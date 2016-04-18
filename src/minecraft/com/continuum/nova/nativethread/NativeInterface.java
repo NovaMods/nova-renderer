@@ -1,6 +1,6 @@
 package com.continuum.nova.nativethread;
 
-import com.continuum.nova.utils.NativeThreadException;
+import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,13 +17,15 @@ import org.apache.logging.log4j.Logger;
  */
 public class NativeInterface {
     private static final Logger LOG = LogManager.getLogger(NativeInterface.class);
-    private static NativeInterface instance;
-    private long instancePointer;
+    private static NativeInterface instance = null;
+    private long nativeHandle;
 
     private boolean renderReady = false;
 
-    public static void startup() throws NativeThreadException {
-        instance = new NativeInterface();
+    public static void startup() {
+        if(instance == null) {
+            instance = new NativeInterface();
+        }
     }
 
     public static NativeInterface getInstance() {
@@ -31,9 +33,11 @@ public class NativeInterface {
     }
 
     private NativeInterface() {
-        instancePointer = runVulkanMod();
-        LOG.info("Native object at memory location " + instancePointer);
+        runVulkanMod();
+        LOG.info("Native object at memory location " + nativeHandle);
     }
 
-    private native long runVulkanMod();
+    private native void runVulkanMod();
+
+    public native void setWorld(World world);
 }

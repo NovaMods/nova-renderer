@@ -4,9 +4,10 @@
 
 #include "nova_renderer.h"
 
-#include "easylogging++.h"
+#include <easylogging++.h>
 
 #include "../gl/windowing/glfw_gl_window.h"
+
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -23,19 +24,9 @@ void initialize_logging() {
     el::Loggers::reconfigureAllLoggers(conf);
 }
 
-long run_vulkan_mod() {
+nova_renderer::nova_renderer() {
     initialize_logging();
 
-    LOG(INFO) << "About to create the mod object";
-
-    nova_renderer * mod = new nova_renderer();
-
-    LOG(INFO) << "Mod object created";
-
-    return (long) mod;
-}
-
-nova_renderer::nova_renderer() {
     m_game_window = new glfw_gl_window();
     LOG(INFO) << "Instantiated window";
 }

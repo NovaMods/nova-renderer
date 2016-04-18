@@ -3,7 +3,6 @@ package com.continuum.nova.transformers;
 import com.continuum.nova.transformers.EntityRenderer.RenderWorldPassReplacer;
 import com.continuum.nova.transformers.Minecraft.StartGameReplacer;
 import com.continuum.nova.transformers.renderglobal.ConstructorReplacer;
-import net.minecraft.launchwrapper.IClassTransformer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.ClassReader;
@@ -25,7 +24,7 @@ import java.util.Map;
  *
  * @author David
  */
-public class VulkanModTransformer implements IClassTransformer {
+public class VulkanModTransformer {
     private static final Logger LOG = LogManager.getLogger(VulkanModTransformer.class);
 
     private static Map<String, Map<String, BetterMethodVisitor>> classTransformers = new HashMap<>();
@@ -61,7 +60,6 @@ public class VulkanModTransformer implements IClassTransformer {
      *
      * @return The transformed class I think
      */
-    @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if(classTransformers.containsKey(name)) {
             LOG.info("Transforming class " + name);

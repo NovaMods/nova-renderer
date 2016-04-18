@@ -23,24 +23,18 @@ set(SOURCE_FILES
         src/interfaces/iwindow.cpp src/interfaces/iwindow.h
         src/core/nova_renderer.cpp src/core/nova_renderer.h
         src/interfaces/igraphics_context.cpp src/interfaces/igraphics_context.h
-        src/core/easylogging++.h
         src/interfaces/ivertex_buffer.cpp src/interfaces/ivertex_buffer.h
         src/interfaces/itexture.cpp src/interfaces/itexture.h
         src/jni/handle.h
         src/gl/windowing/glfw_gl_window.cpp src/gl/windowing/glfw_gl_window.h
         src/gl/core/opengl_wrapper.cpp src/gl/core/opengl_wrapper.h
         src/io/key_forwarder.cpp src/io/key_forwarder.h
-        src/core/com_continuum_vulkan_nativethread_NativeInterface.cpp)
-
-# add_executable(renderer ${SOURCE_FILES})
+        src/core/com_continuum_nova_nativethread_NativeInterface.cpp)
 
 add_library(vulkan-mod-native SHARED ${SOURCE_FILES})
 install(TARGETS vulkan-mod-native DESTINATION ../resources)
 
 # configure the project
-# include the SDL flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-# include the SDL headers
 target_include_directories(vulkan-mod-native SYSTEM PRIVATE)
 target_link_libraries(vulkan-mod-native pthread glfw ${GLFW_LIBRARIES})
 

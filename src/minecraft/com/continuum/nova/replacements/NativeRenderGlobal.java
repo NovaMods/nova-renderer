@@ -1,16 +1,20 @@
 package com.continuum.nova.replacements;
 
+import com.continuum.nova.nativethread.NativeInterface;
+import com.continuum.nova.utils.NativeThreadException;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumWorldBlockLayer;
-import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author David
  */
 public class NativeRenderGlobal extends RenderGlobal {
+    private static final Logger LOG = LogManager.getLogger(NativeRenderGlobal.class);
     protected Minecraft minecraft;
 
     public NativeRenderGlobal(Minecraft mcIn) {
@@ -42,10 +46,13 @@ public class NativeRenderGlobal extends RenderGlobal {
      *
      * <p>Also calls #loadRenderers</p>
      *
-     * @param worldClient
-     *
+     * @param worldClient The WorldClient which (presumably) holds the world
+     */
     @Override
-    public native void setWorldAndLoadRenderers(WorldClient worldClient);
+    public void setWorldAndLoadRenderers(WorldClient worldClient) {
+        loadRenderers();
+        NativeInterface.getInstance().setWorld(worldClient);
+    }
 
     /**
      * Called from Minecraft#runTick and GameSettings#setOptionFloatValue
@@ -228,7 +235,7 @@ public class NativeRenderGlobal extends RenderGlobal {
      * Called all over the place. Definitely not making this a no-op
      *
      * <p>This method does a lot in the base class, a lot that it really shouldn't do.</p>
-     *
+     */
     @Override
     public void loadRenderers() {
         // Do the stupid stuff that loadRenderers does for no good reason
@@ -238,10 +245,8 @@ public class NativeRenderGlobal extends RenderGlobal {
         Blocks.leaves2.setGraphicsLevel(minecraft.gameSettings.fancyGraphics);
 
         // Call the thing I actually want to do
-        loadRenderersNative();
+        NativeInterface.startup();
     }
-
-    private native void loadRenderersNative();
 
     /**
      * Not sure what this does or why it does it. Will wait for more deobsfucation

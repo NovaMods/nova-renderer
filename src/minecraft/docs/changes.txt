@@ -1,0 +1,2 @@
+- Replaced the instantiation of RenderGlobal in Minecraft#startGame with an instantiation of NativeRenderGlobal
+- Removed the GL calls in RenderGlobal#<init>(Minecraft) (Lines 185 - 202)
