@@ -1,0 +1,47 @@
+Notes on renderer:
+
+Looks like rendering entities and whatnot is handled with classes in a map in `RenderManager`. You assign a
+`Render<? extends Entity>` instance to an `Entity` class, then that instance is grabbed at runtime
+
+All the `Render<>`s use direct OpenGL calls, so I'll have to replace all of them. I can't keep them wholly internal to
+the renderer package, since they get returned from the `RenderManager`. I still need a Java class for each one, but I
+can have the Java class just be JNI stuff. I'll have to mess around with JNI and instance variables.
+
+Biggest problem: Any mod which defines a custom `Render` won't draw. It'll try to render to the LJWGL `Display`, which
+won't exist when my mod kills it with a rusty saw. Might cause a crash, might not. Will have to see.
+
+I can probably build a command buffer (in Vulkan) for each `Render<>`. In OpenGL 4.5, I'm tempted to use a geometry
+shader. I'd have to link up a separate program for each entity, though, then switch shaders, and that's super slow.
+Instead, I'll just generate the geometry for each entity in the constructor. I can add the geometry for each Entity to a
+global buffer, returning the index in the buffer and the length of the geometry for each Entity. When a Entity passes
+the visibility check, it'll add a RenderCommand thing to my RenderCommandList or whatever I end up doing. Then I can
+iterate through all RenderCommands and draw all the ones I want. I can sort them to batch them or whatever. So much
+speed.
+
+When glFlush is called, I'll actually render the things. I don't feel too bad about this since it's probably how real
+OpenGL works maybe.
+
+The same basic idea should work in Vulkan. The RenderCommands will probably point to a command buffer of some sort, one
+that knows how to draw each Entity.
+
+I can do the same thing for chunks, too. When a chunk passes the visibility test, it'll add a RenderCommand. Only
+difference is, it's render command should know the vertex positions of the chunk. Or maybe the chunks will add vertices
+to a global chunk vertex buffer, and that buffer will be drawn as a single thing? That seems like a much better idea,
+actually.
+
+All the entities use Models defined in the net.minecraft.client.model package. I should be able to grab the vertices for
+each entity from there, since the entities render models anyways.
+
+That was horrid English. I'm going to grab vertices from MC's already-defined models. That's what'll happen
+
+I'll have to poke my head out of the renderer package into the model package, because there's a ModelRender thing that
+sets positions and rotations and whatnot. Maybe I can just grab the GlStateManager calls?
+
+Probably not. Models use display lists, which are probably pretty fast but annoy me slightly. However, the display lists
+just render the boxes in the model. I can replace that method to give me the vertices
+
+Actually, I can just replace the WorldRenderer. That receives the vertices and adds them to a buffer anyways, which is
+pretty much what I want to do.
+
+WorldRenderer$func_181662_b seems be to about adding vertices (maybe), func_181673_a is almost certainly about adding
+UVs. func_181663_c is probably about adding normals (since Entities are lit)
