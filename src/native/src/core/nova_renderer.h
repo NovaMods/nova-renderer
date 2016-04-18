@@ -29,10 +29,4 @@ private:
     iwindow* m_game_window;
 };
 
-/*!
- * \brief Initializes the Vulkan Mod, starting it up and whatnot
- */
-long run_vulkan_mod();
-
-
 #endif //RENDERER_VULKAN_MOD_H
