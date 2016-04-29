@@ -1,2 +1,4 @@
-- Replaced the instantiation of RenderGlobal in Minecraft#startGame with an instantiation of NativeRenderGlobal
-- Removed the GL calls in RenderGlobal#<init>(Minecraft) (Lines 185 - 202)
+- Removed EntityRenderer and RenderGlobal and other such from Minecraft, replaced with NovaRenderer
+- Instantiate the NovaRenderer instance
+- The installer will need to put any config files in the proper places
+- Register the NovaRenderer as a Reload Listener on the mcResourceManager thingy

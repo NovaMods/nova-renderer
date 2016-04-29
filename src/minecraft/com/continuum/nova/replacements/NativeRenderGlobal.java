@@ -1,12 +1,9 @@
 package com.continuum.nova.replacements;
 
-import com.continuum.nova.nativethread.NativeInterface;
-import com.continuum.nova.utils.NativeThreadException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.init.Blocks;
-import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,7 +48,7 @@ public class NativeRenderGlobal extends RenderGlobal {
     @Override
     public void setWorldAndLoadRenderers(WorldClient worldClient) {
         loadRenderers();
-        NativeInterface.getInstance().setWorld(worldClient);
+        //NativeInterface.getInstance().setWorld(worldClient);
     }
 
     /**
@@ -245,7 +242,7 @@ public class NativeRenderGlobal extends RenderGlobal {
         Blocks.leaves2.setGraphicsLevel(minecraft.gameSettings.fancyGraphics);
 
         // Call the thing I actually want to do
-        NativeInterface.startup();
+        //NativeInterface.startup();
     }
 
     /**
