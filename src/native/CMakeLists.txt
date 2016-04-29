@@ -25,20 +25,20 @@ set(SOURCE_FILES
         src/interfaces/igraphics_context.cpp src/interfaces/igraphics_context.h
         src/interfaces/ivertex_buffer.cpp src/interfaces/ivertex_buffer.h
         src/interfaces/itexture.cpp src/interfaces/itexture.h
-        src/jni/handle.h
         src/gl/windowing/glfw_gl_window.cpp src/gl/windowing/glfw_gl_window.h
         src/gl/core/opengl_wrapper.cpp src/gl/core/opengl_wrapper.h
         src/io/key_forwarder.cpp src/io/key_forwarder.h
-        src/core/com_continuum_nova_nativethread_NativeInterface.cpp)
+        src/core/nova_facade.cpp
+        src/nova_renderer.def
+        )
 
-add_library(vulkan-mod-native SHARED ${SOURCE_FILES})
-install(TARGETS vulkan-mod-native DESTINATION ../resources)
+add_library(nova-renderer SHARED ${SOURCE_FILES})
 
 # configure the project
-target_include_directories(vulkan-mod-native SYSTEM PRIVATE)
-target_link_libraries(vulkan-mod-native pthread glfw ${GLFW_LIBRARIES})
+target_include_directories(nova-renderer SYSTEM PRIVATE)
+target_link_libraries(nova-renderer pthread glfw ${GLFW_LIBRARIES})
 
-set_property(TARGET vulkan-mod-native PROPERTY CXX_STANDARD 14)
-set_property(TARGET vulkan-mod-native PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET nova-renderer PROPERTY CXX_STANDARD 14)
+set_property(TARGET nova-renderer PROPERTY CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_BUILD_TYPE Debug)

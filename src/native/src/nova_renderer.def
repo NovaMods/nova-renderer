@@ -1,0 +1,5 @@
+LIBRARY nova_renderer
+VERSION 0.1
+EXPORTS
+    init_nova           @1
+    add_texture         @2

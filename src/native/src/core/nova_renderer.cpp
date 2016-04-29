@@ -24,6 +24,8 @@ void initialize_logging() {
     el::Loggers::reconfigureAllLoggers(conf);
 }
 
+nova_renderer * nova_renderer::instance;
+
 nova_renderer::nova_renderer() {
     initialize_logging();
 
@@ -47,3 +49,22 @@ bool nova_renderer::should_continue() {
     // If the window wants to close, the user probably clicked on the "X" button
     return m_game_window->should_close();
 }
+
+void nova_renderer::init_instance() {
+    instance = new nova_renderer();
+}
+
+nova_renderer *nova_renderer::get_instance() {
+    return instance;
+}
+
+void nova_renderer::add_texture(mc_texture &new_texture) {
+    num_textures++;
+    LOG(INFO) << num_textures << " textures loaded by Nova";
+}
+
+
+
+
+
+
