@@ -6,11 +6,8 @@ add_subdirectory(
 )
 
 include_directories(
-        "C:/win-builds/include"
         "C:/win-builds/lib/gcc/mingw32/4.8.1/include/c++"
-        "C:/Program Files/Java/jdk1.8.0_25/include/win32"
-        "C:/Program Files/Java/jdk1.8.0_25/include"
-        "C:/VulkanSDK/1.0.5.0/Include"
+        "C:/win-builds/include"
 )
 
 link_directories(
@@ -36,7 +33,7 @@ add_library(nova-renderer SHARED ${SOURCE_FILES})
 
 # configure the project
 target_include_directories(nova-renderer SYSTEM PRIVATE)
-target_link_libraries(nova-renderer pthread glfw ${GLFW_LIBRARIES})
+target_link_libraries(nova-renderer glfw ${GLFW_LIBRARIES})
 
 set_property(TARGET nova-renderer PROPERTY CXX_STANDARD 14)
 set_property(TARGET nova-renderer PROPERTY CXX_STANDARD_REQUIRED ON)

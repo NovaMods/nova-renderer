@@ -13,11 +13,11 @@ interface NovaNative extends Library {
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
 
     public static class mc_texture extends Structure {
-        int width;
-        int height;
-        int num_components;
-        byte[] texture_data;
-        String name;
+        public int width;
+        public int height;
+        public int num_components;
+        public byte[] texture_data;
+        public String name;
 
         public mc_texture(int width, int height, int num_components, byte[] texture_data, String name) {
             this.width = width;
