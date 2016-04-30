@@ -11,7 +11,6 @@
 #define NOVA_FUNC __declspec(dllimport)
 #endif
 
-#include "nova_renderer.h"
 #include "../mc/mc_objects.h"
 
 extern "C" {
@@ -35,6 +34,10 @@ void init_nova();
  * \param texture The texture to add to the renderer
  */
 void add_texture(mc_texture texture);
+
+void reset_texture_manager();
+
+void finalize_textures();
 
 };  // End extern C
     // I don't like doing this, but I just say this closing curly brace and freaked out a little bit.

@@ -7,6 +7,8 @@ import com.sun.jna.Structure;
 /**
  * Provides a direct interface into the native code
  *
+ * This class is going to be really big. Sorry.
+ *
  * @author David
  */
 interface NovaNative extends Library {
@@ -31,4 +33,8 @@ interface NovaNative extends Library {
     void init_nova();
 
     void add_texture(mc_texture texture);
+
+    void reset_texture_manager();
+
+    void finalize_textures();
 }

@@ -8,11 +8,12 @@
 
 #include <string>
 #include <GL/glm/glm.hpp>
-#include <unordered_map>
+#include <map>
 #include "../mc/mc_objects.h"
 #include "../gl/glad/glad.h"
 #include "../interfaces/itexture.h"
 #include "../gl/objects/texture2D.h"
+#include "../gl/core/opengl_wrapper.h"
 
 /*!
  * \brief Holds all the textures that the Nova Renderer can deal with
@@ -51,6 +52,7 @@ public:
         PARTICLES,  //!< The atlas for textures used by particles
         EFFECTS,    //!< The atlas for textures used by effects, such as the underwater overlay
         FONT,       //!< The atlas for textures in the current font
+        NUM_ATLASES,
     };
 
     /*!
@@ -79,7 +81,7 @@ public:
     /*!
      * \brief Initializes the texture_manager. Doesn't do anything special.
      */
-    texture_manager();
+    texture_manager(opengl_wrapper * wrapper);
 
     /*!
      * \brief De-allocates everything ths texture_manager uses
@@ -100,9 +102,9 @@ public:
      * The texture is not put into an atlas immediately. Rather, it is held in a staging area until #finalize_textures
      * is called. Then it's put into an atlas
      *
-     * \param new_texture The new texture
+     * \param make_texture_2D The new texture
      */
-    void add_texture(mc_texture new_texture);
+    void add_texture(mc_texture & new_texture);
 
     /*!
      * \brief Takes all the textures from the staging areas and puts them into multiple atlases
@@ -134,8 +136,12 @@ public:
 
 private:
     std::vector<mc_texture> loaded_textures;
-    std::unordered_map<std::pair<atlas_type, texture_type>, texture2D> atlases;
-    std::unordered_map<std::string, texture_location> locations;
+    std::map<std::pair<atlas_type, texture_type>, texture2D> atlases;
+    std::map<std::string, texture_location> locations;
+
+    opengl_wrapper * gl_wrapper;
+
+    void pack_into_atlas(std::vector<mc_texture> &textures_to_pack, texture2D &atlas);
 };
 
 

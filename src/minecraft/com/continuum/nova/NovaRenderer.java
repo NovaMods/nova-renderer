@@ -70,6 +70,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             return;
         }
 
+        NovaNative.INSTANCE.reset_texture_manager();
+
         for(ResourceLocation textureLocation : TEXTURES_LOCATION) {
             try {
                 IResource texture = resourceManager.getResource(textureLocation);
@@ -86,15 +88,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
         }
 
+        NovaNative.INSTANCE.finalize_textures();
     }
 
     public void preInit() {
         // TODO: Remove this and use the win32-x86 thing to package the DLL into the jar
         System.getProperties().setProperty("jna.library.path", "C:/Users/David/Documents/Nova Renderer/run");
-        LOG.info("Pre-initing");
         LOG.info("PID: " + ManagementFactory.getRuntimeMXBean().getName());
-        LOG.info("Attempting to initialize native code...");
         NovaNative.INSTANCE.init_nova();
-        LOG.info("Native code initialized!");
+        LOG.info("Native code initialized");
     }
 }

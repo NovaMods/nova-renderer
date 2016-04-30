@@ -35,7 +35,7 @@ int glfw_gl_window::init() {
         LOG(FATAL) << "Could not initialize window :(";
     }
 
-    LOG(INFO) << "Window created!";
+    LOG(INFO) << "GLFW window created";
 
     glfwMakeContextCurrent(window);
 
