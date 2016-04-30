@@ -41,22 +41,9 @@ class texture_bind_exception : public std::exception {};
  * implementations without too much hassle. It all depends on how stateful the GPU interfaces are.
  */
 class itexture {
-    /*!
-     * \brief Allocates a new texture on the GPU
-     *
-     * \throws texture_creation_exception if the texture can't be created for some reason
-     */
-    virtual void create() = 0;
-
-    /*!
-     * \brief Deletes this texture from the GPU
-     */
-    virtual void destroy() = 0;
-
+public:
     /*!
      * \brief Tells the graphics context to use this texture for the given texture slot
-     *
-     * TODO: Vulkan may or may not use texture slots like OpenGL does. Probably not. WIll consider later.
      *
      * \param location The identifier to bind this texture to
      *
@@ -65,9 +52,8 @@ class itexture {
     virtual void bind(unsigned int location) = 0;
 
     /*!
-     * \brief Tells the graphics context to not use this texture any more
-     *
-     * Not 100% sure how I'll handle this. I'll probably figure it out when I code it. Hopefully before, though
+     * \brief Tells the graphics context to not use this texture any more, essentially making the texture slot it was
+     * bound to empty
      */
     virtual void unbind() = 0;
 
@@ -82,14 +68,14 @@ class itexture {
      * \param width The width, in pixels, of this texture
      * \param num_channels How many color channels the texture has
      */
-    virtual void set_data(std::vector<float> pixel_data, int height, int width, int num_channels) = 0;
+    virtual void set_data(std::vector<float> pixel_data, std::vector<int> dimensions, GLenum num_channels) = 0;
 
     /*!
      * \brief Sets this texture's filtering parameters
      *
      * \param params The filtering parameters for this texture
      */
-    virtual void set_filtering_params(texture_filtering_params params) = 0;
+    virtual void set_filtering_parameters(texture_filtering_params & params) = 0;
 };
 
 

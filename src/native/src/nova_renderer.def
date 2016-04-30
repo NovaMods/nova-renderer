@@ -1,5 +1,7 @@
 LIBRARY nova_renderer
 VERSION 0.1
 EXPORTS
-    init_nova           @1
-    add_texture         @2
+    init_nova               @1
+    add_texture             @2
+    reset_texture_manager   @3
+    finalize_textures       @4

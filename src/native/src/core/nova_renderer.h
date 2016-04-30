@@ -9,6 +9,7 @@
 #include "../gl/core/opengl_wrapper.h"
 #include "nova.h"
 #include "../mc/mc_objects.h"
+#include "texture_manager.h"
 
 /*!
  * \brief Initializes everything this mod needs, creating its own window
@@ -20,6 +21,8 @@
  */
 class nova_renderer {
 public:
+    static nova_renderer * instance;
+
     nova_renderer();
     ~nova_renderer();
 
@@ -29,16 +32,14 @@ public:
 
     bool should_continue();
 
-    void add_texture(mc_texture & new_texture);
+    texture_manager * get_texture_manager();
 
     static void init_instance();
-    static nova_renderer * get_instance();
 
 private:
-    static nova_renderer * instance;
-
     opengl_wrapper wrapper;
     iwindow* m_game_window;
+    texture_manager tex_manager;
     int num_textures;
 };
 

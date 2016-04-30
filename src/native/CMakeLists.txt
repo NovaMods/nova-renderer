@@ -21,11 +21,13 @@ set(SOURCE_FILES
         src/core/nova_renderer.cpp src/core/nova_renderer.h
         src/interfaces/igraphics_context.cpp src/interfaces/igraphics_context.h
         src/interfaces/ivertex_buffer.cpp src/interfaces/ivertex_buffer.h
-        src/interfaces/itexture.cpp src/interfaces/itexture.h
+        src/interfaces/itexture.h
         src/gl/windowing/glfw_gl_window.cpp src/gl/windowing/glfw_gl_window.h
         src/gl/core/opengl_wrapper.cpp src/gl/core/opengl_wrapper.h
         src/io/key_forwarder.cpp src/io/key_forwarder.h
         src/core/nova_facade.cpp
+        src/core/texture_manager.cpp src/core/texture_manager.h
+        src/gl/objects/texture2D.cpp src/gl/objects/texture2D.h
         src/nova_renderer.def
         )
 

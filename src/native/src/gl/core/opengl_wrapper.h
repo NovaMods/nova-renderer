@@ -6,6 +6,8 @@
 #define RENDERER_OPENGL_WRAPPER_H
 
 
+#include "../objects/texture2D.h"
+
 /*!
  * \brief Provides a higher-level API into OpenGL, providing convenient methods for creating the OpenGL instance,
  * managing the creating of devices, and whatever else
@@ -16,6 +18,13 @@ public:
      * \brief Initializes OpenGL and whatnot
      */
     opengl_wrapper();
+
+    /*!
+     * \brief Allocates a new texture on the GPU
+     *
+     * \return The new texture
+     */
+    texture2D make_texture_2D();
 
 private:
 };

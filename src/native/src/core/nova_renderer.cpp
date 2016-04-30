@@ -26,7 +26,7 @@ void initialize_logging() {
 
 nova_renderer * nova_renderer::instance;
 
-nova_renderer::nova_renderer() {
+nova_renderer::nova_renderer() : tex_manager(&wrapper) {
     initialize_logging();
 
     m_game_window = new glfw_gl_window();
@@ -54,17 +54,6 @@ void nova_renderer::init_instance() {
     instance = new nova_renderer();
 }
 
-nova_renderer *nova_renderer::get_instance() {
-    return instance;
+texture_manager *nova_renderer::get_texture_manager() {
+    return &tex_manager;
 }
-
-void nova_renderer::add_texture(mc_texture &new_texture) {
-    num_textures++;
-    LOG(INFO) << num_textures << " textures loaded by Nova";
-}
-
-
-
-
-
-
