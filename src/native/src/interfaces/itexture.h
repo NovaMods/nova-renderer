@@ -68,7 +68,7 @@ public:
      * \param width The width, in pixels, of this texture
      * \param num_channels How many color channels the texture has
      */
-    virtual void set_data(std::vector<float> pixel_data, std::vector<int> dimensions, GLenum num_channels) = 0;
+    virtual void set_data(std::vector<float> & pixel_data, std::vector<int> & dimensions, GLenum num_channels) = 0;
 
     /*!
      * \brief Sets this texture's filtering parameters

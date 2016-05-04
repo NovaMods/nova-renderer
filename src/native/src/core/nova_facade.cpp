@@ -1,26 +1,39 @@
 /*!
  * \brief Provides implementations for all the functions that this library provides
  *
+ * I'd like for the functions in this file to be a facade sort of thing, but idk if that will happen. These functions
+ * look a lot like simple passthroughs.
+ *
  * \author David
  */
 
+#define DLL_EXPORT
 #include "nova.h"
 #include "nova_renderer.h"
 
 #define TEXTURE_MANAGER nova_renderer::instance->get_texture_manager()
 
-void init_nova() {
+NOVA_FUNC void init_nova() {
     nova_renderer::init_instance();
 }
 
-void add_texture(mc_texture texture) {
-    TEXTURE_MANAGER->add_texture(texture);
+NOVA_FUNC void add_texture(mc_atlas_texture texture, int atlas_type, int texture_type) {
+    TEXTURE_MANAGER->add_texture(
+            texture,
+            static_cast<texture_manager::atlas_type>(atlas_type),
+            static_cast<texture_manager::texture_type >(texture_type)
+    );
 }
 
-void reset_texture_manager() {
+NOVA_FUNC void reset_texture_manager() {
     TEXTURE_MANAGER->reset();
 }
 
-void finalize_textures() {
-    TEXTURE_MANAGER->finalize_textures();
+NOVA_FUNC void add_texture_location(mc_texture_atlas_location location) {
+    TEXTURE_MANAGER->add_texture_location(location);
 }
+
+NOVA_FUNC int get_max_texture_size() {
+    return TEXTURE_MANAGER->get_max_texture_size();
+}
+

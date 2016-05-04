@@ -22,7 +22,7 @@ public:
      * texture. I might need more, for things like particles of all the random UI textures (Those can be packed into an
      * atlas...)
      *
-     * \oaram gl_name The OpenGl name of this texture, generated when the texture was allocated
+     * \param gl_name The OpenGl name of this texture, generated when the texture was allocated
      */
     texture2D(GLuint gl_name);
 
@@ -60,7 +60,7 @@ public:
      * \param dimensions An array of the dimensions in this texture. For a texture2D that array MUST have two elements
      * \param format The format of the texture data
      */
-    virtual void set_data(std::vector<float> pixel_data, std::vector<int> dimensions, GLenum format);
+    virtual void set_data(std::vector<float> & pixel_data, std::vector<int> & dimensions, GLenum format);
 
     virtual void set_filtering_parameters(texture_filtering_params & params);
 

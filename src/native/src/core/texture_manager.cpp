@@ -30,32 +30,62 @@ void texture_manager::reset() {
 
     glDeleteTextures((GLsizei) texture_ids.size(), texture_ids.data());
 
-    loaded_textures.clear();
     atlases.clear();
     locations.clear();
 }
 
-void texture_manager::add_texture(mc_texture & new_texture) {
-    loaded_textures.push_back(new_texture);
+void texture_manager::add_texture(mc_atlas_texture & new_texture, atlas_type type, texture_type data_type) {
+    // TODO:
+    // Create an OpenGL texture from the given texture
+    // Save it to the list of atlas textures
+    texture2D texture = gl_wrapper->make_texture_2D();
+
+    std::vector<float> pixel_data((size_t) (new_texture.width * new_texture.height * new_texture.num_components));
+    for(int i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
+        pixel_data[i] = float(new_texture.texture_data[i]) / 255.0f;
+    }
+
+    std::vector<int> dimensions(2);
+    dimensions.push_back(new_texture.width);
+    dimensions.push_back(new_texture.height);
+
+    GLenum format = GL_RGB;
+    switch(new_texture.num_components) {
+        case 1:
+            format = GL_R;
+            break;
+        case 2:
+            format = GL_RG;
+            break;
+        case 3:
+            format = GL_RGB;
+            break;
+        case 4:
+            format = GL_RGBA;
+            break;
+        default:
+            LOG(ERROR) << "Unsupported number of components. You have " << new_texture.num_components << " components "
+            << ", but I need a number in [1,4]";
+    }
+
+    texture.set_data(pixel_data, dimensions, format);
+
+    atlases[std::pair<atlas_type, texture_type>(type, data_type)] = texture;
 }
 
-void texture_manager::finalize_textures() {
-    LOG(INFO) << "Finalizing " << loaded_textures.size() << " textures";
+void texture_manager::add_texture_location(mc_texture_atlas_location &location) {
+    std::string tex_name(location.name);
+    glm::vec2 min_uv(location.min_u, location.min_v);
+    glm::vec2 max_uv(location.max_u, location.max_v);
 
-    // Make one texture for each atlas
-    texture2D terrain_albedo_atlas = gl_wrapper->make_texture_2D();
-    std::vector<mc_texture> terrain_albedo_textures;
-    auto end = std::copy_if(
-            loaded_textures.begin(),
-            loaded_textures.end(),
-            terrain_albedo_textures.begin(),
-            [](mc_texture x){return std::string(x.name).find("blocks") != std::string::npos;}
-    );
-    terrain_albedo_textures.resize((unsigned long long int) std::distance(terrain_albedo_textures.begin(), end));
+    texture_location tex_loc = {
+            min_uv,
+            max_uv
+    };
 
-    pack_into_atlas(terrain_albedo_textures, terrain_albedo_atlas);
-
+    locations[tex_name] = tex_loc;
 }
+
 
 const texture_manager::texture_location &texture_manager::get_texture_location(std::string &texture_name) {
     return locations[texture_name];
@@ -66,27 +96,10 @@ itexture *texture_manager::get_texture_atlas(atlas_type atlas, texture_type type
     return &atlases[key];
 }
 
-void texture_manager::pack_into_atlas(std::vector<mc_texture> &textures_to_pack, texture2D &atlas) {
-    // Figure out how big our texture can be
-    GLint max_tex_size;
-    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size);
-
-    // Figure out how long the texture would be if I laid every texture out side to side
-    unsigned int atlas_x = (unsigned int) (textures_to_pack.size() * textures_to_pack[0].width);
-    unsigned int allowed_x = std::max(atlas_x, (const unsigned int &) max_tex_size);
-    unsigned int num_rows = atlas_x / allowed_x;
-    num_rows++; // Pretty sure integer division will give me fewer rows than I need.
-
-    if(num_rows > max_tex_size && atlas_x > max_tex_size) {
-        // TODO: Create multiple atlases and manage them somehow
+int texture_manager::get_max_texture_size() {
+    if(max_texture_size < 0) {
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
     }
-
-    // Allocate data for the atlas
-    // I'm always creating textures with four components. Not the best idea in terms of memory usage, but it should
-    // work for now
-    // TODO: Revisit this
-    float * full_texture = new float[allowed_x * num_rows * 4];
-    unsigned int 
+    return max_texture_size;
 }
-
 

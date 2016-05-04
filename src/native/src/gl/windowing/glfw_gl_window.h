@@ -6,6 +6,7 @@
 #define RENDERER_GLFW_GL_WINDOW_H
 
 
+#include "../glad/glad.h"
 #include <GLFW/glfw3.h>
 #include "../../interfaces/iwindow.h"
 
