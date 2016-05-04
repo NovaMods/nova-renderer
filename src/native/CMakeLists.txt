@@ -15,7 +15,7 @@ link_directories(
 )
 
 set(SOURCE_FILES
-        src/main.cpp
+        src/test/main.cpp
         src/gl/glad.c
         src/interfaces/iwindow.cpp src/interfaces/iwindow.h
         src/core/nova_renderer.cpp src/core/nova_renderer.h
@@ -28,7 +28,6 @@ set(SOURCE_FILES
         src/core/nova_facade.cpp
         src/core/texture_manager.cpp src/core/texture_manager.h
         src/gl/objects/texture2D.cpp src/gl/objects/texture2D.h
-        src/nova_renderer.def
         )
 
 add_library(nova-renderer SHARED ${SOURCE_FILES})
@@ -39,5 +38,13 @@ target_link_libraries(nova-renderer glfw ${GLFW_LIBRARIES})
 
 set_property(TARGET nova-renderer PROPERTY CXX_STANDARD 14)
 set_property(TARGET nova-renderer PROPERTY CXX_STANDARD_REQUIRED ON)
+
+add_executable(nova_test ${SOURCE_FILES})
+
+target_include_directories(nova_test SYSTEM PRIVATE)
+target_link_libraries(nova_test glfw ${GLFW_LIBRARIES})
+
+set_property(TARGET nova_test PROPERTY CXX_STANDARD 14)
+set_property(TARGET nova_test PROPERTY CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_BUILD_TYPE Debug)

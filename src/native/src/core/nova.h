@@ -21,7 +21,7 @@ extern "C" {
  * How does this initialize the Nova Renderer? Well, the Nova Renderer is a singleton. Why? So I don't have to pass it
  * as a parameter to every single function that this library provides.
  */
-void init_nova();
+NOVA_FUNC void init_nova();
 
 /*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture
@@ -33,11 +33,24 @@ void init_nova();
  *
  * \param texture The texture to add to the renderer
  */
-void add_texture(mc_texture texture);
+NOVA_FUNC void add_texture(mc_atlas_texture texture);
 
-void reset_texture_manager();
+/*!
+ * \brief Adds the given location to the list of texture locations
+ *
+ * The textures are stored in atlases, but I still need to know the UV range for a given block's texture so I can assign
+ * the block the proper UV coordinates
+ *
+ * \param location The location of the texture
+ */
+NOVA_FUNC void add_texture_location(mc_texture_atlas_location location, int atlas_type, int texture_type);
 
-void finalize_textures();
+/*!
+ * \brief Queries OpenGL and returns the maximum texture size that OpenGL allows
+ */
+NOVA_FUNC int get_max_texture_size();
+
+NOVA_FUNC void reset_texture_manager();
 
 };  // End extern C
     // I don't like doing this, but I just say this closing curly brace and freaked out a little bit.

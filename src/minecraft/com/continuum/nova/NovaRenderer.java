@@ -1,5 +1,6 @@
 package com.continuum.nova;
 
+import com.continuum.nova.utils.AtlasGenerator;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
@@ -8,11 +9,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by David on 24-Dec-15.
@@ -28,7 +34,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     // Looks like I have to enumerate every texture I want. Bah.
     // Optifine/Shaders mod seems to have a better solution for this, but I can't figure it out just yet
-    private final ResourceLocation[] TEXTURES_LOCATION = {
+    private final ResourceLocation[] ALBEDO_TEXTURES_LOCATION = {
             new ResourceLocation("textures/blocks/anvil_base.png"),
             new ResourceLocation("textures/blocks/anvil_top_damaged_0.png"),
             new ResourceLocation("textures/blocks/anvil_top_damaged_1.png"),
@@ -71,25 +77,75 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
 
         NovaNative.INSTANCE.reset_texture_manager();
+        int maxAtlasSize = NovaNative.INSTANCE.get_max_texture_size();
 
-        for(ResourceLocation textureLocation : TEXTURES_LOCATION) {
+        // Make sure that the atlas isn't super enormously huge, because while that would be good to avoid texture,
+        // switching, it runs out of memory
+        maxAtlasSize = Math.min(maxAtlasSize, 8192);
+
+        AtlasGenerator gen = new AtlasGenerator();
+
+        List<AtlasGenerator.ImageName> images = new ArrayList<>();
+
+        for(ResourceLocation textureLocation : ALBEDO_TEXTURES_LOCATION) {
             try {
                 IResource texture = resourceManager.getResource(textureLocation);
 
                 BufferedInputStream in = new BufferedInputStream(texture.getInputStream());
                 BufferedImage image = ImageIO.read(in);
-                int width = image.getWidth();
-                int height = image.getHeight();
-                byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
 
-                NovaNative.INSTANCE.add_texture(new NovaNative.mc_texture(width, height, 4, pixels, texture.getResourceLocation().getResourcePath()));
+                images.add(new AtlasGenerator.ImageName(image, textureLocation.toString()));
+
             } catch(IOException e) {
                 LOG.warn("IOException when loading texture " + textureLocation.toString() + ": " +e.getMessage());
             }
         }
 
-        NovaNative.INSTANCE.finalize_textures();
+        List<AtlasGenerator.Texture> albedoAtlases = gen.Run("albedo", maxAtlasSize, maxAtlasSize, 1, true, images);
+
+        for(AtlasGenerator.Texture texture : albedoAtlases) {
+            BufferedImage image = texture.getImage();
+            byte[] imageData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
+
+            for(int i = 0; i < imageData.length; i += 4) {
+                byte a = imageData[i];
+                byte b = imageData[i + 1];
+                byte g = imageData[i + 2];
+                byte r = imageData[i + 3];
+
+                imageData[i] = r;
+                imageData[i + 1] = g;
+                imageData[i + 2] = b;
+                imageData[i + 3] = a;
+            }
+
+            NovaNative.mc_atlas_texture atlasTex = new NovaNative.mc_atlas_texture(
+                    image.getWidth(),
+                    image.getHeight(),
+                    image.getColorModel().getNumComponents(),
+                    imageData
+            );
+
+            // TODO: This is bad. This will only use one texture per atlas type, and I definitely might want more than
+            // that. I'll have to change a lot of code to support that though
+            NovaNative.INSTANCE.add_texture(atlasTex, NovaNative.AtlasType.TERRAIN.ordinal(), NovaNative.TextureType.ALBEDO.ordinal());
+
+            Map<String, Rectangle> rectangleMap = texture.getRectangleMap();
+            for(String texName : rectangleMap.keySet()) {
+                Rectangle rect = rectangleMap.get(texName);
+                NovaNative.mc_texture_atlas_location atlasLoc = new NovaNative.mc_texture_atlas_location(
+                        texName,
+                        rect.x / (float)image.getWidth(),
+                        rect.y / (float)image.getHeight(),
+                        rect.width / (float)image.getWidth(),
+                        rect.height / (float)image.getHeight()
+                );
+
+                NovaNative.INSTANCE.add_texture_location(atlasLoc);
+            }
+        }
     }
+
 
     public void preInit() {
         // TODO: Remove this and use the win32-x86 thing to package the DLL into the jar

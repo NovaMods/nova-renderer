@@ -1,5 +1,5 @@
 #include <iostream>
-#include "core/nova_renderer.h"
+#include "../core/nova_renderer.h"
 
 using namespace std;
 
