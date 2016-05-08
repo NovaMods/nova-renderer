@@ -4,6 +4,8 @@
  * I'd like for the functions in this file to be a facade sort of thing, but idk if that will happen. These functions
  * look a lot like simple passthroughs.
  *
+ * Although, many of them do things to convert from C-style things to C++-style things, so that's cool I guess
+ *
  * \author David
  */
 
