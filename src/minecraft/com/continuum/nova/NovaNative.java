@@ -1,8 +1,6 @@
 package com.continuum.nova;
 
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.Structure;
+import com.sun.jna.*;
 
 /**
  * Provides a direct interface into the native code
@@ -18,13 +16,16 @@ interface NovaNative extends Library {
         public int width;
         public int height;
         public int num_components;
-        public byte[] texture_data;
+        public Pointer texture_data;
 
         public mc_atlas_texture(int width, int height, int num_components, byte[] texture_data) {
             this.width = width;
             this.height = height;
             this.num_components = num_components;
-            this.texture_data = texture_data;
+            this.texture_data = new Memory(width * height * num_components * Native.getNativeSize(Byte.TYPE));
+            for(int i = 0; i < width * height * num_components; i++) {
+                this.texture_data.setByte(i, texture_data[i]);
+            }
         }
     }
 
