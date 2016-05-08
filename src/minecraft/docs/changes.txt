@@ -2,3 +2,6 @@
 - Instantiate the NovaRenderer instance
 - The installer will need to put any config files in the proper places
 - Register the NovaRenderer as a Reload Listener on the mcResourceManager thingy
+- I think I'll add code to Minecraft#loadWorld(WorldClient, String) so that I can capture the chunks from the current
+world. I can definitely grab entities from that. Entities look easy: I can grab all the data, wrap it in a mc_struct
+thing, and send it to the native code no problemo
