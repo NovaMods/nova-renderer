@@ -104,44 +104,50 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         List<AtlasGenerator.Texture> albedoAtlases = gen.Run("albedo", maxAtlasSize, maxAtlasSize, 1, true, images);
 
         for(AtlasGenerator.Texture texture : albedoAtlases) {
-            BufferedImage image = texture.getImage();
-            byte[] imageData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
+            try {
+                BufferedImage image = texture.getImage();
+                byte[] imageData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
+                LOG.info("The image has " + imageData.length + " separate pixels");
 
-            for(int i = 0; i < imageData.length; i += 4) {
-                byte a = imageData[i];
-                byte b = imageData[i + 1];
-                byte g = imageData[i + 2];
-                byte r = imageData[i + 3];
+                for(int i = 0; i < imageData.length; i += 4) {
+                    byte a = imageData[i];
+                    byte b = imageData[i + 1];
+                    byte g = imageData[i + 2];
+                    byte r = imageData[i + 3];
 
-                imageData[i] = r;
-                imageData[i + 1] = g;
-                imageData[i + 2] = b;
-                imageData[i + 3] = a;
-            }
+                    imageData[i] = r;
+                    imageData[i + 1] = g;
+                    imageData[i + 2] = b;
+                    imageData[i + 3] = a;
+                }
 
-            NovaNative.mc_atlas_texture atlasTex = new NovaNative.mc_atlas_texture(
-                    image.getWidth(),
-                    image.getHeight(),
-                    image.getColorModel().getNumComponents(),
-                    imageData
-            );
-
-            // TODO: This is bad. This will only use one texture per atlas type, and I definitely might want more than
-            // that. I'll have to change a lot of code to support that though
-            NovaNative.INSTANCE.add_texture(atlasTex, NovaNative.AtlasType.TERRAIN.ordinal(), NovaNative.TextureType.ALBEDO.ordinal());
-
-            Map<String, Rectangle> rectangleMap = texture.getRectangleMap();
-            for(String texName : rectangleMap.keySet()) {
-                Rectangle rect = rectangleMap.get(texName);
-                NovaNative.mc_texture_atlas_location atlasLoc = new NovaNative.mc_texture_atlas_location(
-                        texName,
-                        rect.x / (float)image.getWidth(),
-                        rect.y / (float)image.getHeight(),
-                        rect.width / (float)image.getWidth(),
-                        rect.height / (float)image.getHeight()
+                NovaNative.mc_atlas_texture atlasTex = new NovaNative.mc_atlas_texture(
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getColorModel().getNumComponents(),
+                        imageData
                 );
 
-                NovaNative.INSTANCE.add_texture_location(atlasLoc);
+                // TODO: This is bad. This will only use one texture per atlas type, and I definitely might want more than
+                // that. I'll have to change a lot of code to support that though
+                NovaNative.INSTANCE.add_texture(atlasTex, NovaNative.AtlasType.TERRAIN.ordinal(), NovaNative.TextureType.ALBEDO.ordinal());
+
+                Map<String, Rectangle> rectangleMap = texture.getRectangleMap();
+                for(String texName : rectangleMap.keySet()) {
+                    Rectangle rect = rectangleMap.get(texName);
+                    NovaNative.mc_texture_atlas_location atlasLoc = new NovaNative.mc_texture_atlas_location(
+                            texName,
+                            rect.x / (float)image.getWidth(),
+                            rect.y / (float)image.getHeight(),
+                            rect.width / (float)image.getWidth(),
+                            rect.height / (float)image.getHeight()
+                    );
+
+                    NovaNative.INSTANCE.add_texture_location(atlasLoc);
+                }
+
+            } catch(AtlasGenerator.Texture.WrongNumComponentsException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -150,6 +156,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public void preInit() {
         // TODO: Remove this and use the win32-x86 thing to package the DLL into the jar
         System.getProperties().setProperty("jna.library.path", "C:/Users/David/Documents/Nova Renderer/run");
+        System.getProperties().setProperty("jna.dump_memory", "false");
         LOG.info("PID: " + ManagementFactory.getRuntimeMXBean().getName());
         NovaNative.INSTANCE.init_nova();
         LOG.info("Native code initialized");

@@ -8,6 +8,7 @@
  */
 
 #define DLL_EXPORT
+
 #include "nova.h"
 #include "nova_renderer.h"
 
@@ -17,7 +18,7 @@ NOVA_FUNC void init_nova() {
     nova_renderer::init_instance();
 }
 
-NOVA_FUNC void add_texture(mc_atlas_texture texture, int atlas_type, int texture_type) {
+NOVA_FUNC void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type) {
     TEXTURE_MANAGER->add_texture(
             texture,
             static_cast<texture_manager::atlas_type>(atlas_type),

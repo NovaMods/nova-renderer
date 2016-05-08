@@ -1,13 +1,19 @@
 package com.continuum.nova.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.nio.Buffer;
-import java.util.*;
-import java.io.*;
-import javax.imageio.*;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * From https://github.com/lukaszdk/texture-atlas-generator
@@ -17,8 +23,9 @@ import java.util.List;
  * @author lukaszdk
  * @author ddubois
  */
-
 public class AtlasGenerator {
+    private static final Logger LOG = LogManager.getLogger(AtlasGenerator.class);
+
     public List<Texture> Run(String name, int width, int height, int padding, boolean unitCoordinates, List<ImageName> images) {
 
         List<Texture> textures = new ArrayList<>();
@@ -46,8 +53,6 @@ public class AtlasGenerator {
             }
         }
 
-        count = 0;
-
         return textures;
     }
 
@@ -69,7 +74,7 @@ public class AtlasGenerator {
             double getYValue(Rectangle rect);
         }
 
-        private class LargestComparator implements Comparator {
+        private class Largest implements Comparator {
 
             @Override
             public double getComparedValue(double val1, double val2) {
@@ -87,7 +92,7 @@ public class AtlasGenerator {
             }
         }
 
-        private class SmallestComparator implements Comparator {
+        private class Smallest implements Comparator {
 
             @Override
             public double getComparedValue(double val1, double val2) {
@@ -105,12 +110,18 @@ public class AtlasGenerator {
             }
         }
 
+        public static class WrongNumComponentsException extends Exception {
+            WrongNumComponentsException(String msg) {
+                super(msg);
+            }
+        }
+
         private class Node {
-            public Rectangle rect;
+            Rectangle rect;
             public Node child[];
             public BufferedImage image;
 
-            public Node(int x, int y, int width, int height) {
+            Node(int x, int y, int width, int height) {
                 rect = new Rectangle(x, y, width, height);
                 child = new Node[2];
                 child[0] = null;
@@ -118,12 +129,12 @@ public class AtlasGenerator {
                 image = null;
             }
 
-            public boolean IsLeaf() {
+            boolean IsLeaf() {
                 return child[0] == null && child[1] == null;
             }
 
             // Algorithm from http://www.blackpawn.com/texts/lightmaps/
-            public Node Insert(BufferedImage image, int padding) {
+            Node Insert(BufferedImage image, int padding) {
                 if(!IsLeaf()) {
                     Node newNode = child[0].Insert(image, padding);
 
@@ -180,6 +191,8 @@ public class AtlasGenerator {
 
                     minX = comparator.getComparedValue(minX, child1Point.getX());
                     minY = comparator.getComparedValue(minY, child1Point.getY());
+
+                    LOG.info(comparator.getClass().getSimpleName() + " point after looking at child 1: " + minX + "," + minY);
                 }
 
                 if(child[1] != null) {
@@ -187,10 +200,16 @@ public class AtlasGenerator {
 
                     minX = comparator.getComparedValue(minX, child2Point.getX());
                     minY = comparator.getComparedValue(minY, child2Point.getY());
+
+                    LOG.info(comparator.getClass().getSimpleName() + " point after looking at child 2: " + minX + "," + minY);
                 }
 
-                minX = comparator.getComparedValue(minX, comparator.getXValue(rect));
-                minY = comparator.getComparedValue(minY, comparator.getYValue(rect));
+                if(image != null) {
+                    minX = comparator.getComparedValue(minX, comparator.getXValue(rect));
+                    minY = comparator.getComparedValue(minY, comparator.getYValue(rect));
+                }
+
+                LOG.info(comparator.getClass().getSimpleName() + " point after looking at self: " + minX + "," + minY);
 
                 return new Point2D.Double(minX, minY);
             }
@@ -233,15 +252,45 @@ public class AtlasGenerator {
          *
          * @return An image which covers the smallest possible area
          */
-        public BufferedImage getImage() {
+        public BufferedImage getImage() throws WrongNumComponentsException {
             Point2D smallestPos = getAtlasMinBounds();
             Point2D biggestPos = getAtlasMaxBounds();
 
-            BufferedImage img = image.getSubimage((int)smallestPos.getX(), (int)smallestPos.getY(), (int)biggestPos.getX(), (int)biggestPos.getY());
-            BufferedImage copyOfImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-            Graphics g = copyOfImage.createGraphics();
-            g.drawImage(img, 0, 0, null);
-            return copyOfImage;
+            byte[] imageData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
+
+            /*
+            Loop through the image's pixels, grabbing the ones we care about
+             */
+            int imageWidth = (int) (biggestPos.getX() - smallestPos.getX());
+            int imageHeight = (int) (biggestPos.getY() - smallestPos.getY());
+            int numComponents = image.getColorModel().getNumComponents();
+
+            if(numComponents != 3 && numComponents != 4) {
+                throw new WrongNumComponentsException("Texture should have three or four components, but it has " + numComponents);
+            }
+
+            byte[] newData = new byte[imageWidth * imageHeight * numComponents];
+
+            // I'm manually copying the data over because this works, and the Graphics method, although much cleaner and
+            // simpler, does not work.
+            for(int y = 0; y < imageHeight; y++) {
+                System.arraycopy(imageData, (int) (smallestPos.getX() + y * image.getWidth() * numComponents), newData, y * imageWidth * numComponents, numComponents * imageWidth);
+            }
+
+            BufferedImage newImage = new BufferedImage(imageWidth, imageHeight, numComponents == 4 ? BufferedImage.TYPE_4BYTE_ABGR : BufferedImage.TYPE_3BYTE_BGR);
+            byte[] dst = ((DataBufferByte)newImage.getRaster().getDataBuffer()).getData();
+            System.arraycopy(newData, 0, dst, 0, newData.length);
+
+            image = newImage;
+
+            try {
+                File imageFile = new File("Image.jpg");
+                ImageIO.write(image, "jpg", imageFile);
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
+
+            return newImage;
         }
 
         public Map<String, Rectangle> getRectangleMap() {
@@ -255,15 +304,16 @@ public class AtlasGenerator {
          * @return The minimum X and Y used by the atlas
          */
         private Point2D getAtlasMinBounds() {
-            return root.getComparedPoint(new Point2D.Double(100000, 100000), new SmallestComparator());
+            return root.getComparedPoint(new Point2D.Double(100000, 100000), new Smallest());
         }
 
         /**
          * Returns the maximum X and Y of the pixels used by the atlas
-         * @return
+         *
+         * @return The maximum X and Y of the pixels used by the atlas
          */
         private Point2D getAtlasMaxBounds() {
-            return root.getComparedPoint(new Point2D.Double(-100, -100), new LargestComparator());
+            return root.getComparedPoint(new Point2D.Double(0, 0), new Largest());
         }
     }
 }

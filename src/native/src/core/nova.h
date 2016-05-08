@@ -33,7 +33,7 @@ NOVA_FUNC void init_nova();
  *
  * \param texture The texture to add to the renderer
  */
-NOVA_FUNC void add_texture(mc_atlas_texture texture);
+NOVA_FUNC void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type);
 
 /*!
  * \brief Adds the given location to the list of texture locations
@@ -43,7 +43,7 @@ NOVA_FUNC void add_texture(mc_atlas_texture texture);
  *
  * \param location The location of the texture
  */
-NOVA_FUNC void add_texture_location(mc_texture_atlas_location location, int atlas_type, int texture_type);
+NOVA_FUNC void add_texture_location(mc_texture_atlas_location location);
 
 /*!
  * \brief Queries OpenGL and returns the maximum texture size that OpenGL allows

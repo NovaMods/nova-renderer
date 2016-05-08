@@ -5,6 +5,10 @@ add_subdirectory(
         "C:/MinGW/glfw" "${CMAKE_CURRENT_BINARY_DIR}/glfw"
 )
 
+add_subdirectory(
+        "C:/Users/David/Documents/Nova Renderer/src/native/src/test" "${CMAKE_CURRENT_BINARY_DIR}/test"
+)
+
 include_directories(
         "C:/win-builds/lib/gcc/mingw32/4.8.1/include/c++"
         "C:/win-builds/include"
@@ -15,7 +19,6 @@ link_directories(
 )
 
 set(SOURCE_FILES
-        src/test/main.cpp
         src/gl/glad.c
         src/interfaces/iwindow.cpp src/interfaces/iwindow.h
         src/core/nova_renderer.cpp src/core/nova_renderer.h
@@ -38,13 +41,5 @@ target_link_libraries(nova-renderer glfw ${GLFW_LIBRARIES})
 
 set_property(TARGET nova-renderer PROPERTY CXX_STANDARD 14)
 set_property(TARGET nova-renderer PROPERTY CXX_STANDARD_REQUIRED ON)
-
-add_executable(nova_test ${SOURCE_FILES})
-
-target_include_directories(nova_test SYSTEM PRIVATE)
-target_link_libraries(nova_test glfw ${GLFW_LIBRARIES})
-
-set_property(TARGET nova_test PROPERTY CXX_STANDARD 14)
-set_property(TARGET nova_test PROPERTY CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_BUILD_TYPE Debug)
