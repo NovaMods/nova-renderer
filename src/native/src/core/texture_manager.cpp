@@ -38,16 +38,18 @@ void texture_manager::add_texture(mc_atlas_texture & new_texture, atlas_type typ
     // TODO:
     // Create an OpenGL texture from the given texture
     // Save it to the list of atlas textures
+    LOG(DEBUG) << "Creating a Texture2D for this atlas";
     texture2D texture = gl_wrapper->make_texture_2D();
 
+    LOG(DEBUG) << "Converting the pixel data to a float";
     std::vector<float> pixel_data((size_t) (new_texture.width * new_texture.height * new_texture.num_components));
     for(int i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
         pixel_data[i] = float(new_texture.texture_data[i]) / 255.0f;
     }
 
-    std::vector<int> dimensions(2);
-    dimensions.push_back(new_texture.width);
-    dimensions.push_back(new_texture.height);
+    LOG(DEBUG) << "Added all pixel data";
+
+    std::vector<int> dimensions = {new_texture.width, new_texture.height};
 
     GLenum format = GL_RGB;
     switch(new_texture.num_components) {
@@ -69,8 +71,10 @@ void texture_manager::add_texture(mc_atlas_texture & new_texture, atlas_type typ
     }
 
     texture.set_data(pixel_data, dimensions, format);
+    LOG(DEBUG) << "Texture data sent to GPU";
 
     atlases[std::pair<atlas_type, texture_type>(type, data_type)] = texture;
+    LOG(DEBUG) << "Texture added to atlas";
 }
 
 void texture_manager::add_texture_location(mc_texture_atlas_location &location) {

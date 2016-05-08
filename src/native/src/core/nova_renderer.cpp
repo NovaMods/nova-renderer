@@ -19,6 +19,8 @@ void initialize_logging() {
 #ifdef NDEBUG
     conf.parseFromText("*DEBUG:\n ENABLED=false");
     conf.parseFromText("*TRACE:\n ENABLED=false");
+#else
+    conf.parseFromText("*ALL: FORMAT = \"%datetime{%h:%m:%s} [%level] at %loc - %msg\"");
 #endif
 
     el::Loggers::reconfigureAllLoggers(conf);
