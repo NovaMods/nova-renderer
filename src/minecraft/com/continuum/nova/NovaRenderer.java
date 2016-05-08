@@ -12,7 +12,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferInt;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -34,26 +33,398 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     // Looks like I have to enumerate every texture I want. Bah.
     // Optifine/Shaders mod seems to have a better solution for this, but I can't figure it out just yet
-    private final ResourceLocation[] ALBEDO_TEXTURES_LOCATION = {
-            new ResourceLocation("textures/blocks/anvil_base.png"),
-            new ResourceLocation("textures/blocks/anvil_top_damaged_0.png"),
-            new ResourceLocation("textures/blocks/anvil_top_damaged_1.png"),
-            new ResourceLocation("textures/blocks/anvil_top_damaged_2.png"),
-            new ResourceLocation("textures/blocks/beacon.png"),
-            new ResourceLocation("textures/blocks/bedrock.png"),
-            new ResourceLocation("textures/blocks/bed_feet_end.png"),
-            new ResourceLocation("textures/blocks/bed_feet_side.png"),
-            new ResourceLocation("textures/blocks/bed_feet_top.png"),
-            new ResourceLocation("textures/blocks/bed_head_end.png"),
-            new ResourceLocation("textures/blocks/bed_head_side.png"),
-            new ResourceLocation("textures/blocks/bed_head_top.png"),
-            new ResourceLocation("textures/blocks/beetroots_stage_0.png"),
-            new ResourceLocation("textures/blocks/beetroots_stage_1.png"),
-            new ResourceLocation("textures/blocks/beetroots_stage_2.png"),
-            new ResourceLocation("textures/blocks/beetroots_stage_3.png"),
-            new ResourceLocation("textures/blocks/grass_top.png"),
-            new ResourceLocation("textures/blocks/grass_side.png"),
-    };
+    private final List<ResourceLocation> TERRAIN_ALBEDO_TEXTURES_LOCATION = new ArrayList<>();
+    {{
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/anvil_base.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/anvil_top_damaged_0.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/anvil_top_damaged_1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/anvil_top_damaged_2.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/beacon.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/bedrock.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/bed_feet_end.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/bed_feet_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/bed_feet_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/bed_head_end.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/bed_head_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/bed_head_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/bookshelf.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/brewing_stand.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/brewing_stand_base.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/brick.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/brickALT.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/brick_ALT.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cactus_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cactus_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cake_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cake_inner.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cake_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cake_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/carrots_stage_0.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/carrots_stage_1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/carrots_stage_2.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/carrots_stage_3.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cauldron_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cauldron_inner.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cauldron_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cauldron_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/clay.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/coal_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/coal_ore.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/coarse_dirt.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/coarse_dirtt.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cobblestone-A.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cobblestone.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cobblestone_mossy.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cocoa_stage_0.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cocoa_stage_1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/cocoa_stage_2.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/command_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/command_block.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/command_blockk.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/comparator_off.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/comparator_on.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/crafting_table_front.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/crafting_table_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/crafting_table_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/daylight_detector_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/daylight_detector_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/daylight_detector_top2.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/deadbush.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_0.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_2.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_3.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_4.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_5.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_6.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_7.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_8.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/destroy_stage_9.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/diamond_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/diamond_ore.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/dirt.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/dirt_podzol_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/dirt_podzol_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/dispenser_front_horizontal.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/dispenser_front_vertical.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/door_iron_lower.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/door_iron_upper.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/door_wood_lower.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/door_wood_upper.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/doubleflower_paeonia.png.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_fern_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_fern_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_grass_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_grass_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_paeonia_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_paeonia_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_rose_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_rose_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_sunflower_back.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_sunflower_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_sunflower_front.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_sunflower_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_syringa_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/double_plant_syringa_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/dragon_egg.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/dropper_front_horizontal.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/dropper_front_vertical.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/emerald_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/emerald_ore.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/emerald_ore.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/enchanting_table_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/enchanting_table_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/enchanting_table_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/endframe_eye.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/endframe_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/endframe_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/end_stone.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/farmland_dry.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/farmland_wet.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/fern.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/fire_layer_0.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/fire_layer_0.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/fire_layer_00.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/fire_layer_00.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/fire_layer_1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/fire_layer_1.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/fire_layer_11.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/fire_layer_11.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_allium.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_blue_orchid.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_dandelion.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_houstonia.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_oxeye_daisy.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_pot.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_rose.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_tulip_orange.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_tulip_pink.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_tulip_red.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/flower_tulip_white.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/furnace_front_off.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/furnace_front_on.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/furnace_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/furnace_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/gggrass_side_snowed.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/ggold_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/ggrass_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/ggrass_side_overlay.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/ggrass_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_black.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_blue.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_brown.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_cyan.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_gray.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_green.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_light_blue.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_lime.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_magenta.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_orange.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_pane_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_pink.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_purple.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_red.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_silver.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_white.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glass_yellow.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glowstone.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/glowstone.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/gold_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/gold_ore.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/grass_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/grass_side_overlay.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/grass_side_overlayALT.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/grass_side_snowed.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/grass_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/grass_topALT.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/gravel.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_black.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_blue.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_brown.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_cyan.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_gray.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_green.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_light_blue.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_lime.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_magenta.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_orange.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_pink.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_purple.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_red.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_silver.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_white.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hardened_clay_stained_yellow.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hay_block_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hay_block_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hopper_inside.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hopper_outside.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/hopper_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/ice.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/ice_packed.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/iiron_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/iron_bars.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/iron_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/iron_ore.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/iron_trapdoor.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/itemframe_background.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/jukebox_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/jukebox_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/jukebox_top.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/ladder.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/lapis_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/lapis_ore.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/lava_flow.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/lava_flow.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/lava_still.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/lava_still.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/leaves_acacia.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/leaves_big_oak.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/leaves_birch.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/leaves_jungle.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/leaves_oak.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/leaves_spruce.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/lever.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_acacia.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_acacia_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_big_oak.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_big_oak_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_birch.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_birch_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_jungle.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_junglee.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_jungle_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_oak.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_oak_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_spruce.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/log_spruce_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/melon_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/melon_stem_connected.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/melon_stem_disconnected.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/melon_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/mob_spawner.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/mushroom_block_inside.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/mushroom_block_skin_brown.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/mushroom_block_skin_red.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/mushroom_block_skin_stem.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/mushroom_brown.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/mushroom_red.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/mycelium_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/mycelium_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/netherrack.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/nether_brick.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/nether_wart_stage_0.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/nether_wart_stage_1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/nether_wart_stage_2.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/noteblock.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/obsidian.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/piston_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/piston_inner.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/piston_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/piston_top_normal.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/piston_top_sticky.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/planks_acacia.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/planks_big_oak.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/planks_birch.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/planks_jungle.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/planks_oak.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/planks_spruce.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/portal.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/portal.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/potatoes_stage_0.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/potatoes_stage_1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/potatoes_stage_2.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/potatoes_stage_3.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/prismarine_bricks.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/prismarine_dark.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/prismarine_rough.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/prismarine_rough.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/prismarine_roughh.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/pumpkin_face_off.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/pumpkin_face_offALT.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/pumpkin_face_on.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/pumpkin_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/pumpkin_stem_connected.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/pumpkin_stem_disconnected.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/pumpkin_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/qquartz_block_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/quartz_block_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/quartz_block_chiseled.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/quartz_block_chiseled_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/quartz_block_lines.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/quartz_block_lines_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/quartz_block_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/quartz_block_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/quartz_ore.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/rail_activator.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/rail_activator_powered.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/rail_detector.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/rail_detector_powered.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/rail_golden.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/rail_golden_powered.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/rail_normal.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/rail_normal_turned.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_block.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_dust_cross.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_dust_cross_overlay.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_dust_line.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_dust_line_overlay.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_lamp_off.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_lamp_on.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_ore.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_ore.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_torch_off.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/redstone_torch_on.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/red_sand.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/red_sandstone_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/red_sandstone_carved.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/red_sandstone_normal.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/red_sandstone_smooth.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/red_sandstone_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/reeds.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/repeater_off.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/repeater_on.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sand.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sandstone_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sandstone_carved.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sandstone_normal.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sandstone_smooth.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sandstone_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sapling_acacia.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sapling_birch.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sapling_jungle.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sapling_oak.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sapling_roofed_oak.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sapling_spruce.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sea_lantern.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/slime.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/snow.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/soul_sand.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/soul_sand.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sponge.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/spongeALT1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sponge_wet.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/sstone.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stonebrick.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stonebrickALT.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stonebrick_carved.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stonebrick_cracked.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stonebrick_crackedALT.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stonebrick_mossy.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stonebrick_mossyALT.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone_andesite.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone_andesite_smooth.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone_diorite.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone_diorite_smooth.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone_granite.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone_granite_smooth.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone_slab_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/stone_slab_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/tallgrass.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/tnt_bottom.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/tnt_side.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/tnt_top.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/torch_on.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/torch_on.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/trapdoor.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/trip_wire.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/trip_wire_source.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/vine.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/waterlily.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/water_flow.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/water_flow.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/water_still.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/water_still.png.mcmeta"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/web.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wheat_stage_0.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wheat_stage_1.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wheat_stage_2.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wheat_stage_3.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wheat_stage_4.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wheat_stage_5.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wheat_stage_6.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wheat_stage_7.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_black.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_blue.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_brown.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_cyan.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_gray.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_green.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_light_blue.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_lime.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_magenta.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_orange.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_pink.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_purple.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_red.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_silver.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_white.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wool_colored_yellow.png"));
+            TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/wwool_colored_pink.png"));
+    }}
 
     private boolean firstLoad = true;
 
@@ -81,29 +452,41 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         // Make sure that the atlas isn't super enormously huge, because while that would be good to avoid texture,
         // switching, it runs out of memory
-        maxAtlasSize = Math.min(maxAtlasSize, 8192);
+        //maxAtlasSize = Math.min(maxAtlasSize, 8192);
 
         AtlasGenerator gen = new AtlasGenerator();
 
+        addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATION, NovaNative.AtlasType.TERRAIN, NovaNative.TextureType.ALBEDO, resourceManager, maxAtlasSize, gen);
+    }
+
+    private void addTextures(
+            List<ResourceLocation> locations,
+            NovaNative.AtlasType atlasType,
+            NovaNative.TextureType textureType,
+            IResourceManager resourceManager,
+            int maxAtlasSize, AtlasGenerator gen
+    ) {
         List<AtlasGenerator.ImageName> images = new ArrayList<>();
 
-        for(ResourceLocation textureLocation : ALBEDO_TEXTURES_LOCATION) {
+        for(ResourceLocation textureLocation : locations) {
             try {
                 IResource texture = resourceManager.getResource(textureLocation);
 
                 BufferedInputStream in = new BufferedInputStream(texture.getInputStream());
                 BufferedImage image = ImageIO.read(in);
 
-                images.add(new AtlasGenerator.ImageName(image, textureLocation.toString()));
+                if(image != null) {
+                    images.add(new AtlasGenerator.ImageName(image, textureLocation.toString()));
+                }
 
             } catch(IOException e) {
                 LOG.warn("IOException when loading texture " + textureLocation.toString() + ": " +e.getMessage());
             }
         }
 
-        List<AtlasGenerator.Texture> albedoAtlases = gen.Run("albedo", maxAtlasSize, maxAtlasSize, 1, true, images);
+        List<AtlasGenerator.Texture> atlases = gen.Run("albedo", maxAtlasSize, maxAtlasSize, 1, true, images);
 
-        for(AtlasGenerator.Texture texture : albedoAtlases) {
+        for(AtlasGenerator.Texture texture : atlases) {
             try {
                 BufferedImage image = texture.getImage();
                 byte[] imageData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
@@ -130,7 +513,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
                 // TODO: This is bad. This will only use one texture per atlas type, and I definitely might want more than
                 // that. I'll have to change a lot of code to support that though
-                NovaNative.INSTANCE.add_texture(atlasTex, NovaNative.AtlasType.TERRAIN.ordinal(), NovaNative.TextureType.ALBEDO.ordinal());
+                NovaNative.INSTANCE.add_texture(atlasTex, atlasType.ordinal(), textureType.ordinal());
 
                 Map<String, Rectangle> rectangleMap = texture.getRectangleMap();
                 for(String texName : rectangleMap.keySet()) {

@@ -47,7 +47,7 @@ interface NovaNative extends Library {
 
     /**
      * AtlasType and TextureType are provided so you don't have to throw a bunch of ints into a gross C soup. You can
-     * use nicely peeled carrots and chopped onions and a ham bone.
+     * use strongly-typed carrots and chopped onions and a ham bone.
      */
     enum AtlasType {
         TERRAIN,

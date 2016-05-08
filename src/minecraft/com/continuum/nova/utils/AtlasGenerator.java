@@ -37,8 +37,6 @@ public class AtlasGenerator {
         for(ImageName imageName : images) {
             boolean added = false;
 
-            System.out.println("Adding " + imageName.name + " to atlas (" + (++count) + ")");
-
             for(Texture texture : textures) {
                 if(texture.AddImage(imageName.image, imageName.name, padding)) {
                     added = true;
@@ -148,6 +146,10 @@ public class AtlasGenerator {
                         return null; // occupied
                     }
 
+                    if(image == null) {
+                        int breakpoint = 0;
+                    }
+
                     if(image.getWidth() > rect.width || image.getHeight() > rect.height) {
                         return null; // does not fit
                     }
@@ -192,7 +194,7 @@ public class AtlasGenerator {
                     minX = comparator.getComparedValue(minX, child1Point.getX());
                     minY = comparator.getComparedValue(minY, child1Point.getY());
 
-                    LOG.info(comparator.getClass().getSimpleName() + " point after looking at child 1: " + minX + "," + minY);
+                    LOG.debug(comparator.getClass().getSimpleName() + " point after looking at child 1: " + minX + "," + minY);
                 }
 
                 if(child[1] != null) {
@@ -201,7 +203,7 @@ public class AtlasGenerator {
                     minX = comparator.getComparedValue(minX, child2Point.getX());
                     minY = comparator.getComparedValue(minY, child2Point.getY());
 
-                    LOG.info(comparator.getClass().getSimpleName() + " point after looking at child 2: " + minX + "," + minY);
+                    LOG.debug(comparator.getClass().getSimpleName() + " point after looking at child 2: " + minX + "," + minY);
                 }
 
                 if(image != null) {
@@ -209,7 +211,7 @@ public class AtlasGenerator {
                     minY = comparator.getComparedValue(minY, comparator.getYValue(rect));
                 }
 
-                LOG.info(comparator.getClass().getSimpleName() + " point after looking at self: " + minX + "," + minY);
+                LOG.debug(comparator.getClass().getSimpleName() + " point after looking at self: " + minX + "," + minY);
 
                 return new Point2D.Double(minX, minY);
             }
