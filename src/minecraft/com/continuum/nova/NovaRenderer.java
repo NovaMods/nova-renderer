@@ -1,10 +1,23 @@
 package com.continuum.nova;
 
 import com.continuum.nova.utils.AtlasGenerator;
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RegionRenderCache;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.MobEffects;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeCache;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -427,6 +440,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }}
 
     private boolean firstLoad = true;
+    private int renderChunkDistance = 4;
 
     /**
      * Sends all the resources to the native thread
@@ -543,5 +557,102 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.info("PID: " + ManagementFactory.getRuntimeMXBean().getName());
         NovaNative.INSTANCE.init_nova();
         LOG.info("Native code initialized");
+    }
+
+    /**
+     * Updates the renderer's tick-specific state
+     */
+    public void updateRenderer() {
+    }
+
+    /**
+     * Renders a single in-game frame
+     *
+     * <p>This method needs to accomplish two things: prepare the current game state into a format that the native code
+     * can effectively use, and send that data to the native code. First I'll prepare a structure of all the needed
+     * parameters</p>
+     *
+     * @param renderPartialTicks How much time has elapsed since the last tick, in ticks
+     * @param systemNanoTime The current time
+     * @param mc The Minecraft instance we're currently rendering
+     */
+    public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
+        NovaNative.mc_render_command cmd = makeRenderCommand(mc, renderPartialTicks);
+
+        NovaNative.INSTANCE.send_render_command(cmd);
+    }
+
+    private NovaNative.mc_chunk makeChunk(World world, BlockPos chunkCoordinates) {
+        NovaNative.mc_chunk chunk = new NovaNative.mc_chunk();
+        NovaNative.mc_block[] blocks = new NovaNative.mc_block[16 * 16 * 16];
+
+        // We really only want an array of block IDs
+        IBlockAccess blockAccess = new RegionRenderCache(world, chunkCoordinates.add(-1, -1, -1), chunkCoordinates.add(16, 16, 16), 1);
+        for(BlockPos.MutableBlockPos curPos : BlockPos.getAllInBoxMutable(chunkCoordinates, chunkCoordinates.add(15, 15, 15))) {
+            IBlockState blockState = blockAccess.getBlockState(curPos);
+            Block block = blockState.getBlock();
+            int motherFuckingIdFinally = Block.getIdFromBlock(block);
+
+            NovaNative.mc_block cur_block = new NovaNative.mc_block();
+            cur_block.block_id = motherFuckingIdFinally;
+            cur_block.is_on_fire = false;
+
+            blocks[curPos.getX() + curPos.getY() * 16 + curPos.getZ() * 256] = cur_block;
+        }
+
+        chunk.blocks = new Memory(16 * 16 * 16 * Native.getNativeSize(NovaNative.mc_block.class));
+
+
+        return chunk;
+    }
+
+    private List<NovaNative.mc_chunk> getAllChunks(World world) {
+        List<NovaNative.mc_chunk> renderableChunks = new ArrayList<>();
+
+        int chunkCountX = renderChunkDistance;
+        int chunkCountY = 16;
+        int chunkCountZ = renderChunkDistance;
+
+        for(int x = 0; x < chunkCountX; x++) {
+            for(int y = 0; y < chunkCountY; y++) {
+                for(int z = 0; z < chunkCountZ; z++) {
+                    BlockPos pos = new BlockPos(x * 16, y * 16, z * 16);
+                    renderableChunks.add(makeChunk(world, pos));
+                }
+            }
+        }
+
+        return renderableChunks;
+    }
+
+    private NovaNative.mc_render_command makeRenderCommand(Minecraft mc, float partialTicks) {
+        NovaNative.mc_render_command command = new NovaNative.mc_render_command();
+
+        command.anaglyph = mc.gameSettings.anaglyph;
+
+        command.display_height = mc.displayHeight;
+        command.display_width = mc.displayWidth;
+
+        Entity viewEntity = mc.getRenderViewEntity();
+        command.world_params.camera_x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * (double)partialTicks;
+        command.world_params.camera_y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * (double)partialTicks;
+        command.world_params.camera_z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * (double)partialTicks;
+
+        command.world_params.view_bobbing = mc.gameSettings.viewBobbing;
+
+        command.world_params.render_distance = mc.gameSettings.renderDistanceChunks;
+        command.world_params.has_blindness = ((EntityLivingBase)viewEntity).isPotionActive(MobEffects.blindness);
+
+        command.world_params.fog_color_red = mc.entityRenderer.getFogColorRed();
+        command.world_params.fog_color_green = mc.entityRenderer.getFogColorGreen();
+        command.world_params.fog_color_blue = mc.entityRenderer.getFogColorBlue();
+
+        // If we're on the surface world, we can render clouds no problem. If we're not, we shouldn't even be thinking
+        // about rendering clouds
+        command.world_params.should_render_clouds = mc.theWorld.provider.isSurfaceWorld() ? mc.gameSettings.shouldRenderClouds() : 0;
+
+        // TODO: Portal effects
+
+        return command;
     }
 }

@@ -2,6 +2,10 @@
 - Instantiate the NovaRenderer instance
 - The installer will need to put any config files in the proper places
 - Register the NovaRenderer as a Reload Listener on the mcResourceManager thingy
-- I think I'll add code to Minecraft#loadWorld(WorldClient, String) so that I can capture the chunks from the current
-world. I can definitely grab entities from that. Entities look easy: I can grab all the data, wrap it in a mc_struct
-thing, and send it to the native code no problemo
+- Call the Nova Renderer to update itself, rather than RenderGlobal and EntityRenderer, in Minecraft#runTick
+    - Actually, I think I want to keep some of the EntityRenderer setup code around so I don't have to rewrite things
+      like calculating the fog color
+- Call the Nova Renderer to render everything in Minecraft#runGameLoop
+- Add EntityRenderer#getFogColorRed, #getFogColorGreen, and #getFogColorBlue to do exactly what they say on the tin
+    - In order to take advantage of these, I'll have to make sure that EntityRenderer#updateFogColor gets called at some
+      point

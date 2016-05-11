@@ -45,6 +45,87 @@ interface NovaNative extends Library {
         }
     }
 
+    class mc_block extends Structure {
+        public boolean is_on_fire;
+        public int block_id;
+    }
+
+    /**
+     * Holds the data in a single chunk
+     */
+    class mc_chunk extends Structure {
+        public long chunk_id;
+        public Pointer blocks;
+    }
+
+    /**
+     * A class to hold things like what menu we're currently on and whatnot. Currently empty because rendering menus is
+     * hard
+     */
+    class mc_render_menu_params extends Structure {}
+
+    /**
+     * A class to hold all the things needed to render the world
+     *
+     * <p>Hopefully using this class will keep mc_render_command from getting too complicated</p>
+     */
+    class mc_render_world_params extends Structure {
+        /**
+         * The position of the camera
+         */
+        public double camera_x;
+        public double camera_y;
+        public double camera_z;
+
+        /**
+         * The render distance, in chunks
+         */
+        public int render_distance;
+
+        /**
+         * Whether or not the has_blindness status effect is in effect
+         */
+        public boolean has_blindness;
+
+        public double fog_color_red;
+        public double fog_color_green;
+        public double fog_color_blue;
+        public boolean view_bobbing;
+        public int should_render_clouds;
+    }
+
+    class mc_render_command extends Structure {
+        /**
+         * If true, we should render the menu and use the world framebuffer from the last frame as the menu background.
+         * If false, we should render the world
+         */
+        public boolean render_menu;
+
+        /**
+         * The system time, in milliseconds
+         */
+        public long previous_frame_time;
+
+        /**
+         * Userd for determining camera rotation/mouse cursor position
+         */
+        public float mouse_x;
+        public float mouse_y;
+
+        /**
+         * If true, render the world as red/blue anaglyph. If false, don't do that.
+         */
+        public boolean anaglyph;
+
+        /**
+         * The height and width of the Minecraft screen
+         */
+        public int display_width;
+        public int display_height;
+
+        public mc_render_world_params world_params;
+    }
+
     /**
      * AtlasType and TextureType are provided so you don't have to throw a bunch of ints into a gross C soup. You can
      * use strongly-typed carrots and chopped onions and a ham bone.
@@ -74,4 +155,6 @@ interface NovaNative extends Library {
     int get_max_texture_size();
 
     void reset_texture_manager();
+
+    void send_render_command(mc_render_command cmd);
 }
