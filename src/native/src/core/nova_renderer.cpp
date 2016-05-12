@@ -33,6 +33,9 @@ nova_renderer::nova_renderer() : tex_manager(&wrapper) {
 
     m_game_window = new glfw_gl_window();
     LOG(INFO) << "Instantiated window";
+
+    glClearColor(1.0, 1.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 nova_renderer::~nova_renderer() {
@@ -44,10 +47,17 @@ bool nova_renderer::has_render_available() {
 }
 
 void nova_renderer::render_frame() {
+    // Clear to the clear color
+    //glClear(GL_COLOR_BUFFER_BIT);
+
+    // Render solid geometry
+    // Render entities
+    // Render transparent things
+
     m_game_window->end_frame();
 }
 
-bool nova_renderer::should_continue() {
+bool nova_renderer::should_end() {
     // If the window wants to close, the user probably clicked on the "X" button
     return m_game_window->should_close();
 }

@@ -55,14 +55,35 @@ interface NovaNative extends Library {
      */
     class mc_chunk extends Structure {
         public long chunk_id;
-        public Pointer blocks;
+        public mc_block[] blocks = new mc_block[16 * 16 * 16];
+    }
+
+    class mc_button extends Structure {
+        public int x_position;
+        public int y_position;
+        public int width;
+        public int height;
+        public String text;
+    }
+
+    /**
+     * Holds everything you need to render a single Minecraft GUI screen
+     */
+    class mc_gui_screen extends Structure {
+        /**
+         * Supports up to 22 buttons. This is the maximum that can be reasonably crammed onto the Minecraft GUI. I
+         * might add more buttons in the future, depending on how badly mod authors break everything
+         */
+        public mc_button[] buttons = new mc_button[22];
     }
 
     /**
      * A class to hold things like what menu we're currently on and whatnot. Currently empty because rendering menus is
      * hard
      */
-    class mc_render_menu_params extends Structure {}
+    class mc_render_menu_params extends Structure {
+        public int param1;
+    }
 
     /**
      * A class to hold all the things needed to render the world
@@ -92,6 +113,11 @@ interface NovaNative extends Library {
         public double fog_color_blue;
         public boolean view_bobbing;
         public int should_render_clouds;
+
+        // Supports up to 12 x 12 chunks
+        public mc_chunk[] chunks = new mc_chunk[25 * 25];
+
+        public int num_chunks;
     }
 
     class mc_render_command extends Structure {
@@ -100,6 +126,11 @@ interface NovaNative extends Library {
          * If false, we should render the world
          */
         public boolean render_menu;
+
+        /**
+         * If true, we should render the chunks and entities of the Real World (TM). If false, don't.
+         */
+        public boolean render_world;
 
         /**
          * The system time, in milliseconds
@@ -124,6 +155,7 @@ interface NovaNative extends Library {
         public int display_height;
 
         public mc_render_world_params world_params;
+        public mc_render_menu_params menu_params;
     }
 
     /**
@@ -157,4 +189,8 @@ interface NovaNative extends Library {
     void reset_texture_manager();
 
     void send_render_command(mc_render_command cmd);
+
+    void do_test_render();
+
+    boolean should_close();
 }

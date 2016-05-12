@@ -4,6 +4,7 @@
 
 #include "glfw_gl_window.h"
 #include "../../io/key_forwarder.h"
+#include "../../core/nova_renderer.h"
 #include <easylogging++.h>
 
 
@@ -46,6 +47,7 @@ int glfw_gl_window::init() {
     }
 
     glfwGetFramebufferSize(window, &window_dimensions.x, &window_dimensions.y);
+    glViewport(0, 0, window_dimensions.x, window_dimensions.y);
 
     glfwSetKeyCallback(window, key_callback);
 
@@ -76,4 +78,18 @@ glm::vec2 glfw_gl_window::get_size() {
 void glfw_gl_window::end_frame() {
     glfwSwapBuffers(window);
     glfwPollEvents();
+
+    glm::ivec2 new_window_size;
+    glfwGetFramebufferSize(window, &new_window_size.x, &new_window_size.y);
+
+    if(new_window_size != window_dimensions) {
+        set_framebuffer_size(new_window_size);
+    }
 }
+
+void glfw_gl_window::set_framebuffer_size(glm::ivec2 new_framebuffer_size) {
+    window_dimensions = new_framebuffer_size;
+    glViewport(0, 0, window_dimensions.x, window_dimensions.y);
+}
+
+

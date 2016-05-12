@@ -52,6 +52,15 @@ NOVA_FUNC int get_max_texture_size();
 
 NOVA_FUNC void reset_texture_manager();
 
+NOVA_FUNC void send_render_command(mc_render_command * cmd);
+
+/*!
+ * \brief Supplied so I can do sim ple, stupid test rendering thing
+ */
+NOVA_FUNC void do_test_render();
+
+NOVA_FUNC bool should_close();
+
 };  // End extern C
     // I don't like doing this, but I just say this closing curly brace and freaked out a little bit.
     // Random closing braces are not okay.
