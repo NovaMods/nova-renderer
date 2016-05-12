@@ -24,6 +24,8 @@ public:
 private:
     GLFWwindow *window;
     glm::ivec2 window_dimensions;
+
+    void set_framebuffer_size(glm::ivec2 new_framebuffer_size);
 };
 
 

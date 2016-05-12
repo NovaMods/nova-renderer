@@ -30,7 +30,7 @@ public:
 
     void render_frame();
 
-    bool should_continue();
+    bool should_end();
 
     texture_manager * get_texture_manager();
 

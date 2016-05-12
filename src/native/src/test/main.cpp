@@ -20,5 +20,9 @@ int main() {
     add_texture(tex, 0, 0);
     cout << "Added test texture" << endl;
 
+    while(!should_close()) {
+        do_test_render();
+    }
+
     return 0;
 }

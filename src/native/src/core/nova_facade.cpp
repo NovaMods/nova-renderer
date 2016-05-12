@@ -40,3 +40,15 @@ NOVA_FUNC int get_max_texture_size() {
     return TEXTURE_MANAGER->get_max_texture_size();
 }
 
+NOVA_FUNC void send_render_command(mc_render_command * cmd) {
+    // TODO: Write this
+}
+
+NOVA_FUNC void do_test_render() {
+    nova_renderer::instance->render_frame();
+}
+
+NOVA_FUNC bool should_close() {
+    return nova_renderer::instance->should_end();
+}
+
