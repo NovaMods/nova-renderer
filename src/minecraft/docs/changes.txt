@@ -9,3 +9,5 @@
 - Add EntityRenderer#getFogColorRed, #getFogColorGreen, and #getFogColorBlue to do exactly what they say on the tin
     - In order to take advantage of these, I'll have to make sure that EntityRenderer#updateFogColor gets called at some
       point
+- Add GuiScreen#getButtons so I can have the buttons
+- Add GuiButton#getButtonHeight because I need it, yo

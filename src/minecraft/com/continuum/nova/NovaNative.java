@@ -9,7 +9,7 @@ import com.sun.jna.*;
  *
  * @author David
  */
-interface NovaNative extends Library {
+public interface NovaNative extends Library {
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
 
     class mc_atlas_texture extends Structure {
@@ -58,7 +58,7 @@ interface NovaNative extends Library {
         public mc_block[] blocks = new mc_block[16 * 16 * 16];
     }
 
-    class mc_button extends Structure {
+    class mc_gui_button extends Structure {
         public int x_position;
         public int y_position;
         public int width;
@@ -74,7 +74,7 @@ interface NovaNative extends Library {
          * Supports up to 22 buttons. This is the maximum that can be reasonably crammed onto the Minecraft GUI. I
          * might add more buttons in the future, depending on how badly mod authors break everything
          */
-        public mc_button[] buttons = new mc_button[22];
+        public mc_gui_button[] buttons = new mc_gui_button[22];
     }
 
     /**
@@ -82,7 +82,10 @@ interface NovaNative extends Library {
      * hard
      */
     class mc_render_menu_params extends Structure {
-        public int param1;
+        /**
+         * The current GUI screen that we should be rendering right now like omg
+         */
+        public mc_gui_screen cur_screen;
     }
 
     /**

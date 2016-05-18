@@ -13,13 +13,15 @@ link_directories(
 
 set(SOURCE_FILES
         main.cpp
+        shader_test.cpp
+        test_utils.cpp
         )
 
 # configure the project
 add_executable(nova_test ${SOURCE_FILES})
 
 target_include_directories(nova_test SYSTEM PRIVATE)
-target_link_libraries(nova_test glfw nova-renderer.dll ${GLFW_LIBRARIES})
+target_link_libraries(nova_test nova-renderer.dll)
 
 set_property(TARGET nova_test PROPERTY CXX_STANDARD 14)
 set_property(TARGET nova_test PROPERTY CXX_STANDARD_REQUIRED ON)

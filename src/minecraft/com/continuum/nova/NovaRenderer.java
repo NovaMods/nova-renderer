@@ -1,6 +1,7 @@
 package com.continuum.nova;
 
 import com.continuum.nova.utils.AtlasGenerator;
+import com.continuum.nova.utils.RenderCommandBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -574,89 +575,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
      * @param mc The Minecraft instance we're currently rendering
      */
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
-        NovaNative.mc_render_command cmd = makeRenderCommand(mc, renderPartialTicks);
+        NovaNative.mc_render_command cmd = RenderCommandBuilder.makeRenderCommand(mc, renderPartialTicks);
 
         //NovaNative.INSTANCE.send_render_command(cmd);
         NovaNative.INSTANCE.do_test_render();
         NovaNative.INSTANCE.should_close();
     }
 
-    private NovaNative.mc_chunk makeChunk(World world, BlockPos chunkCoordinates) {
-        NovaNative.mc_chunk chunk = new NovaNative.mc_chunk();
-        NovaNative.mc_block[] blocks = new NovaNative.mc_block[16 * 16 * 16];
 
-        // We really only want an array of block IDs
-        IBlockAccess blockAccess = new RegionRenderCache(world, chunkCoordinates.add(-1, -1, -1), chunkCoordinates.add(16, 16, 16), 1);
-        for(BlockPos.MutableBlockPos curPos : BlockPos.getAllInBoxMutable(chunkCoordinates, chunkCoordinates.add(15, 15, 15))) {
-            IBlockState blockState = blockAccess.getBlockState(curPos);
-            Block block = blockState.getBlock();
-            int blockID = Block.getIdFromBlock(block);
-
-            NovaNative.mc_block cur_block = new NovaNative.mc_block();
-            cur_block.block_id = blockID;
-            cur_block.is_on_fire = false;
-
-            blocks[curPos.getX() + curPos.getY() * 16 + curPos.getZ() * 256] = cur_block;
-        }
-
-        chunk.blocks = (NovaNative.mc_block[]) blocks[0].toArray(blocks);
-
-        return chunk;
-    }
-
-    private List<NovaNative.mc_chunk> getAllChunks(World world) {
-        List<NovaNative.mc_chunk> renderableChunks = new ArrayList<>();
-
-        int chunkCountX = renderChunkDistance;
-        int chunkCountY = 16;
-        int chunkCountZ = renderChunkDistance;
-
-        for(int x = 0; x < chunkCountX; x++) {
-            for(int y = 0; y < chunkCountY; y++) {
-                for(int z = 0; z < chunkCountZ; z++) {
-                    BlockPos pos = new BlockPos(x * 16, y * 16, z * 16);
-                    renderableChunks.add(makeChunk(world, pos));
-                }
-            }
-        }
-
-        return renderableChunks;
-    }
-
-    private NovaNative.mc_render_command makeRenderCommand(Minecraft mc, float partialTicks) {
-        NovaNative.mc_render_command command = new NovaNative.mc_render_command();
-
-        command.anaglyph = mc.gameSettings.anaglyph;
-
-        command.display_height = mc.displayHeight;
-        command.display_width = mc.displayWidth;
-
-        command.render_world = mc.theWorld != null;
-
-        if(command.render_world) {
-            Entity viewEntity = mc.getRenderViewEntity();
-            command.world_params.camera_x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * (double) partialTicks;
-            command.world_params.camera_y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * (double) partialTicks;
-            command.world_params.camera_z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * (double) partialTicks;
-
-            command.world_params.view_bobbing = mc.gameSettings.viewBobbing;
-
-            command.world_params.render_distance = mc.gameSettings.renderDistanceChunks;
-            command.world_params.has_blindness = ((EntityLivingBase) viewEntity).isPotionActive(MobEffects.blindness);
-
-            command.world_params.fog_color_red = mc.entityRenderer.getFogColorRed();
-            command.world_params.fog_color_green = mc.entityRenderer.getFogColorGreen();
-            command.world_params.fog_color_blue = mc.entityRenderer.getFogColorBlue();
-
-            // If we're on the surface world, we can render clouds no problem. If we're not, we shouldn't even be thinking
-            // about rendering clouds
-            command.world_params.should_render_clouds = mc.theWorld.provider.isSurfaceWorld() ? mc.gameSettings.shouldRenderClouds() : 0;
-
-            // TODO: Portal effects
-        }
-
-        
-
-        return command;
-    }
 }

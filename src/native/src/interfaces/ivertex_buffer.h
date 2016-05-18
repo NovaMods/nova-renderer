@@ -18,7 +18,7 @@ public:
     /*!
      * \brief Specifies the format of vertex buffer data
      */
-    enum format {
+    enum class format {
         /*!
          * \brief The vertex buffer only has positional data (this is useful somehow)
          */
@@ -33,6 +33,21 @@ public:
          * \brief The vertex buffer has positions, texture coordinates, and normals (Terrain and entities)
          */
         POS_NORMAL_UV
+    };
+
+    /*!
+     * \brief Specifies how the data in thie buffer will be used
+     */
+    enum class usage {
+        /*!
+         * \brief The buffer will be updated once and drawn many times
+         */
+        static_draw,
+
+        /*!
+         * \brief The buffer will be updated many times and drawn many times
+         */
+        dynamic_draw,
     };
 
     /*!
@@ -51,12 +66,32 @@ public:
      * \param data The interleaved vertex data
      * \param data_format The format of the data (\see format)
      */
-    virtual void set_data(std::vector<float> data, format data_format) = 0;
+    virtual void set_data(std::vector<float> data, format data_format, usage data_usage);
+
+    /*!
+     * \brief Sets the index array for this vertex buffer, so that anything using it knows how to handle itself
+     */
+    virtual void set_index_array(std::vector<unsigned short> data, usage data_usage) = 0;
 
     /*!
      * \brief Sets this vertex buffer as the one currently being drawn, allowing it to actually be drawn
      */
     virtual void set_active() = 0;
+
+    /*!
+     * \brief Draws the
+     */
+    virtual void draw() = 0;
+
+    /*!
+     * \brief Returns the format of this vertex buffer
+     *
+     * \return The format of this vertex buffer
+     */
+    virtual format get_format();
+
+protected:
+    format data_format;
 };
 
 
