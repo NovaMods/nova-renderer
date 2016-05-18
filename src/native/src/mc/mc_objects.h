@@ -8,6 +8,8 @@
 #ifndef RENDERER_MC_OBJECTS_H
 #define RENDERER_MC_OBJECTS_H
 
+#include "mc_gui_objects.h"
+
 /*!
  * \brief Holds the information that comes from MC textures
  */

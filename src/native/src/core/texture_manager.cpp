@@ -7,9 +7,7 @@
 #include <easylogging++.h>
 #include "texture_manager.h"
 
-texture_manager::texture_manager(opengl_wrapper * wrapper) {
-    gl_wrapper = wrapper;
-}
+texture_manager::texture_manager() {}
 
 texture_manager::~texture_manager() {
     // gotta free up all the OpenGL textures
@@ -39,7 +37,7 @@ void texture_manager::add_texture(mc_atlas_texture & new_texture, atlas_type typ
     // Create an OpenGL texture from the given texture
     // Save it to the list of atlas textures
     LOG(DEBUG) << "Creating a Texture2D for this atlas";
-    texture2D texture = gl_wrapper->make_texture_2D();
+    texture2D texture;
 
     LOG(DEBUG) << "Converting the pixel data to a float";
     std::vector<float> pixel_data((size_t) (new_texture.width * new_texture.height * new_texture.num_components));
@@ -91,7 +89,7 @@ void texture_manager::add_texture_location(mc_texture_atlas_location &location) 
 }
 
 
-const texture_manager::texture_location &texture_manager::get_texture_location(std::string &texture_name) {
+const texture_manager::texture_location &texture_manager::get_texture_location(const std::string &texture_name) {
     return locations[texture_name];
 }
 

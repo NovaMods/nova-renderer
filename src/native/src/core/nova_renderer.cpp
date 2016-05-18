@@ -28,7 +28,7 @@ void initialize_logging() {
 
 nova_renderer * nova_renderer::instance;
 
-nova_renderer::nova_renderer() : tex_manager(&wrapper) {
+nova_renderer::nova_renderer() {
     initialize_logging();
 
     m_game_window = new glfw_gl_window();

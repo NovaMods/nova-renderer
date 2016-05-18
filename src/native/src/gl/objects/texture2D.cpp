@@ -5,8 +5,8 @@
 #include "texture2D.h"
 #include <stdexcept>
 
-texture2D::texture2D(GLuint gl_name) {
-    this->gl_name = gl_name;
+texture2D::texture2D() {
+    glGenTextures(1, &gl_name);
 }
 
 void texture2D::set_data(std::vector<float> & pixel_data, std::vector<int> & dimensions, GLenum format) {
@@ -59,13 +59,3 @@ void texture2D::set_filtering_parameters(texture_filtering_params &params) {
 const unsigned int &texture2D::get_gl_name() {
     return gl_name;
 }
-
-texture2D::texture2D() {
-
-}
-
-
-
-
-
-

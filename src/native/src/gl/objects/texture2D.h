@@ -11,20 +11,10 @@
 
 class texture2D : public itexture {
 public:
-    texture2D();
-
     /*!
-     * \brief Sets up a texture with the data from an allocator
-     *
-     * The idea of this is that the thing called when a resource pack is loaded will allocate all the textures ie needs,
-     * then pack those allocated textures into texture2D objects so they're easier to deal with. I expect a minimum
-     * number of allocations: One for the albedo texture, one for the normal texture, and one for the specular data
-     * texture. I might need more, for things like particles of all the random UI textures (Those can be packed into an
-     * atlas...)
-     *
-     * \param gl_name The OpenGl name of this texture, generated when the texture was allocated
+     * \brief Instantiates a new texture2D, allocating a new texture object on the GPU
      */
-    texture2D(GLuint gl_name);
+    texture2D();
 
     /*!
      * \brief Binds this texture to the OpenGL context, saving the previously bound texture to an internal variable.

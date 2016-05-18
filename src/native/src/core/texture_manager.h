@@ -13,7 +13,6 @@
 #include "../gl/glad/glad.h"
 #include "../interfaces/itexture.h"
 #include "../gl/objects/texture2D.h"
-#include "../gl/core/opengl_wrapper.h"
 
 /*!
  * \brief Holds all the textures that the Nova Renderer can deal with
@@ -82,7 +81,7 @@ public:
      *
      * Note to self: Don't put any GL calls in the constructor. It's called before an OpenGL context is available
      */
-    texture_manager(opengl_wrapper * wrapper);
+    texture_manager();
 
     /*!
      * \brief De-allocates everything ths texture_manager uses
@@ -121,7 +120,7 @@ public:
      * exact MC name of the texture
      * \return The location of the requested texture
      */
-    const texture_location & get_texture_location(std::string &texture_name);
+    const texture_location & get_texture_location(const std::string &texture_name);
 
     /*!
      * \brief Returns a pointer to the specified atlas
@@ -137,8 +136,6 @@ public:
 private:
     std::map<std::pair<atlas_type, texture_type>, texture2D> atlases;
     std::map<std::string, texture_location> locations;
-
-    opengl_wrapper * gl_wrapper;
 
     int max_texture_size = -1;
 };

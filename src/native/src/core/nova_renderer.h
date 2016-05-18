@@ -6,7 +6,6 @@
 #define RENDERER_VULKAN_MOD_H
 
 #include "../interfaces/iwindow.h"
-#include "../gl/core/opengl_wrapper.h"
 #include "nova.h"
 #include "../mc/mc_objects.h"
 #include "texture_manager.h"
@@ -37,7 +36,6 @@ public:
     static void init_instance();
 
 private:
-    opengl_wrapper wrapper;
     iwindow* m_game_window;
     texture_manager tex_manager;
     int num_textures;
