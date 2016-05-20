@@ -25,7 +25,7 @@ public:
      *
      * \throws std::invalid_value if the requested shader does not exist
      */
-    ishader * get_shader(std::string & shader_name) const;
+    ishader * get_shader(const std::string & shader_name) const;
 private:
     std::unordered_map<std::string, ishader *> shaders;
 };

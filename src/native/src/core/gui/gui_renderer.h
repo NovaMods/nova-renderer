@@ -9,6 +9,7 @@
 #include "../../interfaces/ivertex_buffer.h"
 #include "../../mc/mc_gui_objects.h"
 #include "../texture_manager.h"
+#include "../shaders/shader_store.h"
 
 /*!
  * \brief Defines a bunch of methods to render different GUI elements, including buttons, text, and images
@@ -40,8 +41,10 @@ private:
     mc_gui_screen * cur_screen;
 
     texture_manager * tex_manager;
+    shader_store * shader_manager;
 
     const std::string WIDGETS_TEXTURE_NAME = "textures/gui/widgets.png";
+    const std::string GUI_SHADER_NAME = "gui";
 
     void create_unpressed_button();
     void create_pressed_button();

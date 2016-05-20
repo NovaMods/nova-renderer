@@ -6,11 +6,12 @@
 #include "gui_renderer.h"
 #include "../../gl/objects/gl_vertex_buffer.h"
 
-gui_renderer::gui_renderer(texture_manager * tex_manager) {
+gui_renderer::gui_renderer(texture_manager * textures, shader_store * shaders) {
     create_unpressed_button();
     create_pressed_button();
 
-    this->tex_manager = tex_manager;
+    tex_manager = textures;
+    shader_manager = shaders;
 }
 
 gui_renderer::~gui_renderer() {
@@ -56,6 +57,8 @@ void gui_renderer::render() {
      */
 
     // Bind the GUI buttons texture to texture unit 0
+    ishader * gui_shader = shader_manager->get_shader(GUI_SHADER_NAME);
+    gui_shader->bind();
 
     itexture * gui_tex = tex_manager->get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
     gui_tex->bind(GL_TEXTURE0);
