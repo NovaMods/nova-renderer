@@ -39,10 +39,21 @@ public:
 
     void link_program();
 
-    virtual void bind() noexcept;
-    virtual int get_uniform_location(std::string & uniform_name) const;
-    virtual int get_attribute_location(std::string & attribute_name) const;
-    virtual void set_uniform_data(GLuint location, int data) noexcept;
+    void bind() noexcept;
+    int get_uniform_location(std::string & uniform_name) const;
+    int get_attribute_location(std::string & attribute_name) const;
+    void set_uniform_data(unsigned int location, int data) noexcept;
+
+    /*
+     * Testing functions
+     *
+     * TODO: Remove these before release
+     *
+     * I'm sure there's a better way to accomplish this. All well.
+     */
+    std::vector<GLuint> & get_added_shaders();
+
+    std::vector<std::string> & get_uniform_names();
 
 private:
     std::unordered_map<std::string, GLuint> uniform_locations;

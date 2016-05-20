@@ -9,6 +9,7 @@
 #include "nova.h"
 #include "../mc/mc_objects.h"
 #include "texture_manager.h"
+#include "gui/gui_renderer.h"
 
 /*!
  * \brief Initializes everything this mod needs, creating its own window
@@ -38,6 +39,7 @@ public:
 private:
     iwindow* m_game_window;
     texture_manager tex_manager;
+    gui_renderer * m_gui_renderer;
     int num_textures;
 };
 

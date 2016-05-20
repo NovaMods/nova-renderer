@@ -58,13 +58,17 @@ void gl_shader_program::link_program() {
 
     for(GLuint shader : added_shaders) {
         glAttachShader(gl_name, shader);
+    }
 
-        if(check_for_linking_errors()) {
-            glDeleteProgram(gl_name);
+    glLinkProgram(gl_name);
+    if(check_for_linking_errors()) {
+        glDeleteProgram(gl_name);
 
-            throw program_linking_failure_exception();
-        }
+        throw program_linking_failure_exception();
+    }
 
+    for(GLuint shader : added_shaders) {
+        // Clean up our resources. I'm told that this is a good thing.
         glDetachShader(gl_name, shader);
         glDeleteShader(shader);
     }
@@ -72,7 +76,7 @@ void gl_shader_program::link_program() {
     // No errors during linking? Let's get locations for our variables
     set_uniform_locations();
 
-    LOG(INFO) << "Program " << gl_name << " linked successfully\n";
+    LOG(INFO) << "Program " << gl_name << " linked successfully";
 }
 
 std::string gl_shader_program::read_shader_file(std::string& filename) {
@@ -126,7 +130,7 @@ bool gl_shader_program::check_for_shader_errors(GLuint shader_to_check) {
         std::vector<GLchar> error_log(log_size);
         glGetShaderInfoLog(shader_to_check, log_size, &log_size, &error_log[0]);
 
-        LOG(ERROR) << "Error compiling shader: \n" << &error_log[0] << "\n";
+        LOG(ERROR) << "Error compiling shader: \n" << &error_log[0];
 
         glDeleteShader(shader_to_check);
 
@@ -141,7 +145,7 @@ void gl_shader_program::set_uniform_locations() {
         int location = glGetUniformLocation(gl_name, name.c_str());
         uniform_locations.emplace(name, location);
 
-        LOG(TRACE) << "Set location of variable " << name << "to" << location << "\n";
+        LOG(TRACE) << "Set location of variable " << name << "to" << location;
     }
 }
 
@@ -156,7 +160,7 @@ bool gl_shader_program::check_for_linking_errors() {
         GLchar *info_log = (GLchar *) malloc(log_length * sizeof(GLchar));
         glGetProgramInfoLog(gl_name, log_length, &log_length, info_log);
 
-        LOG(ERROR) << "Error linking program " << gl_name << ":\n" << info_log << "\n";
+        LOG(ERROR) << "Error linking program " << gl_name << ":\n" << info_log;
 
         return true;
     }
@@ -164,7 +168,7 @@ bool gl_shader_program::check_for_linking_errors() {
     return false;
 }
 
-void gl_shader_program::bind() {
+void gl_shader_program::bind() noexcept {
     LOG(INFO) << "Binding a shader";
 }
 
@@ -178,8 +182,16 @@ int gl_shader_program::get_attribute_location(std::string &attribute_name) const
     return 0;
 }
 
-void gl_shader_program::set_uniform_data(GLuint location, int data) {
+void gl_shader_program::set_uniform_data(GLuint location, int data) noexcept {
     LOG(INFO) << "Setting uniform data for uniform at location " << location << " to " << data;
+}
+
+std::vector<GLuint> &gl_shader_program::get_added_shaders() {
+    return added_shaders;
+}
+
+std::vector<std::string> &gl_shader_program::get_uniform_names() {
+    return uniform_names;
 }
 
 shader_file_not_found_exception::shader_file_not_found_exception( std::string &file_name ) :
