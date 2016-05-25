@@ -3,7 +3,7 @@
 layout(location = 0) in vec4 position_in;
 layout(location = 1) in vec4 uv_in;
 
-layout(std140, binding = 0) in cameraData {
+layout(std140, binding = 0) uniform cameraData {
     mat4 gbufferModelView;
     mat4 gbufferProjection;
     mat4 gbufferModelviewInverse;
@@ -14,7 +14,7 @@ layout(std140, binding = 0) in cameraData {
 out vec2 uv;
 
 vec4 ftransform() {
-    return cameraData.gbufferProjection * cameraData.gbufferModelView * position_in;
+    return gbufferProjection * gbufferModelView * position_in;
 }
 
 void main() {

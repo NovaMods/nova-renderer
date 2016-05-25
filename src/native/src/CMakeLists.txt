@@ -21,6 +21,8 @@ set(SOURCE_FILES
         core/texture_manager.cpp core/texture_manager.h
         core/gui/gui_renderer.cpp
         core/gui/gui_button.cpp
+        core/shaders/shader_store.cpp
+        core/shaders/uniform_buffer_manager.cpp
 
         interfaces/iwindow.cpp interfaces/iwindow.h
         interfaces/igraphics_context.cpp interfaces/igraphics_context.h
@@ -32,6 +34,8 @@ set(SOURCE_FILES
         gl/windowing/glfw_gl_window.cpp gl/windowing/glfw_gl_window.h
         gl/objects/texture2D.cpp gl/objects/texture2D.h
         gl/objects/gl_shader_program.cpp gl/objects/gl_shader_program.h
+        gl/objects/gl_uniform_buffer.cpp
+        gl/objects/gl_vertex_buffer.cpp
 
         utils/utils.cpp
 

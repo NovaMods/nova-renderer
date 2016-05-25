@@ -32,7 +32,7 @@ void gl_vertex_buffer::destroy() {
 }
 
 void gl_vertex_buffer::set_data(std::vector<float> data, format data_format, usage data_usage) {
-    ivertex_buffer::set_data(data, data_format, data_usage);
+    this->data_format = data_format;
 
     GLuint last_buffer;
     glGetIntegerv(GL_ARRAY_BUFFER_BINDING, (GLint *) &last_buffer);
@@ -51,6 +51,7 @@ GLenum gl_vertex_buffer::translate_usage(const usage data_usage) const {
         case usage::static_draw:
             return GL_STATIC_DRAW;
         default:
+            // In case something bad happens
             throw std::invalid_argument("data_usage value unsupported");
     }
 }

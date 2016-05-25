@@ -15,17 +15,17 @@ public:
     gl_vertex_buffer();
     ~gl_vertex_buffer();
 
-    virtual void create();
+    void create();
 
-    virtual void destroy();
+    void destroy();
 
-    virtual void set_data(std::vector<float> data, format data_format, usage data_usage);
+    void set_data(std::vector<float> data, format data_format, usage data_usage);
 
-    virtual void set_index_array(std::vector<unsigned short> data, usage data_usage);
+    void set_index_array(std::vector<unsigned short> data, usage data_usage);
 
-    virtual void set_active();
+    void set_active();
 
-    virtual void draw();
+    void draw();
 private:
     GLuint gl_name;
     GLuint element_array_name;
