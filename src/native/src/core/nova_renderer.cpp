@@ -20,6 +20,11 @@ nova_renderer::nova_renderer() {
     m_game_window = new glfw_gl_window();
     LOG(INFO) << "Instantiated window";
 
+    shader_manager = new shader_store();
+    ubo_manager = new uniform_buffer_manager();
+
+    gui_renderer_instance = new gui_renderer(&tex_manager, shader_manager, ubo_manager);
+
     glClearColor(1.0, 1.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -35,6 +40,9 @@ bool nova_renderer::has_render_available() {
 void nova_renderer::render_frame() {
     // Clear to the clear color
     //glClear(GL_COLOR_BUFFER_BIT);
+
+    // TODO: Move this thing to that GUI rendering calls only get dispatched when the GUI has changed
+    gui_renderer_instance->render();
 
     // Render solid geometry
     // Render entities

@@ -66,7 +66,7 @@ public:
      * \param data The interleaved vertex data
      * \param data_format The format of the data (\see format)
      */
-    virtual void set_data(std::vector<float> data, format data_format, usage data_usage);
+    virtual void set_data(std::vector<float> data, format data_format, usage data_usage) = 0;
 
     /*!
      * \brief Sets the index array for this vertex buffer, so that anything using it knows how to handle itself
@@ -88,7 +88,7 @@ public:
      *
      * \return The format of this vertex buffer
      */
-    virtual format get_format();
+    format get_format();
 
 protected:
     format data_format;

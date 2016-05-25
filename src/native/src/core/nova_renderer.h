@@ -39,7 +39,11 @@ public:
 private:
     iwindow* m_game_window;
     texture_manager tex_manager;
-    gui_renderer * m_gui_renderer;
+
+    shader_store * shader_manager;
+    uniform_buffer_manager * ubo_manager;
+
+    gui_renderer * gui_renderer_instance;
     int num_textures;
 };
 

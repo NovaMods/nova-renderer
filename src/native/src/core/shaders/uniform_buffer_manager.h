@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 #include "../../gl/glad/glad.h"
+#include "../../gl/objects/gl_uniform_buffer.h"
 
 /*!
  * \brief Holds all the uniform buffers, and their OpenGL names
@@ -22,8 +23,11 @@ public:
      * have one.
      */
     uniform_buffer_manager();
+
+    gl_uniform_buffer *get_buffer(std::string buffer_name);
+
 private:
-    std::unordered_map<std::string, GLuint> uniform_buffers;
+    std::unordered_map<std::string, gl_uniform_buffer *> uniform_buffers;
 };
 
 

@@ -1,19 +1,11 @@
-#include <cstdlib>
-#include "shader_test.h"
-#include "../utils/utils.h"
-#include "sanity.h"
 #include "../core/nova_renderer.h"
 
 int main() {
-    initialize_logging();
-    // Construct the renderer so we have an OpenGL context to work with
-    nova_renderer renderer;
+    nova_renderer nova;
 
-    sanity::run_all();
-
-    shader::run_all();
-
-    system("PAUSE");
+    while(!nova.should_end()) {
+        nova.render_frame();
+    }
 
     return 0;
 }
