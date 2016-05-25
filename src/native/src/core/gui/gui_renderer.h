@@ -55,6 +55,17 @@ private:
     void create_pressed_button();
 
     void setup_camera_buffer() const;
+
+    /*!
+     * \brief Compares two mc_gui_screen objects, determining if they represnet the same visual data
+     *
+     * I'l like to have had this function in the same header file as the mc_gui_screen struct. However, I need
+     * mc_gui_screen to be a C struct so I can properly assign to it from Java. The compiler yelled at me about "You
+     * can't compare structs" so I couldn't use the == operator and here we are.
+     */
+    bool same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2);
+
+    bool same_buttons(mc_gui_button button1, mc_gui_button button2);
 };
 
 

@@ -61,7 +61,9 @@ void gui_renderer::create_pressed_button() {
 
 void gui_renderer::set_current_screen(mc_gui_screen *screen) {
     // Check the the new screen is different
-
+    if(same_screen(cur_screen, screen)) {
+        return;
+    }
 
     cur_screen = screen;
 
@@ -89,3 +91,30 @@ void gui_renderer::render() {
     gui_tex->bind(GL_TEXTURE0);
     unpressed_button_buffer->draw();
 }
+
+bool gui_renderer::same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2) {
+    if(screen1->screen_id != screen2->screen_id) {
+        return false;
+    }
+
+    for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
+        if(same_buttons(screen1->buttons[i], screen2->buttons[i])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool gui_renderer::same_buttons(mc_gui_button button1, mc_gui_button button2) {
+    return button1.x_position == button2.x_position &&
+            button1.y_position == button2.y_position &&
+            button1.width == button2.width &&
+            button1.height == button2.height &&
+            strcmp(button1.text, button2.text) == 0 &&
+            button1.is_pressed == button2.is_pressed;
+}
+
+
+
+
