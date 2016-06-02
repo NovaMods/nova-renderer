@@ -15,7 +15,7 @@
  *
  * Used by every non-gui shader
  */
-struct cameraData {
+struct camera_data {
     glm::mat4 gbufferModelView;   //!< This is actually the view matrix, but it was super poorly named :(
     glm::mat4 gbufferProjection;
     glm::mat4 gbufferModelviewInverse;
@@ -33,7 +33,7 @@ struct cameraData {
  * I don't expect the GUI to need updating very frequently, so I might be able to move this to a uniform if I need the
  * binding pint for anything else
  */
-struct guiCameraData {
+struct gui_camera_data {
     glm::mat4 mvp;
 };
 
