@@ -5,11 +5,14 @@
 #ifndef RENDERER_VULKAN_MOD_H
 #define RENDERER_VULKAN_MOD_H
 
+#include <memory>
+
 #include "../interfaces/iwindow.h"
 #include "nova.h"
 #include "../mc/mc_objects.h"
 #include "texture_manager.h"
 #include "gui/gui_renderer.h"
+#include "types.h"
 
 /*!
  * \brief Initializes everything this mod needs, creating its own window
@@ -21,7 +24,7 @@
  */
 class nova_renderer {
 public:
-    static nova_renderer * instance;
+    static std::unique_ptr<nova_renderer> instance;
 
     nova_renderer();
     ~nova_renderer();
@@ -32,18 +35,24 @@ public:
 
     bool should_end();
 
-    texture_manager * get_texture_manager();
+    texture_manager & get_texture_manager();
 
     static void init_instance();
 
+    shader_store & get_shader_manager();
+
+    uniform_buffer_store & get_ubo_manager();
+
+    gui_renderer & get_gui_renderer();
+
 private:
-    iwindow* m_game_window;
+    std::unique_ptr<iwindow> game_window;
     texture_manager tex_manager;
 
-    shader_store * shader_manager;
-    uniform_buffer_manager * ubo_manager;
+    shader_store shader_manager;
+    uniform_buffer_store ubo_manager;
 
-    gui_renderer * gui_renderer_instance;
+    gui_renderer gui_renderer_instance;
     int num_textures;
 };
 

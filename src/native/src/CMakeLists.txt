@@ -21,8 +21,6 @@ set(SOURCE_FILES
         core/texture_manager.cpp core/texture_manager.h
         core/gui/gui_renderer.cpp
         core/gui/gui_button.cpp
-        core/shaders/shader_store.cpp
-        core/shaders/uniform_buffer_manager.cpp
 
         interfaces/iwindow.cpp interfaces/iwindow.h
         interfaces/igraphics_context.cpp interfaces/igraphics_context.h
