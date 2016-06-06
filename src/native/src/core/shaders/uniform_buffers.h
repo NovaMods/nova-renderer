@@ -23,18 +23,4 @@ struct camera_data {
     glm::vec3 cameraPosition;
 };
 
-/*!
- * \brief Contains all the data needed to render the GUI
- *
- * I don't expect this to be very complicated, when all's said and done The GUI is pretty simple. I can update the
- * vertex buffer itself to have the texture coordinates of whatever texture a button needs. If people want, they can
- * use the other uniform buffers
- *
- * I don't expect the GUI to need updating very frequently, so I might be able to move this to a uniform if I need the
- * binding pint for anything else
- */
-struct gui_camera_data {
-    glm::mat4 mvp;
-};
-
 #endif //RENDERER_UNIFORM_BUFFERS_H
