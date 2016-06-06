@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.3)
 project(renderer)
 
 add_subdirectory(
-        "C:/MinGW/glfw" "${CMAKE_CURRENT_BINARY_DIR}/glfw"
+        "C:/Libraries/glfw" "${CMAKE_CURRENT_BINARY_DIR}/glfw"
 )
 
 include_directories(
@@ -20,7 +20,6 @@ set(SOURCE_FILES
         core/nova_facade.cpp
         core/texture_manager.cpp core/texture_manager.h
         core/gui/gui_renderer.cpp
-        core/gui/gui_button.cpp
 
         interfaces/iwindow.cpp interfaces/iwindow.h
         interfaces/igraphics_context.cpp interfaces/igraphics_context.h

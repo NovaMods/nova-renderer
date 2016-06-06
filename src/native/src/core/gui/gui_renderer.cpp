@@ -6,7 +6,6 @@
 #include <c++/4.8.3/algorithm>
 #include "gui_renderer.h"
 #include "../../gl/objects/gl_vertex_buffer.h"
-#include "../../gl/objects/gl_uniform_buffer.h"
 
 gui_renderer::gui_renderer(texture_manager & textures,
                            shader_store & shaders,
@@ -14,19 +13,6 @@ gui_renderer::gui_renderer(texture_manager & textures,
         tex_manager(textures),
         shader_manager(shaders),
         ubo_manager(uniform_buffers) {
-}
-
-void gui_renderer::setup_camera_buffer() const {
-    // Update the GUI camera data buffer
-    // TODO: Figure out camera data parameters
-    // I should only need to do this once and use the same MVP matrix for every GUI render
-    gl_uniform_buffer * buf = ubo_manager["gui_camera_data"];
-    buf->bind();
-    GLvoid * p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-    memcpy(p, &cam_data.mvp[0][0], sizeof(glm::mat4));
-    glUnmapBuffer(GL_UNIFORM_BUFFER);
-
-    buf->set_bind_point(0);
 }
 
 gui_renderer::~gui_renderer() {
@@ -61,7 +47,16 @@ void gui_renderer::render() {
     gui_tex->bind(GL_TEXTURE0);
 }
 
-bool gui_renderer::is_same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2) {
+bool gui_renderer::is_same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2) const {
+    if(screen1 == NULL && screen2 == NULL) {
+        return true;
+    } else if(screen1 == NULL) {
+        return false;
+    } else if(screen2 == NULL) {
+        return false;   // TODO: Determine is thie is absolutely the best way to handle null screens
+    }
+
+
     if(screen1->screen_id != screen2->screen_id) {
         return false;
     }
@@ -75,7 +70,7 @@ bool gui_renderer::is_same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2
     return true;
 }
 
-bool gui_renderer::same_buttons(mc_gui_button button1, mc_gui_button button2) {
+bool gui_renderer::same_buttons(mc_gui_button & button1, mc_gui_button & button2) const {
     return button1.x_position == button2.x_position &&
             button1.y_position == button2.y_position &&
             button1.width == button2.width &&

@@ -18,6 +18,22 @@
  *
  * Something interesting to note - GUI layout is all calculated in pixels, then all the vertices are scaled down by the
  * view matrix.
+ *
+ * The GUI renderer works directly with the data received from Minecraft. There's no wrapper classes, no conversions to
+ * a format the renderer can handle better. This is mostly done because I don't hae a good reason to do it another way.
+ * The design of the GUI renderer is such that using the data from MC directly is simpler.
+ *
+ * What is the design of the GUI renderer, you ask? Well, let me tell you. The entire GUI is laid out in a single VBO.
+ * I use atlases to have the textures for multiple GUI elements available. MC does this too, but I shove every
+ * GUI-related texture into the same atlas. This includes the current font. Then, when the GUI receives a GUI screen, I
+ * compare it to the previous GUI screen. If it's exactly the same, I don't re-build the GUI VBO. If it's the same
+ * screen but a button is pressed or an item is highlighted or something, I only change the updated element(s). I only
+ * completely rebuild the GUI geometry when the new gui screen is different from the current GUI screen. I do this so I
+ * don't have to send a lot of information to the GPU. While it's true that the GUI geometry wil be relatively small and
+ * probably not a bottleneck, I want to ensure that every part of this mod is built for speed and efficiency.
+ *
+ * I originally wanted to use a UBO for the MVP matrix. However, upon further consideration I've decided that the GUI
+ * MVP matrix will be constant, so there's no need to take up a UBO with it.
  */
 class gui_renderer {
 public:
@@ -48,8 +64,6 @@ public:
      */
     void render();
 
-    void setup_camera_buffer() const;
-
 private:
     std::vector<GLfloat> unpressed_button_buffer = {
             0,   0,  0,     0,       0.3359375,
@@ -76,8 +90,6 @@ private:
     shader_store & shader_manager;
     uniform_buffer_store & ubo_manager;
 
-    gui_camera_data cam_data;
-
     std::string WIDGETS_TEXTURE_NAME = "textures/gui/widgets.png";
     std::string GUI_SHADER_NAME = "gui";
 
@@ -90,10 +102,27 @@ private:
      * mc_gui_screen to be a C struct so I can properly assign to it from Java. The compiler yelled at me about "You
      * can't compare structs" so I couldn't use the == operator and here we are.
      */
-    bool is_same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2);
+    bool is_same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2) const;
 
-    bool same_buttons(mc_gui_button button1, mc_gui_button button2);
+    /*!
+     * \brief Determines whether or not the two given buttons are the same
+     *
+     * Two buttons are the same if they have the same position, size, and pressed status. Is they can be drawn using
+     * the exact same geometry and texture, then they are the same.
+     *
+     * \param button1 The first button to compare
+     * \param button2 The second button to compare
+     *
+     * \return True if the buttons are the same, false otherwise
+     */
+    bool same_buttons(mc_gui_button & button1, mc_gui_button & button2) const;
 
+    /*!
+     * \brief Constructs the geometry needed to render the current GUI screen
+     *
+     * Note that the GUI screen does not include things like the spinning background on the main menu screen, because
+     * that's going to be rendered as if it was a scene
+     */
     void build_gui_geometry();
 };
 
