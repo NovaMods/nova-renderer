@@ -18,4 +18,7 @@ The Nova Renderer is written in C++ for a couple reasons. First and foremost, I 
 The choice of language is not the only performance-oriented decision I made. The architecture of the code itself also lend itself to speed. I utilize data-oriented-design to design my data structures such that the CPU can deal with them really quickly. I also take full advantage of OpenGL 4.5's features, like the glMultiDrawIndirect function, in order to ensure as little driver overhead as possible.
 
 ### Full of features
-The Nova Renderer has a 
+The Nova Renderer has a
+
+### Installation ###
+Coming soon ... 
