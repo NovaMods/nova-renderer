@@ -136,7 +136,7 @@ public:
      *
      * This size is used primarily as an upper bound for the size of the texture atlases Nova uses. Nova uses OpenGL
      * 4.3, which allows for a greater texture size than the OpenGL 2.1 that the Shaders Mod uses. This allows for
-     * bigger texture atlases, which in turn means I don't have to bind textureas as much.
+     * bigger texture atlases, which in turn means I don't have to bind textures as much.
      */
     int get_max_texture_size();
 

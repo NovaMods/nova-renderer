@@ -1,4 +1,6 @@
 /*!
+ * \brief A few typedefs to improve code readability
+ *
  * \author David
  * \date 26-May-16.
  */
