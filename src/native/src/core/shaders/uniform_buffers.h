@@ -1,6 +1,8 @@
 /*!
  * \brief Defines a number of UBOs that are sent to shaders
  *
+ * I've put them all in one header file so that there's a single place
+ *
  * \author David
  * \date 19-May-16.
  */
