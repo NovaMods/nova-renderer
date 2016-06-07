@@ -58,7 +58,7 @@ static void test_link_shader() {
     test_shader.add_shader(GL_VERTEX_SHADER, "uniform_test.vert");
     test_shader.add_shader(GL_FRAGMENT_SHADER, "uniform_test.frag");
 
-    test_shader.link_program();
+    test_shader.link();
 }
 
 static void test_parse_uniforms() {

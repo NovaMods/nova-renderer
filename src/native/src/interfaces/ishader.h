@@ -9,7 +9,7 @@
 #include <string>
 
 /*!
- * \brief Represents a shader object
+ * \brief Represents a shader object in an API-agnostic way
  */
 class ishader {
 public:

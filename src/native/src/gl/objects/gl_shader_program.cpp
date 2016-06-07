@@ -51,7 +51,7 @@ void gl_shader_program::add_shader(GLenum shader_type, std::string source_file_n
     }
 }
 
-void gl_shader_program::link_program() {
+void gl_shader_program::link() {
     linked = true;
 
     gl_name = glCreateProgram();
@@ -195,10 +195,10 @@ std::vector<std::string> &gl_shader_program::get_uniform_names() {
 }
 
 shader_file_not_found_exception::shader_file_not_found_exception( std::string &file_name ) :
-        m_msg( "Could not open shader file " + file_name ) {}
+        msg( "Could not open shader file " + file_name ) {}
 
 const char * shader_file_not_found_exception::what() noexcept {
-    return m_msg.c_str();
+    return msg.c_str();
 }
 
 const char * shader_program_already_linked_exception::what() noexcept {

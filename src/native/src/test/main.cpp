@@ -7,7 +7,7 @@ int main() {
     gl_shader_program * gui_shader = new gl_shader_program();
     gui_shader->add_shader(GL_VERTEX_SHADER, "shaderpacks/default/shaders/gui.vert");
     gui_shader->add_shader(GL_FRAGMENT_SHADER, "shaderpacks/default/shaders/gui.frag");
-    gui_shader->link_program();
+    gui_shader->link();
 
     nova.get_shader_manager().emplace("gui", gui_shader);
 
