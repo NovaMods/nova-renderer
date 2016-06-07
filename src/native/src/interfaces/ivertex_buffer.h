@@ -32,7 +32,7 @@ public:
         /*!
          * \brief The vertex buffer has positions, texture coordinates, and normals (Terrain and entities)
          */
-        POS_NORMAL_UV
+        POS_NORMAL_TANGENT_UV_LIGHTMAPUV
     };
 
     /*!
