@@ -10,6 +10,12 @@
 #include "../../interfaces/ivertex_buffer.h"
 #include "../glad/glad.h"
 
+/*!
+ * \brief Represents a buffer which holds vertex information
+ *
+ * Buffers of this type can hold positions, positions and texture coordinates, or positions, texture coordinates,
+ * lightmap coordinates, normals, and tangents.
+ */
 class gl_vertex_buffer : public ivertex_buffer {
 public:
     gl_vertex_buffer();
