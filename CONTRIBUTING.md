@@ -11,7 +11,7 @@ The procedure for actually contributing is fairly simple:
   * If you're fixing a bug, reference the issue that the bug was first reported in somewhere in your pull request
 * I'll either approve your changes or let you know if there's any problems.
 
-# List of Contributers
+# List of Contributors
 
 User | Contribution
 ------------ | -------------
