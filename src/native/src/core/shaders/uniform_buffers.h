@@ -1,7 +1,9 @@
 /*!
  * \brief Defines a number of UBOs that are sent to shaders
  *
- * I've put them all in one header file so that there's a single place
+ * I've put them all in one header file so that there's a single place to see all the available uniforms. When this
+ * project is a bit closer to release, I'll document this file so that the Doxygen generated documentation will serve
+ * as a reference of what uniforms are available through Nova.
  *
  * \author David
  * \date 19-May-16.
