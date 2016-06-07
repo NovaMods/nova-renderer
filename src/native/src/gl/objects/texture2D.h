@@ -9,6 +9,9 @@
 #include "../glad/glad.h"
 #include "../../interfaces/itexture.h"
 
+/*!
+ * \brief Represents a two-dimensional OpenGL texture
+ */
 class texture2D : public itexture {
 public:
     /*!
@@ -17,27 +20,23 @@ public:
     texture2D();
 
     /*!
-     * \brief Binds this texture to the OpenGL context, saving the previously bound texture to an internal variable.
+     * \copydoc itexture::bind(unsigned int)
      *
      * For best performance, call this function once, do ABSOLUTELY EVERYTHING you need to do to this texture, then
      * unbind it
      *
      * It's worth noting that, if you give me the location that this texture is already bound to, this function won't
-     * make any GL calls. For that reason, it si ABSOLUTELY IMPERATIVE that you call unbind. Always. Forever. When this
+     * make any GL calls. For that reason, it is ABSOLUTELY IMPERATIVE that you call unbind. Always. Forever. When this
      * texture is no longer active, call unbind. Do it. You're going to forget, and you'll be really sad you can't find
      * the problem, then you're going to find the bit of code that doesn't bind the texture if it's already bound and
-     * you'lll see this comment and you'll understand what you did wrong.
+     * you'll see this comment and you'll understand what you did wrong.
      *
      * \param location The location to bind this texture to
+     *
+     * \throws texture_bind_exception if the texture can't be bound
      */
     virtual void bind(unsigned int location);
 
-    /*!
-     * \brief Unbinds this texture from the OpenGL context
-     *
-     * This function binds texture -1 to this texture's current location. This will probably cause a lot of headaches
-     * in the future, but it's pretty correct.
-     */
     virtual void unbind();
 
     /*!
@@ -75,6 +74,9 @@ public:
      */
     GLint get_format();
 
+    /*!
+     * \brief Returns the OpenGL identifier used to identify this texture
+     */
     const unsigned int &get_gl_name();
 
 private:
