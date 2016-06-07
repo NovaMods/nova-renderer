@@ -10,8 +10,19 @@
 #include <GLFW/glfw3.h>
 #include "../../interfaces/iwindow.h"
 
+/*!
+ * \brief Represents a GLFW window with an OpenGL context
+ *
+ * In OpenGL, the window is responsible for maintaining the OpenGL context, or the context has to be bound to a window,
+ * or something. I'm not entirely sure, but I do know that the window and OpenGL context are pretty closely coupled.
+ *
+ * Point is, this class is pretty important and you shouldn't leave home without it
+ */
 class glfw_gl_window : public iwindow {
 public:
+    /*!
+     * \brief Creates a window and a corresponding OpenGL context
+     */
     glfw_gl_window();
     ~glfw_gl_window();
 
