@@ -40,7 +40,7 @@ NOVA_FUNC int get_max_texture_size() {
     return TEXTURE_MANAGER.get_max_texture_size();
 }
 
-NOVA_FUNC void send_render_command(mc_render_command * cmd) {
+NOVA_FUNC void send_render_command(mc_render_command * command) {
     // TODO: Write this
 }
 

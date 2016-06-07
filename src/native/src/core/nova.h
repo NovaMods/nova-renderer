@@ -1,6 +1,9 @@
-//
-// Created by David on 25-Apr-16.
-//
+/*!
+ * \brief Defines the interface that the Java code wil use to interact with the C++ code
+ *
+ * \author David
+ * \date 25-Apr-16
+ */
 
 #ifndef RENDERER_NOVA_H
 #define RENDERER_NOVA_H
@@ -50,19 +53,39 @@ NOVA_FUNC void add_texture_location(mc_texture_atlas_location location);
  */
 NOVA_FUNC int get_max_texture_size();
 
+/*!
+ * \brief Clears out all the textures held by the texture manager, readying the texture manager to receive the textures
+ * from a new resource pack
+ */
 NOVA_FUNC void reset_texture_manager();
 
-NOVA_FUNC void send_render_command(mc_render_command * cmd);
+/*!
+ * \brief Sends the C++ code a command to render a fram
+ *
+ * \param cmd The mc_render_command containing all the data to be rendered for the current frame
+ *
+ * See \ref mc_render_command for a description of the render command
+ */
+NOVA_FUNC void send_render_command(mc_render_command * command);
 
 /*!
  * \brief Supplied so I can do sim ple, stupid test rendering thing
  */
 NOVA_FUNC void do_test_render();
 
+/*!
+ * \brief Checks if Minecraft should close
+ *
+ * Since the Nova Renderer creates its own window, it needs to handle window events itself. However, Minecraft still
+ * needs to be made aware of any window events. This function, and a couple others, poll the native code for any new
+ * window events. This one triggers if the user decides to close Nova's renderer
+ *
+ * \return Trus if the window should close, false otherwise
+ */
 NOVA_FUNC bool should_close();
 
 };  // End extern C
-    // I don't like doing this, but I just say this closing curly brace and freaked out a little bit.
+    // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.
     // Random closing braces are not okay.
 
 #endif //RENDERER_NOVA_H
