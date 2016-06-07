@@ -63,10 +63,9 @@ public:
      * This method should upload the texture data to the GPU ASAP and set some internal variables to save the result of
      * the texture data uploading
      *
-     * \param pixel_data The raw pixel data for this texture
-     * \param height The height, in pixels, of this texture
-     * \param width The width, in pixels, of this texture
-     * \param num_channels How many color channels the texture has
+     * \param pixel_data The raw pixel_data
+     * \param dimensions An array of the dimensions in this texture. For a texture2D that array MUST have two elements
+     * \param format The format of the texture data
      */
     virtual void set_data(std::vector<float> & pixel_data, std::vector<int> & dimensions, GLenum num_channels) = 0;
 
