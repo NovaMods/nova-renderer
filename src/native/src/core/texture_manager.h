@@ -131,6 +131,13 @@ public:
      */
     itexture * get_texture_atlas(atlas_type atlas, texture_type type);
 
+    /*!
+     * \brief Returns the maximum texture size supported by OpenGL on the current platform
+     *
+     * This size is used primarily as an upper bound for the size of the texture atlases Nova uses. Nova uses OpenGL
+     * 4.3, which allows for a greater texture size than the OpenGL 2.1 that the Shaders Mod uses. This allows for
+     * bigger texture atlases, which in turn means I don't have to bind textureas as much.
+     */
     int get_max_texture_size();
 
 private:
