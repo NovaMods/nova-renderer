@@ -21,9 +21,9 @@ set(SOURCE_FILES
         core/texture_manager.cpp core/texture_manager.h
         core/gui/gui_renderer.cpp
 
-        interfaces/iwindow.cpp interfaces/iwindow.h
-        interfaces/igraphics_context.cpp interfaces/igraphics_context.h
-        interfaces/ivertex_buffer.h
+        interfaces/iwindow.h
+        interfaces/igraphics_context.h
+        interfaces/ivertex_buffer.cpp interfaces/ivertex_buffer.h
         interfaces/itexture.h
 
         io/key_forwarder.cpp io/key_forwarder.h
