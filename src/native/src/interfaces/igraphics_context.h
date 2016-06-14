@@ -5,6 +5,8 @@
 #ifndef RENDERER_IGRAPHICS_CONTEXT_H
 #define RENDERER_IGRAPHICS_CONTEXT_H
 
+// TODO: Document this one next
+
 /*!
  * \brief Defines the interface for a graphics context
  *
