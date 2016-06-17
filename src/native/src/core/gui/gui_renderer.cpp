@@ -135,9 +135,9 @@ void gui_renderer::do_init_tasks() {
 }
 
 void gui_renderer::add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v) {
-    vertex_buffer.push_back(x);
-    vertex_buffer.push_back(y);
-    vertex_buffer.push_back(0);
+    vertex_buffer.push_back(static_cast<float>(x));
+    vertex_buffer.push_back(static_cast<float>(y));
+    vertex_buffer.push_back(0.0f);
 
     vertex_buffer.push_back(u);
     vertex_buffer.push_back(v);
