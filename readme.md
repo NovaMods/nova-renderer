@@ -1,6 +1,8 @@
 # Nova Renderer
 ##### A complete replacement for Minecraft's renderer
 
+[Follow us on Twitter!](https://twitter.com/NovaRendererMC)
+
 ### Development status
 The Nova Renderer is currently early in development, so early that I don't think there's anything worth releasing. Yes, you can download the code and try running it yourself, but you have to make some changes to the Minecraft source code to add in hooks for Nova.
 
