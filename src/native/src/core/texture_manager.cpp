@@ -56,7 +56,7 @@ void texture_manager::add_texture(mc_atlas_texture & new_texture, atlas_type typ
     GLenum format = GL_RGB;
     switch(new_texture.num_components) {
         case 1:
-            format = GL_R;
+            format = GL_RED;
             break;
         case 2:
             format = GL_RG;
