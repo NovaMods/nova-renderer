@@ -16,4 +16,5 @@ The procedure for actually contributing is fairly simple:
 User | Contribution
 ------------ | -------------
 [DethRaid](https://github.com/DethRaid) | Lead Developer
+[mdsitton](https://github.com/mdsitton) | CMake build fixes
 [SylveonBottle](https://github.com/SylveonBottle) | Creating CONTRIBUTING.md
