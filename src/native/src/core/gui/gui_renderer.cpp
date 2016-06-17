@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <easylogging++.h>
 #include "gui_renderer.h"
-#include "../../gl/objects/gl_vertex_buffer.h"
+#include "gl/objects/gl_vertex_buffer.h"
 
 gui_renderer::gui_renderer(texture_manager & textures,
                            shaderpack & shaders,

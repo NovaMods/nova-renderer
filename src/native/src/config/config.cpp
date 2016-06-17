@@ -6,7 +6,7 @@
 #include "config.h"
 #include <easylogging++.h>
 
-#include "../utils/utils.h"
+#include "utils/utils.h"
 
 config::config(std::string filename) {
     LOG(INFO) << "Loading config from " << filename;
@@ -37,4 +37,3 @@ void config::update_change_listeners() {
         l->on_config_change(options);
     }
 }
-

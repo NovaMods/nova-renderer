@@ -1,6 +1,6 @@
 #include <easylogging++.h>
 
-#include "../core/nova.h"
+#include "core/nova.h"
 
 #include "sanity.h"
 #include "shader_test.h"

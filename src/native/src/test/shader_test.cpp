@@ -7,8 +7,8 @@
 
 #include "shader_test.h"
 #include "test_utils.h"
-#include "../gl/objects/gl_shader_program.h"
-#include "../core/nova_renderer.h"
+#include "gl/objects/gl_shader_program.h"
+#include "core/nova_renderer.h"
 #include <easylogging++.h>
 #include <assert.h>
 

@@ -9,8 +9,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "../gl/objects/gl_shader_program.h"
-#include "../config/config.h"
+#include "gl/objects/gl_shader_program.h"
+#include "config/config.h"
 
 /*!
  * \brief Represents a single shaderpack in all its glory
