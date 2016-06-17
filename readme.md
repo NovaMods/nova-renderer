@@ -1,7 +1,7 @@
 # Nova Renderer
 ##### A complete replacement for Minecraft's renderer
 
-[Follow us on Twitter!](https://twitter.com/NovaRendererMC)
+[Follow us on Twitter!](https://twitter.com/NovaRendererMC)  
 [Talk to us on Discord!](https://discordapp.com/invite/014ux6siiDogn9FLz)
 
 ### Development status
