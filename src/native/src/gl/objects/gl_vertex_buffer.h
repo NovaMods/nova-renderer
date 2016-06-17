@@ -37,6 +37,13 @@ private:
     GLuint element_array_name;
 
     GLenum translate_usage(const usage data_usage) const;
+
+    /*!
+     * \brief Enables all the proper OpenGL vertex attributes for the given format
+     *
+     * Enables the proper vertex attribute array bind points and the vertex attribute pointers
+     */
+    void enable_vertex_attributes(format data_format);
 };
 
 

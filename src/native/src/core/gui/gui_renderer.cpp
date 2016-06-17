@@ -3,7 +3,8 @@
  * \date 13-May-16.
  */
 
-#include <c++/4.8.3/algorithm>
+#include <algorithm>
+#include <easylogging++.h>
 #include "gui_renderer.h"
 #include "../../gl/objects/gl_vertex_buffer.h"
 
@@ -13,6 +14,7 @@ gui_renderer::gui_renderer(texture_manager & textures,
         tex_manager(textures),
         shader_manager(shaders),
         ubo_manager(uniform_buffers) {
+    LOG(INFO) << "Creating GUI Renderer";
 }
 
 gui_renderer::~gui_renderer() {
@@ -30,13 +32,7 @@ void gui_renderer::set_current_screen(mc_gui_screen *screen) {
 }
 
 void gui_renderer::render() {
-    /*
-     * Render needs to do a few things
-     *
-     * First, bind the GUI shader. We'll need access to the shaders store
-     *
-     * We'll also need a way to draw items and whatnot
-     */
+    LOG(TRACE) << "Rendering the GUI";
 
     // Bind the GUI shader
     ishader * gui_shader = shader_manager[GUI_SHADER_NAME];
@@ -45,6 +41,9 @@ void gui_renderer::render() {
     // Bind the GUI buttons texture to texture unit 0
     itexture * gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
     gui_tex->bind(GL_TEXTURE0);
+
+    // Draw the 2D GUI geometry
+    cur_screen_buffer->draw();
 }
 
 bool gui_renderer::is_same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2) const {
@@ -97,17 +96,18 @@ void gui_renderer::build_gui_geometry() {
                 }
 
                 std::vector<GLshort> indices_to_add(6);
-                std::transform(index_buffer.begin(), index_buffer.end(), indices_to_add.begin(), [=](GLshort & num) {return num + start_pos;});
+                std::transform(index_buffer.begin(), index_buffer.end(), indices_to_add.begin(), [=](GLushort & num) {return num + start_pos;});
 
                 indices.insert(indices_to_add.begin(), indices_to_add.end(), indices.end());
             });
 }
 
 void gui_renderer::setup_buffer() {
-    cur_screen_buffer = std::unique_ptr<ivertex_buffer>(static_cast<ivertex_buffer *>(new gl_vertex_buffer()));
+    cur_screen_buffer = std::unique_ptr<ivertex_buffer>(new gl_vertex_buffer());
 }
 
-
-
-
-
+void gui_renderer::build_default_gui() {
+    setup_buffer();
+    cur_screen_buffer->set_data(unpressed_button_buffer, ivertex_buffer::format::POS_UV, ivertex_buffer::usage::static_draw);
+    cur_screen_buffer->set_index_array(index_buffer, ivertex_buffer::usage::static_draw);
+}

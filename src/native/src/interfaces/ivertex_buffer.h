@@ -32,7 +32,7 @@ public:
         /*!
          * \brief The vertex buffer has positions, texture coordinates, and normals (Terrain and entities)
          */
-        POS_NORMAL_TANGENT_UV_LIGHTMAPUV
+        POS_UV_LIGHTMAPUV_NORMAL_TANGENT
     };
 
     /*!
@@ -79,7 +79,9 @@ public:
     virtual void set_active() = 0;
 
     /*!
-     * \brief Draws the
+     * \brief Draws this buffer
+     *
+     * This function will almost certainly be used very seldom. Perhaps only in the GUI?
      */
     virtual void draw() = 0;
 

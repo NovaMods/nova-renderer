@@ -1,4 +1,6 @@
 /*!
+ * \brief Contains a bunch of utility functions which may or may not be actually used anywhere
+ *
  * \author David
  * \date 18-May-16.
  */

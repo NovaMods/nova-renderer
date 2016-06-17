@@ -19,7 +19,9 @@ nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shader_manag
     // Oh wow this line is gross. I guess this is why everyone hates CPP?
     game_window = std::unique_ptr<iwindow>(static_cast<iwindow *>(new glfw_gl_window()));
 
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    gui_renderer_instance.build_default_gui();
+
+    glClearColor(0.0, 1.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
