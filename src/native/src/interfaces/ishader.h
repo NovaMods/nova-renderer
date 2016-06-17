@@ -10,6 +10,9 @@
 
 /*!
  * \brief Represents a shader object in an API-agnostic way
+ *
+ * This idea behind this is that I'll be able to switch to a different graphics API with minimal effort. Not sure if
+ * that will ever happen
  */
 class ishader {
 public:

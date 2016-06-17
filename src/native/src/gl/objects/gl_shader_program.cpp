@@ -169,7 +169,8 @@ bool gl_shader_program::check_for_linking_errors() {
 }
 
 void gl_shader_program::bind() noexcept {
-    LOG(INFO) << "Binding a shader";
+    LOG(DEBUG) << "Binding a shader";
+    glUseProgram(gl_name);
 }
 
 int gl_shader_program::get_uniform_location(std::string &uniform_name) const {

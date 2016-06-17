@@ -64,6 +64,13 @@ public:
      */
     void render();
 
+/*!
+ * \brief Creates some very basic GUI geometry
+ *
+ * Intended to be used solely for testing
+ */
+void build_default_gui();
+
 private:
     std::vector<GLfloat> unpressed_button_buffer = {
             0,   0,  0,     0,       0.3359375,
@@ -79,7 +86,7 @@ private:
             200, 20, 0,     0.78125, 0.3359375
     };
 
-    std::vector<GLshort> index_buffer = {
+    std::vector<GLushort> index_buffer = {
             0, 1, 2,
             2, 3, 0
     };
@@ -124,6 +131,7 @@ private:
      * that's going to be rendered as if it was a scene
      */
     void build_gui_geometry();
+
 };
 
 
