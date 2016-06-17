@@ -1,45 +1,159 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.4)
 project(renderer)
 
-add_subdirectory(
-        "C:/Libraries/glfw" "${CMAKE_CURRENT_BINARY_DIR}/glfw"
-)
 
-include_directories(
-        "C:/MinGW/mingw64/x86_64-w64-mingw32/include/c++"
-        "C:/MinGW/mingw64/x86_64-w64-mingw32/include"
-        "C:/MinGW/mingw64/include"
-)
+#add_subdirectory(
+#        "C:/Libraries/libarchive" "${CMAKE_CURRENT_BINARY_DIR}/libarchive"
+#)
 
-link_directories(
-        "C:/win-builds/lib"
-)
+# Functions
+function(nova_set_all_target_outputs target output_dir)
+        set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${output_dir})
+        set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${output_dir})
+        set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${output_dir})
+        set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${output_dir})
+        set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${output_dir})
+        set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${output_dir})
+        set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${output_dir})
+        set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${output_dir})
+        set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${output_dir})
+endfunction()
 
-set(SOURCE_FILES
-        gl/glad.c
+# Initialize cmake options
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-        core/nova_renderer.cpp core/nova_renderer.h
-        core/nova.h
-        core/nova_facade.cpp
-        core/texture_manager.cpp core/texture_manager.h
+# Setup 3rd party dependacies.
+set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+        set(ENV{GLM_ROOT_DIR} "${3RD_PARTY_DIR}/glm")
+        set(ENV{GLFW3_ROOT} "${3RD_PARTY_DIR}/glfw")
+endif()
+
+find_package(GLFW3 REQUIRED)
+find_package(GLM REQUIRED)
+
+# Not sure if this is actually needed or not..,
+# I know some extension loaders and windowing libraries do
+# but I'm not certain since i've never used GLFW or glad. Its really
+# only here just in case it actually is needed. Seems to build fine on
+# linux without though.
+find_package(OpenGL REQUIRED)
+
+set(GLAD_SOURCE ${3RD_PARTY_DIR}/glad/src/glad.c)
+
+include_directories(SYSTEM
+        ${GLM_INCLUDE_DIRS}
+        ${GLFW3_INCLUDE_DIR}
+        "${3RD_PARTY_DIR}/easyloggingpp/include"
+        "${3RD_PARTY_DIR}/glad/include")
+
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} ${GLFW3_LIBRARY} ${OPENGL_LIBRARIES})
+
+
+include_directories(${CMAKE_CURRENT_LIST_DIR})
+
+# Setup the nova-core library.
+set(NOVA_SOURCE
+
         core/gui/gui_renderer.cpp
 
-        config/config.cpp
+        core/nova_renderer.cpp
+        core/nova_facade.cpp
+        core/texture_manager.cpp
+        core/gui/gui_renderer.cpp
+
+        gl/objects/gl_shader_program.cpp
+        gl/objects/gl_uniform_buffer.cpp
+        gl/objects/gl_vertex_buffer.cpp
+        gl/objects/texture2D.cpp
+
+        gl/windowing/glfw_gl_window.cpp
 
         interfaces/ivertex_buffer.cpp
 
-        io/key_forwarder.cpp io/key_forwarder.h
-
-        gl/windowing/glfw_gl_window.cpp gl/windowing/glfw_gl_window.h
-        gl/objects/texture2D.cpp gl/objects/texture2D.h
-        gl/objects/gl_shader_program.cpp gl/objects/gl_shader_program.h
-        gl/objects/gl_uniform_buffer.cpp
-        gl/objects/gl_vertex_buffer.cpp
+        io/key_forwarder.cpp
 
         utils/utils.cpp
 
         shaderpack_loading/shaderpack.cpp
+        config/config.cpp
+        )
 
+# The following lists of files will only be contained in
+# the source groups and will not be sent to the compiler directly.
+set(NOVA_NO_COMPILE
+        core/renderer/batch_builder.cpp
+        core/renderer/model_renderer.cpp
+        )
+
+set(NOVA_HEADERS
+
+        core/gui/gui_renderer.h
+
+        core/renderer/batch_builder.h
+        core/renderer/model_renderer.h
+
+        core/shaders/uniform_buffers.h
+
+        core/nova.h
+        core/nova_renderer.h
+        core/texture_manager.h
+        core/types.h
+
+        gl/objects/gl_shader_program.h
+        gl/objects/gl_uniform_buffer.h
+        gl/objects/gl_vertex_buffer.h
+        gl/objects/texture2D.h
+
+        gl/windowing/glfw_gl_window.h
+
+        interfaces/igraphics_context.h
+        interfaces/ivertex_buffer.h
+        interfaces/iwindow.h
+
+        io/key_forwarder.h
+
+        mc/mc_gui_objects.h
+        mc/mc_objects.h
+
+        utils/utils.h
+        shaderpack_loading/shaderpack.h
+        config/config.h
+        )
+
+# For now just put everthing in a single nova source group
+# because there are several sub groups that would be extremely small
+source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
+
+add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE})
+
+target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT)
+
+add_library(nova-renderer SHARED $<TARGET_OBJECTS:nova-renderer-obj>)
+add_library(nova-renderer-static STATIC $<TARGET_OBJECTS:nova-renderer-obj>)
+
+# This is needed on MSVC otherwise the build files get spread out all over the place.
+# The only *problem* is that we wont be able to create multi-config builds. Personally
+# I dont see this as a problem currently. This will make the location more predictable
+# cross platform as well. Though i think object files are still cached across build
+# types so this should be fine.
+if(MSVC)
+        get_target_property(OUTPUT_DIR nova-renderer LIBRARY_OUTPUT_DIRECTORY)
+        set_target_properties(nova-renderer-obj PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+        nova_set_all_target_outputs(nova-renderer ${OUTPUT_DIR})
+        nova_set_all_target_outputs(nova-renderer-static ${OUTPUT_DIR})
+endif()
+
+target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
+target_link_libraries(nova-renderer-static ${COMMON_LINK_LIBS})
+
+# Setup the nova-test executable
+set(TEST_SOURCE_FILES
         test/main.cpp
         test/sanity.cpp
         test/shader_test.cpp
@@ -47,26 +161,20 @@ set(SOURCE_FILES
         test/config.cpp
         )
 
-add_library(nova-renderer SHARED ${SOURCE_FILES})
-
-# configure the project
-target_include_directories(nova-renderer SYSTEM PRIVATE)
-target_link_libraries(nova-renderer glfw ${GLFW_LIBRARIES})
-target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT)
-
-set_property(TARGET nova-renderer PROPERTY CXX_STANDARD 14)
-set_property(TARGET nova-renderer PROPERTY CXX_STANDARD_REQUIRED ON)
-
-set(TEST_SORUCE_FILES
+set(TEST_HEADERS
+        test/sanity.h
+        test/shader_test.h
+        test/test_utils.h
         )
 
-set(ALL_SOURCE_FILES ${SOURCE_FILES} ${TEST_SOURCE_FILES})
+source_group("test" FILES ${TEST_SOURCE_FILES} ${TEST_HEADERS})
 
-add_executable(nova-test ${SOURCE_FILES})
-target_include_directories(nova-test SYSTEM PRIVATE)
-target_link_libraries(nova-test glfw ${GLFW_LIBRARIES})
+add_executable(nova-test ${TEST_SOURCE_FILES})
+add_dependencies(nova-test nova-renderer-static)
 
-set_property(TARGET nova-test PROPERTY CXX_STANDARD 14)
-set_property(TARGET nova-test PROPERTY CXX_STANDARD_REQUIRED ON)
-
-set(CMAKE_BUILD_TYPE Debug)
+target_link_libraries(nova-test nova-renderer-static ${COMMON_LINK_LIBS})
+set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test")
+# Needed for a similar reason as the libary
+if (MSVC)
+        nova_set_all_target_outputs(nova-test "${CMAKE_BINARY_DIR}/test")
+endif()

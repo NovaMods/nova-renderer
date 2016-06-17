@@ -7,12 +7,12 @@
 #define RENDERER_GUI_RENDERER_H
 
 #include <memory>
-#include "../../interfaces/ivertex_buffer.h"
-#include "../../mc/mc_gui_objects.h"
-#include "../texture_manager.h"
-#include "../shaders/uniform_buffers.h"
-#include "../types.h"
-#include "../../shaderpack_loading/shaderpack.h"
+#include "interfaces/ivertex_buffer.h"
+#include "mc/mc_gui_objects.h"
+#include "core/texture_manager.h"
+#include "core/shaders/uniform_buffers.h"
+#include "core/types.h"
+#include "shaderpack_loading/shaderpack.h"
 
 /*!
  * \brief Defines a bunch of methods to render different GUI elements, including buttons, text, and images
