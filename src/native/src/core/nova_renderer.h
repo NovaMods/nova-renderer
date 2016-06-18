@@ -86,7 +86,7 @@ public:
     /*!
      * \brief Returns the texture manager
      */
-    //texture_manager & get_texture_manager();
+    texture_manager & get_texture_manager();
 
     /*!
      * \brief Returns the shader manager
@@ -104,16 +104,16 @@ public:
      * I use this method now for testing. I expect that, upon release, the gui_renderer will only be called from within
      * this class and thus will not need to be gotten at all, but we'll see.
      */
-    //gui_renderer & get_gui_renderer();
+    gui_renderer & get_gui_renderer();
 
 private:
     std::unique_ptr<iwindow> game_window;
-    //texture_manager tex_manager;
+    texture_manager tex_manager;
 
     shader_store shader_manager;
     uniform_buffer_store ubo_manager;
 
-    //gui_renderer gui_renderer_instance;
+    gui_renderer gui_renderer_instance;
     int num_textures;
 
     std::unique_ptr<ivertex_buffer> triangle;
