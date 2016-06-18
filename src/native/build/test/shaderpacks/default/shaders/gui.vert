@@ -3,10 +3,17 @@
 layout(location = 0) in vec3 position_in;
 layout(location = 1) in vec2 uv_in;
 
+layout(location = 20) uniform ScreenSize {
+    float viewWidth;
+    float viewHeight;
+};
+
 out vec2 uv;
 
 vec4 ftransform() {
-    return vec4(position_in, 1);
+    // Just scale the vertex down
+    vec3 scaled_pos = position_in * vec3(1.0 / viewWidth, 1.0 / viewHeight, 1) + vec3(-1, -1, 0);
+    return vec4(scaled_pos, 1);
 }
 
 void main() {

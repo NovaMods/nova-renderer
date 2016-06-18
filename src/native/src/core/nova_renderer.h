@@ -114,9 +114,6 @@ private:
     uniform_buffer_store ubo_manager;
 
     gui_renderer gui_renderer_instance;
-    int num_textures;
-
-    std::unique_ptr<ivertex_buffer> triangle;
 };
 
 #endif //RENDERER_VULKAN_MOD_H
