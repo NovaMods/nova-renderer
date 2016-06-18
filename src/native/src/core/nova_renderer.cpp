@@ -21,21 +21,6 @@ nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shader_manag
     game_window = std::unique_ptr<iwindow>(new glfw_gl_window());
 
     gui_renderer_instance.build_default_gui();
-
-    // Here's a bunch of really gross code to Make It Work (TM)
-    triangle = std::unique_ptr<ivertex_buffer>(new gl_vertex_buffer());
-
-    static const std::vector<GLfloat> vertex_buffer_data = {
-            -1.0f, -1.0f, 0.0f,     1.0f, 0.0f,
-            1.0f, -1.0f, 0.0f,      0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f,       0.0f, 0.0f
-    };
-
-    triangle->set_data(vertex_buffer_data, ivertex_buffer::format::POS_UV, ivertex_buffer::usage::static_draw);
-
-    std::vector<unsigned short> indices = {0, 1, 2};
-
-    triangle->set_index_array(indices, ivertex_buffer::usage::static_draw);
 }
 
 nova_renderer::~nova_renderer() {
@@ -49,15 +34,6 @@ bool nova_renderer::has_render_available() {
 void nova_renderer::render_frame() {
     // Clear to the clear color
     glClear(GL_COLOR_BUFFER_BIT);
-
-    // TODO: Move this thing so that GUI rendering calls only get dispatched when the GUI has changed
-    //gui_renderer_instance.render();
-
-    shader_manager["triangle"]->bind();
-
-    // More gross code just to Make It Work (TM)
-    triangle->set_active();
-    triangle->draw();
 
     // Render GUI to GUI buffer
     gui_renderer_instance.render();
