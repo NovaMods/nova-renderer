@@ -3,7 +3,7 @@
 layout(location = 0) in vec3 position_in;
 layout(location = 1) in vec2 uv_in;
 
-layout(location = 20) uniform ScreenSize {
+layout(location = 20, std140) uniform ScreenSize {
     float viewWidth;
     float viewHeight;
 };

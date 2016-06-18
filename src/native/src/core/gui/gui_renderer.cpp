@@ -14,7 +14,7 @@ gui_renderer::gui_renderer(texture_manager & textures,
         tex_manager(textures),
         shader_manager(shaders),
         ubo_manager(uniform_buffers) {
-    LOG(INFO) << "Creating GUI Renderer";
+    LOG(INFO) << "Created GUI Renderer";
 }
 
 gui_renderer::~gui_renderer() {
@@ -22,7 +22,7 @@ gui_renderer::~gui_renderer() {
 
 void gui_renderer::set_current_screen(mc_gui_screen *screen) {
     // Check the the new screen is different
-    if(is_same_screen(cur_screen, screen)) {
+    if(cur_screen != NULL && is_same_screen(*cur_screen, *screen)) {
         return;
     }
 
@@ -45,22 +45,13 @@ void gui_renderer::render() {
     cur_screen_buffer->draw();
 }
 
-bool gui_renderer::is_same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2) const {
-    if(screen1 == NULL && screen2 == NULL) {
-        return true;
-    } else if(screen1 == NULL) {
-        return false;
-    } else if(screen2 == NULL) {
-        return false;   // TODO: Determine is thie is absolutely the best way to handle null screens
-    }
-
-
-    if(screen1->screen_id != screen2->screen_id) {
+bool gui_renderer::is_same_screen(mc_gui_screen &screen1, mc_gui_screen &screen2) const {
+    if(screen1.screen_id != screen2.screen_id) {
         return false;
     }
 
     for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
-        if(same_buttons(screen1->buttons[i], screen2->buttons[i])) {
+        if(same_buttons(screen1.buttons[i], screen2.buttons[i])) {
             return false;
         }
     }
@@ -79,34 +70,79 @@ bool gui_renderer::same_buttons(mc_gui_button & button1, mc_gui_button & button2
 
 void gui_renderer::build_gui_geometry() {
     // We need to make a vertex buffer with the positions and texture coordinates of all the gui elements
-    std::vector<GLfloat> buffer(MAX_NUM_BUTTONS * 4 * 5);    // MAX_NUM_BUTTONS buttons * 4 vertices per button * 5 elements per vertex
-    std::vector<GLshort> indices;
+    std::vector<float> vertex_buffer(MAX_NUM_BUTTONS * 4 * 5);    // MAX_NUM_BUTTONS buttons * 4 vertices per button * 5 elements per vertex
+    std::vector<unsigned short> indices;
+    unsigned short start_pos = 0;
 
     std::for_each(
             std::begin(cur_screen->buttons),
             std::end(cur_screen->buttons),
             [&](mc_gui_button & button){
-                short start_pos = (short) (buffer.size() - 1);
 
+                std::vector<float> & uv_buffer = basic_unpressed_uvs;
                 if(button.is_pressed) {
-                    buffer.insert(pressed_button_buffer.begin(), pressed_button_buffer.end(), buffer.end());
-                } else {
-                    buffer.insert(unpressed_button_buffer.begin(), unpressed_button_buffer.end(), buffer.end());
+                    uv_buffer = basic_pressed_uvs;
                 }
 
-                std::vector<GLshort> indices_to_add(6);
-                std::transform(index_buffer.begin(), index_buffer.end(), indices_to_add.begin(), [=](GLushort & num) {return num + start_pos;});
+                // Generate the vertexes from the button's position
+                add_vertices_from_button(vertex_buffer, button, uv_buffer);
 
-                indices.insert(indices_to_add.begin(), indices_to_add.end(), indices.end());
+                for(GLushort & index : index_buffer) {
+                    indices.push_back(index + start_pos);
+                }
+
+                // Add the number of new vertices to the offset for indices, so that indices point to the right
+                // vertices
+                start_pos += 4;
             });
 }
 
-void gui_renderer::setup_buffer() {
+void gui_renderer::add_vertices_from_button(std::vector<GLfloat> &vertex_buffer, const mc_gui_button &button,
+                                            const std::vector<GLfloat> &uv_buffer) {
+    add_vertex(
+            vertex_buffer,
+            button.x_position, button.y_position,
+            uv_buffer[0], uv_buffer[1]
+    );
+    add_vertex(
+            vertex_buffer,
+            button.x_position + button.width, button.y_position,
+            uv_buffer[2], uv_buffer[3]
+    );
+    add_vertex(
+            vertex_buffer,
+            button.x_position, button.y_position + button.height,
+            uv_buffer[4], uv_buffer[5]
+    );
+    add_vertex(
+            vertex_buffer,
+            button.x_position + button.width, button.y_position + button.height,
+            uv_buffer[6], uv_buffer[7]
+    );
+}
+
+void gui_renderer::setup_buffers() {
+    // Buffer for the GUi geometry
     cur_screen_buffer = std::unique_ptr<ivertex_buffer>(new gl_vertex_buffer());
 }
 
-void gui_renderer::build_default_gui() {
-    setup_buffer();
-    cur_screen_buffer->set_data(unpressed_button_buffer, ivertex_buffer::format::POS_UV, ivertex_buffer::usage::static_draw);
+void gui_renderer::do_init_tasks() {
+    setup_buffers();
+    create_default_gui();
+}
+
+void gui_renderer::create_default_gui() const {
+    cur_screen_buffer->set_data(basic_unpressed_uvs, ivertex_buffer::format::POS_UV, ivertex_buffer::usage::static_draw);
     cur_screen_buffer->set_index_array(index_buffer, ivertex_buffer::usage::static_draw);
 }
+
+void gui_renderer::add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v) {
+    vertex_buffer.push_back(x);
+    vertex_buffer.push_back(y);
+    vertex_buffer.push_back(0);
+
+    vertex_buffer.push_back(u);
+    vertex_buffer.push_back(v);
+}
+
+

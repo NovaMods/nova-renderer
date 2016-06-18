@@ -50,7 +50,7 @@ public:
      *
      * So this method needs to be called, but I can't enforce is being called. Whoops.
      */
-    void setup_buffer();
+    void setup_buffers();
 
     /*!
      * \brief Sets the GUI screen to render as the given screen
@@ -69,26 +69,26 @@ public:
      *
      * Intended to be used solely for testing
      */
-    void build_default_gui();
+    void do_init_tasks();
 
 private:
-    std::vector<GLfloat> unpressed_button_buffer = {
-            0,   0,  0,     0,       0.3359375,
-            200, 0,  0,     0.78125, 0.3359375,
-            0,   20, 0,     0,       0.4156963,
-            200, 20, 0,     0.78125, 0.4156963
+    std::vector<float> basic_unpressed_uvs = {
+            0,       0.3359375,
+            0.78125, 0.3359375,
+            0,       0.4156963,
+            0.78125, 0.4156963
     };
 
-    std::vector<GLfloat> pressed_button_buffer = {
+    std::vector<float> basic_pressed_uvs = {
             0,   0,  0,     0,       0.2578112,
             200, 0,  0,     0.78125, 0.2578112,
             0,   20, 0,     0,       0.3359375,
             200, 20, 0,     0.78125, 0.3359375
     };
 
-    std::vector<GLushort> index_buffer = {
+    std::vector<unsigned short> index_buffer = {
             0, 1, 2,
-            2, 3, 0
+            2, 1, 3
     };
 
     mc_gui_screen * cur_screen;
@@ -109,7 +109,7 @@ private:
      * mc_gui_screen to be a C struct so I can properly assign to it from Java. The compiler yelled at me about "You
      * can't compare structs" so I couldn't use the == operator and here we are.
      */
-    bool is_same_screen(mc_gui_screen *screen1, mc_gui_screen *screen2) const;
+    bool is_same_screen(mc_gui_screen & screen1, mc_gui_screen & screen2) const;
 
     /*!
      * \brief Determines whether or not the two given buttons are the same
@@ -132,6 +132,26 @@ private:
      */
     void build_gui_geometry();
 
+    /*!
+     * \brief Fills the GUI vertex buffer with a default button. I'll probably make this go away.
+     */
+    void create_default_gui() const;
+
+    /*!
+     * \brief Adds the vertex with the given parameters to the given vertex buffer
+     *
+     * Note that the z position of the vertices is always set to 0. This is maybe what I want.
+     *
+     * \param vertex_buffer The thing to add vertices to
+     * \param x The x position of the vertex
+     * \param y The y position of the vertex
+     * \param u The u texture coordiante of the vertex
+     * \param v The v texture coordinate of the vertex
+     */
+    void add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v);
+
+    void add_vertices_from_button(std::vector<float> &vertex_buffer, const mc_gui_button &button,
+                                  const std::vector<float> &uv_buffer);
 };
 
 

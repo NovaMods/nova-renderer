@@ -20,7 +20,9 @@ nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shader_manag
     // Oh wow this line is gross. I guess this is why everyone hates CPP?
     game_window = std::unique_ptr<iwindow>(new glfw_gl_window());
 
-    gui_renderer_instance.build_default_gui();
+    gui_renderer_instance.do_init_tasks();
+
+    create_ubos();
 }
 
 nova_renderer::~nova_renderer() {
@@ -70,8 +72,10 @@ gui_renderer & nova_renderer::get_gui_renderer() {
    return gui_renderer_instance;
 }
 
+void nova_renderer::create_ubos() {
+    // Build all the UBOs
 
+    ubo_manager.emplace("cameraData", gl_uniform_buffer(sizeof(camera_data)));
 
-
-
-
+    // TODO: Make a config file from UBO name to bind point
+}

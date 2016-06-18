@@ -1,7 +1,19 @@
+#include <easylogging++.h>
 #include "../core/nova_renderer.h"
 #include "../gl/objects/gl_shader_program.h"
 
+#include "sanity.h"
+#include "shader_test.h"
+
 int main() {
+    LOG(INFO) << "Running sanity tests...";
+    sanity::run_all();
+
+    LOG(INFO) << "Running shader tests...";
+    shader::run_all();
+
+    LOG(INFO) << "Integration tests...";
+
     nova_renderer nova;
 
     gl_shader_program * gui_shader = new gl_shader_program();
