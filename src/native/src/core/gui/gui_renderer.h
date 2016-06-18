@@ -64,12 +64,12 @@ public:
      */
     void render();
 
-/*!
- * \brief Creates some very basic GUI geometry
- *
- * Intended to be used solely for testing
- */
-void build_default_gui();
+    /*!
+     * \brief Creates some very basic GUI geometry
+     *
+     * Intended to be used solely for testing
+     */
+    void build_default_gui();
 
 private:
     std::vector<GLfloat> unpressed_button_buffer = {
