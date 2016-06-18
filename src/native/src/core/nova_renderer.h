@@ -114,6 +114,11 @@ private:
     uniform_buffer_store ubo_manager;
 
     gui_renderer gui_renderer_instance;
+
+    /*!
+     * \brief Creates all the UBOs
+     */
+    void create_ubos();
 };
 
 #endif //RENDERER_VULKAN_MOD_H

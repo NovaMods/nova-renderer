@@ -39,9 +39,22 @@ public:
      */
     void set_bind_point(GLuint bind_point);
 
+    /*!
+     * \brief Uploads the given data to this UBO
+     *
+     * Note that absolutely no checking is done to make sure you're uploading the right data. You better know what
+     * you're doing.
+     *
+     * Note also that this function binds the UBO, so you don't need to bind it yourself.
+     */
+    template <typename T>
+    void send_data(T data) {
+        bind();
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(T), data);
+    };
+
 private:
     GLuint gl_name;
 };
-
 
 #endif //RENDERER_GL_UNIFORM_BUFFER_H
