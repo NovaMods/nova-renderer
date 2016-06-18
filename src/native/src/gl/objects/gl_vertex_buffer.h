@@ -33,8 +33,8 @@ public:
 
     void draw();
 private:
-    GLuint gl_name;
-    GLuint element_array_name;
+    GLuint vertex_buffer;
+    GLuint indices;
 
     GLenum translate_usage(const usage data_usage) const;
 
@@ -44,6 +44,9 @@ private:
      * Enables the proper vertex attribute array bind points and the vertex attribute pointers
      */
     void enable_vertex_attributes(format data_format);
+
+    unsigned int vertex_array;
+    unsigned int num_indices;
 };
 
 

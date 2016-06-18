@@ -68,10 +68,10 @@ public:
     /*!
      * \brief Renders a single frame
      *
-     * As stated in the docs for ::has_render_available, the original plan was to have the renderer in a separate thread.
-     * This method would be called only if a render command was available, and the thread would just hang out and do
-     * nothing if a rendering command was not available. I'm not sure if this is possible with OpenGL, and until I know
-     * for sure I'm keeping traces of the original model in the code
+     * As stated in the docs for ::has_render_available, the original plan was to have the renderer in a separate
+     * thread. This method would be called only if a render command was available, and the thread would just hang out
+     * and do nothing if a rendering command was not available. I'm not sure if this is possible with OpenGL, and until
+     * I know for sure I'm keeping traces of the original model in the code
      */
     void render_frame();
 
@@ -86,7 +86,7 @@ public:
     /*!
      * \brief Returns the texture manager
      */
-    texture_manager & get_texture_manager();
+    //texture_manager & get_texture_manager();
 
     /*!
      * \brief Returns the shader manager
@@ -104,17 +104,19 @@ public:
      * I use this method now for testing. I expect that, upon release, the gui_renderer will only be called from within
      * this class and thus will not need to be gotten at all, but we'll see.
      */
-    gui_renderer & get_gui_renderer();
+    //gui_renderer & get_gui_renderer();
 
 private:
     std::unique_ptr<iwindow> game_window;
-    texture_manager tex_manager;
+    //texture_manager tex_manager;
 
     shader_store shader_manager;
     uniform_buffer_store ubo_manager;
 
-    gui_renderer gui_renderer_instance;
+    //gui_renderer gui_renderer_instance;
     int num_textures;
+
+    std::unique_ptr<ivertex_buffer> triangle;
 };
 
 #endif //RENDERER_VULKAN_MOD_H

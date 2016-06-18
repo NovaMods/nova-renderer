@@ -14,7 +14,7 @@
 #include "nova.h"
 #include "nova_renderer.h"
 
-#define TEXTURE_MANAGER nova_renderer::instance->get_texture_manager()
+#define TEXTURE_MANAGER texture_manager()/*nova_renderer::instance->get_texture_manager()*/
 
 NOVA_FUNC void init_nova() {
     nova_renderer::init_instance();

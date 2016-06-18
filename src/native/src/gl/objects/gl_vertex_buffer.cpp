@@ -4,11 +4,13 @@
  */
 
 #include <c++/4.8.3/stdexcept>
+#include <easylogging++.h>
 #include "gl_vertex_buffer.h"
 
 gl_vertex_buffer::gl_vertex_buffer() {
-    gl_name = 0xFFFFFFFF;
-    element_array_name = 0xFFFFFFFF;
+    vertex_array = 0xFFFFFFFF;
+    vertex_buffer = 0xFFFFFFFF;
+    indices = 0xFFFFFFFF;
     create();
 }
 
@@ -17,24 +19,29 @@ gl_vertex_buffer::~gl_vertex_buffer() {
 }
 
 void gl_vertex_buffer::create() {
-    glGenBuffers(1, &gl_name);
-    glGenBuffers(1, &element_array_name);
+    glGenVertexArrays(1, &vertex_array);
+    glBindVertexArray(vertex_array);
+    glGenBuffers(1, &vertex_buffer);
+    glGenBuffers(1, &indices);
 }
 
 void gl_vertex_buffer::destroy() {
-    if(gl_name != 0xFFFFFFFF) {
-        glDeleteBuffers(1, &gl_name);
+    if(vertex_buffer != 0xFFFFFFFF) {
+        glDeleteBuffers(1, &vertex_buffer);
+        vertex_buffer = 0xFFFFFFFF;
     }
 
-    if(element_array_name != 0xFFFFFFFF) {
-        glDeleteBuffers(1, &element_array_name);
+    if(indices != 0xFFFFFFFF) {
+        glDeleteBuffers(1, &indices);
+        indices = 0xFFFFFFFF;
     }
 }
 
 void gl_vertex_buffer::set_data(std::vector<float> data, format data_format, usage data_usage) {
     this->data_format = data_format;
 
-    glBindBuffer(GL_ARRAY_BUFFER, gl_name);
+    glBindVertexArray(vertex_array);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     GLenum buffer_usage = translate_usage(data_usage);
     glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), buffer_usage);
 
@@ -54,23 +61,22 @@ GLenum gl_vertex_buffer::translate_usage(const usage data_usage) const {
 }
 
 void gl_vertex_buffer::set_active() {
-    glBindBuffer(GL_ARRAY_BUFFER, gl_name);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_name);
+    glBindVertexArray(vertex_array);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
 }
 
 void gl_vertex_buffer::set_index_array(std::vector<unsigned short> data, usage data_usage) {
-    GLuint last_buffer;
-    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, (GLint *) &last_buffer);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_name);
+    glBindVertexArray(vertex_array);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
     GLenum buffer_usage = translate_usage(data_usage);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned short), data.data(), buffer_usage);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_buffer);
+    num_indices = (unsigned int) data.size();
 }
 
 void gl_vertex_buffer::draw() {
-
+    glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_SHORT, 0);
 }
 
 void gl_vertex_buffer::enable_vertex_attributes(format data_format) {

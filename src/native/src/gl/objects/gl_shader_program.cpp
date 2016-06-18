@@ -145,7 +145,7 @@ void gl_shader_program::set_uniform_locations() {
         int location = glGetUniformLocation(gl_name, name.c_str());
         uniform_locations.emplace(name, location);
 
-        LOG(TRACE) << "Set location of variable " << name << "to" << location;
+        LOG(TRACE) << "Set location of variable " << name << " to " << location;
     }
 }
 
@@ -169,7 +169,6 @@ bool gl_shader_program::check_for_linking_errors() {
 }
 
 void gl_shader_program::bind() noexcept {
-    LOG(DEBUG) << "Binding a shader";
     glUseProgram(gl_name);
 }
 
