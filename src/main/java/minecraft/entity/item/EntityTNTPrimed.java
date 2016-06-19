@@ -1,0 +1,162 @@
+package net.minecraft.entity.item;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.world.World;
+
+public class EntityTNTPrimed extends Entity
+{
+    private static final DataParameter<Integer> FUSE = EntityDataManager.<Integer>createKey(EntityTNTPrimed.class, DataSerializers.VARINT);
+    private EntityLivingBase tntPlacedBy;
+
+    /** How long the fuse is */
+    private int fuse;
+
+    public EntityTNTPrimed(World worldIn)
+    {
+        super(worldIn);
+        this.fuse = 80;
+        this.preventEntitySpawning = true;
+        this.setSize(0.98F, 0.98F);
+    }
+
+    public EntityTNTPrimed(World worldIn, double x, double y, double z, EntityLivingBase igniter)
+    {
+        this(worldIn);
+        this.setPosition(x, y, z);
+        float f = (float)(Math.random() * (Math.PI * 2D));
+        this.motionX = (double)(-((float)Math.sin((double)f)) * 0.02F);
+        this.motionY = 0.20000000298023224D;
+        this.motionZ = (double)(-((float)Math.cos((double)f)) * 0.02F);
+        this.func_184534_a(80);
+        this.prevPosX = x;
+        this.prevPosY = y;
+        this.prevPosZ = z;
+        this.tntPlacedBy = igniter;
+    }
+
+    protected void entityInit()
+    {
+        this.dataWatcher.register(FUSE, Integer.valueOf(80));
+    }
+
+    /**
+     * returns if this entity triggers Block.onEntityWalking on the blocks they walk on. used for spiders and wolves to
+     * prevent them from trampling crops
+     */
+    protected boolean canTriggerWalking()
+    {
+        return false;
+    }
+
+    /**
+     * Returns true if other Entities should be prevented from moving through this Entity.
+     */
+    public boolean canBeCollidedWith()
+    {
+        return !this.isDead;
+    }
+
+    /**
+     * Called to update the entity's position/logic.
+     */
+    public void onUpdate()
+    {
+        this.prevPosX = this.posX;
+        this.prevPosY = this.posY;
+        this.prevPosZ = this.posZ;
+        this.motionY -= 0.03999999910593033D;
+        this.moveEntity(this.motionX, this.motionY, this.motionZ);
+        this.motionX *= 0.9800000190734863D;
+        this.motionY *= 0.9800000190734863D;
+        this.motionZ *= 0.9800000190734863D;
+
+        if (this.onGround)
+        {
+            this.motionX *= 0.699999988079071D;
+            this.motionZ *= 0.699999988079071D;
+            this.motionY *= -0.5D;
+        }
+
+        --this.fuse;
+
+        if (this.fuse <= 0)
+        {
+            this.setDead();
+
+            if (!this.worldObj.isRemote)
+            {
+                this.explode();
+            }
+        }
+        else
+        {
+            this.handleWaterMovement();
+            this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY + 0.5D, this.posZ, 0.0D, 0.0D, 0.0D, new int[0]);
+        }
+    }
+
+    private void explode()
+    {
+        float f = 4.0F;
+        this.worldObj.createExplosion(this, this.posX, this.posY + (double)(this.height / 16.0F), this.posZ, f, true);
+    }
+
+    /**
+     * (abstract) Protected helper method to write subclass entity data to NBT.
+     */
+    protected void writeEntityToNBT(NBTTagCompound tagCompound)
+    {
+        tagCompound.setShort("Fuse", (short)this.func_184536_l());
+    }
+
+    /**
+     * (abstract) Protected helper method to read subclass entity data from NBT.
+     */
+    protected void readEntityFromNBT(NBTTagCompound tagCompund)
+    {
+        this.func_184534_a(tagCompund.getShort("Fuse"));
+    }
+
+    /**
+     * returns null or the entityliving it was placed or ignited by
+     */
+    public EntityLivingBase getTntPlacedBy()
+    {
+        return this.tntPlacedBy;
+    }
+
+    public float getEyeHeight()
+    {
+        return 0.0F;
+    }
+
+    public void func_184534_a(int p_184534_1_)
+    {
+        this.dataWatcher.set(FUSE, Integer.valueOf(p_184534_1_));
+        this.fuse = p_184534_1_;
+    }
+
+    public void notifyDataManagerChange(DataParameter<?> key)
+    {
+        if (FUSE.equals(key))
+        {
+            this.fuse = this.func_184535_k();
+        }
+    }
+
+    public int func_184535_k()
+    {
+        return ((Integer)this.dataWatcher.get(FUSE)).intValue();
+    }
+
+    public int func_184536_l()
+    {
+        return this.fuse;
+    }
+}

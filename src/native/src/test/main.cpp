@@ -6,6 +6,9 @@
 #include "shader_test.h"
 
 int main() {
+    // Open the window first, so we have an OpenGL context to play with
+    nova_renderer nova;
+
     LOG(INFO) << "Running sanity tests...";
     sanity::run_all();
 
@@ -13,8 +16,6 @@ int main() {
     shader::run_all();
 
     LOG(INFO) << "Integration tests...";
-
-    nova_renderer nova;
 
     gl_shader_program * gui_shader = new gl_shader_program();
     gui_shader->add_shader(GL_VERTEX_SHADER, "shaderpacks/default/shaders/gui.vert");
