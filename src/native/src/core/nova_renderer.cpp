@@ -14,11 +14,8 @@ INITIALIZE_EASYLOGGINGPP
 
 std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shader_manager, ubo_manager) {
-    initialize_logging();
-
-    // Oh wow this line is gross. I guess this is why everyone hates CPP?
-    game_window = std::unique_ptr<iwindow>(new glfw_gl_window());
+nova_renderer::nova_renderer() : game_window(new glfw_gl_window()),
+                                 gui_renderer_instance(tex_manager, shader_manager, ubo_manager) {
 
     gui_renderer_instance.do_init_tasks();
 
@@ -75,7 +72,7 @@ gui_renderer & nova_renderer::get_gui_renderer() {
 void nova_renderer::create_ubos() {
     // Build all the UBOs
 
-    ubo_manager.emplace("cameraData", gl_uniform_buffer(sizeof(camera_data)));
+    ubo_manager.emplace("cameraData", new gl_uniform_buffer(sizeof(camera_data)));
 
     // TODO: Make a config file from UBO name to bind point
 }
