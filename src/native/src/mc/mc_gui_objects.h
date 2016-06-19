@@ -34,7 +34,6 @@ struct mc_gui_button {
  * There's almost certainly a better way to do this
  */
 struct mc_gui_screen {
-    int screen_id;
     mc_gui_button buttons[MAX_NUM_BUTTONS];
 };
 

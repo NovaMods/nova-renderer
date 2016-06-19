@@ -46,10 +46,6 @@ void gui_renderer::render() {
 }
 
 bool gui_renderer::is_same_screen(mc_gui_screen &screen1, mc_gui_screen &screen2) const {
-    if(screen1.screen_id != screen2.screen_id) {
-        return false;
-    }
-
     for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
         if(same_buttons(screen1.buttons[i], screen2.buttons[i])) {
             return false;

@@ -74,11 +74,16 @@ public interface NovaNative extends Library {
      */
     class mc_chunk extends Structure {
         public long chunk_id;
+
+        /**
+         * Tells us if this chunk has changed since it was last rendered
+         */
+        public boolean is_dirty;
         public mc_block[] blocks = new mc_block[16 * 16 * 16];
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("chunk_id", "blocks");
+            return Arrays.asList("chunk_id", "is_dirty", "blocks");
         }
     }
 
@@ -88,10 +93,11 @@ public interface NovaNative extends Library {
         public int width;
         public int height;
         public String text;
+        public boolean is_pressed;
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("x_position", "y_position", "width", "height");
+            return Arrays.asList("x_position", "y_position", "width", "height", "is_pressed");
         }
     }
 
@@ -116,6 +122,8 @@ public interface NovaNative extends Library {
      * hard
      */
     class mc_render_menu_params extends Structure {
+        public boolean render_menu;
+
         /**
          * The current GUI screen that we should be rendering right now like omg
          */
@@ -123,7 +131,7 @@ public interface NovaNative extends Library {
 
         @Override
         protected List<String> getFieldOrder() {
-            return Collections.singletonList("cur_screen");
+            return Arrays.asList("render_menu", "cur_screen");
         }
     }
 
@@ -177,17 +185,6 @@ public interface NovaNative extends Library {
 
     class mc_render_command extends Structure {
         /**
-         * If true, we should render the menu and use the world framebuffer from the last frame as the menu background.
-         * If false, we should render the world
-         */
-        public boolean render_menu;
-
-        /**
-         * If true, we should render the chunks and entities of the Real World (TM). If false, don't.
-         */
-        public boolean render_world;
-
-        /**
          * The system time, in milliseconds
          */
         public long previous_frame_time;
@@ -214,7 +211,7 @@ public interface NovaNative extends Library {
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("render_menu", "render_world", "previous_frame_time", "mouse_x", "mouse_y", "anaglyph", "display_width", "display_height", "world_params", "menu_params");
+            return Arrays.asList("previous_frame_time", "mouse_x", "mouse_y", "anaglyph", "display_width", "display_height", "world_params", "menu_params");
         }
     }
 

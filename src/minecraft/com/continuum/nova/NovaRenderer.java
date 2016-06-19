@@ -495,6 +495,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                 byte[] imageData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
                 LOG.info("The image has " + imageData.length + " separate pixels");
 
+                // Go from ABGR to RGBA
                 for(int i = 0; i < imageData.length; i += 4) {
                     byte a = imageData[i];
                     byte b = imageData[i + 1];
@@ -541,7 +542,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void preInit() {
         // TODO: Remove this and use the win32-x86 thing to package the DLL into the jar
-        System.getProperties().setProperty("jna.library.path", "C:/Users/David/Documents/Nova Renderer/run");
+        System.getProperties().setProperty("jna.library.path", "C:\\Users\\David\\Documents\\MCP\\run");
         System.getProperties().setProperty("jna.dump_memory", "false");
         LOG.info("PID: " + ManagementFactory.getRuntimeMXBean().getName());
         NovaNative.INSTANCE.init_nova();

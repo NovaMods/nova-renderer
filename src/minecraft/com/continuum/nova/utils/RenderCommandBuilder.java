@@ -76,11 +76,7 @@ public class RenderCommandBuilder {
         command.display_height = mc.displayHeight;
         command.display_width = mc.displayWidth;
 
-        command.render_world = mc.theWorld != null;
-
-        if(command.render_world) {
-            addRenderWorldCommand(mc, partialTicks, command);
-        }
+        addRenderWorldCommand(mc, partialTicks, command);
 
         if(mc.currentScreen != null) {
             addRenderGuiCommand(mc, partialTicks, command);
