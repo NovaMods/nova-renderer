@@ -9,14 +9,14 @@
 #define RENDERER_NOVA_H
 
 #if defined DLL_EXPORT
-#define NOVA_FUNC __declspec(dllexport)
+#define NOVA_EXPORT __declspec(dllexport)
 #else
-#define NOVA_FUNC __declspec(dllimport)
+#define NOVA_EXPORT __declspec(dllimport)
 #endif
 
-#include "../mc/mc_objects.h"
-
 extern "C" {
+
+#include "../mc/mc_objects.h"
 
 /*!
  * \brief Initializes the Nova Renderer
@@ -24,7 +24,7 @@ extern "C" {
  * How does this initialize the Nova Renderer? Well, the Nova Renderer is a singleton. Why? So I don't have to pass it
  * as a parameter to every single function that this library provides.
  */
-NOVA_FUNC void init_nova();
+NOVA_EXPORT void init_nova();
 
 /*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture
@@ -36,7 +36,7 @@ NOVA_FUNC void init_nova();
  *
  * \param texture The texture to add to the renderer
  */
-NOVA_FUNC void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type);
+NOVA_EXPORT void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type);
 
 /*!
  * \brief Adds the given location to the list of texture locations
@@ -46,18 +46,18 @@ NOVA_FUNC void add_texture(mc_atlas_texture & texture, int atlas_type, int textu
  *
  * \param location The location of the texture
  */
-NOVA_FUNC void add_texture_location(mc_texture_atlas_location location);
+NOVA_EXPORT void add_texture_location(mc_texture_atlas_location location);
 
 /*!
  * \brief Queries OpenGL and returns the maximum texture size that OpenGL allows
  */
-NOVA_FUNC int get_max_texture_size();
+NOVA_EXPORT int get_max_texture_size();
 
 /*!
  * \brief Clears out all the textures held by the texture manager, readying the texture manager to receive the textures
  * from a new resource pack
  */
-NOVA_FUNC void reset_texture_manager();
+NOVA_EXPORT void reset_texture_manager();
 
 /*!
  * \brief Sends the C++ code a command to render a fram
@@ -66,12 +66,12 @@ NOVA_FUNC void reset_texture_manager();
  *
  * See \ref mc_render_command for a description of the render command
  */
-NOVA_FUNC void send_render_command(mc_render_command * command);
+NOVA_EXPORT void send_render_command(mc_render_command * command);
 
 /*!
  * \brief Supplied so I can do sim ple, stupid test rendering thing
  */
-NOVA_FUNC void do_test_render();
+NOVA_EXPORT void do_test_render();
 
 /*!
  * \brief Checks if Minecraft should close
@@ -82,7 +82,7 @@ NOVA_FUNC void do_test_render();
  *
  * \return Trus if the window should close, false otherwise
  */
-NOVA_FUNC bool should_close();
+NOVA_EXPORT bool should_close();
 
 };  // End extern C
     // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.

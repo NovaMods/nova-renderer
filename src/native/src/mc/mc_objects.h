@@ -59,7 +59,7 @@ struct mc_render_world_params {
 
     int render_distance;        //!< Should be a setting
 
-    bool has_blinkness;         //!< I forget what this does
+    bool has_blindness;         //!< Some potino effect I think
 
     double fog_color_red;       //!< Should be a setting
     double fog_color_green;     //!< Should be a setting
