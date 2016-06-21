@@ -31,17 +31,21 @@ bool nova_renderer::has_render_available() {
 }
 
 void nova_renderer::render_frame() {
+    LOG(INFO) << "Beginning render";
     // Clear to the clear color
     glClear(GL_COLOR_BUFFER_BIT);
+    LOG(INFO) << "Cleared color";
 
     // Render GUI to GUI buffer
     gui_renderer_instance.render();
+    LOG(INFO) << "Rendered GUI";
 
     // Render solid geometry
     // Render entities
     // Render transparent things
 
     game_window->end_frame();
+    LOG(INFO) << "Ended frame";
 }
 
 bool nova_renderer::should_end() {

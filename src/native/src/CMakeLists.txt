@@ -5,6 +5,10 @@ add_subdirectory(
         "C:/Libraries/glfw" "${CMAKE_CURRENT_BINARY_DIR}/glfw"
 )
 
+add_subdirectory(
+        "C:/Libraries/libarchive" "${CMAKE_CURRENT_BINARY_DIR}/libarchive"
+)
+
 include_directories(
         "C:/win-builds/lib/gcc/mingw32/4.8.1/include/c++"
         "C:/win-builds/include"

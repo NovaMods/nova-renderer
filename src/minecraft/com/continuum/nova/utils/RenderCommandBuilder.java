@@ -13,6 +13,8 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.List;
  * @author David
  */
 public class RenderCommandBuilder {
+    private static final Logger LOG = LogManager.getLogger(RenderCommandBuilder.class);
     private static NovaNative.mc_chunk makeChunk(World world, BlockPos chunkCoordinates) {
         NovaNative.mc_chunk chunk = new NovaNative.mc_chunk();
         NovaNative.mc_block[] blocks = new NovaNative.mc_block[16 * 16 * 16];
@@ -104,14 +107,18 @@ public class RenderCommandBuilder {
 
     private static void addRenderWorldCommand(Minecraft mc, double partialTicks, NovaNative.mc_render_command command) {
         Entity viewEntity = mc.getRenderViewEntity();
-        command.world_params.camera_x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * partialTicks;
-        command.world_params.camera_y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * partialTicks;
-        command.world_params.camera_z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * partialTicks;
+
+        if(Utils.exists(viewEntity)) {
+            command.world_params.camera_x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * partialTicks;
+            command.world_params.camera_y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * partialTicks;
+            command.world_params.camera_z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * partialTicks;
+
+            command.world_params.has_blindness = ((EntityLivingBase) viewEntity).isPotionActive(MobEffects.blindness);
+        }
 
         command.world_params.view_bobbing = mc.gameSettings.viewBobbing;
 
         command.world_params.render_distance = mc.gameSettings.renderDistanceChunks;
-        command.world_params.has_blindness = ((EntityLivingBase) viewEntity).isPotionActive(MobEffects.blindness);
 
         command.world_params.fog_color_red = mc.entityRenderer.getFogColorRed();
         command.world_params.fog_color_green = mc.entityRenderer.getFogColorGreen();
@@ -119,8 +126,11 @@ public class RenderCommandBuilder {
 
         // If we're on the surface world, we can render clouds no problem. If we're not, we shouldn't even be thinking
         // about rendering clouds
-        command.world_params.should_render_clouds = mc.theWorld.provider.isSurfaceWorld() ? mc.gameSettings.shouldRenderClouds() : 0;
+        if(Utils.exists(mc.theWorld)) {
+            command.world_params.should_render_clouds = mc.theWorld.provider.isSurfaceWorld() ? mc.gameSettings.shouldRenderClouds() : 0;
+        }
 
         // TODO: Portal effects
     }
+
 }

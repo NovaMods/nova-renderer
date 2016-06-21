@@ -60,7 +60,7 @@ public:
      * GL_TESSELLATION_CONTROL_SHADER, GL_TESSELLATION_EVALUATION_SHADER, or GL_FRAGMENT_SHADER. Note that if you add a
      * shader and the shader_program you add it to already has a shader of that type, you'll get an exception
      * \param source_file_name The name of the file to read the shader source from. Right now this file path is
-     * relative to the working directory. Upon release this file path will be relative tot he root of the current
+     * relative to the working directory. Upon release this file path will be relative to the root of the current
      * shaderpack. Shaderpacks aren't implemented yet, so I can't really make this work the proper way yet
      */
     void add_shader(GLenum shader_type, std::string source_file_name);
