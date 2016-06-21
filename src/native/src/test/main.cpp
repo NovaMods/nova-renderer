@@ -22,9 +22,9 @@ int main() {
     gui_shader->add_shader(GL_FRAGMENT_SHADER, "shaderpacks/default/shaders/gui.frag");
     gui_shader->link();
 
-    nova.get_shader_manager().emplace("gui", gui_shader);
+    //nova.get_shader_manager().emplace("gui", gui_shader);
 
-    nova.get_ubo_manager().emplace("camera_data", new gl_uniform_buffer(sizeof(camera_data)));
+    //nova.get_ubo_manager().emplace("camera_data", new gl_uniform_buffer(sizeof(camera_data)));
 
     while(!nova.should_end()) {
         nova.render_frame();
