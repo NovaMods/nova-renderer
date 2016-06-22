@@ -165,6 +165,9 @@ set(NOVA_HEADERS
 source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
 add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE})
+set_target_properties(nova-renderer-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT)
 
 target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT)
 
@@ -180,12 +183,15 @@ add_library(nova-renderer-static STATIC $<TARGET_OBJECTS:nova-renderer-obj>)
 # I dont see this as a problem currently. This will make the location more predictable
 # cross platform as well. Though i think object files are still cached across build
 # types so this should be fine.
-if(MSVC)
-        get_target_property(OUTPUT_DIR nova-renderer LIBRARY_OUTPUT_DIRECTORY)
-        set_target_properties(nova-renderer-obj PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-        nova_set_all_target_outputs(nova-renderer ${OUTPUT_DIR})
-        nova_set_all_target_outputs(nova-renderer-static ${OUTPUT_DIR})
+get_target_property(OUTPUT_DIR nova-renderer LIBRARY_OUTPUT_DIRECTORY)
+nova_set_all_target_outputs(nova-renderer ${OUTPUT_DIR})
+nova_set_all_target_outputs(nova-renderer-static ${OUTPUT_DIR})
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
+
+#set_target_properties(nova-renderer-obj PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+
 
 # Not sure if this is actually doing anything
 if(GLFW_COMPILED)
@@ -214,7 +220,7 @@ source_group("test" FILES ${TEST_SOURCE_FILES} ${TEST_HEADERS})
 
 add_executable(nova-test ${TEST_SOURCE_FILES})
 add_dependencies(nova-test nova-renderer-static)
-
+target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
 target_link_libraries(nova-test nova-renderer-static ${COMMON_LINK_LIBS})
 set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test")
 # Needed for a similar reason as the libary
