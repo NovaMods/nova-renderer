@@ -22,7 +22,10 @@ endfunction()
 # Initialize cmake options
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 14)
+
 set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CONFIGURATION_TYPES Debug) # This seems to be needed to actually change
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
@@ -34,7 +37,39 @@ if(CMAKE_SYSTEM_NAME MATCHES "Windows")
         set(ENV{GLFW3_ROOT} "${3RD_PARTY_DIR}/glfw")
 endif()
 
-find_package(GLFW3 REQUIRED)
+# First look for a pre compiled version if it doesnt find anything
+# Try to compile it.
+set(GLFW_COMPILED FALSE)
+# this will still find the include directory for us even if we need to compile
+find_package(GLFW3)
+if(NOT GLFW3_FOUND OR NOT GLFW3_LIBRARY)
+        set(GLFW_DIR "${3RD_PARTY_DIR}/glfw-src")
+        set(GLFW3_INCLUDE_DIR "${3RD_PARTY_DIR}/glfw/include")
+        if(EXISTS "${GLFW_DIR}" AND EXISTS "${GLFW_DIR}/src")
+                set(GLFW_COMPILED TRUE)
+
+                include(ExternalProject)
+                ExternalProject_add(glfw3 DOWNLOAD_COMMAND ""
+                        PREFIX ${BINARY_DIR}
+                        INSTALL_DIR "${3RD_PARTY_DIR}/glfw"
+                        CMAKE_ARGS CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DGLFW_BUILD_EXAMPLES:BOOL=OFF -DGLFW_BUILD_TESTS:BOOL=OFF -DGLFW_BUILD_DOCS:BOOL=OFF -DGLFW_INSTALL:BOOL=ON
+                        SOURCE_DIR ${GLFW_DIR}
+                )
+                if(MSVC)
+                    set(GLFW3_LIBRARY "${3RD_PARTY_DIR}/glfw/lib/glfw3.lib")
+                else()
+                    set(GLFW3_LIBRARY "${3RD_PARTY_DIR}/glfw/lib/libglfw3.a")
+                endif()
+                # This is a hack to make sure that the compilation order
+                # is correct. The ExternalProject needs to be compiled before
+                # nova-renderer so that the header files will be installed into
+                # the correct location.
+                add_library(GLFW-fake OBJECT "")
+                add_dependencies(GLFW-fake glfw3)
+        endif()
+endif()
+
+
 find_package(GLM REQUIRED)
 
 # Not sure if this is actually needed or not..,
@@ -53,7 +88,6 @@ include_directories(SYSTEM
         "${3RD_PARTY_DIR}/glad/include")
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} ${GLFW3_LIBRARY} ${OPENGL_LIBRARIES})
-
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
@@ -134,6 +168,10 @@ add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE})
 
 target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT)
 
+if (GLFW_COMPILED)
+    add_dependencies(nova-renderer-obj GLFW-fake)
+endif()
+
 add_library(nova-renderer SHARED $<TARGET_OBJECTS:nova-renderer-obj>)
 add_library(nova-renderer-static STATIC $<TARGET_OBJECTS:nova-renderer-obj>)
 
@@ -147,6 +185,11 @@ if(MSVC)
         set_target_properties(nova-renderer-obj PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
         nova_set_all_target_outputs(nova-renderer ${OUTPUT_DIR})
         nova_set_all_target_outputs(nova-renderer-static ${OUTPUT_DIR})
+endif()
+
+# Not sure if this is actually doing anything
+if(GLFW_COMPILED)
+        add_dependencies(nova-renderer glfw3)
 endif()
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
