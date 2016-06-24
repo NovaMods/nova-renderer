@@ -20,3 +20,15 @@ void initialize_logging() {
     el::Loggers::reconfigureAllLoggers(conf);
 }
 
+std::vector<std::string> split_string(const std::string &s, char delim = ' ') {
+    std::vector<std::string> elems;
+    std::stringstream ss(s);
+    std::string item;
+
+    while(getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+
+    return elems;
+}
+
