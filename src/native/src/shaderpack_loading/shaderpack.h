@@ -11,11 +11,12 @@
 
 #include "../interfaces/ishader.h"
 #include "../gl/objects/gl_shader_program.h"
+#include "../config/config.h"
 
 /*!
  * \brief Represents a single shaderpack in all its glory
  */
-class shaderpack {
+class shaderpack : public iconfig_change_listener {
 public:
     /*!
      * \brief Loads the shaderpack with the given name
@@ -27,6 +28,12 @@ public:
      * \param shaderpack_name The name of the shaderpack to load
      */
     shaderpack(std::string shaderpack_name);
+
+    /**
+     * iconfig_change_listener methods
+     */
+
+    void on_config_change(config & new_config);
 private:
     const std::string SHADERPACK_FOLDER_NAME = "shaders";
 
@@ -35,7 +42,8 @@ private:
     };
 
     std::unordered_map<std::string, ishader *> shaders;
-    // shaderpack_config config;
+
+    std::string name;
 
     void load_zip_shaderpack(std::string shaderpack_name);
 
@@ -47,6 +55,8 @@ private:
 
     bool try_loading_shader(const std::string &shader_name, gl_shader_program *program, GLenum shader_type,
                             const std::string extension) const;
+
+    void load_shaderpack(const std::string &shaderpack_name);
 };
 
 

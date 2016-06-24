@@ -19,12 +19,15 @@ config_parser::config_parser(std::string filename) {
             accum += buf;
         }
 
-        rapidjson::Document config;
         config.Parse(accum.c_str());
 
         LOG(INFO) << "lastShaderpack: " << config["lastShaderpack"].GetString();
     }
 
     // TODO: There's going to be a lot more to do when I introduce shader renaming and custon execution orders.
+}
+
+rapidjson::Document config_parser::get_config() {
+    return config;
 }
 

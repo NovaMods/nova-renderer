@@ -13,6 +13,8 @@
 #include "texture_manager.h"
 #include "gui/gui_renderer.h"
 #include "types.h"
+#include "../config/config.h"
+#include "../shaderpack_loading/shaderpack.h"
 
 /*!
  * \brief Initializes everything this mod needs, creating its own window
@@ -107,13 +109,18 @@ public:
     gui_renderer & get_gui_renderer();
 
 private:
-    std::unique_ptr<iwindow> game_window;
+    // It's not wrapped in uniqur_ptr. Sorry. I need to pass this into a vector, and vectors of unique_ptrs don't quite
+    // work in my experience
+    iwindow * game_window;
     texture_manager tex_manager;
 
+    shaderpack cur_shaders;
     shader_store shader_manager;
     uniform_buffer_store ubo_manager;
 
     gui_renderer gui_renderer_instance;
+
+    std::unique_ptr<config> nova_config;
 
     /*!
      * \brief Creates all the UBOs

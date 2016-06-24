@@ -19,9 +19,10 @@ public:
      * \param filename The name of the file to read the config from
      */
     config_parser(std::string filename);
-    
+
+    rapidjson::Document get_config();
 private:
-    std::string last_shaderpack;
+    rapidjson::Document config;
 };
 
 
