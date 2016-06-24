@@ -4,6 +4,7 @@
 
 #include "sanity.h"
 #include "shader_test.h"
+#include "config.h"
 
 int main() {
     // Open the window first, so we have an OpenGL context to play with
@@ -14,6 +15,9 @@ int main() {
 
     LOG(INFO) << "Running shader tests...";
     shader::run_all();
+
+    LOG(INFO) << "Running config loading tests...";
+    config::run_all();
 
     LOG(INFO) << "Integration tests...";
 

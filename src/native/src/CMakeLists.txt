@@ -9,14 +9,20 @@ add_subdirectory(
         "C:/Libraries/libarchive" "${CMAKE_CURRENT_BINARY_DIR}/libarchive"
 )
 
+add_subdirectory(
+        "C:/Libraries/rapidjson" "${CMAKE_CURRENT_BINARY_DIR}/rapidjson"
+)
+
 include_directories(
-        "C:/win-builds/lib/gcc/mingw32/4.8.1/include/c++"
+        "C:/win-builds/include/c++/4.8.3"
         "C:/win-builds/include"
+        "C:/Libraries/rapidjson/include"
 )
 
 link_directories(
         "C:/win-builds/lib"
 )
+
 set(SOURCE_FILES
         gl/glad.c
 
@@ -24,6 +30,8 @@ set(SOURCE_FILES
         core/nova_facade.cpp
         core/texture_manager.cpp core/texture_manager.h
         core/gui/gui_renderer.cpp
+
+        config/config_parser.cpp
 
         interfaces/iwindow.h
         interfaces/igraphics_context.h
@@ -44,6 +52,7 @@ set(SOURCE_FILES
         test/sanity.cpp
         test/shader_test.cpp
         test/test_utils.cpp
+        test/config.cpp
         )
 
 add_library(nova-renderer SHARED ${SOURCE_FILES})
