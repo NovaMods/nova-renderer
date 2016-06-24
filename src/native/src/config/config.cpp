@@ -24,6 +24,10 @@ void config::set_data(std::string data_path, bool data) {
     set_data_impl(data_path, [&](auto node) -> {node.SetFloat(data);});
 }
 
+void config::set_data(std::string data_path, std::string data) {
+    set_data_impl(data_path, [&](auto node) -> {node.SetString(data);});
+}
+
 void config::set_data_impl(const std::string &data_path, void (*set_data_func)(rapidjson::Value &)) {
     rapidjson::Value node = get_value(data_path);
 
@@ -47,3 +51,33 @@ void config::update_change_listeners() {
         l->on_config_change(options);
     }
 }
+
+int config::get_int(std::string data_path) {
+    rapidjson::Value value = get_value(data_path);
+    return value.GetInt();
+}
+
+float config::get_float(std::string data_path) {
+    rapidjson::Value value = get_value(data_path);
+    return value.GetFloat();
+}
+
+bool config::get_bool(std::string data_path) {
+    rapidjson::Value value = get_value(data_path);
+    return value.GetBool();
+}
+
+std::string config::get_string(std::string data_path) {
+    rapidjson::Value value = get_value(data_path);
+    return value.GetString();
+}
+
+
+
+
+
+
+
+
+
+

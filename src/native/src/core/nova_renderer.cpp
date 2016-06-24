@@ -9,6 +9,7 @@
 #include "../gl/windowing/glfw_gl_window.h"
 #include "../utils/utils.h"
 #include "../gl/objects/gl_vertex_buffer.h"
+#include "../config/config_parser.h"
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -16,6 +17,11 @@ std::unique_ptr<nova_renderer> nova_renderer::instance;
 
 nova_renderer::nova_renderer() : game_window(new glfw_gl_window()),
                                  gui_renderer_instance(tex_manager, shader_manager, ubo_manager) {
+
+    config_parser parser("config/config.json");
+    nova_config = new config(parser.get_config());
+    nova_config->register_change_listener(game_window);
+    nova_config->update_change_listeners();
 
     gui_renderer_instance.do_init_tasks();
 

@@ -6,13 +6,14 @@
 #define RENDERER_WINDOW_H
 
 #include <GL/glm/glm.hpp>
+#include "../config/config.h"
 
 /*
  * !\brief Represents a window that can be drawn to.
  *
  * This class simply defines an interface. I expect I'll need a separate subclass for each rendering API
  */
-class iwindow {
+class iwindow : public iconfig_change_listener {
 public:
     /*!
      * \brief Initializes the window, creating it and making it visible.

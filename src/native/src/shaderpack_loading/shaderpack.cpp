@@ -11,9 +11,15 @@
 
 shaderpack::shaderpack(std::string shaderpack_name) {
     // TODO: Look in a config file to see what the last loaded shaderpack was
+    load_shaderpack(shaderpack_name);
+
+}
+
+void shaderpack::load_shaderpack(const std::string &shaderpack_name) {
+    name = shaderpack_name;
 
     // check if the shaderpack is a zip file or not
-    if(shaderpack_name.find(".zip") != std::string::npos) {
+    if(shaderpack_name.find(".zip") != std::basic_string::npos) {
         load_zip_shaderpack(shaderpack_name);
     } else {
         load_folder_shaderpack(shaderpack_name);
@@ -90,6 +96,15 @@ bool shaderpack::try_loading_shader(const std::string &shader_name, gl_shader_pr
 
     return false;
 }
+
+void shaderpack::on_config_change(config &new_config) {
+    std::string new_shaderpack_name = new_config.get_string("loadedShaderpack");
+    if(new_shaderpack_name == name) {
+        load_shaderpack(new_shaderpack_name);
+    }
+}
+
+
 
 
 

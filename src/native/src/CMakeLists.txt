@@ -32,6 +32,7 @@ set(SOURCE_FILES
         core/gui/gui_renderer.cpp
 
         config/config_parser.cpp
+        config/config.cpp
 
         interfaces/iwindow.h
         interfaces/igraphics_context.h

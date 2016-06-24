@@ -9,6 +9,7 @@
 #include "../glad/glad.h"
 #include <GLFW/glfw3.h>
 #include "../../interfaces/iwindow.h"
+#include "../../config/config.h"
 
 /*!
  * \brief Represents a GLFW window with an OpenGL context
@@ -26,12 +27,22 @@ public:
     glfw_gl_window();
     ~glfw_gl_window();
 
+    /**
+     * iwindow methods
+     */
+
     virtual int init();
     virtual void destroy();
     virtual void end_frame();
     virtual void set_fullscreen(bool fullscreen);
     virtual glm::vec2 get_size();
     virtual bool should_close();
+
+    /**
+     * iconfig_change_listener methods
+     */
+
+    void on_config_change(rapidjson::Document &config);
 private:
     GLFWwindow *window;
     glm::ivec2 window_dimensions;
