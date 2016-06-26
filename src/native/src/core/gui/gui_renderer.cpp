@@ -9,10 +9,10 @@
 #include "../../gl/objects/gl_vertex_buffer.h"
 
 gui_renderer::gui_renderer(texture_manager & textures,
-                           shader_store & shaders,
+                           shaderpack & shaders,
                            uniform_buffer_store & uniform_buffers) :
         tex_manager(textures),
-        shader_manager(shaders),
+        shaders(shaders),
         ubo_manager(uniform_buffers) {
     LOG(INFO) << "Created GUI Renderer";
 }
@@ -33,7 +33,7 @@ void gui_renderer::set_current_screen(mc_gui_screen *screen) {
 
 void gui_renderer::render() {
     // Bind the GUI shader
-    ishader * gui_shader = shader_manager[GUI_SHADER_NAME];
+    ishader * gui_shader = shaders.get_shader(GUI_SHADER_NAME);
     gui_shader->bind();
 
     // Bind the GUI buttons texture to texture unit 0

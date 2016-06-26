@@ -9,18 +9,17 @@
 #include "../gl/windowing/glfw_gl_window.h"
 #include "../utils/utils.h"
 #include "../gl/objects/gl_vertex_buffer.h"
-#include "../config/config_parser.h"
 
 INITIALIZE_EASYLOGGINGPP
 
 std::unique_ptr<nova_renderer> nova_renderer::instance;
 
 nova_renderer::nova_renderer() : game_window(new glfw_gl_window()),
-                                 gui_renderer_instance(tex_manager, shader_manager, ubo_manager) {
+                                 gui_renderer_instance(tex_manager, shaders, ubo_manager) {
 
-    config_parser parser("config/config.json");
-    nova_config = new config(parser.get_config());
+    nova_config = std::unique_ptr<config>(new config("config/config.json"));
     nova_config->register_change_listener(game_window);
+    nova_config->register_change_listener(&shaders);
     nova_config->update_change_listeners();
 
     gui_renderer_instance.do_init_tasks();
@@ -37,21 +36,17 @@ bool nova_renderer::has_render_available() {
 }
 
 void nova_renderer::render_frame() {
-    LOG(INFO) << "Beginning render";
     // Clear to the clear color
     glClear(GL_COLOR_BUFFER_BIT);
-    LOG(INFO) << "Cleared color";
 
     // Render GUI to GUI buffer
     gui_renderer_instance.render();
-    LOG(INFO) << "Rendered GUI";
 
     // Render solid geometry
     // Render entities
     // Render transparent things
 
     game_window->end_frame();
-    LOG(INFO) << "Ended frame";
 }
 
 bool nova_renderer::should_end() {
@@ -67,8 +62,8 @@ texture_manager & nova_renderer::get_texture_manager() {
     return tex_manager;
 }
 
-shader_store &nova_renderer::get_shader_manager() {
-    return shader_manager;
+shaderpack &nova_renderer::get_shaderpack() {
+    return shaders;
 }
 
 uniform_buffer_store &nova_renderer::get_ubo_manager() {

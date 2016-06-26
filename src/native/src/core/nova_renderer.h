@@ -93,7 +93,7 @@ public:
     /*!
      * \brief Returns the shader manager
      */
-    shader_store & get_shader_manager();
+    shaderpack & get_shaderpack();
 
     /*!
      * \brief Returns the uniform buffer object manager
@@ -114,8 +114,7 @@ private:
     iwindow * game_window;
     texture_manager tex_manager;
 
-    shaderpack cur_shaders;
-    shader_store shader_manager;
+    shaderpack shaders;
     uniform_buffer_store ubo_manager;
 
     gui_renderer gui_renderer_instance;

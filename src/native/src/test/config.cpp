@@ -4,13 +4,12 @@
  */
 
 #include "config.h"
-#include "../config/config_parser.h"
 #include "test_utils.h"
 
 static void test_output_config() {
-    config_parser parser("config/config.json");
+    //config parser("config/config.json");
 }
 
-void config::run_all() {
+void config_ns::run_all() {
     run_test(test_output_config, "test_output_config");
 }

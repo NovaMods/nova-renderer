@@ -12,6 +12,7 @@
 #include "../texture_manager.h"
 #include "../shaders/uniform_buffers.h"
 #include "../types.h"
+#include "../../shaderpack_loading/shaderpack.h"
 
 /*!
  * \brief Defines a bunch of methods to render different GUI elements, including buttons, text, and images
@@ -38,7 +39,7 @@
 class gui_renderer {
 public:
     gui_renderer(texture_manager & textures,
-                 shader_store & shaders,
+                 shaderpack & shaders,
                  uniform_buffer_store & uniform_buffers);
     ~gui_renderer();
 
@@ -94,7 +95,7 @@ private:
     mc_gui_screen * cur_screen;
 
     texture_manager & tex_manager;
-    shader_store & shader_manager;
+    shaderpack & shaders;
     uniform_buffer_store & ubo_manager;
 
     std::string WIDGETS_TEXTURE_NAME = "textures/gui/widgets.png";
