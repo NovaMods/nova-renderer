@@ -542,7 +542,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void preInit() {
         // TODO: Remove this and use the win32-x86 thing to package the DLL into the jar
-        System.getProperties().setProperty("jna.library.path", "C:\\Users\\David\\Documents\\MCP\\run");
+        System.getProperties().setProperty("jna.library.path", "C:\\Users\\David\\Documents\\Nova Renderer\\run");
         System.getProperties().setProperty("jna.dump_memory", "false");
         LOG.info("PID: " + ManagementFactory.getRuntimeMXBean().getName());
         NovaNative.INSTANCE.init_nova();
@@ -570,9 +570,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.mc_render_command cmd = RenderCommandBuilder.makeRenderCommand(mc, renderPartialTicks);
 
         //NovaNative.INSTANCE.send_render_command(cmd);
-        NovaNative.INSTANCE.do_test_render();
-        NovaNative.INSTANCE.should_close();
+
+        if(NovaNative.INSTANCE.should_close()) {
+            Minecraft.getMinecraft().shutdown();
+        }
     }
-
-
 }

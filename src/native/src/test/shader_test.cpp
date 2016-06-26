@@ -27,8 +27,10 @@ static void test_add_fragment_shader() {
     // Create the shader program
     gl_shader_program test_shader;
 
+    std::ifstream frag_stream("uniform_test.frag");
+
     // Add a basic fragment program
-    test_shader.add_shader(GL_FRAGMENT_SHADER, "uniform_test.frag");
+    test_shader.add_shader(GL_FRAGMENT_SHADER, frag_stream);
 
     // Check that we actually added the shader
     std::vector<GLuint> & shaders = test_shader.get_added_shaders();
@@ -43,8 +45,10 @@ static void test_add_vertex_shader() {
     // Create the shader program
     gl_shader_program test_shader;
 
+    std::ifstream vert_stream("uniform_test.vert");
+
     // Add a basic fragment program
-    test_shader.add_shader(GL_VERTEX_SHADER, "uniform_test.vert");
+    test_shader.add_shader(GL_VERTEX_SHADER, vert_stream);
 
     // Check that we actually added the shader
     std::vector<GLuint> & shaders = test_shader.get_added_shaders();
@@ -55,8 +59,11 @@ static void test_add_vertex_shader() {
 static void test_link_shader() {
     gl_shader_program test_shader;
 
-    test_shader.add_shader(GL_VERTEX_SHADER, "uniform_test.vert");
-    test_shader.add_shader(GL_FRAGMENT_SHADER, "uniform_test.frag");
+    std::ifstream frag_stream("uniform_test.frag");
+    std::ifstream vert_stream("uniform_test.vert");
+
+    test_shader.add_shader(GL_VERTEX_SHADER, frag_stream);
+    test_shader.add_shader(GL_FRAGMENT_SHADER, vert_stream);
 
     test_shader.link();
 }
@@ -65,8 +72,10 @@ static void test_parse_uniforms() {
     // Create the shader program
     gl_shader_program test_shader;
 
+    std::ifstream frag_stream("uniform_test.frag");
+
     // Add a basic fragment program
-    test_shader.add_shader(GL_FRAGMENT_SHADER, "uniform_test.frag");
+    test_shader.add_shader(GL_FRAGMENT_SHADER, frag_stream);
 
     // Get all the uniforms and ensure that we have all the ones we need
     std::vector<std::string> & uniforms = test_shader.get_uniform_names();

@@ -5,18 +5,10 @@ add_subdirectory(
         "C:/Libraries/glfw" "${CMAKE_CURRENT_BINARY_DIR}/glfw"
 )
 
-add_subdirectory(
-        "C:/Libraries/libarchive" "${CMAKE_CURRENT_BINARY_DIR}/libarchive"
-)
-
-add_subdirectory(
-        "C:/Libraries/rapidjson" "${CMAKE_CURRENT_BINARY_DIR}/rapidjson"
-)
-
 include_directories(
-        "C:/win-builds/include/c++/4.8.3"
-        "C:/win-builds/include"
-        "C:/Libraries/rapidjson/include"
+        "C:/MinGW/mingw64/x86_64-w64-mingw32/include/c++"
+        "C:/MinGW/mingw64/x86_64-w64-mingw32/include"
+        "C:/MinGW/mingw64/include"
 )
 
 link_directories(
@@ -31,7 +23,6 @@ set(SOURCE_FILES
         core/texture_manager.cpp core/texture_manager.h
         core/gui/gui_renderer.cpp
 
-        config/config_parser.cpp
         config/config.cpp
 
         interfaces/iwindow.h
@@ -48,6 +39,8 @@ set(SOURCE_FILES
         gl/objects/gl_vertex_buffer.cpp
 
         utils/utils.cpp
+
+        shaderpack_loading/shaderpack.cpp
 
         test/main.cpp
         test/sanity.cpp

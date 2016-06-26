@@ -9,17 +9,15 @@
 #include <fstream>
 #include <easylogging++.h>
 
-shaderpack::shaderpack(std::string shaderpack_name) {
-    // TODO: Look in a config file to see what the last loaded shaderpack was
-    load_shaderpack(shaderpack_name);
-
+shaderpack::shaderpack() {
+    default_shader_names.push_back("gui");
 }
 
 void shaderpack::load_shaderpack(const std::string &shaderpack_name) {
     name = shaderpack_name;
 
     // check if the shaderpack is a zip file or not
-    if(shaderpack_name.find(".zip") != std::basic_string::npos) {
+    if(shaderpack_name.find(".zip") != std::string::npos) {
         load_zip_shaderpack(shaderpack_name);
     } else {
         load_folder_shaderpack(shaderpack_name);
@@ -36,7 +34,9 @@ void shaderpack::load_folder_shaderpack(std::string shaderpack_name) {
 
     // Shaders are at "$shaderpack_name/shaders", so let's go there
 
-    const std::string shaders_base_dir = shaderpack_name + "/" + SHADERPACK_FOLDER_NAME + "/";
+    const std::string shaders_base_dir = "shaderpacks/" + shaderpack_name + "/" + SHADERPACK_FOLDER_NAME + "/";
+
+    LOG(INFO) << "Loading shaders from folder " << shaders_base_dir;
 
     for(const std::string & shader_name : default_shader_names) {
         load_program(shaders_base_dir, shader_name);
@@ -87,22 +87,33 @@ bool shaderpack::try_loading_shader(const std::string &shader_name, gl_shader_pr
     const std::string full_file_name = shader_name + extension;
     std::ifstream shader_file(full_file_name);
 
+    LOG(INFO) << "Trying to load shader " << full_file_name;
+
     if(shader_file.is_open()) {
-        program->add_shader(shader_type, full_file_name);
+        program->add_shader(shader_type, shader_file);
 
         shader_file.close();
+
+        LOG(INFO) << "Success!";
         return true;
     }
 
     return false;
 }
 
-void shaderpack::on_config_change(config &new_config) {
-    std::string new_shaderpack_name = new_config.get_string("loadedShaderpack");
-    if(new_shaderpack_name == name) {
+void shaderpack::on_config_change(nlohmann::json &new_config) {
+    std::string new_shaderpack_name = new_config["loadedShaderpack"];
+    if(new_shaderpack_name != name) {
+        LOG(INFO) << "Switched to shaderpack " << new_shaderpack_name;
         load_shaderpack(new_shaderpack_name);
     }
 }
+
+ishader *shaderpack::get_shader(std::string shader_name) {
+    return shaders[shader_name];
+}
+
+
 
 
 

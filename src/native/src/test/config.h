@@ -7,7 +7,7 @@
 #define RENDERER_CONFIG_H
 
 
-namespace config {
+namespace config_ns {
     void run_all();
 };
 

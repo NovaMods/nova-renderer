@@ -10,35 +10,15 @@ gl_shader_program::gl_shader_program() : linked(false) {
 
 }
 
-void gl_shader_program::add_shader(GLenum shader_type, std::string source_file_name) {
+void gl_shader_program::add_shader(GLenum shader_type, std::istream & shader_file_stream) {
     if(linked) {
         throw shader_program_already_linked_exception();
-    }
-
-    switch(shader_type) {
-        case GL_VERTEX_SHADER:
-            vert_shader_name = source_file_name;
-            break;
-        case GL_FRAGMENT_SHADER:
-            frag_shader_name = source_file_name;
-            break;
-        case GL_GEOMETRY_SHADER:
-            geom_shader_name = source_file_name;
-            break;
-        case GL_TESS_CONTROL_SHADER:
-            tesc_shader_name = source_file_name;
-            break;
-        case GL_TESS_EVALUATION_SHADER:
-            tese_shader_name = source_file_name;
-            break;
-        default:
-            LOG(ERROR) << "Invalid shader type " << shader_type << " specified";
     }
 
     GLuint shader_name = glCreateShader(shader_type);
 
     // Read in the shader source, getting uniforms
-    std::string shader_source = read_shader_file(source_file_name);
+    std::string shader_source = read_shader_file(shader_file_stream);
 
     const char *shader_source_char = shader_source.c_str();
 
@@ -79,14 +59,13 @@ void gl_shader_program::link() {
     LOG(INFO) << "Program " << gl_name << " linked successfully";
 }
 
-std::string gl_shader_program::read_shader_file(std::string& filename) {
+std::string gl_shader_program::read_shader_file(std::istream & shader_file_stream) {
     // TODO: Add support for some kind of #include statement
-    std::ifstream file(filename.c_str());
 
-    if(file.is_open()) {
+    if(shader_file_stream.good()) {
         std::string buf;
         std::string accum;
-        while(getline(file, buf)) {
+        while(getline(shader_file_stream, buf)) {
             accum += buf + "\n";
 
             std::string var_type;
@@ -114,7 +93,7 @@ std::string gl_shader_program::read_shader_file(std::string& filename) {
         }
         return accum;
     } else {
-        throw shader_file_not_found_exception(filename);
+        LOG(ERROR) << "I was told to load a shader from a bad stream. Have fun debugging this!";
     }
 }
 
@@ -194,7 +173,7 @@ std::vector<std::string> &gl_shader_program::get_uniform_names() {
     return uniform_names;
 }
 
-shader_file_not_found_exception::shader_file_not_found_exception( std::string &file_name ) :
+shader_file_not_found_exception::shader_file_not_found_exception(std::string file_name) :
         msg( "Could not open shader file " + file_name ) {}
 
 const char * shader_file_not_found_exception::what() noexcept {

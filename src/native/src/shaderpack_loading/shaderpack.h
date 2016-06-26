@@ -18,28 +18,19 @@
  */
 class shaderpack : public iconfig_change_listener {
 public:
-    /*!
-     * \brief Loads the shaderpack with the given name
-     *
-     * If the shaderpack name ends in ".zip", it's loaded as a zip file. If the shaderpack does not, then it's added as
-     * a folder. DO NOT call this method, except with one of those two cases. It WILL break, and you'll tear your hair
-     * out.
-     *
-     * \param shaderpack_name The name of the shaderpack to load
-     */
-    shaderpack(std::string shaderpack_name);
+    shaderpack();
+
+    ishader * get_shader(std::string shader_name);
 
     /**
      * iconfig_change_listener methods
      */
 
-    void on_config_change(config & new_config);
+    void on_config_change(nlohmann::json & new_config);
 private:
     const std::string SHADERPACK_FOLDER_NAME = "shaders";
 
-    std::vector<const std::string> default_shader_names = {
-            "gui"
-    };
+    std::vector<std::string> default_shader_names;
 
     std::unordered_map<std::string, ishader *> shaders;
 
@@ -56,6 +47,13 @@ private:
     bool try_loading_shader(const std::string &shader_name, gl_shader_program *program, GLenum shader_type,
                             const std::string extension) const;
 
+    /*!
+     * \brief Loads the shaderpack with the given name
+     *
+     * If the shaderpack name ends in ".zip", it's loaded as a zip file. If the shaderpack does not, then it's added as
+     * a folder. DO NOT call this method, except with one of those two cases. It WILL break, and you'll tear your hair
+     * out.
+     */
     void load_shaderpack(const std::string &shaderpack_name);
 };
 

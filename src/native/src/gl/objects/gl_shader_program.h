@@ -32,7 +32,7 @@ public:
      *
      * \param file_name The name of the file that could not be found
      */
-    shader_file_not_found_exception( std::string &file_name );
+    shader_file_not_found_exception(std::string file_name);
     virtual const char * what() noexcept;
 private:
     std::string msg;
@@ -63,7 +63,7 @@ public:
      * relative to the working directory. Upon release this file path will be relative to the root of the current
      * shaderpack. Shaderpacks aren't implemented yet, so I can't really make this work the proper way yet
      */
-    void add_shader(GLenum shader_type, std::string source_file_name);
+    void add_shader(GLenum shader_type, std::istream & shader_file_stream);
 
     /*!
      * \brief Links this shader program
@@ -93,19 +93,13 @@ private:
     std::unordered_map<std::string, GLuint> attribute_locations;
     bool linked;
 
-    std::string vert_shader_name;
-    std::string frag_shader_name;
-    std::string geom_shader_name;
-    std::string tese_shader_name;
-    std::string tesc_shader_name;
-
     GLuint gl_name;
 
     std::vector<std::string> uniform_names;
     std::vector<std::string> attribute_names;
     std::vector<GLuint> added_shaders;
 
-    std::string read_shader_file(std::string &filename);
+    std::string read_shader_file(std::istream & shader_file_stream);
 
     bool check_for_shader_errors(GLuint shader_to_check);
 

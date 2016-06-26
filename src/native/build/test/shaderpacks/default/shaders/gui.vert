@@ -1,5 +1,7 @@
 #version 430
 
+#extension GL_ARB_enhanced_layouts : enable
+
 layout(location = 0) in vec3 position_in;
 layout(location = 1) in vec2 uv_in;
 

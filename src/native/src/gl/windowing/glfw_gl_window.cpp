@@ -95,7 +95,7 @@ void glfw_gl_window::set_framebuffer_size(glm::ivec2 new_framebuffer_size) {
     glViewport(0, 0, window_dimensions.x, window_dimensions.y);
 }
 
-void glfw_gl_window::on_config_change(rapidjson::Document &config) {
+void glfw_gl_window::on_config_change(nlohmann::json & new_config) {
     LOG(INFO) << "gl_glfw_window received the updated config";
 }
 
