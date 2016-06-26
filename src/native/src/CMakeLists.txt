@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 project(renderer)
 
-
-#add_subdirectory(
-#        "C:/Libraries/libarchive" "${CMAKE_CURRENT_BINARY_DIR}/libarchive"
-#)
-
 # Functions
 function(nova_set_all_target_outputs target output_dir)
         set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${output_dir})
@@ -81,11 +76,17 @@ find_package(OpenGL REQUIRED)
 
 set(GLAD_SOURCE ${3RD_PARTY_DIR}/glad/src/glad.c)
 
+
+set(MINIZ_SOURCE "${3RD_PARTY_DIR}/miniz/src/miniz.c"
+                 "${3RD_PARTY_DIR}/miniz/src/miniz_zip.c"
+                 "${3RD_PARTY_DIR}/miniz/src/miniz_tinfl.c"
+                 "${3RD_PARTY_DIR}/miniz/src/miniz_tdef.c")
 include_directories(SYSTEM
         ${GLM_INCLUDE_DIRS}
         ${GLFW3_INCLUDE_DIR}
         "${3RD_PARTY_DIR}/easyloggingpp/include"
-        "${3RD_PARTY_DIR}/glad/include")
+        "${3RD_PARTY_DIR}/glad/include"
+        "${3RD_PARTY_DIR}/miniz/src")
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} ${GLFW3_LIBRARY} ${OPENGL_LIBRARIES})
 
@@ -164,7 +165,7 @@ set(NOVA_HEADERS
 # because there are several sub groups that would be extremely small
 source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
-add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE})
+add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE} ${MINIZ_SOURCE})
 set_target_properties(nova-renderer-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT)
