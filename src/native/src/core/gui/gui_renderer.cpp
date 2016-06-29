@@ -29,16 +29,18 @@ void gui_renderer::set_current_screen(mc_gui_screen *screen) {
     cur_screen = screen;
 
     build_gui_geometry();
+    LOG(INFO) << "GUI geometry built successfully";
 }
 
 void gui_renderer::render() {
     // Bind the GUI shader
-    ishader * gui_shader = shaders.get_shader(GUI_SHADER_NAME);
-    gui_shader->bind();
+    gl_shader_program & gui_shader = shaders.get_shader(GUI_SHADER_NAME);
+    gui_shader.bind();
+    LOG(TRACE) << "Bound shader " << GUI_SHADER_NAME;
 
     // Bind the GUI buttons texture to texture unit 0
-    itexture * gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
-    gui_tex->bind(GL_TEXTURE0);
+    texture2D & gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
+    gui_tex.bind(GL_TEXTURE0);
 
     // Draw the 2D GUI geometry
     cur_screen_buffer->set_active();
@@ -67,29 +69,31 @@ bool gui_renderer::same_buttons(mc_gui_button & button1, mc_gui_button & button2
 void gui_renderer::build_gui_geometry() {
     // We need to make a vertex buffer with the positions and texture coordinates of all the gui elements
     std::vector<float> vertex_buffer(MAX_NUM_BUTTONS * 4 * 5);    // MAX_NUM_BUTTONS buttons * 4 vertices per button * 5 elements per vertex
+    vertex_buffer.clear();
     std::vector<unsigned short> indices;
     unsigned short start_pos = 0;
 
-    std::for_each(
-            std::begin(cur_screen->buttons),
-            std::end(cur_screen->buttons),
-            [&](mc_gui_button & button){
+    for(int i = 0; i < cur_screen->num_buttons; i++) {
+        mc_gui_button & button = cur_screen->buttons[i];
 
-                // TODO: More switches to figure out exactly which UVs we should use
-                std::vector<float> & uv_buffer = basic_unpressed_uvs;
-                if(button.is_pressed) {
-                    uv_buffer = basic_pressed_uvs;
-                }
+        // TODO: More switches to figure out exactly which UVs we should use
+        std::vector<float> & uv_buffer = basic_unpressed_uvs;
+        if(button.is_pressed) {
+            uv_buffer = basic_pressed_uvs;
+        }
 
-                // Generate the vertexes from the button's position
-                add_vertices_from_button(vertex_buffer, button, uv_buffer);
+        // Generate the vertexes from the button's position
+        add_vertices_from_button(vertex_buffer, button, uv_buffer);
 
-                add_indices_for_button(indices, start_pos);
+        add_indices_for_button(indices, start_pos);
 
-                // Add the number of new vertices to the offset for indices, so that indices point to the right
-                // vertices
-                start_pos += 4;
-            });
+        // Add the number of new vertices to the offset for indices, so that indices point to the right
+        // vertices
+        start_pos += 4;
+    }
+
+    cur_screen_buffer->set_data(vertex_buffer, ivertex_buffer::format::POS_UV, ivertex_buffer::usage::static_draw);
+    cur_screen_buffer->set_index_array(indices, ivertex_buffer::usage::static_draw);
 }
 
 void gui_renderer::add_indices_for_button(std::vector<unsigned short> &indices, unsigned short start_pos) {
@@ -123,7 +127,7 @@ void gui_renderer::add_vertices_from_button(std::vector<GLfloat> &vertex_buffer,
 }
 
 void gui_renderer::setup_buffers() {
-    // Buffer for the GUi geometry
+    // Buffer for the GUI geometry
     cur_screen_buffer = std::unique_ptr<ivertex_buffer>(new gl_vertex_buffer());
 }
 

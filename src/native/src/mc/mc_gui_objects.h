@@ -35,6 +35,7 @@ struct mc_gui_button {
  */
 struct mc_gui_screen {
     mc_gui_button buttons[MAX_NUM_BUTTONS];
+    int num_buttons;
 };
 
 #endif //RENDERER_MC_GUI_OBJECTS_H

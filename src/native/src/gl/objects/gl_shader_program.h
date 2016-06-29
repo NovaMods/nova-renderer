@@ -12,7 +12,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../../interfaces/ishader.h"
 #include "../glad/glad.h"
 
 class shader_program_already_linked_exception : public std::exception {
@@ -46,7 +45,7 @@ private:
  * tessellation evaluation shader. Note that if a shader program has one of the tessellation shaders, it must also have
  * the other tessellation shader.
  */
-class gl_shader_program : public ishader {
+class gl_shader_program {
 public:
     /*!
      * \brief Constructs a gl_shader_program
@@ -72,9 +71,41 @@ public:
      */
     void link();
 
+    /*!
+     * \brief Sets this shader as the currently active shader
+     */
     void bind() noexcept;
+
+    /*!
+     * \brief Gets the locaiton of the given uniform variable
+     *
+     * This is kinda GL-specific, but I'm only using OpenGL so I'm not all that worried at this point
+     *
+     * \param uniform_name The name of the uniform variable to get
+     * \return The OpenGL location of the given uniform
+     *
+     * \throws std::invalid_value if the given uniform name isn't in this shader
+     */
     int get_uniform_location(std::string & uniform_name) const;
+
+    /*!
+    * \brief Gets the locaiton of the given attribute variable
+    *
+    * This is kinda GL-specific, but I'm only using OpenGL so I'm not all that worried at this point
+    *
+    * \param uniform_name The name of the attribute variable to get
+    * \return The OpenGL location of the given attribute
+    *
+    * \throws std::invalid_value if the given attribute name isn't in this shader
+    */
     int get_attribute_location(std::string & attribute_name) const;
+
+    /*!
+     * \brief Sets the given integer as the data for the uniform variable with the given location
+     *
+     * \param location The uniform location to put the data in
+     * \param data The data to give to the given uniform location
+     */
     void set_uniform_data(unsigned int location, int data) noexcept;
 
     /*

@@ -29,6 +29,47 @@ import java.util.List;
  */
 public class RenderCommandBuilder {
     private static final Logger LOG = LogManager.getLogger(RenderCommandBuilder.class);
+
+    public static NovaNative.mc_render_command makeRenderCommand(Minecraft mc, float partialTicks) {
+        NovaNative.mc_render_command command = new NovaNative.mc_render_command();
+
+        addRenderWorldCommand(mc, partialTicks, command);
+
+        return command;
+    }
+
+    public static NovaNative.mc_set_gui_screen_command createSetGuiScreenCommand(GuiScreen curScreen) {
+        // Get all the buttons from the current GUI screen
+        // TODO: Menu backgrounds, and everything else
+        NovaNative.mc_set_gui_screen_command set_gui_screen_command = new NovaNative.mc_set_gui_screen_command();
+
+        int cur_button = 0;
+        for(GuiButton button : curScreen.getButtonList()) {
+            NovaNative.mc_gui_button new_button = new NovaNative.mc_gui_button();
+            new_button.x_position = button.xPosition;
+            new_button.y_position = button.yPosition;
+            new_button.width = button.getButtonWidth();
+            new_button.height = button.getButtonHeight();
+            new_button.text = button.displayString;
+
+            set_gui_screen_command.screen.buttons[cur_button] = new_button;
+        }
+
+        return set_gui_screen_command;
+    }
+
+    private static void addRenderWorldCommand(Minecraft mc, double partialTicks, NovaNative.mc_render_command command) {
+        Entity viewEntity = mc.getRenderViewEntity();
+
+        if(Utils.exists(viewEntity)) {
+            command.world_params.camera_x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * partialTicks;
+            command.world_params.camera_y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * partialTicks;
+            command.world_params.camera_z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * partialTicks;
+        }
+
+        // TODO: Portal effects
+    }
+
     private static NovaNative.mc_chunk makeChunk(World world, BlockPos chunkCoordinates) {
         NovaNative.mc_chunk chunk = new NovaNative.mc_chunk();
         NovaNative.mc_block[] blocks = new NovaNative.mc_block[16 * 16 * 16];
@@ -70,67 +111,4 @@ public class RenderCommandBuilder {
 
         return renderableChunks;
     }
-
-    public static NovaNative.mc_render_command makeRenderCommand(Minecraft mc, float partialTicks) {
-        NovaNative.mc_render_command command = new NovaNative.mc_render_command();
-
-        command.anaglyph = mc.gameSettings.anaglyph;
-
-        command.display_height = mc.displayHeight;
-        command.display_width = mc.displayWidth;
-
-        addRenderWorldCommand(mc, partialTicks, command);
-
-        if(mc.currentScreen != null) {
-            addRenderGuiCommand(mc, partialTicks, command);
-        }
-
-        return command;
-    }
-
-    private static void addRenderGuiCommand(Minecraft mc, double partialTicks, NovaNative.mc_render_command command) {
-        // Get all the buttons from the current GUI screen
-        // TODO: Menu backgrounds, and everything else
-        GuiScreen curScreen = mc.currentScreen;
-        int cur_button = 0;
-        for(GuiButton button : curScreen.getButtonList()) {
-            NovaNative.mc_gui_button new_button = new NovaNative.mc_gui_button();
-            new_button.x_position = button.xPosition;
-            new_button.y_position = button.yPosition;
-            new_button.width = button.getButtonWidth();
-            new_button.height = button.getButtonHeight();
-            new_button.text = button.displayString;
-
-            command.menu_params.cur_screen.buttons[cur_button] = new_button;
-        }
-    }
-
-    private static void addRenderWorldCommand(Minecraft mc, double partialTicks, NovaNative.mc_render_command command) {
-        Entity viewEntity = mc.getRenderViewEntity();
-
-        if(Utils.exists(viewEntity)) {
-            command.world_params.camera_x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * partialTicks;
-            command.world_params.camera_y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * partialTicks;
-            command.world_params.camera_z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * partialTicks;
-
-            command.world_params.has_blindness = ((EntityLivingBase) viewEntity).isPotionActive(MobEffects.blindness);
-        }
-
-        command.world_params.view_bobbing = mc.gameSettings.viewBobbing;
-
-        command.world_params.render_distance = mc.gameSettings.renderDistanceChunks;
-
-        command.world_params.fog_color_red = mc.entityRenderer.getFogColorRed();
-        command.world_params.fog_color_green = mc.entityRenderer.getFogColorGreen();
-        command.world_params.fog_color_blue = mc.entityRenderer.getFogColorBlue();
-
-        // If we're on the surface world, we can render clouds no problem. If we're not, we shouldn't even be thinking
-        // about rendering clouds
-        if(Utils.exists(mc.theWorld)) {
-            command.world_params.should_render_clouds = mc.theWorld.provider.isSurfaceWorld() ? mc.gameSettings.shouldRenderClouds() : 0;
-        }
-
-        // TODO: Portal effects
-    }
-
 }

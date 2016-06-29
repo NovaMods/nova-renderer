@@ -3,6 +3,8 @@ package com.continuum.nova;
 import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.utils.RenderCommandBuilder;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
@@ -447,7 +449,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             // after all the resources are loaded. So, by ignoring the first time this method is called, nothing bad
             // should happen
             firstLoad = false;
-            return;
+            // return;
         }
 
         NovaNative.INSTANCE.reset_texture_manager();
@@ -539,7 +541,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
     }
 
-
     public void preInit() {
         // TODO: Remove this and use the win32-x86 thing to package the DLL into the jar
         System.getProperties().setProperty("jna.library.path", "C:\\Users\\David\\Documents\\Nova Renderer\\run");
@@ -569,10 +570,15 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
         NovaNative.mc_render_command cmd = RenderCommandBuilder.makeRenderCommand(mc, renderPartialTicks);
 
-        //NovaNative.INSTANCE.send_render_command(cmd);
+        NovaNative.INSTANCE.send_render_command(cmd);
 
         if(NovaNative.INSTANCE.should_close()) {
             Minecraft.getMinecraft().shutdown();
         }
+    }
+
+    public void setGuiScreen(GuiScreen guiScreenIn) {
+        NovaNative.mc_set_gui_screen_command set_gui_screen = RenderCommandBuilder.createSetGuiScreenCommand(guiScreenIn);
+        NovaNative.INSTANCE.send_change_gui_screen_command(set_gui_screen);
     }
 }

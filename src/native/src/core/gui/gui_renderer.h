@@ -92,7 +92,7 @@ private:
             2, 1, 3
     };
 
-    mc_gui_screen * cur_screen;
+    mc_gui_screen * cur_screen = NULL;
 
     texture_manager & tex_manager;
     shaderpack & shaders;

@@ -122,8 +122,6 @@ public interface NovaNative extends Library {
      * hard
      */
     class mc_render_menu_params extends Structure {
-        public boolean render_menu;
-
         /**
          * The current GUI screen that we should be rendering right now like omg
          */
@@ -131,7 +129,7 @@ public interface NovaNative extends Library {
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("render_menu", "cur_screen");
+            return Collections.singletonList("cur_screen");
         }
     }
 
@@ -148,37 +146,10 @@ public interface NovaNative extends Library {
         public double camera_y;
         public double camera_z;
 
-        /**
-         * The render distance, in chunks
-         */
-        public int render_distance;
-
-        /**
-         * Whether or not the has_blindness status effect is in effect
-         */
-        public boolean has_blindness;
-
-        public double fog_color_red;
-        public double fog_color_green;
-        public double fog_color_blue;
-        public boolean view_bobbing;
-        public int should_render_clouds;
-
-        // Supports up to 12 x 12 chunks
-        public mc_chunk[] chunks = new mc_chunk[25 * 25];
-
-        public int num_chunks;
-
         @Override
         protected List<String> getFieldOrder() {
             return Arrays.asList(
-                    "camera_x", "camera_y", "camera_z",
-                    "render_distance",
-                    "has_blindness",
-                    "fog_color_red", "fog_color_green", "fog_color_blue",
-                    "view_bobbing",
-                    "should_render_clouds",
-                    "chunks", "num_chunks"
+                    "camera_x", "camera_y", "camera_z"
             );
         }
     }
@@ -190,15 +161,31 @@ public interface NovaNative extends Library {
         public long previous_frame_time;
 
         /**
-         * Userd for determining camera rotation/mouse cursor position
+         * Used for determining camera rotation/mouse cursor position
          */
         public float mouse_x;
         public float mouse_y;
+
+        public mc_render_world_params world_params;
+        public mc_render_menu_params menu_params;
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("previous_frame_time", "mouse_x", "mouse_y", "world_params", "menu_params");
+        }
+    }
+
+    class mc_settings extends Structure {
+        public boolean render_menu;
 
         /**
          * If true, render the world as red/blue anaglyph. If false, don't do that.
          */
         public boolean anaglyph;
+
+        public double fog_color_red;
+        public double fog_color_green;
+        public double fog_color_blue;
 
         /**
          * The height and width of the Minecraft screen
@@ -206,12 +193,48 @@ public interface NovaNative extends Library {
         public int display_width;
         public int display_height;
 
-        public mc_render_world_params world_params;
-        public mc_render_menu_params menu_params;
+        public boolean view_bobbing;
+        public int should_render_clouds;
+
+        /**
+         * The render distance, in chunks
+         */
+        public int render_distance;
+
+        /**
+         * Whether or not the has_blindness status effect is in effect
+         */
+        public boolean has_blindness;
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("previous_frame_time", "mouse_x", "mouse_y", "anaglyph", "display_width", "display_height", "world_params", "menu_params");
+            return Arrays.asList(
+                    "anaglyph", "fog_color_red", "fog_color_green", "fog_color_blue", "display_width",
+                    "display_height", "view_bobbing", "should_render_clouds", "render_distance", "render_menu",
+                    "has_blindness"
+            );
+        }
+    }
+
+    class mc_add_chunk_command extends Structure {
+        public mc_chunk new_chunk;
+
+        public float chunk_x;
+        public float chunk_y;
+        public float chunk_z;
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("new_chunk", "chunk_x", "chunk_y", "chunk_x");
+        }
+    }
+
+    class mc_set_gui_screen_command extends Structure {
+        public mc_gui_screen screen;
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Collections.singletonList("screen");
         }
     }
 
@@ -250,4 +273,6 @@ public interface NovaNative extends Library {
     void do_test_render();
 
     boolean should_close();
+
+    void send_change_gui_screen_command(mc_set_gui_screen_command set_gui_screen);
 }
