@@ -7,12 +7,34 @@
 
 
 #include "../glad/glad.h"
-#include "../../interfaces/itexture.h"
+#include <exception>
+#include <vector>
+
+/*!
+ * \brief Encapsulates the parameters for texture filtering
+ */
+class texture_filtering_params {
+public:
+    enum filter {
+        POINT,
+        BILINEAR,
+        TRILINEAR,
+    };
+
+    filter texture_upsample_filter;
+    filter texture_downsample_filter;
+
+    int num_mipmap_levels;
+    int anisotropic_level;
+};
+
+class texture_creation_exception : public std::exception {};
+class texture_bind_exception : public std::exception {};
 
 /*!
  * \brief Represents a two-dimensional OpenGL texture
  */
-class texture2D : public itexture {
+class texture2D {
 public:
     /*!
      * \brief Instantiates a new texture2D, allocating a new texture object on the GPU

@@ -76,7 +76,9 @@ void gl_vertex_buffer::set_index_array(std::vector<unsigned short> data, usage d
 }
 
 void gl_vertex_buffer::draw() {
-    glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_SHORT, 0);
+    if(num_indices > 0) {
+        glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_SHORT, 0);
+    }
 }
 
 void gl_vertex_buffer::enable_vertex_attributes(format data_format) {

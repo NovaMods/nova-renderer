@@ -11,7 +11,6 @@
 #include <map>
 #include "../mc/mc_objects.h"
 #include "../gl/glad/glad.h"
-#include "../interfaces/itexture.h"
 #include "../gl/objects/texture2D.h"
 
 /*!
@@ -129,7 +128,7 @@ public:
      * \param type The type of data that should be in the atlas
      * \return A pointer to the atlas texture
      */
-    itexture * get_texture_atlas(atlas_type atlas, texture_type type);
+    texture2D & get_texture_atlas(atlas_type atlas, texture_type type);
 
     /*!
      * \brief Returns the maximum texture size supported by OpenGL on the current platform

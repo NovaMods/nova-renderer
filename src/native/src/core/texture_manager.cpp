@@ -14,6 +14,7 @@ texture_manager::~texture_manager() {
     // The driver probably does that for me, but I ain't about to let no stinkin' driver boss me around!
     LOG(INFO) << "Creating the Texture Manager";
     reset();
+    LOG(INFO) << "Texture manager created";
 }
 
 void texture_manager::reset() {
@@ -94,9 +95,9 @@ const texture_manager::texture_location &texture_manager::get_texture_location(c
     return locations[texture_name];
 }
 
-itexture *texture_manager::get_texture_atlas(atlas_type atlas, texture_type type) {
+texture2D & texture_manager::get_texture_atlas(atlas_type atlas, texture_type type) {
     auto key = std::pair<atlas_type, texture_type>(atlas, type);
-    return &atlases[key];
+    return atlases[key];
 }
 
 int texture_manager::get_max_texture_size() {

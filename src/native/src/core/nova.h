@@ -11,7 +11,7 @@
 #if defined DLL_EXPORT
 #define NOVA_EXPORT __declspec(dllexport)
 #else
-#define NOVA_EXPORT __declspec(dllimport)
+#define NOVA_EXPORT
 #endif
 
 extern "C" {
@@ -69,7 +69,7 @@ NOVA_EXPORT void reset_texture_manager();
 NOVA_EXPORT void send_render_command(mc_render_command * command);
 
 /*!
- * \brief Supplied so I can do sim ple, stupid test rendering thing
+ * \brief Supplied so I can do simple, stupid test rendering thing
  */
 NOVA_EXPORT void do_test_render();
 
@@ -83,6 +83,13 @@ NOVA_EXPORT void do_test_render();
  * \return Trus if the window should close, false otherwise
  */
 NOVA_EXPORT bool should_close();
+
+/*!
+ * \brief Sets the GUI screen that Nova should render
+ *
+ * \param set_gui_screen The command to set the GUI screen
+ */
+NOVA_EXPORT void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen);
 
 };  // End extern C
     // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.

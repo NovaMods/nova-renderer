@@ -44,9 +44,9 @@ struct mc_block {
  * the geometry every frame
  */
 struct mc_chunk {
-    long chunk_id;
-    bool is_dirty;
-    mc_block * blocks;
+    long chunk_id;  //!< Unique identifier for the chunk
+    bool is_dirty;  //!< Has the chunk changed since it was last sent to Nova?
+    mc_block blocks[4096];  //!< All the blocks in the chunk
 };
 
 /*!
@@ -56,27 +56,12 @@ struct mc_render_world_params {
     double camera_x;
     double camera_y;
     double camera_z;
-
-    int render_distance;        //!< Should be a setting
-
-    bool has_blindness;         //!< Some potino effect I think
-
-    double fog_color_red;       //!< Should be a setting
-    double fog_color_green;     //!< Should be a setting
-    double fog_color_blue;      //!< Should be a setting
-
-    bool view_bobbing;          //!< Should be a setting
-    int should_render_clouds;   //!< Should be a setting
-
-    mc_chunk * chunks;
-    int num_chunks;
 };
 
 /*!
  * \brief All the data needed to render the GU, along with a couple flags
  */
 struct mc_render_gui_params {
-    bool render_menu;
     mc_gui_screen cur_screen;
 };
 
@@ -89,13 +74,49 @@ struct mc_render_command {
     float mouse_x;
     float mouse_y;
 
-    bool anaglyph;      //!< Should be a setting
+    mc_render_world_params render_world_params;
+    mc_render_gui_params render_gui_params;
+};
+
+/*!
+ * \brief Holds all the settings that are exposed from the Minecraft options menu
+ */
+struct mc_settings {
+    bool anaglyph;
+
+    double fog_color_red;
+    double fog_color_green;
+    double fog_color_blue;
 
     int display_width;
     int display_height;
 
-    mc_render_world_params render_world_params;
-    mc_render_gui_params render_gui_params;
+    bool view_bobbing;
+    int should_render_clouds;
+
+    int render_distance;
+
+    bool render_menu;           //!< Controlled by F1
+
+    bool has_blindness;         //!< Some potion effect I think
+};
+
+/*!
+ * \brief Tells Nova to add this chunk to its list of potential chunks to render
+ */
+struct mc_add_chunk_command {
+    mc_chunk new_chunk;
+
+    float chunk_x;
+    float chunk_y;
+    float chunk_z;
+};
+
+/*!
+ * \brief Tells Nova to change to the give GUI screen
+ */
+struct mc_set_gui_screen_command {
+    mc_gui_screen screen;
 };
 
 #endif //RENDERER_MC_OBJECTS_H

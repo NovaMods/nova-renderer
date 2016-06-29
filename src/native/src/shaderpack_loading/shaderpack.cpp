@@ -45,7 +45,7 @@ void shaderpack::load_folder_shaderpack(std::string shaderpack_name) {
 
 void shaderpack::load_program(const std::string shader_path, const std::string shader_name) {
 
-    gl_shader_program * program = new gl_shader_program();
+    gl_shader_program program;
 
     const std::string full_shader_path = shader_path + shader_name;
 
@@ -60,7 +60,7 @@ void shaderpack::load_program(const std::string shader_path, const std::string s
 }
 
 void shaderpack::load_shader(const std::string &shader_name,
-                             gl_shader_program *program, GLenum shader_type) const {
+                             gl_shader_program & program, GLenum shader_type) const {
     // I don't like this because of the duplicate code, Not sure what else to do, though
     switch(shader_type) {
         case GL_VERTEX_SHADER:
@@ -82,7 +82,7 @@ void shaderpack::load_shader(const std::string &shader_name,
     }
 }
 
-bool shaderpack::try_loading_shader(const std::string &shader_name, gl_shader_program *program, GLenum shader_type,
+bool shaderpack::try_loading_shader(const std::string &shader_name, gl_shader_program & program, GLenum shader_type,
                                     const std::string extension) const {
     const std::string full_file_name = shader_name + extension;
     std::ifstream shader_file(full_file_name);
@@ -90,7 +90,7 @@ bool shaderpack::try_loading_shader(const std::string &shader_name, gl_shader_pr
     LOG(INFO) << "Trying to load shader " << full_file_name;
 
     if(shader_file.is_open()) {
-        program->add_shader(shader_type, shader_file);
+        program.add_shader(shader_type, shader_file);
 
         shader_file.close();
 
@@ -109,7 +109,7 @@ void shaderpack::on_config_change(nlohmann::json &new_config) {
     }
 }
 
-ishader *shaderpack::get_shader(std::string shader_name) {
+gl_shader_program & shaderpack::get_shader(std::string shader_name) {
     return shaders[shader_name];
 }
 

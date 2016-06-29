@@ -19,16 +19,14 @@ set(SOURCE_FILES
         gl/glad.c
 
         core/nova_renderer.cpp core/nova_renderer.h
+        core/nova.h
         core/nova_facade.cpp
         core/texture_manager.cpp core/texture_manager.h
         core/gui/gui_renderer.cpp
 
         config/config.cpp
 
-        interfaces/iwindow.h
-        interfaces/igraphics_context.h
-        interfaces/ivertex_buffer.cpp interfaces/ivertex_buffer.h
-        interfaces/itexture.h
+        interfaces/ivertex_buffer.cpp
 
         io/key_forwarder.cpp io/key_forwarder.h
 
@@ -54,6 +52,7 @@ add_library(nova-renderer SHARED ${SOURCE_FILES})
 # configure the project
 target_include_directories(nova-renderer SYSTEM PRIVATE)
 target_link_libraries(nova-renderer glfw ${GLFW_LIBRARIES})
+target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT)
 
 set_property(TARGET nova-renderer PROPERTY CXX_STANDARD 14)
 set_property(TARGET nova-renderer PROPERTY CXX_STANDARD_REQUIRED ON)

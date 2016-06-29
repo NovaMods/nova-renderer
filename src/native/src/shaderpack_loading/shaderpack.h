@@ -9,7 +9,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "../interfaces/ishader.h"
 #include "../gl/objects/gl_shader_program.h"
 #include "../config/config.h"
 
@@ -20,7 +19,7 @@ class shaderpack : public iconfig_change_listener {
 public:
     shaderpack();
 
-    ishader * get_shader(std::string shader_name);
+    gl_shader_program & get_shader(std::string shader_name);
 
     /**
      * iconfig_change_listener methods
@@ -32,7 +31,7 @@ private:
 
     std::vector<std::string> default_shader_names;
 
-    std::unordered_map<std::string, ishader *> shaders;
+    std::unordered_map<std::string, gl_shader_program> shaders;
 
     std::string name;
 
@@ -42,9 +41,9 @@ private:
 
     void load_program(const std::string shader_path, const std::string shader_name);
 
-    void load_shader(const std::string &shader_name, gl_shader_program *program, GLenum shader_type) const;
+    void load_shader(const std::string &shader_name, gl_shader_program & program, GLenum shader_type) const;
 
-    bool try_loading_shader(const std::string &shader_name, gl_shader_program *program, GLenum shader_type,
+    bool try_loading_shader(const std::string &shader_name, gl_shader_program & program, GLenum shader_type,
                             const std::string extension) const;
 
     /*!
