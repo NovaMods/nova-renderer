@@ -62,8 +62,8 @@ static void test_link_shader() {
     std::ifstream frag_stream("uniform_test.frag");
     std::ifstream vert_stream("uniform_test.vert");
 
-    test_shader.add_shader(GL_VERTEX_SHADER, frag_stream);
-    test_shader.add_shader(GL_FRAGMENT_SHADER, vert_stream);
+    test_shader.add_shader(GL_VERTEX_SHADER, vert_stream);
+    test_shader.add_shader(GL_FRAGMENT_SHADER, frag_stream);
 
     test_shader.link();
 }

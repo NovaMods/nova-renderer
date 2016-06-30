@@ -1,4 +1,4 @@
-#version 430
+#version 450
 
 uniform mat4 gbufferModelviewInverse;
 uniform mat4 gbufferProjectionInverse;

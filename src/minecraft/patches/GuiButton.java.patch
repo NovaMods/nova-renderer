@@ -1,0 +1,6 @@
+net/minecraft/gui/GuiButton.java
+148
+149     public int getButtonHeight() {
+150         return height;
+151     }
+

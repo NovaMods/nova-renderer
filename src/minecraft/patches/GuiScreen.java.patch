@@ -1,0 +1,6 @@
+net/minecraft/client/gui/GuiScreen.java
+770
+771     public List<GuiButton> getButtonList() {
+772         return buttonList;
+773     }
+774

@@ -1,0 +1,14 @@
+net/minecraft/client/render/EntityRenderer.java
+2036
+2037     public float getFogColorRed() {
+2038         return fogColorRed;
+2039     }
+2040
+2041     public float getFogColorGreen() {
+2042         return fogColorGreen;
+2043     }
+2044
+2045     public float getFogColorBlue() {
+2046         return fogColorBlue;
+2047     }
+
