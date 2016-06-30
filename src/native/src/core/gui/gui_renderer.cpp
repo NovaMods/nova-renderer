@@ -36,7 +36,6 @@ void gui_renderer::render() {
     // Bind the GUI shader
     gl_shader_program & gui_shader = shaders.get_shader(GUI_SHADER_NAME);
     gui_shader.bind();
-    LOG(TRACE) << "Bound shader " << GUI_SHADER_NAME;
 
     // Bind the GUI buttons texture to texture unit 0
     texture2D & gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);

@@ -1,4 +1,4 @@
-#version 430
+#version 450
 
 layout(location = 0) in vec3 position_in;
 //layout(location = 1)

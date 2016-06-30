@@ -86,7 +86,7 @@ std::string gl_shader_program::read_shader_file(std::istream & shader_file_strea
 
                 var_name = buf.substr(start_pos, end_pos - start_pos);
 
-                LOG(TRACE) << "Found uniform '" << var_type << "' '" << var_name << "'\n";
+                LOG(TRACE) << "Found uniform '" << var_type << "' '" << var_name << "'";
 
                 uniform_names.push_back(var_name);
             }
@@ -116,6 +116,8 @@ bool gl_shader_program::check_for_shader_errors(GLuint shader_to_check) {
         return true;
     }
 
+    LOG(INFO) << "Shader compiled successfully";
+
     return false;
 }
 
@@ -142,6 +144,8 @@ bool gl_shader_program::check_for_linking_errors() {
         LOG(ERROR) << "Error linking program " << gl_name << ":\n" << info_log;
 
         return true;
+    } else {
+        LOG(INFO) << "Program " << gl_name << " linked successfully";
     }
 
     return false;
@@ -171,6 +175,16 @@ std::vector<GLuint> &gl_shader_program::get_added_shaders() {
 
 std::vector<std::string> &gl_shader_program::get_uniform_names() {
     return uniform_names;
+}
+
+gl_shader_program::~gl_shader_program() {
+    if(linked) {
+        glDeleteProgram(gl_name);
+    } else {
+        for(GLuint shader : added_shaders) {
+            glDeleteShader(shader);
+        }
+    }
 }
 
 shader_file_not_found_exception::shader_file_not_found_exception(std::string file_name) :

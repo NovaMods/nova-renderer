@@ -53,6 +53,11 @@ public:
     gl_shader_program();
 
     /*!
+     * \brief Deletes this shader and all it holds dear
+     */
+    ~gl_shader_program();
+
+    /*!
      * \brief Adds a shader to this shader program
      *
      * \param shader_type The type of the shader to add. Can be one of GL_VERTEX_SHADER, GL_GEOMETRY_SHADER,
