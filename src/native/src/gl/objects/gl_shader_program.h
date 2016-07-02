@@ -50,7 +50,9 @@ public:
     /*!
      * \brief Constructs a gl_shader_program
      */
-    gl_shader_program();
+    gl_shader_program(std::string name);
+
+    gl_shader_program() {};
 
     /*!
      * \brief Deletes this shader and all it holds dear
@@ -125,6 +127,8 @@ public:
     std::vector<std::string> & get_uniform_names();
 
 private:
+    std::string name;   //!< Mostly useful for debugging
+
     std::unordered_map<std::string, GLuint> uniform_locations;
     std::unordered_map<std::string, GLuint> attribute_locations;
     bool linked;
