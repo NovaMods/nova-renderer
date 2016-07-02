@@ -17,7 +17,7 @@
  */
 static void test_create_shader() {
     // Create a basic shader
-    gl_shader_program test_shader;
+    gl_shader_program test_shader("test");
 }
 
 /*!
@@ -25,7 +25,7 @@ static void test_create_shader() {
  */
 static void test_add_fragment_shader() {
     // Create the shader program
-    gl_shader_program test_shader;
+    gl_shader_program test_shader("uniform_test");
 
     std::ifstream frag_stream("uniform_test.frag");
 
@@ -43,7 +43,7 @@ static void test_add_fragment_shader() {
  */
 static void test_add_vertex_shader() {
     // Create the shader program
-    gl_shader_program test_shader;
+    gl_shader_program test_shader("uniform_test");
 
     std::ifstream vert_stream("uniform_test.vert");
 
@@ -57,7 +57,7 @@ static void test_add_vertex_shader() {
 }
 
 static void test_link_shader() {
-    gl_shader_program test_shader;
+    gl_shader_program test_shader("uniform_test");
 
     std::ifstream frag_stream("uniform_test.frag");
     std::ifstream vert_stream("uniform_test.vert");
@@ -70,7 +70,7 @@ static void test_link_shader() {
 
 static void test_parse_uniforms() {
     // Create the shader program
-    gl_shader_program test_shader;
+    gl_shader_program test_shader("uniform_test");
 
     std::ifstream frag_stream("uniform_test.frag");
 

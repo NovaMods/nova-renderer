@@ -45,12 +45,14 @@ void shaderpack::load_folder_shaderpack(std::string shaderpack_name) {
 
 void shaderpack::load_program(const std::string shader_path, const std::string shader_name) {
 
-    gl_shader_program program;
+    gl_shader_program program(shader_name);
 
     const std::string full_shader_path = shader_path + shader_name;
 
     load_shader(full_shader_path, program, GL_VERTEX_SHADER);
     load_shader(full_shader_path, program, GL_FRAGMENT_SHADER);
+
+    program.link();
 
     shaders.emplace(shader_name, program);
 

@@ -6,8 +6,8 @@
 #include <easylogging++.h>
 #include "gl_shader_program.h"
 
-gl_shader_program::gl_shader_program() : linked(false) {
-
+gl_shader_program::gl_shader_program(std::string name) : linked(false) {
+    this->name = name;
 }
 
 void gl_shader_program::add_shader(GLenum shader_type, std::istream & shader_file_stream) {
@@ -55,8 +55,6 @@ void gl_shader_program::link() {
 
     // No errors during linking? Let's get locations for our variables
     set_uniform_locations();
-
-    LOG(INFO) << "Program " << gl_name << " linked successfully";
 }
 
 std::string gl_shader_program::read_shader_file(std::istream & shader_file_stream) {
@@ -152,6 +150,7 @@ bool gl_shader_program::check_for_linking_errors() {
 }
 
 void gl_shader_program::bind() noexcept {
+    //LOG(INFO) << "Binding program " << name;
     glUseProgram(gl_name);
 }
 
