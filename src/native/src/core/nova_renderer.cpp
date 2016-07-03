@@ -25,6 +25,10 @@ nova_renderer::nova_renderer() : game_window(new glfw_gl_window()),
     gui_renderer_instance.do_init_tasks();
 
     create_ubos();
+
+    enable_debug();
+
+    glClearColor(1.0, 0.0, 1.0, 1.0);
 }
 
 nova_renderer::~nova_renderer() {
@@ -81,3 +85,76 @@ void nova_renderer::create_ubos() {
 
     // TODO: Make a config file from UBO name to bind point
 }
+
+std::string translate_debug_source(GLenum source) {
+    switch(source) {
+        case GL_DEBUG_SOURCE_API:
+            return "API";
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+            return "window system";
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:
+            return "shader compiler";
+        case GL_DEBUG_SOURCE_THIRD_PARTY:
+            return "third party";
+        case GL_DEBUG_SOURCE_APPLICATION:
+            return "application";
+        case GL_DEBUG_SOURCE_OTHER:
+            return "other";
+        default:
+            return "something else somehow";
+    }
+}
+
+std::string translate_debug_type(GLenum type) {
+    switch(type) {
+        case GL_DEBUG_TYPE_ERROR:
+            return "an error, probably from the API";
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            return "some behavior marked deprecated has been used";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            return "something has invoked undefined behavior";
+        case GL_DEBUG_TYPE_PORTABILITY:
+            return "some functionality the user relies upon is not portable";
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            return "code has triggered possible performance issues";
+        case GL_DEBUG_TYPE_MARKER:
+            return "command stream annotation";
+        case GL_DEBUG_TYPE_PUSH_GROUP:
+            return "group pushing";
+        case GL_DEBUG_TYPE_POP_GROUP:
+            return "group popping";
+        case GL_DEBUG_TYPE_OTHER:
+            return "other";
+        default:
+            return "something else somwhow";
+    }
+}
+
+void debug_logger(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar * message, const void * user_param) {
+    std::string source_name = translate_debug_source(source);
+    std::string type_name = translate_debug_type(type);
+
+    switch(severity) {
+        case GL_DEBUG_SEVERITY_HIGH:
+            LOG(ERROR) << id << " - Message from " << source_name << " of type " << type_name << ": " << message;
+            break;
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            LOG(INFO) << id << " - Message from " << source_name << " of type " << type_name << ": " << message;
+            break;
+        case GL_DEBUG_SEVERITY_LOW:
+            LOG(DEBUG)<< id << " - Message from " << source_name << " of type " << type_name << ": " << message;
+            break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            LOG(TRACE)<< id << " - Message from " << source_name << " of type " << type_name << ": " << message;
+            break;
+        default:
+            LOG(INFO) << id << " - Message from " << source_name << " of type " << type_name << ": " << message;
+    }
+}
+
+void nova_renderer::enable_debug() {
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(debug_logger, NULL);
+}
+
+

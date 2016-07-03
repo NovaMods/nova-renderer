@@ -38,8 +38,8 @@ void gui_renderer::render() {
     gui_shader.bind();
 
     // Bind the GUI buttons texture to texture unit 0
-    texture2D & gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
-    gui_tex.bind(GL_TEXTURE0);
+    //texture2D & gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
+    //gui_tex.bind(GL_TEXTURE0);
 
     // Draw the 2D GUI geometry
     cur_screen_buffer->set_active();

@@ -47,6 +47,8 @@ void gl_shader_program::link() {
         throw program_linking_failure_exception();
     }
 
+    LOG(INFO) << "Program " << gl_name << " linked succesfully";
+
     for(GLuint shader : added_shaders) {
         // Clean up our resources. I'm told that this is a good thing.
         glDetachShader(gl_name, shader);
@@ -107,14 +109,14 @@ bool gl_shader_program::check_for_shader_errors(GLuint shader_to_check) {
         std::vector<GLchar> error_log(log_size);
         glGetShaderInfoLog(shader_to_check, log_size, &log_size, &error_log[0]);
 
-        LOG(ERROR) << "Error compiling shader: \n" << &error_log[0];
+        if(log_size > 0) {
+            LOG(ERROR) << "Error compiling shader: \n" << &error_log[0];
+        }
 
         glDeleteShader(shader_to_check);
 
         return true;
     }
-
-    LOG(INFO) << "Shader compiled successfully";
 
     return false;
 }
@@ -139,11 +141,11 @@ bool gl_shader_program::check_for_linking_errors() {
         GLchar *info_log = (GLchar *) malloc(log_length * sizeof(GLchar));
         glGetProgramInfoLog(gl_name, log_length, &log_length, info_log);
 
-        LOG(ERROR) << "Error linking program " << gl_name << ":\n" << info_log;
+        if(log_length > 0) {
+            LOG(ERROR) << "Error linking program " << gl_name << ":\n" << info_log;
+        }
 
         return true;
-    } else {
-        LOG(INFO) << "Program " << gl_name << " linked successfully";
     }
 
     return false;

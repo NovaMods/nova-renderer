@@ -14,7 +14,6 @@ void error_callback(int error, const char * description) {
 }
 
 void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
-    // TODO: Send keys to an input manager of some sort, where they can be sent on to some java code
     key_forwarder::forward_keypress(key, scancode);
 }
 
@@ -32,7 +31,7 @@ glfw_gl_window::glfw_gl_window() {
 
 int glfw_gl_window::init() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     window = glfwCreateWindow(640, 480, "Minecraft Nova Renderer", NULL, NULL);
@@ -48,6 +47,9 @@ int glfw_gl_window::init() {
     if(!gladLoadGL()) {
         LOG(FATAL) << "Could not load OpenGL";
     }
+
+    const GLubyte * vendor = glGetString(GL_VENDOR);
+    LOG(INFO) << "Vendor: " << vendor;
 
     glfwGetFramebufferSize(window, &window_dimensions.x, &window_dimensions.y);
     glViewport(0, 0, window_dimensions.x, window_dimensions.y);

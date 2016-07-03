@@ -69,11 +69,6 @@ NOVA_EXPORT void reset_texture_manager();
 NOVA_EXPORT void send_render_command(mc_render_command * command);
 
 /*!
- * \brief Supplied so I can do simple, stupid test rendering thing
- */
-NOVA_EXPORT void do_test_render();
-
-/*!
  * \brief Checks if Minecraft should close
  *
  * Since the Nova Renderer creates its own window, it needs to handle window events itself. However, Minecraft still

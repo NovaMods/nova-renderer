@@ -23,8 +23,8 @@ int main() {
     mc_set_gui_screen_command gui_command;
     gui_command.screen.buttons[0].width = 20;
     gui_command.screen.buttons[0].height = 20;
-    gui_command.screen.buttons[0].x_position = -20;
-    gui_command.screen.buttons[0].y_position = -20;
+    gui_command.screen.buttons[0].x_position = 0;
+    gui_command.screen.buttons[0].y_position = 0;
 
     gui_command.screen.num_buttons = 1;
 

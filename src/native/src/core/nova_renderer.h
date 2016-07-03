@@ -125,6 +125,8 @@ private:
      * \brief Creates all the UBOs
      */
     void create_ubos();
+
+    void enable_debug();
 };
 
 #endif //RENDERER_VULKAN_MOD_H
