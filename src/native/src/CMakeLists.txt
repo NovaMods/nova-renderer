@@ -86,7 +86,8 @@ include_directories(SYSTEM
         ${GLFW3_INCLUDE_DIR}
         "${3RD_PARTY_DIR}/easyloggingpp/include"
         "${3RD_PARTY_DIR}/glad/include"
-        "${3RD_PARTY_DIR}/miniz/src")
+        "${3RD_PARTY_DIR}/miniz/src"
+        "${3RD_PARTY_DIR}/json/src")
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} ${GLFW3_LIBRARY} ${OPENGL_LIBRARIES})
 
