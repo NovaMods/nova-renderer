@@ -35,6 +35,7 @@ void gl_shader_program::link() {
     linked = true;
 
     gl_name = glCreateProgram();
+    LOG(INFO) << "Created shader program " << gl_name;
 
     for(GLuint shader : added_shaders) {
         glAttachShader(gl_name, shader);
@@ -47,7 +48,7 @@ void gl_shader_program::link() {
         throw program_linking_failure_exception();
     }
 
-    LOG(INFO) << "Program " << gl_name << " linked succesfully";
+    LOG(INFO) << "Program " << gl_name << " linked successfully";
 
     for(GLuint shader : added_shaders) {
         // Clean up our resources. I'm told that this is a good thing.
@@ -153,7 +154,7 @@ bool gl_shader_program::check_for_linking_errors() {
 
 void gl_shader_program::bind() noexcept {
     //LOG(INFO) << "Binding program " << name;
-    glUseProgram(gl_name);
+    glUseProgram(1);
 }
 
 int gl_shader_program::get_uniform_location(std::string &uniform_name) const {
