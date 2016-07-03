@@ -43,10 +43,6 @@ NOVA_EXPORT void send_render_command(mc_render_command * command) {
     nova_renderer::instance->render_frame();
 }
 
-NOVA_EXPORT void do_test_render() {
-    nova_renderer::instance->render_frame();
-}
-
 NOVA_EXPORT bool should_close() {
     return nova_renderer::instance->should_end();
 }

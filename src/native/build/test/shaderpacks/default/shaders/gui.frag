@@ -1,8 +1,4 @@
-#version 450
-
-uniform sampler2D albedo;
-
-in vec2 uv;
+#version 430
 
 layout(location = 0) out vec4 color;
 

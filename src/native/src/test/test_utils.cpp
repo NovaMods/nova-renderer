@@ -14,5 +14,4 @@ void run_test(test_func test_function, std::string name) {
     } catch(std::exception & e) {
         LOG(ERROR) << "Exception with message " << e.what();
     }
-    LOG(INFO) << "\n";
 }

@@ -11,7 +11,7 @@ uniform mat4 gbufferProjectionMatrix;
 out vec3 normal;
 
 void main() {
-	gl_Position = gbufferModelviewMatrix * gbufferProjectionMatrix * position;
+	gl_Position = position;//gbufferModelviewMatrix * gbufferProjectionMatrix * position;
 
 	normal = normal_in;
 }
