@@ -6,7 +6,7 @@
 #ifndef RENDERER_GL_UNIFORM_BUFFER_H
 #define RENDERER_GL_UNIFORM_BUFFER_H
 
-#include "../glad/glad.h"
+#include <glad/glad.h>
 
 /*!
  * \brief Represents a uniform buffer, which can be used for whatever

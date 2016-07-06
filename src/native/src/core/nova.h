@@ -8,15 +8,11 @@
 #ifndef RENDERER_NOVA_H
 #define RENDERER_NOVA_H
 
-#if defined DLL_EXPORT
-#define NOVA_EXPORT __declspec(dllexport)
-#else
-#define NOVA_EXPORT
-#endif
+#include "utils/export.h"
 
 extern "C" {
 
-#include "../mc/mc_objects.h"
+#include "mc/mc_objects.h"
 
 /*!
  * \brief Initializes the Nova Renderer

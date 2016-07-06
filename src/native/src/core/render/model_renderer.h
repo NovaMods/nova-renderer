@@ -13,7 +13,7 @@
  *
  * Why make so simple a file? Mostly so I don't have to re-write the vertex buffer drawing logic across the code base
  */
-#include "../../interfaces/ivertex_buffer.h"
+#include "interfaces/ivertex_buffer.h"
 
 namespace model_renderer {
 void draw_vertex_buffer(ivertex_buffer & buffer_to_draw) const;

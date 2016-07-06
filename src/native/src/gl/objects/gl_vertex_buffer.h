@@ -7,8 +7,8 @@
 #define RENDERER_GL_VERTEX_BUFFER_H
 
 
-#include "../../interfaces/ivertex_buffer.h"
-#include "../glad/glad.h"
+#include "interfaces/ivertex_buffer.h"
+#include <glad/glad.h>
 
 /*!
  * \brief Represents a buffer which holds vertex information
