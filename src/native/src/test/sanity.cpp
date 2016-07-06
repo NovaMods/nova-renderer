@@ -6,7 +6,7 @@
 #include <cassert>
 #include <easylogging++.h>
 #include "sanity.h"
-#include "../gl/glad/glad.h"
+#include <glad/glad.h>
 #include "test_utils.h"
 
 static void sanity::check_gl_version() {
