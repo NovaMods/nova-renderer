@@ -4,7 +4,7 @@
  */
 
 #include "shaderpack.h"
-#include "../gl/objects/gl_shader_program.h"
+#include "gl/objects/gl_shader_program.h"
 
 #include <fstream>
 #include <easylogging++.h>
@@ -114,12 +114,3 @@ void shaderpack::on_config_change(nlohmann::json &new_config) {
 gl_shader_program & shaderpack::get_shader(std::string shader_name) {
     return shaders[shader_name];
 }
-
-
-
-
-
-
-
-
-

@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../glad/glad.h"
+#include <glad/glad.h>
 
 class shader_program_already_linked_exception : public std::exception {
 public:

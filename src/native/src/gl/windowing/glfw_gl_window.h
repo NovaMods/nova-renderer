@@ -6,10 +6,10 @@
 #define RENDERER_GLFW_GL_WINDOW_H
 
 
-#include "../glad/glad.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "../../interfaces/iwindow.h"
-#include "../../config/config.h"
+#include "interfaces/iwindow.h"
+#include "config/config.h"
 
 /*!
  * \brief Represents a GLFW window with an OpenGL context

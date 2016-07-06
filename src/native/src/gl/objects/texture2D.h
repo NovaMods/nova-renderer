@@ -6,7 +6,7 @@
 #define RENDERER_TEXTURE_H
 
 
-#include "../glad/glad.h"
+#include <glad/glad.h>
 #include <exception>
 #include <vector>
 
