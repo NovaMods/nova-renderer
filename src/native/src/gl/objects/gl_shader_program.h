@@ -37,6 +37,19 @@ private:
     std::string msg;
 };
 
+class shader_program_not_linked_exception : public std::exception {
+public:
+    /*!
+     * \brief Constructs this exceptions
+     *
+     * \param name The name of the shader program that is not linked
+     */
+    shader_program_not_linked_exception(std::string name);
+    virtual const char * what() noexcept;
+private:
+    std::string msg;
+};
+
 /*!
  * \brief Represents an OpenGL shader program
  *
@@ -51,6 +64,14 @@ public:
      * \brief Constructs a gl_shader_program
      */
     gl_shader_program(std::string name);
+
+    /**
+     * \brief Move constructor
+     *
+     * I expect that this constructor will only be called when returning a fully linked shader from a builder function.
+     * If this is not the case, this will throw an error. Be watchful.
+     */
+    gl_shader_program(gl_shader_program && other);
 
     gl_shader_program() {};
 
