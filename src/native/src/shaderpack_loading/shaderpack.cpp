@@ -7,6 +7,7 @@
 #include "gl/objects/gl_shader_program.h"
 
 #include <fstream>
+#include <utility>
 #include <easylogging++.h>
 
 shaderpack::shaderpack() {
@@ -54,7 +55,7 @@ void shaderpack::load_program(const std::string shader_path, const std::string s
 
     program.link();
 
-    shaders.emplace(shader_name, program);
+    shaders.emplace(shader_name, std::move(program));
 
     // Only load vertex and fragment shaders for now
 
