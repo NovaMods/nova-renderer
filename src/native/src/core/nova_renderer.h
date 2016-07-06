@@ -7,14 +7,15 @@
 
 #include <memory>
 
-#include "../interfaces/iwindow.h"
+#include "interfaces/iwindow.h"
+#include "mc/mc_objects.h"
+
 #include "nova.h"
-#include "../mc/mc_objects.h"
+#include "types.h"
 #include "texture_manager.h"
 #include "gui/gui_renderer.h"
-#include "types.h"
-#include "../config/config.h"
-#include "../shaderpack_loading/shaderpack.h"
+#include "config/config.h"
+#include "shaderpack_loading/shaderpack.h"
 
 /*!
  * \brief Initializes everything this mod needs, creating its own window

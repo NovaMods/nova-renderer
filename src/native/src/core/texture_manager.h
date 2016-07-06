@@ -7,11 +7,11 @@
 #define RENDERER_TEXTURE_RECEIVER_H
 
 #include <string>
-#include <GL/glm/glm.hpp>
+#include <glm/glm.hpp>
 #include <map>
-#include "../mc/mc_objects.h"
-#include "../gl/glad/glad.h"
-#include "../gl/objects/texture2D.h"
+#include "mc/mc_objects.h"
+#include <glad/glad.h>
+#include "gl/objects/texture2D.h"
 
 /*!
  * \brief Holds all the textures that the Nova Renderer can deal with

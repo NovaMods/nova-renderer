@@ -6,9 +6,9 @@
 
 #include <easylogging++.h>
 
-#include "../gl/windowing/glfw_gl_window.h"
-#include "../utils/utils.h"
-#include "../gl/objects/gl_vertex_buffer.h"
+#include "gl/windowing/glfw_gl_window.h"
+#include "utils/utils.h"
+#include "gl/objects/gl_vertex_buffer.h"
 
 INITIALIZE_EASYLOGGINGPP
 

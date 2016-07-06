@@ -40,6 +40,18 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 
+# ignore library folders
+glfw/
+glm/
+3rdparty/
+!3rdparty/easyloggingpp/
+!3rdparty/glad/
+!3rdparty/miniz/
+build/
+!build/config/
+!build/test/
+
+*.db
 
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm

@@ -3,9 +3,9 @@
 //
 
 #include "glfw_gl_window.h"
-#include "../../io/key_forwarder.h"
-#include "../../core/nova_renderer.h"
-#include "../../utils/utils.h"
+#include "io/key_forwarder.h"
+#include "core/nova_renderer.h"
+#include "utils/utils.h"
 #include <easylogging++.h>
 
 
