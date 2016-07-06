@@ -17,6 +17,7 @@ endfunction()
 # Initialize cmake options
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CONFIGURATION_TYPES Debug) # This seems to be needed to actually change
