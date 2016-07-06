@@ -10,6 +10,27 @@ gl_shader_program::gl_shader_program(std::string name) : linked(false) {
     this->name = name;
 }
 
+gl_shader_program::gl_shader_program(gl_shader_program && other) :
+        uniform_locations(std::move(other.uniform_locations)),
+        attribute_locations(std::move(other.attribute_locations)),
+        name(std::move(other.name)) {
+    if(!other.linked) {
+        throw shader_program_not_linked_exception("Trying to move shader program " + other.name + " but it isn't finished building yet");
+    }
+
+    // Copy the data we need
+    this->linked = other.linked;
+    this->gl_name = other.gl_name;
+
+    // uniform_names, attribute_names, and added_shaders shouldn't be moved, since they are only useful when building
+    // a shader
+
+    // Make the other shader invalid
+    other.gl_name = 0;
+    other.linked = false;
+    other.added_shaders.clear();
+}
+
 void gl_shader_program::add_shader(GLenum shader_type, std::istream & shader_file_stream) {
     if(linked) {
         throw shader_program_already_linked_exception();
@@ -181,6 +202,7 @@ std::vector<std::string> &gl_shader_program::get_uniform_names() {
 
 gl_shader_program::~gl_shader_program() {
     if(linked) {
+        LOG(INFO) << "Deleting program " << gl_name;
         glDeleteProgram(gl_name);
     } else {
         for(GLuint shader : added_shaders) {
@@ -204,3 +226,9 @@ const char * program_linking_failure_exception::what() noexcept {
     return "Program failed to link";
 }
 
+shader_program_not_linked_exception::shader_program_not_linked_exception(std::string name) :
+    msg("Tried to move shader " + name + ", but it's not complete yet") {}
+
+const char * shader_program_not_linked_exception::what() noexcept {
+    return msg.c_str();
+}
