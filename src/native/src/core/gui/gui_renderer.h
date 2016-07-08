@@ -7,11 +7,11 @@
 #define RENDERER_GUI_RENDERER_H
 
 #include <memory>
+#include <core/uniform_buffer_store.h>
 #include "interfaces/ivertex_buffer.h"
 #include "mc/mc_gui_objects.h"
 #include "core/texture_manager.h"
 #include "core/shaders/uniform_buffers.h"
-#include "core/types.h"
 #include "shaderpack_loading/shaderpack.h"
 
 /*!

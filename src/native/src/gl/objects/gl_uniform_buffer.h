@@ -20,13 +20,15 @@ public:
      */
     gl_uniform_buffer(GLuint size);
 
+    gl_uniform_buffer() {};
+
     /*!
      * \brief Deallocates this uniform buffer
      */
     ~gl_uniform_buffer();
 
     /*!
-     * \brief Binds this uniform buffer so we can to things to it
+     * \brief Binds this uniform buffer so we can do things to it
      *
      * \param bindpoint The buffer thing to bind this buffer to
      */
@@ -50,7 +52,7 @@ public:
     template <typename T>
     void send_data(T data) {
         bind();
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(T), data);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(T), &data);
     };
 
 private:

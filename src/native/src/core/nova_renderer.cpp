@@ -6,20 +6,16 @@
 
 #include <easylogging++.h>
 
-#include "gl/windowing/glfw_gl_window.h"
-#include "utils/utils.h"
-#include "gl/objects/gl_vertex_buffer.h"
-
 INITIALIZE_EASYLOGGINGPP
 
 std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-nova_renderer::nova_renderer() : game_window(new glfw_gl_window()),
-                                 gui_renderer_instance(tex_manager, shaders, ubo_manager) {
+nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shaders, ubo_manager) {
 
     nova_config = std::unique_ptr<config>(new config("config/config.json"));
-    nova_config->register_change_listener(game_window);
+    nova_config->register_change_listener(&game_window);
     nova_config->register_change_listener(&shaders);
+    nova_config->register_change_listener(&ubo_manager);
     nova_config->update_change_listeners();
 
     gui_renderer_instance.do_init_tasks();
@@ -28,15 +24,11 @@ nova_renderer::nova_renderer() : game_window(new glfw_gl_window()),
 
     enable_debug();
 
-    glClearColor(1.0, 0.0, 1.0, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
 }
 
 nova_renderer::~nova_renderer() {
-    game_window->destroy();
-}
-
-bool nova_renderer::has_render_available() {
-    return false;
+    game_window.destroy();
 }
 
 void nova_renderer::render_frame() {
@@ -50,12 +42,12 @@ void nova_renderer::render_frame() {
     // Render entities
     // Render transparent things
 
-    game_window->end_frame();
+    game_window.end_frame();
 }
 
 bool nova_renderer::should_end() {
     // If the window wants to close, the user probably clicked on the "X" button
-    return game_window->should_close();
+    return game_window.should_close();
 }
 
 void nova_renderer::init_instance() {
@@ -81,7 +73,8 @@ gui_renderer & nova_renderer::get_gui_renderer() {
 void nova_renderer::create_ubos() {
     // Build all the UBOs
 
-    ubo_manager.emplace("cameraData", new gl_uniform_buffer(sizeof(camera_data)));
+    ubo_manager["cameraData"] = gl_uniform_buffer(sizeof(camera_data));
+    ubo_manager["cameraData"].set_bind_point(20);
 
     // TODO: Make a config file from UBO name to bind point
 }

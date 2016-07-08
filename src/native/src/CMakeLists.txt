@@ -102,6 +102,7 @@ set(NOVA_SOURCE
         core/nova_renderer.cpp
         core/nova_facade.cpp
         core/texture_manager.cpp
+        core/uniform_buffer_store.cpp
         core/gui/gui_renderer.cpp
 
         gl/objects/gl_shader_program.cpp
