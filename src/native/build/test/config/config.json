@@ -1,3 +1,5 @@
 {
-  "loadedShaderpack" : "default"
+  "loadedShaderpack" : "default",
+  "viewWidth": 850,
+  "viewHeight": 480
 }

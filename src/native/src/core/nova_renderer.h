@@ -11,11 +11,12 @@
 #include "mc/mc_objects.h"
 
 #include "nova.h"
-#include "types.h"
 #include "texture_manager.h"
 #include "gui/gui_renderer.h"
 #include "config/config.h"
 #include "shaderpack_loading/shaderpack.h"
+#include "uniform_buffer_store.h"
+#include "../gl/windowing/glfw_gl_window.h"
 
 /*!
  * \brief Initializes everything this mod needs, creating its own window
@@ -54,19 +55,6 @@ public:
      * \brief Destructor
      */
     ~nova_renderer();
-
-    /*!
-     * \brief Checks if Minecraft has recently sent a rendering command
-     *
-     * The original plan for this mod was to use Vulkan as the rendering API and run the renderer in a completely
-     * separate thread from Minecraft itself. This posed a number of excruciating problems, so now I'm using OpenGL from
-     * the same thread as Minecraft. This method is, at present, completely superfluous. However, I'd like to stick to
-     * my original model of running the renderer in a completely separate thread from the rest of the game. I'm not
-     * really sure if OpenGL support sthis, so this method and the infrastructure around it will stay for the time being
-     *
-     * \return Trus if a render command is available for processing, false otherwise
-     */
-    bool has_render_available();
 
     /*!
      * \brief Renders a single frame
@@ -112,7 +100,7 @@ public:
 private:
     // It's not wrapped in uniqur_ptr. Sorry. I need to pass this into a vector, and vectors of unique_ptrs don't quite
     // work in my experience
-    iwindow * game_window;
+    glfw_gl_window game_window;
     texture_manager tex_manager;
 
     shaderpack shaders;

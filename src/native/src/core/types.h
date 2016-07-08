@@ -13,7 +13,4 @@
 #include <memory>
 #include "gl/objects/gl_uniform_buffer.h"
 
-// much easier to type this way
-typedef std::unordered_map<std::string, gl_uniform_buffer *> uniform_buffer_store;
-
 #endif //RENDERER_TYPES_H
