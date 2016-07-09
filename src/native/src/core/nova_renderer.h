@@ -110,11 +110,6 @@ private:
 
     std::unique_ptr<config> nova_config;
 
-    /*!
-     * \brief Creates all the UBOs
-     */
-    void create_ubos();
-
     void enable_debug();
 };
 

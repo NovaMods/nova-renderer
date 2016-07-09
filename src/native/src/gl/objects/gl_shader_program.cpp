@@ -178,12 +178,12 @@ void gl_shader_program::bind() noexcept {
     glUseProgram(gl_name);
 }
 
-int gl_shader_program::get_uniform_location(std::string &uniform_name) const {
+int gl_shader_program::get_uniform_location(std::string &uniform_name) const noexcept {
     LOG(INFO) << "Geting uniform location for uniform " << uniform_name;
     return 0;
 }
 
-int gl_shader_program::get_attribute_location(std::string &attribute_name) const {
+int gl_shader_program::get_attribute_location(std::string &attribute_name) const noexcept {
     LOG(INFO) << "Getting attribute location for attribute " << attribute_name;
     return 0;
 }
@@ -209,6 +209,16 @@ gl_shader_program::~gl_shader_program() {
             glDeleteShader(shader);
         }
     }
+}
+
+void gl_shader_program::link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept {
+    GLuint buffer_index = glGetUniformBlockIndex(gl_name, buffer.get_name().c_str());
+    if(buffer_index == GL_INVALID_INDEX) {
+        LOG(ERROR) << buffer.get_name() << " is not a valid identifier for program " << gl_name;
+        // return;
+    }
+    LOG(TRACE) << "Shader: " << gl_name << " index: " << buffer_index << " bind point " << buffer.get_bind_point();
+    glUniformBlockBinding(gl_name, buffer_index, buffer.get_bind_point());
 }
 
 shader_file_not_found_exception::shader_file_not_found_exception(std::string file_name) :

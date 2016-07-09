@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <glad/glad.h>
+#include "gl_uniform_buffer.h"
 
 class shader_program_already_linked_exception : public std::exception {
 public:
@@ -104,6 +105,8 @@ public:
      */
     void bind() noexcept;
 
+    void link_to_uniform_buffer(const gl_uniform_buffer & buffer) noexcept;
+
     /*!
      * \brief Gets the locaiton of the given uniform variable
      *
@@ -114,7 +117,7 @@ public:
      *
      * \throws std::invalid_value if the given uniform name isn't in this shader
      */
-    int get_uniform_location(std::string & uniform_name) const;
+    int get_uniform_location(std::string & uniform_name) const noexcept;
 
     /*!
     * \brief Gets the locaiton of the given attribute variable
@@ -126,7 +129,7 @@ public:
     *
     * \throws std::invalid_value if the given attribute name isn't in this shader
     */
-    int get_attribute_location(std::string & attribute_name) const;
+    int get_attribute_location(std::string & attribute_name) const noexcept;
 
     /*!
      * \brief Sets the given integer as the data for the uniform variable with the given location

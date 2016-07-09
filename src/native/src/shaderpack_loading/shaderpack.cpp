@@ -9,6 +9,7 @@
 #include <fstream>
 #include <utility>
 #include <easylogging++.h>
+#include <core/uniform_buffer_store.h>
 
 shaderpack::shaderpack() {
     default_shader_names.push_back("gui");
@@ -115,3 +116,11 @@ void shaderpack::on_config_change(nlohmann::json &new_config) {
 gl_shader_program & shaderpack::get_shader(std::string shader_name) {
     return shaders[shader_name];
 }
+
+void shaderpack::link_up_uniform_buffers(uniform_buffer_store &ubo_store) {
+    for(auto & shader : shaders) {
+        ubo_store.register_all_buffers_with_shader(shader.second);
+    }
+}
+
+

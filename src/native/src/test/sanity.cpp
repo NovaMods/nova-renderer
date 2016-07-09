@@ -19,7 +19,7 @@ static void sanity::check_gl_version() {
     LOG(INFO) << "Using OpenGL version " << gl_version_major << "." << gl_version_minor;
 
     assert(gl_version_major == 4);
-    assert(gl_version_minor == 3);
+    assert(gl_version_minor == 5);
 }
 
 void sanity::run_all() {

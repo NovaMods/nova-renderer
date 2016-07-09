@@ -1,9 +1,9 @@
-#version 430
+#version 450
 
 in vec2 uv;
 
 out vec3 color;
 
 void main() {
-    color = vec3(uv, 0);
+    color = vec3(uv, 1);
 }
