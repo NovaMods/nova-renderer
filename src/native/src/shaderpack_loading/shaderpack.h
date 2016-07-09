@@ -8,6 +8,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <core/uniform_buffer_store.h>
 
 #include "gl/objects/gl_shader_program.h"
 #include "config/config.h"
@@ -26,6 +27,9 @@ public:
      */
 
     void on_config_change(nlohmann::json & new_config);
+
+    void link_up_uniform_buffers(uniform_buffer_store &ubo_store);
+
 private:
     const std::string SHADERPACK_FOLDER_NAME = "shaders";
 

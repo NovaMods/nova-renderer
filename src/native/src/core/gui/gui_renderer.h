@@ -11,7 +11,7 @@
 #include "interfaces/ivertex_buffer.h"
 #include "mc/mc_gui_objects.h"
 #include "core/texture_manager.h"
-#include "core/shaders/uniform_buffers.h"
+#include "core/shaders/uniform_buffer_definitions.h"
 #include "shaderpack_loading/shaderpack.h"
 
 /*!

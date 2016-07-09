@@ -20,7 +20,7 @@ nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shaders, ubo
 
     gui_renderer_instance.do_init_tasks();
 
-    create_ubos();
+    shaders.link_up_uniform_buffers(ubo_manager);
 
     enable_debug();
 
@@ -68,15 +68,6 @@ uniform_buffer_store &nova_renderer::get_ubo_manager() {
 
 gui_renderer & nova_renderer::get_gui_renderer() {
    return gui_renderer_instance;
-}
-
-void nova_renderer::create_ubos() {
-    // Build all the UBOs
-
-    ubo_manager["cameraData"] = gl_uniform_buffer(sizeof(camera_data));
-    ubo_manager["cameraData"].set_bind_point(20);
-
-    // TODO: Make a config file from UBO name to bind point
 }
 
 std::string translate_debug_source(GLenum source) {

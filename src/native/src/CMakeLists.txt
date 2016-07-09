@@ -136,7 +136,7 @@ set(NOVA_HEADERS
         core/renderer/batch_builder.h
         core/renderer/model_renderer.h
 
-        core/shaders/uniform_buffers.h
+        core/shaders/uniform_buffer_definitions.h
 
         core/nova.h
         core/nova_renderer.h
