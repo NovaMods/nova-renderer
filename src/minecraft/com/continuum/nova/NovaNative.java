@@ -110,10 +110,11 @@ public interface NovaNative extends Library {
          * might add more buttons in the future, depending on how badly mod authors break everything
          */
         public mc_gui_button[] buttons = new mc_gui_button[22];
+        public int num_buttons;
 
         @Override
         public List<String> getFieldOrder() {
-            return Collections.singletonList("buttons");
+            return Arrays.asList("buttons", "num_buttons");
         }
     }
 

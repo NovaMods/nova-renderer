@@ -53,7 +53,10 @@ public class RenderCommandBuilder {
             new_button.text = button.displayString;
 
             set_gui_screen_command.screen.buttons[cur_button] = new_button;
+            cur_button++;
         }
+
+        set_gui_screen_command.screen.num_buttons = cur_button;
 
         return set_gui_screen_command;
     }
