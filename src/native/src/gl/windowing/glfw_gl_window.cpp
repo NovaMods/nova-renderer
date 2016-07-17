@@ -8,6 +8,8 @@
 #include "utils/utils.h"
 #include <easylogging++.h>
 
+#include <pthread.h>
+
 
 void error_callback(int error, const char * description) {
     LOG(ERROR) << "Error " << error << ": " << description;
@@ -55,6 +57,9 @@ int glfw_gl_window::init() {
     glViewport(0, 0, window_dimensions.x, window_dimensions.y);
 
     glfwSetKeyCallback(window, key_callback);
+
+    pthread_t thread = pthread_self();
+    LOG(DEBUG) << "Initialized context in thread " << thread;
 
     return 0;
 }

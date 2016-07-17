@@ -8,6 +8,7 @@
 
 #include <glad/glad.h>
 #include <c++/easylogging++.h>
+#include <pthread.h>
 
 /*!
  * \brief Represents a uniform buffer, which can be used for whatever
@@ -70,9 +71,6 @@ public:
     void send_data(T data) {
         bind();
         GLvoid * p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-
-        int err = glGetError();
-        LOG(DEBUG) << "Error code " << err;
 
         memcpy(p, &data, sizeof(T));
         //glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(T), &data);
