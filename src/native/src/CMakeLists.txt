@@ -90,7 +90,7 @@ include_directories(SYSTEM
         "${3RD_PARTY_DIR}/miniz/src"
         "${3RD_PARTY_DIR}/json/src")
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} ${GLFW3_LIBRARY} ${OPENGL_LIBRARIES})
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} ${GLFW3_LIBRARY} ${OPENGL_LIBRARIES} pthread)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
