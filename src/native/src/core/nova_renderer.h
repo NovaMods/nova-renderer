@@ -6,6 +6,7 @@
 #define RENDERER_VULKAN_MOD_H
 
 #include <memory>
+#include <pthread.h>    // I'd love to use <thread>, but apparently my compiler doesn't support it. Just a few more days until Linux...
 
 #include "interfaces/iwindow.h"
 #include "mc/mc_objects.h"
@@ -25,6 +26,13 @@
  *
  * This class is kinda a facade and kinda a God class that holds all the everything that the mod needs. I'd like it to
  * be more of a facade but idk. Facades are hard.
+ *
+ * This class's instance runs completely in a separate thread. Whatever you want to use it for, it runs in a separate
+ * thread. Calling froman application with a million threads already? Too bad, separate thread.
+ *
+ * I'm not worried about data races. Data moves into this thread, then gets rendered. The only data racey thing are the
+ * flags that specify rendering commands are available. However, I'm using atomics for those, so I don't expect too many
+ * problems. If I notice the renderer missing render commands, I'll re-evaluate the data integrity scheme
  */
 class nova_renderer {
 public:
@@ -59,10 +67,9 @@ public:
     /*!
      * \brief Renders a single frame
      *
-     * As stated in the docs for ::has_render_available, the original plan was to have the renderer in a separate
-     * thread. This method would be called only if a render command was available, and the thread would just hang out
-     * and do nothing if a rendering command was not available. I'm not sure if this is possible with OpenGL, and until
-     * I know for sure I'm keeping traces of the original model in the code
+     * This method runs in a separate thread from the rest of the methods in this class. This is because the other
+     * methods are called by Minecraft, from the Minecraft thread, while this method is run in a separate thread. This
+     * is done to keep the OpenGL contexts separate. Hopefully it'll work
      */
     void render_frame();
 
@@ -98,8 +105,8 @@ public:
     gui_renderer & get_gui_renderer();
 
 private:
-    // It's not wrapped in uniqur_ptr. Sorry. I need to pass this into a vector, and vectors of unique_ptrs don't quite
-    // work in my experience
+    static pthread_t render_thread;
+
     glfw_gl_window game_window;
     texture_manager tex_manager;
 

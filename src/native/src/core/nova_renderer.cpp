@@ -9,6 +9,17 @@
 INITIALIZE_EASYLOGGINGPP
 
 std::unique_ptr<nova_renderer> nova_renderer::instance;
+pthread_t nova_renderer::render_thread;
+
+void * run_render(void * ignored) {
+    nova_renderer::instance = std::unique_ptr<nova_renderer>(new nova_renderer());
+
+    while(!nova_renderer::instance->should_end()) {
+        nova_renderer::instance->render_frame();
+    }
+
+    return nullptr;
+}
 
 nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shaders, ubo_manager) {
 
@@ -51,7 +62,8 @@ bool nova_renderer::should_end() {
 }
 
 void nova_renderer::init_instance() {
-    instance = std::unique_ptr<nova_renderer>(new nova_renderer());
+    pthread_create(&render_thread, nullptr, run_render, nullptr);
+    pthread_join(render_thread, nullptr);
 }
 
 texture_manager & nova_renderer::get_texture_manager() {
