@@ -21,15 +21,8 @@ gui_renderer::~gui_renderer() {
 }
 
 void gui_renderer::set_current_screen(mc_gui_screen *screen) {
-    // Check the the new screen is different
-    if(cur_screen != NULL && is_same_screen(*cur_screen, *screen)) {
-        return;
-    }
-
-    cur_screen = screen;
-
-    build_gui_geometry();
-    LOG(INFO) << "GUI geometry built successfully";
+    new_screen = *screen;
+    has_screen_available.store(true);
 }
 
 void gui_renderer::render() {
@@ -46,14 +39,14 @@ void gui_renderer::render() {
     cur_screen_buffer->draw();
 }
 
-bool gui_renderer::is_same_screen(mc_gui_screen &screen1, mc_gui_screen &screen2) const {
+bool gui_renderer::is_different_screen(mc_gui_screen &screen1, mc_gui_screen &screen2) const {
     for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
         if(same_buttons(screen1.buttons[i], screen2.buttons[i])) {
-            return false;
+            return true;
         }
     }
 
-    return true;
+    return false;
 }
 
 bool gui_renderer::same_buttons(mc_gui_button & button1, mc_gui_button & button2) const {
@@ -72,8 +65,8 @@ void gui_renderer::build_gui_geometry() {
     std::vector<unsigned short> indices;
     unsigned short start_pos = 0;
 
-    for(int i = 0; i < cur_screen->num_buttons; i++) {
-        mc_gui_button & button = cur_screen->buttons[i];
+    for(int i = 0; i < cur_screen.num_buttons; i++) {
+        mc_gui_button & button = cur_screen.buttons[i];
 
         // TODO: More switches to figure out exactly which UVs we should use
         std::vector<float> & uv_buffer = basic_unpressed_uvs;
@@ -142,5 +135,14 @@ void gui_renderer::add_vertex(std::vector<float> &vertex_buffer, int x, int y, f
     vertex_buffer.push_back(u);
     vertex_buffer.push_back(v);
 }
+
+void gui_renderer::update() {
+    if(has_screen_available && is_different_screen(cur_screen, new_screen)) {
+        cur_screen = new_screen;
+        build_gui_geometry();
+    }
+}
+
+
 
 

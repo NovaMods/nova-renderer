@@ -7,7 +7,8 @@
 #define RENDERER_GUI_RENDERER_H
 
 #include <memory>
-#include <core/uniform_buffer_store.h>
+#include <atomic>
+#include "core/uniform_buffer_store.h"
 #include "interfaces/ivertex_buffer.h"
 #include "mc/mc_gui_objects.h"
 #include "core/texture_manager.h"
@@ -32,9 +33,6 @@
  * completely rebuild the GUI geometry when the new gui screen is different from the current GUI screen. I do this so I
  * don't have to send a lot of information to the GPU. While it's true that the GUI geometry wil be relatively small and
  * probably not a bottleneck, I want to ensure that every part of this mod is built for speed and efficiency.
- *
- * I originally wanted to use a UBO for the MVP matrix. However, upon further consideration I've decided that the GUI
- * MVP matrix will be constant, so there's no need to take up a UBO with it.
  */
 class gui_renderer {
 public:
@@ -72,6 +70,12 @@ public:
      */
     void do_init_tasks();
 
+    /*!
+     * \brief Checks to see if a new GUI screen is available. If so, sets the current GUI screen to the new GUI screen
+     * and re-builds GUI geometry
+     */
+    void update();
+
 private:
     std::vector<float> basic_unpressed_uvs = {
             0.0f,       0.3359375f,
@@ -92,7 +96,7 @@ private:
             2, 1, 3
     };
 
-    mc_gui_screen * cur_screen = NULL;
+    mc_gui_screen cur_screen;
 
     texture_manager & tex_manager;
     shaderpack & shaders;
@@ -103,6 +107,10 @@ private:
 
     std::unique_ptr<ivertex_buffer> cur_screen_buffer;
 
+    // Memory that will be accessed from both the render thread and the Java thread
+    mc_gui_screen new_screen;
+    std::atomic<bool> has_screen_available;
+
     /*!
      * \brief Compares two mc_gui_screen objects, determining if they represent the same visual data
      *
@@ -110,12 +118,12 @@ private:
      * mc_gui_screen to be a C struct so I can properly assign to it from Java. The compiler yelled at me about "You
      * can't compare structs" so I couldn't use the == operator and here we are.
      */
-    bool is_same_screen(mc_gui_screen & screen1, mc_gui_screen & screen2) const;
+    bool is_different_screen(mc_gui_screen & screen1, mc_gui_screen & screen2) const;
 
     /*!
      * \brief Determines whether or not the two given buttons are the same
      *
-     * Two buttons are the same if they have the same position, size, and pressed status. Is they can be drawn using
+     * Two buttons are the same if they have the same position, size, and pressed status. If they can be drawn using
      * the exact same geometry and texture, then they are the same.
      *
      * \param button1 The first button to compare
