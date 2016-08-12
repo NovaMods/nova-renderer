@@ -38,7 +38,7 @@ public class SettingsCommandBuilder {
         Entity viewEntity = mc.getRenderViewEntity();
 
         if(Utils.exists(viewEntity)) {
-            settings.has_blindness = ((EntityLivingBase) viewEntity).isPotionActive(MobEffects.blindness);
+            settings.has_blindness = ((EntityLivingBase) viewEntity).isPotionActive(MobEffects.BLINDNESS);
         }
 
         return settings;

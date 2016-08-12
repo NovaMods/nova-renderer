@@ -6,7 +6,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.RegionRenderCache;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.MobEffects;
@@ -78,7 +77,7 @@ public class RenderCommandBuilder {
         NovaNative.mc_block[] blocks = new NovaNative.mc_block[16 * 16 * 16];
 
         // We really only want an array of block IDs
-        IBlockAccess blockAccess = new RegionRenderCache(world, chunkCoordinates.add(-1, -1, -1), chunkCoordinates.add(16, 16, 16), 1);
+        /*IBlockAccess blockAccess = new RegionRenderCache(world, chunkCoordinates.add(-1, -1, -1), chunkCoordinates.add(16, 16, 16), 1);
         for(BlockPos.MutableBlockPos curPos : BlockPos.getAllInBoxMutable(chunkCoordinates, chunkCoordinates.add(15, 15, 15))) {
             IBlockState blockState = blockAccess.getBlockState(curPos);
             Block block = blockState.getBlock();
@@ -89,9 +88,9 @@ public class RenderCommandBuilder {
             cur_block.is_on_fire = false;
 
             blocks[curPos.getX() + curPos.getY() * 16 + curPos.getZ() * 256] = cur_block;
-        }
+        }*/
 
-        chunk.blocks = (NovaNative.mc_block[]) blocks[0].toArray(blocks);
+        //chunk.blocks = (NovaNative.mc_block[]) blocks[0].toArray(blocks);
 
         return chunk;
     }
