@@ -25,7 +25,7 @@ set(CMAKE_CONFIGURATION_TYPES Debug) # This seems to be needed to actually chang
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# Setup 3rd party dependacies.
+# Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
@@ -196,7 +196,6 @@ endif()
 
 #set_target_properties(nova-renderer-obj PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
-
 # Not sure if this is actually doing anything
 if(GLFW_COMPILED)
         add_dependencies(nova-renderer glfw3)
@@ -226,8 +225,8 @@ add_executable(nova-test ${TEST_SOURCE_FILES})
 add_dependencies(nova-test nova-renderer-static)
 target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
 target_link_libraries(nova-test nova-renderer-static ${COMMON_LINK_LIBS})
-set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test")
+set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}../test")
 # Needed for a similar reason as the libary
 if (MSVC)
-        nova_set_all_target_outputs(nova-test "${CMAKE_BINARY_DIR}/test")
+        nova_set_all_target_outputs(nova-test "run")
 endif()
