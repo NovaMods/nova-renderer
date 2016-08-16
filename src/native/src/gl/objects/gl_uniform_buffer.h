@@ -7,7 +7,7 @@
 #define RENDERER_GL_UNIFORM_BUFFER_H
 
 #include <glad/glad.h>
-#include <c++/easylogging++.h>
+#include <easylogging++.h>
 #include <pthread.h>
 
 /*!
