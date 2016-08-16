@@ -225,7 +225,8 @@ add_executable(nova-test ${TEST_SOURCE_FILES})
 add_dependencies(nova-test nova-renderer-static)
 target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
 target_link_libraries(nova-test nova-renderer-static ${COMMON_LINK_LIBS})
-set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}../test")
+set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test")
+
 # Needed for a similar reason as the libary
 if (MSVC)
         nova_set_all_target_outputs(nova-test "run")
