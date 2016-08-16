@@ -5,6 +5,8 @@ REM Purpose:     Handle the buid lifecycle of the Nova Renderer
 REM Author:      dexcelstraun7@gmail.com
 REM Revision:    August 2016 - initial version
 
+REM When downloading everything, we should download the pre-build GLFW binaries because building from source code is hard
+
 SETLOCAL ENABLEEXTENSIONS
 SET me=%~n0
 SET parent=%~dp0
@@ -25,6 +27,9 @@ IF /I "%1" == "help" (
     SET PREFIX_PATH=%~2
     SET CXX=%3
     CALL :build
+    EXIT /B %errno%
+) ELSE IF /I "%1" == "clean" (
+    CALL :clean
     EXIT /B %errno%
 )
 
@@ -47,6 +52,18 @@ IF /I "%1" == "help" (
     ECHO:
     PAUSE
 
+REM Cleans up all the compiled files. ALL OF THEM
+REM This includes Java .class files, all files generated from the C++ code, the things that CMake generates, etc
+:clean
+    CD src\native
+    mingw32-make -f Makefile clean
+    DEL CMakeCache.txt
+    DEL cmake_install.cmake
+
+    ECHO Generated files deleted
+
+    EXIT /B
+
 :build
     ECHO Starting compilation of Nova...
     ECHO:
@@ -55,7 +72,7 @@ IF /I "%1" == "help" (
     )
 
     REM make sure the compiler we have selected exists on the system path
-    call %%CXX%%
+    call %%CXX%% 2> nul
     IF /I "%ERRORLEVEL%" EQU "9009" (
         ECHO It seems like your specified compiler doesn't exist on your system PATH. That's going to be a problem. This script will still generate build files for you, but it won't be able to actually compile the native code. You'll have to do that manually
         SET /A error^|=%ERROR_COMPILER_NOT_PRESENT%
@@ -64,7 +81,12 @@ IF /I "%1" == "help" (
     CD src\native
 
     CALL :generatebuildfiles
-    CALL :compilenova
+    CALL :compilenative
+    CALL :movedlls
+
+    cd ..\..
+
+    CALL :compilejava
 
     EXIT /B
 
@@ -72,15 +94,16 @@ REM Tries to find a compiler on the system path. First searches for G++, then MS
 :findcompiler
     ECHO Compiler not specified, trying to auto-detect...
     REM try to use G++, then try to use msvc
-    g++ --version > nul
-    if /I "%ERRORLEVEL%" EQU "9009" (
+    g++ --version
+    IF /I "%ERRORLEVEL%" EQU "9009" (
         REM g++ not found. Try MSVC
         REM Google tells me that trying to use MSVC from the command line is madness itself, so I'll just ask the user what
         REM compiler they want
 
         SET /P "Could not auto-detect C++ compiler. What C++ compiler would you like to use? We support g++ and msvc " %cxx%
 
-    ) else (
+    ) ELSE (
+        ECHO G++ found. Assuming MinGW.
         SET CXX=g++
     )
     EXIT /B
@@ -101,7 +124,7 @@ REM Generates the build files needed to, you know, build Nova
     EXIT /B
 
 REM executes compilation of the C++ part of Nova
-:compilenova
+:compilenative
     REM first, we need to check if we're using G++ or MSVC
     IF /I "%CXX%" EQU "g++" (
         ECHO Compiling with G++ under MinGW
@@ -121,4 +144,16 @@ REM executes compilation of the C++ part of Nova
 
     )
 
+    EXIT /B
+
+REM This one is simple. All we need to do is copy some files to where they need to be
+REM Copying nova is easy. nova-renderer.dll hangs out in the root directory, so we'll just copy it to where we need it
+REM If we're using MinGW, we probably need to copy MinGW's libc++ thing. Where that lives depends on a lot.
+:movedlls
+    XCOPY /Y libnova-renderer.dll ..\..\jars\versions\1.10\1.10-natives\
+    EXIT /B
+
+REM compiles the Java code. This is simple
+:compilejava
+    CALL gradle build
     EXIT /B
