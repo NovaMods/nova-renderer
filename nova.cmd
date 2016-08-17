@@ -24,33 +24,67 @@ IF /I "%1" == "help" (
     CALL :showhelp
     EXIT /B 0
 ) ELSE IF /I "%1" == "build" (
-    SET PREFIX_PATH=%~2
-    SET CXX=%3
+    SET PREFIX_PATH=%~3
+    SET CXX=%2
     CALL :build
     EXIT /B %errno%
 ) ELSE IF /I "%1" == "clean" (
     CALL :clean
+    EXIT /B %errno%
+) ELSE IF /I "%1" == "setup" (
+    CALL :setup
     EXIT /B %errno%
 )
 
 :showhelp
     ECHO This is a utility to build, run, and package the Minecraft Nova Renderer
     ECHO Usage: 
-    ECHO    nova help
-    ECHO    nova build ^<CMAKE_PREFIX_PATH^> ^<compiler name^>
-    ECHO    nova run
+    ECHO     nova help
+    ECHO     nova setup
+    ECHO     nova build ^<compiler name^> ^<CMAKE_PREFIX_PATH^>
+    ECHO     nova clean
+    ECHO     nova run
     ECHO:
     ECHO Command detail:
     ECHO     help        Print this message
+    ECHO     setup       Downloads MCP, sets up MCP, downloads GLM and GLFW to the correct directories
     ECHO     build       Compile the Nova Renderer
+    ECHO     clean       Deletes all generated files, including generated build scripts and compiled code
     ECHO     run         Launch Minecraft with the Nova Renderer
     ECHO:
     ECHO Arguments for build:
-    ECHO     ^<CMAKE_PREFIX_PATH^>  Required. Tells CMake the prefix path where all your dependencies are installed. Eventually this script will manage downloading all dependencies and put them in a good location, but this will work for now
-    ECHO:
     ECHO     ^<compiler name^>      Optional but encouraged. Specify the C++ compiler to use. Supported options are g++ and msvc. If this parameter is not present, this script will try to detect if you have g++ or msvc installed, and will use whichever it finds
     ECHO:
+    ECHO     ^<CMAKE_PREFIX_PATH^>  Optional. Tells CMake the prefix path where all your dependencies are installed. Eventually this script will manage downloading all dependencies and put them in a good location, but this will work for now
+    ECHO:
+    ECHO     Note that, because I'm bad at scripting, if you want to specify the prefix path, you also have to specify the compiler name. However, you can put the compiler name all by itself and there will be no problems
+    ECHO:
     PAUSE
+
+REM Downloads all the super spicy dependencies and spices them up
+REM Now with extra spice!
+:setup
+    CALL :setupmcp
+    CALL :applypatches
+    CALL :setupcxxdependencies
+    EXIT /B
+
+REM Basic idea: download MCP, unzip it, run the decompile.bat, party
+REM Advanced idea: Create a new folder for MCP, download it there
+:setupmcp
+    MKDIR mcp
+    CD mcp
+
+    EXIT /B
+
+REM applies the soruce code patches which integrate Nova into Minecraft
+REM in the future, this may go away and I might figure out how to do this at runtime. That would be cool because then I could do it in the real world
+:applypatches
+    EXIT /B
+
+REM Downloads the C++ code's dependencies (GLM and GLFW for now), unzipping and copying where appropriate
+:setupcxxdependencies
+    EXIT /B
 
 REM Cleans up all the compiled files. ALL OF THEM
 REM This includes Java .class files, all files generated from the C++ code, the things that CMake generates, etc
