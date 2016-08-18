@@ -156,6 +156,37 @@ function Invoke-CMake([string]$generator) {
 
 ################################################################################
 #                                                                              #
+#  Clean                                                                       #
+#                                                                              #
+################################################################################
+
+function Remove-BuildFiles {
+    <#
+    .SYNOPSIS
+        Removes all the build files, including generated CMake files, compiled code, and any makefiles that happened to happen
+    #>
+
+    cd src\native
+
+    # Remove CMake files
+    Remove-Item "CMakeFiles","CMakeCache.txt" -Recurse
+
+    # Check for MinGW files
+    if(Test-Path "Makefile") {
+        # We're dealing with a MinGW build
+        Remove-Item "Makefile","libnova-renderer.dll","libnova-renderer.dll.a"
+    }
+
+    if(Test-Path "nova-renderer.sln") {
+        # TODO: Verify that this is the name of the Visual Studio solution, and remove all the files involved
+        Remove-Item "nova-renderer.dll","nova-renderer.dll.lib"
+    }
+
+    cd ..\..
+}
+
+################################################################################
+#                                                                              #
 #  Main                                                                        #
 #                                                                              #
 ################################################################################
@@ -169,7 +200,7 @@ if($build -eq $true) {
 }
 
 if($clean -eq $true) {
-    Clean-Nova
+    Remove-BuildFiles
 }
 
 if($run -eq $true) {
