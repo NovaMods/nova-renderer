@@ -78,7 +78,7 @@ function New-NovaEnvironment {
     Write-Host "Unzipped MCP" 
     Remove-Item "mcp.zip"
     Write-Host "Deleted MCP zip (but not really)"
-    robocopy "." "..\" "*"
+    robocopy "." "..\" "*" /s
     Write-Host "Copied MCP files to the root directory"
     Set-Location ".."
     Write-Host "Followed the files I've copied"
@@ -229,6 +229,16 @@ function Remove-BuildFiles {
 
 ################################################################################
 #                                                                              #
+#  Run                                                                         #
+#                                                                              #
+################################################################################
+
+function Invoke-Nova {
+
+}
+
+################################################################################
+#                                                                              #
 #  Main                                                                        #
 #                                                                              #
 ################################################################################
@@ -246,5 +256,5 @@ if($clean -eq $true) {
 }
 
 if($run -eq $true) {
-    # TODO: Invoke-Nova
+    Invoke-Nova
 }
