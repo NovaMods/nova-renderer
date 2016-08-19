@@ -63,28 +63,31 @@ function New-NovaEnvironment {
         Sets up Nova in a new environment by downloading MCP, unpacking it, moving it to the right location, and applying the source code transformations
     #>
 
+    Write-Host "We're at $PSScriptRoot"
+
     New-Item "mcp" -ItemType Directory
     Write-Host "Created directory for MCP to live in"
     Set-Location "mcp"
     Write-Host "Moved to MCP directory"
 
     $wc = New-Object System.Net.WebClient
-    $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "mcp.zip")
+    $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
     Write-Host "Downloaded MCP successfully"
 
-    Unzip -zipfile "mcp.zip" -outpath "."
+    Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
     Write-Host "Unzipped MCP" 
-    # Remove-Item "mcp.zip"
+    Remove-Item "mcp.zip"
     Write-Host "Deleted MCP zip (but not really)"
     robocopy "." "..\" "*"
     Write-Host "Copied MCP files to the root directory"
     Set-Location ".."
     Write-Host "Followed the files I've copied"
-    .\decompile.bat
+    cmd.exe /C "$PSScriptRoot/decompile.bat"
     Write-Host "Decompiled MCP"
 }
 
 function Unzip([string]$zipfile, [string]$outpath) {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath)
 }
 
