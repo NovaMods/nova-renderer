@@ -64,16 +64,24 @@ function New-NovaEnvironment {
     #>
 
     New-Item "mcp" -ItemType Directory
+    Write-Host "Created directory for MCP to live in"
     Set-Location "mcp"
+    Write-Host "Moved to MCP directory"
 
     $wc = New-Object System.Net.WebClient
     $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "mcp.zip")
+    Write-Host "Downloaded MCP successfully"
 
     Unzip -zipfile "mcp.zip" -outpath "."
-    Remove-Item "mcp.zip"
+    Write-Host "Unzipped MCP" 
+    # Remove-Item "mcp.zip"
+    Write-Host "Deleted MCP zip (but not really)"
     robocopy "." "..\" "*"
+    Write-Host "Copied MCP files to the root directory"
     Set-Location ".."
+    Write-Host "Followed the files I've copied"
     .\decompile.bat
+    Write-Host "Decompiled MCP"
 }
 
 function Unzip([string]$zipfile, [string]$outpath) {
