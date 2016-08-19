@@ -58,8 +58,26 @@ param (
 function New-NovaEnvironment {
     <#
     .SYNOPSIS
-        
+        Sets up Nova in a new environment
+    .DESCRIPTION
+        Sets up Nova in a new environment by downloading MCP, unpacking it, moving it to the right location, and applying the source code transformations
     #>
+
+    New-Item "mcp" -ItemType Directory
+    Set-Location "mcp"
+
+    $wc = New-Object System.Net.WebClient
+    $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "mcp.zip")
+
+    Unzip -zipfile "mcp.zip" -outpath "."
+    Remove-Item "mcp.zip"
+    robocopy "." "..\" "*"
+    Set-Location ".."
+    .\decompile.bat
+}
+
+function Unzip([string]$zipfile, [string]$outpath) {
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath)
 }
 
 ################################################################################
@@ -217,5 +235,5 @@ if($clean -eq $true) {
 }
 
 if($run -eq $true) {
-    Invoke-Nova
+    # TODO: Invoke-Nova
 }
