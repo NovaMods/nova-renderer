@@ -242,7 +242,7 @@ function Invoke-Nova {
     Write-Host "Launching Nova..."
     
     Set-Location "jars"
-    java.exe "..\bin\minecraft\Start.class"
+    java.exe "$PSScriptRoot\src\minecraft\Start"
 }
 
 ################################################################################
