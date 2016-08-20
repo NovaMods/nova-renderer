@@ -234,7 +234,15 @@ function Remove-BuildFiles {
 ################################################################################
 
 function Invoke-Nova {
+    <#
+    .SYNOPSIS
+        Lanuches Nova from the correct directory
+    #>
 
+    Write-Host "Launching Nova..."
+    
+    Set-Location "jars"
+    java.exe "..\bin\minecraft\Start.class"
 }
 
 ################################################################################
