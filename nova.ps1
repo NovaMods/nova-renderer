@@ -242,7 +242,10 @@ function Invoke-Nova {
     Write-Host "Launching Nova..."
     
     Set-Location "jars"
-    java.exe "$PSScriptRoot\src\minecraft\Start"
+    $env = "-Djava.library.path=$PSScriptRoot\jars\versions\1.10\1.10-natives"
+    $jarfile = "$PSScriptRoot\build\libs\Nova Renderer-0.3.jar"
+    . java $env -jar $jarfile
+    Set-Location ".."
 }
 
 ################################################################################
