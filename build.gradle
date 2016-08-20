@@ -7,9 +7,7 @@
  * build the installer
  */
 
-// Apply the java plugin to add support for Java, and the applicatio plugin so the code can be run
 apply plugin: 'java'
-apply plugin: 'application'
 
 // Set Nova's settings
 sourceCompatibility = 1.8
@@ -17,13 +15,22 @@ version = '0.3'
 jar {
     manifest {
         attributes 'Implementation-Title': 'Nova Renderer',
-                   'Implementation-Version': version
+                   'Implementation-Version': version,
+                   'Main-Class': 'Start'
     }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 }
 
-// Some setting so we can run Nova
-mainClassName = "Start"
-applicationDefaultJvmArgs = ["-Djava.library.path=" + rootDir + "versions/1.10/1.10-natives"]
+task fatjar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Nova Renderer',
+                   'Implementation-Version': version,
+                   'Main-Class': 'Start'
+    }
+    baseName = project.name + "-all"
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
 
 // Set the source directory
 sourceSets {
@@ -33,7 +40,6 @@ sourceSets {
         }
     }
 }
-
 // In this section you declare where to find the dependencies of your project
 repositories {
     // Use 'jcenter' for resolving your dependencies.
