@@ -1,0 +1,13 @@
+498,509d497
+<     public float getFogColorRed() {
+<         return fogColorRed;
+<     }
+< 
+<     public float getFogColorGreen() {
+<         return fogColorGreen;
+<     }
+< 
+<     public float getFogColorBlue() {
+<         return fogColorBlue;
+<     }
+< 

@@ -144,7 +144,7 @@ function New-MinGWNovaBuild {
         mingw32-make -f Makefile nova-renderer
 
         # Copy output DLL to the correct location
-        robocopy "." "..\..\run\" "libnova-renderer.dll" 
+        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "libnova-renderer.dll" 
 
         Write-Host "Copied Nova, but you're going to have to put libstc++.dll on your path somewhere, or else you won't be able to run Nova."
 
@@ -169,7 +169,7 @@ function New-VisualStudioBuild {
 
         # Copy the DLL to the correct location
         # TODO: Verify that this is the name of the DLL
-        robocopy "." "..\..\run\" "nova-renderer.dll" 
+        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "nova-renderer.dll" 
     } else {
         Write-Error "Could not call the Visual Studio make tool, unable to build Nova. Please enstall Visual Stusio 2015 and ensure that devenv.exe is on your path"
     }

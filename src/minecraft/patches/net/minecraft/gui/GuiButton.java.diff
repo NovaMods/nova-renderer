@@ -1,0 +1,5 @@
+154,157d153
+<     public int getButtonHeight() {
+<         return height;
+<     }
+< 
