@@ -11,6 +11,8 @@
 gui_renderer::gui_renderer(texture_manager & textures, shaderpack & shaders, uniform_buffer_store & uniform_buffers) :
         tex_manager(textures), shaders(shaders), ubo_manager(uniform_buffers) {
     LOG(INFO) << "Created GUI Renderer";
+
+    setup_buffers();
 }
 
 gui_renderer::~gui_renderer() {
@@ -27,8 +29,9 @@ void gui_renderer::render() {
     gui_shader.bind();
 
     // Bind the GUI buttons texture to texture unit 0
-    //texture2D & gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
-    //gui_tex.bind(GL_TEXTURE0);
+    // Commented out because we don't support textures yet. Not really.
+    // texture2D& gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
+    // gui_tex.bind(GL_TEXTURE0);
 
     // Draw the 2D GUI geometry
     cur_screen_buffer->set_active();
@@ -117,10 +120,6 @@ void gui_renderer::add_vertices_from_button(std::vector<GLfloat> &vertex_buffer,
 void gui_renderer::setup_buffers() {
     // Buffer for the GUI geometry
     cur_screen_buffer = std::unique_ptr<ivertex_buffer>(new gl_vertex_buffer());
-}
-
-void gui_renderer::do_init_tasks() {
-    setup_buffers();
 }
 
 void gui_renderer::add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v) {

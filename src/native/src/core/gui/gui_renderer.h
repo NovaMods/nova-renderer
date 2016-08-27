@@ -36,9 +36,7 @@
  */
 class gui_renderer {
 public:
-    gui_renderer(texture_manager & textures,
-                 shaderpack & shaders,
-                 uniform_buffer_store & uniform_buffers);
+    gui_renderer(texture_manager& textures, shaderpack& shaders, uniform_buffer_store& uniform_buffers);
     ~gui_renderer();
 
     /*!
@@ -54,7 +52,7 @@ public:
     /*!
      * \brief Sets the GUI screen to render as the given screen
      */
-    void set_current_screen(mc_gui_screen * screen);
+    void set_current_screen(mc_gui_screen* screen);
 
     /*!
      * \brief Renders the current GUI screen
@@ -62,13 +60,6 @@ public:
      * Note: for right now, it just draws the unpressed button, just to prove that I can
      */
     void render();
-
-    /*!
-     * \brief Creates some very basic GUI geometry
-     *
-     * Intended to be used solely for testing
-     */
-    void do_init_tasks();
 
     /*!
      * \brief Checks to see if a new GUI screen is available. If so, sets the current GUI screen to the new GUI screen
@@ -98,8 +89,8 @@ private:
 
     mc_gui_screen cur_screen;
 
-    texture_manager & tex_manager;
-    shaderpack & shaders;
+    texture_manager& tex_manager;
+    shaderpack& shaders;
     uniform_buffer_store & ubo_manager;
 
     std::string WIDGETS_TEXTURE_NAME = "textures/gui/widgets.png";
@@ -118,7 +109,7 @@ private:
      * mc_gui_screen to be a C struct so I can properly assign to it from Java. The compiler yelled at me about "You
      * can't compare structs" so I couldn't use the == operator and here we are.
      */
-    bool is_different_screen(mc_gui_screen & screen1, mc_gui_screen & screen2) const;
+    bool is_different_screen(mc_gui_screen& screen1, mc_gui_screen & screen2) const;
 
     /*!
      * \brief Determines whether or not the two given buttons are the same
@@ -131,7 +122,7 @@ private:
      *
      * \return True if the buttons are the same, false otherwise
      */
-    bool same_buttons(mc_gui_button & button1, mc_gui_button & button2) const;
+    bool same_buttons(mc_gui_button& button1, mc_gui_button& button2) const;
 
     /*!
      * \brief Constructs the geometry needed to render the current GUI screen

@@ -28,9 +28,7 @@ nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shaders, ubo
     nova_config.register_change_listener(&ubo_manager);
 
     nova_config.update_config_loaded();
-    nova_config.update_change_listeners();
-
-    gui_renderer_instance.do_init_tasks();
+    nova_config.update_config_changed();
 
     shaders.link_up_uniform_buffers(ubo_manager);
 

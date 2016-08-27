@@ -32,9 +32,9 @@ nlohmann::json & config::get_options() {
     return options;
 }
 
-void config::update_change_listeners() {
+void config::update_config_changed() {
     for(iconfig_listener * l : config_change_listeners) {
-        l->on_config_change(options);
+        l->on_config_change(options["settings"]);
     }
 }
 

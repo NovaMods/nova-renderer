@@ -19,17 +19,11 @@ void uniform_buffer_store::create_ubos() {
 }
 
 void uniform_buffer_store::set_bind_points(nlohmann::json& config) {
-    nlohmann::json data_node = config["data"];
-    nlohmann::json ubo_bind_points_node = data_node["uboBindPoints"];
+    nlohmann::json& ubo_bind_points_node = config["readOnly"]["uboBindPoints"];
 
     LOG(INFO) << "Provided configuration: " << config;
-    LOG(INFO) << "Data node: " << data_node;
-    LOG(INFO) << "UBO Bind Points: " << ubo_bind_points_node;
-    LOG(INFO) << "Things in the config json node: " << ubo_bind_points_node;
 
     for(auto & pair : buffers) {
-        // Set the bind point from the config file
-        // TODO: This line fails. Must debug further.
         unsigned int bind_point = ubo_bind_points_node[pair.first];
         buffers[pair.first].set_bind_point(bind_point);
         buffers[pair.first].set_name(pair.first);
@@ -37,7 +31,6 @@ void uniform_buffer_store::set_bind_points(nlohmann::json& config) {
 }
 
 void uniform_buffer_store::on_config_change(nlohmann::json& new_config) {
-    // Grab the data we need from the config structure
     cam_data.viewHeight = new_config["viewWidth"];
     cam_data.viewWidth = new_config["viewHeight"];
 
