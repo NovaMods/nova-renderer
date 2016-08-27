@@ -8,12 +8,8 @@
 #include "gui_renderer.h"
 #include "gl/objects/gl_vertex_buffer.h"
 
-gui_renderer::gui_renderer(texture_manager & textures,
-                           shaderpack & shaders,
-                           uniform_buffer_store & uniform_buffers) :
-        tex_manager(textures),
-        shaders(shaders),
-        ubo_manager(uniform_buffers) {
+gui_renderer::gui_renderer(texture_manager & textures, shaderpack & shaders, uniform_buffer_store & uniform_buffers) :
+        tex_manager(textures), shaders(shaders), ubo_manager(uniform_buffers) {
     LOG(INFO) << "Created GUI Renderer";
 }
 

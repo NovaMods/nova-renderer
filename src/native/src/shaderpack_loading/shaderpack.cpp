@@ -13,6 +13,7 @@
 
 shaderpack::shaderpack() {
     default_shader_names.push_back("gui");
+    LOG(INFO) << "Initialized default shaderpack";
 }
 
 void shaderpack::load_shaderpack(const std::string &shaderpack_name) {

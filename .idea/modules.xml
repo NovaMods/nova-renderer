@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Nova Renderer.iml" filepath="$PROJECT_DIR$/.idea/Nova Renderer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Nova Renderer.iml" filepath="$PROJECT_DIR$/.idea/modules/Nova Renderer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Nova_Renderer_main.iml" filepath="$PROJECT_DIR$/.idea/modules/Nova_Renderer_main.iml" group="Nova Renderer" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Nova_Renderer_test.iml" filepath="$PROJECT_DIR$/.idea/modules/Nova_Renderer_test.iml" group="Nova Renderer" />
     </modules>
   </component>
 </project>
