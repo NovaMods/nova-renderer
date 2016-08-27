@@ -23,6 +23,8 @@ public:
      * This method is called throughout Nova's lifetime whenever a configuration value changes. This method should
      * handle changing configuration values such as the size of the window and what shaderpack the user has loaded
      *
+     * Note that this method only recieves the read-write config values (the 'settings' node)
+     *
      * \param new_config The updated configuration
      */
     virtual void on_config_change(nlohmann::json& new_config) = 0;
@@ -35,6 +37,9 @@ public:
      * then this method should be used for any initial configuration whose values will not change throughout the
      * program's lifetime. An example of this is reading in the bind points of the UBOs: the bind points won't change
      * throughout the program's life, so they should be handled in this function
+     *
+     * We may want to consider two config files: one for read-only values and one for read-write values. Probably a
+     * good idea, but I don't feel like implimenting that just yet
      *
      * \param config The configuration that was loaded
      */
@@ -68,8 +73,10 @@ public:
      *
      * This method is public so that whatever changes values can delay calling it. You can set a bunch of options that
      * are pretty computationally intensive to change, the update listeners after all the values are changed
+     *
+     * Note that this method only send the read-write config values (children of the node 'settings') to the listeners
      */
-    void update_change_listeners();
+    void update_config_changed();
 
     /*!
      * \brief Tells all the config listeners that the configuration has been loaded for the first time

@@ -1,9 +1,0 @@
-{
-  "lastShaderpack" : "default",
-  "data" : {
-    "uboBindPoints": {
-      "cameraData": 20
-    }
-  }
-}
-

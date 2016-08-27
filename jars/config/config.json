@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "loadedShaderpack": "default",
+    "viewWidth": 800,
+    "viewHeight": 480
+  },
+  "readOnly": {
+    "uboBindPoints": {
+      "cameraData": 20
+    }
+  }
+}
+
