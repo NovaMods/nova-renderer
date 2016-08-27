@@ -107,6 +107,10 @@ void glfw_gl_window::on_config_change(nlohmann::json & new_config) {
     glfwSetWindowSize(window, new_config["viewWidth"], new_config["viewHeight"]);
 }
 
+void glfw_gl_window::on_config_loaded(nlohmann::json &config) {
+    // Don't do anything, we don't rely on any read-only config values... yet
+}
+
 
 
 

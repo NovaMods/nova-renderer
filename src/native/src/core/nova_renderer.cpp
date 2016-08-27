@@ -21,13 +21,14 @@ void * run_render(void * ignored) {
     return nullptr;
 }
 
-nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shaders, ubo_manager) {
+nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shaders, ubo_manager), nova_config("config/config.json") {
 
-    nova_config = std::unique_ptr<config>(new config("config/config.json"));
-    nova_config->register_change_listener(&game_window);
-    nova_config->register_change_listener(&shaders);
-    nova_config->register_change_listener(&ubo_manager);
-    nova_config->update_change_listeners();
+    nova_config.register_change_listener(&game_window);
+    nova_config.register_change_listener(&shaders);
+    nova_config.register_change_listener(&ubo_manager);
+
+    nova_config.update_config_loaded();
+    nova_config.update_change_listeners();
 
     gui_renderer_instance.do_init_tasks();
 

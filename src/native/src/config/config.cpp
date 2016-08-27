@@ -24,7 +24,7 @@ config::config(std::string filename) {
     }
 }
 
-void config::register_change_listener(iconfig_change_listener *new_listener) {
+void config::register_change_listener(iconfig_listener *new_listener) {
     config_change_listeners.push_back(new_listener);
 }
 
@@ -33,7 +33,13 @@ nlohmann::json & config::get_options() {
 }
 
 void config::update_change_listeners() {
-    for(iconfig_change_listener * l : config_change_listeners) {
+    for(iconfig_listener * l : config_change_listeners) {
         l->on_config_change(options);
+    }
+}
+
+void config::update_config_loaded() {
+    for(iconfig_listener * l : config_change_listeners) {
+        l->on_config_loaded(options);
     }
 }

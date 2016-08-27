@@ -12,9 +12,33 @@
 
 class config;
 
-class iconfig_change_listener {
+/*!
+ * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
+ */
+class iconfig_listener {
 public:
-     virtual void on_config_change(nlohmann::json &new_config) = 0;
+    /*!
+     * \brief Tells the listeners that there has been a change in the configuration
+     *
+     * This method is called throughout Nova's lifetime whenever a configuration value changes. This method should
+     * handle changing configuration values such as the size of the window and what shaderpack the user has loaded
+     *
+     * \param new_config The updated configuration
+     */
+    virtual void on_config_change(nlohmann::json& new_config) = 0;
+
+    /*!
+     * \brief Tells listeners that the configuration has been loaded
+     *
+     * When Nova starts up, this method is called on all config listeners, then on_config_change is called.
+     * on_config_change should be used to listen for any config values that change throughout the program's life, so
+     * then this method should be used for any initial configuration whose values will not change throughout the
+     * program's lifetime. An example of this is reading in the bind points of the UBOs: the bind points won't change
+     * throughout the program's life, so they should be handled in this function
+     *
+     * \param config The configuration that was loaded
+     */
+    virtual void on_config_loaded(nlohmann::json& config) = 0;
 };
 
 /*!
@@ -35,9 +59,9 @@ public:
     /*!
      * \brief Registers the given iconfig_change_listener as an Observer
      */
-    void register_change_listener(iconfig_change_listener * new_listener);
+    void register_change_listener(iconfig_listener* new_listener);
 
-    nlohmann::json & get_options();
+    nlohmann::json& get_options();
 
     /*!
      * \brief Updates all the change listeners with the current state of the settings
@@ -46,9 +70,14 @@ public:
      * are pretty computationally intensive to change, the update listeners after all the values are changed
      */
     void update_change_listeners();
+
+    /*!
+     * \brief Tells all the config listeners that the configuration has been loaded for the first time
+     */
+    void update_config_loaded();
 private:
     nlohmann::json options;
-    std::vector<iconfig_change_listener *> config_change_listeners;
+    std::vector<iconfig_listener*> config_change_listeners;
 };
 
 #endif //RENDERER_CONFIG_H
