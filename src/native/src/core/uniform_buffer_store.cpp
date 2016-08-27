@@ -8,10 +8,18 @@
 #include <easylogging++.h>
 #include "uniform_buffer_store.h"
 
+#ifdef __WIN32
+#include <dirent.h>
+#else
+#include <unistd.h>
+#endif
+
 uniform_buffer_store::uniform_buffer_store() {
     create_ubos();
 
     set_bind_points();
+
+    LOG(INFO) << "Initialized uniform buffer store";
 }
 
 void uniform_buffer_store::create_ubos() {
@@ -20,10 +28,18 @@ void uniform_buffer_store::create_ubos() {
 
 void uniform_buffer_store::set_bind_points() {
     nlohmann::json data = load_data();
+    nlohmann::json data_node = data["data"];
+    nlohmann::json ubo_bind_points_node = data_node["uboBindPoints"];
+
+    LOG(INFO) << "Read-in configuration: " << data;
+    LOG(INFO) << "Data node: " << data_node;
+    LOG(INFO) << "UBO Bind Points: " << ubo_bind_points_node;
+    LOG(INFO) << "Things in the config json node: " << ubo_bind_points_node;
 
     for(auto & pair : buffers) {
         // Set the bind point from the config file
-        unsigned int bind_point = data["data"]["uboBindPoints"][pair.first];
+        // TODO: This line fails. Must debug further.
+        unsigned int bind_point = ubo_bind_points_node[pair.first];
         buffers[pair.first].set_bind_point(bind_point);
         buffers[pair.first].set_name(pair.first);
     }
@@ -31,6 +47,15 @@ void uniform_buffer_store::set_bind_points() {
 
 nlohmann::json uniform_buffer_store::load_data() const {
     nlohmann::json data;
+
+    char* current_directory;
+#ifdef __WIN32
+    current_directory = _getcwd(NULL, 0);
+#else
+    current_directory = get_current_dir_name();
+#endif
+
+    LOG(INFO) << "Current directory: " << current_directory;
 
     std::ifstream config_file("config/data.json");
     if(config_file.is_open()) {
@@ -41,7 +66,11 @@ nlohmann::json uniform_buffer_store::load_data() const {
             accum += buf;
         }
 
+        LOG(INFO) << "Accumulated config file data: " << accum;
+
         data = nlohmann::json::parse(accum.c_str());
+    } else {
+        LOG(WARNING) << "Could not open the config file";
     }
 
     return data;

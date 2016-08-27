@@ -11,6 +11,9 @@
 .PARAMETER build
     Compiles the native code, moves the output DLL to the correct directory, then compiles the Java code
 
+.PARAMETER nativeOnly
+    Only compiles the C++ code. Does not compile the Java code
+
 .PARAMETER clean
     Deletes all compiled code and generated build files
 
@@ -46,6 +49,7 @@ param (
     [switch]$build = $false,
     [switch]$clean = $false,
     [switch]$run = $false,
+    [switch]$nativeOnly = $false,
     [string]$buildEnvironment = "mingw"
 )
 
@@ -123,9 +127,11 @@ function New-NovaCode([string]$buildEnvironment) {
     # Return us to the previous location
     Set-Location ..\..
 
-    # Compile the Java code
+    if($nativeOnly -eq $false) {
+        # Compile the Java code
 
-    gradle build
+        gradle build
+    }
 
     Write-Host "Nova compiled!"
 }
