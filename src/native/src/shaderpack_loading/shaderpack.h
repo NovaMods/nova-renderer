@@ -16,7 +16,7 @@
 /*!
  * \brief Represents a single shaderpack in all its glory
  */
-class shaderpack : public iconfig_change_listener {
+class shaderpack : public iconfig_listener {
 public:
     shaderpack();
 
@@ -26,7 +26,9 @@ public:
      * iconfig_change_listener methods
      */
 
-    void on_config_change(nlohmann::json & new_config);
+    void on_config_change(nlohmann::json& new_config);
+
+    void on_config_loaded(nlohmann::json& config);
 
     void link_up_uniform_buffers(uniform_buffer_store &ubo_store);
 

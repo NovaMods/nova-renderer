@@ -42,7 +42,9 @@ public:
      * iconfig_change_listener methods
      */
 
-    void on_config_change(nlohmann::json &new_config);
+    void on_config_change(nlohmann::json& new_config);
+
+    void on_config_loaded(nlohmann::json& config);
 private:
     GLFWwindow *window;
     glm::ivec2 window_dimensions;

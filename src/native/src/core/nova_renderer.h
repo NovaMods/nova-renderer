@@ -115,7 +115,7 @@ private:
 
     gui_renderer gui_renderer_instance;
 
-    std::unique_ptr<config> nova_config;
+    config nova_config;
 
     void enable_debug();
 };

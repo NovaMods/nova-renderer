@@ -124,4 +124,8 @@ void shaderpack::link_up_uniform_buffers(uniform_buffer_store &ubo_store) {
     }
 }
 
+void shaderpack::on_config_loaded(nlohmann::json &config) {
+    // Do nothing, I don't care yet
+}
+
 
