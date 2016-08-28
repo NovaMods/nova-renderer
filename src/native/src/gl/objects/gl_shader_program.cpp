@@ -128,7 +128,7 @@ bool gl_shader_program::check_for_shader_errors(GLuint shader_to_check) {
         GLint log_size = 0;
         glGetShaderiv(shader_to_check, GL_INFO_LOG_LENGTH, &log_size);
 
-        std::vector<GLchar> error_log(log_size);
+        std::vector<GLchar> error_log((unsigned long long int) log_size);
         glGetShaderInfoLog(shader_to_check, log_size, &log_size, &error_log[0]);
 
         if(log_size > 0) {
