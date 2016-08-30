@@ -7,10 +7,7 @@
 #include <easylogging++.h>
 #include "gl_vertex_buffer.h"
 
-gl_vertex_buffer::gl_vertex_buffer() {
-    vertex_array = 0xFFFFFFFF;
-    vertex_buffer = 0xFFFFFFFF;
-    indices = 0xFFFFFFFF;
+gl_vertex_buffer::gl_vertex_buffer() : vertex_array(0), vertex_buffer(0), indices(0), num_indices(0) {
     create();
 }
 
@@ -26,14 +23,14 @@ void gl_vertex_buffer::create() {
 }
 
 void gl_vertex_buffer::destroy() {
-    if(vertex_buffer != 0xFFFFFFFF) {
+    if(vertex_buffer != 0) {
         glDeleteBuffers(1, &vertex_buffer);
-        vertex_buffer = 0xFFFFFFFF;
+        vertex_buffer = 0;
     }
 
-    if(indices != 0xFFFFFFFF) {
+    if(indices != 0) {
         glDeleteBuffers(1, &indices);
-        indices = 0xFFFFFFFF;
+        indices = 0;
     }
 }
 

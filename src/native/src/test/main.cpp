@@ -11,12 +11,6 @@ int main() {
     // Open the window first, so we have an OpenGL context to play with
     init_nova();
 
-    LOG(INFO) << "Running sanity tests...";
-    sanity::run_all();
-
-    //LOG(INFO) << "Running shader tests...";
-    //shader::run_all();
-
     LOG(INFO) << "Integration tests...";
 
     // Build a basic GUI thing

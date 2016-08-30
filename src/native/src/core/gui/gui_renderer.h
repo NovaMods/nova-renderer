@@ -157,6 +157,8 @@ private:
                                   const std::vector<float> &uvs);
 
     void add_indices_for_button(std::vector<unsigned short> &indices, unsigned short start_pos);
+
+    bool compare_text(const char *text1, const char *text2) const;
 };
 
 
