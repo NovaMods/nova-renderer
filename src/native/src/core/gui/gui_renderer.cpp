@@ -12,6 +12,8 @@ gui_renderer::gui_renderer(texture_manager & textures, shaderpack & shaders, uni
         tex_manager(textures), shaders(shaders), ubo_manager(uniform_buffers) {
     LOG(INFO) << "Created GUI Renderer";
 
+    cur_screen = {};
+
     setup_buffers();
 }
 
@@ -49,12 +51,16 @@ bool gui_renderer::is_different_screen(mc_gui_screen &screen1, mc_gui_screen &sc
 }
 
 bool gui_renderer::same_buttons(mc_gui_button & button1, mc_gui_button & button2) const {
-    return button1.x_position == button2.x_position &&
+    bool same_rect = button1.x_position == button2.x_position &&
             button1.y_position == button2.y_position &&
             button1.width == button2.width &&
-            button1.height == button2.height &&
-            strcmp(button1.text, button2.text) == 0 &&
-            button1.is_pressed == button2.is_pressed;
+            button1.height == button2.height;
+
+    bool same_text = compare_text(button1.text, button2.text);
+
+    bool same_pressed = button1.is_pressed == button2.is_pressed;
+
+    return same_rect && same_text && same_pressed;
 }
 
 void gui_renderer::build_gui_geometry() {
@@ -136,6 +142,24 @@ void gui_renderer::update() {
         cur_screen = new_screen;
         build_gui_geometry();
     }
+}
+
+bool gui_renderer::compare_text(const char *text1, const char *text2) const {
+    if(text1 == nullptr && text2 == nullptr) {
+        // They're both null, and null equals null, so they're the same
+        // If this causes problems I'll change it
+        return true;
+    }
+
+    if(text1 == nullptr) {
+        return false;
+    }
+
+    if(text2 == nullptr) {
+        return false;
+    }
+
+    return strcmp(text1, text2) == 0;
 }
 
 

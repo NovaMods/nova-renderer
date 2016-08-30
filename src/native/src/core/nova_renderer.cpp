@@ -15,6 +15,7 @@ void * run_render(void * ignored) {
     nova_renderer::instance = std::unique_ptr<nova_renderer>(new nova_renderer());
 
     while(!nova_renderer::instance->should_end()) {
+        nova_renderer::instance->update();
         nova_renderer::instance->render_frame();
     }
 
@@ -150,6 +151,18 @@ void debug_logger(GLenum source, GLenum type, GLuint id, GLenum severity, GLsize
 void nova_renderer::enable_debug() {
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(debug_logger, NULL);
+}
+
+void nova_renderer::update() {
+    /*
+    nova_config.update();
+    game_window.update();
+    tex_manager.update();
+    shaders.update();
+    ubo_manager.update();
+    */
+
+    gui_renderer_instance.update();
 }
 
 

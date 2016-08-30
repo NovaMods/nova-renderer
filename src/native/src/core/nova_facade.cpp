@@ -38,9 +38,13 @@ NOVA_EXPORT int get_max_texture_size() {
     return TEXTURE_MANAGER.get_max_texture_size();
 }
 
+NOVA_EXPORT void update_renderer() {
+    nova_renderer::instance->update();
+}
+
 NOVA_EXPORT void send_render_command(mc_render_command * command) {
     // TODO: Pass down the render command
-    //nova_renderer::instance->render_frame();
+    nova_renderer::instance->render_frame();
 }
 
 NOVA_EXPORT bool should_close() {

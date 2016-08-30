@@ -56,6 +56,11 @@ NOVA_EXPORT int get_max_texture_size();
 NOVA_EXPORT void reset_texture_manager();
 
 /*!
+ * \brief Updates the Nova Renderer, which mostly involves taking data from the queues
+ */
+NOVA_EXPORT void update_renderer();
+
+/*!
  * \brief Sends the C++ code a command to render a fram
  *
  * \param cmd The mc_render_command containing all the data to be rendered for the current frame

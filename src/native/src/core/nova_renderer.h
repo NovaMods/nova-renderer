@@ -41,6 +41,10 @@ public:
      *
      * I want only one nova_renderer active at a time, and the C code needs a good way to reference the nova_renderer
      * instance. A singleton fulfils both those requirements.
+     *
+     * This is a pointer so it can be initialized in the render thread. You're going to want to change this to be a
+     * simple object. DON'T. You'll regret it. This NEEDS to be a pointer, and there's no discussion to be had on this
+     * point
      */
     static std::unique_ptr<nova_renderer> instance;
 
@@ -63,6 +67,13 @@ public:
      * \brief Destructor
      */
     ~nova_renderer();
+
+    /*!
+     * \brief Updates all the components of the Nova Renderer
+     *
+     * This mostly includes reading from all the shared memory queues
+     */
+    void update();
 
     /*!
      * \brief Renders a single frame

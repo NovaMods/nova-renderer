@@ -15,7 +15,7 @@ uniform_buffer_store::uniform_buffer_store() {
 }
 
 void uniform_buffer_store::create_ubos() {
-    buffers.emplace("cameraData", gl_uniform_buffer(sizeof(camera_data)));
+    buffers.emplace("cameraData", gl_uniform_buffer(16));
 }
 
 void uniform_buffer_store::set_bind_points(nlohmann::json& config) {
