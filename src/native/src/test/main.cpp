@@ -1,9 +1,9 @@
-#include <easylogging++.h>
+#include <thread>
+#include <chrono>
+
+#include <unistd.h>
 
 #include "core/nova.h"
-
-#include "sanity.h"
-#include "shader_test.h"
 
 void fill_render_command(mc_render_command &command);
 
@@ -11,7 +11,9 @@ int main() {
     // Open the window first, so we have an OpenGL context to play with
     init_nova();
 
-    LOG(INFO) << "Integration tests...";
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+
+    //usleep(5000000);
 
     // Build a basic GUI thing
     mc_set_gui_screen_command gui_command;
@@ -19,12 +21,15 @@ int main() {
     gui_command.screen.buttons[0].height = 20;
     gui_command.screen.buttons[0].x_position = 0;
     gui_command.screen.buttons[0].y_position = 0;
+    gui_command.screen.buttons[0].is_pressed = false;
+    gui_command.screen.buttons[0].text = "";
 
     gui_command.screen.num_buttons = 1;
 
     send_change_gui_screen_command(&gui_command);
 
-    while(!should_close()) {
+    // This needs to run forever so we don't exit
+    while(!should_close() || true) {
         // Make a dummy render command
         mc_render_command command;
         fill_render_command(command);

@@ -8,6 +8,9 @@
 
 #include <memory>
 #include <atomic>
+
+#include <mutex>
+
 #include "core/uniform_buffer_store.h"
 #include "interfaces/ivertex_buffer.h"
 #include "mc/mc_gui_objects.h"
@@ -100,6 +103,7 @@ private:
 
     // Memory that will be accessed from both the render thread and the Java thread
     mc_gui_screen new_screen;
+    std::mutex new_screen_guard;
     std::atomic<bool> has_screen_available;
 
     /*!
@@ -122,7 +126,7 @@ private:
      *
      * \return True if the buttons are the same, false otherwise
      */
-    bool same_buttons(mc_gui_button& button1, mc_gui_button& button2) const;
+    bool different_buttons(mc_gui_button &button1, mc_gui_button &button2) const;
 
     /*!
      * \brief Constructs the geometry needed to render the current GUI screen

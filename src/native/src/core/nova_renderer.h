@@ -6,7 +6,7 @@
 #define RENDERER_VULKAN_MOD_H
 
 #include <memory>
-#include <pthread.h>    // I'd love to use <thread>, but apparently my compiler doesn't support it. Just a few more days until Linux...
+#include <thread>
 
 #include "interfaces/iwindow.h"
 #include "mc/mc_objects.h"
@@ -116,7 +116,8 @@ public:
     gui_renderer & get_gui_renderer();
 
 private:
-    static pthread_t render_thread;
+    //! This is a pointer so I can initialize it later
+    static std::unique_ptr<std::thread> render_thread;
 
     glfw_gl_window game_window;
     texture_manager tex_manager;

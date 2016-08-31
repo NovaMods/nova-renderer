@@ -9,7 +9,7 @@
 #include "gl/objects/gl_vertex_buffer.h"
 
 gui_renderer::gui_renderer(texture_manager & textures, shaderpack & shaders, uniform_buffer_store & uniform_buffers) :
-        tex_manager(textures), shaders(shaders), ubo_manager(uniform_buffers) {
+        tex_manager(textures), shaders(shaders), ubo_manager(uniform_buffers), has_screen_available(false) {
     LOG(INFO) << "Created GUI Renderer";
 
     cur_screen = {};
@@ -22,7 +22,7 @@ gui_renderer::~gui_renderer() {
 
 void gui_renderer::set_current_screen(mc_gui_screen *screen) {
     new_screen = *screen;
-    has_screen_available.store(true);
+    has_screen_available = true;
 }
 
 void gui_renderer::render() {
@@ -42,7 +42,7 @@ void gui_renderer::render() {
 
 bool gui_renderer::is_different_screen(mc_gui_screen &screen1, mc_gui_screen &screen2) const {
     for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
-        if(same_buttons(screen1.buttons[i], screen2.buttons[i])) {
+        if(different_buttons(screen1.buttons[i], screen2.buttons[i])) {
             return true;
         }
     }
@@ -50,7 +50,7 @@ bool gui_renderer::is_different_screen(mc_gui_screen &screen1, mc_gui_screen &sc
     return false;
 }
 
-bool gui_renderer::same_buttons(mc_gui_button & button1, mc_gui_button & button2) const {
+bool gui_renderer::different_buttons(mc_gui_button &button1, mc_gui_button &button2) const {
     bool same_rect = button1.x_position == button2.x_position &&
             button1.y_position == button2.y_position &&
             button1.width == button2.width &&
@@ -60,7 +60,7 @@ bool gui_renderer::same_buttons(mc_gui_button & button1, mc_gui_button & button2
 
     bool same_pressed = button1.is_pressed == button2.is_pressed;
 
-    return same_rect && same_text && same_pressed;
+    return !same_rect || !same_text || !same_pressed;
 }
 
 void gui_renderer::build_gui_geometry() {
@@ -138,9 +138,21 @@ void gui_renderer::add_vertex(std::vector<float> &vertex_buffer, int x, int y, f
 }
 
 void gui_renderer::update() {
-    if(has_screen_available && is_different_screen(cur_screen, new_screen)) {
-        cur_screen = new_screen;
-        build_gui_geometry();
+    if(has_screen_available) {
+        has_screen_available = false;
+
+        // We want to spend as little time as possible with locks on
+        new_screen_guard.lock();
+        mc_gui_screen new_screen_copy = new_screen;
+        new_screen_guard.unlock();
+
+        bool is_different = is_different_screen(cur_screen, new_screen_copy);
+
+        if(is_different) {
+            LOG(INFO) << "Switching to a new GUI screen";
+            cur_screen = new_screen_copy;
+            build_gui_geometry();
+        }
     }
 }
 
