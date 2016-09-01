@@ -11,7 +11,10 @@ layout(binding = 20, std140) uniform cameraData {
 out vec2 uv;
 
 void main() {
-	gl_Position.xyz = position_in / vec3(viewWidth * 0.5, viewHeight * 0.5, 1) + vec3(-1, -1, 0);
+	gl_Position.xyz = position_in / vec3(viewWidth, viewHeight, 1.0f);
+	gl_Position.xy *= 4.0f;
+	gl_Position.xy -= 1.0f;
+	gl_Position.y *= -1;
 	gl_Position.w = 1.0f;
 
 	uv = uv_in;
