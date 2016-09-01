@@ -31,8 +31,8 @@ void uniform_buffer_store::set_bind_points(nlohmann::json& config) {
 }
 
 void uniform_buffer_store::on_config_change(nlohmann::json& new_config) {
-    cam_data.viewHeight = new_config["viewWidth"];
-    cam_data.viewWidth = new_config["viewHeight"];
+    cam_data.viewWidth = new_config["viewWidth"];
+    cam_data.viewHeight = new_config["viewHeight"];
 
     upload_data();
 }

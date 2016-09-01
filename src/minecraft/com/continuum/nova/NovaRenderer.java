@@ -23,14 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class NovaRenderer implements IResourceManagerReloadListener
-{
+public class NovaRenderer implements IResourceManagerReloadListener {
     public static final String MODID = "Nova Renderer";
     public static final String VERSION = "0.0.3";
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
 
     private final List<ResourceLocation> TERRAIN_ALBEDO_TEXTURES_LOCATION = new ArrayList<>();
+
     {
         {
             TERRAIN_ALBEDO_TEXTURES_LOCATION.add(new ResourceLocation("textures/blocks/anvil_base.png"));
@@ -429,10 +429,8 @@ public class NovaRenderer implements IResourceManagerReloadListener
     private int renderChunkDistance = 4;
 
     @Override
-    public void onResourceManagerReload(IResourceManager resourceManager)
-    {
-        if (firstLoad)
-        {
+    public void onResourceManagerReload(IResourceManager resourceManager) {
+        if(firstLoad) {
             firstLoad = false;
         }
 
@@ -443,46 +441,37 @@ public class NovaRenderer implements IResourceManagerReloadListener
     }
 
     private void addTextures(
-        List<ResourceLocation> locations,
-        NovaNative.AtlasType atlasType,
-        NovaNative.TextureType textureType,
-        IResourceManager resourceManager,
-        int maxAtlasSize, AtlasGenerator gen
-    )
-    {
+            List<ResourceLocation> locations,
+            NovaNative.AtlasType atlasType,
+            NovaNative.TextureType textureType,
+            IResourceManager resourceManager,
+            int maxAtlasSize, AtlasGenerator gen
+    ) {
         List<AtlasGenerator.ImageName> images = new ArrayList<>();
 
-        for (ResourceLocation textureLocation : locations)
-        {
-            try
-            {
+        for(ResourceLocation textureLocation : locations) {
+            try {
                 IResource texture = resourceManager.getResource(textureLocation);
                 BufferedInputStream in = new BufferedInputStream(texture.getInputStream());
                 BufferedImage image = ImageIO.read(in);
 
-                if (image != null)
-                {
+                if(image != null) {
                     images.add(new AtlasGenerator.ImageName(image, textureLocation.toString()));
                 }
-            }
-            catch (IOException e)
-            {
-                LOG.warn("IOException when loading texture " + textureLocation.toString() + ": " + e.getMessage());
+            } catch(IOException e) {
+                LOG.warn("IOException when loading texture " + textureLocation.toString(), e);
             }
         }
 
         List<AtlasGenerator.Texture> atlases = gen.Run("albedo", maxAtlasSize, maxAtlasSize, 1, true, images);
 
-        for (AtlasGenerator.Texture texture : atlases)
-        {
-            try
-            {
+        for(AtlasGenerator.Texture texture : atlases) {
+            try {
                 BufferedImage image = texture.getImage();
-                byte[] imageData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
+                byte[] imageData = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
                 LOG.info("The image has " + imageData.length + " separate pixels");
 
-                for (int i = 0; i < imageData.length; i += 4)
-                {
+                for(int i = 0; i < imageData.length; i += 4) {
                     byte a = imageData[i];
                     byte b = imageData[i + 1];
                     byte g = imageData[i + 2];
@@ -494,29 +483,26 @@ public class NovaRenderer implements IResourceManagerReloadListener
                 }
 
                 NovaNative.mc_atlas_texture atlasTex = new NovaNative.mc_atlas_texture(
-                    image.getWidth(),
-                    image.getHeight(),
-                    image.getColorModel().getNumComponents(),
-                    imageData
+                        image.getWidth(),
+                        image.getHeight(),
+                        image.getColorModel().getNumComponents(),
+                        imageData
                 );
                 NovaNative.INSTANCE.add_texture(atlasTex, atlasType.ordinal(), textureType.ordinal());
                 Map<String, Rectangle> rectangleMap = texture.getRectangleMap();
 
-                for (String texName : rectangleMap.keySet())
-                {
+                for(String texName : rectangleMap.keySet()) {
                     Rectangle rect = rectangleMap.get(texName);
                     NovaNative.mc_texture_atlas_location atlasLoc = new NovaNative.mc_texture_atlas_location(
-                        texName,
-                        rect.x / (float)image.getWidth(),
-                        rect.y / (float)image.getHeight(),
-                        rect.width / (float)image.getWidth(),
-                        rect.height / (float)image.getHeight()
+                            texName,
+                            rect.x / (float) image.getWidth(),
+                            rect.y / (float) image.getHeight(),
+                            rect.width / (float) image.getWidth(),
+                            rect.height / (float) image.getHeight()
                     );
                     NovaNative.INSTANCE.add_texture_location(atlasLoc);
                 }
-            }
-            catch (AtlasGenerator.Texture.WrongNumComponentsException e)
-            {
+            } catch(AtlasGenerator.Texture.WrongNumComponentsException e) {
                 e.printStackTrace();
             }
         }
@@ -525,31 +511,25 @@ public class NovaRenderer implements IResourceManagerReloadListener
     public void preInit() {
         System.getProperties().setProperty("jna.library.path", "D:\\Documents\\Nova Renderer\\jars\\versions\\1.10\\1.10-natives");
         System.getProperties().setProperty("jna.dump_memory", "false");
-        LOG.info("PID: " + ManagementFactory.getRuntimeMXBean().getName());
         String pid = ManagementFactory.getRuntimeMXBean().getName();
-        String curDir = System.getProperty("user.dir");
-        LOG.info("Current directory: " + curDir);
+        LOG.info("PID: " + pid);
         NovaNative.INSTANCE.init_nova();
         LOG.info("Native code initialized");
     }
 
-    public void updateRenderer()
-    {
+    public void updateRenderer() {
     }
 
-    public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc)
-    {
+    public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
         NovaNative.mc_render_command cmd = RenderCommandBuilder.makeRenderCommand(mc, renderPartialTicks);
         NovaNative.INSTANCE.send_render_command(cmd);
 
-        if (NovaNative.INSTANCE.should_close())
-        {
+        if(NovaNative.INSTANCE.should_close()) {
             Minecraft.getMinecraft().shutdown();
         }
     }
 
-    public void setGuiScreen(GuiScreen guiScreenIn)
-    {
+    public void setGuiScreen(GuiScreen guiScreenIn) {
         NovaNative.mc_set_gui_screen_command set_gui_screen = RenderCommandBuilder.createSetGuiScreenCommand(guiScreenIn);
         NovaNative.INSTANCE.send_change_gui_screen_command(set_gui_screen);
     }
