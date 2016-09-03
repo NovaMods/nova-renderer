@@ -111,8 +111,6 @@ function New-NovaCode([string]$buildEnvironment) {
 
     Write-Information "Starting compilation of Nova..."
 
-    Set-Location src\main\cpp
-
     if($buildEnvironment -eq "mingw") {
         Write-Information "Building with MinGW"
         New-MinGWNovaBuild
@@ -123,9 +121,6 @@ function New-NovaCode([string]$buildEnvironment) {
     }
 
     # I assume that everything worked properly
-
-    # Return us to the previous location
-    Set-Location ..\..\..
 
     if($nativeOnly -eq $false) {
         # Compile the Java code
@@ -143,6 +138,10 @@ function New-MinGWNovaBuild {
     #>
 
     if(Test-Command -command "mingw32-make.exe") {
+        New-Item target -ItemType Directory
+        New-Item target\cpp -ItemType Directory
+        Set-Location target\cpp
+
         # MinGW is probably installed, let's assume it is
         Invoke-CMake -generator "MinGW Makefiles"
 
@@ -150,9 +149,11 @@ function New-MinGWNovaBuild {
         mingw32-make -f Makefile nova-renderer
 
         # Copy output DLL to the correct location
-        robocopy "." "..\..\..\jars\versions\1.10\1.10-natives\" "libnova-renderer.dll" 
+        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "libnova-renderer.dll" 
 
         Write-Information "Copied Nova, but you're going to have to put libstc++.dll on your path somewhere, or else you won't be able to run Nova."
+
+        Set-Location ..\..
 
     } else {
         Write-Error "Could not call the MinGW Make tool, unable to build Nova. Please install MinGW AND ensure that mingw32-make is in your path"
@@ -199,7 +200,7 @@ function Invoke-CMake([string]$generator) {
         The generator for CMake to use
     #>
 
-    cmake -G $generator .
+    cmake -G $generator ../../src/main/cpp
 }
 
 ################################################################################

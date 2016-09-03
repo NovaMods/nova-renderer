@@ -212,9 +212,10 @@ gradle-app.setting
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+
+
 .idea/modules/
-bin/
-lib/
 mappingviewer/
 mcp/
 reobf/
+target/
