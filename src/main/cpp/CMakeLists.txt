@@ -133,12 +133,6 @@ set(NOVA_SOURCE
         config/config.cpp
         3rdparty/stb_image/stb_image.h)
 
-# The following lists of files will only be contained in
-# the source groups and will not be sent to the compiler directly.
-set(NOVA_NO_COMPILE
-        core/renderer/batch_builder.cpp
-        core/renderer/model_renderer.cpp
-        )
 
 set(NOVA_HEADERS
 
