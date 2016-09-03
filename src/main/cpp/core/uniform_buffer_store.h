@@ -9,10 +9,10 @@
 #include <string>
 #include <unordered_map>
 #include <json.hpp>
-#include <gl/objects/gl_shader_program.h>
+#include <gl/models/gl_shader_program.h>
 
 #include "config/config.h"
-#include "gl/objects/gl_uniform_buffer.h"
+#include "gl/models/gl_uniform_buffer.h"
 #include "core/shaders/uniform_buffer_definitions.h"
 
 class uniform_buffer_store : public iconfig_listener {

@@ -11,7 +11,7 @@
 #include <map>
 #include "mc/mc_objects.h"
 #include <glad/glad.h>
-#include "gl/objects/texture2D.h"
+#include "gl/models/texture2D.h"
 
 /*!
  * \brief Holds all the textures that the Nova Renderer can deal with
