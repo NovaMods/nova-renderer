@@ -215,23 +215,11 @@ function Remove-BuildFiles {
         Removes all the build files, including generated CMake files, compiled code, and any makefiles that happened to happen
     #>
 
-    Set-Location src\main\cpp
+    Set-Location target
+    Remove-Item * -Recurse
+    Set-Location ..
 
-    # Remove CMake files
-    Remove-Item "CMakeFiles","CMakeCache.txt" -Recurse
-
-    # Check for MinGW files
-    if(Test-Path "Makefile") {
-        # We're dealing with a MinGW build
-        Remove-Item "Makefile","libnova-renderer.dll","libnova-renderer.dll.a"
-    }
-
-    if(Test-Path "nova-renderer.sln") {
-        # TODO: Verify that this is the name of the Visual Studio solution, and remove all the files involved
-        Remove-Item "nova-renderer.dll","nova-renderer.dll.lib"
-    }
-
-    Set-Location ..\..\..
+    Remove-Item target
 }
 
 ################################################################################
