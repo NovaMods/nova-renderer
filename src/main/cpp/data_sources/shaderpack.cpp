@@ -4,7 +4,6 @@
  */
 
 #include "shaderpack.h"
-#include "gl/objects/gl_shader_program.h"
 
 #include <fstream>
 #include <utility>

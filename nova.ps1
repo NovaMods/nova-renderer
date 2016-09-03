@@ -67,27 +67,27 @@ function New-NovaEnvironment {
         Sets up Nova in a new environment by downloading MCP, unpacking it, moving it to the right location, and applying the source code transformations
     #>
 
-    Write-Host "We're at $PSScriptRoot"
+    Write-Information "We're at $PSScriptRoot"
 
     New-Item "mcp" -ItemType Directory
-    Write-Host "Created directory for MCP to live in"
+    Write-Information "Created directory for MCP to live in"
     Set-Location "mcp"
-    Write-Host "Moved to MCP directory"
+    Write-Information "Moved to MCP directory"
 
     $wc = New-Object System.Net.WebClient
     $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
-    Write-Host "Downloaded MCP successfully"
+    Write-Information "Downloaded MCP successfully"
 
     Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
-    Write-Host "Unzipped MCP" 
+    Write-Information "Unzipped MCP" 
     Remove-Item "mcp.zip"
-    Write-Host "Deleted MCP zip (but not really)"
+    Write-Information "Deleted MCP zip (but not really)"
     robocopy "." "..\" "*" /s
-    Write-Host "Copied MCP files to the root directory"
+    Write-Information "Copied MCP files to the root directory"
     Set-Location ".."
-    Write-Host "Followed the files I've copied"
+    Write-Information "Followed the files I've copied"
     cmd.exe /C "$PSScriptRoot/decompile.bat"
-    Write-Host "Decompiled MCP"
+    Write-Information "Decompiled MCP"
 }
 
 function Unzip([string]$zipfile, [string]$outpath) {
@@ -109,23 +109,23 @@ function New-NovaCode([string]$buildEnvironment) {
         Specifies the build environment you with to use. Must be either 'mingw' or 'msvc'.
     #>
 
-    Write-Host "Starting compilation of Nova..."
+    Write-Information "Starting compilation of Nova..."
 
-    Set-Location src\native
+    Set-Location src\main\cpp
 
     if($buildEnvironment -eq "mingw") {
-        Write-Host "Building with MinGW"
+        Write-Information "Building with MinGW"
         New-MinGWNovaBuild
 
     } elseif($buildEnvironment -eq "msvc") {
-        Write-Host "Building wth Visual Studio"
+        Write-Information "Building wth Visual Studio"
         New-VisualStudioBuild
     }
 
     # I assume that everything worked properly
 
     # Return us to the previous location
-    Set-Location ..\..
+    Set-Location ..\..\..
 
     if($nativeOnly -eq $false) {
         # Compile the Java code
@@ -133,7 +133,7 @@ function New-NovaCode([string]$buildEnvironment) {
         gradle build
     }
 
-    Write-Host "Nova compiled!"
+    Write-Information "Nova compiled!"
 }
 
 function New-MinGWNovaBuild {
@@ -150,9 +150,9 @@ function New-MinGWNovaBuild {
         mingw32-make -f Makefile nova-renderer
 
         # Copy output DLL to the correct location
-        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "libnova-renderer.dll" 
+        robocopy "." "..\..\..\jars\versions\1.10\1.10-natives\" "libnova-renderer.dll" 
 
-        Write-Host "Copied Nova, but you're going to have to put libstc++.dll on your path somewhere, or else you won't be able to run Nova."
+        Write-Information "Copied Nova, but you're going to have to put libstc++.dll on your path somewhere, or else you won't be able to run Nova."
 
     } else {
         Write-Error "Could not call the MinGW Make tool, unable to build Nova. Please install MinGW AND ensure that mingw32-make is in your path"
@@ -182,7 +182,7 @@ function New-VisualStudioBuild {
 }
 
 function Test-Command([string]$command) {
-    if((Get-Command $command -ErrorAction SilentlyContinue) -eq $null) {
+    if($null -eq (Get-Command $command -ErrorAction SilentlyContinue)) {
         Write-Error "Could not find the $command executable. Please ensure that it's in your PATH, then run this script again" -Category ResourceUnavailable
         return $false
     } else {
@@ -199,7 +199,7 @@ function Invoke-CMake([string]$generator) {
         The generator for CMake to use
     #>
 
-    cmake -G $generator src
+    cmake -G $generator .
 }
 
 ################################################################################
@@ -214,7 +214,7 @@ function Remove-BuildFiles {
         Removes all the build files, including generated CMake files, compiled code, and any makefiles that happened to happen
     #>
 
-    cd src\native
+    Set-Location src\main\cpp
 
     # Remove CMake files
     Remove-Item "CMakeFiles","CMakeCache.txt" -Recurse
@@ -230,7 +230,7 @@ function Remove-BuildFiles {
         Remove-Item "nova-renderer.dll","nova-renderer.dll.lib"
     }
 
-    cd ..\..
+    Set-Location ..\..\..
 }
 
 ################################################################################
@@ -245,7 +245,7 @@ function Invoke-Nova {
         Lanuches Nova from the correct directory
     #>
 
-    Write-Host "Launching Nova..."
+    Write-Information "Launching Nova..."
     
     Set-Location "jars"
     $env = "-Djava.library.path=$PSScriptRoot\jars\versions\1.10\1.10-natives"
