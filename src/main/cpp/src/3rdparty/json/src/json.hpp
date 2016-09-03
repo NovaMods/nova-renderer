@@ -3128,7 +3128,7 @@ class basic_json
     */
     reference at(const typename object_t::key_type& key)
     {
-        // at only works for objects
+        // at only works for models
         if (is_object())
         {
             try
@@ -3176,7 +3176,7 @@ class basic_json
     */
     const_reference at(const typename object_t::key_type& key) const
     {
-        // at only works for objects
+        // at only works for models
         if (is_object())
         {
             try
@@ -3317,7 +3317,7 @@ class basic_json
             m_value.object = create<object_t>();
         }
 
-        // operator[] only works for objects
+        // operator[] only works for models
         if (is_object())
         {
             assert(m_value.object != nullptr);
@@ -3358,7 +3358,7 @@ class basic_json
     */
     const_reference operator[](const typename object_t::key_type& key) const
     {
-        // const operator[] only works for objects
+        // const operator[] only works for models
         if (is_object())
         {
             assert(m_value.object != nullptr);
@@ -3476,7 +3476,7 @@ class basic_json
             m_value = value_t::object;
         }
 
-        // at only works for objects
+        // at only works for models
         if (is_object())
         {
             assert(m_value.object != nullptr);
@@ -3518,7 +3518,7 @@ class basic_json
     template<typename T>
     const_reference operator[](T* key) const
     {
-        // at only works for objects
+        // at only works for models
         if (is_object())
         {
             assert(m_value.object != nullptr);
@@ -3585,7 +3585,7 @@ class basic_json
                   , int>::type = 0>
     ValueType value(const typename object_t::key_type& key, ValueType default_value) const
     {
-        // at only works for objects
+        // at only works for models
         if (is_object())
         {
             // if key is found, return value and given default value otherwise
@@ -3945,7 +3945,7 @@ class basic_json
     */
     size_type erase(const typename object_t::key_type& key)
     {
-        // this erase only works for objects
+        // this erase only works for models
         if (is_object())
         {
             assert(m_value.object != nullptr);
@@ -4705,7 +4705,7 @@ class basic_json
     */
     void push_back(basic_json&& val)
     {
-        // push_back only works for null objects or arrays
+        // push_back only works for null models or arrays
         if (not(is_null() or is_array()))
         {
             throw std::domain_error("cannot use push_back() with " + type_name());
@@ -4741,7 +4741,7 @@ class basic_json
     */
     void push_back(const basic_json& val)
     {
-        // push_back only works for null objects or arrays
+        // push_back only works for null models or arrays
         if (not(is_null() or is_array()))
         {
             throw std::domain_error("cannot use push_back() with " + type_name());
@@ -4791,7 +4791,7 @@ class basic_json
     */
     void push_back(const typename object_t::value_type& val)
     {
-        // push_back only works for null objects or objects
+        // push_back only works for null models or models
         if (not(is_null() or is_object()))
         {
             throw std::domain_error("cannot use push_back() with " + type_name());
@@ -5162,7 +5162,7 @@ class basic_json
     */
     void swap(object_t& other)
     {
-        // swap only works for objects
+        // swap only works for models
         if (is_object())
         {
             assert(m_value.object != nullptr);
@@ -6669,7 +6669,7 @@ class basic_json
         /// comparison: equal
         bool operator==(const const_iterator& other) const
         {
-            // if objects are not the same, the comparison is undefined
+            // if models are not the same, the comparison is undefined
             if (m_object != other.m_object)
             {
                 throw std::domain_error("cannot compare iterators of different containers");
@@ -6705,7 +6705,7 @@ class basic_json
         /// comparison: smaller
         bool operator<(const const_iterator& other) const
         {
-            // if objects are not the same, the comparison is undefined
+            // if models are not the same, the comparison is undefined
             if (m_object != other.m_object)
             {
                 throw std::domain_error("cannot compare iterators of different containers");
@@ -9255,7 +9255,7 @@ basic_json_parser_63:
         {
             if (not value.is_object())
             {
-                throw std::domain_error("only objects can be unflattened");
+                throw std::domain_error("only models can be unflattened");
             }
 
             basic_json result;
@@ -9645,8 +9645,8 @@ basic_json_parser_63:
         // type check
         if (not json_patch.is_array())
         {
-            // a JSON patch must be an array of objects
-            throw std::invalid_argument("JSON patch must be an array of objects");
+            // a JSON patch must be an array of models
+            throw std::invalid_argument("JSON patch must be an array of models");
         }
 
         // iterate and apply th eoperations
@@ -9682,7 +9682,7 @@ basic_json_parser_63:
             // type check
             if (not val.is_object())
             {
-                throw std::invalid_argument("JSON patch must be an array of objects");
+                throw std::invalid_argument("JSON patch must be an array of models");
             }
 
             // collect mandatory members

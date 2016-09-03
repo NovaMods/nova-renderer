@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <core/uniform_buffer_store.h>
 
-#include "gl/objects/gl_shader_program.h"
+#include "gl/models/gl_shader_program.h"
 #include "config/config.h"
 
 /*!

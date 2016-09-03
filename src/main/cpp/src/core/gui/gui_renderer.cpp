@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <easylogging++.h>
 #include "gui_renderer.h"
-#include "gl/objects/gl_vertex_buffer.h"
+#include "gl/models/gl_vertex_buffer.h"
 
 gui_renderer::gui_renderer(texture_manager & textures, shaderpack & shaders, uniform_buffer_store & uniform_buffers) :
         tex_manager(textures), shaders(shaders), ubo_manager(uniform_buffers), has_screen_available(false) {
@@ -32,8 +32,8 @@ void gui_renderer::render() {
 
     // Bind the GUI buttons texture to texture unit 0
     // Commented out because we don't support textures yet. Not really.
-    // texture2D& gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
-    // gui_tex.bind(GL_TEXTURE0);
+    //texture2D& gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);
+    //gui_tex.bind(0);
 
     // Draw the 2D GUI geometry
     cur_screen_buffer->set_active();

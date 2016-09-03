@@ -53,11 +53,11 @@ public:
      * the problem, then you're going to find the bit of code that doesn't bind the texture if it's already bound and
      * you'll see this comment and you'll understand what you did wrong.
      *
-     * \param location The location to bind this texture to
+     * \param binding The location to bind this texture to
      *
      * \throws texture_bind_exception if the texture can't be bound
      */
-    virtual void bind(unsigned int location);
+    virtual void bind(unsigned int binding);
 
     virtual void unbind();
 

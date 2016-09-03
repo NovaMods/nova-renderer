@@ -36,7 +36,7 @@ task fatjar(type: Jar) {
 sourceSets {
     main {
         java {
-            srcDirs = ["src/minecraft"]
+            srcDirs = ["src/main/java"]
         }
     }
 }
@@ -49,9 +49,6 @@ repositories {
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    // The production code uses the SLF4J logging API at compile time
-    compile 'org.slf4j:slf4j-api:1.7.21'
-
     // Uses ASM for transforming Minecraft's source code
     compile group: 'org.ow2.asm', name: 'asm', version: '5.1'
 
@@ -59,7 +56,8 @@ dependencies {
     compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
 
     // Add all the dependencies that Minecraft has
-    compile files('jars/versions/1.10/1.10.jar',
+    compile files(
+    		'jars/versions/1.10/1.10.jar',
             'jars/libraries/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar',
             'jars/libraries/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar',
             'jars/libraries/com/google/guava/guava/17.0/guava-17.0.jar',
@@ -92,7 +90,8 @@ dependencies {
             'jars/libraries/org/lwjgl/lwjgl/lwjgl/2.9.4-nightly-20150209/lwjgl-2.9.4-nightly-20150209.jar',
             'jars/libraries/org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209-natives-windows.jar',
             'jars/libraries/org/lwjgl/lwjgl/lwjgl_util/2.9.4-nightly-20150209/lwjgl_util-2.9.4-nightly-20150209.jar',
-            'jars/libraries/oshi-project/oshi-core/1.1/oshi-core-1.1.jar')
+            'jars/libraries/oshi-project/oshi-core/1.1/oshi-core-1.1.jar'
+        )
 
     // Declare the dependency for your favourite test framework you want to use in your tests.
     // TestNG is also supported by the Gradle Test task. Just change the

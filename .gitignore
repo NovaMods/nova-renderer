@@ -187,8 +187,9 @@ logs/
 runtime/
 temp/
 eclipse/
-src/minecraft/net/
-src/minecraft/Start.java
+src/main/java/net/
+src/main/java/mcp/
+src/main/java/Start.java
 
 ### Gradle ###
 .gradle
@@ -211,3 +212,9 @@ gradle-app.setting
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+.idea/modules/
+bin/
+lib/
+mappingviewer/
+mcp/
+reobf/

@@ -22,15 +22,14 @@ void texture2D::set_data(std::vector<float> & pixel_data, std::vector<int> & dim
     glBindTexture(GL_TEXTURE_2D, (GLuint) previous_texture);
 }
 
-void texture2D::bind(unsigned int location) {
-    if(location < GL_TEXTURE0 || location > GL_TEXTURE31) {
-        throw std::invalid_argument("location must be a valid OpenGL texture location");
+void texture2D::bind(unsigned int binding) {
+    if(binding < GL_TEXTURE0 || binding > GL_TEXTURE31) {
+        throw std::invalid_argument("binding must be a valid OpenGL texture binding");
     }
 
-    if(location != current_location) {
-        glActiveTexture(location);
-        glBindTexture(GL_TEXTURE_2D, gl_name);
-        current_location = location;
+    if(binding != current_location) {
+        glBindTextureUnit(binding, gl_name);
+        current_location = binding;
     }
 }
 

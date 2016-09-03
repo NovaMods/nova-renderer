@@ -16,7 +16,7 @@
 #include "mc/mc_gui_objects.h"
 #include "core/texture_manager.h"
 #include "core/shaders/uniform_buffer_definitions.h"
-#include "shaderpack_loading/shaderpack.h"
+#include "data_sources/shaderpack.h"
 
 /*!
  * \brief Defines a bunch of methods to render different GUI elements, including buttons, text, and images

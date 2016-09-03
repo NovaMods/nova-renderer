@@ -28,6 +28,17 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
+# Dependency management. Download GLM, GLFW, and ZipLib
+# Gonna just do ZipLib first, cause we already have a solution for the others
+
+# Add ZipLib
+#ExternalProject_Add(ziplib
+#        GIT_REPOSITORY https://bitbucket.org/hsmith/ziplib/src/5b9fda317e6ba60d5be87c7511fcd35b2addefcd?at=master
+#        INSTALL_DIR ${3RD_PARTY_DIR}/ziplib
+#        SOURCE_DIR ${3RD_PARTY_DIR}/ziplib#
+#
+#        )
+
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
         set(ENV{GLM_ROOT_DIR} "${3RD_PARTY_DIR}/glm")
         set(ENV{GLFW3_ROOT} "${3RD_PARTY_DIR}/glfw")
@@ -105,10 +116,10 @@ set(NOVA_SOURCE
         core/uniform_buffer_store.cpp
         core/gui/gui_renderer.cpp
 
-        gl/objects/gl_shader_program.cpp
-        gl/objects/gl_uniform_buffer.cpp
-        gl/objects/gl_vertex_buffer.cpp
-        gl/objects/texture2D.cpp
+        gl/models/gl_shader_program.cpp
+        gl/models/gl_uniform_buffer.cpp
+        gl/models/gl_vertex_buffer.cpp
+        gl/models/texture2D.cpp
 
         gl/windowing/glfw_gl_window.cpp
 
@@ -118,9 +129,9 @@ set(NOVA_SOURCE
 
         utils/utils.cpp
 
-        shaderpack_loading/shaderpack.cpp
+        data_sources/shaderpack.cpp
         config/config.cpp
-        )
+        3rdparty/stb_image/stb_image.h)
 
 # The following lists of files will only be contained in
 # the source groups and will not be sent to the compiler directly.
@@ -143,10 +154,10 @@ set(NOVA_HEADERS
         core/texture_manager.h
         core/types.h
 
-        gl/objects/gl_shader_program.h
-        gl/objects/gl_uniform_buffer.h
-        gl/objects/gl_vertex_buffer.h
-        gl/objects/texture2D.h
+        gl/models/gl_shader_program.h
+        gl/models/gl_uniform_buffer.h
+        gl/models/gl_vertex_buffer.h
+        gl/models/texture2D.h
 
         gl/windowing/glfw_gl_window.h
 
@@ -160,7 +171,7 @@ set(NOVA_HEADERS
         mc/mc_objects.h
 
         utils/utils.h
-        shaderpack_loading/shaderpack.h
+        data_sources/shaderpack.h
         config/config.h
         )
 

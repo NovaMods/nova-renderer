@@ -15,7 +15,7 @@
 #include "texture_manager.h"
 #include "gui/gui_renderer.h"
 #include "config/config.h"
-#include "shaderpack_loading/shaderpack.h"
+#include "data_sources/shaderpack.h"
 #include "uniform_buffer_store.h"
 #include "../gl/windowing/glfw_gl_window.h"
 
