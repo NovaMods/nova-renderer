@@ -3,7 +3,7 @@
 
 #include <unistd.h>
 
-#include "core/nova.h"
+#include "mc_interface/nova.h"
 
 void fill_render_command(mc_render_command &command);
 

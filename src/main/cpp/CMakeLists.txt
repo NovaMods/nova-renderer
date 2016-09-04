@@ -111,27 +111,25 @@ set(NOVA_SOURCE
         core/gui/gui_renderer.cpp
 
         core/nova_renderer.cpp
-        core/nova_facade.cpp
-        core/texture_manager.cpp
-        core/uniform_buffer_store.cpp
+        mc_interface/nova_facade.cpp
+        model/texture_manager.cpp
+        model/uniform_buffer_store.cpp
         core/gui/gui_renderer.cpp
 
-        gl/models/gl_shader_program.cpp
-        gl/models/gl_uniform_buffer.cpp
-        gl/models/gl_vertex_buffer.cpp
-        gl/models/texture2D.cpp
+        model/gl/gl_shader_program.cpp
+        model/gl/gl_uniform_buffer.cpp
+        model/gl/gl_vertex_buffer.cpp
+        model/texture2D.cpp
 
         gl/windowing/glfw_gl_window.cpp
 
         interfaces/ivertex_buffer.cpp
 
-        io/key_forwarder.cpp
-
         utils/utils.cpp
 
-        data_sources/shaderpack.cpp
-        config/config.cpp
-        3rdparty/stb_image/stb_image.h)
+        model/shaderpack.cpp
+        model/config.cpp
+        3rdparty/stb_image/stb_image.h model/loaders/shader_loading.cpp model/loaders/loaders.h)
 
 
 set(NOVA_HEADERS
@@ -143,15 +141,15 @@ set(NOVA_HEADERS
 
         core/shaders/uniform_buffer_definitions.h
 
-        core/nova.h
+        mc_interface/nova.h
         core/nova_renderer.h
-        core/texture_manager.h
+        model/texture_manager.h
         core/types.h
 
-        gl/models/gl_shader_program.h
-        gl/models/gl_uniform_buffer.h
-        gl/models/gl_vertex_buffer.h
-        gl/models/texture2D.h
+        model/gl/gl_shader_program.h
+        model/gl/gl_uniform_buffer.h
+        model/gl/gl_vertex_buffer.h
+        model/texture2D.h
 
         gl/windowing/glfw_gl_window.h
 
@@ -159,14 +157,12 @@ set(NOVA_HEADERS
         interfaces/ivertex_buffer.h
         interfaces/iwindow.h
 
-        io/key_forwarder.h
-
-        mc/mc_gui_objects.h
-        mc/mc_objects.h
+        mc_interface/mc_gui_objects.h
+        mc_interface/mc_objects.h
 
         utils/utils.h
-        data_sources/shaderpack.h
-        config/config.h
+        model/shaderpack.h
+        model/config.h
         )
 
 # For now just put everthing in a single nova source group

@@ -3,7 +3,6 @@
 //
 
 #include "glfw_gl_window.h"
-#include "io/key_forwarder.h"
 #include "core/nova_renderer.h"
 #include "utils/utils.h"
 #include <easylogging++.h>
@@ -16,7 +15,6 @@ void error_callback(int error, const char * description) {
 }
 
 void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
-    key_forwarder::forward_keypress(key, scancode);
 }
 
 glfw_gl_window::glfw_gl_window() {

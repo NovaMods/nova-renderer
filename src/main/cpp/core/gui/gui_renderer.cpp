@@ -6,9 +6,9 @@
 #include <algorithm>
 #include <easylogging++.h>
 #include "gui_renderer.h"
-#include "gl/models/gl_vertex_buffer.h"
+#include "model/gl/gl_vertex_buffer.h"
 
-gui_renderer::gui_renderer(texture_manager & textures, shaderpack & shaders, uniform_buffer_store & uniform_buffers) :
+gui_renderer::gui_renderer(nova::model::texture_manager & textures, nova::model::shaderpack & shaders, nova::model::uniform_buffer_store & uniform_buffers) :
         tex_manager(textures), shaders(shaders), ubo_manager(uniform_buffers), has_screen_available(false) {
     LOG(INFO) << "Created GUI Renderer";
 
@@ -27,7 +27,7 @@ void gui_renderer::set_current_screen(mc_gui_screen *screen) {
 
 void gui_renderer::render() {
     // Bind the GUI shader
-    gl_shader_program & gui_shader = shaders.get_shader(GUI_SHADER_NAME);
+    nova::model::gl_shader_program & gui_shader = shaders.get_shader(GUI_SHADER_NAME);
     gui_shader.bind();
 
     // Bind the GUI buttons texture to texture unit 0
@@ -125,7 +125,7 @@ void gui_renderer::add_vertices_from_button(std::vector<GLfloat> &vertex_buffer,
 
 void gui_renderer::setup_buffers() {
     // Buffer for the GUI geometry
-    cur_screen_buffer = std::unique_ptr<ivertex_buffer>(new gl_vertex_buffer());
+    cur_screen_buffer = std::unique_ptr<ivertex_buffer>(new nova::model::gl_vertex_buffer());
 }
 
 void gui_renderer::add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v) {
