@@ -5,6 +5,10 @@
 
 #include <easylogging++.h>
 
+#include <iostream>
+
+#include "utils.h"
+
 void initialize_logging() {
     // Configure the logger
     el::Configurations conf("config/logging.conf");
@@ -20,15 +24,27 @@ void initialize_logging() {
     el::Loggers::reconfigureAllLoggers(conf);
 }
 
-std::vector<std::string> split_string(const std::string &s, char delim = ' ') {
-    std::vector<std::string> elems;
-    std::stringstream ss(s);
-    std::string item;
-
-    while(getline(ss, item, delim)) {
-        elems.push_back(item);
+namespace nova {
+    std::string read_file(const std::string& filename) {
+        std::ifstream in(filename.c_str(), std::ios::in | std::ios::binary);
+        if(in) {
+            std::string contents;
+            in.seekg(0, std::ios::end);
+            contents.resize(in.tellg());
+            in.seekg(0, std::ios::beg);
+            in.read(&contents[0], contents.size());
+            in.close();
+            return (contents);
+        }
+        throw (errno);
     }
 
-    return elems;
+    not_found::not_found(const std::string &msg) {
+        message = "Could not fine resource " + msg;
+    }
+
+    const char * not_found::what() const noexcept {
+        return message.c_str();
+    }
 }
 

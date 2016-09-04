@@ -11,12 +11,12 @@
 
 #include <mutex>
 
-#include "core/uniform_buffer_store.h"
+#include "model/uniform_buffer_store.h"
 #include "interfaces/ivertex_buffer.h"
-#include "mc/mc_gui_objects.h"
-#include "core/texture_manager.h"
+#include "mc_interface/mc_gui_objects.h"
+#include "model/texture_manager.h"
 #include "core/shaders/uniform_buffer_definitions.h"
-#include "data_sources/shaderpack.h"
+#include "model/shaderpack.h"
 
 /*!
  * \brief Defines a bunch of methods to render different GUI elements, including buttons, text, and images
@@ -39,7 +39,7 @@
  */
 class gui_renderer {
 public:
-    gui_renderer(texture_manager& textures, shaderpack& shaders, uniform_buffer_store& uniform_buffers);
+    gui_renderer(nova::model::texture_manager& textures, nova::model::shaderpack& shaders, nova::model::uniform_buffer_store& uniform_buffers);
     ~gui_renderer();
 
     /*!
@@ -92,9 +92,9 @@ private:
 
     mc_gui_screen cur_screen;
 
-    texture_manager& tex_manager;
-    shaderpack& shaders;
-    uniform_buffer_store & ubo_manager;
+    nova::model::texture_manager& tex_manager;
+    nova::model::shaderpack& shaders;
+    nova::model::uniform_buffer_store & ubo_manager;
 
     std::string WIDGETS_TEXTURE_NAME = "textures/gui/widgets.png";
     std::string GUI_SHADER_NAME = "gui";

@@ -9,14 +9,14 @@
 #include <thread>
 
 #include "interfaces/iwindow.h"
-#include "mc/mc_objects.h"
+#include "mc_interface/mc_objects.h"
 
-#include "nova.h"
-#include "texture_manager.h"
+#include "mc_interface/nova.h"
+#include "model/texture_manager.h"
 #include "gui/gui_renderer.h"
-#include "config/config.h"
-#include "data_sources/shaderpack.h"
-#include "uniform_buffer_store.h"
+#include "model/config.h"
+#include "model/shaderpack.h"
+#include "model/uniform_buffer_store.h"
 #include "../gl/windowing/glfw_gl_window.h"
 
 /*!
@@ -95,17 +95,17 @@ public:
     /*!
      * \brief Returns the texture manager
      */
-    texture_manager & get_texture_manager();
+    nova::model::texture_manager & get_texture_manager();
 
     /*!
      * \brief Returns the shader manager
      */
-    shaderpack & get_shaderpack();
+    nova::model::shaderpack & get_shaderpack();
 
     /*!
      * \brief Returns the uniform buffer object manager
      */
-    uniform_buffer_store & get_ubo_manager();
+    nova::model::uniform_buffer_store & get_ubo_manager();
 
     /*!
      * \brief Returns the gui renderer
@@ -120,10 +120,10 @@ private:
     static std::unique_ptr<std::thread> render_thread;
 
     glfw_gl_window game_window;
-    texture_manager tex_manager;
+    nova::model::texture_manager tex_manager;
 
-    shaderpack shaders;
-    uniform_buffer_store ubo_manager;
+    nova::model::shaderpack shaders;
+    nova::model::uniform_buffer_store ubo_manager;
 
     gui_renderer gui_renderer_instance;
 

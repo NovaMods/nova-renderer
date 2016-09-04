@@ -10,20 +10,35 @@
 
 #include <vector>
 #include <string>
+#include <algorithm>
+#include <exception>
 
 /*!
  * \brief Initializes the logging system
  */
 void initialize_logging();
 
-/*!
- * \brief Splits a string into a vector of strings
- *
- * \param s The string to split
- * \param delim The character to split on
- *
- * \return The vector containing the split string
- */
-std::vector<std::string> split_string(const std::string &s, char delim = ' ');
+namespace nova {
+    /*!
+     * \brief Calls the fucntion once for every element in the provided container
+     *
+     * \param container The container to perform an action for each element in
+     * \param thingToDo The action to perform for each element in the collection
+     */
+    template <typename Cont, typename Func>
+    void foreach(Cont container, Func thingToDo) {
+        std::for_each(std::cbegin(container), std::cend(container), thingToDo);
+    };
+
+    std::string read_file(const std::string& filename);
+
+    class not_found : public std::exception {
+    public:
+        not_found(const std::string& msg);
+        virtual const char * what() const noexcept;
+    private:
+        std::string message;
+    };
+}
 
 #endif //RENDERER_UTILS_H

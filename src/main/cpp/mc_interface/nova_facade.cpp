@@ -10,7 +10,7 @@
  */
 
 #include "nova.h"
-#include "nova_renderer.h"
+#include "core/nova_renderer.h"
 
 #define TEXTURE_MANAGER nova_renderer::instance->get_texture_manager()
 
@@ -21,8 +21,8 @@ NOVA_EXPORT void init_nova() {
 NOVA_EXPORT void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type) {
     TEXTURE_MANAGER.add_texture(
             texture,
-            static_cast<texture_manager::atlas_type>(atlas_type),
-            static_cast<texture_manager::texture_type >(texture_type)
+            static_cast<nova::model::texture_manager::atlas_type>(atlas_type),
+            static_cast<nova::model::texture_manager::texture_type >(texture_type)
     );
 }
 

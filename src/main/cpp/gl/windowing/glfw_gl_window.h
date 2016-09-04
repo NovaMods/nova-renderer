@@ -9,7 +9,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "interfaces/iwindow.h"
-#include "config/config.h"
+#include "model/config.h"
 
 /*!
  * \brief Represents a GLFW window with an OpenGL context

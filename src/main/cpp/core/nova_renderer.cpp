@@ -63,15 +63,15 @@ void nova_renderer::init_instance() {
     render_thread = std::unique_ptr<std::thread>(new std::thread(run_render));
 }
 
-texture_manager & nova_renderer::get_texture_manager() {
+nova::model::texture_manager & nova_renderer::get_texture_manager() {
     return tex_manager;
 }
 
-shaderpack &nova_renderer::get_shaderpack() {
+nova::model::shaderpack &nova_renderer::get_shaderpack() {
     return shaders;
 }
 
-uniform_buffer_store &nova_renderer::get_ubo_manager() {
+nova::model::uniform_buffer_store &nova_renderer::get_ubo_manager() {
     return ubo_manager;
 }
 

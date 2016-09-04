@@ -12,7 +12,7 @@
 
 extern "C" {
 
-#include "mc/mc_objects.h"
+#include "mc_objects.h"
 
 /*!
  * \brief Initializes the Nova Renderer
