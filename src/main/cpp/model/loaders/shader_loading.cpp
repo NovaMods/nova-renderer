@@ -23,12 +23,12 @@ namespace nova {
                 shader_sources = load_sources_from_folder(shaderpack_name, shader_names);
             }
 
-            foreach(shader_sources, [&](auto item) {shaderpack.emplace(item.first, parse_shader(item.second));} );
+            foreach(shader_sources, [&](auto item) {shaderpack.emplace(item.first, gl_shader_program(item.second, item.first));} );
 
             return shaderpack;
         }
 
-        bool is_zip_file(std::string filename) {
+        bool is_zip_file(const std::string& filename) {
             mz_zip_archive dummy_zip_archive = {};
 
             return (bool) mz_zip_reader_init_file(&dummy_zip_archive, filename.c_str(), 0, 0, 0);
@@ -37,7 +37,7 @@ namespace nova {
         auto load_sources_from_folder(const std::string& shaderpack_name, const std::vector<const std::string>& shader_names) {
             std::unordered_map<std::string, shader_source> sources;
 
-            for(auto name : shader_names) {
+            for(auto& name : shader_names) {
                 try {
                     auto shader_path = shaderpack_name + "/shaders/" + name;
 
@@ -47,7 +47,7 @@ namespace nova {
                     };
 
                     sources.emplace(name, full_shader_source);
-                } catch(not_found e) {
+                } catch(std::exception e) {
                     LOG(ERROR) << e.what();
                 }
             }
@@ -108,14 +108,20 @@ namespace nova {
             }
         }
 
-        auto load_included_file(const std::string& shader_path, const std::string& line) {
-            auto included_file_name = get_filename_from_include(line);
-            auto file_to_include = get_included_file_path(shader_path, included_file_name);
+        auto load_shader_file(const std::string& shader_path, const std::vector<const std::string>& extensions) {
+            for(auto& extension : extensions) {
+                auto full_shader_path = shader_path + extension;
 
-            return load_shader_file(file_to_include, {""});
+                std::ifstream stream(full_shader_path, std::ios::in);
+                if(stream.good()) {
+                    return read_shader_stream(stream, shader_path);
+                }
+            }
+
+            throw resource_not_found(shader_path);
         }
 
-        auto load_shader_file(std::istream& stream, const std::string& shader_path) {
+        auto read_shader_stream(std::istream &stream, const std::string &shader_path) {
             std::vector<shader_line> file_source;
             std::string line;
             auto line_counter = 0;
@@ -134,37 +140,23 @@ namespace nova {
             return file_source;
         }
 
-        auto load_shader_file(const std::string& shader_path, const std::vector<const std::string>& extensions) {
-            for(auto extension : extensions) {
-                auto full_shader_path = shader_path + extension;
+        auto load_included_file(const std::string& shader_path, const std::string& line) {
+            auto included_file_name = get_filename_from_include(line);
+            auto file_to_include = get_included_file_path(shader_path, included_file_name);
 
-                std::ifstream stream(full_shader_path, std::ios::in);
-                if(stream.good()) {
-                    return load_shader_file(stream, shader_path);
-                }
-            }
-
-            throw not_found(shader_path);
+            return load_shader_file(file_to_include, {""});
         }
 
-        gl_shader_program parse_shader(const shader_source& shader_sources) {
-            // The goal here is to go from a bunch of shader source code to an OpenGL shader object, along with
-            // information about the uniforms and attributes that the shader has (probably) (I'm honestly not sure how
-            // usefun uniforms will be to me)
-            //
-            // The hard part here is that We have to determine if the shader is a GLSL 120, GLSL 450, or SPIR-V file,
-            // and use the appropriate functions to handle each
-            // We'll also have to handle #include files, and any other steps that we need to take to process the shader
-            // Oh, what joy!
-
-            auto included_source = process_includes(shader_sources);
-            //auto compilable_sources = convert_120_to_450(included_source);
+        auto load_sources_from_zip_file(const std::string& shaderpack_name, const std::vector<const std::string>& shader_names) {
+            LOG(WARN) << "Cannot load zipped shaderpack " << shaderpack_name;
         }
 
-        shader_source process_includes(const shader_source& source) {
-            auto new_shader_source = shader_source{};
-            new_shader_source.vertex_source = process_includes(source);
+        compilation_error::compilation_error(const std::string &error_message, const std::vector<shader_line> source_lines) :
+                std::runtime_error(error_message + get_original_line_message(error_message, source_lines))
+        {}
 
+        auto compilation_error::get_original_line_message(const std::string &error_message, const std::vector<shader_line> source_lines) {
+            return "";
         }
     }
 }

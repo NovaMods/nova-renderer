@@ -12,7 +12,7 @@
 
 #include <string>
 #include <unordered_map>
-#include "../shaderpack.h"
+
 #include "../gl/gl_shader_program.h"
 
 namespace nova {
@@ -31,7 +31,7 @@ namespace nova {
          * \param texture_name The path to the texture form the root of the resource pack
          * \return The OpenGL name of the loaded texture
          */
-        unsigned int load_texture(const std::string texture_name);
+        //unsigned int load_texture(const std::string texture_name);
     }
 }
 

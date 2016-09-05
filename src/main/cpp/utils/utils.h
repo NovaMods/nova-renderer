@@ -33,9 +33,9 @@ namespace nova {
     /*!
      * \brief Simple exception to represent that a resouce can not be found
      */
-    class not_found : public std::exception {
+    class resource_not_found : public std::exception {
     public:
-        not_found(const std::string& msg);
+        resource_not_found(const std::string& msg);
         virtual const char * what() const noexcept;
     private:
         std::string message;
