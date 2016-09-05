@@ -28,9 +28,9 @@ namespace nova {
 
             void on_config_loaded(nlohmann::json& config);
 
-            void on_config_changed(nlohmann::json& config);
+            void on_config_change(nlohmann::json& config);
 
-            std::vector<gl_shader_program&> get_all_shaders();
+            std::vector<gl_shader_program*> get_all_shaders();
 
         private:
             std::unordered_map<std::string, gl_shader_program> loaded_shaderpack;

@@ -116,7 +116,7 @@ namespace nova {
 
             if(version_line == "#version 450") {
                 // GLSL 450 code! This is the simplest: just concatenate all the lines in the shader file
-                foreach(shader_source, [&](auto line) {full_shader_source.append(line + "\n");});
+                foreach(shader_source, [&](auto line) {full_shader_source.append(line.line + "\n");});
 
             } else {
                 throw wrong_shader_version(shader_source[0].line);
@@ -137,5 +137,13 @@ namespace nova {
 
         wrong_shader_version::wrong_shader_version(const std::string &version_line) :
                 std::runtime_error("Invalid version line: " + version_line + ". Please only use GLSL version 450 (NOT compatibility profile)") {}
+
+        compilation_error::compilation_error(const std::string &error_message, const std::vector<shader_line> source_lines) :
+                std::runtime_error(error_message + get_original_line_message(error_message, source_lines))
+        {}
+
+        std::string compilation_error::get_original_line_message(const std::string &error_message, const std::vector<shader_line> source_lines) {
+            return "This logic isn't implemented yet";
+        }
     }
 }

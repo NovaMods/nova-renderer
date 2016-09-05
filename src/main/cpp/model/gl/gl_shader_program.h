@@ -36,6 +36,25 @@ namespace nova {
             // TODO: Figure out how to handle geometry and tessellation shaders
         };
 
+        /*!
+         * \brief Represents an error in compiling a shader
+         */
+        class compilation_error : public std::runtime_error {
+        public:
+            /*!
+             * \brief Constructs a compilation_error with the provided message, using the given list of shader_lines to
+             * map from line number in the error message to line number and shader file on disk
+             *
+             * \param error_message The compilation message, straight from the driver
+             * \param source_lines The list of source_line objects that maps from line in the shader sent to the driver
+             * to the line number and shader file on disk
+             */
+            compilation_error(const std::string& error_message, const std::vector<shader_line> source_lines);
+        private:
+
+            std::string get_original_line_message(const std::string &error_message, const std::vector<shader_line> source_lines);
+        };
+
         class wrong_shader_version : public std::runtime_error {
         public:
             wrong_shader_version(const std::string &version_line);

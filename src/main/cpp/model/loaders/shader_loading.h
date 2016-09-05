@@ -78,7 +78,7 @@ namespace nova {
          * As we add more shaders, we should add their names to this vector
          */
         std::vector<const std::string> shader_names = {
-                "gui",
+                "gui"
         };
 
         std::vector<const std::string> fragment_extensions = {
@@ -91,25 +91,6 @@ namespace nova {
                 ".vsh",
                 ".vert",
                 ".vert.spv"
-        };
-
-        /*!
-         * \brief Represents an error in compiling a shader
-         */
-        class compilation_error : public std::runtime_error {
-        public:
-            /*!
-             * \brief Constructs a compilation_error with the provided message, using the given list of shader_lines to
-             * map from line number in the error message to line number and shader file on disk
-             *
-             * \param error_message The compilation message, straight from the driver
-             * \param source_lines The list of source_line objects that maps from line in the shader sent to the driver
-             * to the line number and shader file on disk
-             */
-            compilation_error(const std::string& error_message, const std::vector<shader_line> source_lines);
-        private:
-
-            auto get_original_line_message(const std::string &error_message, const std::vector<shader_line> source_lines);
         };
     }
 }
