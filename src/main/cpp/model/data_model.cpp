@@ -25,7 +25,7 @@ namespace nova {
 
         void data_model::on_config_loaded(nlohmann::json &config) {}
 
-        void data_model::load_new_shaderpack(const std::string &new_shaderpack_name) {
+        void data_model::load_new_shaderpack(const std::string &new_shaderpack_name) noexcept {
             if(new_shaderpack_name != loaded_shaderpack_name) {
                 try {
                     loaded_shaderpack = load_shaderpack(new_shaderpack_name);

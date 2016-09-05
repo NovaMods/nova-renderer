@@ -16,14 +16,14 @@ namespace nova {
         std::unordered_map<std::string, gl_shader_program> load_shaderpack(const std::string& shaderpack_name) {
             std::unordered_map<std::string, gl_shader_program> shaderpack;
 
-            auto shader_sources = std::unordered_map<std::string, shader_source>();
+            auto shader_sources = std::unordered_map<std::string, shader_source>{};
             if(is_zip_file(shaderpack_name)) {
                 shader_sources = load_sources_from_zip_file(shaderpack_name, shader_names);
             } else {
                 shader_sources = load_sources_from_folder(shaderpack_name, shader_names);
             }
 
-            foreach(shader_sources, [&](auto item) {shaderpack.emplace(item.first, gl_shader_program(item.second, item.first));} );
+            foreach(shader_sources, [&](auto item) {shaderpack.emplace(item.first, gl_shader_program(item.first, item.second));} );
 
             return shaderpack;
         }
@@ -34,7 +34,10 @@ namespace nova {
             return (bool) mz_zip_reader_init_file(&dummy_zip_archive, filename.c_str(), 0, 0, 0);
         }
 
-        auto load_sources_from_folder(const std::string& shaderpack_name, const std::vector<std::string>& shader_names) {
+        std::unordered_map<std::string, shader_source> load_sources_from_folder(
+                const std::string& shaderpack_name,
+                const std::vector<std::string>& shader_names
+        ) {
             std::unordered_map<std::string, shader_source> sources;
 
             for(auto& name : shader_names) {
@@ -42,8 +45,8 @@ namespace nova {
                     auto shader_path = shaderpack_name + "/shaders/" + name;
 
                     shader_source full_shader_source = {
-                            {load_shader_file(shader_path, vertex_extensions)},
-                            {load_shader_file(shader_path, fragment_extensions)}
+                            load_shader_file(shader_path, vertex_extensions),
+                            load_shader_file(shader_path, fragment_extensions)
                     };
 
                     sources.emplace(name, full_shader_source);
@@ -108,7 +111,7 @@ namespace nova {
             }
         }
 
-        auto load_shader_file(const std::string& shader_path, const std::vector<std::string>& extensions) {
+        std::vector<shader_line> load_shader_file(const std::string& shader_path, const std::vector<std::string>& extensions) {
             for(auto& extension : extensions) {
                 auto full_shader_path = shader_path + extension;
 
@@ -121,14 +124,14 @@ namespace nova {
             throw resource_not_found(shader_path);
         }
 
-        auto read_shader_stream(std::istream &stream, const std::string &shader_path) {
+        std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path) {
             std::vector<shader_line> file_source;
             std::string line;
             auto line_counter = 0;
             while(std::getline(stream, line, '\n')) {
                 if(line.find("#include") == 0) {
                     auto included_file = load_included_file(shader_path, line);
-                    file_source.insert(file_source.end(), included_file);
+                    file_source.insert(file_source.end(), std::begin(included_file), std::end(included_file));
 
                 } else {
                     file_source.push_back({line_counter, shader_path, line});
@@ -140,14 +143,17 @@ namespace nova {
             return file_source;
         }
 
-        auto load_included_file(const std::string& shader_path, const std::string& line) {
+        std::vector<shader_line> load_included_file(const std::string& shader_path, const std::string& line) {
             auto included_file_name = get_filename_from_include(line);
             auto file_to_include = get_included_file_path(shader_path, included_file_name);
 
             return load_shader_file(file_to_include, {""});
         }
 
-        auto load_sources_from_zip_file(const std::string& shaderpack_name, const std::vector<std::string>& shader_names) {
+        std::unordered_map<std::string, shader_source> load_sources_from_zip_file(
+                const std::string& shaderpack_name,
+                const std::vector<std::string>& shader_names
+        ) {
             LOG(WARNING) << "Cannot load zipped shaderpack " << shaderpack_name;
         }
     }

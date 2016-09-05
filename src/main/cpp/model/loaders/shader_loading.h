@@ -26,7 +26,10 @@ namespace nova {
          * \param shader_names The list of names of shaders to load
          * \return A map from shader name to shader source
          */
-        auto load_sources_from_zip_file(const std::string& shaderpack_name, const std::vector<std::string>& shader_names);
+        std::unordered_map<std::string, shader_source> load_sources_from_zip_file(
+                const std::string& shaderpack_name,
+                const std::vector<std::string>& shader_names
+        );
 
         /*!
          * \brief Loads the source file of all the shaders with the provided names
@@ -38,7 +41,10 @@ namespace nova {
          * \param shader_names The list of names of shaders to load
          * \return A map from shader name to shader source
          */
-        auto load_sources_from_folder(const std::string& shaderpack_name, const std::vector<std::string>& shader_names);
+        std::unordered_map<std::string, shader_source> load_sources_from_folder(
+                const std::string& shaderpack_name,
+                const std::vector<std::string>& shader_names
+        );
 
         /*!
          * \brief Tries to load a single shader file from a folder
@@ -51,7 +57,7 @@ namespace nova {
          * \param extensions A list of extensions to try
          * \return The full source of the shader file
          */
-        auto load_shader_file(const std::string& shader_path, const std::vector<std::string>& extensions);
+        std::vector<shader_line> load_shader_file(const std::string& shader_path, const std::vector<std::string>& extensions);
 
         /*!
          * \brief Loads the shader file from the provided istream
@@ -60,9 +66,9 @@ namespace nova {
          * \param shader_path The path to the shader file (useful mostly for includes)
          * \return A list of shader_line objects
          */
-        auto read_shader_stream(std::istream &stream, const std::string &shader_path);
+        std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
 
-        auto load_included_file(const std::string& shader_path, const std::string& line);
+        std::vector<shader_line> load_included_file(const std::string& shader_path, const std::string& line);
 
         /*!
          * \brief Checks if the given file is a zip file or not

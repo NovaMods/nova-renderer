@@ -13,6 +13,9 @@ namespace nova {
 
             gl_name = glCreateProgram();
 
+            // Name the program for use in debug
+            glObjectLabel(GL_SHADER, gl_name, (GLsizei) name.length(), name.c_str());
+
             create_shader(source.vertex_source, GL_VERTEX_SHADER);
             create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
         }
