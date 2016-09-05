@@ -37,6 +37,7 @@ namespace nova {
             cam_data.viewHeight = new_config["viewHeight"];
 
             upload_data();
+            LOG(DEBUG) << "UBO store received updated config";
         }
 
         void uniform_buffer_store::on_config_loaded(nlohmann::json &config) {
