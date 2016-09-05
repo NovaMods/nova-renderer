@@ -30,8 +30,9 @@ namespace nova {
         std::for_each(std::cbegin(container), std::cend(container), thingToDo);
     };
 
-    std::string read_file(const std::string& filename);
-
+    /*!
+     * \brief Simple exception to represent that a resouce can not be found
+     */
     class not_found : public std::exception {
     public:
         not_found(const std::string& msg);
