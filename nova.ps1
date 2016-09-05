@@ -138,8 +138,9 @@ function New-MinGWNovaBuild {
     #>
 
     if(Test-Command -command "mingw32-make.exe") {
-        New-Item target -ItemType Directory
-        New-Item target\cpp -ItemType Directory
+        # I don't care if it can't make the directories, I just want to make sure they're there
+        New-Item target -ItemType Directory >$null 2>&1
+        New-Item target\cpp -ItemType Directory >$null 2>&1
         Set-Location target\cpp
 
         # MinGW is probably installed, let's assume it is

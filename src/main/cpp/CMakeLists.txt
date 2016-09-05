@@ -128,7 +128,7 @@ set(NOVA_SOURCE
         utils/utils.cpp
 
         model/settings.cpp
-        3rdparty/stb_image/stb_image.h model/loaders/shader_loading.cpp model/loaders/loaders.h model/loaders/shader_loading.h model/model.cpp model/model.h)
+        3rdparty/stb_image/stb_image.h model/loaders/shader_loading.cpp model/loaders/loaders.h model/loaders/shader_loading.h model/data_model.cpp model/data_model.h)
 
 
 set(NOVA_HEADERS

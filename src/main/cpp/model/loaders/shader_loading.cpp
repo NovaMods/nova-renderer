@@ -148,15 +148,7 @@ namespace nova {
         }
 
         auto load_sources_from_zip_file(const std::string& shaderpack_name, const std::vector<const std::string>& shader_names) {
-            LOG(WARN) << "Cannot load zipped shaderpack " << shaderpack_name;
-        }
-
-        compilation_error::compilation_error(const std::string &error_message, const std::vector<shader_line> source_lines) :
-                std::runtime_error(error_message + get_original_line_message(error_message, source_lines))
-        {}
-
-        auto compilation_error::get_original_line_message(const std::string &error_message, const std::vector<shader_line> source_lines) {
-            return "";
+            LOG(WARNING) << "Cannot load zipped shaderpack " << shaderpack_name;
         }
     }
 }

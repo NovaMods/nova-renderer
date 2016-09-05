@@ -5,7 +5,7 @@
  * \date 04-Sep-16.
  */
 
-#include "model.h"
+#include "data_model.h"
 
 #include "loaders/loaders.h"
 
@@ -19,7 +19,7 @@ namespace nova {
             return loaded_shaderpack[program_name];
         }
 
-        void data_model::on_config_changed(nlohmann::json &config) {
+        void data_model::on_config_change(nlohmann::json &config) {
             load_new_shaderpack(config["loadedShaderpack"]);
         }
 
@@ -38,10 +38,10 @@ namespace nova {
             }
         }
 
-        std::vector<gl_shader_program&> data_model::get_all_shaders() {
-            auto all_shaders = std::vector<gl_shader_program&>{};
+        std::vector<gl_shader_program*> data_model::get_all_shaders() {
+            auto all_shaders = std::vector<gl_shader_program*>{};
             for(auto& shader : loaded_shaderpack) {
-                all_shaders.push_back(shader.second);
+                all_shaders.push_back(&shader.second);
             }
 
             return all_shaders;
