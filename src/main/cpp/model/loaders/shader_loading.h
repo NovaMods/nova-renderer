@@ -26,7 +26,7 @@ namespace nova {
          * \param shader_names The list of names of shaders to load
          * \return A map from shader name to shader source
          */
-        auto load_sources_from_zip_file(const std::string& shaderpack_name, const std::vector<const std::string>& shader_names);
+        auto load_sources_from_zip_file(const std::string& shaderpack_name, const std::vector<std::string>& shader_names);
 
         /*!
          * \brief Loads the source file of all the shaders with the provided names
@@ -38,7 +38,7 @@ namespace nova {
          * \param shader_names The list of names of shaders to load
          * \return A map from shader name to shader source
          */
-        auto load_sources_from_folder(const std::string& shaderpack_name, const std::vector<const std::string>& shader_names);
+        auto load_sources_from_folder(const std::string& shaderpack_name, const std::vector<std::string>& shader_names);
 
         /*!
          * \brief Tries to load a single shader file from a folder
@@ -51,7 +51,7 @@ namespace nova {
          * \param extensions A list of extensions to try
          * \return The full source of the shader file
          */
-        auto load_shader_file(const std::string& shader_path, const std::vector<const std::string>& extensions);
+        auto load_shader_file(const std::string& shader_path, const std::vector<std::string>& extensions);
 
         /*!
          * \brief Loads the shader file from the provided istream
@@ -77,17 +77,17 @@ namespace nova {
          *
          * As we add more shaders, we should add their names to this vector
          */
-        std::vector<const std::string> shader_names = {
+        std::vector<std::string> shader_names = {
                 "gui"
         };
 
-        std::vector<const std::string> fragment_extensions = {
+        std::vector<std::string> fragment_extensions = {
                 ".fsh",
                 ".frag",
                 ".frag.spv"
         };
 
-        std::vector<const std::string> vertex_extensions = {
+        std::vector<std::string> vertex_extensions = {
                 ".vsh",
                 ".vert",
                 ".vert.spv"
