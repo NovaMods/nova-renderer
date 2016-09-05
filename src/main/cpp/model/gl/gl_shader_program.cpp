@@ -11,13 +11,10 @@ namespace nova {
         gl_shader_program::gl_shader_program(const std::string name, const shader_source& source) : name(name) {
             // We can handle all the shader programs more or less independently
 
-            gl_name = glCreateProgram();
-
-            // Name the program for use in debug
-            glObjectLabel(GL_SHADER, gl_name, (GLsizei) name.length(), name.c_str());
-
             create_shader(source.vertex_source, GL_VERTEX_SHADER);
             create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
+
+            link();
         }
 
         gl_shader_program::gl_shader_program(gl_shader_program &&other) :
@@ -32,7 +29,8 @@ namespace nova {
 
         void gl_shader_program::link() {
             gl_name = glCreateProgram();
-            LOG(INFO) << "Created shader program " << gl_name;
+            glObjectLabel(GL_SHADER, gl_name, (GLsizei) name.length(), name.c_str());
+            LOG(TRACE) << "Created shader program " << gl_name;
 
             for(GLuint shader : added_shaders) {
                 glAttachShader(gl_name, shader);
@@ -41,7 +39,7 @@ namespace nova {
             glLinkProgram(gl_name);
             check_for_linking_errors();
 
-            LOG(INFO) << "Program " << gl_name << " linked successfully";
+            LOG(DEBUG) << "Program " << name << " linked successfully";
 
             for(GLuint shader : added_shaders) {
                 // Clean up our resources. I'm told that this is a good thing.

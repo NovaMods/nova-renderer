@@ -8,4 +8,6 @@ out vec3 color;
 
 void main() {
     color = texture(colortex, uv).rgb;
+
+    color = vec3(1, 0, 1);
 }

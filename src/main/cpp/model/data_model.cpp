@@ -13,6 +13,9 @@ namespace nova {
     namespace model {
         data_model::data_model() : render_settings("config/config.json") {
             render_settings.register_change_listener(this);
+
+            render_settings.update_config_loaded();
+            render_settings.update_config_changed();
         }
 
         gl_shader_program &data_model::get_shader_program(const std::string &program_name) {
@@ -28,6 +31,7 @@ namespace nova {
         void data_model::load_new_shaderpack(const std::string &new_shaderpack_name) noexcept {
             if(new_shaderpack_name != loaded_shaderpack_name) {
                 try {
+                    LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
                     loaded_shaderpack = load_shaderpack(new_shaderpack_name);
                     loaded_shaderpack_name = new_shaderpack_name;
                 } catch(std::exception e) {
