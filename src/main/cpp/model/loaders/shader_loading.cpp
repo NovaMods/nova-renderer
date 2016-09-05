@@ -34,7 +34,7 @@ namespace nova {
             return (bool) mz_zip_reader_init_file(&dummy_zip_archive, filename.c_str(), 0, 0, 0);
         }
 
-        auto load_sources_from_folder(const std::string& shaderpack_name, const std::vector<const std::string>& shader_names) {
+        auto load_sources_from_folder(const std::string& shaderpack_name, const std::vector<std::string>& shader_names) {
             std::unordered_map<std::string, shader_source> sources;
 
             for(auto& name : shader_names) {
@@ -108,7 +108,7 @@ namespace nova {
             }
         }
 
-        auto load_shader_file(const std::string& shader_path, const std::vector<const std::string>& extensions) {
+        auto load_shader_file(const std::string& shader_path, const std::vector<std::string>& extensions) {
             for(auto& extension : extensions) {
                 auto full_shader_path = shader_path + extension;
 
@@ -147,7 +147,7 @@ namespace nova {
             return load_shader_file(file_to_include, {""});
         }
 
-        auto load_sources_from_zip_file(const std::string& shaderpack_name, const std::vector<const std::string>& shader_names) {
+        auto load_sources_from_zip_file(const std::string& shaderpack_name, const std::vector<std::string>& shader_names) {
             LOG(WARNING) << "Cannot load zipped shaderpack " << shaderpack_name;
         }
     }
