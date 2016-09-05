@@ -18,60 +18,56 @@
 
 namespace nova {
     namespace model {
-        class shader_program_already_linked_exception : public std::exception {
-        public:
-            virtual const char *what() noexcept;
+        /*!
+        * \brief Holds a line number and file name
+        *
+        * This struct is used to create a map from the line of code in the shader sent to the driver and the line of
+        * code on disk
+        */
+        struct shader_line {
+            int line_num;               //!< The line number in the original source file
+            std::string shader_name;    //!< The name of the original source file
+            std::string line;           //!< The actual line
         };
 
-        class program_linking_failure_exception : public std::exception {
-        public:
-            virtual const char *what() noexcept;
+        struct shader_source {
+            std::vector<shader_line> vertex_source;
+            std::vector<shader_line> fragment_source;
+            // TODO: Figure out how to handle geometry and tessellation shaders
         };
 
-        class shader_file_not_found_exception : public std::exception {
+        class wrong_shader_version : public std::runtime_error {
         public:
-            /*!
-             * \brief Constructs this exceptions
-             *
-             * \param file_name The name of the file that could not be found
-             */
-            shader_file_not_found_exception(std::string file_name);
-
-            virtual const char *what() noexcept;
-
-        private:
-            std::string msg;
+            wrong_shader_version(const std::string &version_line);
         };
 
-        class shader_program_not_linked_exception : public std::exception {
+        class program_linking_failure : public std::runtime_error {
         public:
-            /*!
-             * \brief Constructs this exceptions
-             *
-             * \param name The name of the shader program that is not linked
-             */
-            shader_program_not_linked_exception(std::string name);
-
-            virtual const char *what() noexcept;
-
-        private:
-            std::string msg;
+            program_linking_failure(const std::string name) : std::runtime_error("Program " + name + " failed to link") {};
         };
 
-/*!
- * \brief Represents an OpenGL shader program
- *
- * Shader programs can include between two and five shaders. At the bare minimum, a shader program needs a vertex shader
- * and a fragment shader. A shader program can also have a geometry shader, a tessellation control shader, and a
- * tessellation evaluation shader. Note that if a shader program has one of the tessellation shaders, it must also have
- * the other tessellation shader.
- */
+        /*!
+         * \brief Represents an OpenGL shader program
+         *
+         * Shader programs can include between two and five shaders. At the bare minimum, a shader program needs a vertex shader
+         * and a fragment shader. A shader program can also have a geometry shader, a tessellation control shader, and a
+         * tessellation evaluation shader. Note that if a shader program has one of the tessellation shaders, it must also have
+         * the other tessellation shader.
+         *
+         * A gl_shader_program does a couple of things. First, it holds a reference to the OpenGL object. Second, it holds all
+         * the configuration options declared in the shader. Third, it possibly holds the uniforms and attributes defined in
+         * this shader. There's a good chance that I won't end up with uniform and attribute information. This class will also
+         * hold the map from line in the shader sent to the compiler and the line number and shader file that the line came from
+         * on disk
+         */
         class gl_shader_program {
         public:
+            GLuint gl_name;
+
             /*!
              * \brief Constructs a gl_shader_program
              */
-            gl_shader_program(std::string name);
+            gl_shader_program(const std::string name, const shader_source &source);
 
             /**
              * \brief Move constructor
@@ -89,94 +85,25 @@ namespace nova {
             ~gl_shader_program();
 
             /*!
-             * \brief Adds a shader to this shader program
-             *
-             * \param shader_type The type of the shader to add. Can be one of GL_VERTEX_SHADER, GL_GEOMETRY_SHADER,
-             * GL_TESSELLATION_CONTROL_SHADER, GL_TESSELLATION_EVALUATION_SHADER, or GL_FRAGMENT_SHADER. Note that if you add a
-             * shader and the shader_program you add it to already has a shader of that type, you'll get an exception
-             * \param source_file_name The name of the file to read the shader source from. Right now this file path is
-             * relative to the working directory. Upon release this file path will be relative to the root of the current
-             * shaderpack. Shaderpacks aren't implemented yet, so I can't really make this work the proper way yet
-             */
-            void add_shader(GLenum shader_type, std::istream &shader_file_stream);
-
-            /*!
-             * \brief Links this shader program
-             *
-             * If this shader program fails to link, an exception is thrown
-             */
-            void link();
-
-            /*!
              * \brief Sets this shader as the currently active shader
              */
             void bind() noexcept;
 
             void link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept;
 
-            /*!
-             * \brief Gets the locaiton of the given uniform variable
-             *
-             * This is kinda GL-specific, but I'm only using OpenGL so I'm not all that worried at this point
-             *
-             * \param uniform_name The name of the uniform variable to get
-             * \return The OpenGL location of the given uniform
-             *
-             * \throws std::invalid_value if the given uniform name isn't in this shader
-             */
-            int get_uniform_location(std::string &uniform_name) const noexcept;
-
-            /*!
-            * \brief Gets the locaiton of the given attribute variable
-            *
-            * This is kinda GL-specific, but I'm only using OpenGL so I'm not all that worried at this point
-            *
-            * \param uniform_name The name of the attribute variable to get
-            * \return The OpenGL location of the given attribute
-            *
-            * \throws std::invalid_value if the given attribute name isn't in this shader
-            */
-            int get_attribute_location(std::string &attribute_name) const noexcept;
-
-            /*!
-             * \brief Sets the given integer as the data for the uniform variable with the given location
-             *
-             * \param location The uniform location to put the data in
-             * \param data The data to give to the given uniform location
-             */
-            void set_uniform_data(unsigned int location, int data) noexcept;
-
-            /*
-             * Testing functions
-             *
-             * TODO: Remove these before release
-             *
-             * I'm sure there's a better way to accomplish this. All well.
-             */
-            std::vector<GLuint> &get_added_shaders();
-
-            std::vector<std::string> &get_uniform_names();
-
         private:
-            std::string name;   //!< Mostly useful for debugging
+            std::string name;
 
-            std::unordered_map<std::string, GLuint> uniform_locations;
-            std::unordered_map<std::string, GLuint> attribute_locations;
-            bool linked;
-
-            GLuint gl_name;
-
-            std::vector<std::string> uniform_names;
-            std::vector<std::string> attribute_names;
             std::vector<GLuint> added_shaders;
 
-            std::string read_shader_file(std::istream &shader_file_stream);
+            void create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type);
 
-            bool check_for_shader_errors(GLuint shader_to_check);
+            void check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line> line_map);
 
-            void set_uniform_locations();
+            void link();
 
-            bool check_for_linking_errors();
+            void check_for_linking_errors();
+
         };
     }
 }

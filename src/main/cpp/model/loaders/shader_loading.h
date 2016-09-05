@@ -16,33 +16,6 @@
 
 namespace nova {
     namespace model {
-
-        /*!
-        * \brief Holds a line number and file name
-        *
-        * This struct is used to create a map from the line of code in the shader sent to the driver and the line of
-        * code on disk
-        */
-        struct shader_line {
-            int line_num;               //!< The line number in the original source file
-            std::string shader_name;    //!< The name of the original source file
-            std::string line;           //!< The actual line
-        };
-
-        struct shader_source {
-            std::vector<shader_line> vertex_source;
-            std::vector<shader_line> fragment_source;
-            // TODO: Figure out how to handle geometry and tessellation shaders
-        };
-
-        /*!
-         * \brief Parses the given string into a shader program object
-         *
-         * \param shader_source The full source code of the shader
-         * \return The shader program, in an easy-to-use format
-         */
-        gl_shader_program parse_shader(const shader_source& shader_sources);
-
         /*!
          * \brief Loads the source file of all the shaders with the provided names
          *
@@ -78,7 +51,7 @@ namespace nova {
          * \param extensions A list of extensions to try
          * \return The full source of the shader file
          */
-        auto load_shader_file(const std::string shader_path, const std::vector<const std::string>& extensions);
+        auto load_shader_file(const std::string& shader_path, const std::vector<const std::string>& extensions);
 
         /*!
          * \brief Loads the shader file from the provided istream
@@ -87,7 +60,9 @@ namespace nova {
          * \param shader_path The path to the shader file (useful mostly for includes)
          * \return A list of shader_line objects
          */
-        auto load_shader_file(std::istream& stream, const std::string& shader_path);
+        auto read_shader_stream(std::istream &stream, const std::string &shader_path);
+
+        auto load_included_file(const std::string& shader_path, const std::string& line);
 
         /*!
          * \brief Checks if the given file is a zip file or not
@@ -95,7 +70,7 @@ namespace nova {
          * \param filename The name of the file to check
          * \return True if the file is a zipfile, false otherwise
          */
-        bool is_zip_file(std::string& filename);
+        bool is_zip_file(const std::string& filename);
 
         /*!
          * \brief Holds the name of all the shaders to load
@@ -116,6 +91,25 @@ namespace nova {
                 ".vsh",
                 ".vert",
                 ".vert.spv"
+        };
+
+        /*!
+         * \brief Represents an error in compiling a shader
+         */
+        class compilation_error : public std::runtime_error {
+        public:
+            /*!
+             * \brief Constructs a compilation_error with the provided message, using the given list of shader_lines to
+             * map from line number in the error message to line number and shader file on disk
+             *
+             * \param error_message The compilation message, straight from the driver
+             * \param source_lines The list of source_line objects that maps from line in the shader sent to the driver
+             * to the line number and shader file on disk
+             */
+            compilation_error(const std::string& error_message, const std::vector<shader_line> source_lines);
+        private:
+
+            auto get_original_line_message(const std::string &error_message, const std::vector<shader_line> source_lines);
         };
     }
 }

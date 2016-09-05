@@ -11,7 +11,7 @@
 #include <json.hpp>
 #include <model/gl/gl_shader_program.h>
 
-#include "config.h"
+#include "settings.h"
 #include "model/gl/gl_uniform_buffer.h"
 #include "core/shaders/uniform_buffer_definitions.h"
 

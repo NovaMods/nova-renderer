@@ -8,8 +8,8 @@
 #include "gui_renderer.h"
 #include "model/gl/gl_vertex_buffer.h"
 
-gui_renderer::gui_renderer(nova::model::texture_manager & textures, nova::model::shaderpack & shaders, nova::model::uniform_buffer_store & uniform_buffers) :
-        tex_manager(textures), shaders(shaders), ubo_manager(uniform_buffers), has_screen_available(false) {
+gui_renderer::gui_renderer(nova::model::texture_manager & textures, nova::model::uniform_buffer_store & uniform_buffers) :
+        tex_manager(textures), ubo_manager(uniform_buffers), has_screen_available(false) {
     LOG(INFO) << "Created GUI Renderer";
 
     cur_screen = {};
@@ -26,10 +26,6 @@ void gui_renderer::set_current_screen(mc_gui_screen *screen) {
 }
 
 void gui_renderer::render() {
-    // Bind the GUI shader
-    nova::model::gl_shader_program & gui_shader = shaders.get_shader(GUI_SHADER_NAME);
-    gui_shader.bind();
-
     // Bind the GUI buttons texture to texture unit 0
     // Commented out because we don't support textures yet. Not really.
     //texture2D& gui_tex = tex_manager.get_texture_atlas(texture_manager::atlas_type::GUI, texture_manager::texture_type::ALBEDO);

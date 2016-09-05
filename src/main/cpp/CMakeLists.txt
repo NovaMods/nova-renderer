@@ -127,9 +127,8 @@ set(NOVA_SOURCE
 
         utils/utils.cpp
 
-        model/shaderpack.cpp
-        model/config.cpp
-        3rdparty/stb_image/stb_image.h model/loaders/shader_loading.cpp model/loaders/loaders.h model/loaders/shader_loading.h)
+        model/settings.cpp
+        3rdparty/stb_image/stb_image.h model/loaders/shader_loading.cpp model/loaders/loaders.h model/loaders/shader_loading.h model/model.cpp model/model.h)
 
 
 set(NOVA_HEADERS
@@ -161,8 +160,7 @@ set(NOVA_HEADERS
         mc_interface/mc_objects.h
 
         utils/utils.h
-        model/shaderpack.h
-        model/config.h
+        model/settings.h
         )
 
 # For now just put everthing in a single nova source group

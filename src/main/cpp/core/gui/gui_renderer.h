@@ -16,7 +16,6 @@
 #include "mc_interface/mc_gui_objects.h"
 #include "model/texture_manager.h"
 #include "core/shaders/uniform_buffer_definitions.h"
-#include "model/shaderpack.h"
 
 /*!
  * \brief Defines a bunch of methods to render different GUI elements, including buttons, text, and images
@@ -39,7 +38,7 @@
  */
 class gui_renderer {
 public:
-    gui_renderer(nova::model::texture_manager& textures, nova::model::shaderpack& shaders, nova::model::uniform_buffer_store& uniform_buffers);
+    gui_renderer(nova::model::texture_manager& textures, nova::model::uniform_buffer_store& uniform_buffers);
     ~gui_renderer();
 
     /*!
@@ -93,7 +92,6 @@ private:
     mc_gui_screen cur_screen;
 
     nova::model::texture_manager& tex_manager;
-    nova::model::shaderpack& shaders;
     nova::model::uniform_buffer_store & ubo_manager;
 
     std::string WIDGETS_TEXTURE_NAME = "textures/gui/widgets.png";

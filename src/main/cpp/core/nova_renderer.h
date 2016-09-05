@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <thread>
+#include <model/model.h>
 
 #include "interfaces/iwindow.h"
 #include "mc_interface/mc_objects.h"
@@ -14,8 +15,7 @@
 #include "mc_interface/nova.h"
 #include "model/texture_manager.h"
 #include "gui/gui_renderer.h"
-#include "model/config.h"
-#include "model/shaderpack.h"
+#include "model/settings.h"
 #include "model/uniform_buffer_store.h"
 #include "../gl/windowing/glfw_gl_window.h"
 
@@ -98,11 +98,6 @@ public:
     nova::model::texture_manager & get_texture_manager();
 
     /*!
-     * \brief Returns the shader manager
-     */
-    nova::model::shaderpack & get_shaderpack();
-
-    /*!
      * \brief Returns the uniform buffer object manager
      */
     nova::model::uniform_buffer_store & get_ubo_manager();
@@ -122,14 +117,17 @@ private:
     glfw_gl_window game_window;
     nova::model::texture_manager tex_manager;
 
-    nova::model::shaderpack shaders;
+    nova::model::data_model model;
     nova::model::uniform_buffer_store ubo_manager;
 
     gui_renderer gui_renderer_instance;
 
-    config nova_config;
+    settings nova_config;
 
     void enable_debug();
+
+    void
+    link_up_uniform_buffers(std::vector<nova::model::gl_shader_program &> shaders, nova::model::uniform_buffer_store ubos);
 };
 
 #endif //RENDERER_VULKAN_MOD_H

@@ -10,7 +10,7 @@
 #include <vector>
 #include <json.hpp>
 
-class config;
+class settings;
 
 /*!
  * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
@@ -52,14 +52,14 @@ public:
  * Stores values like the graphics settings, performance settings, any settings shaderpacks define, etc. Uses a JSON
  * document as the data model
  */
-class config {
+class settings {
 public:
     /*!
      * \brief Constructs this config from the given JSON document
      *
      * \param filename The name of the file to load the config from
      */
-    config(std::string filename);
+    settings(std::string filename);
 
     /*!
      * \brief Registers the given iconfig_change_listener as an Observer

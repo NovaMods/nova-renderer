@@ -3,12 +3,12 @@
  * \date 23-Jun-16.
  */
 
-#include "config.h"
+#include "settings.h"
 #include <easylogging++.h>
 
 #include "utils/utils.h"
 
-config::config(std::string filename) {
+settings::settings(std::string filename) {
     LOG(INFO) << "Loading config from " << filename;
 
     std::ifstream config_file(filename);
@@ -24,21 +24,21 @@ config::config(std::string filename) {
     }
 }
 
-void config::register_change_listener(iconfig_listener *new_listener) {
+void settings::register_change_listener(iconfig_listener *new_listener) {
     config_change_listeners.push_back(new_listener);
 }
 
-nlohmann::json & config::get_options() {
+nlohmann::json & settings::get_options() {
     return options;
 }
 
-void config::update_config_changed() {
+void settings::update_config_changed() {
     for(iconfig_listener * l : config_change_listeners) {
         l->on_config_change(options["settings"]);
     }
 }
 
-void config::update_config_loaded() {
+void settings::update_config_loaded() {
     for(iconfig_listener * l : config_change_listeners) {
         l->on_config_loaded(options);
     }

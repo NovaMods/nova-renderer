@@ -5,6 +5,7 @@
 #include "nova_renderer.h"
 
 #include <easylogging++.h>
+#include <utils/utils.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -20,16 +21,15 @@ void run_render() {
     }
 }
 
-nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, shaders, ubo_manager), nova_config("config/config.json") {
+nova_renderer::nova_renderer() : gui_renderer_instance(tex_manager, ubo_manager), nova_config("config/config.json") {
 
     nova_config.register_change_listener(&game_window);
-    nova_config.register_change_listener(&shaders);
     nova_config.register_change_listener(&ubo_manager);
 
     nova_config.update_config_loaded();
     nova_config.update_config_changed();
 
-    shaders.link_up_uniform_buffers(ubo_manager);
+    link_up_uniform_buffers(model.get_all_shaders(), ubo_manager);
 
     enable_debug();
 
@@ -44,6 +44,7 @@ void nova_renderer::render_frame() {
     // Clear to the clear color
     glClear(GL_COLOR_BUFFER_BIT);
 
+    model.get_shader_program("gui").bind();
     // Render GUI to GUI buffer
     gui_renderer_instance.render();
 
@@ -65,10 +66,6 @@ void nova_renderer::init_instance() {
 
 nova::model::texture_manager & nova_renderer::get_texture_manager() {
     return tex_manager;
-}
-
-nova::model::shaderpack &nova_renderer::get_shaderpack() {
-    return shaders;
 }
 
 nova::model::uniform_buffer_store &nova_renderer::get_ubo_manager() {
@@ -155,11 +152,14 @@ void nova_renderer::update() {
     nova_config.update();
     game_window.update();
     tex_manager.update();
-    shaders.update();
     ubo_manager.update();
     */
 
     gui_renderer_instance.update();
+}
+
+void nova_renderer::link_up_uniform_buffers(std::vector<nova::model::gl_shader_program &> shaders, nova::model::uniform_buffer_store ubos) {
+    nova::foreach(shaders, [&](auto shader) {shader.register_all_buffers_with_shader(ubos);});
 }
 
 
