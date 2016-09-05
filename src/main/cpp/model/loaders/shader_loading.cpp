@@ -18,8 +18,10 @@ namespace nova {
 
             auto shader_sources = std::unordered_map<std::string, shader_source>{};
             if(is_zip_file(shaderpack_name)) {
+                LOG(TRACE) << "Loading shaderpack " << shaderpack_name << " from a zip file";
                 shader_sources = load_sources_from_zip_file(shaderpack_name, shader_names);
             } else {
+                LOG(TRACE) << "Loading shaderpack " << shaderpack_name << " from a regular folder";
                 shader_sources = load_sources_from_folder(shaderpack_name, shader_names);
             }
 
@@ -42,7 +44,8 @@ namespace nova {
 
             for(auto& name : shader_names) {
                 try {
-                    auto shader_path = shaderpack_name + "/shaders/" + name;
+                    // All shaderpacks are in the shaderpacks folder
+                    auto shader_path = "shaderpacks/" + shaderpack_name + "/shaders/" + name;
 
                     shader_source full_shader_source = {
                             load_shader_file(shader_path, vertex_extensions),
@@ -114,10 +117,13 @@ namespace nova {
         std::vector<shader_line> load_shader_file(const std::string& shader_path, const std::vector<std::string>& extensions) {
             for(auto& extension : extensions) {
                 auto full_shader_path = shader_path + extension;
+                LOG(TRACE) << "Loading shader file " << full_shader_path;
 
                 std::ifstream stream(full_shader_path, std::ios::in);
                 if(stream.good()) {
                     return read_shader_stream(stream, shader_path);
+                } else {
+                    LOG(WARNING) << "Could not read file " << shader_path;
                 }
             }
 
@@ -146,6 +152,7 @@ namespace nova {
         std::vector<shader_line> load_included_file(const std::string& shader_path, const std::string& line) {
             auto included_file_name = get_filename_from_include(line);
             auto file_to_include = get_included_file_path(shader_path, included_file_name);
+            LOG(TRACE) << "Dealing with included file " << file_to_include;
 
             return load_shader_file(file_to_include, {""});
         }
