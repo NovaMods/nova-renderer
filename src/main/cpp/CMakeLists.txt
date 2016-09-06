@@ -88,11 +88,8 @@ find_package(OpenGL REQUIRED)
 
 set(GLAD_SOURCE ${3RD_PARTY_DIR}/glad/src/glad.c)
 
+set(MINIZ_SOURCE "${3RD_PARTY_DIR}/miniz/src/miniz.c")
 
-set(MINIZ_SOURCE "${3RD_PARTY_DIR}/miniz/src/miniz.c"
-                 "${3RD_PARTY_DIR}/miniz/src/miniz_zip.c"
-                 "${3RD_PARTY_DIR}/miniz/src/miniz_tinfl.c"
-                 "${3RD_PARTY_DIR}/miniz/src/miniz_tdef.c")
 include_directories(SYSTEM
         ${GLM_INCLUDE_DIRS}
         ${GLFW3_INCLUDE_DIR}
@@ -128,7 +125,7 @@ set(NOVA_SOURCE
         utils/utils.cpp
 
         model/settings.cpp
-        3rdparty/stb_image/stb_image.h model/loaders/shader_loading.cpp model/loaders/loaders.h model/loaders/shader_loading.h model/data_model.cpp model/data_model.h)
+        3rdparty/stb_image/stb_image.h model/loaders/shader_loading.cpp model/loaders/loaders.h model/loaders/shader_loading.h model/data_model.cpp model/data_model.h model/loaders/texture_loading.cpp model/loaders/texture_loading.h model/loaders/loader_utils.cpp model/loaders/loader_utils.h)
 
 
 set(NOVA_HEADERS
