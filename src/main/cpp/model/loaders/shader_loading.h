@@ -71,14 +71,6 @@ namespace nova {
         std::vector<shader_line> load_included_file(const std::string& shader_path, const std::string& line);
 
         /*!
-         * \brief Checks if the given file is a zip file or not
-         *
-         * \param filename The name of the file to check
-         * \return True if the file is a zipfile, false otherwise
-         */
-        bool is_zip_file(const std::string& filename);
-
-        /*!
          * \brief Holds the name of all the shaders to load
          *
          * As we add more shaders, we should add their names to this vector

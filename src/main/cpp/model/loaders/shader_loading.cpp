@@ -5,11 +5,10 @@
  * \date 03-Sep-16.
  */
 
-#include <miniz_zip.h>
-
 #include "utils/utils.h"
 #include "loaders.h"
 #include "shader_loading.h"
+#include "loader_utils.h"
 
 namespace nova {
     namespace model {
@@ -28,12 +27,6 @@ namespace nova {
             foreach(shader_sources, [&](auto item) {shaderpack.emplace(item.first, gl_shader_program(item.first, item.second));} );
 
             return shaderpack;
-        }
-
-        bool is_zip_file(const std::string& filename) {
-            mz_zip_archive dummy_zip_archive = {};
-
-            return (bool) mz_zip_reader_init_file(&dummy_zip_archive, filename.c_str(), 0, 0, 0);
         }
 
         std::unordered_map<std::string, shader_source> load_sources_from_folder(
