@@ -1,6 +1,9 @@
 {
   "settings": {
     "loadedShaderpack": "default",
+    "loadedResourcepacks": [
+      "/versions/1.10/1.10.jar"
+    ],
     "viewWidth": 800,
     "viewHeight": 480
   },

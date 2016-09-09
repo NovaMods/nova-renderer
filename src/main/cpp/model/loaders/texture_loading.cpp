@@ -42,7 +42,6 @@ namespace nova {
         };
 
         std::unordered_map<std::string, texture_data> load_textures_zip(const std::string& resourcepack_name) {
-            // TODO: Refactor this for LOC
             mz_zip_archive zip_archive = {};
             if(!mz_zip_reader_init_file(&zip_archive, resourcepack_name.c_str(), 0)) {
                 LOG(ERROR) << "Could not open resourcepack " << resourcepack_name;

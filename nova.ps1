@@ -88,6 +88,7 @@ function New-NovaEnvironment {
     Write-Information "Followed the files I've copied"
     cmd.exe /C "$PSScriptRoot/decompile.bat"
     Write-Information "Decompiled MCP"
+    robocopy "src\minecraft" "src\main\java" "*" /s
 }
 
 function Unzip([string]$zipfile, [string]$outpath) {
