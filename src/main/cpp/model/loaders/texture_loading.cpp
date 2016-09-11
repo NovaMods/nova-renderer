@@ -25,6 +25,8 @@ namespace nova {
                 loaded_textures.insert(std::begin(textures), std::end(textures));
             }
 
+            // We have all the textures. Let's pack them into a texture atlas
+
             return {};
         };
 
