@@ -1,7 +1,7 @@
 /*!
  * \brief Defines a ton of functions to aid loading textures from a resourcepack
  *
- * \author ddubois 
+ * \author ddubois
  * \date 05-Sep-16.
  */
 
