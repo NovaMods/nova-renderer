@@ -2,10 +2,8 @@ package com.continuum.nova;
 
 import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.utils.RenderCommandBuilder;
-import com.sun.istack.internal.NotNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
@@ -465,7 +463,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
         }
 
-        List<AtlasGenerator.Texture> atlases = gen.Run("albedo", maxAtlasSize, maxAtlasSize, 1, true, images);
+        List<AtlasGenerator.Texture> atlases = gen.Run(maxAtlasSize, maxAtlasSize, 1, images);
 
         for(AtlasGenerator.Texture texture : atlases) {
             try {

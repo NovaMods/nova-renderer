@@ -219,3 +219,5 @@ mappingviewer/
 mcp/
 reobf/
 target/
+
+*.png
