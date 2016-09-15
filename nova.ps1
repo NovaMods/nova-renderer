@@ -71,27 +71,27 @@ function New-NovaEnvironment {
         Sets up Nova in a new environment by downloading MCP, unpacking it, moving it to the right location, and applying the source code transformations
     #>
 
-    Write-Information "We're at $PSScriptRoot"
+    Write-Host "We're at $PSScriptRoot"
 
     New-Item "mcp" -ItemType Directory
-    Write-Information "Created directory for MCP to live in"
+    Write-Host "Created directory for MCP to live in"
     Set-Location "mcp"
-    Write-Information "Moved to MCP directory"
+    Write-Host "Moved to MCP directory"
 
     $wc = New-Object System.Net.WebClient
     $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
-    Write-Information "Downloaded MCP successfully"
+    Write-Host "Downloaded MCP successfully"
 
     Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
-    Write-Information "Unzipped MCP"
+    Write-Host "Unzipped MCP"
     Remove-Item "mcp.zip"
-    Write-Information "Deleted MCP zip (but not really)"
+    Write-Host "Deleted MCP zip (but not really)"
     robocopy "." "..\" "*" /s
-    Write-Information "Copied MCP files to the root directory"
+    Write-Host "Copied MCP files to the root directory"
     Set-Location ".."
-    Write-Information "Followed the files I've copied"
+    Write-Host "Followed the files I've copied"
     cmd.exe /C "$PSScriptRoot/decompile.bat"
-    Write-Information "Decompiled MCP"
+    Write-Host "Decompiled MCP"
     robocopy "src\minecraft" "src\main\java" "*" /s
 }
 
@@ -114,14 +114,14 @@ function New-NovaCode([string]$buildEnvironment) {
         Specifies the build environment you with to use. Must be either 'mingw' or 'msvc'.
     #>
 
-    Write-Information "Starting compilation of Nova..."
+    Write-Host "Starting compilation of Nova..."
 
     if($buildEnvironment -eq "mingw") {
-        Write-Information "Building with MinGW"
+        Write-Host "Building with MinGW"
         $buildGood = New-MinGWNovaBuild
 
     } elseif($buildEnvironment -eq "msvc") {
-        Write-Information "Building wth Visual Studio"
+        Write-Host "Building wth Visual Studio"
         $buildGood = New-VisualStudioBuild
     }
 
@@ -143,7 +143,7 @@ function New-NovaCode([string]$buildEnvironment) {
         }
     }
 
-    Write-Information "Nova compiled!"
+    Write-Host "Nova compiled!"
     return $true
 }
 
@@ -248,7 +248,7 @@ function Invoke-Nova {
         Lanuches Nova from the correct directory
     #>
 
-    Write-Information "Launching Nova..."
+    Write-Host "Launching Nova..."
 
     Set-Location "jars"
     $env = "-Djava.library.path=$PSScriptRoot\jars\versions\1.10\1.10-natives"
