@@ -28,7 +28,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
-
+# need to compile GLFW and JSON
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/glfw" glfw)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/json" json)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/glm" glm)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/easyloggingpp" easyloggingpp)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/miniz" miniz)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
         set(ENV{GLM_ROOT_DIR} "${3RD_PARTY_DIR}/glm")
