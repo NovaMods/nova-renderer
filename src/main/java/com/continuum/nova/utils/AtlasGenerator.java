@@ -113,19 +113,29 @@ public class AtlasGenerator {
                     int dw = rect.width - image.getWidth();
                     int dh = rect.height - image.getHeight();
 
-                    if(dw > dh) {
-                        child[0] = new Node(rect.x, rect.y, image.getWidth(), rect.height);
-                        child[1] = new Node(padding + rect.x + image.getWidth(), rect.y, rect.width - image.getWidth() - padding, rect.height);
-                    } else {
+                    // Prefer filling vertically before horizontally. MC has a number of textures that are much higher
+                    // than they are wide
+                    // TODO: Figure out how to make the atlas texture as square as possible
+                    if(dh > dw) {
                         child[0] = new Node(rect.x, rect.y, rect.width, image.getHeight());
                         child[1] = new Node(rect.x, padding + rect.y + image.getHeight(), rect.width, rect.height - image.getHeight() - padding);
+                    } else {
+                        child[0] = new Node(rect.x, rect.y, image.getWidth(), rect.height);
+                        child[1] = new Node(padding + rect.x + image.getWidth(), rect.y, rect.width - image.getWidth() - padding, rect.height);
                     }
 
                     return child[0].Insert(image, padding);
                 }
             }
 
+            /**
+             * Figures out the maximum bounds of this node or any of its children
+             *
+             * @param comparePoint The point to compare the bounds of this nide and its children to
+             * @return The maximum bounds of this node or any of its children
+             */
             Point2D getMaxBounds(Point2D comparePoint) {
+                // yes, there's duplicate logic. This code is simple. Bite me.
                 double maxX = comparePoint.getX();
                 double maxY = comparePoint.getY();
 
