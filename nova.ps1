@@ -71,27 +71,27 @@ function New-NovaEnvironment {
         Sets up Nova in a new environment by downloading MCP, unpacking it, moving it to the right location, and applying the source code transformations
     #>
 
-    Write-Host "We're at $PSScriptRoot"
+    Write-Host "Downloading MCP..."
 
     New-Item "mcp" -ItemType Directory
-    Write-Host "Created directory for MCP to live in"
+    Write-Information "Created directory for MCP to live in"
     Set-Location "mcp"
-    Write-Host "Moved to MCP directory"
+    Write-Information "Moved to MCP directory"
 
     $wc = New-Object System.Net.WebClient
     $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
     Write-Host "Downloaded MCP successfully"
 
     Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
-    Write-Host "Unzipped MCP"
+    Write-Information "Unzipped MCP"
     Remove-Item "mcp.zip"
-    Write-Host "Deleted MCP zip (but not really)"
+    Write-Information "Deleted MCP zip (but not really)"
     robocopy "." "..\" "*" /s
     Write-Host "Copied MCP files to the root directory"
     Set-Location ".."
-    Write-Host "Followed the files I've copied"
+    Write-Information "Followed the files I've copied"
     cmd.exe /C "$PSScriptRoot/decompile.bat"
-    Write-Host "Decompiled MCP"
+    Write-Information "Decompiled MCP"
     robocopy "src\minecraft" "src\main\java" "*" /s
 }
 
