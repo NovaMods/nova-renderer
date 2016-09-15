@@ -83,16 +83,16 @@ function New-NovaEnvironment {
     Write-Host "Downloaded MCP successfully"
 
     Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
-    Write-Information "Unzipped MCP"
     Remove-Item "mcp.zip"
-    Write-Information "Deleted MCP zip (but not really)"
     robocopy "." "..\" "*" /s
     Write-Host "Copied MCP files to the root directory"
     Set-Location ".."
-    Write-Information "Followed the files I've copied"
     cmd.exe /C "$PSScriptRoot/decompile.bat"
-    Write-Information "Decompiled MCP"
     robocopy "src\minecraft" "src\main\java" "*" /s
+
+    # Clean up the intermediary files
+    Remove-Item "src\minecraft" -Recurse
+    Remove-Item "mcp" -Recurse
 
     Write-Host "Nova set up successfully"
 }
