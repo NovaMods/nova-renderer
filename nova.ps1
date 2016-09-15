@@ -1,4 +1,4 @@
-<# 
+<#
 .SYNOPSIS
     A simple script to handle the build lifecycle of the Nova Renderer
 
@@ -22,10 +22,10 @@
 
 .PARAMETER buildEnvironment
     Specifies the build environment to use to compile the native code. Can be one of 'mingw' or 'msvc'. Default is 'mingw'
-    
+
     If set to mingw, this script assumes that you have MinGW all set up, and have mingw32-make on your path. If that's not true, you better fix it now!
-    
-    If set to msvc, this script assumes you have Visual Studio 2015 installed and have devenv.exe on your path. If that's not the case, fix it now! 
+
+    If set to msvc, this script assumes you have Visual Studio 2015 installed and have devenv.exe on your path. If that's not the case, fix it now!
 
 .NOTES
     File Name       : nova.ps
@@ -38,6 +38,10 @@
 .EXAMPLE
     nova -build -compiler mingw
     Builds Nova, using the MinGW build environment to compile the native code
+
+.EXAMPLE
+    nova -build -nativeOnly
+    Builds Nova, compiling only the native code and skipping the Java compilation
 
 .EXAMPLE
     nova -run
@@ -79,7 +83,7 @@ function New-NovaEnvironment {
     Write-Information "Downloaded MCP successfully"
 
     Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
-    Write-Information "Unzipped MCP" 
+    Write-Information "Unzipped MCP"
     Remove-Item "mcp.zip"
     Write-Information "Deleted MCP zip (but not really)"
     robocopy "." "..\" "*" /s
@@ -114,11 +118,16 @@ function New-NovaCode([string]$buildEnvironment) {
 
     if($buildEnvironment -eq "mingw") {
         Write-Information "Building with MinGW"
-        New-MinGWNovaBuild
+        $buildGood = New-MinGWNovaBuild
 
     } elseif($buildEnvironment -eq "msvc") {
         Write-Information "Building wth Visual Studio"
-        New-VisualStudioBuild
+        $buildGood = New-VisualStudioBuild
+    }
+
+    if($buildGood -eq $false) {
+        Write-Error "Compilation of native code failed, aborting"
+        return $false
     }
 
     # I assume that everything worked properly
@@ -127,9 +136,15 @@ function New-NovaCode([string]$buildEnvironment) {
         # Compile the Java code
 
         gradle build
+
+        if($LASTEXITCODE -ne 0) {
+            Write-Error "Gradle invocation failed, aborting"
+            return $false
+        }
     }
 
     Write-Information "Nova compiled!"
+    return $true
 }
 
 function New-MinGWNovaBuild {
@@ -145,21 +160,29 @@ function New-MinGWNovaBuild {
         Set-Location target\cpp
 
         # MinGW is probably installed, let's assume it is
-        Invoke-CMake -generator "MinGW Makefiles"
+        cmake -G "MinGW Makefiles" ../../src/main/cpp
+        if($LASTEXITCODE -ne 0) {
+            Write-Error "Failed to invoke CMake, aborting compilation"
+            return $false
+        }
 
         # Compile the code
         mingw32-make -f Makefile nova-renderer
 
         # Copy output DLL to the correct location
-        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "libnova-renderer.dll" 
+        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "libnova-renderer.dll"
 
-        Write-Information "Copied Nova, but you're going to have to put libstc++.dll on your path somewhere, or else you won't be able to run Nova."
+        $mcpLoc = Read-Host "Please enter the path to your MinGW installation. This should be the path to the folder with mingw-w64.bat in it"
+        robocopy "$($mcpLoc)\mingw64\bin" "..\..\jars\versions\1.10\1.10-natives" "libstdc++-6.dll"
 
         Set-Location ..\..
 
     } else {
         Write-Error "Could not call the MinGW Make tool, unable to build Nova. Please install MinGW AND ensure that mingw32-make is in your path"
+        return $false
     }
+
+    return $true
 }
 
 function New-VisualStudioBuild {
@@ -178,7 +201,7 @@ function New-VisualStudioBuild {
 
         # Copy the DLL to the correct location
         # TODO: Verify that this is the name of the DLL
-        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "nova-renderer.dll" 
+        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "nova-renderer.dll"
     } else {
         Write-Error "Could not call the Visual Studio make tool, unable to build Nova. Please enstall Visual Stusio 2015 and ensure that devenv.exe is on your path"
     }
@@ -192,17 +215,6 @@ function Test-Command([string]$command) {
         # I could return the result of the Get-Command test, but I want to output an error message upon failure
         return $true
     }
-}
-
-function Invoke-CMake([string]$generator) {
-    <#
-    .SYNOPSIS
-        Invokes CMake using the provided generator
-    .PARAMETER geneartor 
-        The generator for CMake to use
-    #>
-
-    cmake -G $generator ../../src/main/cpp
 }
 
 ################################################################################
@@ -237,7 +249,7 @@ function Invoke-Nova {
     #>
 
     Write-Information "Launching Nova..."
-    
+
     Set-Location "jars"
     $env = "-Djava.library.path=$PSScriptRoot\jars\versions\1.10\1.10-natives"
     $jarfile = "$PSScriptRoot\build\libs\Nova Renderer-0.3.jar"
