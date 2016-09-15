@@ -189,8 +189,8 @@ function New-MinGWNovaBuild {
         # Copy output DLL to the correct location
         robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "libnova-renderer.dll"
 
-        $mcpLoc = Read-Host "Please enter the path to your MinGW installation. This should be the path to the folder with mingw-w64.bat in it"
-        robocopy "$($mcpLoc)\mingw64\bin" "..\..\jars\versions\1.10\1.10-natives" "libstdc++-6.dll"
+        # $mcpLoc = Read-Host "Please enter the path to your MinGW installation. This should be the path to the folder with mingw-w64.bat in it"
+        # robocopy "$($mcpLoc)\mingw64\bin" "..\..\jars\versions\1.10\1.10-natives" "libstdc++-6.dll"
 
         Set-Location ..\..
 

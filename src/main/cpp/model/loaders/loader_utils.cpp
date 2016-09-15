@@ -1,12 +1,12 @@
 /*!
  * \brief
  *
- * \author ddubois 
+ * \author ddubois
  * \date 05-Sep-16.
  */
 
 #define MINIZ_HEADER_FILE_ONLY
-#include <3rdparty/miniz/src/miniz.c>
+#include "miniz.c"
 #include "loader_utils.h"
 
 namespace nova {

@@ -24,7 +24,6 @@ namespace nova {
 
         void data_model::on_config_change(nlohmann::json &config) {
             load_new_shaderpack(config["loadedShaderpack"]);
-            load_new_resourcepack(config["loadedResourcepacks"]);
         }
 
         void data_model::on_config_loaded(nlohmann::json &config) {}
@@ -51,25 +50,6 @@ namespace nova {
             }
 
             return all_shaders;
-        }
-
-        void data_model::load_new_resourcepack(const std::vector<std::string>& resourcepack_names) {
-            if(resourcepack_names != loaded_resourcepack_names) {
-                try {
-                    LOG(INFO) << "Loading resourcepacks: ";
-                    for(auto& name : resourcepack_names) {
-                        LOG(INFO) << "\t" << name;
-                    }
-
-                    loaded_textures = load_textures(resourcepack_names);
-                    loaded_resourcepack_names = resourcepack_names;
-
-                } catch(std::runtime_error& e) {
-                    LOG(ERROR) << "Could not load specified resourcepacks: " << e.what();
-                    loaded_resourcepack_names = {"/versions/1.10/1.10.jar"};
-                    loaded_textures = load_textures(loaded_resourcepack_names);
-                }
-            }
         }
     }
 }
