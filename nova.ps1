@@ -94,6 +94,21 @@ function New-NovaEnvironment {
     Remove-Item "src\minecraft" -Recurse
     Remove-Item "mcp" -Recurse
 
+    Write-Host "Downloading GLFW..."
+    git submodule update --init -- src/main/cpp/3rdparty/easyloggingpp
+
+    Write-Host "Downloading miniz..."
+    git submodule update --init -- src/main/cpp/3rdparty/miniz
+
+    Write-Host "Downloading json..."
+    git submodule update --init -- src/main/cpp/3rdparty/json
+
+    Write-Host "Downloading GLFW..."
+    git submodule update --init -- src/main/cpp/3rdparty/glfw
+
+    Write-Host "Downloading GLM..."
+    git submodule update --init -- src/main/cpp/3rdparty/glm
+
     Write-Host "Nova set up successfully"
 }
 

@@ -28,16 +28,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
-# Dependency management. Download GLM, GLFW, and ZipLib
-# Gonna just do ZipLib first, cause we already have a solution for the others
 
-# Add ZipLib
-#ExternalProject_Add(ziplib
-#        GIT_REPOSITORY https://bitbucket.org/hsmith/ziplib/src/5b9fda317e6ba60d5be87c7511fcd35b2addefcd?at=master
-#        INSTALL_DIR ${3RD_PARTY_DIR}/ziplib
-#        SOURCE_DIR ${3RD_PARTY_DIR}/ziplib#
-#
-#        )
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
         set(ENV{GLM_ROOT_DIR} "${3RD_PARTY_DIR}/glm")
