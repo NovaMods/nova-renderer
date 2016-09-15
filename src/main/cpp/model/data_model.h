@@ -39,8 +39,6 @@ namespace nova {
             std::vector<std::string> loaded_resourcepack_names;
 
             void load_new_shaderpack(const std::string &new_shaderpack_name) noexcept;
-
-            void load_new_resourcepack(const std::vector<std::string>&resourcepack_names);
         };
     }
 }
