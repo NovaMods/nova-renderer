@@ -94,6 +94,12 @@ function New-NovaEnvironment {
     Remove-Item "src\minecraft" -Recurse
     Remove-Item "mcp" -Recurse
 
+    # Apply our patch file
+    Write-Host "Injecting Nova into Minecraft..."
+    Set-Location src\main\resources\patches
+    ..\..\..\..\runtime\bin\applydiff.exe -p0 -i .\nova.diff
+    Set-Location ..\..\..\..\
+
     Write-Host "Downloading GLFW..."
     git submodule update --init -- src/main/cpp/3rdparty/easyloggingpp
 

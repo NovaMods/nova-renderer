@@ -21,7 +21,7 @@ namespace nova {
         }
 
         void uniform_buffer_store::set_bind_points(nlohmann::json &config) {
-            nlohmann::json &ubo_bind_points_node = config["readOnly"]["uboBindPoints"];
+            nlohmann::json &ubo_bind_points_node = config["uboBindPoints"];
 
             LOG(INFO) << "Provided configuration: " << config;
 
