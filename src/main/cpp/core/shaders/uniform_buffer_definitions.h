@@ -12,8 +12,6 @@
 #ifndef RENDERER_UNIFORM_BUFFERS_H
 #define RENDERER_UNIFORM_BUFFERS_H
 
-#include <glm/glm.hpp>
-
 /*!
  * \brief Holds data that changes whenever the camera changes
  *

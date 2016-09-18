@@ -7,8 +7,8 @@
 #define RENDERER_TEXTURE_RECEIVER_H
 
 #include <string>
-#include <glm/glm.hpp>
 #include <map>
+#include "3rdparty/glm/glm/glm.hpp"
 #include "mc_interface/mc_objects.h"
 #include <glad/glad.h>
 #include "model/texture2D.h"

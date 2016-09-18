@@ -1,0 +1,15 @@
+[submodule "src/main/cpp/3rdparty/glm"]
+	path = src/main/cpp/3rdparty/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "src/main/cpp/3rdparty/glfw"]
+	path = src/main/cpp/3rdparty/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "src/main/cpp/3rdparty/miniz"]
+	path = src/main/cpp/3rdparty/miniz
+	url = https://github.com/richgel999/miniz.git
+[submodule "src/main/cpp/3rdparty/easyloggingpp"]
+	path = src/main/cpp/3rdparty/easyloggingpp
+	url = https://github.com/easylogging/easyloggingpp.git
+[submodule "src/main/cpp/3rdparty/json"]
+	path = src/main/cpp/3rdparty/json
+	url = https://github.com/nlohmann/json.git
