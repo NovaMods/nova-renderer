@@ -40,6 +40,6 @@ void settings::update_config_changed() {
 
 void settings::update_config_loaded() {
     for(iconfig_listener * l : config_change_listeners) {
-        l->on_config_loaded(options);
+        l->on_config_loaded(options["readOnly"]);
     }
 }

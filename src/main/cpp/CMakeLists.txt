@@ -3,15 +3,15 @@ project(renderer)
 
 # Functions
 function(nova_set_all_target_outputs target output_dir)
-        set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${output_dir})
-        set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${output_dir})
-        set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${output_dir})
-        set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${output_dir})
-        set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${output_dir})
-        set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${output_dir})
-        set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${output_dir})
-        set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${output_dir})
-        set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${output_dir})
+    set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${output_dir})
+    set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${output_dir})
+    set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${output_dir})
+    set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${output_dir})
+    set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${output_dir})
+    set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${output_dir})
+    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${output_dir})
+    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${output_dir})
+    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${output_dir})
 endfunction()
 
 # Initialize cmake options
@@ -28,77 +28,27 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
-# Dependency management. Download GLM, GLFW, and ZipLib
-# Gonna just do ZipLib first, cause we already have a solution for the others
+find_package(OpenGL)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-# Add ZipLib
-#ExternalProject_Add(ziplib
-#        GIT_REPOSITORY https://bitbucket.org/hsmith/ziplib/src/5b9fda317e6ba60d5be87c7511fcd35b2addefcd?at=master
-#        INSTALL_DIR ${3RD_PARTY_DIR}/ziplib
-#        SOURCE_DIR ${3RD_PARTY_DIR}/ziplib#
-#
-#        )
-
-if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-        set(ENV{GLM_ROOT_DIR} "${3RD_PARTY_DIR}/glm")
-        set(ENV{GLFW3_ROOT} "${3RD_PARTY_DIR}/glfw")
-endif()
-
-# First look for a pre compiled version if it doesnt find anything
-# Try to compile it.
-set(GLFW_COMPILED FALSE)
-# this will still find the include directory for us even if we need to compile
-find_package(GLFW3)
-if(NOT GLFW3_FOUND OR NOT GLFW3_LIBRARY)
-        set(GLFW_DIR "${3RD_PARTY_DIR}/glfw-src")
-        set(GLFW3_INCLUDE_DIR "${3RD_PARTY_DIR}/glfw/include")
-        if(EXISTS "${GLFW_DIR}" AND EXISTS "${GLFW_DIR}/src")
-                set(GLFW_COMPILED TRUE)
-
-                include(ExternalProject)
-                ExternalProject_add(glfw3 DOWNLOAD_COMMAND ""
-                        PREFIX ${BINARY_DIR}
-                        INSTALL_DIR "${3RD_PARTY_DIR}/glfw"
-                        CMAKE_ARGS CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DGLFW_BUILD_EXAMPLES:BOOL=OFF -DGLFW_BUILD_TESTS:BOOL=OFF -DGLFW_BUILD_DOCS:BOOL=OFF -DGLFW_INSTALL:BOOL=ON
-                        SOURCE_DIR ${GLFW_DIR}
-                )
-                if(MSVC)
-                    set(GLFW3_LIBRARY "${3RD_PARTY_DIR}/glfw/lib/glfw3.lib")
-                else()
-                    set(GLFW3_LIBRARY "${3RD_PARTY_DIR}/glfw/lib/libglfw3.a")
-                endif()
-                # This is a hack to make sure that the compilation order
-                # is correct. The ExternalProject needs to be compiled before
-                # nova-renderer so that the header files will be installed into
-                # the correct location.
-                add_library(GLFW-fake OBJECT "")
-                add_dependencies(GLFW-fake glfw3)
-        endif()
-endif()
-
-
-find_package(GLM REQUIRED)
-
-# Not sure if this is actually needed or not..,
-# I know some extension loaders and windowing libraries do
-# but I'm not certain since i've never used GLFW or glad. Its really
-# only here just in case it actually is needed. Seems to build fine on
-# linux without though.
-find_package(OpenGL REQUIRED)
-
-set(GLAD_SOURCE ${3RD_PARTY_DIR}/glad/src/glad.c)
-
-set(MINIZ_SOURCE "${3RD_PARTY_DIR}/miniz/src/miniz.c")
+# need to compile GLFW and JSON
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/glfw")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/json")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/glm")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/easyloggingpp")
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/miniz")
 
 include_directories(SYSTEM
-        ${GLM_INCLUDE_DIRS}
-        ${GLFW3_INCLUDE_DIR}
-        "${3RD_PARTY_DIR}/easyloggingpp/include"
+        "${3RD_PARTY_DIR}/glfw/include"
+        "${3RD_PARTY_DIR}/easyloggingpp/src"
         "${3RD_PARTY_DIR}/glad/include"
-        "${3RD_PARTY_DIR}/miniz/src"
+        "${3RD_PARTY_DIR}/glm"
+        "${3RD_PARTY_DIR}/miniz"
         "${3RD_PARTY_DIR}/json/src")
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} ${GLFW3_LIBRARY} ${OPENGL_LIBRARIES} pthread)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
@@ -125,7 +75,18 @@ set(NOVA_SOURCE
         utils/utils.cpp
 
         model/settings.cpp
-        3rdparty/stb_image/stb_image.h model/loaders/shader_loading.cpp model/loaders/loaders.h model/loaders/shader_loading.h model/data_model.cpp model/data_model.h model/loaders/texture_loading.cpp model/loaders/texture_loading.h model/loaders/loader_utils.cpp model/loaders/loader_utils.h)
+        model/loaders/shader_loading.cpp
+        model/loaders/loaders.h
+        model/loaders/shader_loading.h
+        model/data_model.cpp
+        model/data_model.h
+        model/loaders/loader_utils.cpp
+        model/loaders/loader_utils.h
+
+        # Need to compile third party stuff, too...
+        3rdparty/glad/src/glad.c
+        3rdparty/miniz/miniz.c
+        )
 
 
 set(NOVA_HEADERS
@@ -171,10 +132,6 @@ target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT)
 
 target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT)
 
-if (GLFW_COMPILED)
-    add_dependencies(nova-renderer-obj GLFW-fake)
-endif()
-
 add_library(nova-renderer SHARED $<TARGET_OBJECTS:nova-renderer-obj>)
 add_library(nova-renderer-static STATIC $<TARGET_OBJECTS:nova-renderer-obj>)
 
@@ -187,7 +144,7 @@ get_target_property(OUTPUT_DIR nova-renderer LIBRARY_OUTPUT_DIRECTORY)
 nova_set_all_target_outputs(nova-renderer ${OUTPUT_DIR})
 nova_set_all_target_outputs(nova-renderer-static ${OUTPUT_DIR})
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-        set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
+    set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
 
 #set_target_properties(nova-renderer-obj PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
@@ -203,16 +160,9 @@ target_link_libraries(nova-renderer-static ${COMMON_LINK_LIBS})
 # Setup the nova-test executable
 set(TEST_SOURCE_FILES
         test/main.cpp
-        test/sanity.cpp
-        test/shader_test.cpp
-        test/test_utils.cpp
-        test/config.cpp
         )
 
 set(TEST_HEADERS
-        test/sanity.h
-        test/shader_test.h
-        test/test_utils.h
         )
 
 source_group("test" FILES ${TEST_SOURCE_FILES} ${TEST_HEADERS})
@@ -225,5 +175,5 @@ set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BIN
 
 # Needed for a similar reason as the libary
 if (MSVC)
-        nova_set_all_target_outputs(nova-test "run")
+    nova_set_all_target_outputs(nova-test "run")
 endif()
