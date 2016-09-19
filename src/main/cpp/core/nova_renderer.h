@@ -123,7 +123,7 @@ namespace nova {
 
         gui_renderer gui_renderer_instance;
 
-        settings nova_config;
+        nova::model::settings nova_config;
 
         void enable_debug();
 
