@@ -14,10 +14,10 @@
 
 #include "mc_interface/nova.h"
 #include "model/texture_manager.h"
-#include "gui/gui_renderer.h"
+#include "view/gui/gui_renderer.h"
 #include "model/settings.h"
 #include "model/uniform_buffer_store.h"
-#include "../gl/windowing/glfw_gl_window.h"
+#include "gl/windowing/glfw_gl_window.h"
 
 namespace nova {
 /*!
