@@ -13,9 +13,6 @@
 
 namespace nova {
     namespace model {
-
-        class settings;
-
         /*!
          * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
          */
