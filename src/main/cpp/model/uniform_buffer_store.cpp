@@ -3,9 +3,9 @@
  * \date 05-Jul-16.
  */
 
-#include <core/shaders/uniform_buffer_definitions.h>
 #include <fstream>
 #include <easylogging++.h>
+
 #include "uniform_buffer_store.h"
 
 namespace nova {

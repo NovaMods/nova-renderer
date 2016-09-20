@@ -10,7 +10,7 @@
  */
 
 #include "nova.h"
-#include "core/nova_renderer.h"
+#include "view/nova_renderer.h"
 
 #define TEXTURE_MANAGER nova::nova_renderer::instance->get_texture_manager()
 

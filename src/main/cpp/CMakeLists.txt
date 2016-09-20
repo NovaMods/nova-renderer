@@ -55,13 +55,13 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 # Setup the nova-core library.
 set(NOVA_SOURCE
 
-        core/gui/gui_renderer.cpp
+        view/gui/gui_renderer.cpp
 
-        core/nova_renderer.cpp
+        view/nova_renderer.cpp
         mc_interface/nova_facade.cpp
         model/texture_manager.cpp
         model/uniform_buffer_store.cpp
-        core/gui/gui_renderer.cpp
+        view/gui/gui_renderer.cpp
 
         model/gl/gl_shader_program.cpp
         model/gl/gl_uniform_buffer.cpp
@@ -91,17 +91,17 @@ set(NOVA_SOURCE
 
 set(NOVA_HEADERS
 
-        core/gui/gui_renderer.h
+        view/gui/gui_renderer.h
 
         core/renderer/batch_builder.h
         core/renderer/model_renderer.h
 
-        core/shaders/uniform_buffer_definitions.h
+        view/shaders/uniform_buffer_definitions.h
 
         mc_interface/nova.h
-        core/nova_renderer.h
+        view/nova_renderer.h
         model/texture_manager.h
-        core/types.h
+        view/types.h
 
         model/gl/gl_shader_program.h
         model/gl/gl_uniform_buffer.h
