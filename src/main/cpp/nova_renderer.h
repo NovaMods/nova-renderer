@@ -17,24 +17,24 @@
 #include "view/gui/gui_renderer.h"
 #include "model/settings.h"
 #include "model/uniform_buffer_store.h"
-#include "gl/windowing/glfw_gl_window.h"
+#include "view/windowing/glfw_gl_window.h"
 
 namespace nova {
-/*!
- * \brief Initializes everything this mod needs, creating its own window
- *
- * Idea: Replace the Display class too, maybe?
- *
- * This class is kinda a facade and kinda a God class that holds all the everything that the mod needs. I'd like it to
- * be more of a facade but idk. Facades are hard.
- *
- * This class's instance runs completely in a separate thread. Whatever you want to use it for, it runs in a separate
- * thread. Calling froman application with a million threads already? Too bad, separate thread.
- *
- * I'm not worried about data races. Data moves into this thread, then gets rendered. The only data racey thing are the
- * flags that specify rendering commands are available. However, I'm using atomics for those, so I don't expect too many
- * problems. If I notice the renderer missing render commands, I'll re-evaluate the data integrity scheme
- */
+    /*!
+     * \brief Initializes everything this mod needs, creating its own window
+     *
+     * Idea: Replace the Display class too, maybe?
+     *
+     * This class is kinda a facade and kinda a God class that holds all the everything that the mod needs. I'd like it to
+     * be more of a facade but idk. Facades are hard.
+     *
+     * This class's instance runs completely in a separate thread. Whatever you want to use it for, it runs in a separate
+     * thread. Calling froman application with a million threads already? Too bad, separate thread.
+     *
+     * I'm not worried about data races. Data moves into this thread, then gets rendered. The only data racey thing are the
+     * flags that specify rendering commands are available. However, I'm using atomics for those, so I don't expect too many
+     * problems. If I notice the renderer missing render commands, I'll re-evaluate the data integrity scheme
+     */
     class nova_renderer {
     public:
         /*!
