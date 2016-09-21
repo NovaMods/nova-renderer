@@ -57,7 +57,7 @@ set(NOVA_SOURCE
 
         view/gui/gui_renderer.cpp
 
-        view/nova_renderer.cpp
+        nova_renderer.cpp
         mc_interface/nova_facade.cpp
         model/texture_manager.cpp
         model/uniform_buffer_store.cpp
@@ -68,7 +68,7 @@ set(NOVA_SOURCE
         model/gl/gl_vertex_buffer.cpp
         model/texture2D.cpp
 
-        gl/windowing/glfw_gl_window.cpp
+        view/windowing/glfw_gl_window.cpp
 
         interfaces/ivertex_buffer.cpp
 
@@ -86,7 +86,7 @@ set(NOVA_SOURCE
         # Need to compile third party stuff, too...
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
-        )
+        view/renderer.cpp view/renderer.h adapter/adapter_facade.cpp adapter/adapter_facade.h adapter/render_command/render_command.cpp adapter/render_command/render_command.h model/render_object.h view/shaders/shader_interface.cpp view/shaders/shader_interface.h 3rdparty/tree/tree.hh)
 
 
 set(NOVA_HEADERS
@@ -99,7 +99,7 @@ set(NOVA_HEADERS
         view/shaders/uniform_buffer_definitions.h
 
         mc_interface/nova.h
-        view/nova_renderer.h
+        nova_renderer.h
         model/texture_manager.h
         view/types.h
 
@@ -108,7 +108,7 @@ set(NOVA_HEADERS
         model/gl/gl_vertex_buffer.h
         model/texture2D.h
 
-        gl/windowing/glfw_gl_window.h
+        view/windowing/glfw_gl_window.h
 
         interfaces/igraphics_context.h
         interfaces/ivertex_buffer.h
