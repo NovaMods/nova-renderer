@@ -509,7 +509,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void preInit() {
-        System.getProperties().setProperty("jna.library.path", "D:\\Documents\\Nova Renderer\\jars\\versions\\1.10\\1.10-natives");
+        System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
         LOG.info("PID: " + pid);
