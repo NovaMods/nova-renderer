@@ -13,7 +13,7 @@
 
 #include "settings.h"
 #include "model/gl/gl_uniform_buffer.h"
-#include "core/shaders/uniform_buffer_definitions.h"
+#include "view/shaders/uniform_buffer_definitions.h"
 
 namespace nova {
     namespace model {

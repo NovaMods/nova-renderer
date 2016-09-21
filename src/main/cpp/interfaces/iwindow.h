@@ -13,7 +13,7 @@
  *
  * This class simply defines an interface. I expect I'll need a separate subclass for each rendering API
  */
-class iwindow : public iconfig_listener {
+class iwindow : public nova::model::iconfig_listener {
 public:
     /*!
      * \brief Initializes the window, creating it and making it visible.
