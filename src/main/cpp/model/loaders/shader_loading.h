@@ -12,7 +12,7 @@
 #include <vector>
 #include <unordered_map>
 
-#include "model/gl/gl_shader_program.h"
+#include "model/shaders/gl_shader_program.h"
 
 namespace nova {
     namespace model {

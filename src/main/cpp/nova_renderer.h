@@ -115,7 +115,7 @@ namespace nova {
         //! This is a pointer so I can initialize it later
         static std::unique_ptr<std::thread> render_thread;
 
-        glfw_gl_window game_window;
+        nova::model::glfw_gl_window game_window;
         nova::model::texture_manager tex_manager;
 
         nova::model::data_model model;

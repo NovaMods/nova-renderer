@@ -36,7 +36,7 @@ namespace nova {
             float aspectRatio;
             float viewWidth;
             float viewHeight;
-            float near;
+            float near; // No clue why this is a userless type name in empty declaration. Google gives no help
             float far;
             glm::vec3 sunPosition;
             glm::vec3 moonPosition;

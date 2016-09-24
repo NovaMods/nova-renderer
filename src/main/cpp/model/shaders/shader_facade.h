@@ -13,11 +13,11 @@
 #include <string>
 #include <functional>
 #include <initializer_list>
-#include "model/gl/gl_shader_program.h"
+#include "gl_shader_program.h"
 #include "model/render_object.h"
 
 namespace nova {
-    namespace view {
+    namespace model {
         /*!
          * \brief Holds all the filters that a shader might need
          */
@@ -28,17 +28,17 @@ namespace nova {
             shader_tree(std::string name);
             shader_tree(std::string name, std::initializer_list<shader_tree> children);
 
-            void calculate_filters(std::unordered_map<std::string, std::function<bool(model::render_object)>> filters, std::vector<std::string> loaded_shaders);
+            void calculate_filters(std::unordered_map<std::string, std::function<bool(render_object)>> filters, std::vector<std::string> loaded_shaders);
 
-            std::function<bool(model::render_object)> get_filter_function();
+            std::function<bool(render_object)> get_filter_function();
 
-            template<typename Func>
-            void map(Func f) {
-                f(*this);
-                for(auto& child : children) {
-                    child.map(f);
-                }
-            }
+            /*!
+             * \brief Performs a depth-first traversal of the tree, funning the provided function on each element in the
+             * tree
+             *
+             * \param f The function to run on the tree
+             */
+            void foreach_df(std::function<void(shader_tree&)> f);
 
         private:
             std::vector<std::function<bool(model::render_object)>> filters;
@@ -52,15 +52,26 @@ namespace nova {
          * This includes functionality like getting the filters for a shader, getting the framebuffer textures for a shader,
          * and all sorts of other fun stuff
          */
-        class shader_interface {
+        class shader_facade {
+        public:
+            void operator=(std::unordered_map<std::string, gl_shader_program>&& shaders);
+
+            gl_shader_program& operator[](const std::string& key);
+
+            const gl_shader_program& operator[](const std::string& key) const;
+
+            auto begin();
+            auto end();
+            const auto begin() const;
+            const auto end() const;
         private:
             /*!
              * \brief Defines which shaders to use if a given shader is not present
              */
             static shader_tree gbuffers_shaders;
 
-            std::unordered_map<std::string, std::function<bool(model::render_object)>> filters;
-            std::unordered_map<std::string, model::gl_shader_program&> loaded_shaders;
+            std::unordered_map<std::string, std::function<bool(render_object)>> filters;
+            std::unordered_map<std::string, gl_shader_program> loaded_shaders;
 
             /*!
              * \brief Creates the filters to get the geometry that the current shaderpack needs
