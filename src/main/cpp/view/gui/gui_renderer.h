@@ -15,7 +15,7 @@
 #include "interfaces/ivertex_buffer.h"
 #include "mc_interface/mc_gui_objects.h"
 #include "model/texture_manager.h"
-#include "view/shaders/uniform_buffer_definitions.h"
+#include "model/shaders/uniform_buffer_definitions.h"
 
 /*!
  * \brief Defines a bunch of methods to render different GUI elements, including buttons, text, and images

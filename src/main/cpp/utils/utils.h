@@ -40,59 +40,6 @@ namespace nova {
     private:
         std::string message;
     };
-
-    template<typename T>
-    class maybe {
-    public:
-        /*!
-         * \brief Creates an empty maybe
-         */
-        maybe() : has_data(false) {}
-
-        /*!
-         * \brief Creates a Maybe which holds the given piece of data
-         *
-         * \param data The data for this Maybe to hold
-         */
-        template<typename T>
-        maybe(T* data) : data(data), has_data(true) {}
-
-        /*!
-         * \brief Maps a function over this maybe
-         *
-         * \return A new maybe encapsulating the result of this function
-         */
-        template<typename T, typename U, typename Func>
-        maybe<U> map(Func f) {
-            if(!has_data) {
-                return maybe();
-            }
-
-            return maybe(Func(data));
-        };
-
-        /*!
-         * \brief Runs a function on the data in this maybe if it exists, doesn't otherwise
-         * \param f
-         */
-        template<typename T, typename Func>
-        void if_present(Func f) {
-            if(has_data) {
-                f(data);
-            }
-        };
-
-        /*!
-         * \brief Get the data in thie maybe, if it's present. If it isn't present, return the provided data
-         */
-        template<typename T>
-        T* get_or_else(T* alternate) {
-            return has_data ? data : alternate;
-        }
-    private:
-        T* data;
-        bool has_data;
-    };
 }
 
 #endif //RENDERER_UTILS_H

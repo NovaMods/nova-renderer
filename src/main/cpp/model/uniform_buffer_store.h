@@ -9,11 +9,11 @@
 #include <string>
 #include <unordered_map>
 #include <json.hpp>
-#include <model/gl/gl_shader_program.h>
+#include <model/shaders/gl_shader_program.h>
 
 #include "settings.h"
 #include "model/gl/gl_uniform_buffer.h"
-#include "view/shaders/uniform_buffer_definitions.h"
+#include "model/shaders/uniform_buffer_definitions.h"
 
 namespace nova {
     namespace model {

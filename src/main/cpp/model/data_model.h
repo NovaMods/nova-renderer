@@ -8,8 +8,9 @@
 #ifndef RENDERER_MODEL_H
 #define RENDERER_MODEL_H
 
+#include "model/shaders/shader_facade.h"
 #include "settings.h"
-#include "gl/gl_shader_program.h"
+#include "model/shaders/gl_shader_program.h"
 #include "uniform_buffer_store.h"
 
 namespace nova {
@@ -34,7 +35,7 @@ namespace nova {
             std::vector<gl_shader_program*> get_all_shaders();
 
         private:
-            std::unordered_map<std::string, gl_shader_program> loaded_shaderpack;
+            shader_facade loaded_shaderpack;
             std::string loaded_shaderpack_name;
 
             uniform_buffer_store ubos;

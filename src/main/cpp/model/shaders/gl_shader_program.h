@@ -13,7 +13,7 @@
 #include <vector>
 
 #include <glad/glad.h>
-#include "gl_uniform_buffer.h"
+#include "model/gl/gl_uniform_buffer.h"
 
 
 namespace nova {
