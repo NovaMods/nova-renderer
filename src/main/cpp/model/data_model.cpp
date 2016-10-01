@@ -46,7 +46,7 @@ namespace nova {
 
         std::vector<gl_shader_program*> data_model::get_all_shaders() {
             auto all_shaders = std::vector<gl_shader_program*>{};
-            for(auto& shader : loaded_shaderpack) {
+            for(auto& shader : loaded_shaderpack.get_loaded_shaders()) {
                 all_shaders.push_back(&shader.second);
             }
 

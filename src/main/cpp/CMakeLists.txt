@@ -55,13 +55,13 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 # Setup the nova-core library.
 set(NOVA_SOURCE
 
-        view/gui/gui_renderer.cpp
+        view/geometry_cache/gui/gui_geometry_builder.cpp
 
         nova_renderer.cpp
         mc_interface/nova_facade.cpp
         model/texture_manager.cpp
-        model/uniform_buffer_store.cpp
-        view/gui/gui_renderer.cpp
+        view/uniform_buffer_store.cpp
+        view/geometry_cache/gui/gui_geometry_builder.cpp
 
         model/shaders/gl_shader_program.cpp
         model/gl/gl_uniform_buffer.cpp
@@ -87,20 +87,17 @@ set(NOVA_SOURCE
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
         view/renderer.cpp
+
         view/renderer.h
-        adapter/adapter_facade.cpp
-        adapter/adapter_facade.h
-        adapter/render_command/render_command.cpp
-        adapter/render_command/render_command.h
         model/render_object.h
         model/shaders/shader_facade.cpp
         model/shaders/shader_facade.h
-        )
+        view/geometry_cache/geometry_cache.cpp view/geometry_cache/geometry_cache.h view/render_pass.h)
 
 
 set(NOVA_HEADERS
 
-        view/gui/gui_renderer.h
+        view/geometry_cache/gui/gui_geometry_builder.h
 
         core/renderer/batch_builder.h
         core/renderer/model_renderer.h

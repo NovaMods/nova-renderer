@@ -115,11 +115,7 @@ namespace nova {
             );
         }
 
-        gl_shader_program& shader_facade::operator[](const std::string &key) {
-            return loaded_shaders[key];
-        }
-
-        const gl_shader_program& shader_facade::operator[](const std::string &key) const {
+        gl_shader_program& shader_facade::operator[](std::string key) {
             return loaded_shaders[key];
         }
 
@@ -127,20 +123,8 @@ namespace nova {
             loaded_shaders = shaders;
         }
 
-        auto shader_facade::begin() {
-            return loaded_shaders.begin();
-        }
-
-        auto shader_facade::end() {
-            return loaded_shaders.end();
-        }
-
-        const auto shader_facade::begin() const {
-            return loaded_shaders.cbegin();
-        }
-
-        const auto shader_facade::end() const {
-            return loaded_shaders.cend();
+        std::unordered_map<std::string, gl_shader_program> &shader_facade::get_loaded_shaders() {
+            return loaded_shaders;
         }
     }
 }

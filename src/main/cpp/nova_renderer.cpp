@@ -75,7 +75,7 @@ namespace nova {
         return ubo_manager;
     }
 
-    gui_renderer &nova_renderer::get_gui_renderer() {
+    gui_geometry_builder &nova_renderer::get_gui_renderer() {
         return gui_renderer_instance;
     }
 

@@ -8,8 +8,9 @@
 #ifndef RENDERER_RENDER_THREAD_H
 #define RENDERER_RENDER_THREAD_H
 
+#include "view/geometry_cache/geometry_cache.h"
+#include "model/data_model.h"
 #include "view/windowing/glfw_gl_window.h"
-#include "adapter/adapter_facade.h"
 
 namespace nova {
     namespace view {
@@ -33,18 +34,32 @@ namespace nova {
          */
         class renderer {
         public:
-            renderer(adapter::adapter_facade& adapter);
+            renderer();
 
         private:
-            adapter::adapter_facade& adapter;
-
             glfw_gl_window game_window;
 
+            geometry_cache geom_cache;
+
+            model::data_model model;
 
             /*!
              * \brief Called every frame to, you know, render the frame
              */
             void render_frame();
+
+            /*!
+             * \brief Renders the GUI of Minecraft
+             */
+            void render_gui();
+
+            void render_shadow_pass();
+
+            void render_gbuffers();
+
+            void render_composite_passes();
+
+            void render_final_pass();
         };
     }
 }

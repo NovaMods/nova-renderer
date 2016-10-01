@@ -14,9 +14,9 @@
 
 #include "mc_interface/nova.h"
 #include "model/texture_manager.h"
-#include "view/gui/gui_renderer.h"
+#include "view/gui/gui_geometry_builder.h"
 #include "model/settings.h"
-#include "model/uniform_buffer_store.h"
+#include "view/uniform_buffer_store.h"
 #include "view/windowing/glfw_gl_window.h"
 
 namespace nova {
@@ -109,19 +109,19 @@ namespace nova {
          * I use this method now for testing. I expect that, upon release, the gui_renderer will only be called from within
          * this class and thus will not need to be gotten at all, but we'll see.
          */
-        gui_renderer &get_gui_renderer();
+        gui_geometry_builder &get_gui_renderer();
 
     private:
         //! This is a pointer so I can initialize it later
         static std::unique_ptr<std::thread> render_thread;
 
-        nova::model::glfw_gl_window game_window;
+        nova::view::glfw_gl_window game_window;
         nova::model::texture_manager tex_manager;
 
         nova::model::data_model model;
         nova::model::uniform_buffer_store ubo_manager;
 
-        gui_renderer gui_renderer_instance;
+        gui_geometry_builder gui_renderer_instance;
 
         nova::model::settings nova_config;
 
