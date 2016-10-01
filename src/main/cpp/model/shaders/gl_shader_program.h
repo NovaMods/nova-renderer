@@ -88,6 +88,10 @@ namespace nova {
              */
             gl_shader_program(const std::string name, const shader_source &source);
 
+            gl_shader_program(gl_shader_program& other);
+
+            gl_shader_program(const gl_shader_program& other);
+
             /**
              * \brief Move constructor
              *

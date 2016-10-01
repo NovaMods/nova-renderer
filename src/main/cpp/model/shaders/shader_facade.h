@@ -56,14 +56,9 @@ namespace nova {
         public:
             void operator=(std::unordered_map<std::string, gl_shader_program>&& shaders);
 
-            gl_shader_program& operator[](const std::string& key);
+            gl_shader_program& operator[](std::string key);
 
-            const gl_shader_program& operator[](const std::string& key) const;
-
-            auto begin();
-            auto end();
-            const auto begin() const;
-            const auto end() const;
+            std::unordered_map<std::string, gl_shader_program>& get_loaded_shaders();
         private:
             /*!
              * \brief Defines which shaders to use if a given shader is not present

@@ -141,11 +141,11 @@ function New-NovaCode([string]$buildEnvironment) {
 
     if($buildEnvironment -eq "mingw") {
         Write-Host "Building with MinGW"
-        $buildGood = New-MinGWNovaBuild
+        New-MinGWNovaBuild
 
     } elseif($buildEnvironment -eq "msvc") {
         Write-Host "Building wth Visual Studio"
-        $buildGood = New-VisualStudioBuild
+        New-VisualStudioBuild
     }
 
     if($buildGood -eq $false) {
@@ -184,10 +184,6 @@ function New-MinGWNovaBuild {
 
         # MinGW is probably installed, let's assume it is
         cmake -G "MinGW Makefiles" ../../src/main/cpp
-        if($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to invoke CMake, aborting compilation"
-            return $false
-        }
 
         # Compile the code
         mingw32-make -f Makefile nova-renderer
@@ -204,8 +200,6 @@ function New-MinGWNovaBuild {
         Write-Error "Could not call the MinGW Make tool, unable to build Nova. Please install MinGW AND ensure that mingw32-make is in your path"
         return $false
     }
-
-    return $true
 }
 
 function New-VisualStudioBuild {

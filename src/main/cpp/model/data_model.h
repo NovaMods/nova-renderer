@@ -11,7 +11,7 @@
 #include "model/shaders/shader_facade.h"
 #include "settings.h"
 #include "model/shaders/gl_shader_program.h"
-#include "uniform_buffer_store.h"
+#include "view/uniform_buffer_store.h"
 
 namespace nova {
     namespace model {

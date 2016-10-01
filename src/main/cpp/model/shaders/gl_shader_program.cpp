@@ -136,6 +136,18 @@ namespace nova {
             added_shaders.push_back(shader_name);
         }
 
+        gl_shader_program::gl_shader_program(gl_shader_program &other) {
+            this->name = other.name;
+            this->added_shaders = other.added_shaders;
+            this->gl_name = other.gl_name;
+        }
+
+        gl_shader_program::gl_shader_program(const gl_shader_program &other) {
+            this->name = other.name;
+            this->added_shaders = other.added_shaders;
+            this->gl_name = other.gl_name;
+        }
+
         wrong_shader_version::wrong_shader_version(const std::string &version_line) :
                 std::runtime_error("Invalid version line: " + version_line + ". Please only use GLSL version 450 (NOT compatibility profile)") {}
 
