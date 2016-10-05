@@ -70,6 +70,11 @@ namespace nova {
             // The GUI matrix is super simple, just a viewport transformation
             glm::mat4 gui_model_view(1.0f);
             gui_model_view = glm::scale(gui_model_view, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
+            gui_model_view = glm::scale(gui_model_view, glm::vec3(4.0f, 4.0f, 1.0f));
+            gui_model_view = glm::translate(gui_model_view, glm::vec3(-1.0f, -1.0f, 0.0f));
+            gui_model_view = glm::scale(gui_model_view, glm::vec3(1.0f, -1.0f, 1.0f));
+
+            gui_uniforms.gbufferModelView = gui_model_view;
 
             buffers["gui_uniforms"].send_data(gui_uniforms);
         }

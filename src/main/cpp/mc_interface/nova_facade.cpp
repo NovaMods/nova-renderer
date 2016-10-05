@@ -10,12 +10,12 @@
  */
 
 #include "nova.h"
-#include "nova_renderer.h"
+#include "view/nova_renderer.h"
 
-#define TEXTURE_MANAGER nova::nova_renderer::instance->get_texture_manager()
+#define TEXTURE_MANAGER nova::view::nova_renderer::instance->get_texture_manager()
 
 NOVA_EXPORT void init_nova() {
-    nova::nova_renderer::init_instance();
+    nova::view::nova_renderer::init_instance();
 }
 
 NOVA_EXPORT void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type) {
@@ -48,9 +48,9 @@ NOVA_EXPORT void send_render_command(mc_render_command * command) {
 }
 
 NOVA_EXPORT bool should_close() {
-    return nova::nova_renderer::instance->should_end();
+    return nova::view::nova_renderer::instance->should_end();
 }
 
 NOVA_EXPORT void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen) {
-    nova::nova_renderer::instance->get_gui_renderer().set_current_screen(&set_gui_screen->screen);
+    nova::view::nova_renderer::instance->get_model().set_current_screen(&set_gui_screen->screen);
 }

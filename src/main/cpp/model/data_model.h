@@ -11,7 +11,6 @@
 #include "model/shaders/shader_facade.h"
 #include "settings.h"
 #include "model/shaders/gl_shader_program.h"
-#include "view/uniform_buffer_store.h"
 
 namespace nova {
     namespace model {
@@ -21,10 +20,18 @@ namespace nova {
         class data_model : public iconfig_listener {
         public:
             settings render_settings;
+            shader_facade loaded_shaderpack;
 
             data_model();
 
             gl_shader_program& get_shader_program(const std::string& program_name);
+
+            /*!
+             * \brief Explicitly tells the render_settings to send its data to all its registered listeners
+             *
+             * Useful when you register a new thing and want to make sure it gets all the latest data
+             */
+            void trigger_config_update();
 
             /* From iconfig_listener */
 
@@ -35,10 +42,7 @@ namespace nova {
             std::vector<gl_shader_program*> get_all_shaders();
 
         private:
-            shader_facade loaded_shaderpack;
             std::string loaded_shaderpack_name;
-
-            uniform_buffer_store ubos;
 
             void load_new_shaderpack(const std::string &new_shaderpack_name) noexcept;
         };

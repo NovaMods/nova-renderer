@@ -3,7 +3,7 @@
 //
 
 #include "glfw_gl_window.h"
-#include "nova_renderer.h"
+#include "view/nova_renderer.h"
 #include "utils/utils.h"
 #include <easylogging++.h>
 
