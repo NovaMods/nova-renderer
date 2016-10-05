@@ -57,7 +57,7 @@ set(NOVA_SOURCE
 
         view/geometry_cache/gui/gui_geometry_builder.cpp
 
-        nova_renderer.cpp
+        view/nova_renderer.cpp
         mc_interface/nova_facade.cpp
         model/texture_manager.cpp
         view/uniform_buffer_store.cpp
@@ -86,9 +86,7 @@ set(NOVA_SOURCE
         # Need to compile third party stuff, too...
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
-        view/renderer.cpp
 
-        view/renderer.h
         model/render_object.h
         model/shaders/shader_facade.cpp
         model/shaders/shader_facade.h
@@ -105,7 +103,7 @@ set(NOVA_HEADERS
         model/shaders/uniform_buffer_definitions.h
 
         mc_interface/nova.h
-        nova_renderer.h
+        view/nova_renderer.h
         model/texture_manager.h
         view/types.h
 

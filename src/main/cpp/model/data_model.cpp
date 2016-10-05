@@ -13,7 +13,6 @@ namespace nova {
     namespace model {
         data_model::data_model() : render_settings("config/config.json") {
             render_settings.register_change_listener(this);
-            render_settings.register_change_listener(&ubos);
 
             render_settings.update_config_loaded();
             render_settings.update_config_changed();
@@ -51,6 +50,11 @@ namespace nova {
             }
 
             return all_shaders;
+        }
+
+        void data_model::trigger_config_update() {
+            render_settings.update_config_loaded();
+            render_settings.update_config_changed();
         }
     }
 }
