@@ -6,13 +6,16 @@
  *
  * Although, many of them do things to convert from C-style things to C++-style things, so that's cool I guess
  *
+ * The function in this file simply set data. Data is copied out of Minecraft objects. This might be a bit slow, but I
+ * don't want to save a pointer that gets re-allocated by the JVM. I don't trust it enough (although maybe I should?)
+ *
  * \author David
  */
 
 #include "nova.h"
 #include "view/nova_renderer.h"
 
-#define TEXTURE_MANAGER nova::view::nova_renderer::instance->get_texture_manager()
+#define TEXTURE_MANAGER nova::view::nova_renderer::instance->get_model().get_texture_manager()
 
 NOVA_EXPORT void init_nova() {
     nova::view::nova_renderer::init_instance();
@@ -39,7 +42,7 @@ NOVA_EXPORT int get_max_texture_size() {
 }
 
 NOVA_EXPORT void update_renderer() {
-    // nova_renderer::instance->update();
+    nova::view::nova_renderer::instance->update();
 }
 
 NOVA_EXPORT void send_render_command(mc_render_command * command) {
@@ -52,5 +55,5 @@ NOVA_EXPORT bool should_close() {
 }
 
 NOVA_EXPORT void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen) {
-    nova::view::nova_renderer::instance->get_model().set_current_screen(&set_gui_screen->screen);
+    nova::view::nova_renderer::instance->get_model().set_gui_screen(&set_gui_screen->screen);
 }

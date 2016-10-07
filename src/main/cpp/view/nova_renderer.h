@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <thread>
-#include "view/geometry_cache/geometry_cache.h"
+#include "view/geometry_cache/mesh_accessor.h"
 #include "model/data_model.h"
 
 #include "interfaces/iwindow.h"
@@ -98,7 +98,7 @@ namespace nova {
 
             uniform_buffer_store ubo_manager;
 
-            geometry_cache gui_geom_cache;
+            mesh_accessor gui_geom_cache;
 
             /* Data in Controller */
 

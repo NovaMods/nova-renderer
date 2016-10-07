@@ -15,7 +15,7 @@
 #include "model/shaders/uniform_buffer_definitions.h"
 
 namespace nova {
-    namespace adapter {
+    namespace view {
         /*!
          * \brief Defines a single mesh to draw
          */
@@ -67,7 +67,7 @@ namespace nova {
             std::vector<gbuffer_stage> gbuffer_passes;
             std::vector<fullscreen_stage> fullscreen_passes;
 
-            model::per_pass_uniforms uniforms;
+            model::per_frame_uniforms uniforms;
         };
     }
 }

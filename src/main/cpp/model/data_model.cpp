@@ -56,6 +56,61 @@ namespace nova {
             render_settings.update_config_loaded();
             render_settings.update_config_changed();
         }
+
+        texture_manager &data_model::get_texture_manager() {
+            return textures;
+        }
+
+        void data_model::set_gui_screen(mc_gui_screen *screen) {
+            if(are_different_screens(*screen, cur_gui_screen)) {
+                cur_gui_screen = *screen;
+            }
+        }
+
+        settings& data_model::get_render_settings() {
+            return render_settings;
+        }
+
+        bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) const {
+            for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
+                if(are_different_buttons(screen1.buttons[i], screen2.buttons[i])) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool are_different_buttons(const mc_gui_button &button1, const mc_gui_button &button2) const {
+            bool same_rect = button1.x_position == button2.x_position &&
+                             button1.y_position == button2.y_position &&
+                             button1.width == button2.width &&
+                             button1.height == button2.height;
+
+            bool same_text = !are_different_strings(button1.text, button2.text);
+
+            bool same_pressed = button1.is_pressed == button2.is_pressed;
+
+            return !same_rect || !same_text || !same_pressed;
+        }
+
+        bool are_different_strings(const char *text1, const char *text2) const {
+            if(text1 == nullptr && text2 == nullptr) {
+                // They're both null, and null equals null, so they're the same
+                // If this causes problems I'll change it
+                return false;
+            }
+
+            if(text1 == nullptr) {
+                return true;
+            }
+
+            if(text2 == nullptr) {
+                return true;
+            }
+
+            return strcmp(text1, text2) != 0;
+        }
     }
 }
 

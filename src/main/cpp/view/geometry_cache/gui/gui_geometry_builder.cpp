@@ -11,30 +11,56 @@
 
 namespace nova {
     namespace view {
-        gui_geometry_builder::gui_geometry_builder(nova::model::texture_manager &textures,
-                                                   nova::model::uniform_buffer_store &uniform_buffers) :
-                tex_manager(textures), ubo_manager(uniform_buffers), has_screen_available(false) {
-            LOG(INFO) << "Created GUI Renderer";
+        std::vector<float> basic_unpressed_uvs = {
+                0.0f, 0.3359375f,
+                0.78125f, 0.3359375f,
+                0.0f, 0.4156963f,
+                0.78125f, 0.4156963f
+        };
 
-            cur_screen = {};
+        std::vector<float> basic_pressed_uvs = {
+                0.0f, 0.2578112f,
+                0.78125, 0.2578112f,
+                0.0f, 0.3359375f,
+                0.78125f, 0.3359375f
+        };
 
-            setup_buffers();
-        }
+        std::vector<unsigned short> index_buffer = {
+                0, 1, 2,
+                2, 1, 3
+        };
 
-        gui_geometry_builder::~gui_geometry_builder() {
-        }
+        void add_indices_for_button(std::vector<unsigned short> &indices, unsigned short start_pos);
 
-        void gui_geometry_builder::set_current_screen(mc_gui_screen *screen) {
-            new_screen = *screen;
-            has_screen_available = true;
-        }
+        /*!
+         * \brief Adds all the vertices from the given button to the given vertex buffer. uvs holds the uv
+         * coordinates for this button
+         *
+         * \param vertex_buffer The vertex buffer to add vertices to
+         * \param button The button to get vertices from
+         * \param uvs The uv coordinates to use for this button
+         */
+        void add_vertices_from_button(std::vector<float> &vertex_buffer, const mc_gui_button &button,
+                                      const std::vector<float> &uvs);
 
-        void gui_geometry_builder::build_gui_geometry() {
+        /*!
+         * \brief Adds the vertex with the given parameters to the given vertex buffer
+         *
+         * Note that the z position of the vertices is always set to 0. This is maybe what I want.
+         *
+         * \param vertex_buffer The thing to add vertices to
+         * \param x The x position of the vertex
+         * \param y The y position of the vertex
+         * \param u The u texture coordiante of the vertex
+         * \param v The v texture coordinate of the vertex
+         */
+        void add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v);
+
+        model::gl_vertex_buffer build_gui_geometry(mc_gui_screen& cur_screen) {
             // We need to make a vertex buffer with the positions and texture coordinates of all the gui elements
             std::vector<float> vertex_buffer(
                     MAX_NUM_BUTTONS * 4 * 5
             );    // MAX_NUM_BUTTONS buttons * 4 vertices per button * 5 elements per vertex
-            vertex_buffer.clear();
             std::vector<unsigned short> indices;
             unsigned short start_pos = 0;
 
@@ -57,63 +83,22 @@ namespace nova {
                 start_pos += 4;
             }
 
+            model::gl_vertex_buffer cur_screen_buffer;
+
             cur_screen_buffer.set_data(
                     vertex_buffer, ivertex_buffer::format::POS_UV, ivertex_buffer::usage::static_draw
             );
+
             cur_screen_buffer.set_index_array(indices, ivertex_buffer::usage::static_draw);
-        }
 
-        void gui_geometry_builder::update() {
-            if(has_screen_available) {
-                has_screen_available = false;
-
-                // We want to spend as little time as possible with locks on
-                new_screen_guard.lock();
-                mc_gui_screen new_screen_copy = new_screen;
-                new_screen_guard.unlock();
-
-                bool is_different = are_different_screens(cur_screen, new_screen_copy);
-
-                if(is_different) {
-                    LOG(INFO) << "Switching to a new GUI screen";
-                    cur_screen = new_screen_copy;
-                    build_gui_geometry();
-                }
-            }
-        }
-
-
-        void gui_geometry_builder::add_indices_for_button(std::vector<unsigned short> &indices, unsigned short start_pos) {
-            for(unsigned short &index : index_buffer) {
-                indices.push_back(index + start_pos);
-            }
-        }
-
-        model::gl_vertex_buffer &gui_geometry_builder::get_vertex_buffer() {
             return cur_screen_buffer;
         }
 
-        bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) const {
-            for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
-                if(are_different_buttons(screen1.buttons[i], screen2.buttons[i])) {
-                    return true;
-                }
+
+        void add_indices_for_button(std::vector<unsigned short> &indices, unsigned short start_pos) {
+            for(unsigned short &index : index_buffer) {
+                indices.push_back(index + start_pos);
             }
-
-            return false;
-        }
-
-        bool are_different_buttons(const mc_gui_button &button1, const mc_gui_button &button2) const {
-            bool same_rect = button1.x_position == button2.x_position &&
-                             button1.y_position == button2.y_position &&
-                             button1.width == button2.width &&
-                             button1.height == button2.height;
-
-            bool same_text = compare_text(button1.text, button2.text);
-
-            bool same_pressed = button1.is_pressed == button2.is_pressed;
-
-            return !same_rect || !same_text || !same_pressed;
         }
 
         void add_vertices_from_button(std::vector<GLfloat> &vertex_buffer, const mc_gui_button &button,
@@ -147,24 +132,6 @@ namespace nova {
 
             vertex_buffer.push_back(u);
             vertex_buffer.push_back(v);
-        }
-
-        bool compare_text(const char *text1, const char *text2) const {
-            if(text1 == nullptr && text2 == nullptr) {
-                // They're both null, and null equals null, so they're the same
-                // If this causes problems I'll change it
-                return true;
-            }
-
-            if(text1 == nullptr) {
-                return false;
-            }
-
-            if(text2 == nullptr) {
-                return false;
-            }
-
-            return strcmp(text1, text2) == 0;
         }
     }
 }
