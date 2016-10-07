@@ -14,7 +14,7 @@
 #include <functional>
 #include <initializer_list>
 #include "gl_shader_program.h"
-#include "model/render_object.h"
+#include "view/geometry_cache/render_object.h"
 
 namespace nova {
     namespace model {

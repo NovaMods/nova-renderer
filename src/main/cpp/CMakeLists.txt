@@ -76,21 +76,16 @@ set(NOVA_SOURCE
 
         model/settings.cpp
         model/loaders/shader_loading.cpp
-        model/loaders/loaders.h
-        model/loaders/shader_loading.h
         model/data_model.cpp
-        model/data_model.h
         model/loaders/loader_utils.cpp
-        model/loaders/loader_utils.h
 
         # Need to compile third party stuff, too...
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
 
-        model/render_object.h
         model/shaders/shader_facade.cpp
-        model/shaders/shader_facade.h
-        view/geometry_cache/geometry_cache.cpp view/geometry_cache/geometry_cache.h view/render_pass.h)
+        view/geometry_cache/mesh_accessor.cpp
+        view/geometry_cache/geometry_builder.cpp view/geometry_cache/geometry_builder.h)
 
 
 set(NOVA_HEADERS
@@ -123,6 +118,14 @@ set(NOVA_HEADERS
 
         utils/utils.h
         model/settings.h
+        model/loaders/loaders.h
+        model/loaders/shader_loading.h
+        model/data_model.h
+        model/loaders/loader_utils.h
+        view/geometry_cache/mesh_accessor.h
+        view/render_pass.h
+        model/shaders/shader_facade.h
+        view/geometry_cache/render_object.h
         )
 
 # For now just put everthing in a single nova source group

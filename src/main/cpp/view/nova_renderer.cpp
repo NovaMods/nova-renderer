@@ -24,7 +24,7 @@ namespace nova {
         }
 
         nova_renderer::nova_renderer() {
-            model.render_settings.register_change_listener(&ubo_manager);
+            model.get_render_settings().register_change_listener(&ubo_manager);
             model.trigger_config_update();
 
             link_up_uniform_buffers(model.get_all_shaders(), ubo_manager);

@@ -9,9 +9,10 @@
 #define RENDERER_RENDER_OBJECT_H
 
 #include <string>
+#include "view/render_pass.h"
 
 namespace nova {
-    namespace model {
+    namespace view {
         enum class geometry_type {
             block,
             entity,
@@ -71,6 +72,8 @@ namespace nova {
              * - fullscreen_quad
              */
             std::string name;
+
+            mesh geometry;
         };
     }
 }
