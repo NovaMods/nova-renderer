@@ -50,6 +50,13 @@ struct mc_chunk {
 };
 
 /*!
+ * \brief Describes a single entity
+ */
+struct mc_entity {
+    int id;
+};
+
+/*!
  * \brief All the data needed to render the world
  */
 struct mc_render_world_params {

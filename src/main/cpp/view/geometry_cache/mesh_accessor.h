@@ -12,6 +12,7 @@
 #include "view/geometry_cache/gui/gui_geometry_builder.h"
 #include "render_object.h"
 #include "view/render_pass.h"
+#include "geometry_builder.h"
 
 namespace nova {
     namespace view {
@@ -25,9 +26,17 @@ namespace nova {
             std::vector<render_object> get_meshes_for_filter(std::function<bool(render_object)>& filter);
 
             void add_render_object(const render_object new_obj);
+
+            /*!
+             * \brief Provides the geometry builder so that the model can provide things to have geometry built from
+             *
+             * \return The geometry builder
+             */
+            geometry_builder& get_geometry_builder();
         private:
             std::mutex render_objects_lock;
             std::vector<render_object> renderable_objects;
+            geometry_builder geom_builder;
         };
     }
 }
