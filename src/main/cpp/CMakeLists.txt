@@ -55,17 +55,17 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 # Setup the nova-core library.
 set(NOVA_SOURCE
 
-        view/geometry_cache/gui/gui_geometry_builder.cpp
+        view/geometry_cache/builders/gui_geometry_builder.cpp
 
         view/nova_renderer.cpp
         mc_interface/nova_facade.cpp
         model/texture_manager.cpp
         view/uniform_buffer_store.cpp
-        view/geometry_cache/gui/gui_geometry_builder.cpp
+        view/geometry_cache/builders/gui_geometry_builder.cpp
 
         model/shaders/gl_shader_program.cpp
         model/gl/gl_uniform_buffer.cpp
-        model/gl/gl_vertex_buffer.cpp
+        model/gl/gl_mesh.cpp
         model/texture2D.cpp
 
         view/windowing/glfw_gl_window.cpp
@@ -85,12 +85,12 @@ set(NOVA_SOURCE
 
         model/shaders/shader_facade.cpp
         view/geometry_cache/mesh_accessor.cpp
-        view/geometry_cache/geometry_builder.cpp view/geometry_cache/geometry_builder.h)
+        model/physics/AABB.cpp model/physics/AABB.h)
 
 
 set(NOVA_HEADERS
 
-        view/geometry_cache/gui/gui_geometry_builder.h
+        view/geometry_cache/builders/gui_geometry_builder.h
 
         core/renderer/batch_builder.h
         core/renderer/model_renderer.h
@@ -104,7 +104,7 @@ set(NOVA_HEADERS
 
         model/shaders/gl_shader_program.h
         model/gl/gl_uniform_buffer.h
-        model/gl/gl_vertex_buffer.h
+        model/gl/gl_mesh.h
         model/texture2D.h
 
         view/windowing/glfw_gl_window.h

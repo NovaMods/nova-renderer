@@ -17,19 +17,6 @@
 namespace nova {
     namespace view {
         /*!
-         * \brief Defines a single mesh to draw
-         */
-        struct mesh {
-            GLuint vao;
-
-            // We need the bounds of the mesh for visibility culling
-            float min_x;
-            float min_y;
-            float max_x;
-            float max_y;
-        };
-
-        /*!
          * \brief Defines a single render pass
          *
          * There is a one-to-one corellation between render passes and shaders.

@@ -81,8 +81,10 @@ namespace nova {
             // Bind all the GUI data
             model.get_shader_program("gui").bind();
 
-            model::gl_vertex_buffer& gui_geometry = gui_geom_cache.get_gui_geometry();
-            gui_geometry.draw();
+            std::vector<render_object&> gui_geometry = meshes.get_gui_geometry();
+            for(auto& geom : gui_geometry) {
+                geom.geometry.draw();
+            }
         }
 
         bool nova_renderer::should_end() {
@@ -117,7 +119,7 @@ namespace nova {
         std::string translate_debug_type(GLenum type) {
             switch(type) {
                 case GL_DEBUG_TYPE_ERROR:
-                    return "an error, probably from the API";
+                    return "error";
                 case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
                     return "some behavior marked deprecated has been used";
                 case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
@@ -149,17 +151,21 @@ namespace nova {
                     LOG(ERROR) << id << " - Message from " << source_name << " of type " << type_name << ": "
                                << message;
                     break;
+
                 case GL_DEBUG_SEVERITY_MEDIUM:
                     LOG(INFO) << id << " - Message from " << source_name << " of type " << type_name << ": " << message;
                     break;
+
                 case GL_DEBUG_SEVERITY_LOW:
                     LOG(DEBUG) << id << " - Message from " << source_name << " of type " << type_name << ": "
                                << message;
                     break;
+
                 case GL_DEBUG_SEVERITY_NOTIFICATION:
                     LOG(TRACE) << id << " - Message from " << source_name << " of type " << type_name << ": "
                                << message;
                     break;
+
                 default:
                     LOG(INFO) << id << " - Message from " << source_name << " of type " << type_name << ": " << message;
             }

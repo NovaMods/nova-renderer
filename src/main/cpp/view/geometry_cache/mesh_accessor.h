@@ -8,11 +8,13 @@
 #ifndef RENDERER_GEOMETRY_CACHE_H
 #define RENDERER_GEOMETRY_CACHE_H
 
+#include <vector>
+#include <mutex>
+#include <functional>
 #include <unordered_map>
-#include "view/geometry_cache/gui/gui_geometry_builder.h"
+#include "mc_interface/mc_objects.h"
 #include "render_object.h"
 #include "view/render_pass.h"
-#include "geometry_builder.h"
 
 namespace nova {
     namespace view {
@@ -28,15 +30,22 @@ namespace nova {
             void add_render_object(const render_object new_obj);
 
             /*!
-             * \brief Provides the geometry builder so that the model can provide things to have geometry built from
-             *
-             * \return The geometry builder
+            * \brief Builds some geometry for the GUI from the provided GUI data structure
+            */
+            void build_geometry(mc_gui_screen& screen);
+
+            /*!
+             * \brief Builds some geometry for the chunk described by the given data structure
              */
-            geometry_builder& get_geometry_builder();
+            void build_geometry(mc_chunk& chunk);
+
+            /*!
+             * \brief Builds geometry for the provided entity definition
+             */
+            void build_geometry(mc_entity& entity);
         private:
             std::mutex render_objects_lock;
             std::vector<render_object> renderable_objects;
-            geometry_builder geom_builder;
         };
     }
 }

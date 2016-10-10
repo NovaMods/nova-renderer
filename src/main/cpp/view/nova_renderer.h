@@ -98,7 +98,7 @@ namespace nova {
 
             uniform_buffer_store ubo_manager;
 
-            mesh_accessor gui_geom_cache;
+            mesh_accessor meshes;
 
             /* Data in Controller */
 

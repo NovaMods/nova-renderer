@@ -16,7 +16,7 @@ namespace nova {
         shader_tree::shader_tree(std::string name, std::initializer_list<shader_tree> children) : shader_name(name), children(children) { }
 
         void shader_tree::calculate_filters(
-                std::unordered_map<std::string, std::function<bool(render_object)>> orig_filters,    // Holy type signature, Batman!
+                std::unordered_map<std::string, std::function<bool(view::render_object)>> orig_filters,    // Holy type signature, Batman!
                 std::vector<std::string> loaded_shaders
         ) {
             filters.push_back(orig_filters[shader_name]);   // The filters for this shader always include the original filter for this shader
@@ -31,7 +31,7 @@ namespace nova {
             }
         }
 
-        std::function<bool(render_object)> shader_tree::get_filter_function() {
+        std::function<bool(view::render_object)> shader_tree::get_filter_function() {
             return [&](const auto& geom) {
                 for(auto& filter : filters) {
                     if(filter(geom)) {
@@ -72,36 +72,36 @@ namespace nova {
 
         void shader_facade::build_filters() {
             // First, define one filter per possible shader
-            static std::unordered_map<std::string, std::function<bool(render_object)>> orig_filters = {
-                    {"gui",                     [](const auto& geom) {return geom.type == geometry_type::gui;}},
+            static std::unordered_map<std::string, std::function<bool(view::render_object)>> orig_filters = {
+                    {"gui",                     [](const auto& geom) {return geom.type == view::geometry_type::gui;}},
 
-                    {"shadow",                  [](const auto& geom) {return geom.type != geometry_type::fullscreen_quad;}},
+                    {"shadow",                  [](const auto& geom) {return geom.type != view::geometry_type::fullscreen_quad;}},
 
-                    {"gbuffers_basic",          [](const auto& geom) {return geom.type == geometry_type::selection_box;}},
-                    {"gbuffers_textured",       [](const auto& geom) {return geom.type == geometry_type::particle;}},
-                    {"gbuffers_textured_lit",   [](const auto& geom) {return geom.type == geometry_type::lit_particle || geom.name == "world_border";}},
+                    {"gbuffers_basic",          [](const auto& geom) {return geom.type == view::geometry_type::selection_box;}},
+                    {"gbuffers_textured",       [](const auto& geom) {return geom.type == view::geometry_type::particle;}},
+                    {"gbuffers_textured_lit",   [](const auto& geom) {return geom.type == view::geometry_type::lit_particle || geom.name == "world_border";}},
                     {"gbuffers_skybasic",       [](const auto& geom) {return geom.name == "sky" || geom.name == "horizon" || geom.name == "stars" || geom.name == "void";}},
                     {"gbuffers_skytextured",    [](const auto& geom) {return geom.name == "sun" || geom.name == "moon";}},
-                    {"gbuffers_clouds",         [](const auto& geom) {return geom.type == geometry_type::cloud;}},
-                    {"gbuffers_terrain",        [](const auto& geom) {return geom.type == geometry_type::block && !geom.is_transparent;}},
-                    {"gbuffers_damagedblock",   [](const auto& geom) {return geom.type == geometry_type::block && geom.damage_level > 0;}},
-                    {"gbuffers_water",          [](const auto& geom) {return geom.type == geometry_type::block && geom.is_transparent;}},
-                    {"gbuffers_block",          [](const auto& geom) {return geom.type == geometry_type::falling_block;}},
-                    {"gbuffers_entities",       [](const auto& geom) {return geom.type == geometry_type::entity;}},
-                    {"gbuffers_armor_glint",    [](const auto& geom) {return geom.type == geometry_type::glint;}},
-                    {"gbuffers_spidereyes",     [](const auto& geom) {return geom.type == geometry_type::eyes;}},
-                    {"gbuffres_hand",           [](const auto& geom) {return geom.type == geometry_type::hand;}},
-                    {"gbuffers_weather",        [](const auto& geom) {return geom.type == geometry_type::weather;}},
+                    {"gbuffers_clouds",         [](const auto& geom) {return geom.type == view::geometry_type::cloud;}},
+                    {"gbuffers_terrain",        [](const auto& geom) {return geom.type == view::geometry_type::block && !geom.is_transparent;}},
+                    {"gbuffers_damagedblock",   [](const auto& geom) {return geom.type == view::geometry_type::block && geom.damage_level > 0;}},
+                    {"gbuffers_water",          [](const auto& geom) {return geom.type == view::geometry_type::block && geom.is_transparent;}},
+                    {"gbuffers_block",          [](const auto& geom) {return geom.type == view::geometry_type::falling_block;}},
+                    {"gbuffers_entities",       [](const auto& geom) {return geom.type == view::geometry_type::entity;}},
+                    {"gbuffers_armor_glint",    [](const auto& geom) {return geom.type == view::geometry_type::glint;}},
+                    {"gbuffers_spidereyes",     [](const auto& geom) {return geom.type == view::geometry_type::eyes;}},
+                    {"gbuffres_hand",           [](const auto& geom) {return geom.type == view::geometry_type::hand;}},
+                    {"gbuffers_weather",        [](const auto& geom) {return geom.type == view::geometry_type::weather;}},
 
-                    {"composite",               [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;}},
-                    {"composite1",              [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;}},
-                    {"composite2",              [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;}},
-                    {"composite3",              [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;}},
-                    {"composite4",              [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;}},
-                    {"composite5",              [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;}},
-                    {"composite6",              [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;}},
-                    {"composite7",              [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;}},
-                    {"final",                   [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;}},
+                    {"composite",               [](const auto& geom) {return geom.type == view::geometry_type::fullscreen_quad;}},
+                    {"composite1",              [](const auto& geom) {return geom.type == view::geometry_type::fullscreen_quad;}},
+                    {"composite2",              [](const auto& geom) {return geom.type == view::geometry_type::fullscreen_quad;}},
+                    {"composite3",              [](const auto& geom) {return geom.type == view::geometry_type::fullscreen_quad;}},
+                    {"composite4",              [](const auto& geom) {return geom.type == view::geometry_type::fullscreen_quad;}},
+                    {"composite5",              [](const auto& geom) {return geom.type == view::geometry_type::fullscreen_quad;}},
+                    {"composite6",              [](const auto& geom) {return geom.type == view::geometry_type::fullscreen_quad;}},
+                    {"composite7",              [](const auto& geom) {return geom.type == view::geometry_type::fullscreen_quad;}},
+                    {"final",                   [](const auto& geom) {return geom.type == view::geometry_type::fullscreen_quad;}},
             };
 
             // Next, look at which shaders are loaded and figure out the actual filters to use

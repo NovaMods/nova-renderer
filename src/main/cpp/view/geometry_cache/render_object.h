@@ -73,7 +73,7 @@ namespace nova {
              */
             std::string name;
 
-            mesh geometry;
+            model::gl_mesh geometry;
         };
     }
 }

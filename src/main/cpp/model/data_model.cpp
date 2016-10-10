@@ -11,7 +11,7 @@
 
 namespace nova {
     namespace model {
-        data_model::data_model() : render_settings("config/config.json") {
+        data_model::data_model(view::mesh_accessor& meshes) : render_settings("config/config.json"), meshes(meshes) {
             render_settings.register_change_listener(this);
 
             render_settings.update_config_loaded();
@@ -64,6 +64,7 @@ namespace nova {
         void data_model::set_gui_screen(mc_gui_screen *screen) {
             if(are_different_screens(*screen, cur_gui_screen)) {
                 cur_gui_screen = *screen;
+                meshes.build_geometry(cur_gui_screen);
             }
         }
 

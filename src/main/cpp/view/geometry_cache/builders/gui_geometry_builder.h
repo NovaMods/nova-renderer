@@ -11,7 +11,7 @@
 
 #include <mutex>
 
-#include "model/gl/gl_vertex_buffer.h"
+#include "model/gl/gl_mesh.h"
 #include "view/uniform_buffer_store.h"
 #include "interfaces/ivertex_buffer.h"
 #include "mc_interface/mc_gui_objects.h"
@@ -27,7 +27,7 @@ namespace nova {
          * Note that the GUI screen does not include things like the spinning background on the main menu screen, because
          * that's going to be rendered as if it was a scene
          */
-        model::gl_vertex_buffer build_gui_geometry(mc_gui_screen &cur_screen);
+        model::gl_mesh build_gui_geometry(mc_gui_screen &cur_screen);
     }
 }
 

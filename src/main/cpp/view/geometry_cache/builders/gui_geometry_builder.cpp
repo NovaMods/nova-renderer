@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <easylogging++.h>
 #include "gui_geometry_builder.h"
-#include "model/gl/gl_vertex_buffer.h"
+#include "model/gl/gl_mesh.h"
 
 
 namespace nova {
@@ -56,7 +56,7 @@ namespace nova {
          */
         void add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v);
 
-        model::gl_vertex_buffer build_gui_geometry(mc_gui_screen& cur_screen) {
+        model::gl_mesh build_gui_geometry(mc_gui_screen& cur_screen) {
             // We need to make a vertex buffer with the positions and texture coordinates of all the gui elements
             std::vector<float> vertex_buffer(
                     MAX_NUM_BUTTONS * 4 * 5
@@ -83,7 +83,7 @@ namespace nova {
                 start_pos += 4;
             }
 
-            model::gl_vertex_buffer cur_screen_buffer;
+            model::gl_mesh cur_screen_buffer;
 
             cur_screen_buffer.set_data(
                     vertex_buffer, ivertex_buffer::format::POS_UV, ivertex_buffer::usage::static_draw
