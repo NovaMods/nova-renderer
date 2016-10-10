@@ -5,26 +5,26 @@
 
 #include <stdexcept>
 #include <easylogging++.h>
-#include "gl_vertex_buffer.h"
+#include "gl_mesh.h"
 
 namespace nova {
     namespace model {
-        gl_vertex_buffer::gl_vertex_buffer() : vertex_array(0), vertex_buffer(0), indices(0), num_indices(0) {
+        gl_mesh::gl_mesh() : vertex_array(0), vertex_buffer(0), indices(0), num_indices(0) {
             create();
         }
 
-        gl_vertex_buffer::~gl_vertex_buffer() {
+        gl_mesh::~gl_mesh() {
             destroy();
         }
 
-        void gl_vertex_buffer::create() {
+        void gl_mesh::create() {
             glGenVertexArrays(1, &vertex_array);
             glBindVertexArray(vertex_array);
             glGenBuffers(1, &vertex_buffer);
             glGenBuffers(1, &indices);
         }
 
-        void gl_vertex_buffer::destroy() {
+        void gl_mesh::destroy() {
             if(vertex_buffer != 0) {
                 glDeleteBuffers(1, &vertex_buffer);
                 vertex_buffer = 0;
@@ -36,7 +36,7 @@ namespace nova {
             }
         }
 
-        void gl_vertex_buffer::set_data(std::vector<float> data, format data_format, usage data_usage) {
+        void gl_mesh::set_data(std::vector<float> data, format data_format, usage data_usage) {
             this->data_format = data_format;
 
             glBindVertexArray(vertex_array);
@@ -45,9 +45,11 @@ namespace nova {
             glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), buffer_usage);
 
             enable_vertex_attributes(data_format);
+
+            compute_aabb(data, data_format);
         }
 
-        GLenum gl_vertex_buffer::translate_usage(const usage data_usage) const {
+        GLenum gl_mesh::translate_usage(const usage data_usage) const {
             switch(data_usage) {
                 case usage::dynamic_draw:
                     return GL_DYNAMIC_DRAW;
@@ -59,13 +61,13 @@ namespace nova {
             }
         }
 
-        void gl_vertex_buffer::set_active() {
+        void gl_mesh::set_active() {
             glBindVertexArray(vertex_array);
             glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
         }
 
-        void gl_vertex_buffer::set_index_array(std::vector<unsigned short> data, usage data_usage) {
+        void gl_mesh::set_index_array(std::vector<unsigned short> data, usage data_usage) {
             glBindVertexArray(vertex_array);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
             GLenum buffer_usage = translate_usage(data_usage);
@@ -74,13 +76,13 @@ namespace nova {
             num_indices = (unsigned int) data.size();
         }
 
-        void gl_vertex_buffer::draw() {
+        void gl_mesh::draw() {
             if(num_indices > 0) {
                 glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_SHORT, 0);
             }
         }
 
-        void gl_vertex_buffer::enable_vertex_attributes(format data_format) {
+        void gl_mesh::enable_vertex_attributes(format data_format) {
             switch(data_format) {
                 case format::POS:
                     // We only need to set up positional data
@@ -115,6 +117,11 @@ namespace nova {
 
                     break;
             }
+        }
+
+        void gl_mesh::compute_aabb(std::vector<float> &vertices, ivertex_buffer::format data_format) {
+            // TODO: Translate data_format into a stride
+            // TODO: All of this. The AABB stuff is going to come later
         }
     }
 }

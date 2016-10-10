@@ -5,9 +5,9 @@
  * \date 27-Sep-16.
  */
 
-#include <d3d11.h>
-#include <vector>
 #include "mesh_accessor.h"
+
+#include "view/geometry_cache/builders/gui_geometry_builder.h"
 
 namespace nova {
     namespace view {
@@ -31,6 +31,17 @@ namespace nova {
             renderable_objects.push_back(new_obj);
 
             render_objects_lock.unlock();
+        }
+
+        void mesh_accessor::build_geometry(mc_gui_screen &screen) {
+            model::gl_mesh gui_object = build_gui_geometry(screen);
+
+            render_object gui = {};
+            gui.geometry = std::move(gui_object);
+            gui.type = geometry_type::gui;
+            gui.name = "gui";
+
+            add_render_object(gui);
         }
     }
 }

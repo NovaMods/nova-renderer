@@ -8,6 +8,7 @@
 #ifndef RENDERER_MODEL_H
 #define RENDERER_MODEL_H
 
+#include "view/geometry_cache/mesh_accessor.h"
 #include "model/shaders/shader_facade.h"
 #include "settings.h"
 #include "model/shaders/gl_shader_program.h"
@@ -22,7 +23,7 @@ namespace nova {
          */
         class data_model : public iconfig_listener {
         public:
-            data_model();
+            data_model(view::mesh_accessor& meshes);
 
             gl_shader_program& get_shader_program(const std::string& program_name);
 
@@ -33,6 +34,14 @@ namespace nova {
              */
             void trigger_config_update();
 
+            /*!
+             * \brief Sets the current GUI screen
+             *
+             * Note that this method can trigger a GUI geometry rebuild if the sent screen is different from the
+             * current screen. This may or may not be important to know, but I feel like I should say it
+             *
+             * \param screen
+             */
             void set_gui_screen(mc_gui_screen* screen);
 
             std::vector<gl_shader_program*> get_all_shaders();
@@ -53,6 +62,7 @@ namespace nova {
             texture_manager textures;
             std::string loaded_shaderpack_name;
             mc_gui_screen cur_gui_screen;
+            view::mesh_accessor& meshes;
 
             void load_new_shaderpack(const std::string &new_shaderpack_name) noexcept;
         };

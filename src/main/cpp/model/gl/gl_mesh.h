@@ -9,20 +9,21 @@
 
 #include "interfaces/ivertex_buffer.h"
 #include <glad/glad.h>
+#include "model/physics/AABB.h"
 
 namespace nova {
     namespace model {
-/*!
- * \brief Represents a buffer which holds vertex information
- *
- * Buffers of this type can hold positions, positions and texture coordinates, or positions, texture coordinates,
- * lightmap coordinates, normals, and tangents.
- */
-        class gl_vertex_buffer : public ivertex_buffer {
+        /*!
+         * \brief Represents a buffer which holds vertex information
+         *
+         * Buffers of this type can hold positions, positions and texture coordinates, or positions, texture coordinates,
+         * lightmap coordinates, normals, and tangents.
+         */
+        class gl_mesh : public ivertex_buffer {
         public:
-            gl_vertex_buffer();
+            gl_mesh();
 
-            ~gl_vertex_buffer();
+            ~gl_mesh();
 
             void create();
 
@@ -51,6 +52,16 @@ namespace nova {
 
             unsigned int vertex_array;
             unsigned int num_indices;
+
+            AABB aabb;
+
+            /*!
+             * \brief Examines the vertices in the given vector, finding the minimum and maximum bounds in each axis
+             *
+             * \param vertices The vertices the get the bounds of
+             * \param data_format The format of the vertices. Necessary for knowing the desired stride
+             */
+            void compute_aabb(std::vector<float> &vertices, format data_format);
         };
     }
 }
