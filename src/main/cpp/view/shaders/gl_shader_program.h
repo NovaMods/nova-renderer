@@ -14,10 +14,11 @@
 
 #include <glad/glad.h>
 #include "model/gl/gl_uniform_buffer.h"
+#include "view/geometry_cache/render_object.h"
 
 
 namespace nova {
-    namespace model {
+    namespace view {
         /*!
         * \brief Holds a line number and file name
         *
@@ -112,12 +113,20 @@ namespace nova {
              */
             void bind() noexcept;
 
-            void link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept;
+            void link_to_uniform_buffer(const model::gl_uniform_buffer &buffer) noexcept;
 
         private:
             std::string name;
 
             std::vector<GLuint> added_shaders;
+
+            /*!
+             * \brief The filter that the renderer should use to get the geometry for this shader
+             *
+             * Since there's a one-to-one correallation between shaders and filters, I thought it'd be best to put the
+             * filter with the shader
+             */
+            std::function<bool(render_object)> filter;
 
             void create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type);
 

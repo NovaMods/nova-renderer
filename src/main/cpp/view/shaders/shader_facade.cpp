@@ -9,14 +9,14 @@
 #include <algorithm>
 
 namespace nova {
-    namespace model {
+    namespace view {
 
         shader_tree::shader_tree(std::string name) : shader_name(name) {}
 
         shader_tree::shader_tree(std::string name, std::initializer_list<shader_tree> children) : shader_name(name), children(children) { }
 
         void shader_tree::calculate_filters(
-                std::unordered_map<std::string, std::function<bool(view::render_object)>> orig_filters,    // Holy type signature, Batman!
+                std::unordered_map<std::string, std::function<bool(render_object)>> orig_filters,    // Holy type signature, Batman!
                 std::vector<std::string> loaded_shaders
         ) {
             filters.push_back(orig_filters[shader_name]);   // The filters for this shader always include the original filter for this shader
@@ -31,7 +31,7 @@ namespace nova {
             }
         }
 
-        std::function<bool(view::render_object)> shader_tree::get_filter_function() {
+        std::function<bool(render_object)> shader_tree::get_filter_function() {
             return [&](const auto& geom) {
                 for(auto& filter : filters) {
                     if(filter(geom)) {
@@ -72,7 +72,7 @@ namespace nova {
 
         void shader_facade::build_filters() {
             // First, define one filter per possible shader
-            static std::unordered_map<std::string, std::function<bool(view::render_object)>> orig_filters = {
+            static std::unordered_map<std::string, std::function<bool(render_object)>> orig_filters = {
                     {"gui",                     [](const auto& geom) {return geom.type == view::geometry_type::gui;}},
 
                     {"shadow",                  [](const auto& geom) {return geom.type != view::geometry_type::fullscreen_quad;}},

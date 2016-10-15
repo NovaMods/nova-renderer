@@ -3,11 +3,15 @@
  * \date 17-May-16.
  */
 
+#include <cstdlib>
+#include <algorithm>
+
 #include <easylogging++.h>
-#include <utils/utils.h>
+#include <malloc.h>
 #include "gl_shader_program.h"
+
 namespace nova {
-    namespace model {
+    namespace view {
         gl_shader_program::gl_shader_program(const std::string name, const shader_source& source) : name(name) {
             // We can handle all the shader programs more or less independently
 
@@ -99,7 +103,7 @@ namespace nova {
             glDeleteProgram(gl_name);
         }
 
-        void gl_shader_program::link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept {
+        void gl_shader_program::link_to_uniform_buffer(const model::gl_uniform_buffer &buffer) noexcept {
             GLuint buffer_index = glGetUniformBlockIndex(gl_name, buffer.get_name().c_str());
             if(buffer_index == GL_INVALID_INDEX) {
                 LOG(ERROR) << buffer.get_name() << " is not a valid identifier for program " << gl_name;
@@ -117,7 +121,7 @@ namespace nova {
 
             if(version_line == "#version 450") {
                 // GLSL 450 code! This is the simplest: just concatenate all the lines in the shader file
-                foreach(shader_source, [&](auto line) {full_shader_source.append(line.line + "\n");});
+                std::for_each(std::begin(shader_source), std::end(shader_source), [&](auto& line) {full_shader_source.append(line.line + "\n");});
 
             } else {
                 throw wrong_shader_version(shader_source[0].line);

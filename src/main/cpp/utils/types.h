@@ -8,9 +8,8 @@
 #ifndef RENDERER_TYPES_H
 #define RENDERER_TYPES_H
 
-#include <unordered_map>
-#include <string>
-#include <memory>
-#include "gl/objects/gl_uniform_buffer.h"
+#include <functional>
+
+using geometry_filter = std::function<bool(view::render_object)>;
 
 #endif //RENDERER_TYPES_H
