@@ -63,7 +63,7 @@ set(NOVA_SOURCE
         view/uniform_buffer_store.cpp
         view/geometry_cache/builders/gui_geometry_builder.cpp
 
-        model/shaders/gl_shader_program.cpp
+        view/shaders/gl_shader_program.cpp
         model/gl/gl_uniform_buffer.cpp
         model/gl/gl_mesh.cpp
         model/texture2D.cpp
@@ -83,7 +83,7 @@ set(NOVA_SOURCE
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
 
-        model/shaders/shader_facade.cpp
+        view/shaders/shader_facade.cpp
         view/geometry_cache/mesh_accessor.cpp
         model/physics/AABB.cpp model/physics/AABB.h)
 
@@ -95,14 +95,14 @@ set(NOVA_HEADERS
         core/renderer/batch_builder.h
         core/renderer/model_renderer.h
 
-        model/shaders/uniform_buffer_definitions.h
+        view/shaders/uniform_buffer_definitions.h
 
         mc_interface/nova.h
         view/nova_renderer.h
         model/texture_manager.h
-        view/types.h
+        utils/types.h
 
-        model/shaders/gl_shader_program.h
+        view/shaders/gl_shader_program.h
         model/gl/gl_uniform_buffer.h
         model/gl/gl_mesh.h
         model/texture2D.h
@@ -124,7 +124,7 @@ set(NOVA_HEADERS
         model/loaders/loader_utils.h
         view/geometry_cache/mesh_accessor.h
         view/render_pass.h
-        model/shaders/shader_facade.h
+        view/shaders/shader_facade.h
         view/geometry_cache/render_object.h
         )
 

@@ -17,7 +17,7 @@
 #include "view/geometry_cache/render_object.h"
 
 namespace nova {
-    namespace model {
+    namespace view {
         /*!
          * \brief Holds all the filters that a shader might need
          */
@@ -28,9 +28,9 @@ namespace nova {
             shader_tree(std::string name);
             shader_tree(std::string name, std::initializer_list<shader_tree> children);
 
-            void calculate_filters(std::unordered_map<std::string, std::function<bool(view::render_object)>> filters, std::vector<std::string> loaded_shaders);
+            void calculate_filters(std::unordered_map<std::string, std::function<bool(render_object)>> filters, std::vector<std::string> loaded_shaders);
 
-            std::function<bool(view::render_object)> get_filter_function();
+            std::function<bool(render_object)> get_filter_function();
 
             /*!
              * \brief Performs a depth-first traversal of the tree, funning the provided function on each element in the
@@ -41,7 +41,7 @@ namespace nova {
             void foreach_df(std::function<void(shader_tree&)> f);
 
         private:
-            std::vector<std::function<bool(view::render_object)>> filters;
+            std::vector<std::function<bool(render_object)>> filters;
 
             std::vector<shader_tree> children;
         };
@@ -65,7 +65,7 @@ namespace nova {
              */
             static shader_tree gbuffers_shaders;
 
-            std::unordered_map<std::string, std::function<bool(view::render_object)>> filters;
+            std::unordered_map<std::string, std::function<bool(render_object)>> filters;
             std::unordered_map<std::string, gl_shader_program> loaded_shaders;
 
             /*!
