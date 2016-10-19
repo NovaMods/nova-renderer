@@ -83,7 +83,7 @@ public:
      *
      * This function will almost certainly be used very seldom. Perhaps only in the GUI?
      */
-    virtual void draw() = 0;
+    virtual void draw() const = 0;
 
     /*!
      * \brief Returns the format of this vertex buffer

@@ -13,6 +13,7 @@
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "model/shaders/uniform_buffer_definitions.h"
+#include "model/gl/gl_mesh.h"
 
 namespace nova {
     namespace view {
@@ -28,25 +29,25 @@ namespace nova {
         struct render_pass {
             std::string shader_program_name;
 
-            std::vector<mesh> meshes_to_draw;
+            std::vector<model::gl_mesh> meshes_to_draw;
         };
 
         struct shadow_stage {
             std::vector<render_pass> meshes_to_draw;
 
-            model::shadow_pass_uniforms uniforms;
+            model::shadow_pass_textures textures;
         };
 
         struct gbuffer_stage {
             std::vector<render_pass> meshes_to_draw;
 
-            model::gbuffer_pass_uniforms uniforms;
+            model::gbuffer_pass_textures textures;
         };
 
         struct fullscreen_stage {
             std::vector<render_pass> meshes_to_draw;
 
-            model::fullscreen_pass_uniforms uniforms;
+            model::fullscreen_pass_textures textures;
         };
 
         struct render_command {

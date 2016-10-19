@@ -99,9 +99,9 @@ namespace nova {
 
             void link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept;
 
-            void set_filter(std::function<bool(render_object)>& filter) noexcept;
+            void set_filter(std::function<bool(const render_object&)> filter) noexcept;
 
-            std::function<bool(render_object)>& get_filter() noexcept;
+            std::function<bool(const render_object&)>& get_filter() noexcept;
 
         private:
             std::string name;
@@ -114,7 +114,7 @@ namespace nova {
              * Since there's a one-to-one correallation between shaders and filters, I thought it'd be best to put the
              * filter with the shader
              */
-            std::function<bool(render_object)> filter;
+            std::function<bool(const render_object&)> filter;
 
             void create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type);
 

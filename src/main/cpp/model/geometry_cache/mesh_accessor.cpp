@@ -11,7 +11,7 @@
 
 namespace nova {
     namespace model {
-        std::vector<render_object*> mesh_accessor::get_meshes_for_filter(std::function<bool(render_object)> &filter) {
+        std::vector<render_object*> mesh_accessor::get_meshes_for_filter(std::function<bool(const render_object&)> &filter) {
             std::vector<render_object*> meshes(renderable_objects.size());
 
             render_objects_lock.lock();

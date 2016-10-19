@@ -74,7 +74,7 @@ namespace nova {
          * mc_gui_screen to be a C struct so I can properly assign to it from Java. The compiler yelled at me about "You
          * can't compare structs" so I couldn't use the == operator and here we are.
          */
-        bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) const;
+        bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2);
 
         /*!
          * \brief Determines whether or not the two given buttons are the same
@@ -87,7 +87,7 @@ namespace nova {
          *
          * \return True if the buttons are the same, false otherwise
          */
-        bool are_different_buttons(const mc_gui_button &button1, const mc_gui_button &button2) const;
+        bool are_different_buttons(const mc_gui_button &button1, const mc_gui_button &button2);
 
         /*!
          * \brief Compares two C strings, taking special care to not crash if one or both of the strings is null
@@ -96,7 +96,7 @@ namespace nova {
          * \param text2  The second string to compare
          * \return True is the strings are different, false otherwise
          */
-        bool are_different_strings(const char *text1, const char *text2) const;
+        bool are_different_strings(const char *text1, const char *text2);
     }
 }
 

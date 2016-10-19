@@ -53,47 +53,9 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 # Setup the nova-core library.
-set(NOVA_SOURCE
-
-        model/geometry_cache/builders/gui_geometry_builder.cpp
-
-        view/nova_renderer.cpp
-        mc_interface/nova_facade.cpp
-        model/texture_manager.cpp
-        view/uniform_buffer_store.cpp
-        model/geometry_cache/builders/gui_geometry_builder.cpp
-
-        model/shaders/gl_shader_program.cpp
-        model/gl/gl_uniform_buffer.cpp
-        model/gl/gl_mesh.cpp
-        model/texture2D.cpp
-
-        view/windowing/glfw_gl_window.cpp
-
-        interfaces/ivertex_buffer.cpp
-
-        utils/utils.cpp
-
-        model/settings.cpp
-        model/loaders/shader_loading.cpp
-        model/data_model.cpp
-        model/loaders/loader_utils.cpp
-
-        # Need to compile third party stuff, too...
-        3rdparty/glad/src/glad.c
-        3rdparty/miniz/miniz.c
-
-        model/shaders/shader_facade.cpp
-        model/geometry_cache/mesh_accessor.cpp
-        model/physics/AABB.cpp )
-
-
 set(NOVA_HEADERS
 
         model/geometry_cache/builders/gui_geometry_builder.h
-
-        core/renderer/batch_builder.h
-        core/renderer/model_renderer.h
 
         model/shaders/uniform_buffer_definitions.h
 
@@ -130,6 +92,42 @@ set(NOVA_HEADERS
         model/physics/AABB.h
         model/loaders/shader_source_structs.h
         )
+
+set(NOVA_SOURCE
+
+        ${NOVA_HEADERS}
+
+        model/geometry_cache/builders/gui_geometry_builder.cpp
+
+        view/nova_renderer.cpp
+        mc_interface/nova_facade.cpp
+        model/texture_manager.cpp
+        view/uniform_buffer_store.cpp
+        model/geometry_cache/builders/gui_geometry_builder.cpp
+
+        model/shaders/gl_shader_program.cpp
+        model/gl/gl_uniform_buffer.cpp
+        model/gl/gl_mesh.cpp
+        model/texture2D.cpp
+
+        view/windowing/glfw_gl_window.cpp
+
+        interfaces/ivertex_buffer.cpp
+
+        utils/utils.cpp
+
+        model/settings.cpp
+        model/loaders/shader_loading.cpp
+        model/data_model.cpp
+        model/loaders/loader_utils.cpp
+
+        # Need to compile third party stuff, too...
+        3rdparty/glad/src/glad.c
+        3rdparty/miniz/miniz.c
+
+        model/shaders/shader_facade.cpp
+        model/geometry_cache/mesh_accessor.cpp
+        model/physics/AABB.cpp )
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small

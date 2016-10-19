@@ -6,11 +6,10 @@
 #include <algorithm>
 #include <easylogging++.h>
 #include "gui_geometry_builder.h"
-#include "model/gl/gl_mesh.h"
 
 
 namespace nova {
-    namespace view {
+    namespace model {
         std::vector<float> basic_unpressed_uvs = {
                 0.0f, 0.3359375f,
                 0.78125f, 0.3359375f,

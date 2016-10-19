@@ -12,6 +12,8 @@
 #ifndef RENDERER_UNIFORM_BUFFERS_H
 #define RENDERER_UNIFORM_BUFFERS_H
 
+#include <glad/glad.h>
+#include <glm/glm.hpp>
 
 namespace nova {
     namespace model {
@@ -37,8 +39,8 @@ namespace nova {
             GLfloat aspectRatio;
             GLfloat viewWidth;
             GLfloat viewHeight;
-            GLfloat near; // No clue why this is a userless type name in empty declaration. Google gives no help
-            GLfloat far;
+            GLfloat nearPlane;  // near in the shaders. Re-named because GCC was yelling about "This line does not declare anything", like it's some great authority on declaring things
+            GLfloat farPlane;   // far in the shaders
             glm::vec3 sunPosition;
             glm::vec3 moonPosition;
             glm::vec3 shadowLightPosition;
