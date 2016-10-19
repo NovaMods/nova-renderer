@@ -11,7 +11,7 @@
 #include "gl_shader_program.h"
 
 namespace nova {
-    namespace view {
+    namespace model {
         gl_shader_program::gl_shader_program(const std::string name, const shader_source& source) : name(name) {
             // We can handle all the shader programs more or less independently
 
@@ -52,7 +52,7 @@ namespace nova {
             }
         }
 
-        void gl_shader_program::check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line> line_map) {
+        void gl_shader_program::check_for_shader_errors(GLuint shader_to_check, const std::vector<model::shader_line> line_map) {
             GLint success = 0;
 
             glGetShaderiv(shader_to_check, GL_COMPILE_STATUS, &success);
@@ -113,7 +113,7 @@ namespace nova {
             glUniformBlockBinding(gl_name, buffer_index, buffer.get_bind_point());
         }
 
-        void gl_shader_program::create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type) {
+        void gl_shader_program::create_shader(const std::vector<model::shader_line> shader_source, const GLenum shader_type) {
             // Check what kind of shader we're dealing with
 
             std::string full_shader_source;
@@ -152,14 +152,22 @@ namespace nova {
             this->gl_name = other.gl_name;
         }
 
+        void gl_shader_program::set_filter(std::function<bool(render_object)> &filter) {
+            this->filter = filter;
+        }
+
+        std::function<bool(render_object)> &gl_shader_program::get_filter() {
+            return filter;
+        }
+
         wrong_shader_version::wrong_shader_version(const std::string &version_line) :
                 std::runtime_error("Invalid version line: " + version_line + ". Please only use GLSL version 450 (NOT compatibility profile)") {}
 
-        compilation_error::compilation_error(const std::string &error_message, const std::vector<shader_line> source_lines) :
+        compilation_error::compilation_error(const std::string &error_message, const std::vector<model::shader_line> source_lines) :
                 std::runtime_error(error_message + get_original_line_message(error_message, source_lines))
         {}
 
-        std::string compilation_error::get_original_line_message(const std::string &error_message, const std::vector<shader_line> source_lines) {
+        std::string compilation_error::get_original_line_message(const std::string &error_message, const std::vector<model::shader_line> source_lines) {
             return "This logic isn't implemented yet";
         }
     }

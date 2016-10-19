@@ -57,3 +57,9 @@ NOVA_EXPORT bool should_close() {
 NOVA_EXPORT void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen) {
     nova::view::nova_renderer::instance->get_model().set_gui_screen(&set_gui_screen->screen);
 }
+
+NOVA_EXPORT void set_string_setting(const char * setting_name, const char * setting_value) {
+    nova::model::settings& settings = nova::view::nova_renderer::instance->get_model().get_render_settings();
+    settings.get_options()[setting_name] = setting_value;
+    settings.update_config_changed();
+}

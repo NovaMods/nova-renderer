@@ -11,15 +11,11 @@
 
 namespace nova {
     namespace model {
-        data_model::data_model(view::mesh_accessor& meshes) : render_settings("config/config.json"), meshes(meshes) {
+        data_model::data_model() : render_settings("config/config.json") {
             render_settings.register_change_listener(this);
 
             render_settings.update_config_loaded();
             render_settings.update_config_changed();
-        }
-
-        gl_shader_program &data_model::get_shader_program(const std::string &program_name) {
-            return loaded_shaderpack[program_name];
         }
 
         void data_model::on_config_change(nlohmann::json &config) {
@@ -35,7 +31,7 @@ namespace nova {
                     loaded_shaderpack = load_shaderpack(new_shaderpack_name);
                     loaded_shaderpack_name = new_shaderpack_name;
 
-                } catch(std::exception e) {
+                } catch(std::exception& e) {
                     LOG(ERROR) << "Could not load shaderpack " << new_shaderpack_name << ". Reason: " << e.what();
                     loaded_shaderpack_name = "default";
                     loaded_shaderpack = load_shaderpack(loaded_shaderpack_name);
@@ -43,13 +39,8 @@ namespace nova {
             }
         }
 
-        std::vector<gl_shader_program*> data_model::get_all_shaders() {
-            auto all_shaders = std::vector<gl_shader_program*>{};
-            for(auto& shader : loaded_shaderpack.get_loaded_shaders()) {
-                all_shaders.push_back(&shader.second);
-            }
-
-            return all_shaders;
+        shader_facade& data_model::get_shader_facade() {
+            return loaded_shaderpack;
         }
 
         void data_model::trigger_config_update() {
@@ -70,6 +61,10 @@ namespace nova {
 
         settings& data_model::get_render_settings() {
             return render_settings;
+        }
+
+        mesh_accessor &data_model::get_mesh_accessor() {
+            return meshes;
         }
 
         bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) const {

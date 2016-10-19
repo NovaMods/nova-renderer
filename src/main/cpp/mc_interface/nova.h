@@ -87,6 +87,20 @@ NOVA_EXPORT bool should_close();
  */
 NOVA_EXPORT void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen);
 
+/**
+ * Settings updates
+ */
+
+/*!
+ * \brief Sets a string setting to a specified value
+ *
+ * This is super useful when, say, changing the loaded shaderpack
+ *
+ * \param setting_name The name of the setting to update
+ * \param setting_value The desired value of the setting
+ */
+NOVA_EXPORT void set_string_setting(const char * setting_name, const char * setting_value);
+
 };  // End extern C
     // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.
     // Random closing braces are not okay.
