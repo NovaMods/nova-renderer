@@ -13,29 +13,13 @@
 #include <vector>
 
 #include <glad/glad.h>
+#include "model/loaders/shader_source_structs.h"
 #include "model/gl/gl_uniform_buffer.h"
-#include "view/geometry_cache/render_object.h"
+#include "model/geometry_cache/render_object.h"
 
 
 namespace nova {
-    namespace view {
-        /*!
-        * \brief Holds a line number and file name
-        *
-        * This struct is used to create a map from the line of code in the shader sent to the driver and the line of
-        * code on disk
-        */
-        struct shader_line {
-            int line_num;               //!< The line number in the original source file
-            std::string shader_name;    //!< The name of the original source file
-            std::string line;           //!< The actual line
-        };
-
-        struct shader_source {
-            std::vector<shader_line> vertex_source;
-            std::vector<shader_line> fragment_source;
-            // TODO: Figure out how to handle geometry and tessellation shaders
-        };
+    namespace model {
 
         /*!
          * \brief Represents an error in compiling a shader
@@ -113,7 +97,11 @@ namespace nova {
              */
             void bind() noexcept;
 
-            void link_to_uniform_buffer(const model::gl_uniform_buffer &buffer) noexcept;
+            void link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept;
+
+            void set_filter(std::function<bool(render_object)>& filter) noexcept;
+
+            std::function<bool(render_object)>& get_filter() noexcept;
 
         private:
             std::string name;

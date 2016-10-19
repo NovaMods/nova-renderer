@@ -12,7 +12,7 @@
 #include "view/render_pass.h"
 
 namespace nova {
-    namespace view {
+    namespace model {
         enum class geometry_type {
             block,
             entity,
@@ -73,7 +73,7 @@ namespace nova {
              */
             std::string name;
 
-            model::gl_mesh geometry;
+            gl_mesh geometry;
         };
     }
 }

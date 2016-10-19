@@ -14,19 +14,19 @@
 #include <functional>
 #include <initializer_list>
 #include "gl_shader_program.h"
-#include "view/geometry_cache/render_object.h"
+#include "model/geometry_cache/render_object.h"
 
 namespace nova {
-    namespace view {
+    namespace model {
         /*!
          * \brief Holds all the filters that a shader might need
          */
-        class shader_tree {
+        class shader_tree_node {
         public:
             std::string shader_name;
 
-            shader_tree(std::string name);
-            shader_tree(std::string name, std::initializer_list<shader_tree> children);
+            shader_tree_node(std::string name);
+            shader_tree_node(std::string name, std::initializer_list<shader_tree_node> children);
 
             void calculate_filters(std::unordered_map<std::string, std::function<bool(render_object)>> filters, std::vector<std::string> loaded_shaders);
 
@@ -38,12 +38,12 @@ namespace nova {
              *
              * \param f The function to run on the tree
              */
-            void foreach_df(std::function<void(shader_tree&)> f);
+            void foreach_df(std::function<void(shader_tree_node&)> f);
 
         private:
             std::vector<std::function<bool(render_object)>> filters;
 
-            std::vector<shader_tree> children;
+            std::vector<shader_tree_node> children;
         };
 
         /*!
@@ -63,9 +63,8 @@ namespace nova {
             /*!
              * \brief Defines which shaders to use if a given shader is not present
              */
-            static shader_tree gbuffers_shaders;
+            static shader_tree_node gbuffers_shaders;
 
-            std::unordered_map<std::string, std::function<bool(render_object)>> filters;
             std::unordered_map<std::string, gl_shader_program> loaded_shaders;
 
             /*!

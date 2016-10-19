@@ -5,6 +5,8 @@
  * \date 03-Sep-16.
  */
 
+#include <easylogging++.h>
+
 #include "utils/utils.h"
 #include "loaders.h"
 #include "shader_loading.h"

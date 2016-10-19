@@ -98,13 +98,11 @@ namespace nova {
 
             uniform_buffer_store ubo_manager;
 
-            mesh_accessor meshes;
-
             /* Data in Controller */
 
             glfw_gl_window game_window;
 
-            /* Data in mode */
+            /* Data in model */
 
             model::data_model model;
 
