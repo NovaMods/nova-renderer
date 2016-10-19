@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <thread>
-#include "view/geometry_cache/mesh_accessor.h"
 #include "model/data_model.h"
 
 #include "interfaces/iwindow.h"
@@ -15,7 +14,6 @@
 
 #include "mc_interface/nova.h"
 #include "model/texture_manager.h"
-#include "view/geometry_cache/gui/gui_geometry_builder.h"
 #include "model/settings.h"
 #include "view/uniform_buffer_store.h"
 #include "view/windowing/glfw_gl_window.h"
@@ -121,7 +119,7 @@ namespace nova {
 
             void enable_debug();
 
-            void link_up_uniform_buffers(std::vector<nova::model::gl_shader_program *> shaders,
+            void link_up_uniform_buffers(std::unordered_map<std::string, model::gl_shader_program>& shaders,
                                          nova::view::uniform_buffer_store &ubos);
 
             void init_opengl_state() const;

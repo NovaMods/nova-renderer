@@ -25,7 +25,7 @@ namespace nova {
          */
         class mesh_accessor {
         public:
-            std::vector<render_object*> get_meshes_for_filter(std::function<bool(render_object)>& filter);
+            std::vector<render_object*> get_meshes_for_filter(std::function<bool(const render_object&)>& filter);
 
             void add_render_object(const render_object& new_obj);
 

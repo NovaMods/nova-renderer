@@ -152,11 +152,11 @@ namespace nova {
             this->gl_name = other.gl_name;
         }
 
-        void gl_shader_program::set_filter(std::function<bool(render_object)> &filter) {
+        void gl_shader_program::set_filter(std::function<bool(const render_object&)> filter) noexcept {
             this->filter = filter;
         }
 
-        std::function<bool(render_object)> &gl_shader_program::get_filter() {
+        std::function<bool(const render_object&)> &gl_shader_program::get_filter() noexcept {
             return filter;
         }
 

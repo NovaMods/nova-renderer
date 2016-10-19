@@ -12,15 +12,10 @@
 #include <mutex>
 
 #include "model/gl/gl_mesh.h"
-#include "view/uniform_buffer_store.h"
-#include "interfaces/ivertex_buffer.h"
 #include "mc_interface/mc_gui_objects.h"
-#include "model/texture_manager.h"
-#include "model/shaders/uniform_buffer_definitions.h"
-
 
 namespace nova {
-    namespace view {
+    namespace model {
         /*!
          * \brief Constructs the geometry needed to render the current GUI screen
          *

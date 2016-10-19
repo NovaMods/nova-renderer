@@ -35,7 +35,7 @@ namespace nova {
 
             void set_active();
 
-            void draw();
+            void draw() const;
 
         private:
             GLuint vertex_buffer;

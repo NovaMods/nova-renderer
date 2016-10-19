@@ -67,7 +67,7 @@ namespace nova {
             return meshes;
         }
 
-        bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) const {
+        bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) {
             for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
                 if(are_different_buttons(screen1.buttons[i], screen2.buttons[i])) {
                     return true;
@@ -77,7 +77,7 @@ namespace nova {
             return false;
         }
 
-        bool are_different_buttons(const mc_gui_button &button1, const mc_gui_button &button2) const {
+        bool are_different_buttons(const mc_gui_button &button1, const mc_gui_button &button2) {
             bool same_rect = button1.x_position == button2.x_position &&
                              button1.y_position == button2.y_position &&
                              button1.width == button2.width &&
@@ -90,7 +90,7 @@ namespace nova {
             return !same_rect || !same_text || !same_pressed;
         }
 
-        bool are_different_strings(const char *text1, const char *text2) const {
+        bool are_different_strings(const char *text1, const char *text2) {
             if(text1 == nullptr && text2 == nullptr) {
                 // They're both null, and null equals null, so they're the same
                 // If this causes problems I'll change it

@@ -27,7 +27,7 @@ namespace nova {
             model.get_render_settings().register_change_listener(&ubo_manager);
             model.trigger_config_update();
 
-            link_up_uniform_buffers(model.get_all_shaders(), ubo_manager);
+            link_up_uniform_buffers(model.get_shader_facade().get_loaded_shaders(), ubo_manager);
 
             enable_debug();
 
@@ -177,9 +177,9 @@ namespace nova {
             glDebugMessageCallback(debug_logger, NULL);
         }
 
-        void nova_renderer::link_up_uniform_buffers(std::vector<nova::model::gl_shader_program *> shaders,
+        void nova_renderer::link_up_uniform_buffers(std::unordered_map<std::string, model::gl_shader_program>& shaders,
                                                     nova::view::uniform_buffer_store &ubos) {
-            nova::foreach(shaders, [&](auto shader) { ubos.register_all_buffers_with_shader(*shader); });
+            nova::foreach(shaders, [&](auto shader) { ubos.register_all_buffers_with_shader(shader.second); });
         }
 
         model::data_model &nova_renderer::get_model() {

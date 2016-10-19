@@ -76,7 +76,7 @@ namespace nova {
             num_indices = (unsigned int) data.size();
         }
 
-        void gl_mesh::draw() {
+        void gl_mesh::draw() const {
             if(num_indices > 0) {
                 glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_SHORT, 0);
             }

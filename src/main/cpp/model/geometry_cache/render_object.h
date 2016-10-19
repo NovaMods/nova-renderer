@@ -9,7 +9,7 @@
 #define RENDERER_RENDER_OBJECT_H
 
 #include <string>
-#include "view/render_pass.h"
+#include "model/gl/gl_mesh.h"
 
 namespace nova {
     namespace model {

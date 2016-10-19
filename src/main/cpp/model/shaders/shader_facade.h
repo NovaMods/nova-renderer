@@ -28,9 +28,9 @@ namespace nova {
             shader_tree_node(std::string name);
             shader_tree_node(std::string name, std::initializer_list<shader_tree_node> children);
 
-            void calculate_filters(std::unordered_map<std::string, std::function<bool(render_object)>> filters, std::vector<std::string> loaded_shaders);
+            void calculate_filters(std::unordered_map<std::string, std::function<bool(const render_object&)>> filters, std::vector<std::string> loaded_shaders);
 
-            std::function<bool(render_object)> get_filter_function();
+            std::function<bool(const render_object&)> get_filter_function();
 
             /*!
              * \brief Performs a depth-first traversal of the tree, funning the provided function on each element in the
@@ -41,7 +41,7 @@ namespace nova {
             void foreach_df(std::function<void(shader_tree_node&)> f);
 
         private:
-            std::vector<std::function<bool(render_object)>> filters;
+            std::vector<std::function<bool(const render_object&)>> filters;
 
             std::vector<shader_tree_node> children;
         };
