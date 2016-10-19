@@ -79,11 +79,12 @@ namespace nova {
 
         void nova_renderer::render_gui() {
             // Bind all the GUI data
-            model.get_shader_program("gui").bind();
+            model::gl_shader_program& gui_shader = model.get_shader_facade()["gui"];
+            gui_shader.bind();
 
-            std::vector<render_object&> gui_geometry = meshes.get_gui_geometry();
-            for(auto& geom : gui_geometry) {
-                geom.geometry.draw();
+            std::vector<model::render_object*> gui_geometry = model.get_mesh_accessor().get_meshes_for_filter(gui_shader.get_filter());
+            for(const auto* geom : gui_geometry) {
+                geom->geometry.draw();
             }
         }
 

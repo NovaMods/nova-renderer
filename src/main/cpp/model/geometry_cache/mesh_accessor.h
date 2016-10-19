@@ -17,7 +17,7 @@
 #include "view/render_pass.h"
 
 namespace nova {
-    namespace view {
+    namespace model {
         /*!
          * \brief Provides access to the meshes that Nova will want to deal with
          *
@@ -25,9 +25,9 @@ namespace nova {
          */
         class mesh_accessor {
         public:
-            std::vector<render_object> get_meshes_for_filter(std::function<bool(render_object)>& filter);
+            std::vector<render_object*> get_meshes_for_filter(std::function<bool(render_object)>& filter);
 
-            void add_render_object(const render_object new_obj);
+            void add_render_object(const render_object& new_obj);
 
             /*!
             * \brief Builds some geometry for the GUI from the provided GUI data structure
