@@ -521,9 +521,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
-        NovaNative.mc_render_command cmd = RenderCommandBuilder.makeRenderCommand(mc, renderPartialTicks);
-        NovaNative.INSTANCE.send_render_command(cmd);
-
         if(NovaNative.INSTANCE.should_close()) {
             Minecraft.getMinecraft().shutdown();
         }

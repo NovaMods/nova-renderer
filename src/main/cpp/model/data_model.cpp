@@ -54,6 +54,7 @@ namespace nova {
 
         void data_model::set_gui_screen(mc_gui_screen *screen) {
             if(are_different_screens(*screen, cur_gui_screen)) {
+                LOG(DEBUG) << "Rebuilding GUI geometry";
                 cur_gui_screen = *screen;
                 meshes.build_geometry(cur_gui_screen);
             }
