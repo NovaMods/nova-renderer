@@ -61,15 +61,6 @@ NOVA_EXPORT void reset_texture_manager();
 NOVA_EXPORT void update_renderer();
 
 /*!
- * \brief Sends the C++ code a command to render a fram
- *
- * \param cmd The mc_render_command containing all the data to be rendered for the current frame
- *
- * See \ref mc_render_command for a description of the render command
- */
-NOVA_EXPORT void send_render_command(mc_render_command * command);
-
-/*!
  * \brief Checks if Minecraft should close
  *
  * Since the Nova Renderer creates its own window, it needs to handle window events itself. However, Minecraft still

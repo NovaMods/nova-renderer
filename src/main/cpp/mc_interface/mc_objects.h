@@ -46,7 +46,7 @@ struct mc_block {
 struct mc_chunk {
     long chunk_id;  //!< Unique identifier for the chunk
     bool is_dirty;  //!< Has the chunk changed since it was last sent to Nova?
-    mc_block blocks[4096];  //!< All the blocks in the chunk
+    mc_block blocks[16 * 16 * 16];  //!< All the blocks in the chunk
 };
 
 /*!
@@ -73,22 +73,11 @@ struct mc_render_gui_params {
 };
 
 /*!
- * \brief All the data needed to render a single frame
- */
-struct mc_render_command {
-    long previous_frame_time;
-
-    float mouse_x;
-    float mouse_y;
-
-    mc_render_world_params render_world_params;
-    mc_render_gui_params render_gui_params;
-};
-
-/*!
  * \brief Holds all the settings that are exposed from the Minecraft options menu
  */
 struct mc_settings {
+    bool render_menu;           //!< Controlled by F1
+
     bool anaglyph;
 
     double fog_color_red;
@@ -102,8 +91,6 @@ struct mc_settings {
     int should_render_clouds;
 
     int render_distance;
-
-    bool render_menu;           //!< Controlled by F1
 
     bool has_blindness;         //!< Some potion effect I think
 };
