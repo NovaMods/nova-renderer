@@ -99,8 +99,9 @@ namespace nova {
         }
 
         gl_shader_program::~gl_shader_program() {
-            LOG(DEBUG) << "Deleting program " << gl_name;
-            glDeleteProgram(gl_name);
+            // Commented because move semantics are hard
+            //LOG(DEBUG) << "Deleting program " << gl_name;
+            //glDeleteProgram(gl_name);
         }
 
         void gl_shader_program::link_to_uniform_buffer(const model::gl_uniform_buffer &buffer) noexcept {

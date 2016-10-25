@@ -48,6 +48,7 @@ namespace nova {
 
             if(!gladLoadGL()) {
                 LOG(FATAL) << "Could not load OpenGL";
+                return -1;
             }
 
             const GLubyte *vendor = glGetString(GL_VENDOR);

@@ -9,7 +9,8 @@
   },
   "readOnly": {
     "uboBindPoints": {
-      "cameraData": 20
+      "per_frame_uniforms": 0,
+      "gui_uniforms": 20
     }
   }
 }

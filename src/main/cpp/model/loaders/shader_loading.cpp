@@ -118,7 +118,7 @@ namespace nova {
                 if(stream.good()) {
                     return read_shader_stream(stream, shader_path);
                 } else {
-                    LOG(WARNING) << "Could not read file " << shader_path;
+                    LOG(WARNING) << "Could not read file " << full_shader_path;
                 }
             }
 
