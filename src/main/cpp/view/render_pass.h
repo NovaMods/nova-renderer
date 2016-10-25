@@ -31,7 +31,6 @@ namespace nova {
 
             std::vector<model::gl_mesh> meshes_to_draw;
         };
-
         struct shadow_stage {
             std::vector<render_pass> meshes_to_draw;
 

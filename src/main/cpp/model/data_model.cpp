@@ -57,6 +57,7 @@ namespace nova {
                 LOG(DEBUG) << "Rebuilding GUI geometry";
                 cur_gui_screen = *screen;
                 meshes.build_geometry(cur_gui_screen);
+                LOG(DEBUG) << "Geometry re-built";
             }
         }
 

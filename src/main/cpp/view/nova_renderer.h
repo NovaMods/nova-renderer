@@ -92,13 +92,13 @@ namespace nova {
             //! This is a pointer so I can initialize it later
             static std::unique_ptr<std::thread> render_thread;
 
-            /* Data in View */
-
-            uniform_buffer_store ubo_manager;
-
             /* Data in Controller */
 
             glfw_gl_window game_window;
+
+            /* Data in View */
+
+            uniform_buffer_store ubo_manager;
 
             /* Data in model */
 

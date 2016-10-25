@@ -16,7 +16,7 @@ namespace nova {
 
             render_objects_lock.lock();
             for(auto& renderable_object : renderable_objects) {
-                if(filter(renderable_object)) {
+                if(filter(renderable_object)) { // here
                     meshes.push_back(&renderable_object);
                 }
             }
