@@ -1,9 +1,4 @@
-#include <thread>
-#include <chrono>
-
-#include <unistd.h>
-
-#include "mc_interface/nova.h"
+#include <gtest/gtest.h>
 
 void fill_render_command(mc_render_command &command);
 
@@ -47,4 +42,9 @@ void fill_render_command(mc_render_command &command) {
     command.render_world_params.camera_x = 0;
     command.render_world_params.camera_y = 0;
     command.render_world_params.camera_z = 0;
+}
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
