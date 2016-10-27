@@ -34,11 +34,12 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 # need to compile GLFW and JSON
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/glfw")
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/json")
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/glm")
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/easyloggingpp")
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/miniz")
+add_subdirectory("${3RD_PARTY_DIR}/glfw")
+add_subdirectory("${3RD_PARTY_DIR}/json")
+add_subdirectory("${3RD_PARTY_DIR}/glm")
+add_subdirectory("${3RD_PARTY_DIR}/easyloggingpp")
+add_subdirectory("${3RD_PARTY_DIR}/miniz")
+add_subdirectory("${3RD_PARTY_DIR}/googletest")
 
 include_directories(SYSTEM
         "${3RD_PARTY_DIR}/glfw/include"
@@ -46,7 +47,9 @@ include_directories(SYSTEM
         "${3RD_PARTY_DIR}/glad/include"
         "${3RD_PARTY_DIR}/glm"
         "${3RD_PARTY_DIR}/miniz"
-        "${3RD_PARTY_DIR}/json/src")
+        "${3RD_PARTY_DIR}/json/src"
+        "${3RD_PARTY_DIR}/googletest/googletest/include"
+        )
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
 
@@ -127,7 +130,8 @@ set(NOVA_SOURCE
 
         model/shaders/shader_facade.cpp
         model/geometry_cache/mesh_accessor.cpp
-        model/physics/AABB.cpp )
+        model/physics/AABB.cpp
+        )
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
@@ -178,7 +182,7 @@ source_group("test" FILES ${TEST_SOURCE_FILES} ${TEST_HEADERS})
 add_executable(nova-test ${TEST_SOURCE_FILES})
 add_dependencies(nova-test nova-renderer-static)
 target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
-target_link_libraries(nova-test nova-renderer-static ${COMMON_LINK_LIBS})
+target_link_libraries(nova-test nova-renderer-static gtest ${COMMON_LINK_LIBS})
 set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test")
 
 # Needed for a similar reason as the libary
