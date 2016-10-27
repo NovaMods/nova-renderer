@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <utils/export.h>
 
 #include "model/shaders/gl_shader_program.h"
 #include "shader_source_structs.h"
@@ -67,30 +68,9 @@ namespace nova {
          * \param shader_path The path to the shader file (useful mostly for includes)
          * \return A list of shader_line objects
          */
-        std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
+        NOVA_EXPORT std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
 
         std::vector<shader_line> load_included_file(const std::string& shader_path, const std::string& line);
-
-        /*!
-         * \brief Holds the name of all the shaders to load
-         *
-         * As we add more shaders, we should add their names to this vector
-         */
-        std::vector<std::string> shader_names = {
-                "gui"
-        };
-
-        std::vector<std::string> fragment_extensions = {
-                ".fsh",
-                ".frag",
-                ".frag.spv"
-        };
-
-        std::vector<std::string> vertex_extensions = {
-                ".vsh",
-                ".vert",
-                ".vert.spv"
-        };
     }
 }
 

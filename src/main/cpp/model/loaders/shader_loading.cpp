@@ -14,6 +14,27 @@
 
 namespace nova {
     namespace model {
+        /*!
+         * \brief Holds the name of all the shaders to load
+         *
+         * As we add more shaders, we should add their names to this vector
+         */
+        std::vector<std::string> shader_names = {
+                "gui"
+        };
+
+        std::vector<std::string> fragment_extensions = {
+                ".fsh",
+                ".frag",
+                ".frag.spv"
+        };
+
+        std::vector<std::string> vertex_extensions = {
+                ".vsh",
+                ".vert",
+                ".vert.spv"
+        };
+
         std::unordered_map<std::string, gl_shader_program> load_shaderpack(const std::string& shaderpack_name) {
             std::unordered_map<std::string, gl_shader_program> shaderpack;
 
