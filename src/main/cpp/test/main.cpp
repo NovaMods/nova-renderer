@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
-void fill_render_command(mc_render_command &command);
+#include <easylogging++.h>
+INITIALIZE_EASYLOGGINGPP
+
+/*void fill_render_command(mc_render_command &command);
 
 int main() {
     // Open the window first, so we have an OpenGL context to play with
@@ -43,7 +46,7 @@ void fill_render_command(mc_render_command &command) {
     command.render_world_params.camera_y = 0;
     command.render_world_params.camera_z = 0;
 }
-
+*/
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

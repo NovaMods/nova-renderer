@@ -130,8 +130,7 @@ set(NOVA_SOURCE
 
         model/shaders/shader_facade.cpp
         model/geometry_cache/mesh_accessor.cpp
-        model/physics/AABB.cpp
-        )
+        model/physics/AABB.cpp)
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
@@ -172,6 +171,8 @@ target_link_libraries(nova-renderer-static ${COMMON_LINK_LIBS})
 # Setup the nova-test executable
 set(TEST_SOURCE_FILES
         test/main.cpp
+
+        test/model/loaders/shader_loading_test.cpp
         )
 
 set(TEST_HEADERS
@@ -180,10 +181,10 @@ set(TEST_HEADERS
 source_group("test" FILES ${TEST_SOURCE_FILES} ${TEST_HEADERS})
 
 add_executable(nova-test ${TEST_SOURCE_FILES})
-add_dependencies(nova-test nova-renderer-static)
+add_dependencies(nova-test nova-renderer)
 target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
-target_link_libraries(nova-test nova-renderer-static gtest ${COMMON_LINK_LIBS})
-set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test")
+target_link_libraries(nova-test nova-renderer gtest ${COMMON_LINK_LIBS})
+set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # Needed for a similar reason as the libary
 if (MSVC)
