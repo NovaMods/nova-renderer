@@ -149,7 +149,7 @@ namespace nova {
         std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path) {
             std::vector<shader_line> file_source;
             std::string line;
-            auto line_counter = 0;
+            auto line_counter = 1;
             while(std::getline(stream, line, '\n')) {
                 if(line.find("#include") == 0) {
                     auto included_file = load_included_file(shader_path, line);

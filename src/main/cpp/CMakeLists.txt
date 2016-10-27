@@ -130,7 +130,8 @@ set(NOVA_SOURCE
 
         model/shaders/shader_facade.cpp
         model/geometry_cache/mesh_accessor.cpp
-        model/physics/AABB.cpp)
+        model/physics/AABB.cpp
+        )
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
@@ -173,6 +174,7 @@ set(TEST_SOURCE_FILES
         test/main.cpp
 
         test/model/loaders/shader_loading_test.cpp
+        test/model/shaders/shader_facade_test.cpp
         )
 
 set(TEST_HEADERS

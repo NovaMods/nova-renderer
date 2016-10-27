@@ -13,6 +13,7 @@
 #include <string>
 #include <functional>
 #include <initializer_list>
+#include <utils/export.h>
 #include "gl_shader_program.h"
 #include "model/geometry_cache/render_object.h"
 
@@ -21,7 +22,7 @@ namespace nova {
         /*!
          * \brief Holds all the filters that a shader might need
          */
-        class shader_tree_node {
+        NOVA_EXPORT class shader_tree_node {
         public:
             std::string shader_name;
 
