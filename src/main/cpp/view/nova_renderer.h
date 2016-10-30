@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <thread>
+#include "utils/export.h"
 #include "model/data_model.h"
 
 #include "interfaces/iwindow.h"
@@ -35,7 +36,7 @@ namespace nova {
          * flags that specify rendering commands are available. However, I'm using atomics for those, so I don't expect too many
          * problems. If I notice the renderer missing render commands, I'll re-evaluate the data integrity scheme
          */
-        class nova_renderer {
+        class NOVA_EXPORT nova_renderer {
         public:
             /*!
              * \brief A singleton for the nova_renderer instance
