@@ -5,6 +5,7 @@
  * \date 27-Sep-16.
  */
 
+#include <stdlib.h>
 #include "mesh_accessor.h"
 
 #include "model/geometry_cache/builders/gui_geometry_builder.h"
@@ -34,10 +35,14 @@ namespace nova {
         }
 
         void mesh_accessor::build_geometry(mc_gui_screen &screen) {
-            model::gl_mesh gui_object = build_gui_geometry(screen);
+            gl_mesh gui_object = build_gui_geometry(screen);
 
+            // This is a hack. I'm sorry. I just want to Make It Work before refactoring the RAII away from OpenGL
+            // objects
+            // TODO: Fix this
             render_object gui = {};
-            gui.geometry = std::move(gui_object);
+            gui.geometry = (gl_mesh*)malloc(sizeof(gl_mesh));
+            *gui.geometry = std::move(gui_object);
             gui.type = geometry_type::gui;
             gui.name = "gui";
 

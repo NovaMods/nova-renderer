@@ -10,6 +10,7 @@
 #include "interfaces/ivertex_buffer.h"
 #include <glad/glad.h>
 #include "model/physics/AABB.h"
+#include "utils/export.h"
 
 namespace nova {
     namespace model {
@@ -19,7 +20,7 @@ namespace nova {
          * Buffers of this type can hold positions, positions and texture coordinates, or positions, texture coordinates,
          * lightmap coordinates, normals, and tangents.
          */
-        class gl_mesh : public ivertex_buffer {
+        class NOVA_EXPORT gl_mesh : public ivertex_buffer {
         public:
             gl_mesh();
 

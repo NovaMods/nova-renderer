@@ -22,7 +22,7 @@ namespace nova {
          * Note that the GUI screen does not include things like the spinning background on the main menu screen, because
          * that's going to be rendered as if it was a scene
          */
-        model::gl_mesh build_gui_geometry(mc_gui_screen &cur_screen);
+        gl_mesh build_gui_geometry(mc_gui_screen &cur_screen);
     }
 }
 

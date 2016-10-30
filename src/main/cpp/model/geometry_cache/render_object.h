@@ -9,6 +9,7 @@
 #define RENDERER_RENDER_OBJECT_H
 
 #include <string>
+#include <memory>
 #include "model/gl/gl_mesh.h"
 
 namespace nova {
@@ -73,7 +74,7 @@ namespace nova {
              */
             std::string name;
 
-            gl_mesh geometry;
+            gl_mesh* geometry;
         };
     }
 }

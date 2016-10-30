@@ -22,14 +22,14 @@ namespace nova {
         /*!
          * \brief Holds all the filters that a shader might need
          */
-        NOVA_EXPORT class shader_tree_node {
+        class NOVA_EXPORT shader_tree_node {
         public:
             std::string shader_name;
 
-            shader_tree_node(std::string name);
-            shader_tree_node(std::string name, std::initializer_list<shader_tree_node> children);
+            shader_tree_node(std::string name, std::function<bool(const render_object&)> filter);
+            shader_tree_node(std::string name, std::function<bool(const render_object&)> filter, std::vector<shader_tree_node> children);
 
-            void calculate_filters(std::unordered_map<std::string, std::function<bool(const render_object&)>> filters, std::vector<std::string> loaded_shaders);
+            void calculate_filters(std::vector<std::string> loaded_shaders);
 
             std::function<bool(const render_object&)> get_filter_function();
 
@@ -42,7 +42,8 @@ namespace nova {
             void foreach_df(std::function<void(shader_tree_node&)> f);
 
         private:
-            std::vector<std::function<bool(const render_object&)>> filters;
+            std::vector<std::function<bool(const render_object&)>> filters; // Instance variable so it doesn't get cleaned up
+            std::function<bool(const render_object&)> filter;
 
             std::vector<shader_tree_node> children;
         };

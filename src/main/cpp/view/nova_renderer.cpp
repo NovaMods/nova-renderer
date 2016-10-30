@@ -84,7 +84,7 @@ namespace nova {
 
             std::vector<model::render_object*> gui_geometry = model.get_mesh_accessor().get_meshes_for_filter(gui_shader.get_filter());
             for(const auto* geom : gui_geometry) {
-                geom->geometry.draw();
+                geom->geometry->draw();
             }
         }
 
