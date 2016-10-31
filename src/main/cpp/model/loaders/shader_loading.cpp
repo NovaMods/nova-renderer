@@ -112,9 +112,9 @@ namespace nova {
          * \param include_line The line with the #include statement on it
          * \return The filename that is being included
          */
-        auto get_filename_from_include(const std::string include_line) {
+        std::string get_filename_from_include(const std::string include_line) {
             auto quote_pos = include_line.find('"');
-            return include_line.substr(quote_pos + 1, include_line.size() - quote_pos);
+            return include_line.substr(quote_pos + 1, include_line.size() - quote_pos - 2);
         }
 
         auto get_included_file_path(const std::string& shader_path, const std::string& included_file_name) {
@@ -177,7 +177,8 @@ namespace nova {
                 const std::string& shaderpack_name,
                 const std::vector<std::string>& shader_names
         ) {
-            LOG(WARNING) << "Cannot load zipped shaderpack " << shaderpack_name;
+            LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
+            return {};
         }
     }
 }

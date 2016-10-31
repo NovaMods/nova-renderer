@@ -38,10 +38,13 @@ TEST(shader_tree_node, calculate_filters_one_child) {
                 return geom.type == nova::model::geometry_type::block && !geom.is_transparent;
             },
             {
-            nova::model::shader_tree_node("gbuffers_damaged_block", [](const auto &geom) {
-                return geom.type == nova::model::geometry_type::block && geom.is_transparent;;
-            })
-    });
+                    nova::model::shader_tree_node(
+                            "gbuffers_damaged_block", [](const auto &geom) {
+                                return geom.type == nova::model::geometry_type::block && geom.is_transparent;
+                            }
+                    )
+            }
+    );
 
     auto loaded_shaders = std::vector<std::string>{"gbuffers_terrain"};
 
@@ -64,3 +67,4 @@ TEST(shader_tree_node, calculate_filters_one_child) {
     EXPECT_EQ(true, filter_function(damaged_block)) << "Filter function did not accept a damaged block!";
     EXPECT_EQ(false, filter_function(cloud)) << "Filter function did not reject a cloud!";
 }
+
