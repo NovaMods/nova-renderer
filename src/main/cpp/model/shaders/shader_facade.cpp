@@ -6,7 +6,6 @@
  */
 
 #include "shader_facade.h"
-#include <algorithm>
 
 namespace nova {
     namespace model {
@@ -137,6 +136,19 @@ namespace nova {
                         }
                     }
             );
+
+            // Save the filters for the shaders that don't exist in the gbuffers tree
+            for(auto& item : loaded_shaders) {
+                if(item.first == "gui") {
+                    item.second.set_filter([](const auto& geom) {return geom.type == geometry_type::gui;});
+
+                } else if(item.first.find("composite") == 0 || item.first == "final") {
+                    item.second.set_filter([](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;});
+
+                } else if(item.first.find("shadow") == 0) {
+                    item.second.set_filter([](const auto& geom) {return geom.type != geometry_type::fullscreen_quad;});
+                }
+            }
         }
 
         gl_shader_program& shader_facade::operator[](std::string key) {

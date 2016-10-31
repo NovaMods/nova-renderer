@@ -70,7 +70,11 @@ namespace nova {
          */
         NOVA_EXPORT std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
 
-        std::vector<shader_line> load_included_file(const std::string& shader_path, const std::string& line);
+        NOVA_EXPORT std::vector<shader_line> load_included_file(const std::string& shader_path, const std::string& line);
+
+        auto get_included_file_path(const std::string& shader_path, const std::string& included_file_name);
+
+        NOVA_EXPORT std::string get_filename_from_include(const std::string include_line);
     }
 }
 
