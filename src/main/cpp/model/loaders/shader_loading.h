@@ -43,7 +43,7 @@ namespace nova {
          * \param shader_names The list of names of shaders to load
          * \return A map from shader name to shader source
          */
-        std::unordered_map<std::string, shader_source> load_sources_from_folder(
+        NOVA_API std::unordered_map<std::string, shader_source> load_sources_from_folder(
                 const std::string& shaderpack_name,
                 const std::vector<std::string>& shader_names
         );
@@ -59,7 +59,7 @@ namespace nova {
          * \param extensions A list of extensions to try
          * \return The full source of the shader file
          */
-        std::vector<shader_line> load_shader_file(const std::string& shader_path, const std::vector<std::string>& extensions);
+        NOVA_API std::vector<shader_line> load_shader_file(const std::string& shader_path, const std::vector<std::string>& extensions);
 
         /*!
          * \brief Loads the shader file from the provided istream
@@ -68,13 +68,13 @@ namespace nova {
          * \param shader_path The path to the shader file (useful mostly for includes)
          * \return A list of shader_line objects
          */
-        NOVA_EXPORT std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
+        NOVA_API std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
 
-        NOVA_EXPORT std::vector<shader_line> load_included_file(const std::string& shader_path, const std::string& line);
+        NOVA_API std::vector<shader_line> load_included_file(const std::string& shader_path, const std::string& line);
 
         auto get_included_file_path(const std::string& shader_path, const std::string& included_file_name);
 
-        NOVA_EXPORT std::string get_filename_from_include(const std::string include_line);
+        NOVA_API std::string get_filename_from_include(const std::string include_line);
     }
 }
 
