@@ -137,7 +137,7 @@ namespace nova {
 
                 std::ifstream stream(full_shader_path, std::ios::in);
                 if(stream.good()) {
-                    return read_shader_stream(stream, shader_path);
+                    return read_shader_stream(stream, full_shader_path);
                 } else {
                     LOG(WARNING) << "Could not read file " << full_shader_path;
                 }

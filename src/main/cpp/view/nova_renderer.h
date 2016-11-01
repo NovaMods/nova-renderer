@@ -36,7 +36,7 @@ namespace nova {
          * flags that specify rendering commands are available. However, I'm using atomics for those, so I don't expect too many
          * problems. If I notice the renderer missing render commands, I'll re-evaluate the data integrity scheme
          */
-        class NOVA_EXPORT nova_renderer {
+        class NOVA_API nova_renderer {
         public:
             /*!
              * \brief A singleton for the nova_renderer instance

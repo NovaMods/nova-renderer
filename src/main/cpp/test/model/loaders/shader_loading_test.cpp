@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <model/loaders/shader_loading.h>
+#include <utils/utils.h>
 
 TEST(shader_loading, read_shader_stream_no_includes) {
     auto shader_path = "shaderpacks/default/shaders/gui.frag";
@@ -76,4 +77,80 @@ TEST(shader_loading, load_included_file) {
     EXPECT_EQ(line_5.line_num, 5);
     EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
     EXPECT_EQ(line_5.line, "in vec2 uv;");
+}
+
+TEST(shader_loading, load_shader_file_no_includes_no_extensions) {
+    auto shader_path = "shaderpacks/default/shaders/gui";
+    auto extensions = std::vector<std::string>{"", ".zip", ".docx"};
+
+    EXPECT_THROW(nova::model::load_shader_file(shader_path, extensions), nova::resource_not_found);
+}
+
+TEST(shader_loading, load_shader_file_no_inlcudes_one_extension) {
+    auto shader_path = "shaderpacks/default/shaders/gui";
+    auto extensions = std::vector<std::string>{".frag"};
+
+    auto shader_file = nova::model::load_shader_file(shader_path, extensions);
+
+    EXPECT_EQ(shader_file.size(), 13);
+
+    auto line_5 = shader_file[4];
+    EXPECT_EQ(line_5.line_num, 5);
+    EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
+    EXPECT_EQ(line_5.line, "in vec2 uv;");
+}
+
+TEST(shader_loading, load_shader_file_no_includes_two_extensions) {
+    auto shader_path = "shaderpacks/default/shaders/gui";
+    auto extensions = std::vector<std::string>{".fsh", ".frag"};
+
+    auto shader_file = nova::model::load_shader_file(shader_path, extensions);
+
+    EXPECT_EQ(shader_file.size(), 13);
+
+    auto line_5 = shader_file[4];
+    EXPECT_EQ(line_5.line_num, 5);
+    EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
+    EXPECT_EQ(line_5.line, "in vec2 uv;");
+}
+
+TEST(shader_loading, load_shader_file_one_include_one_extension) {
+    auto shader_path = "shaderpacks/default/shaders/gui_with_include";
+    auto extensions = std::vector<std::string>{".frag"};
+
+    auto shader_file = nova::model::load_shader_file(shader_path, extensions);
+
+    EXPECT_EQ(shader_file.size(), 27);
+
+    auto line_5 = shader_file[4];
+    EXPECT_EQ(line_5.line_num, 3);
+    EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
+    EXPECT_EQ(line_5.line, "layout(binding = 0) uniform sampler2D colortex;");
+
+    auto line_18 = shader_file[16];
+    EXPECT_EQ(line_18.line_num, 5);
+    EXPECT_EQ(line_18.shader_name, "shaderpacks/default/shaders/gui_with_include.frag");
+    EXPECT_EQ(line_18.line, "layout(binding = 0) uniform sampler2D colortex;");
+}
+
+TEST(shader_loading, load_sources_from_folder) {
+    auto shaderpack_name = "default";
+    auto shader_names = std::vector<std::string>{"gui"};
+
+    auto shaderpack = nova::model::load_sources_from_folder(shaderpack_name, shader_names);
+
+    auto gui_location = shaderpack.find("gui");
+
+    ASSERT_NE(gui_location, shaderpack.end());
+
+    auto gui_shader = gui_location->second;
+    auto fragment_source = gui_shader.fragment_source;
+
+    EXPECT_EQ(fragment_source.size(), 13);
+
+    auto line_5 = fragment_source[4];
+    EXPECT_EQ(line_5.line_num, 5);
+    EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
+
+    auto vertex_source = gui_shader.vertex_source;
 }

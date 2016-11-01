@@ -22,7 +22,7 @@ namespace nova {
         /*!
          * \brief Holds all the filters that a shader might need
          */
-        class NOVA_EXPORT shader_tree_node {
+        class NOVA_API shader_tree_node {
         public:
             std::string shader_name;
 

@@ -20,7 +20,7 @@ namespace nova {
          * Buffers of this type can hold positions, positions and texture coordinates, or positions, texture coordinates,
          * lightmap coordinates, normals, and tangents.
          */
-        class NOVA_EXPORT gl_mesh : public ivertex_buffer {
+        class NOVA_API gl_mesh : public ivertex_buffer {
         public:
             gl_mesh();
 
