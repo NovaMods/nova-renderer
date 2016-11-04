@@ -6,9 +6,9 @@
 #ifndef RENDERER_GL_UNIFORM_BUFFER_H
 #define RENDERER_GL_UNIFORM_BUFFER_H
 
+#include <string>
 #include <glad/glad.h>
-#include <easylogging++.h>
-#include <pthread.h>
+
 namespace nova {
     namespace model {
 /*!

@@ -171,6 +171,8 @@ target_link_libraries(nova-renderer-static ${COMMON_LINK_LIBS})
 
 # Setup the nova-test executable
 set(TEST_SOURCE_FILES
+        3rdparty/glad/src/glad.c
+
         test/main.cpp
 
         test/model/loaders/shader_loading_test.cpp
