@@ -23,7 +23,7 @@ namespace nova {
          * \param shaderpack_name The name of the shaderpack to load
          * \return The loaded shaderpack
          */
-        std::unordered_map<std::string, gl_shader_program> load_shaderpack(const std::string& shaderpack_name);
+        NOVA_API std::unordered_map<std::string, gl_shader_program> load_shaderpack(const std::string& shaderpack_name);
     }
 }
 

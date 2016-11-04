@@ -5,6 +5,8 @@
  * \date 04-Sep-16.
  */
 
+#include <easylogging++.h>
+
 #include "data_model.h"
 
 #include "loaders/loaders.h"

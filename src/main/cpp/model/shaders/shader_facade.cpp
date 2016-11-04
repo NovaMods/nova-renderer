@@ -6,6 +6,7 @@
  */
 
 #include "shader_facade.h"
+#include <algorithm>
 
 namespace nova {
     namespace model {

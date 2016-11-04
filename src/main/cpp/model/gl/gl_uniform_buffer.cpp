@@ -3,6 +3,8 @@
  * \date 22-May-16.
  */
 
+#include <easylogging++.h>
+
 #include "gl_uniform_buffer.h"
 
 namespace nova {

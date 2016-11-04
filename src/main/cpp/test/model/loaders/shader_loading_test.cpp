@@ -5,10 +5,14 @@
  * \date 26-Oct-16.
  */
 
+#include <fstream>
+
 #include <gtest/gtest.h>
 
 #include <model/loaders/shader_loading.h>
+#include <model/loaders/loaders.h>
 #include <utils/utils.h>
+#include <view/nova_renderer.h>
 
 TEST(shader_loading, read_shader_stream_no_includes) {
     auto shader_path = "shaderpacks/default/shaders/gui.frag";
@@ -151,6 +155,29 @@ TEST(shader_loading, load_sources_from_folder) {
     auto line_5 = fragment_source[4];
     EXPECT_EQ(line_5.line_num, 5);
     EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
+    EXPECT_EQ(line_5.line, "in vec2 uv;");
 
     auto vertex_source = gui_shader.vertex_source;
+
+    auto line_6 = vertex_source[5];
+    EXPECT_EQ(line_6.line_num, 6);
+    EXPECT_EQ(line_6.shader_name, "shaderpacks/default/shaders/gui.vert");
+    EXPECT_EQ(line_6.line, "layout(binding = 20, std140) uniform gui_uniforms {");
+}
+
+TEST(shader_loading, load_shaderpack_folder) {
+    nova::view::nova_renderer::init_instance();
+
+    auto shaderpack_name = "default";
+
+    auto shaderpack = nova::model::load_shaderpack(shaderpack_name);
+
+    auto gui_location = shaderpack.find("gui");
+
+    ASSERT_NE(gui_location, shaderpack.end());
+
+    auto gui_shader = gui_location->second;
+    GLuint shader_gl_name = gui_shader.gl_name;
+
+    ASSERT_TRUE(glIsShader(shader_gl_name));
 }
