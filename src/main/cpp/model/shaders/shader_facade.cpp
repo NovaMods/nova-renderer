@@ -120,8 +120,8 @@ namespace nova {
         void shader_facade::build_filters() {
             // Which shaders are actually loaded?
             std::vector<std::string> loaded_shader_names;
-            loaded_shader_names.reserve(loaded_shaders.size());
-            for(auto kv : loaded_shaders) {
+            loaded_shader_names.reserve(shader_definitions.size());
+            for(auto kv : shader_definitions) {
                 loaded_shader_names.push_back(kv.first);
             }
 
@@ -131,37 +131,45 @@ namespace nova {
             // Save the filter with the shader that uses it
             gbuffers_shaders.foreach_df(
                     [&](auto &node) {
-                        if(loaded_shaders.find(node.shader_name) != loaded_shaders.end()) {
+                        if(shader_definitions.find(node.shader_name) != shader_definitions.end()) {
                             // If we've loaded this shader, let's set its filtering function as the filtering function for the shader
-                            loaded_shaders[node.shader_name].set_filter(node.get_filter_function());
+                            filters[node.shader_name] = node.get_filter_function();
                         }
                     }
             );
 
             // Save the filters for the shaders that don't exist in the gbuffers tree
-            for(auto& item : loaded_shaders) {
+            for(auto& item : shader_definitions) {
                 if(item.first == "gui") {
-                    item.second.set_filter([](const auto& geom) {return geom.type == geometry_type::gui;});
+                    filters["gui"] = [](const auto& geom) {return geom.type == geometry_type::gui;};
 
                 } else if(item.first.find("composite") == 0 || item.first == "final") {
-                    item.second.set_filter([](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;});
+                    filters[item.first] = [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;};
 
                 } else if(item.first.find("shadow") == 0) {
-                    item.second.set_filter([](const auto& geom) {return geom.type != geometry_type::fullscreen_quad;});
+                    filters[item.first] = [](const auto& geom) {return geom.type != geometry_type::fullscreen_quad;};
                 }
             }
         }
 
-        gl_shader_program& shader_facade::operator[](std::string key) {
-            return loaded_shaders[key];
+        shader_definition& shader_facade::operator[](std::string key) const {
+            return shader_definitions[key];
         }
 
-        void shader_facade::operator=(std::unordered_map<std::string, gl_shader_program>&& shaders) {
-            loaded_shaders = shaders;
+        void shader_facade::operator=(std::unordered_map<std::string, shader_definition>&& shaders) {
+            shader_definitions = shaders;
         }
 
-        std::unordered_map<std::string, gl_shader_program> &shader_facade::get_loaded_shaders() {
-            return loaded_shaders;
+        std::unordered_map<std::string, shader_definition> &shader_facade::get_loaded_shaders() const {
+            return shader_definitions;
+        }
+
+        void shader_facade::upload_shaders() {
+            for(const auto& shader : shader_definitions) {
+                loaded_shaders.erase(shader.first);
+                loaded_shaders.emplace(shader.first, gl_shader_program(shader.first, shader.second));
+                loaded_shaders[shader.first].set_filter(filters[shader.first]);
+            }
         }
     }
 }

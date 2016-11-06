@@ -8,6 +8,7 @@
 #ifndef RENDERER_MODEL_H
 #define RENDERER_MODEL_H
 
+#include <atomic>
 #include "model/geometry_cache/mesh_accessor.h"
 #include "model/shaders/shader_facade.h"
 #include "settings.h"
@@ -23,6 +24,8 @@ namespace nova {
          */
         class data_model : public iconfig_listener {
         public:
+            std::atomic<bool> has_new_shaderpack;
+
             data_model();
 
             /*!
@@ -42,13 +45,13 @@ namespace nova {
              */
             void set_gui_screen(mc_gui_screen* screen);
 
-            shader_facade& get_shader_facade();
+            shader_facade& get_shader_facade() const;
 
-            texture_manager& get_texture_manager();
+            texture_manager& get_texture_manager() const;
 
-            settings& get_render_settings();
+            settings& get_render_settings() const;
 
-            mesh_accessor& get_mesh_accessor();
+            mesh_accessor& get_mesh_accessor() const;
 
             /* From iconfig_listener */
 
@@ -63,6 +66,8 @@ namespace nova {
             std::string loaded_shaderpack_name;
             mc_gui_screen cur_gui_screen;
             mesh_accessor meshes;
+
+            std::mutex shaderpack_reading_guard;
 
             void load_new_shaderpack(const std::string &new_shaderpack_name) noexcept;
         };

@@ -35,10 +35,8 @@ namespace nova {
                 ".vert.spv"
         };
 
-        std::unordered_map<std::string, gl_shader_program> load_shaderpack(const std::string& shaderpack_name) {
-            std::unordered_map<std::string, gl_shader_program> shaderpack;
-
-            auto shader_sources = std::unordered_map<std::string, shader_source>{};
+        std::unordered_map<std::string, shader_definition> load_shaderpack(const std::string& shaderpack_name) {
+            auto shader_sources = std::unordered_map<std::string, shader_definition>{};
             if(is_zip_file(shaderpack_name)) {
                 LOG(TRACE) << "Loading shaderpack " << shaderpack_name << " from a zip file";
                 shader_sources = load_sources_from_zip_file(shaderpack_name, shader_names);
@@ -47,23 +45,21 @@ namespace nova {
                 shader_sources = load_sources_from_folder(shaderpack_name, shader_names);
             }
 
-            foreach(shader_sources, [&](auto item) {shaderpack.emplace(item.first, gl_shader_program(item.first, item.second));} );
-
-            return shaderpack;
+            return shader_sources;
         }
 
-        std::unordered_map<std::string, shader_source> load_sources_from_folder(
+        std::unordered_map<std::string, shader_definition> load_sources_from_folder(
                 const std::string& shaderpack_name,
                 const std::vector<std::string>& shader_names
         ) {
-            std::unordered_map<std::string, shader_source> sources;
+            std::unordered_map<std::string, shader_definition> sources;
 
             for(auto& name : shader_names) {
                 try {
                     // All shaderpacks are in the shaderpacks folder
                     auto shader_path = "shaderpacks/" + shaderpack_name + "/shaders/" + name;
 
-                    shader_source full_shader_source = {
+                    shader_definition full_shader_source = {
                             load_shader_file(shader_path, vertex_extensions),
                             load_shader_file(shader_path, fragment_extensions)
                     };
@@ -173,7 +169,7 @@ namespace nova {
             return load_shader_file(file_to_include, {""});
         }
 
-        std::unordered_map<std::string, shader_source> load_sources_from_zip_file(
+        std::unordered_map<std::string, shader_definition> load_sources_from_zip_file(
                 const std::string& shaderpack_name,
                 const std::vector<std::string>& shader_names
         ) {
