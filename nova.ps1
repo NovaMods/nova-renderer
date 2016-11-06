@@ -115,6 +115,9 @@ function New-NovaEnvironment {
     Write-Host "Downloading GLM..."
     git submodule update --init -- src/main/cpp/3rdparty/glm
 
+    Write-Host "Downloading googletest..."
+    git submodule update --init -- src/main/cpp/3rdparty/googletest
+
     Write-Host "Nova set up successfully"
 }
 
