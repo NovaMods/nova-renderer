@@ -27,8 +27,6 @@ namespace nova {
             model.get_render_settings().register_change_listener(&ubo_manager);
             model.trigger_config_update();
 
-            link_up_uniform_buffers(model.get_shader_facade().get_loaded_shaders(), ubo_manager);
-
             enable_debug();
 
             init_opengl_state();
@@ -179,19 +177,19 @@ namespace nova {
             glDebugMessageCallback(debug_logger, NULL);
         }
 
-        void nova_renderer::link_up_uniform_buffers(std::unordered_map<std::string, model::gl_shader_program>& shaders,
-                                                    nova::view::uniform_buffer_store &ubos) {
-            nova::foreach(shaders, [&](auto shader) { ubos.register_all_buffers_with_shader(shader.second); });
-        }
-
         model::data_model &nova_renderer::get_model() {
             return model;
         }
 
-        void nova_renderer::check_for_new_shaders() const {
+        void nova_renderer::check_for_new_shaders() {
             if(model.has_new_shaderpack) {
                 model.get_shader_facade().upload_shaders();
+                link_up_uniform_buffers(model.get_shader_facade().get_loaded_shaders(), ubo_manager);
             }
+        }
+
+        void link_up_uniform_buffers(std::unordered_map<std::string, model::gl_shader_program>& shaders, const uniform_buffer_store &ubos) {
+            nova::foreach(shaders, [&](auto shader) { ubos.register_all_buffers_with_shader(shader.second); });
         }
     }
 }

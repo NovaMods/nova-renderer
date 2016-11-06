@@ -45,13 +45,13 @@ namespace nova {
              */
             void set_gui_screen(mc_gui_screen* screen);
 
-            shader_facade& get_shader_facade() const;
+            shader_facade& get_shader_facade();
 
-            texture_manager& get_texture_manager() const;
+            texture_manager& get_texture_manager();
 
-            settings& get_render_settings() const;
+            settings& get_render_settings();
 
-            mesh_accessor& get_mesh_accessor() const;
+            mesh_accessor& get_mesh_accessor();
 
             /* From iconfig_listener */
 

@@ -120,16 +120,15 @@ namespace nova {
 
             void enable_debug();
 
-            void link_up_uniform_buffers(std::unordered_map<std::string, model::gl_shader_program>& shaders,
-                                         nova::view::uniform_buffer_store &ubos);
-
             void init_opengl_state() const;
 
             /*!
              * \brief Checks if any new shaders have been loaded, and uploads them to the GPU
              */
-            void check_for_new_shaders() const;
+            void check_for_new_shaders();
         };
+
+        void link_up_uniform_buffers(std::unordered_map<std::string, model::gl_shader_program>& shaders, const uniform_buffer_store &ubos);
     }
 }
 
