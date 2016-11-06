@@ -56,11 +56,11 @@ namespace nova {
          */
         class shader_facade {
         public:
-            void operator=(std::unordered_map<std::string, shader_definition>&& shaders);
+            void set_shader_definitions(std::unordered_map<std::string, shader_definition>& definitions);
 
-            shader_definition& operator[](std::string key) const;
+            gl_shader_program& operator[](std::string key);
 
-            std::unordered_map<std::string, shader_definition>& get_loaded_shaders() const;
+            std::unordered_map<std::string, gl_shader_program>& get_loaded_shaders();
 
             /*!
              * \brief

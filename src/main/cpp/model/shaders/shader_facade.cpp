@@ -152,16 +152,16 @@ namespace nova {
             }
         }
 
-        shader_definition& shader_facade::operator[](std::string key) const {
-            return shader_definitions[key];
+        gl_shader_program& shader_facade::operator[](std::string key) {
+            return loaded_shaders[key];
         }
 
-        void shader_facade::operator=(std::unordered_map<std::string, shader_definition>&& shaders) {
-            shader_definitions = shaders;
+        void shader_facade::set_shader_definitions(std::unordered_map<std::string, shader_definition>& definitions) {
+            shader_definitions = definitions;
         }
 
-        std::unordered_map<std::string, shader_definition> &shader_facade::get_loaded_shaders() const {
-            return shader_definitions;
+        std::unordered_map<std::string, gl_shader_program> &shader_facade::get_loaded_shaders() {
+            return loaded_shaders;
         }
 
         void shader_facade::upload_shaders() {

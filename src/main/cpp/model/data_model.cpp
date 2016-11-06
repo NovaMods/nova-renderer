@@ -41,13 +41,13 @@ namespace nova {
 
                 shaderpack_reading_guard.lock();
                 loaded_shaderpack_name = new_shaderpack_name;
-                loaded_shaderpack = std::move(new_shaderpack);
+                loaded_shaderpack.set_shader_definitions(new_shaderpack);
                 has_new_shaderpack = true;
                 shaderpack_reading_guard.unlock();
             }
         }
 
-        shader_facade& data_model::get_shader_facade() const {
+        shader_facade& data_model::get_shader_facade() {
             return loaded_shaderpack;
         }
 
@@ -56,7 +56,7 @@ namespace nova {
             render_settings.update_config_changed();
         }
 
-        texture_manager &data_model::get_texture_manager() const {
+        texture_manager &data_model::get_texture_manager() {
             return textures;
         }
 
@@ -69,11 +69,11 @@ namespace nova {
             }
         }
 
-        settings& data_model::get_render_settings() const {
+        settings& data_model::get_render_settings() {
             return render_settings;
         }
 
-        mesh_accessor &data_model::get_mesh_accessor() const {
+        mesh_accessor &data_model::get_mesh_accessor() {
             return meshes;
         }
 
