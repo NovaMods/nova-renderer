@@ -28,7 +28,7 @@ namespace nova {
          * \param shader_names The list of names of shaders to load
          * \return A map from shader name to shader source
          */
-        std::unordered_map<std::string, shader_source> load_sources_from_zip_file(
+        std::unordered_map<std::string, shader_definition> load_sources_from_zip_file(
                 const std::string& shaderpack_name,
                 const std::vector<std::string>& shader_names
         );
@@ -43,7 +43,7 @@ namespace nova {
          * \param shader_names The list of names of shaders to load
          * \return A map from shader name to shader source
          */
-        NOVA_API std::unordered_map<std::string, shader_source> load_sources_from_folder(
+        NOVA_API std::unordered_map<std::string, shader_definition> load_sources_from_folder(
                 const std::string& shaderpack_name,
                 const std::vector<std::string>& shader_names
         );

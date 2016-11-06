@@ -12,7 +12,7 @@
 
 namespace nova {
     namespace model {
-        gl_shader_program::gl_shader_program(const std::string name, const shader_source& source) : name(name) {
+        gl_shader_program::gl_shader_program(const std::string name, const shader_definition& source) : name(name) {
             // We can handle all the shader programs more or less independently
 
             create_shader(source.vertex_source, GL_VERTEX_SHADER);

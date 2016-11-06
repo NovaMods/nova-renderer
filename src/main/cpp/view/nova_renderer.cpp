@@ -41,6 +41,8 @@ namespace nova {
         }
 
         void nova_renderer::render_frame() {
+            check_for_new_shaders();
+
             // Clear to the clear color
             glClear(GL_COLOR_BUFFER_BIT);
 
@@ -184,6 +186,12 @@ namespace nova {
 
         model::data_model &nova_renderer::get_model() {
             return model;
+        }
+
+        void nova_renderer::check_for_new_shaders() const {
+            if(model.has_new_shaderpack) {
+                model.get_shader_facade().upload_shaders();
+            }
         }
     }
 }

@@ -71,7 +71,7 @@ namespace nova {
             /*!
              * \brief Constructs a gl_shader_program
              */
-            gl_shader_program(const std::string name, const shader_source &source);
+            gl_shader_program(const std::string name, const shader_definition &source);
 
             gl_shader_program(gl_shader_program& other);
 

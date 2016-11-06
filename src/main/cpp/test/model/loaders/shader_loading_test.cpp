@@ -177,7 +177,4 @@ TEST(shader_loading, load_shaderpack_folder) {
     ASSERT_NE(gui_location, shaderpack.end());
 
     auto gui_shader = gui_location->second;
-    GLuint shader_gl_name = gui_shader.gl_name;
-
-    ASSERT_TRUE(glIsShader(shader_gl_name));
 }

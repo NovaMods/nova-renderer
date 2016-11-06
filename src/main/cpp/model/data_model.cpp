@@ -28,20 +28,26 @@ namespace nova {
 
         void data_model::load_new_shaderpack(const std::string &new_shaderpack_name) noexcept {
             if(new_shaderpack_name != loaded_shaderpack_name) {
+                std::unordered_map<std::string, shader_definition> new_shaderpack;
                 try {
                     LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
-                    loaded_shaderpack = load_shaderpack(new_shaderpack_name);
-                    loaded_shaderpack_name = new_shaderpack_name;
+                    new_shaderpack = load_shaderpack(new_shaderpack_name);
 
                 } catch(std::exception& e) {
                     LOG(ERROR) << "Could not load shaderpack " << new_shaderpack_name << ". Reason: " << e.what();
+                    new_shaderpack = load_shaderpack(loaded_shaderpack_name);
                     loaded_shaderpack_name = "default";
-                    loaded_shaderpack = load_shaderpack(loaded_shaderpack_name);
                 }
+
+                shaderpack_reading_guard.lock();
+                loaded_shaderpack_name = new_shaderpack_name;
+                loaded_shaderpack = std::move(new_shaderpack);
+                has_new_shaderpack = true;
+                shaderpack_reading_guard.unlock();
             }
         }
 
-        shader_facade& data_model::get_shader_facade() {
+        shader_facade& data_model::get_shader_facade() const {
             return loaded_shaderpack;
         }
 
@@ -50,7 +56,7 @@ namespace nova {
             render_settings.update_config_changed();
         }
 
-        texture_manager &data_model::get_texture_manager() {
+        texture_manager &data_model::get_texture_manager() const {
             return textures;
         }
 
@@ -63,11 +69,11 @@ namespace nova {
             }
         }
 
-        settings& data_model::get_render_settings() {
+        settings& data_model::get_render_settings() const {
             return render_settings;
         }
 
-        mesh_accessor &data_model::get_mesh_accessor() {
+        mesh_accessor &data_model::get_mesh_accessor() const {
             return meshes;
         }
 

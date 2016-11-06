@@ -124,6 +124,11 @@ namespace nova {
                                          nova::view::uniform_buffer_store &ubos);
 
             void init_opengl_state() const;
+
+            /*!
+             * \brief Checks if any new shaders have been loaded, and uploads them to the GPU
+             */
+            void check_for_new_shaders() const;
         };
     }
 }
