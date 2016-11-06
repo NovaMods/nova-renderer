@@ -100,7 +100,7 @@ function New-NovaEnvironment {
     ..\..\..\..\runtime\bin\applydiff.exe -p0 -i .\nova.diff
     Set-Location ..\..\..\..\
 
-    Write-Host "Downloading GLFW..."
+    Write-Host "Downloading easyloggingpp..."
     git submodule update --init -- src/main/cpp/3rdparty/easyloggingpp
 
     Write-Host "Downloading miniz..."
