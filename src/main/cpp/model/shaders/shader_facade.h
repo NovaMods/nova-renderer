@@ -14,6 +14,7 @@
 #include <functional>
 #include <initializer_list>
 #include <utils/export.h>
+#include <mutex>
 #include "gl_shader_program.h"
 #include "model/geometry_cache/render_object.h"
 
@@ -79,6 +80,9 @@ namespace nova {
             std::unordered_map<std::string, shader_definition> shader_definitions;
             std::unordered_map<std::string, gl_shader_program> loaded_shaders;
             std::unordered_map<std::string, std::function<bool(const render_object&)>> filters;
+
+            //! \brief Protects reading the shader definitions
+            std::mutex shaderpack_reading_guard;
 
             /*!
              * \brief Creates the filters to get the geometry that the current shaderpack needs

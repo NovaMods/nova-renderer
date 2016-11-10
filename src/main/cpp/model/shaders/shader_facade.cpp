@@ -120,6 +120,8 @@ namespace nova {
         void shader_facade::build_filters() {
             // Which shaders are actually loaded?
             std::vector<std::string> loaded_shader_names;
+
+            shaderpack_reading_guard.lock();
             loaded_shader_names.reserve(shader_definitions.size());
             for(auto kv : shader_definitions) {
                 loaded_shader_names.push_back(kv.first);
@@ -150,6 +152,7 @@ namespace nova {
                     filters[item.first] = [](const auto& geom) {return geom.type != geometry_type::fullscreen_quad;};
                 }
             }
+            shaderpack_reading_guard.unlock();
         }
 
         gl_shader_program& shader_facade::operator[](std::string key) {
@@ -157,7 +160,9 @@ namespace nova {
         }
 
         void shader_facade::set_shader_definitions(std::unordered_map<std::string, shader_definition>& definitions) {
+            shaderpack_reading_guard.lock();
             shader_definitions = definitions;
+            shaderpack_reading_guard.unlock();
         }
 
         std::unordered_map<std::string, gl_shader_program> &shader_facade::get_loaded_shaders() {
@@ -165,11 +170,16 @@ namespace nova {
         }
 
         void shader_facade::upload_shaders() {
+            shaderpack_reading_guard.lock();
             for(const auto& shader : shader_definitions) {
                 loaded_shaders.erase(shader.first);
-                loaded_shaders.emplace(shader.first, gl_shader_program(shader.first, shader.second));
+
+                auto shader_program = gl_shader_program(shader.first, shader.second);
+
+                loaded_shaders.emplace(shader.first, shader_program);
                 loaded_shaders[shader.first].set_filter(filters[shader.first]);
             }
+            shaderpack_reading_guard.unlock();
         }
     }
 }

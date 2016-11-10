@@ -4,7 +4,6 @@
  */
 
 #include <stdexcept>
-#include <easylogging++.h>
 #include "gl_mesh.h"
 
 namespace nova {

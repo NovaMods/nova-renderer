@@ -177,4 +177,19 @@ TEST(shader_loading, load_shaderpack_folder) {
     ASSERT_NE(gui_location, shaderpack.end());
 
     auto gui_shader = gui_location->second;
+    auto gui_fragment_source = gui_shader.fragment_source;
+
+    EXPECT_EQ(gui_fragment_source.size(), 13);
+
+    auto line_5 = gui_fragment_source[4];
+    EXPECT_EQ(line_5.line_num, 5);
+    EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
+    EXPECT_EQ(line_5.line, "in vec2 uv;");
+
+    auto gui_vertex_source = gui_shader.vertex_source;
+
+    auto line_6 = gui_vertex_source[5];
+    EXPECT_EQ(line_6.line_num, 6);
+    EXPECT_EQ(line_6.shader_name, "shaderpacks/default/shaders/gui.vert");
+    EXPECT_EQ(line_6.line, "layout(binding = 20, std140) uniform gui_uniforms {");
 }

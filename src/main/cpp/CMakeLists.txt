@@ -177,6 +177,7 @@ set(TEST_SOURCE_FILES
 
         test/model/loaders/shader_loading_test.cpp
         test/model/shaders/shader_facade_test.cpp
+        test/model/geometry_cache/builders/gui_geometry_builder_tests.cpp
         )
 
 set(TEST_HEADERS

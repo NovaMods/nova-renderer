@@ -183,8 +183,12 @@ namespace nova {
 
         void nova_renderer::check_for_new_shaders() {
             if(model.has_new_shaderpack) {
-                model.get_shader_facade().upload_shaders();
-                link_up_uniform_buffers(model.get_shader_facade().get_loaded_shaders(), ubo_manager);
+                model::shader_facade &shaders = model.get_shader_facade();
+                shaders.upload_shaders();
+
+                auto &loaded_shaders = shaders.get_loaded_shaders();
+                link_up_uniform_buffers(loaded_shaders, ubo_manager);
+                model.has_new_shaderpack = false;
             }
         }
 
