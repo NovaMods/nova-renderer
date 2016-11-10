@@ -67,8 +67,6 @@ namespace nova {
             mc_gui_screen cur_gui_screen;
             mesh_accessor meshes;
 
-            std::mutex shaderpack_reading_guard;
-
             void load_new_shaderpack(const std::string &new_shaderpack_name) noexcept;
         };
 

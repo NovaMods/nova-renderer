@@ -23,6 +23,32 @@ namespace nova {
          * that's going to be rendered as if it was a scene
          */
         gl_mesh build_gui_geometry(mc_gui_screen &cur_screen);
+
+        void add_indices_with_offset(std::vector<unsigned short> &indices, unsigned short start_pos);
+
+        /*!
+         * \brief Adds all the vertices from the given button to the given vertex buffer. uvs holds the uv
+         * coordinates for this button
+         *
+         * \param vertex_buffer The vertex buffer to add vertices to
+         * \param button The button to get vertices from
+         * \param uvs The uv coordinates to use for this button
+         */
+        NOVA_API void add_vertices_from_button(std::vector<float> &vertex_buffer, const mc_gui_button &button,
+                                      const std::vector<float> &uvs);
+
+        /*!
+         * \brief Adds the vertex with the given parameters to the given vertex buffer
+         *
+         * Note that the z position of the vertices is always set to 0. This is maybe what I want.
+         *
+         * \param vertex_buffer The thing to add vertices to
+         * \param x The x position of the vertex
+         * \param y The y position of the vertex
+         * \param u The u texture coordiante of the vertex
+         * \param v The v texture coordinate of the vertex
+         */
+        NOVA_API void add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v);
     }
 }
 

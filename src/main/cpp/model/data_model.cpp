@@ -39,11 +39,9 @@ namespace nova {
                     loaded_shaderpack_name = "default";
                 }
 
-                shaderpack_reading_guard.lock();
                 loaded_shaderpack_name = new_shaderpack_name;
                 loaded_shaderpack.set_shader_definitions(new_shaderpack);
                 has_new_shaderpack = true;
-                shaderpack_reading_guard.unlock();
             }
         }
 

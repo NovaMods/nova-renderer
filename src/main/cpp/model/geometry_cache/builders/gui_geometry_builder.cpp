@@ -10,56 +10,27 @@
 
 namespace nova {
     namespace model {
-        std::vector<float> basic_unpressed_uvs = {
-                0.0f, 0.3359375f,
-                0.78125f, 0.3359375f,
-                0.0f, 0.4156963f,
-                0.78125f, 0.4156963f
-        };
-
-        std::vector<float> basic_pressed_uvs = {
-                0.0f, 0.2578112f,
-                0.78125, 0.2578112f,
-                0.0f, 0.3359375f,
-                0.78125f, 0.3359375f
-        };
-
-        std::vector<unsigned short> index_buffer = {
-                0, 1, 2,
-                2, 1, 3
-        };
-
-        void add_indices_for_button(std::vector<unsigned short> &indices, unsigned short start_pos);
-
-        /*!
-         * \brief Adds all the vertices from the given button to the given vertex buffer. uvs holds the uv
-         * coordinates for this button
-         *
-         * \param vertex_buffer The vertex buffer to add vertices to
-         * \param button The button to get vertices from
-         * \param uvs The uv coordinates to use for this button
-         */
-        void add_vertices_from_button(std::vector<float> &vertex_buffer, const mc_gui_button &button,
-                                      const std::vector<float> &uvs);
-
-        /*!
-         * \brief Adds the vertex with the given parameters to the given vertex buffer
-         *
-         * Note that the z position of the vertices is always set to 0. This is maybe what I want.
-         *
-         * \param vertex_buffer The thing to add vertices to
-         * \param x The x position of the vertex
-         * \param y The y position of the vertex
-         * \param u The u texture coordiante of the vertex
-         * \param v The v texture coordinate of the vertex
-         */
-        void add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v);
-
         gl_mesh build_gui_geometry(mc_gui_screen& cur_screen) {
+            // The UV coordinates for a pressed and an unpressed GUI button
+            static auto basic_unpressed_uvs = std::vector<float>{
+                    0.0f, 0.3359375f,
+                    0.78125f, 0.3359375f,
+                    0.0f, 0.4156963f,
+                    0.78125f, 0.4156963f
+            };
+
+            static auto basic_pressed_uvs = std::vector<float>{
+                    0.0f, 0.2578112f,
+                    0.78125, 0.2578112f,
+                    0.0f, 0.3359375f,
+                    0.78125f, 0.3359375f
+            };
+
             // We need to make a vertex buffer with the positions and texture coordinates of all the gui elements
             std::vector<float> vertex_buffer(
                     MAX_NUM_BUTTONS * 4 * 5
             );    // MAX_NUM_BUTTONS buttons * 4 vertices per button * 5 elements per vertex
+
             std::vector<unsigned short> indices;
             unsigned short start_pos = 0;
 
@@ -75,7 +46,7 @@ namespace nova {
                 // Generate the vertexes from the button's position
                 add_vertices_from_button(vertex_buffer, button, uv_buffer);
 
-                add_indices_for_button(indices, start_pos);
+                add_indices_with_offset(indices, start_pos);
 
                 // Add the number of new vertices to the offset for indices, so that indices point to the right
                 // vertices
@@ -94,7 +65,12 @@ namespace nova {
         }
 
 
-        void add_indices_for_button(std::vector<unsigned short> &indices, unsigned short start_pos) {
+        void add_indices_with_offset(std::vector<unsigned short> &indices, unsigned short start_pos) {
+            static auto index_buffer = std::vector<unsigned short>{
+                    0, 1, 2,
+                    2, 1, 3
+            };
+
             for(unsigned short &index : index_buffer) {
                 indices.push_back(index + start_pos);
             }

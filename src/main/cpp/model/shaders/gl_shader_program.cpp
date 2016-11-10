@@ -33,7 +33,7 @@ namespace nova {
 
         void gl_shader_program::link() {
             gl_name = glCreateProgram();
-            glObjectLabel(GL_SHADER, gl_name, (GLsizei) name.length(), name.c_str());
+            glObjectLabel(GL_PROGRAM, gl_name, (GLsizei) name.length(), name.c_str());
             LOG(TRACE) << "Created shader program " << gl_name;
 
             for(GLuint shader : added_shaders) {
@@ -108,7 +108,7 @@ namespace nova {
             GLuint buffer_index = glGetUniformBlockIndex(gl_name, buffer.get_name().c_str());
             if(buffer_index == GL_INVALID_INDEX) {
                 LOG(ERROR) << buffer.get_name() << " is not a valid identifier for program " << gl_name;
-                // return;
+                return;
             }
             LOG(TRACE) << "Shader: " << gl_name << " index: " << buffer_index << " bind point " << buffer.get_bind_point();
             glUniformBlockBinding(gl_name, buffer_index, buffer.get_bind_point());

@@ -77,10 +77,10 @@ namespace nova {
             gui_uniforms.gbufferModelView = gui_model_view;
 
             buffers["gui_uniforms"].send_data(gui_uniforms);
+            LOG(DEBUG) << "Updated all uniforms";
         }
 
         void uniform_buffer_store::update_per_frame_uniforms() {
-
             buffers["per_frame_uniforms"].send_data(per_frame_uniforms);
         }
     }
