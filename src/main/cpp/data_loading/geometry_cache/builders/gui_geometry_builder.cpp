@@ -4,13 +4,14 @@
  */
 
 #include <algorithm>
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include "gui_geometry_builder.h"
 
 
 namespace nova {
     namespace model {
-        gl_mesh build_gui_geometry(mc_gui_screen& cur_screen) {
+        mesh_definition build_gui_geometry(mc_gui_screen& cur_screen) {
             // The UV coordinates for a pressed and an unpressed GUI button
             static auto basic_unpressed_uvs = std::vector<float>{
                     0.0f, 0.3359375f,
@@ -28,11 +29,11 @@ namespace nova {
 
             // We need to make a vertex buffer with the positions and texture coordinates of all the gui elements
             std::vector<float> vertex_buffer(
-                    MAX_NUM_BUTTONS * 4 * 5
-            );    // MAX_NUM_BUTTONS buttons * 4 vertices per button * 5 elements per vertex
+                    (unsigned long long int) (cur_screen.num_buttons * 4 * 5)
+            );    // cur_screen.num_buttons buttons * 4 vertices per button * 5 elements per vertex
 
-            std::vector<unsigned short> indices;
-            unsigned short start_pos = 0;
+            std::vector<unsigned> indices((unsigned long long int) (cur_screen.num_buttons * 6)); // six entries per button
+            unsigned start_pos = 0;
 
             for(int i = 0; i < cur_screen.num_buttons; i++) {
                 mc_gui_button &button = cur_screen.buttons[i];
@@ -53,19 +54,16 @@ namespace nova {
                 start_pos += 4;
             }
 
-            gl_mesh cur_screen_buffer;
-
-            cur_screen_buffer.set_data(
-                    vertex_buffer, ivertex_buffer::format::POS_UV, ivertex_buffer::usage::static_draw
-            );
-
-            cur_screen_buffer.set_index_array(indices, ivertex_buffer::usage::static_draw);
+            mesh_definition cur_screen_buffer;
+            cur_screen_buffer.vertex_data = vertex_buffer;
+            cur_screen_buffer.indices = indices;
+            cur_screen_buffer.vertex_format = format::POS_UV;
 
             return cur_screen_buffer;
         }
 
 
-        void add_indices_with_offset(std::vector<unsigned short> &indices, unsigned short start_pos) {
+        void add_indices_with_offset(std::vector<unsigned> &indices, unsigned start_pos) {
             static auto index_buffer = std::vector<unsigned short>{
                     0, 1, 2,
                     2, 1, 3

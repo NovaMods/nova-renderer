@@ -6,6 +6,7 @@
 #include "view/nova_renderer.h"
 #include "utils/utils.h"
 
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
 #include <pthread.h>

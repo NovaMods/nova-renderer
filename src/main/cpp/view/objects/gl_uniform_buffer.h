@@ -10,10 +10,10 @@
 #include <glad/glad.h>
 
 namespace nova {
-    namespace model {
-/*!
- * \brief Represents a uniform buffer, which can be used for whatever
- */
+    namespace view {
+        /*!
+         * \brief Represents a uniform buffer, which can be used for whatever
+         */
         class gl_uniform_buffer {
         public:
             /*!

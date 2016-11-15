@@ -6,13 +6,14 @@
 #include <cstdlib>
 #include <algorithm>
 
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include <malloc.h>
 #include "gl_shader_program.h"
 
 namespace nova {
-    namespace model {
-        gl_shader_program::gl_shader_program(const std::string name, const shader_definition& source) : name(name) {
+    namespace view {
+        gl_shader_program::gl_shader_program(const std::string name, const model::shader_definition& source) : name(name) {
             // We can handle all the shader programs more or less independently
 
             create_shader(source.vertex_source, GL_VERTEX_SHADER);
@@ -104,7 +105,7 @@ namespace nova {
             //glDeleteProgram(gl_name);
         }
 
-        void gl_shader_program::link_to_uniform_buffer(const model::gl_uniform_buffer &buffer) noexcept {
+        void gl_shader_program::link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept {
             GLuint buffer_index = glGetUniformBlockIndex(gl_name, buffer.get_name().c_str());
             if(buffer_index == GL_INVALID_INDEX) {
                 LOG(ERROR) << buffer.get_name() << " is not a valid identifier for program " << gl_name;

@@ -4,6 +4,7 @@
  */
 
 #include "settings.h"
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
 #include "utils/utils.h"
