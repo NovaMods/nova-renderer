@@ -4,6 +4,7 @@
 
 #include "nova_renderer.h"
 
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include <utils/utils.h>
 
@@ -23,7 +24,8 @@ namespace nova {
             }
         }
 
-        nova_renderer::nova_renderer() {
+        nova_renderer::nova_renderer() : meshes(model.get_mesh_builder()) {
+
             model.get_render_settings().register_change_listener(&ubo_manager);
             model.trigger_config_update();
 
@@ -38,8 +40,13 @@ namespace nova {
             game_window.destroy();
         }
 
-        void nova_renderer::render_frame() {
+        void nova_renderer::update() {
             check_for_new_shaders();
+            meshes.update();
+        }
+
+        void nova_renderer::render_frame() {
+            update();
 
             // Clear to the clear color
             glClear(GL_COLOR_BUFFER_BIT);
@@ -79,10 +86,10 @@ namespace nova {
 
         void nova_renderer::render_gui() {
             // Bind all the GUI data
-            model::gl_shader_program& gui_shader = model.get_shader_facade()["gui"];
+            gl_shader_program& gui_shader = model.get_shader_facade()["gui"];
             gui_shader.bind();
 
-            std::vector<model::render_object*> gui_geometry = model.get_mesh_accessor().get_meshes_for_filter(gui_shader.get_filter());
+            std::vector<render_object*> gui_geometry = meshes.get_meshes_for_filter(gui_shader.get_filter());
             for(const auto* geom : gui_geometry) {
                 geom->geometry->draw();
             }
@@ -183,7 +190,7 @@ namespace nova {
 
         void nova_renderer::check_for_new_shaders() {
             if(model.has_new_shaderpack) {
-                model::shader_facade &shaders = model.get_shader_facade();
+                shader_facade &shaders = model.get_shader_facade();
                 shaders.upload_shaders();
 
                 auto &loaded_shaders = shaders.get_loaded_shaders();
@@ -192,7 +199,7 @@ namespace nova {
             }
         }
 
-        void link_up_uniform_buffers(std::unordered_map<std::string, model::gl_shader_program>& shaders, const uniform_buffer_store &ubos) {
+        void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program>& shaders, const uniform_buffer_store &ubos) {
             nova::foreach(shaders, [&](auto shader) { ubos.register_all_buffers_with_shader(shader.second); });
         }
     }

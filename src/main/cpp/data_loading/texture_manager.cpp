@@ -4,6 +4,7 @@
  */
 
 #include <algorithm>
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include "texture_manager.h"
 

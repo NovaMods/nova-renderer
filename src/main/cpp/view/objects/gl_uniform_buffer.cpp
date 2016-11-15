@@ -3,12 +3,13 @@
  * \date 22-May-16.
  */
 
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
 #include "gl_uniform_buffer.h"
 
 namespace nova {
-    namespace model {
+    namespace view {
         gl_uniform_buffer::gl_uniform_buffer(GLuint size) {
             glGenBuffers(1, &gl_name);
             bind();

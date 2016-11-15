@@ -10,10 +10,10 @@
 
 #include <string>
 #include <memory>
-#include "model/gl/gl_mesh.h"
+#include "view/objects/gl_mesh.h"
 
 namespace nova {
-    namespace model {
+    namespace view {
         enum class geometry_type {
             block,
             entity,

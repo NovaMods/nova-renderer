@@ -9,7 +9,7 @@
 #include <algorithm>
 
 namespace nova {
-    namespace model {
+    namespace view {
 
         shader_tree_node::shader_tree_node(std::string name, std::function<bool(const render_object&)> filter) : shader_name(name), filter(filter) {}
 
@@ -159,7 +159,7 @@ namespace nova {
             return loaded_shaders[key];
         }
 
-        void shader_facade::set_shader_definitions(std::unordered_map<std::string, shader_definition>& definitions) {
+        void shader_facade::set_shader_definitions(std::unordered_map<std::string, model::shader_definition>& definitions) {
             shaderpack_reading_guard.lock();
             shader_definitions = definitions;
             shaderpack_reading_guard.unlock();

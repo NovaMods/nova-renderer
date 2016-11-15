@@ -5,6 +5,7 @@
  * \date 04-Sep-16.
  */
 
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
 #include "data_model.h"
@@ -71,7 +72,7 @@ namespace nova {
             return render_settings;
         }
 
-        mesh_accessor &data_model::get_mesh_accessor() {
+        mesh_builder &data_model::get_mesh_builder() {
             return meshes;
         }
 

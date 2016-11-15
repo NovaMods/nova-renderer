@@ -13,7 +13,7 @@
 #include "glad/glad.h"
 #include "glm/glm.hpp"
 #include "model/shaders/uniform_buffer_definitions.h"
-#include "model/gl/gl_mesh.h"
+#include "view/objects/gl_mesh.h"
 
 namespace nova {
     namespace view {

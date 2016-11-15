@@ -7,15 +7,17 @@
 
 #include <memory>
 #include <thread>
+#include <view/objects/mesh_accessor.h>
+#include <data_loading/data_model.h>
+#include <view/objects/shaders/shader_facade.h>
 #include "utils/export.h"
-#include "model/data_model.h"
 
 #include "interfaces/iwindow.h"
 #include "mc_interface/mc_objects.h"
 
 #include "mc_interface/nova.h"
-#include "model/texture_manager.h"
-#include "model/settings.h"
+#include "data_loading/texture_manager.h"
+#include "data_loading/settings.h"
 #include "view/uniform_buffer_store.h"
 #include "view/windowing/glfw_gl_window.h"
 
@@ -71,6 +73,11 @@ namespace nova {
             ~nova_renderer();
 
             /*!
+             * \brief Tells all the data holding things to check for new data
+             */
+            void update();
+
+            /*!
              * \brief Renders a single frame
              *
              * This method runs in a separate thread from the rest of the methods in this class. This is because the other
@@ -93,17 +100,15 @@ namespace nova {
             //! This is a pointer so I can initialize it later
             static std::unique_ptr<std::thread> render_thread;
 
-            /* Data in Controller */
+            model::data_model model;
 
             glfw_gl_window game_window;
 
-            /* Data in View */
+            mesh_accessor meshes;
 
             uniform_buffer_store ubo_manager;
 
-            /* Data in model */
-
-            model::data_model model;
+            shader_facade shaders;
 
             /*!
              * \brief Renders the GUI of Minecraft
@@ -128,7 +133,7 @@ namespace nova {
             void check_for_new_shaders();
         };
 
-        void link_up_uniform_buffers(std::unordered_map<std::string, model::gl_shader_program>& shaders, const uniform_buffer_store &ubos);
+        void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program>& shaders, const uniform_buffer_store &ubos);
     }
 }
 

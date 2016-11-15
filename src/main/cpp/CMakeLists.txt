@@ -58,79 +58,80 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 # Setup the nova-core library.
 set(NOVA_HEADERS
 
-        model/geometry_cache/builders/gui_geometry_builder.h
+        data_loading/geometry_cache/builders/gui_geometry_builder.h
 
-        model/shaders/uniform_buffer_definitions.h
+        view/objects/shaders/uniform_buffer_definitions.h
 
         mc_interface/nova.h
         view/nova_renderer.h
-        model/texture_manager.h
+        data_loading/texture_manager.h
         utils/types.h
 
-        model/shaders/gl_shader_program.h
-        model/gl/gl_uniform_buffer.h
-        model/gl/gl_mesh.h
-        model/texture2D.h
+        view/objects/shaders/gl_shader_program.h
+        view/objects/gl_uniform_buffer.h
+        view/objects/gl_mesh.h
+        data_loading/texture2D.h
 
         view/windowing/glfw_gl_window.h
 
         interfaces/igraphics_context.h
-        interfaces/ivertex_buffer.h
         interfaces/iwindow.h
 
         mc_interface/mc_gui_objects.h
         mc_interface/mc_objects.h
 
         utils/utils.h
-        model/settings.h
-        model/loaders/loaders.h
-        model/loaders/shader_loading.h
-        model/data_model.h
-        model/loaders/loader_utils.h
-        model/geometry_cache/mesh_accessor.h
+        data_loading/settings.h
+        data_loading/loaders/loaders.h
+        data_loading/loaders/shader_loading.h
+        data_loading/data_model.h
+        data_loading/loaders/loader_utils.h
+        view/objects/mesh_accessor.h
         view/render_pass.h
-        model/shaders/shader_facade.h
-        model/geometry_cache/render_object.h
+        view/objects/shaders/shader_facade.h
+        view/objects/render_object.h
 
-        model/physics/AABB.h
-        model/loaders/shader_source_structs.h
+        data_loading/physics/AABB.h
+        data_loading/loaders/shader_source_structs.h
+        data_loading/geometry_cache/mesh_definition.h
+        data_loading/geometry_cache/builders/mesh_builder.h
         )
 
 set(NOVA_SOURCE
 
         ${NOVA_HEADERS}
 
-        model/geometry_cache/builders/gui_geometry_builder.cpp
+        data_loading/geometry_cache/builders/gui_geometry_builder.cpp
 
         view/nova_renderer.cpp
         mc_interface/nova_facade.cpp
-        model/texture_manager.cpp
+        data_loading/texture_manager.cpp
         view/uniform_buffer_store.cpp
-        model/geometry_cache/builders/gui_geometry_builder.cpp
+        data_loading/geometry_cache/builders/gui_geometry_builder.cpp
 
-        model/shaders/gl_shader_program.cpp
-        model/gl/gl_uniform_buffer.cpp
-        model/gl/gl_mesh.cpp
-        model/texture2D.cpp
+        view/objects/shaders/gl_shader_program.cpp
+        view/objects/gl_uniform_buffer.cpp
+        view/objects/gl_mesh.cpp
+        data_loading/texture2D.cpp
 
         view/windowing/glfw_gl_window.cpp
 
-        interfaces/ivertex_buffer.cpp
-
         utils/utils.cpp
 
-        model/settings.cpp
-        model/loaders/shader_loading.cpp
-        model/data_model.cpp
-        model/loaders/loader_utils.cpp
+        data_loading/settings.cpp
+        data_loading/loaders/shader_loading.cpp
+        data_loading/data_model.cpp
+        data_loading/loaders/loader_utils.cpp
 
         # Need to compile third party stuff, too...
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
 
-        model/shaders/shader_facade.cpp
-        model/geometry_cache/mesh_accessor.cpp
-        model/physics/AABB.cpp
+        view/objects/shaders/shader_facade.cpp
+        view/objects/mesh_accessor.cpp
+        data_loading/physics/AABB.cpp
+        data_loading/geometry_cache/mesh_definition.cpp
+        data_loading/geometry_cache/builders/mesh_builder.cpp
         )
 
 # For now just put everthing in a single nova source group

@@ -13,13 +13,13 @@
 #include <vector>
 
 #include <glad/glad.h>
-#include "model/loaders/shader_source_structs.h"
-#include "model/gl/gl_uniform_buffer.h"
-#include "model/geometry_cache/render_object.h"
+#include "data_loading/loaders/shader_source_structs.h"
+#include "view/objects/gl_uniform_buffer.h"
+#include "view/objects/render_object.h"
 
 
 namespace nova {
-    namespace model {
+    namespace view {
 
         /*!
          * \brief Represents an error in compiling a shader
@@ -34,10 +34,10 @@ namespace nova {
              * \param source_lines The list of source_line objects that maps from line in the shader sent to the driver
              * to the line number and shader file on disk
              */
-            compilation_error(const std::string& error_message, const std::vector<shader_line> source_lines);
+            compilation_error(const std::string& error_message, const std::vector<model::shader_line> source_lines);
         private:
 
-            std::string get_original_line_message(const std::string &error_message, const std::vector<shader_line> source_lines);
+            std::string get_original_line_message(const std::string &error_message, const std::vector<model::shader_line> source_lines);
         };
 
         class wrong_shader_version : public std::runtime_error {
@@ -71,7 +71,7 @@ namespace nova {
             /*!
              * \brief Constructs a gl_shader_program
              */
-            gl_shader_program(const std::string name, const shader_definition &source);
+            gl_shader_program(const std::string name, const model::shader_definition &source);
 
             gl_shader_program(gl_shader_program& other);
 
@@ -116,9 +116,9 @@ namespace nova {
              */
             std::function<bool(const render_object&)> filter;
 
-            void create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type);
+            void create_shader(const std::vector<model::shader_line> shader_source, const GLenum shader_type);
 
-            void check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line> line_map);
+            void check_for_shader_errors(GLuint shader_to_check, const std::vector<model::shader_line> line_map);
 
             void link();
 

@@ -8,7 +8,8 @@
 #include <vector>
 #include <gtest/gtest.h>
 
-#include <model/geometry_cache/builders/gui_geometry_builder.h>
+#include <data_loading/geometry_cache/builders/gui_geometry_builder.h>
+#include <view/nova_renderer.h>
 
 TEST(gui_geometry_builder, add_vertex_test) {
     auto vertex_buffer = std::vector<float>{};
@@ -44,4 +45,40 @@ TEST(gui_geometry_builder, add_vertices_from_button_test) {
     EXPECT_EQ(vertex_buffer[11], 100);
     EXPECT_EQ(vertex_buffer[13], 1);
     EXPECT_EQ(vertex_buffer[14], 0);
+}
+
+TEST(gui_geometry_builder, add_indices_with_offset_positive_test) {
+    auto indices = std::vector<unsigned>{};
+    auto start_pos = 3;
+
+    nova::model::add_indices_with_offset(indices, (unsigned int) start_pos);
+
+    EXPECT_EQ(indices[0], 3);
+    EXPECT_EQ(indices[1], 4);
+    EXPECT_EQ(indices[2], 5);
+    EXPECT_EQ(indices[3], 5);
+    EXPECT_EQ(indices[4], 4);
+    EXPECT_EQ(indices[5], 6);
+}
+
+TEST(gui_geometry_builder, add_indices_with_offset_negative_offset_test) {
+    auto indices = std::vector<unsigned>{};
+    auto start_pos = -3;
+
+    nova::model::add_indices_with_offset(indices, (unsigned int) start_pos);
+
+    EXPECT_EQ(indices[0], 65533);
+    EXPECT_EQ(indices[1], 65534);
+    EXPECT_EQ(indices[2], 65535);
+    EXPECT_EQ(indices[3], 65535);
+    EXPECT_EQ(indices[4], 65534);
+    EXPECT_EQ(indices[5], 0);
+}
+
+TEST(gui_geometry_builder, build_gui_geometry_no_buttons_test) {
+    nova::view::nova_renderer::init_instance();
+    mc_gui_screen gui = {};
+    gui.num_buttons = 0;
+
+    nova::model::mesh_definition gui_mesh = nova::model::build_gui_geometry(gui);
 }

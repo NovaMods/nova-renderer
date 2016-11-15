@@ -15,11 +15,13 @@
 #include <initializer_list>
 #include <utils/export.h>
 #include <mutex>
+
+#include "view/objects/render_object.h"
 #include "gl_shader_program.h"
-#include "model/geometry_cache/render_object.h"
 
 namespace nova {
-    namespace model {
+    namespace view {
+
         /*!
          * \brief Holds all the filters that a shader might need
          */
@@ -57,7 +59,7 @@ namespace nova {
          */
         class shader_facade {
         public:
-            void set_shader_definitions(std::unordered_map<std::string, shader_definition>& definitions);
+            void set_shader_definitions(std::unordered_map<std::string, model::shader_definition>& definitions);
 
             gl_shader_program& operator[](std::string key);
 
@@ -77,7 +79,7 @@ namespace nova {
             // envision their use:
             //      - Shaders are loaded. Their source code gets stuck in the shader_definitions map
             //      - Based on which shaders are loaded,
-            std::unordered_map<std::string, shader_definition> shader_definitions;
+            std::unordered_map<std::string, model::shader_definition> shader_definitions;
             std::unordered_map<std::string, gl_shader_program> loaded_shaders;
             std::unordered_map<std::string, std::function<bool(const render_object&)>> filters;
 
@@ -90,6 +92,6 @@ namespace nova {
             void build_filters();
         };
     }
-}
+
 
 #endif //RENDERER_SHADER_INTERFACE_H

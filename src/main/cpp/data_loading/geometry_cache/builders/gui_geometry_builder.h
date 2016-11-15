@@ -10,8 +10,9 @@
 #include <atomic>
 
 #include <mutex>
+#include <data_loading/geometry_cache/mesh_definition.h>
 
-#include "model/gl/gl_mesh.h"
+#include "view/objects/gl_mesh.h"
 #include "mc_interface/mc_gui_objects.h"
 
 namespace nova {
@@ -22,9 +23,9 @@ namespace nova {
          * Note that the GUI screen does not include things like the spinning background on the main menu screen, because
          * that's going to be rendered as if it was a scene
          */
-        gl_mesh build_gui_geometry(mc_gui_screen &cur_screen);
+        NOVA_API mesh_definition build_gui_geometry(mc_gui_screen &cur_screen);
 
-        void add_indices_with_offset(std::vector<unsigned short> &indices, unsigned short start_pos);
+        NOVA_API void add_indices_with_offset(std::vector<unsigned> &indices, unsigned start_pos);
 
         /*!
          * \brief Adds all the vertices from the given button to the given vertex buffer. uvs holds the uv

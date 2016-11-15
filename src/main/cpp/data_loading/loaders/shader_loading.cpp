@@ -5,6 +5,7 @@
  * \date 03-Sep-16.
  */
 
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
 #include "utils/utils.h"

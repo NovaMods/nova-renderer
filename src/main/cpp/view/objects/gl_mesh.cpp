@@ -7,9 +7,15 @@
 #include "gl_mesh.h"
 
 namespace nova {
-    namespace model {
+    namespace view {
         gl_mesh::gl_mesh() : vertex_array(0), vertex_buffer(0), indices(0), num_indices(0) {
             create();
+        }
+
+        gl_mesh::gl_mesh(model::mesh_definition& definition) {
+            create();
+            set_data(definition.vertex_data, definition.vertex_format, usage::static_draw);
+            set_index_array(definition.indices, usage::static_draw);
         }
 
         gl_mesh::~gl_mesh() {
@@ -35,7 +41,7 @@ namespace nova {
             }
         }
 
-        void gl_mesh::set_data(std::vector<float> data, format data_format, usage data_usage) {
+        void gl_mesh::set_data(std::vector<float> data, model::format data_format, usage data_usage) {
             this->data_format = data_format;
 
             glBindVertexArray(vertex_array);
@@ -55,7 +61,7 @@ namespace nova {
                 case usage::static_draw:
                     return GL_STATIC_DRAW;
                 default:
-                    // In case something bad happens
+                    // In case I add a new value to the enum and forget to update this switch statement
                     throw std::invalid_argument("data_usage value unsupported");
             }
         }
@@ -66,11 +72,11 @@ namespace nova {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
         }
 
-        void gl_mesh::set_index_array(std::vector<unsigned short> data, usage data_usage) {
+        void gl_mesh::set_index_array(std::vector<unsigned> data, usage data_usage) {
             glBindVertexArray(vertex_array);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
             GLenum buffer_usage = translate_usage(data_usage);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned short), data.data(), buffer_usage);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned), data.data(), buffer_usage);
 
             num_indices = (unsigned int) data.size();
         }
@@ -81,9 +87,9 @@ namespace nova {
             }
         }
 
-        void gl_mesh::enable_vertex_attributes(format data_format) {
+        void gl_mesh::enable_vertex_attributes(model::format data_format) {
             switch(data_format) {
-                case format::POS:
+                case model::format::POS:
                     // We only need to set up positional data
                     // Positions are always at vertex attribute 0
                     glEnableVertexAttribArray(0);   // Position
@@ -92,7 +98,7 @@ namespace nova {
 
                     break;
 
-                case format::POS_UV:
+                case model::format::POS_UV:
                     glEnableVertexAttribArray(0);   // Position
                     glEnableVertexAttribArray(1);   // Texture UV
 
@@ -101,7 +107,7 @@ namespace nova {
 
                     break;
 
-                case format::POS_UV_LIGHTMAPUV_NORMAL_TANGENT:
+                case model::format::POS_UV_LIGHTMAPUV_NORMAL_TANGENT:
                     glEnableVertexAttribArray(0);   // Position
                     glEnableVertexAttribArray(1);   // Texture UV
                     glEnableVertexAttribArray(2);   // Lightmap UV
@@ -118,9 +124,13 @@ namespace nova {
             }
         }
 
-        void gl_mesh::compute_aabb(std::vector<float> &vertices, ivertex_buffer::format data_format) {
+        void gl_mesh::compute_aabb(std::vector<float> &vertices, model::format data_format) {
             // TODO: Translate data_format into a stride
             // TODO: All of this. The AABB stuff is going to come later
+        }
+
+        model::format gl_mesh::get_format() {
+            return data_format;
         }
     }
 }

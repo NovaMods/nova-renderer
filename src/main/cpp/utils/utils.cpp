@@ -3,9 +3,8 @@
  * \date 18-May-16.
  */
 
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
-
-#include <iostream>
 
 #include "utils.h"
 

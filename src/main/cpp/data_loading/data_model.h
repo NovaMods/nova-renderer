@@ -9,10 +9,9 @@
 #define RENDERER_MODEL_H
 
 #include <atomic>
-#include "model/geometry_cache/mesh_accessor.h"
-#include "model/shaders/shader_facade.h"
+#include <data_loading/geometry_cache/builders/mesh_builder.h>
+#include "data_loading/shaders/shader_facade.h"
 #include "settings.h"
-#include "model/shaders/gl_shader_program.h"
 #include "texture_manager.h"
 
 namespace nova {
@@ -51,7 +50,7 @@ namespace nova {
 
             settings& get_render_settings();
 
-            mesh_accessor& get_mesh_accessor();
+            mesh_builder& get_mesh_builder();
 
             /* From iconfig_listener */
 
@@ -65,7 +64,7 @@ namespace nova {
             texture_manager textures;
             std::string loaded_shaderpack_name;
             mc_gui_screen cur_gui_screen;
-            mesh_accessor meshes;
+            mesh_builder meshes;
 
             void load_new_shaderpack(const std::string &new_shaderpack_name) noexcept;
         };
