@@ -31,8 +31,9 @@ namespace nova {
         }
 
         void mesh_accessor::update_gui_mesh() {
-            if(mesh_builder.has_new_gui_mesh()) {
-                auto gui_definition = mesh_builder.get_gui_mesh();
+            model::loaded_resource<model::mesh_definition> gui_mesh = mesh_builder.get_gui_mesh();
+            if(gui_mesh.has_new_resource()) {
+                auto gui_definition = gui_mesh.get_resource();
 
                 render_object gui = {};
                 gui.geometry = new gl_mesh(gui_definition);

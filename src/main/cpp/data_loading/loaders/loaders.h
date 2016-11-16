@@ -12,8 +12,8 @@
 
 #include <string>
 #include <unordered_map>
-
-#include "model/shaders/gl_shader_program.h"
+#include <utils/export.h>
+#include "shader_source_structs.h"
 
 namespace nova {
     namespace model {

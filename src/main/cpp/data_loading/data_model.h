@@ -10,6 +10,7 @@
 
 #include <atomic>
 #include <data_loading/geometry_cache/builders/mesh_builder.h>
+#include <data_loading/loaders/shader_source_structs.h>
 #include "data_loading/shaders/shader_facade.h"
 #include "settings.h"
 #include "texture_manager.h"
@@ -44,7 +45,7 @@ namespace nova {
              */
             void set_gui_screen(mc_gui_screen* screen);
 
-            shader_facade& get_shader_facade();
+            loaded_resource<std::unordered_map<std::string, shader_definition>>& get_shader_facade();
 
             texture_manager& get_texture_manager();
 
@@ -60,7 +61,7 @@ namespace nova {
 
         private:
             settings render_settings;
-            shader_facade loaded_shaderpack;
+            loaded_resource<std::unordered_map<std::string, shader_definition>> loaded_shaderpack;
             texture_manager textures;
             std::string loaded_shaderpack_name;
             mc_gui_screen cur_gui_screen;

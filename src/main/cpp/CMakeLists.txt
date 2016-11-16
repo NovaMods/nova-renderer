@@ -74,7 +74,6 @@ set(NOVA_HEADERS
 
         view/windowing/glfw_gl_window.h
 
-        interfaces/igraphics_context.h
         interfaces/iwindow.h
 
         mc_interface/mc_gui_objects.h
@@ -95,6 +94,7 @@ set(NOVA_HEADERS
         data_loading/loaders/shader_source_structs.h
         data_loading/geometry_cache/mesh_definition.h
         data_loading/geometry_cache/builders/mesh_builder.h
+        data_loading/loaded_resource.h
         )
 
 set(NOVA_SOURCE
@@ -131,8 +131,7 @@ set(NOVA_SOURCE
         view/objects/mesh_accessor.cpp
         data_loading/physics/AABB.cpp
         data_loading/geometry_cache/mesh_definition.cpp
-        data_loading/geometry_cache/builders/mesh_builder.cpp
-        )
+        data_loading/geometry_cache/builders/mesh_builder.cpp)
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
