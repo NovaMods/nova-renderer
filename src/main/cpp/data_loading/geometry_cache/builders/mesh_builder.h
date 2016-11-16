@@ -12,6 +12,7 @@
 #include <data_loading/geometry_cache/mesh_definition.h>
 #include <unordered_map>
 #include <mutex>
+#include <data_loading/loaded_resource.h>
 
 namespace nova {
     namespace model {
@@ -37,14 +38,10 @@ namespace nova {
              */
             void build_geometry(mc_entity& entity);
 
-            mesh_definition get_gui_mesh();
-
-            const bool has_new_gui_mesh() const;
+            loaded_resource<mesh_definition>& get_gui_mesh() const;
 
         private:
-            std::mutex gui_mesh_lock;
-            bool has_new_gui;
-            mesh_definition gui_mesh;
+            loaded_resource<mesh_definition> gui_mesh;
         };
     }
 }

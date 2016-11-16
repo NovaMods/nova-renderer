@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <utils/export.h>
 
-#include "model/shaders/gl_shader_program.h"
 #include "shader_source_structs.h"
 
 namespace nova {
