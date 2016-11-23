@@ -38,7 +38,7 @@ namespace nova {
              */
             void build_geometry(mc_entity& entity);
 
-            loaded_resource<mesh_definition>& get_gui_mesh() const;
+            loaded_resource<mesh_definition>& get_gui_mesh();
 
         private:
             loaded_resource<mesh_definition> gui_mesh;

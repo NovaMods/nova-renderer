@@ -5,20 +5,20 @@
  * \date 20-Sep-16.
  */
 
-#include "shader_facade.h"
 #include <algorithm>
+#include "shader_facade.h"
 
 namespace nova {
     namespace view {
 
-        shader_tree_node::shader_tree_node(std::string name, std::function<bool(const render_object&)> filter) : shader_name(name), filter(filter) {}
+        shader_tree_node::shader_tree_node(std::string name, std::function<bool(const render_object&)> filter) :
+                shader_name(name), filter(filter) {}
 
-        shader_tree_node::shader_tree_node(std::string name, std::function<bool(const render_object&)> filter, std::vector<shader_tree_node> children) :
+        shader_tree_node::shader_tree_node(std::string name, std::function<bool(const render_object&)> filter,
+                                           std::vector<shader_tree_node> children) :
                 shader_name(name), filter(filter), children(children) { }
 
-        void shader_tree_node::calculate_filters(
-                std::vector<std::string> loaded_shaders
-        ) {
+        void shader_tree_node::calculate_filters(std::vector<std::string> loaded_shaders) {
             filters.push_back(filter);   // The filters for this shader always include the original filter for this shader
 
             for(auto& child : children) {
@@ -123,7 +123,7 @@ namespace nova {
 
             shaderpack_reading_guard.lock();
             loaded_shader_names.reserve(shader_definitions.size());
-            for(auto kv : shader_definitions) {
+            for(auto& kv : shader_definitions) {
                 loaded_shader_names.push_back(kv.first);
             }
 

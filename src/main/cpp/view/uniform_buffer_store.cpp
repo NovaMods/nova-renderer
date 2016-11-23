@@ -20,8 +20,8 @@ namespace nova {
         }
 
         void uniform_buffer_store::create_ubos() {
-            buffers.emplace("per_frame_uniforms", model::gl_uniform_buffer(sizeof(model::per_frame_uniforms)));
-            buffers.emplace("gui_uniforms", model::gl_uniform_buffer(sizeof(model::gui_uniforms)));
+            buffers.emplace("per_frame_uniforms", gl_uniform_buffer(sizeof(per_frame_uniforms)));
+            buffers.emplace("gui_uniforms", gl_uniform_buffer(sizeof(gui_uniforms)));
         }
 
         void uniform_buffer_store::set_bind_points(nlohmann::json &config) {
@@ -54,11 +54,11 @@ namespace nova {
             set_bind_points(config);
         }
 
-        model::gl_uniform_buffer &uniform_buffer_store::operator[](std::string name) {
+        gl_uniform_buffer &uniform_buffer_store::operator[](std::string name) {
             return buffers[name];
         }
 
-        void uniform_buffer_store::register_all_buffers_with_shader(model::gl_shader_program &shader) const noexcept {
+        void uniform_buffer_store::register_all_buffers_with_shader(gl_shader_program &shader) const noexcept {
             for(auto &buffer : buffers) {
                 shader.link_to_uniform_buffer(buffer.second);
             }
@@ -75,14 +75,14 @@ namespace nova {
             gui_model_view = glm::translate(gui_model_view, glm::vec3(-1.0f, -1.0f, 0.0f));
             gui_model_view = glm::scale(gui_model_view, glm::vec3(1.0f, -1.0f, 1.0f));
 
-            gui_uniforms.gbufferModelView = gui_model_view;
+            gui_uniform_variables.gbufferModelView = gui_model_view;
 
-            buffers["gui_uniforms"].send_data(gui_uniforms);
+            buffers["gui_uniforms"].send_data(gui_uniform_variables);
             LOG(DEBUG) << "Updated all uniforms";
         }
 
         void uniform_buffer_store::update_per_frame_uniforms() {
-            buffers["per_frame_uniforms"].send_data(per_frame_uniforms);
+            buffers["per_frame_uniforms"].send_data(per_frame_uniform_variables);
         }
     }
 }

@@ -3,7 +3,6 @@
 //
 
 #include "glfw_gl_window.h"
-#include "view/nova_renderer.h"
 #include "utils/utils.h"
 
 #define ELPP_THREAD_SAFE

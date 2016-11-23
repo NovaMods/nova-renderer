@@ -10,9 +10,9 @@
 
 #include <string>
 #include <vector>
+#include <view/objects/shaders/uniform_buffer_definitions.h>
 #include "glad/glad.h"
 #include "glm/glm.hpp"
-#include "model/shaders/uniform_buffer_definitions.h"
 #include "view/objects/gl_mesh.h"
 
 namespace nova {
@@ -29,24 +29,24 @@ namespace nova {
         struct render_pass {
             std::string shader_program_name;
 
-            std::vector<model::gl_mesh> meshes_to_draw;
+            std::vector<gl_mesh> meshes_to_draw;
         };
         struct shadow_stage {
             std::vector<render_pass> meshes_to_draw;
 
-            model::shadow_pass_textures textures;
+            shadow_pass_textures textures;
         };
 
         struct gbuffer_stage {
             std::vector<render_pass> meshes_to_draw;
 
-            model::gbuffer_pass_textures textures;
+            gbuffer_pass_textures textures;
         };
 
         struct fullscreen_stage {
             std::vector<render_pass> meshes_to_draw;
 
-            model::fullscreen_pass_textures textures;
+            fullscreen_pass_textures textures;
         };
 
         struct render_command {
@@ -54,7 +54,7 @@ namespace nova {
             std::vector<gbuffer_stage> gbuffer_passes;
             std::vector<fullscreen_stage> fullscreen_passes;
 
-            model::per_frame_uniforms uniforms;
+            per_frame_uniforms uniforms;
         };
     }
 }

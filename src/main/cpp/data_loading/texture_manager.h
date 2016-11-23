@@ -11,7 +11,7 @@
 #include "3rdparty/glm/glm/glm.hpp"
 #include "mc_interface/mc_objects.h"
 #include <glad/glad.h>
-#include "model/texture2D.h"
+#include "data_loading/texture2D.h"
 
 namespace nova {
     namespace model {

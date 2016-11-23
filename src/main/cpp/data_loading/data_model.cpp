@@ -41,12 +41,11 @@ namespace nova {
                 }
 
                 loaded_shaderpack_name = new_shaderpack_name;
-                loaded_shaderpack.set_shader_definitions(new_shaderpack);
-                has_new_shaderpack = true;
+                loaded_shaderpack.set_resource(new_shaderpack);
             }
         }
 
-        shader_facade& data_model::get_shader_facade() {
+        loaded_resource<std::unordered_map<std::string, shader_definition>>& data_model::get_loaded_shaderpack() {
             return loaded_shaderpack;
         }
 

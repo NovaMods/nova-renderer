@@ -32,7 +32,7 @@ namespace nova {
 
         void mesh_accessor::update_gui_mesh() {
             model::loaded_resource<model::mesh_definition> gui_mesh = mesh_builder.get_gui_mesh();
-            if(gui_mesh.has_new_resource()) {
+            if(gui_mesh.is_new()) {
                 auto gui_definition = gui_mesh.get_resource();
 
                 render_object gui = {};
