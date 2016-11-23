@@ -67,11 +67,11 @@ TEST(gui_geometry_builder, add_indices_with_offset_negative_offset_test) {
 
     nova::model::add_indices_with_offset(indices, (unsigned int) start_pos);
 
-    EXPECT_EQ(indices[0], 65533);
-    EXPECT_EQ(indices[1], 65534);
-    EXPECT_EQ(indices[2], 65535);
-    EXPECT_EQ(indices[3], 65535);
-    EXPECT_EQ(indices[4], 65534);
+    EXPECT_EQ(indices[0], 4294967293);
+    EXPECT_EQ(indices[1], 4294967294);
+    EXPECT_EQ(indices[2], 4294967295);
+    EXPECT_EQ(indices[3], 4294967295);
+    EXPECT_EQ(indices[4], 4294967294);
     EXPECT_EQ(indices[5], 0);
 }
 
