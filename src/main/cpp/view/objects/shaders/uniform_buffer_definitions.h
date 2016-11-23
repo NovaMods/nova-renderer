@@ -16,7 +16,7 @@
 #include <glm/glm.hpp>
 
 namespace nova {
-    namespace model {
+    namespace view {
         /*!
          * \brief Holds all the uniform variables that are shared by all shader executions
          *

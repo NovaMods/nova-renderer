@@ -29,12 +29,14 @@ namespace nova {
         public:
             std::string shader_name;
 
-            shader_tree_node(std::string name, std::function<bool(const render_object&)> filter);
-            shader_tree_node(std::string name, std::function<bool(const render_object&)> filter, std::vector<shader_tree_node> children);
+            shader_tree_node(std::string name, std::function<bool(const render_object &)> filter);
+
+            shader_tree_node(std::string name, std::function<bool(const render_object &)> filter,
+                             std::vector<shader_tree_node> children);
 
             void calculate_filters(std::vector<std::string> loaded_shaders);
 
-            std::function<bool(const render_object&)> get_filter_function();
+            std::function<bool(const render_object &)> get_filter_function();
 
             /*!
              * \brief Performs a depth-first traversal of the tree, funning the provided function on each element in the
@@ -42,11 +44,12 @@ namespace nova {
              *
              * \param f The function to run on the tree
              */
-            void foreach_df(std::function<void(shader_tree_node&)> f);
+            void foreach_df(std::function<void(shader_tree_node &)> f);
 
         private:
-            std::vector<std::function<bool(const render_object&)>> filters; // Instance variable so it doesn't get cleaned up
-            std::function<bool(const render_object&)> filter;
+            std::vector<std::function<bool(
+                    const render_object &)>> filters; // Instance variable so it doesn't get cleaned up
+            std::function<bool(const render_object &)> filter;
 
             std::vector<shader_tree_node> children;
         };
@@ -59,16 +62,17 @@ namespace nova {
          */
         class shader_facade {
         public:
-            void set_shader_definitions(std::unordered_map<std::string, model::shader_definition>& definitions);
+            void set_shader_definitions(std::unordered_map<std::string, model::shader_definition> &definitions);
 
-            gl_shader_program& operator[](std::string key);
+            gl_shader_program &operator[](std::string key);
 
-            std::unordered_map<std::string, gl_shader_program>& get_loaded_shaders();
+            std::unordered_map<std::string, gl_shader_program> &get_loaded_shaders();
 
             /*!
              * \brief
              */
             void upload_shaders();
+
         private:
             /*!
              * \brief Defines which shaders to use if a given shader is not present
@@ -81,7 +85,7 @@ namespace nova {
             //      - Based on which shaders are loaded,
             std::unordered_map<std::string, model::shader_definition> shader_definitions;
             std::unordered_map<std::string, gl_shader_program> loaded_shaders;
-            std::unordered_map<std::string, std::function<bool(const render_object&)>> filters;
+            std::unordered_map<std::string, std::function<bool(const render_object &)>> filters;
 
             //! \brief Protects reading the shader definitions
             std::mutex shaderpack_reading_guard;
@@ -92,6 +96,7 @@ namespace nova {
             void build_filters();
         };
     }
+}
 
 
 #endif //RENDERER_SHADER_INTERFACE_H

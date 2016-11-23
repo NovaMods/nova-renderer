@@ -11,7 +11,6 @@
 #include <atomic>
 #include <data_loading/geometry_cache/builders/mesh_builder.h>
 #include <data_loading/loaders/shader_source_structs.h>
-#include "data_loading/shaders/shader_facade.h"
 #include "settings.h"
 #include "texture_manager.h"
 
@@ -24,8 +23,6 @@ namespace nova {
          */
         class data_model : public iconfig_listener {
         public:
-            std::atomic<bool> has_new_shaderpack;
-
             data_model();
 
             /*!
@@ -45,7 +42,7 @@ namespace nova {
              */
             void set_gui_screen(mc_gui_screen* screen);
 
-            loaded_resource<std::unordered_map<std::string, shader_definition>>& get_shader_facade();
+            loaded_resource<std::unordered_map<std::string, shader_definition>>& get_loaded_shaderpack();
 
             texture_manager& get_texture_manager();
 

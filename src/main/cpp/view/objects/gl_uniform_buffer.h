@@ -68,14 +68,7 @@ namespace nova {
              *
              * Note also that this function binds the UBO, so you don't need to bind it yourself.
              */
-            template <typename T>
-            void send_data(T data) {
-                bind();
-                GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-
-                memcpy(p, &data, sizeof(T));
-                //glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(T), &data);
-            };
+            void send_data(void* data, int size);
 
             void operator=(gl_uniform_buffer &&old) noexcept;
 

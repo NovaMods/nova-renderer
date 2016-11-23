@@ -12,8 +12,10 @@
  * \author David
  */
 
+#include <data_loading/settings.h>
+#include <data_loading/texture_manager.h>
+#include <view/nova_renderer.h>
 #include "nova.h"
-#include "view/nova_renderer.h"
 
 #define TEXTURE_MANAGER nova::view::nova_renderer::instance->get_model().get_texture_manager()
 

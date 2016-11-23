@@ -16,7 +16,7 @@ namespace nova {
             gui_mesh.set_resource(gui_object);
         }
 
-        loaded_resource<mesh_definition>& mesh_builder::get_gui_mesh() const {
+        loaded_resource<mesh_definition>& mesh_builder::get_gui_mesh() {
             return gui_mesh;
         }
     }

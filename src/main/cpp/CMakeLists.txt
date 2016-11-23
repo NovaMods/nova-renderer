@@ -99,8 +99,6 @@ set(NOVA_HEADERS
 
 set(NOVA_SOURCE
 
-        ${NOVA_HEADERS}
-
         data_loading/geometry_cache/builders/gui_geometry_builder.cpp
 
         view/nova_renderer.cpp
