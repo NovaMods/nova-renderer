@@ -9,8 +9,8 @@
 
 #include <gtest/gtest.h>
 
-#include <model/loaders/shader_loading.h>
-#include <model/loaders/loaders.h>
+#include <data_loading/loaders/shader_loading.h>
+#include <data_loading/loaders/loaders.h>
 #include <utils/utils.h>
 #include <view/nova_renderer.h>
 
