@@ -192,7 +192,8 @@ namespace nova {
             auto loaded_shaderpack = model.get_loaded_shaderpack();
 
             if(loaded_shaderpack.is_new()) {
-                shaders.set_shader_definitions(loaded_shaderpack.get_resource());
+                auto resource = loaded_shaderpack.get_resource();
+                shaders.set_shader_definitions(resource);
                 shaders.upload_shaders();
 
                 auto &loaded_shaders = shaders.get_loaded_shaders();
