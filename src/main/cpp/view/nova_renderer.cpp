@@ -189,7 +189,7 @@ namespace nova {
         }
 
         void nova_renderer::check_for_new_shaders() {
-            auto loaded_shaderpack = model.get_loaded_shaderpack();
+            auto& loaded_shaderpack = model.get_loaded_shaderpack();
 
             if(loaded_shaderpack.is_new()) {
                 auto resource = loaded_shaderpack.get_resource();
