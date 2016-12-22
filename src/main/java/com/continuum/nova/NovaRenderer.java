@@ -527,7 +527,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void setGuiScreen(GuiScreen guiScreenIn) {
-        NovaNative.mc_set_gui_screen_command set_gui_screen = RenderCommandBuilder.createSetGuiScreenCommand(guiScreenIn);
-        NovaNative.INSTANCE.send_change_gui_screen_command(set_gui_screen);
+        NovaNative.mc_set_gui_screen_command setGuiScreen = RenderCommandBuilder.createSetGuiScreenCommand(guiScreenIn);
+        LOG.info("Changing GUI screen");
+        NovaNative.INSTANCE.send_change_gui_screen_command(setGuiScreen);
+        LOG.info("Gui screen change successful");
     }
 }

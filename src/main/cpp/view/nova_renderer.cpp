@@ -149,7 +149,7 @@ namespace nova {
             }
         }
 
-        void debug_logger(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
+        void APIENTRY debug_logger(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
                           const void *user_param) {
             std::string source_name = translate_debug_source(source);
             std::string type_name = translate_debug_type(type);
@@ -189,7 +189,7 @@ namespace nova {
         }
 
         void nova_renderer::check_for_new_shaders() {
-            auto loaded_shaderpack = model.get_loaded_shaderpack();
+            auto& loaded_shaderpack = model.get_loaded_shaderpack();
 
             if(loaded_shaderpack.is_new()) {
                 auto resource = loaded_shaderpack.get_resource();

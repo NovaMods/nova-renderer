@@ -8,8 +8,6 @@
 #define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
-#include <pthread.h>
-
 namespace nova {
     namespace view {
 
@@ -59,10 +57,7 @@ namespace nova {
             glViewport(0, 0, window_dimensions.x, window_dimensions.y);
 
             glfwSetKeyCallback(window, key_callback);
-
-            pthread_t thread = pthread_self();
-            LOG(DEBUG) << "Initialized context in thread " << thread;
-
+			
             return 0;
         }
 
@@ -88,6 +83,7 @@ namespace nova {
         }
 
         void glfw_gl_window::end_frame() {
+            // We're in thread 29
             glfwSwapBuffers(window);
             glfwPollEvents();
 

@@ -9,6 +9,7 @@
 #define RENDERER_AABB_H
 
 #include <glm/glm.hpp>
+#include "utils/export.h"
 
 namespace nova {
     namespace model {
@@ -17,7 +18,7 @@ namespace nova {
          *
          * Contains methods to help it be a productive member of society
          */
-        class AABB {
+        class NOVA_API AABB {
         public:
             void set_extents(glm::vec3& new_extents);
 
