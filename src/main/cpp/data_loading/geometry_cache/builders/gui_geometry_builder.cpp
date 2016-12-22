@@ -59,6 +59,8 @@ namespace nova {
             cur_screen_buffer.indices = indices;
             cur_screen_buffer.vertex_format = format::POS_UV;
 
+            LOG(INFO) << "Build GUI Geometry";
+
             return cur_screen_buffer;
         }
 

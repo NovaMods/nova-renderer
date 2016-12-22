@@ -54,63 +54,63 @@ namespace nova {
 
         shader_tree_node shader_facade::gbuffers_shaders = shader_tree_node(
                 "gbuffers_basic",
-                [](const auto& geom) {return geom.type == geometry_type::selection_box;},
+                [](const render_object& geom) {return geom.type == geometry_type::selection_box;},
                 {
                 shader_tree_node(
                         "gbuffers_skybasic",
-                        [](const auto& geom) {return geom.name == "sky" || geom.name == "horizon" || geom.name == "stars" || geom.name == "void";}
+                        [](const render_object& geom) {return geom.name == "sky" || geom.name == "horizon" || geom.name == "stars" || geom.name == "void";}
                 ),
                 shader_tree_node(
                         "gbuffers_textured",
-                        [](const auto& geom) {return geom.type == geometry_type::particle;},
+                        [](const render_object& geom) {return geom.type == geometry_type::particle;},
                         {
                         shader_tree_node(
                                 "gbuffers_spidereyes",
-                                [](const auto& geom) {return geom.type == geometry_type::eyes;}
+                                [](const render_object& geom) {return geom.type == geometry_type::eyes;}
                         ),
                         shader_tree_node(
                                 "gbuffers_armor_glint",
-                                [](const auto& geom) {return geom.type == geometry_type::glint;}
+                                [](const render_object& geom) {return geom.type == geometry_type::glint;}
                         ),
                         shader_tree_node(
                                 "gbuffers_clouds",
-                                [](const auto& geom) {return geom.type == geometry_type::cloud;}
+                                [](const render_object& geom) {return geom.type == geometry_type::cloud;}
                         ),
                         shader_tree_node(
                                 "gbuffers_skytextured",
-                                [](const auto& geom) {return geom.name == "sun" || geom.name == "moon";}
+                                [](const render_object& geom) {return geom.name == "sun" || geom.name == "moon";}
                         ),
                         shader_tree_node(
                                 "gbuffers_textured_lit",
-                                [](const auto& geom) {return geom.type == geometry_type::lit_particle || geom.name == "world_border";},
+                                [](const render_object& geom) {return geom.type == geometry_type::lit_particle || geom.name == "world_border";},
                                 {
                                 shader_tree_node(
                                         "gbuffers_entities",
-                                        [](const auto& geom) {return geom.type == geometry_type::entity;}
+                                        [](const render_object& geom) {return geom.type == geometry_type::entity;}
                                     ),
                                 shader_tree_node(
                                         "gbuffers_hand",
-                                        [](const auto& geom) {return geom.type == geometry_type::hand;}
+                                        [](const render_object& geom) {return geom.type == geometry_type::hand;}
                                 ),
                                 shader_tree_node(
                                         "gbuffers_weather",
-                                        [](const auto& geom) {return geom.type == geometry_type::weather;}
+                                        [](const render_object& geom) {return geom.type == geometry_type::weather;}
                                 ),
                                 shader_tree_node(
                                         "gbuffers_terrain",
-                                        [](const auto& geom) {return geom.type == geometry_type::block && !geom.is_transparent;},
+                                        [](const render_object& geom) {return geom.type == geometry_type::block && !geom.is_transparent;},
                                         {
                                         shader_tree_node(
                                                 "gbuffers_damagedblock",
-                                                [](const auto& geom) {return geom.type == geometry_type::block && geom.damage_level > 0;}
+                                                [](const render_object& geom) {return geom.type == geometry_type::block && geom.damage_level > 0;}
                                         ),
                                         shader_tree_node(
                                                 "gbuffers_water",
-                                                [](const auto& geom) {return geom.type == geometry_type::block && geom.is_transparent;}
+                                                [](const render_object& geom) {return geom.type == geometry_type::block && geom.is_transparent;}
                                         ),
                                         shader_tree_node(
                                                 "gbuffers_block",
-                                                [](const auto& geom) {return geom.type == geometry_type::falling_block;}
+                                                [](const render_object& geom) {return geom.type == geometry_type::falling_block;}
                                         )
                                 })
                         })
@@ -143,13 +143,13 @@ namespace nova {
             // Save the filters for the shaders that don't exist in the gbuffers tree
             for(auto& item : shader_definitions) {
                 if(item.first == "gui") {
-                    filters["gui"] = [](const auto& geom) {return geom.type == geometry_type::gui;};
+                    filters["gui"] = [](const render_object& geom) {return geom.type == geometry_type::gui;};
 
                 } else if(item.first.find("composite") == 0 || item.first == "final") {
-                    filters[item.first] = [](const auto& geom) {return geom.type == geometry_type::fullscreen_quad;};
+                    filters[item.first] = [](const render_object& geom) {return geom.type == geometry_type::fullscreen_quad;};
 
                 } else if(item.first.find("shadow") == 0) {
-                    filters[item.first] = [](const auto& geom) {return geom.type != geometry_type::fullscreen_quad;};
+                    filters[item.first] = [](const render_object& geom) {return geom.type != geometry_type::fullscreen_quad;};
                 }
             }
             shaderpack_reading_guard.unlock();

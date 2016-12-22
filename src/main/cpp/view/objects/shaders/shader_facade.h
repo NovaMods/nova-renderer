@@ -69,7 +69,11 @@ namespace nova {
             std::unordered_map<std::string, gl_shader_program> &get_loaded_shaders();
 
             /*!
-             * \brief
+             * \brief Sends the shaders to the GPU
+			 *
+			 * The idea here is that the shaders are loaded in the main thread, then sent to the GPU in the render
+			 * thread. This lets me have an OpenGL 4.5 context for the render, while letting Minecraft's 2.1 context 
+			 * persist
              */
             void upload_shaders();
 

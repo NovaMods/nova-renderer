@@ -6,6 +6,7 @@
  */
 
 #include <algorithm>
+#include <easylogging++.h>
 #include "mesh_accessor.h"
 
 #include "data_loading/geometry_cache/builders/gui_geometry_builder.h"
@@ -45,8 +46,10 @@ namespace nova {
                 if(old_gui_object != renderable_objects.end()) {
                     renderable_objects.erase(old_gui_object);
                     renderable_objects.insert(old_gui_object, gui);
+                    LOG(DEBUG) << "Replaced the GUI geometry";
                 } else {
                     renderable_objects.push_back(gui);
+                    LOG(DEBUG) << "Added GUI geometry";
                 }
             }
         }

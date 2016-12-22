@@ -59,6 +59,7 @@ namespace nova {
         }
 
         void data_model::set_gui_screen(mc_gui_screen *screen) {
+            LOG(DEBUG) << "Called set_gui_screen";
             if(are_different_screens(*screen, cur_gui_screen)) {
                 LOG(DEBUG) << "Rebuilding GUI geometry";
                 cur_gui_screen = *screen;
@@ -77,9 +78,13 @@ namespace nova {
 
         bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) {
             for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
+                LOG(TRACE) << "Checking button " << i << " for similarity";
                 if(are_different_buttons(screen1.buttons[i], screen2.buttons[i])) {
+                    LOG(TRACE) << "Button " << i << " is different";
                     return true;
                 }
+
+                LOG(TRACE) << "Button " << i << " is the same in both screens";
             }
 
             return false;

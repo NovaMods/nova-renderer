@@ -17,12 +17,7 @@ namespace nova {
         class loaded_resource {
         public:
             loaded_resource() {}
-
-            loaded_resource(const loaded_resource<Resource> &other) {
-                has_new = other.has_new;
-                resource = other.resource;
-            }
-
+			
             loaded_resource(loaded_resource<Resource> &other) {
                 has_new = other.has_new;
                 resource = other.resource;

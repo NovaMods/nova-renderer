@@ -19,6 +19,8 @@
 
 #define TEXTURE_MANAGER nova::view::nova_renderer::instance->get_model().get_texture_manager()
 
+// runs in thread 5
+
 NOVA_API void init_nova() {
     nova::view::nova_renderer::init_instance();
 }
