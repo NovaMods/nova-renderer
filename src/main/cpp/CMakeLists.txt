@@ -129,7 +129,7 @@ set(NOVA_SOURCE
         view/objects/mesh_accessor.cpp
         data_loading/physics/AABB.cpp
         data_loading/geometry_cache/mesh_definition.cpp
-        data_loading/geometry_cache/builders/mesh_builder.cpp)
+        data_loading/geometry_cache/builders/mesh_builder.cpp test/model/texture_manager_test.cpp)
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
