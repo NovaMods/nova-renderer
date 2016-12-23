@@ -33,11 +33,11 @@ public class AtlasGenerator {
                 File imageFile = new File(splitPath[splitPath.length - 1]);
                 ImageIO.write(imageName.image, "png", imageFile);
             } catch(IOException e) {
-                e.printStackTrace();
+                LOG.warn("Could not write image " + imageName, e);
             }
 
             for(Texture texture : textures) {
-                if(texture.AddImage(imageName.image, imageName.name, padding)) {
+                if(texture.addImage(imageName.image, imageName.name, padding)) {
                     added = true;
                     break;
                 }
@@ -45,7 +45,7 @@ public class AtlasGenerator {
 
             if(!added) {
                 Texture texture = new Texture(width, height);
-                texture.AddImage(imageName.image, imageName.name, padding);
+                texture.addImage(imageName.image, imageName.name, padding);
                 textures.add(texture);
             }
         }
@@ -83,19 +83,20 @@ public class AtlasGenerator {
                 image = null;
             }
 
-            boolean IsLeaf() {
+            boolean isLeaf() {
                 return child[0] == null && child[1] == null;
             }
 
-            Node Insert(BufferedImage image, int padding) {
-                if(!IsLeaf()) {
-                    Node newNode = child[0].Insert(image, padding);
+            Node insert(BufferedImage image, int padding) {
+                LOG.debug("Inserting an image with padding {}", padding);
+                if(!isLeaf()) {
+                    Node newNode = child[0].insert(image, padding);
 
                     if(newNode != null) {
                         return newNode;
                     }
 
-                    return child[1].Insert(image, padding);
+                    return child[1].insert(image, padding);
                 } else {
                     if(this.image != null) {
                         return null;
@@ -124,7 +125,7 @@ public class AtlasGenerator {
                         child[1] = new Node(padding + rect.x + image.getWidth(), rect.y, rect.width - image.getWidth() - padding, rect.height);
                     }
 
-                    return child[0].Insert(image, padding);
+                    return child[0].insert(image, padding);
                 }
             }
 
@@ -189,8 +190,8 @@ public class AtlasGenerator {
             rectangleMap = new TreeMap<>();
         }
 
-        boolean AddImage(BufferedImage image, String name, int padding) {
-            Node node = root.Insert(image, padding);
+        boolean addImage(BufferedImage image, String name, int padding) {
+            Node node = root.insert(image, padding);
 
             if(node == null) {
                 return false;

@@ -435,6 +435,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         NovaNative.INSTANCE.reset_texture_manager();
         int maxAtlasSize = NovaNative.INSTANCE.get_max_texture_size();
+        maxAtlasSize = 8096;    // TODO Figure out why the above line doesn't work
         addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATION, NovaNative.AtlasType.TERRAIN, NovaNative.TextureType.ALBEDO, resourceManager, maxAtlasSize);
         //addTextures(GUI_ALBEDO_TEXTURES_LOCATIONS, NovaNative.AtlasType.GUI, NovaNative.TextureType.ALBEDO, resourceManager, maxAtlasSize);
     }

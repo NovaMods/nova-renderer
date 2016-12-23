@@ -42,7 +42,7 @@ NOVA_API void add_texture_location(mc_texture_atlas_location location) {
 }
 
 NOVA_API int get_max_texture_size() {
-    return TEXTURE_MANAGER.get_max_texture_size();
+    return 8096;//TEXTURE_MANAGER.get_max_texture_size();
 }
 
 NOVA_API void update_renderer() {
