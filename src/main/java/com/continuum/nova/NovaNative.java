@@ -188,7 +188,9 @@ public interface NovaNative extends Library {
         SPECULAR
     }
 
-    void init_nova();
+    void initialize();
+
+    void execute_frame();
 
     void add_texture(mc_atlas_texture texture, int atlas_type, int texture_type);
 

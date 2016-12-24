@@ -14,15 +14,6 @@ namespace nova {
     namespace view {
 
         std::unique_ptr<nova_renderer> nova_renderer::instance;
-        std::unique_ptr<std::thread> nova_renderer::render_thread;
-
-        void run_render() {
-            nova_renderer::instance = std::unique_ptr<nova_renderer>(new nova_renderer());
-
-            while(!nova_renderer::instance->should_end()) {
-                nova_renderer::instance->render_frame();
-            }
-        }
 
         nova_renderer::nova_renderer() : meshes(model.get_mesh_builder()) {
 
@@ -101,8 +92,7 @@ namespace nova {
         }
 
         void nova_renderer::init_instance() {
-            render_thread = std::unique_ptr<std::thread>(new std::thread(run_render));
-            render_thread->detach();
+            instance = std::make_unique<nova_renderer>();
         }
 
         std::string translate_debug_source(GLenum source) {

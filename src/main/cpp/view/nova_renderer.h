@@ -45,17 +45,11 @@ namespace nova {
              *
              * I want only one nova_renderer active at a time, and the C code needs a good way to reference the nova_renderer
              * instance. A singleton fulfils both those requirements.
-             *
-             * This is a pointer so it can be initialized in the render thread. You're going to want to change this to be a
-             * simple object. DON'T. You'll regret it. This NEEDS to be a pointer, and there's no discussion to be had on this
-             * point
              */
             static std::unique_ptr<nova_renderer> instance;
 
             /*!
-             * \brief Initializes the nova_renderer instance
-             *
-             * See \ref ::nova_renderer for an overview of what all that entails
+             * \brief Initializes the static instance of the Nova renderer
              */
             static void init_instance();
 
@@ -97,9 +91,6 @@ namespace nova {
             model::data_model& get_model();
 
         private:
-            //! This is a pointer so I can initialize it later
-            static std::unique_ptr<std::thread> render_thread;
-
             model::data_model model;
 
             glfw_gl_window game_window;
