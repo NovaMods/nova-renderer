@@ -129,7 +129,7 @@ set(NOVA_SOURCE
         view/objects/mesh_accessor.cpp
         data_loading/physics/AABB.cpp
         data_loading/geometry_cache/mesh_definition.cpp
-        data_loading/geometry_cache/builders/mesh_builder.cpp test/model/texture_manager_test.cpp)
+        data_loading/geometry_cache/builders/mesh_builder.cpp)
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
@@ -176,6 +176,7 @@ set(TEST_SOURCE_FILES
         test/model/loaders/shader_loading_test.cpp
         test/model/shaders/shader_facade_test.cpp
         test/model/geometry_cache/builders/gui_geometry_builder_tests.cpp
+        test/model/texture_manager_test.cpp
         )
 
 set(TEST_HEADERS

@@ -514,7 +514,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
         LOG.info("PID: " + pid);
-        NovaNative.INSTANCE.init_nova();
+        NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
     }
 
@@ -525,6 +525,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         if(NovaNative.INSTANCE.should_close()) {
             Minecraft.getMinecraft().shutdown();
         }
+        NovaNative.INSTANCE.execute_frame();
     }
 
     public void setGuiScreen(GuiScreen guiScreenIn) {

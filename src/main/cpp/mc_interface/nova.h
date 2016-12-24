@@ -16,11 +16,8 @@ extern "C" {
 
 /*!
  * \brief Initializes the Nova Renderer
- *
- * How does this initialize the Nova Renderer? Well, the Nova Renderer is a singleton. Why? So I don't have to pass it
- * as a parameter to every single function that this library provides.
  */
-NOVA_API void init_nova();
+NOVA_API void initialize();
 
 /*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture
@@ -56,9 +53,9 @@ NOVA_API int get_max_texture_size();
 NOVA_API void reset_texture_manager();
 
 /*!
- * \brief Updates the Nova Renderer, which mostly involves taking data from the queues
+ * \brief Updates the Nova Renderer and renders the current frame
  */
-NOVA_API void update_renderer();
+NOVA_API void execute_frame();
 
 /*!
  * \brief Checks if Minecraft should close

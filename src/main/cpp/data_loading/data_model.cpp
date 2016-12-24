@@ -78,6 +78,9 @@ namespace nova {
 
         bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) {
             for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
+                if(i >= screen1.num_buttons || i >= screen2.num_buttons) {
+                    break;
+                }
                 LOG(TRACE) << "Checking button " << i << " for similarity";
                 if(are_different_buttons(screen1.buttons[i], screen2.buttons[i])) {
                     LOG(TRACE) << "Button " << i << " is different";
