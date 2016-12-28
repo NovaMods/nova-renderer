@@ -28,11 +28,11 @@ namespace nova {
             };
 
             // We need to make a vertex buffer with the positions and texture coordinates of all the gui elements
-            std::vector<float> vertex_buffer(
-                    (unsigned long long int) (cur_screen.num_buttons * 4 * 5)
-            );    // cur_screen.num_buttons buttons * 4 vertices per button * 5 elements per vertex
+            std::vector<float> vertex_buffer;
+            vertex_buffer.reserve((unsigned long long int) (cur_screen.num_buttons * 4 * 5));    // cur_screen.num_buttons buttons * 4 vertices per button * 5 elements per vertex
 
-            std::vector<unsigned> indices((unsigned long long int) (cur_screen.num_buttons * 6)); // six entries per button
+            std::vector<unsigned> indices;
+            indices.reserve((unsigned long long int) (cur_screen.num_buttons * 6)); // six entries per button
             unsigned start_pos = 0;
 
             for(int i = 0; i < cur_screen.num_buttons; i++) {

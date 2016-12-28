@@ -16,3 +16,6 @@
 [submodule "src/main/cpp/3rdparty/googletest"]
 	path = src/main/cpp/3rdparty/googletest
 	url = https://github.com/google/googletest.git
+[submodule "src/main/cpp/3rdparty/optional"]
+	path = src/main/cpp/3rdparty/optional
+	url = https://github.com/akrzemi1/Optional.git

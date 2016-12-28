@@ -16,10 +16,11 @@ namespace nova {
         mesh_accessor::mesh_accessor(model::mesh_builder &builder_ref) : mesh_builder(builder_ref) {}
 
         std::vector<render_object*> mesh_accessor::get_meshes_for_filter(std::function<bool(const render_object&)> &filter) {
-            std::vector<render_object*> meshes(renderable_objects.size());
+            std::vector<render_object*> meshes;
+            meshes.reserve(renderable_objects.size());
 
             for(auto& renderable_object : renderable_objects) {
-                if(filter(renderable_object)) { // here
+                if(filter(renderable_object)) { // TODO: Crashes at this line. Re-think filters?
                     meshes.push_back(&renderable_object);
                 }
             }
