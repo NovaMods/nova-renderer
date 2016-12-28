@@ -15,12 +15,30 @@
 #include <initializer_list>
 #include <utils/export.h>
 #include <mutex>
+#include <optional>
 
 #include "view/objects/render_object.h"
 #include "gl_shader_program.h"
 
 namespace nova {
     namespace view {
+        /*!
+         * \brief Holds a bunch of information to filter geometry
+         *
+         * At first I used lambdas. Lambdas are very powerful: they can do anything. Anything!
+         *
+         * The lambdas were super hard to debug, though. I stored references to them in some kinda of structure, and
+         * those references were really bad at pointing back to the line of code where the lambda was actually
+         * constructed. I couldn't see what was actually happening. this would be fine, except that it wasn't and I
+         * kept getting crashes that were super hard to debug.
+         *
+         * Now there's a simple data structure. Data is much easier to debug. No more stupid crashes for me!
+         *
+         * (i hope)
+         */
+        struct geometry_filter {
+            std::optional<bool> should_be_block;
+        };
 
         /*!
          * \brief Holds all the filters that a shader might need

@@ -51,7 +51,7 @@ namespace nova {
             render_final_pass();
 
             // We want to draw the GUI on top of the other things, so we'll render it last
-            // Additionally, I could use the stencil buffer to not graw MC underneath the GUI. Could be a fun
+            // Additionally, I could use the stencil buffer to not draw MC underneath the GUI. Could be a fun
             // optimization - I'd have to watch out for when the user hides the GUI, though. I can just re-render the
             // stencil buffer when the GUI screen changes
             render_gui();
