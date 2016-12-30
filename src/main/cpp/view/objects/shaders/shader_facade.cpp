@@ -6,7 +6,7 @@
  */
 
 #include <algorithm>
-#include "shader_facade.h"
+#include "shaderpack.h"
 
 namespace nova {
     namespace view {
@@ -51,7 +51,7 @@ namespace nova {
             }
         }
 
-        shader_tree_node shader_facade::gbuffers_shaders = shader_tree_node(
+        shader_tree_node shaderpack::gbuffers_shaders = shader_tree_node(
                 "gbuffers_basic",
                 geometry_filter().selection_box().build(),
                 {
@@ -116,7 +116,36 @@ namespace nova {
                 })
         });
 
-        void shader_facade::build_filters() {
+        std::unordered_map<std::string, std::function<void(gometry_filter)> shaderpack::filter_modifying_functions = {
+            { "block",              accept_block },
+            { "not_block",          reject_block },
+            { "selection_box",      accept_selection_box },
+            { "not_selection_box",  reject_selection_box },
+            { "entity",             accept_entity },
+            { "not_entity",         reject_entity },
+            { "particle",           accept_particle },
+            { "not_particle",       reject_particle },
+            { "sky_object",         accept_sky_object },
+            { "not_sky_object",     reject_sky_object },
+            { "solid",              accept_solid },
+            { "not_solid",          reject_solid },
+            { "transparent",        accept_transparent },
+            { "not_transparent",    reject_transparent },
+            { "cutout",             accept_cutout },
+            { "not_cutout",         reject_cutout },
+            { "emissive",           accept_emissive },
+            { "not_emissive",       reject_emissive },
+            { "damaged",            accept_damaged },
+            { "not_damaged",        reject_damaged },
+            { "everything_else",    accept_everything_else },
+            { "nothing_else",       reject_everything_else }
+        };
+
+        void shaderpack::shaderpack(std::string shaderpack_name) {
+            
+        }
+
+        void shaderpack::build_filters() {
             // Which shaders are actually loaded?
             std::vector<std::string> loaded_shader_names;
 
@@ -154,21 +183,21 @@ namespace nova {
             shaderpack_reading_guard.unlock();
         }
 
-        gl_shader_program& shader_facade::operator[](std::string key) {
+        gl_shader_program& shaderpack::operator[](std::string key) {
             return loaded_shaders[key];
         }
 
-        void shader_facade::set_shader_definitions(std::unordered_map<std::string, model::shader_definition>& definitions) {
+        void shaderpack::set_shader_definitions(std::unordered_map<std::string, model::shader_definition>& definitions) {
             shaderpack_reading_guard.lock();
             shader_definitions = definitions;
             shaderpack_reading_guard.unlock();
         }
 
-        std::unordered_map<std::string, gl_shader_program> &shader_facade::get_loaded_shaders() {
+        std::unordered_map<std::string, gl_shader_program> &shaderpack::get_loaded_shaders() {
             return loaded_shaders;
         }
 
-        void shader_facade::upload_shaders() {
+        void shaderpack::upload_shaders() {
             shaderpack_reading_guard.lock();
             for(const auto& shader : shader_definitions) {
                 loaded_shaders.erase(shader.first);
