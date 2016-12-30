@@ -27,6 +27,8 @@ namespace nova {
          *  - If one of the optional values isn't set, then it's ignored.
          *  - Block, Entity, Sky, Particle, Geometry Type, and Name filters are applied first. They're all OR'd together
          *  - Transparent, Cutout, Damaged, and Emissive are applied next, OR'd together
+         *  - Any geometry which is accepted by name, name part, or geometry_type is accepted even if other filter
+         *  values would cause it to be reject
          *
          * This means you can have a filter which matches transparent blocks and entities, or all cutout blocks of a
          * certain geometry type, but you can't have a filter that matches cutout blocks and emissive particles. If you
@@ -89,11 +91,21 @@ namespace nova {
         void accept_cutout(geometry_filter& filter);
         void reject_cutout(geometry_filter& filter);
 
-        void accapt_emissive(geometry_filter& filter);
+        void accept_emissive(geometry_filter& filter);
         void reject_emissive(geometry_filter& filter);
 
         void accept_damaged(geometry_filter& filter);
         void reject_damaged(geometry_filter& filter);
+
+        /*!
+         * \brief Tells the given filter to accept all geometry attributes that aren't explicitly rejected
+         */
+        void accept_everything_else(geometry_filter& fitler);
+
+        /*!
+         * \brief Tells the given filter to reject all geometry attributes that aren't explicitly allowed
+         */
+        void reject_everything_else(geometry_filter& filter);
     }
 }
 
