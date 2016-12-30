@@ -45,6 +45,7 @@ namespace nova {
             std::vector<std::string>> names;
             std::vector<std::string>> name_parts;
 
+            std::experimental::optional<bool> should_be_solid;
             std::experimental::optional<bool> should_be_transparent;
             std::experimental::optional<bool> should_be_cutout;
             std::experimental::optional<bool> should_be_emissive;
@@ -59,25 +60,40 @@ namespace nova {
          */
 
         void accept_block(geometry_filter& filter);
-
-        void reject_block(geometry_filter& filter);
+        void reject_block(geometry_filter& filter); 
 
         void accept_entity(geometry_filter& filter);
-
-        void reject_entity(geometry_filter& filter);
+        void reject_entity(geometry_filter& filter); 
 
         void accept_selection_box(geometry_filter& filter);
-
-        void reject_selection_box(geometry_filter& filter);
+        void reject_selection_box(geometry_filter& filter); 
 
         void accept_particle(geometry_filter& filter);
-
-        void reject_particle(geometry_filter& filter);
+        void reject_particle(geometry_filter& filter); 
 
         void accept_sky_object(geometry_filter& filter);
-        void reject_sky_object(geometry_filter& filter);
+        void reject_sky_object(geometry_filter& filter); 
 
         void accept_geometry_type(geometry_filter& filter, geometry_type type);
+        
+        void accept_name(geometry_filter& filter, std::string& name);
+        
+        void accept_name_part(geometry_filter& filter, std::string& name_part);
+
+        void accept_solid(geometry_filter& filter);
+        void reject_solid(geometry_filter& filter);
+
+        void accept_transparent(geometry_filter& filter);
+        void reject_transparent(geometry_filter& filter);
+
+        void accept_cutout(geometry_filter& filter);
+        void reject_cutout(geometry_filter& filter);
+
+        void accapt_emissive(geometry_filter& filter);
+        void reject_emissive(geometry_filter& filter);
+
+        void accept_damaged(geometry_filter& filter);
+        void reject_damaged(geometry_filter& filter);
     }
 }
 
