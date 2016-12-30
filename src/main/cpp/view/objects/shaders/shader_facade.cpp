@@ -141,8 +141,37 @@ namespace nova {
             { "nothing_else",       reject_everything_else }
         };
 
+        nlohmann::json shaderpack::default_shaders_json;
+        bool shaderpack::default_shaders_json_loaded = false;
+
+        void shaderpack::load_default_shaders_json() {
+           LOG(INFO) << "Loading default shader.json file";
+
+           std::ifstream shaders_json("config/shaders.json");
+           if(shaders_json.is_open()) {
+               std::string buf;
+               std::string accum;
+
+               while(getline(shaders_json, buf)) {
+                   accum += buf;   // Not the most effecient, but it works
+               }
+
+               default_shaders_json = nlohmann::json::parse(accum.c_str());
+               default_shaders_json_loaded = true;
+
+            } else {
+                LOG(FATAL) << "Could not load default shaders.json file. Please make sure that the file 'shader.json' is present in the 'config' directory of your Minecraft home folder. If it is not, please download a new one.";
+            }
+        }
+
         void shaderpack::shaderpack(std::string shaderpack_name) {
+            // First, check if there's a shaders.json file in the shaderpack.
+            // If so, use it to tell us which shaders and filters we have. If
+            // that file doesn't exist, load the default one
             
+            if(!default_shaders_json_loaded) {
+                load_default_shaders_json();
+            }
         }
 
         void shaderpack::build_filters() {
