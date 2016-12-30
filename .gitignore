@@ -184,7 +184,6 @@ temp/
 eclipse/
 src/main/java/net/
 src/main/java/mcp/
-src/main/java/Start.java
 
 ### Gradle ###
 .gradle
