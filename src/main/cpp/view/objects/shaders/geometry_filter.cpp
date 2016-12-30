@@ -1,117 +1,58 @@
-#ifndef GEOMETRY_FILTER_H
-#define GEOMETRY_FILTER_H
+#include "geometry_fitler.h"
 
 namespace nova {
     namespace view {
-        geometry_filter& geometry_filter::block() {
-            should_be_block = true;
-            return *this;
+        void accept_block(geometry_filter& filter) {
+            filter.accept_block = true;
         }
 
-        geometry_filter &geometry_filter::not_block() {
-            should_be_block = false;
-            return *this;
+        void reject_block(geometry_filter& filter) {
+            filter.accept_block = false;
         }
 
-        geometry_filter &geometry_filter::entity() {
-            should_be_entity = true;
-            return *this;
+        void accept_entity(geometry_filter& filter) {
+            filter.accept_entity = true;
         }
 
-        geometry_filter &geometry_filter::not_entity() {
-            should_be_entity = false;
-            return *this;
+        void reject_entity(geometry_filter& filter) {
+            filter.accept_entity = false;
         }
 
-        geometry_filter &geometry_filter::particle() {
-            should_be_particle = true;
-            return *this;
+        void accept_selection_box(geometry_filter& filter) {
+            filter.accept_selection_box = true;
         }
 
-        geometry_filter &geometry_filter::not_particle() {
-            should_be_particle = false;
-            return *this;
+        void reject_selection_box(geometry_filter& filter) {
+            filter.accept_selection_box = false;
         }
 
-        geometry_filter &geometry_filter::sky_object() {
-            should_be_sky_object = true;
-            return *this;
+        void accept_particle(geometry_filter& filter) {
+            filter.accept_particle = true;
         }
 
-        geometry_filter &geometry_filter::not_sky_object() {
-            should_be_sky_object = false;
-            return *this;
+        void reject_particle(geometry_filter& filter) {
+            filter.accept_particle = false;
         }
 
-        geometry_filter &geometry_filter::add_geometry_type(geometry_type type) {
-            geometry_types.push_back(type);
-            return *this;
+        void accept_sky_object(geometry_filter& filter) {
+            filter.accept_sky_object = true;
         }
 
-        geometry_filter &geometry_filter::add_name(std::string name) {
-            names.push_back(name);
-            return *this;
+        void reject_sky_object(geometry_filter& filter) {
+            filter.accept_sky_object = false;
         }
 
-        geometry_filter &geometry_filter::add_name_part(std::string name_part) {
-            name_parts.puch_back(name_part);
-            return *this;
+        void accept_geometry_type(geometry_filter& filter, geometry_type type) {
+            filter.geometry_types.push_back(type);
         }
 
-        geometry_filter &geometry_filter::transparent() {
-            should_be_transparent = true;
-            return *this;
+        void accept_name(geometry_filter& fitler, std::string& name) {
+            filter.names.push_back(name);
         }
 
-        geometry_filter &geometry_filter::not_transparent() {
-            should_be_transparent = false;
-            return *this;
+        void accept_name_part(geometry_filter& filter, std::string& name_part) {
+            filter.name_parts.push_back(name_part);
         }
+    }
+}
 
-        geometry_filter &geometry_filter::cutout() {
-            should_be_cutout = true;
-            return *this;
-        }
-
-        geometry_filter &geometry_filter::not_cutout() {
-            should_be_cutout = false;
-            return *this;
-        }
-
-        geometry_filter &geometry_filter::emissive() {
-            should_be_emissive = true;
-            return *this;
-        }
-
-        geometry_filter &geometry_filter::not_emissive() {
-            should_be_emissive = false;
-            return *this;
-        }
-
-        geometry_filter geometry_filter::build() {
-            return *this;
-        }
-
-        geometry_filter &geometry_filter::damaged() {
-            should_be_damaged = true;
-            return *this;
-        }
-
-        geometry_filter &geometry_filter::not_damaged() {
-            should_be_damaged = false;
-            return *this;
-        }
-
-        geometry_filter &geometry_filter::selection_box() {
-            should_be_selection_box = true;
-            return *this;
-        }
-
-        geometry_filter &geometry_filter::not_selection_box() {
-            should_be_selection_box = false;
-            return *this;
-        }
-    };
-};
-
-#endif

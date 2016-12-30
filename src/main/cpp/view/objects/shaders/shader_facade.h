@@ -107,4 +107,4 @@ namespace nova {
 }
 
 
-#endif //RENDERER_SHADER_INTERFACE_H
+#endif //RENDERER_SHADER_INTERFACE_H.
