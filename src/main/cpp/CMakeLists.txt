@@ -40,6 +40,7 @@ add_subdirectory("${3RD_PARTY_DIR}/glm")
 add_subdirectory("${3RD_PARTY_DIR}/easyloggingpp")
 add_subdirectory("${3RD_PARTY_DIR}/miniz")
 add_subdirectory("${3RD_PARTY_DIR}/googletest")
+add_subdirectory("${3RD_PARTY_DIR}/optional")
 
 include_directories(SYSTEM
         "${3RD_PARTY_DIR}/glfw/include"
@@ -49,6 +50,7 @@ include_directories(SYSTEM
         "${3RD_PARTY_DIR}/miniz"
         "${3RD_PARTY_DIR}/json/src"
         "${3RD_PARTY_DIR}/googletest/googletest/include"
+        "${3RD_PARTY_DIR}/optional"
         )
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
