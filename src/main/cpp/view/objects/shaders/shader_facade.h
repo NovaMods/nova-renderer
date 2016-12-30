@@ -63,6 +63,17 @@ namespace nova {
          */
         class shaderpack {
         public:
+            /*!
+             * \brief Loads the shaderpack with the given name
+             *
+             * This is kinda gross because the shaderpack loading logic is all 
+             * in the data_loading module... thing is, there's no longer any
+             * reason to keep that running in a separate thread, so why not put
+             * it here?
+             *
+             * \param shaderpack_name The name of the shaderpcack to load
+             *
+             */
             shaderpack(std::string shaderpack_name);
 
             void set_shader_definitions(std::unordered_map<std::string, model::shader_definition> &definitions);
@@ -95,16 +106,33 @@ namespace nova {
              */
             static unordered_map<std::string, std::function<void(geometry_filter)>> filter_modifying_functions;
 
-            // The shaders and filters are two separate data structures because they're used differently. Here's how I
-            // envision their use:
-            //      - Shaders are loaded. Their source code gets stuck in the shader_definitions map
-            //      - Based on which shaders are loaded,
-            std::unordered_map<std::string, model::shader_definition> shader_definitions;
+            /*!
+             * \brief Holds the default filters, shader heirarchy, and shader 
+             * order
+             *
+             * One super important thing: shaders.json is only relevant for 
+             * drawing the gbuffers phase. It doesn't control fullscreen passes
+             * because the fullscreen passes are very well defined: all 
+             * composites are rendered in alphabetical order, then final is 
+             * rendered. All fullscreen passes use the same geometry, so 
+             * there's no need at all to define per-shader filters
+             */
+            static nlohmann::json default_shaders_json;
+
+            static cool default_shaders_json_loaded;
+ 
             std::unordered_map<std::string, gl_shader_program> loaded_shaders;
-            std::unordered_map<std::string, std::function<bool(const render_object &)>> filters;
+            std::unordered_map<std::string, geometry_filter> filters;
 
             //! \brief Protects reading the shader definitions
             std::mutex shaderpack_reading_guard;
+
+            /*!
+             * \brief Loads the default shaders.json file from the config 
+             * folder so that shaderpacks that don't provide a shader.json file
+             * can still work
+             */
+            void load_default_shaders_json();
 
             /*!
              * \brief Creates the filters to get the geometry that the current shaderpack needs
