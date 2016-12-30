@@ -59,13 +59,12 @@ namespace nova {
         };
 
         /*!
-         * \brief Provides an interface to interact with shaders
-         *
-         * This includes functionality like getting the filters for a shader, getting the framebuffer textures for a
-         * shader, and all sorts of other fun stuff
+         * \brief Represents a shaderpack in all of its glory
          */
-        class shader_facade {
+        class shaderpack {
         public:
+            shaderpack(std::string shaderpack_name);
+
             void set_shader_definitions(std::unordered_map<std::string, model::shader_definition> &definitions);
 
             gl_shader_program &operator[](std::string key);
@@ -87,6 +86,15 @@ namespace nova {
              */
             static shader_tree_node gbuffers_shaders;
 
+            /*!
+             * \brief Holds the functions used to modify a geometry_filter 
+             *
+             * The idea here is that a list of filters will be provided in the shaders.json file. Each of those filters 
+             * corresponds to either a function in this map, or a request to add a specific geometry_type, name, or
+             * name part to the filter.
+             */
+            static unordered_map<std::string, std::function<void(geometry_filter)>> filter_modifying_functions;
+
             // The shaders and filters are two separate data structures because they're used differently. Here's how I
             // envision their use:
             //      - Shaders are loaded. Their source code gets stuck in the shader_definitions map
@@ -105,6 +113,5 @@ namespace nova {
         };
     }
 }
-
 
 #endif //RENDERER_SHADER_INTERFACE_H.
