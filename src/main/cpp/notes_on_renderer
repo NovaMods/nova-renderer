@@ -45,3 +45,9 @@ pretty much what I want to do.
 
 WorldRenderer$func_181662_b seems be to about adding vertices (maybe), func_181673_a is almost certainly about adding
 UVs. func_181663_c is probably about adding normals (since Entities are lit)
+
+
+## TODO:
+When a chunk is loaded, filter all the things in it by the active shaders and their filters. Build geometry buffers for 
+each filter (some buffers will be empty, this is fine)
+
