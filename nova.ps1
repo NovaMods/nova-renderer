@@ -100,23 +100,8 @@ function New-NovaEnvironment {
     ..\..\..\..\runtime\bin\applydiff.exe -p0 -i .\nova.diff
     Set-Location ..\..\..\..\
 
-    Write-Host "Downloading easyloggingpp..."
-    git submodule update --init -- src/main/cpp/3rdparty/easyloggingpp
-
-    Write-Host "Downloading miniz..."
-    git submodule update --init -- src/main/cpp/3rdparty/miniz
-
-    Write-Host "Downloading json..."
-    git submodule update --init -- src/main/cpp/3rdparty/json
-
-    Write-Host "Downloading GLFW..."
-    git submodule update --init -- src/main/cpp/3rdparty/glfw
-
-    Write-Host "Downloading GLM..."
-    git submodule update --init -- src/main/cpp/3rdparty/glm
-
-    Write-Host "Downloading googletest..."
-    git submodule update --init -- src/main/cpp/3rdparty/googletest
+    Write-Host "Downloading dependencies..."
+    git submodule update --init --recursive
 
     Write-Host "Nova set up successfully"
 }
@@ -157,6 +142,8 @@ function New-NovaCode([string]$buildEnvironment) {
     }
 
     # I assume that everything worked properly
+
+    # TODO: Build the patches here
 
     if($nativeOnly -eq $false) {
         # Compile the Java code

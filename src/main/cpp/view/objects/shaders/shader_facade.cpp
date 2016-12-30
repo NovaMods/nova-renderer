@@ -11,11 +11,10 @@
 namespace nova {
     namespace view {
 
-        shader_tree_node::shader_tree_node(std::string name, std::function<bool(const render_object&)> filter) :
+        shader_tree_node::shader_tree_node(std::string name, geometry_filter filter) :
                 shader_name(name), filter(filter) {}
 
-        shader_tree_node::shader_tree_node(std::string name, std::function<bool(const render_object&)> filter,
-                                           std::vector<shader_tree_node> children) :
+        shader_tree_node::shader_tree_node(std::string name, geometry_filter filter, std::vector<shader_tree_node> children) :
                 shader_name(name), filter(filter), children(children) { }
 
         void shader_tree_node::calculate_filters(std::vector<std::string> loaded_shaders) {
@@ -26,7 +25,7 @@ namespace nova {
 
                 if(std::find(loaded_shaders.begin(), loaded_shaders.end(), child.shader_name) == loaded_shaders.end()) {
                     // Only add the child's filters to our own if the child's shader isn't loaded
-                    filters.push_back(child.get_filter_function());
+                    filters.push_back(child.get_filter());
                 }
             }
 
@@ -41,7 +40,7 @@ namespace nova {
             };
         }
 
-        std::function<bool(const render_object&)> shader_tree_node::get_filter_function() {
+        geometry_filter& shader_tree_node::get_filter() {
             return filter;
         }
 
@@ -54,63 +53,63 @@ namespace nova {
 
         shader_tree_node shader_facade::gbuffers_shaders = shader_tree_node(
                 "gbuffers_basic",
-                [](const render_object& geom) {return geom.type == geometry_type::selection_box;},
+                geometry_filter().selection_box().build(),
                 {
                 shader_tree_node(
                         "gbuffers_skybasic",
-                        [](const render_object& geom) {return geom.name == "sky" || geom.name == "horizon" || geom.name == "stars" || geom.name == "void";}
+                        geometry_filter().sky_object().build()
                 ),
                 shader_tree_node(
                         "gbuffers_textured",
-                        [](const render_object& geom) {return geom.type == geometry_type::particle;},
+                        geometry_filter().particle().build(),
                         {
                         shader_tree_node(
                                 "gbuffers_spidereyes",
-                                [](const render_object& geom) {return geom.type == geometry_type::eyes;}
+                                geometry_filter().add_geometry_type(geometry_type::eyes).build()
                         ),
                         shader_tree_node(
                                 "gbuffers_armor_glint",
-                                [](const render_object& geom) {return geom.type == geometry_type::glint;}
+                                geometry_filter().add_geometry_type(geometry_type::glint).build()
                         ),
                         shader_tree_node(
                                 "gbuffers_clouds",
-                                [](const render_object& geom) {return geom.type == geometry_type::cloud;}
+                                geometry_filter().add_geometry_type(geometry_type::cloud).build()
                         ),
                         shader_tree_node(
                                 "gbuffers_skytextured",
-                                [](const render_object& geom) {return geom.name == "sun" || geom.name == "moon";}
+                                geometry_filter().add_name("sun").add_name("moon").build()
                         ),
                         shader_tree_node(
                                 "gbuffers_textured_lit",
-                                [](const render_object& geom) {return geom.type == geometry_type::lit_particle || geom.name == "world_border";},
+                                geometry_filter().add_geometry_type(geometry_type::lit_particle).add_name("world_border").build(),
                                 {
                                 shader_tree_node(
                                         "gbuffers_entities",
-                                        [](const render_object& geom) {return geom.type == geometry_type::entity;}
+                                        geometry_filter().entity().build()
                                     ),
                                 shader_tree_node(
                                         "gbuffers_hand",
-                                        [](const render_object& geom) {return geom.type == geometry_type::hand;}
+                                        geometry_filter().add_geometry_type(geometry_type::hand).build()
                                 ),
                                 shader_tree_node(
                                         "gbuffers_weather",
-                                        [](const render_object& geom) {return geom.type == geometry_type::weather;}
+                                        geometry_filter().add_geometry_type(geometry_type::weather).build()
                                 ),
                                 shader_tree_node(
                                         "gbuffers_terrain",
-                                        [](const render_object& geom) {return geom.type == geometry_type::block && !geom.is_transparent;},
+                                        geometry_filter().add_geometry_type(geometry_type::block).not_transparent().build(),
                                         {
                                         shader_tree_node(
                                                 "gbuffers_damagedblock",
-                                                [](const render_object& geom) {return geom.type == geometry_type::block && geom.damage_level > 0;}
+                                                geometry_filter().block().damaged().build()
                                         ),
                                         shader_tree_node(
                                                 "gbuffers_water",
-                                                [](const render_object& geom) {return geom.type == geometry_type::block && geom.is_transparent;}
+                                                geometry_filter().block().transparent().build()
                                         ),
                                         shader_tree_node(
                                                 "gbuffers_block",
-                                                [](const render_object& geom) {return geom.type == geometry_type::falling_block;}
+                                                geometry_filter().block().entity().build()
                                         )
                                 })
                         })
@@ -180,6 +179,115 @@ namespace nova {
                 loaded_shaders[shader.first].set_filter(filters[shader.first]);
             }
             shaderpack_reading_guard.unlock();
+        }
+
+        geometry_filter& geometry_filter::block() {
+            should_be_block = true;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::not_block() {
+            should_be_block = false;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::entity() {
+            should_be_entity = true;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::not_entity() {
+            should_be_entity = false;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::particle() {
+            should_be_particle = true;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::not_particle() {
+            should_be_particle = false;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::sky_object() {
+            should_be_sky_object = true;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::not_sky_object() {
+            should_be_sky_object = false;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::add_geometry_type(geometry_type type) {
+            geometry_types.push_back(type);
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::add_name(std::string name) {
+            names.push_back(name);
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::add_name_part(std::string name_part) {
+            name_parts.puch_back(name_part);
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::transparent() {
+            should_be_transparent = true;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::not_transparent() {
+            should_be_transparent = false;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::cutout() {
+            should_be_cutout = true;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::not_cutout() {
+            should_be_cutout = false;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::emissive() {
+            should_be_emissive = true;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::not_emissive() {
+            should_be_emissive = false;
+            return *this;
+        }
+
+        geometry_filter geometry_filter::build() {
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::damaged() {
+            should_be_damaged = true;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::not_damaged() {
+            should_be_damaged = false;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::selection_box() {
+            should_be_selection_box = true;
+            return *this;
+        }
+
+        geometry_filter &geometry_filter::not_selection_box() {
+            should_be_selection_box = false;
+            return *this;
         }
     }
 }

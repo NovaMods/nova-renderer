@@ -16,11 +16,11 @@ TEST(shader_tree_node, calculate_filters_simple) {
 
     node.calculate_filters(loaded_shaders);
 
-    auto filter_function = node.get_filter_function();
+    auto filter_function = node.get_filter();
 
     // Check that the filter function we get back is the same one we sent in
     // I don't know of a better way to test this... and technically this test case will test both calcualte_filters and
-    // get_filter_function. Oops.
+    // get_filter. Oops.
 
     nova::view::render_object block = {};
     block.is_block = true;
@@ -50,7 +50,7 @@ TEST(shader_tree_node, calculate_filters_one_child) {
 
     node.calculate_filters(loaded_shaders);
 
-    auto filter_function = node.get_filter_function();
+    auto filter_function = node.get_filter();
 
     nova::view::render_object terrain_block = {};
     terrain_block.type = nova::view::geometry_type::block;
