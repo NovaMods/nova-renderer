@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <unordered_map>
 #include <initializer_list>
 #include <utils/export.h>
 #include <mutex>
@@ -74,7 +75,7 @@ namespace nova {
              * \param shaderpack_name The name of the shaderpcack to load
              *
              */
-            shaderpack(nlohmann::json shaders_json, std::unordered_map<std::string, shader_definition>& shaders);
+            shaderpack(nlohmann::json shaders_json, std::unordered_map<std::string, model::shader_definition>& shaders);
 
             void set_shader_definitions(std::unordered_map<std::string, model::shader_definition> &definitions);
 
@@ -84,10 +85,10 @@ namespace nova {
 
             /*!
              * \brief Sends the shaders to the GPU
-			 *
-			 * The idea here is that the shaders are loaded in the main thread, then sent to the GPU in the render
-			 * thread. This lets me have an OpenGL 4.5 context for the render, while letting Minecraft's 2.1 context 
-			 * persist
+             *
+             * The idea here is that the shaders are loaded in the main thread, then sent to the GPU in the render
+             * thread. This lets me have an OpenGL 4.5 context for the render, while letting Minecraft's 2.1 context
+             * persist
              */
             void upload_shaders();
 
@@ -104,7 +105,7 @@ namespace nova {
              * corresponds to either a function in this map, or a request to add a specific geometry_type, name, or
              * name part to the filter.
              */
-            static unordered_map<std::string, std::function<void(geometry_filter)>> filter_modifying_functions;
+            static std::unordered_map<std::string, std::function<void(geometry_filter)>> filter_modifying_functions;
 
             /*!
              * \brief Holds the default filters, shader heirarchy, and shader 
@@ -119,7 +120,7 @@ namespace nova {
              */
             static nlohmann::json default_shaders_json;
 
-            static cool default_shaders_json_loaded;
+            static bool default_shaders_json_loaded;
  
             std::unordered_map<std::string, gl_shader_program> loaded_shaders;
             std::unordered_map<std::string, geometry_filter> filters;
