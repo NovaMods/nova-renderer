@@ -34,11 +34,13 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 # need to compile GLFW and JSON
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/glfw")
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/json")
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/glm")
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/easyloggingpp")
-add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/3rdparty/miniz")
+add_subdirectory("${3RD_PARTY_DIR}/glfw")
+add_subdirectory("${3RD_PARTY_DIR}/json")
+add_subdirectory("${3RD_PARTY_DIR}/glm")
+add_subdirectory("${3RD_PARTY_DIR}/easyloggingpp")
+add_subdirectory("${3RD_PARTY_DIR}/miniz")
+add_subdirectory("${3RD_PARTY_DIR}/googletest")
+add_subdirectory("${3RD_PARTY_DIR}/optional")
 
 include_directories(SYSTEM
         "${3RD_PARTY_DIR}/glfw/include"
@@ -46,80 +48,90 @@ include_directories(SYSTEM
         "${3RD_PARTY_DIR}/glad/include"
         "${3RD_PARTY_DIR}/glm"
         "${3RD_PARTY_DIR}/miniz"
-        "${3RD_PARTY_DIR}/json/src")
+        "${3RD_PARTY_DIR}/json/src"
+        "${3RD_PARTY_DIR}/googletest/googletest/include"
+        "${3RD_PARTY_DIR}/optional"
+        )
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 # Setup the nova-core library.
-set(NOVA_SOURCE
-
-        view/gui/gui_renderer.cpp
-
-        view/nova_renderer.cpp
-        mc_interface/nova_facade.cpp
-        model/texture_manager.cpp
-        model/uniform_buffer_store.cpp
-        view/gui/gui_renderer.cpp
-
-        model/gl/gl_shader_program.cpp
-        model/gl/gl_uniform_buffer.cpp
-        model/gl/gl_vertex_buffer.cpp
-        model/texture2D.cpp
-
-        gl/windowing/glfw_gl_window.cpp
-
-        interfaces/ivertex_buffer.cpp
-
-        utils/utils.cpp
-
-        model/settings.cpp
-        model/loaders/shader_loading.cpp
-        model/loaders/loaders.h
-        model/loaders/shader_loading.h
-        model/data_model.cpp
-        model/data_model.h
-        model/loaders/loader_utils.cpp
-        model/loaders/loader_utils.h
-
-        # Need to compile third party stuff, too...
-        3rdparty/glad/src/glad.c
-        3rdparty/miniz/miniz.c
-        )
-
-
 set(NOVA_HEADERS
 
-        view/gui/gui_renderer.h
+        data_loading/geometry_cache/builders/gui_geometry_builder.h
 
-        core/renderer/batch_builder.h
-        core/renderer/model_renderer.h
-
-        view/shaders/uniform_buffer_definitions.h
+        view/objects/shaders/uniform_buffer_definitions.h
 
         mc_interface/nova.h
         view/nova_renderer.h
-        model/texture_manager.h
-        view/types.h
+        data_loading/texture_manager.h
+        utils/types.h
 
-        model/gl/gl_shader_program.h
-        model/gl/gl_uniform_buffer.h
-        model/gl/gl_vertex_buffer.h
-        model/texture2D.h
+        view/objects/shaders/gl_shader_program.h
+        view/objects/gl_uniform_buffer.h
+        view/objects/gl_mesh.h
+        data_loading/texture2D.h
 
-        gl/windowing/glfw_gl_window.h
+        view/windowing/glfw_gl_window.h
 
-        interfaces/igraphics_context.h
-        interfaces/ivertex_buffer.h
         interfaces/iwindow.h
 
         mc_interface/mc_gui_objects.h
         mc_interface/mc_objects.h
 
         utils/utils.h
-        model/settings.h
+        data_loading/settings.h
+        data_loading/loaders/loaders.h
+        data_loading/loaders/shader_loading.h
+        data_loading/data_model.h
+        data_loading/loaders/loader_utils.h
+        view/objects/mesh_accessor.h
+        view/render_pass.h
+        view/objects/shaders/shader_facade.h
+        view/objects/render_object.h
+
+        data_loading/physics/AABB.h
+        data_loading/loaders/shader_source_structs.h
+        data_loading/geometry_cache/mesh_definition.h
+        data_loading/geometry_cache/builders/mesh_builder.h
+        data_loading/loaded_resource.h
         )
+
+set(NOVA_SOURCE
+
+        data_loading/geometry_cache/builders/gui_geometry_builder.cpp
+
+        view/nova_renderer.cpp
+        mc_interface/nova_facade.cpp
+        data_loading/texture_manager.cpp
+        view/uniform_buffer_store.cpp
+        data_loading/geometry_cache/builders/gui_geometry_builder.cpp
+
+        view/objects/shaders/gl_shader_program.cpp
+        view/objects/gl_uniform_buffer.cpp
+        view/objects/gl_mesh.cpp
+        data_loading/texture2D.cpp
+
+        view/windowing/glfw_gl_window.cpp
+
+        utils/utils.cpp
+
+        data_loading/settings.cpp
+        data_loading/loaders/shader_loading.cpp
+        data_loading/data_model.cpp
+        data_loading/loaders/loader_utils.cpp
+
+        # Need to compile third party stuff, too...
+        3rdparty/glad/src/glad.c
+        3rdparty/miniz/miniz.c
+
+        view/objects/shaders/shader_facade.cpp
+        view/objects/mesh_accessor.cpp
+        data_loading/physics/AABB.cpp
+        data_loading/geometry_cache/mesh_definition.cpp
+        data_loading/geometry_cache/builders/mesh_builder.cpp)
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
@@ -159,7 +171,14 @@ target_link_libraries(nova-renderer-static ${COMMON_LINK_LIBS})
 
 # Setup the nova-test executable
 set(TEST_SOURCE_FILES
+        3rdparty/glad/src/glad.c
+
         test/main.cpp
+
+        test/model/loaders/shader_loading_test.cpp
+        test/model/shaders/shader_facade_test.cpp
+        test/model/geometry_cache/builders/gui_geometry_builder_tests.cpp
+        test/model/texture_manager_test.cpp
         )
 
 set(TEST_HEADERS
@@ -168,10 +187,10 @@ set(TEST_HEADERS
 source_group("test" FILES ${TEST_SOURCE_FILES} ${TEST_HEADERS})
 
 add_executable(nova-test ${TEST_SOURCE_FILES})
-add_dependencies(nova-test nova-renderer-static)
+add_dependencies(nova-test nova-renderer)
 target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
-target_link_libraries(nova-test nova-renderer-static ${COMMON_LINK_LIBS})
-set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test")
+target_link_libraries(nova-test nova-renderer gtest ${COMMON_LINK_LIBS})
+set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # Needed for a similar reason as the libary
 if (MSVC)

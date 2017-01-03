@@ -3,17 +3,17 @@
 
 #if defined(_WIN32)
   #if defined(DLL_EXPORT)
-    #define NOVA_EXPORT __declspec(dllexport)
+    #define NOVA_API __declspec(dllexport)
   #else
     #if defined(STATIC_LINKAGE)
-      #define NOVA_EXPORT
+      #define NOVA_API
     #else
-      #define NOVA_EXPORT __declspec(dllimport)
+      #define NOVA_API __declspec(dllimport)
     #endif
   #endif
 #else
   #if defined(__GNUC__)
-    #define NOVA_EXPORT __attribute__((visibility("default")))
+    #define NOVA_API __attribute__((visibility("default")))
   #endif
 #endif
 

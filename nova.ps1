@@ -100,20 +100,8 @@ function New-NovaEnvironment {
     ..\..\..\..\runtime\bin\applydiff.exe -p0 -i .\nova.diff
     Set-Location ..\..\..\..\
 
-    Write-Host "Downloading GLFW..."
-    git submodule update --init -- src/main/cpp/3rdparty/easyloggingpp
-
-    Write-Host "Downloading miniz..."
-    git submodule update --init -- src/main/cpp/3rdparty/miniz
-
-    Write-Host "Downloading json..."
-    git submodule update --init -- src/main/cpp/3rdparty/json
-
-    Write-Host "Downloading GLFW..."
-    git submodule update --init -- src/main/cpp/3rdparty/glfw
-
-    Write-Host "Downloading GLM..."
-    git submodule update --init -- src/main/cpp/3rdparty/glm
+    Write-Host "Downloading dependencies..."
+    git submodule update --init --recursive
 
     Write-Host "Nova set up successfully"
 }
@@ -141,11 +129,11 @@ function New-NovaCode([string]$buildEnvironment) {
 
     if($buildEnvironment -eq "mingw") {
         Write-Host "Building with MinGW"
-        $buildGood = New-MinGWNovaBuild
+        New-MinGWNovaBuild
 
     } elseif($buildEnvironment -eq "msvc") {
         Write-Host "Building wth Visual Studio"
-        $buildGood = New-VisualStudioBuild
+        New-VisualStudioBuild
     }
 
     if($buildGood -eq $false) {
@@ -154,6 +142,8 @@ function New-NovaCode([string]$buildEnvironment) {
     }
 
     # I assume that everything worked properly
+
+    # TODO: Build the patches here
 
     if($nativeOnly -eq $false) {
         # Compile the Java code
@@ -184,10 +174,6 @@ function New-MinGWNovaBuild {
 
         # MinGW is probably installed, let's assume it is
         cmake -G "MinGW Makefiles" ../../src/main/cpp
-        if($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to invoke CMake, aborting compilation"
-            return $false
-        }
 
         # Compile the code
         mingw32-make -f Makefile nova-renderer
@@ -204,8 +190,6 @@ function New-MinGWNovaBuild {
         Write-Error "Could not call the MinGW Make tool, unable to build Nova. Please install MinGW AND ensure that mingw32-make is in your path"
         return $false
     }
-
-    return $true
 }
 
 function New-VisualStudioBuild {
