@@ -3,9 +3,8 @@
  * \date 18-May-16.
  */
 
+#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
-
-#include <iostream>
 
 #include "utils.h"
 
@@ -31,6 +30,17 @@ namespace nova {
 
     const char * resource_not_found::what() const noexcept {
         return message.c_str();
+    }
+
+    nlohmann::json load_json_from_stream(std::istream& stream) {
+        std::string buf;
+        std::string accum;
+
+        while(getline(stream, buf)) {
+            accum += buf;
+        }
+
+        return nlohmann::json::parse(accum.c_str());
     }
 }
 

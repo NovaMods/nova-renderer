@@ -435,6 +435,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         NovaNative.INSTANCE.reset_texture_manager();
         int maxAtlasSize = NovaNative.INSTANCE.get_max_texture_size();
+        maxAtlasSize = 8096;    // TODO Figure out why the above line doesn't work
         addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATION, NovaNative.AtlasType.TERRAIN, NovaNative.TextureType.ALBEDO, resourceManager, maxAtlasSize);
         //addTextures(GUI_ALBEDO_TEXTURES_LOCATIONS, NovaNative.AtlasType.GUI, NovaNative.TextureType.ALBEDO, resourceManager, maxAtlasSize);
     }
@@ -513,7 +514,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
         LOG.info("PID: " + pid);
-        NovaNative.INSTANCE.init_nova();
+        NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
     }
 
@@ -521,16 +522,16 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
-        NovaNative.mc_render_command cmd = RenderCommandBuilder.makeRenderCommand(mc, renderPartialTicks);
-        NovaNative.INSTANCE.send_render_command(cmd);
-
         if(NovaNative.INSTANCE.should_close()) {
             Minecraft.getMinecraft().shutdown();
         }
+        NovaNative.INSTANCE.execute_frame();
     }
 
     public void setGuiScreen(GuiScreen guiScreenIn) {
+        LOG.info("Changing GUI screen");
         NovaNative.mc_set_gui_screen_command set_gui_screen = RenderCommandBuilder.createSetGuiScreenCommand(guiScreenIn);
         NovaNative.INSTANCE.send_change_gui_screen_command(set_gui_screen);
+        LOG.info("Gui screen change successful");
     }
 }

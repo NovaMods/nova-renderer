@@ -13,6 +13,10 @@
 #include <algorithm>
 #include <exception>
 
+#include <utils/export.h>
+#include <json.hpp>
+#include <fstream>
+
 /*!
  * \brief Initializes the logging system
  */
@@ -33,13 +37,27 @@ namespace nova {
     /*!
      * \brief Simple exception to represent that a resouce can not be found
      */
-    class resource_not_found : public std::exception {
+    class NOVA_API resource_not_found : public std::exception {
     public:
         resource_not_found(const std::string& msg);
         virtual const char * what() const noexcept;
     private:
         std::string message;
     };
+
+    /*!
+     * \brief Loads a json data structure from the provided stream
+     *
+     * A couple assumptions are made here:
+     *  - The stream is already open
+     *  - The stream will return a valid JSON string
+     *
+     * If one or both of these is not true, this method will throw an exception
+     *
+     * Also worth noting: this function will close the stream. Do not try to
+     * use it after calling this function of you'll have a bad time
+     */
+    nlohmann::json load_json_from_stream(std::istream& stream);
 }
 
 #endif //RENDERER_UTILS_H

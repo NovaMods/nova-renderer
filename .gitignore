@@ -77,6 +77,7 @@ build/
 *.iws
 
 ## Plugin-specific files:
+.idea/sonarlint
 
 # IntelliJ
 /out/
@@ -183,7 +184,6 @@ temp/
 eclipse/
 src/main/java/net/
 src/main/java/mcp/
-src/main/java/Start.java
 
 ### Gradle ###
 .gradle

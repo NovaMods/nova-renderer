@@ -16,11 +16,8 @@ extern "C" {
 
 /*!
  * \brief Initializes the Nova Renderer
- *
- * How does this initialize the Nova Renderer? Well, the Nova Renderer is a singleton. Why? So I don't have to pass it
- * as a parameter to every single function that this library provides.
  */
-NOVA_EXPORT void init_nova();
+NOVA_API void initialize();
 
 /*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture
@@ -32,7 +29,7 @@ NOVA_EXPORT void init_nova();
  *
  * \param texture The texture to add to the renderer
  */
-NOVA_EXPORT void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type);
+NOVA_API void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type);
 
 /*!
  * \brief Adds the given location to the list of texture locations
@@ -42,32 +39,23 @@ NOVA_EXPORT void add_texture(mc_atlas_texture & texture, int atlas_type, int tex
  *
  * \param location The location of the texture
  */
-NOVA_EXPORT void add_texture_location(mc_texture_atlas_location location);
+NOVA_API void add_texture_location(mc_texture_atlas_location location);
 
 /*!
  * \brief Queries OpenGL and returns the maximum texture size that OpenGL allows
  */
-NOVA_EXPORT int get_max_texture_size();
+NOVA_API int get_max_texture_size();
 
 /*!
  * \brief Clears out all the textures held by the texture manager, readying the texture manager to receive the textures
  * from a new resource pack
  */
-NOVA_EXPORT void reset_texture_manager();
+NOVA_API void reset_texture_manager();
 
 /*!
- * \brief Updates the Nova Renderer, which mostly involves taking data from the queues
+ * \brief Updates the Nova Renderer and renders the current frame
  */
-NOVA_EXPORT void update_renderer();
-
-/*!
- * \brief Sends the C++ code a command to render a fram
- *
- * \param cmd The mc_render_command containing all the data to be rendered for the current frame
- *
- * See \ref mc_render_command for a description of the render command
- */
-NOVA_EXPORT void send_render_command(mc_render_command * command);
+NOVA_API void execute_frame();
 
 /*!
  * \brief Checks if Minecraft should close
@@ -78,14 +66,28 @@ NOVA_EXPORT void send_render_command(mc_render_command * command);
  *
  * \return Trus if the window should close, false otherwise
  */
-NOVA_EXPORT bool should_close();
+NOVA_API bool should_close();
 
 /*!
  * \brief Sets the GUI screen that Nova should render
  *
  * \param set_gui_screen The command to set the GUI screen
  */
-NOVA_EXPORT void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen);
+NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen);
+
+/**
+ * Settings updates
+ */
+
+/*!
+ * \brief Sets a string setting to a specified value
+ *
+ * This is super useful when, say, changing the loaded shaderpack
+ *
+ * \param setting_name The name of the setting to update
+ * \param setting_value The desired value of the setting
+ */
+NOVA_API void set_string_setting(const char * setting_name, const char * setting_value);
 
 };  // End extern C
     // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.
