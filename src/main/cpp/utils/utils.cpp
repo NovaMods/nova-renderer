@@ -31,5 +31,18 @@ namespace nova {
     const char * resource_not_found::what() const noexcept {
         return message.c_str();
     }
+
+    nlohmann::json load_json_from_stream(std::istream& stream) {
+        std::string buf;
+        std::string accum;
+
+        while(getline(stream, buf)) {
+            accum += buf;
+        }
+
+        stream.close();
+
+        return nlohmann::json::parse(accum.c_str());
+    }
 }
 

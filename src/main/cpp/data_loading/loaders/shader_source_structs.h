@@ -9,7 +9,13 @@
 #define RENDERER_SHADER_SOURCE_STRUCTS_H
 
 #include <string>
+#include <shared_ptr>
 #include <vector>
+
+#include <optional/optional.hpp>
+
+// While I usually don't like to do this, I'm tires of typing so much
+using namespace std::experimental;
 
 namespace nova {
     namespace model {
@@ -29,9 +35,27 @@ namespace nova {
          * \brief Represents a shader before it goes to the GPU
          */
         struct shader_definition {
+            std::string name;
+            std::vector<std::string> filters;
+            optional<std::string> fallback_name;
+
+            optional<std::shared_ptr<shader_definition>> fallback_def;
+
             std::vector<shader_line> vertex_source;
             std::vector<shader_line> fragment_source;
             // TODO: Figure out how to handle geometry and tessellation shaders
+            
+            shader_definition(nlohmann::json& json) {
+                name = json["name"].as_text();
+
+                for(auto filter : json["filters"]) {
+                    filters.push_back(filter.as_text());
+                }
+
+                if(json.has_element("fallback")) {
+                    fallback = std::optional_of<std::string>(json["fallback"].as_text());
+                }
+            }
         };
     }
 }

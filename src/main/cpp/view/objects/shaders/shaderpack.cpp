@@ -172,6 +172,8 @@ namespace nova {
             if(!default_shaders_json_loaded) {
                 load_default_shaders_json();
             }
+
+
         }
 
         void shaderpack::build_filters() {
