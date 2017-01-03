@@ -14,7 +14,7 @@
 #include <exception>
 
 #include <utils/export.h>
-#include <json/json.hpp>
+#include <json.hpp>
 #include <fstream>
 
 /*!

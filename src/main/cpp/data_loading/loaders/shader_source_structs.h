@@ -9,10 +9,11 @@
 #define RENDERER_SHADER_SOURCE_STRUCTS_H
 
 #include <string>
-#include <shared_ptr>
+#include <memory>
 #include <vector>
 
-#include <optional/optional.hpp>
+#include <optional.hpp>
+#include <json.hpp>
 
 // While I usually don't like to do this, I'm tires of typing so much
 using namespace std::experimental;
@@ -46,14 +47,15 @@ namespace nova {
             // TODO: Figure out how to handle geometry and tessellation shaders
             
             shader_definition(nlohmann::json& json) {
-                name = json["name"].as_text();
+                name = json["name"];
 
                 for(auto filter : json["filters"]) {
-                    filters.push_back(filter.as_text());
+                    filters.push_back(filter);
                 }
 
-                if(json.has_element("fallback")) {
-                    fallback = std::optional_of<std::string>(json["fallback"].as_text());
+                if(json.find("fallback") != json.end()) {
+                    std::string fallback_name_str = json["fallback"];
+                    fallback_name = optional<std::string>(fallback_name_str);
                 }
             }
         };

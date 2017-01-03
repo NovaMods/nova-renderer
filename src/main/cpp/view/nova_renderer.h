@@ -9,7 +9,7 @@
 #include <thread>
 #include <view/objects/mesh_accessor.h>
 #include <data_loading/data_model.h>
-#include <view/objects/shaders/shader_facade.h>
+#include <view/objects/shaders/shaderpack.h>
 #include "utils/export.h"
 
 #include "interfaces/iwindow.h"
@@ -99,7 +99,7 @@ namespace nova {
 
             uniform_buffer_store ubo_manager;
 
-            shader_facade shaders;
+            std::unique_ptr<shaderpack> shaders;
 
             /*!
              * \brief Renders the GUI of Minecraft
