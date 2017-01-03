@@ -38,6 +38,7 @@ namespace nova {
         };
 
         nova::view::shaderpack load_shaderpack(const std::string& shaderpack_name) {
+            // TODO: Make this function return a shaderpack object
             // TODO: Make shaderpacks take a bunch of shader definitions and
             // the shaders.json file's data in the constructor, and figure
             // everything out from there
@@ -52,77 +53,25 @@ namespace nova {
             }
         }
 
-        /*!
-         * \brief Looks at the json data present in 
-         */
-        std::vector<shader_definition> get_shader_definitions(nlohmann::json& shaders_json) {
-            // Check if the top-level element is an array or an object. If it's
-            // an array, load all the elements of the array into shader 
-            // definition objects. If it's an object, look for a property 
-            // called 'shaders' which should be an array. Load the definitions
-            // from there.
-            
-            nlohmann::json& definitions_array = shaders_json;
-            if(shaders_json.is_object()) {
-                definitions_array = shaders_json["shaders"];
-            }
-
-            std::vector<shader_definition> definitions;
-            for(auto definition : definitions_array) {
-                definitions.push_back(shader_definition(definition));
-            }
-
-            return definitions;
-        }
-
-        nova::view::shaderpack load_sources_from_folder(
+        std::unordered_map<std::string, shader_definition> load_sources_from_folder(
                 const std::string& shaderpack_name,
                 const std::vector<std::string>& shader_names
         ) {
-            std::vector<shader_definition> sources;
+            std::unordered_map<std::string, shader_definition> sources;
 
-            // First, load in the shaders.json file so we can see what we're
-            // dealing with
-            std::ifstream shaders_json_file("shaderpacks/" + shaderpack_name + "/shaders.json");
-            // TODO: Load a default shaders.json file, store it somewhere 
-            // accessable, and load it if there isn't a shaders.json in the 
-            // shaderpack
-            nlohmann::json shaders_json = shaders_json_file.is_open() ? load_json_from_stream(shaders_json_file) : nlohmann::json();
-            
-            // Figure out all the shader files that we need to load
-            auto shaders = get_shader_definitions(shaders_json);
-
-            for(auto& shader : shaders) {
+            for(auto& name : shader_names) {
                 try {
                     // All shaderpacks are in the shaderpacks folder
-                    auto shader_path = "shaderpacks/" + shaderpack_name + "/shaders/" + shader.name;
- 
-                    shader.vertex_source = load_shader_file(shader_path, vertex_extensions);
-                    shader.fragment_source = load_shader_file(shader_path, fragment_extensions); 
+                    auto shader_path = "shaderpacks/" + shaderpack_name + "/shaders/" + name;
 
-                    sources.push_back(full_shader_source);
+                    shader_definition full_shader_source = {
+                            load_shader_file(shader_path, vertex_extensions),
+                            load_shader_file(shader_path, fragment_extensions)
+                    };
+
+                    sources.emplace(name, full_shader_source);
                 } catch(std::exception e) {
                     LOG(ERROR) << e.what();
-                }
-            }
-
-            warn_fo
-
-            // Verify that all the fallbacks exist
-            for(auto def : sources) {
-                if(def.fallback) {
-                    bool found_fallback = false;
-                    for(auto test : sources) {
-                        if(test.name == *def.fallback) {
-                            found_fallback = true;
-                        }
-                    }
-
-                    if(!found_fallback) {
-                        LOG(WARN) << "Could not find fallback shader " << def.fallback << " for shader " << def.name << ".";
-                    }
-                } else {
-                    LOG(WARN) << "No fallback specified for shader " << def.name << ". If you forget that shader, its geometry won't render";
                 }
             }
 

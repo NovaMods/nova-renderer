@@ -74,7 +74,7 @@ namespace nova {
              * \param shaderpack_name The name of the shaderpcack to load
              *
              */
-            shaderpack(std::string shaderpack_name);
+            shaderpack(nlohmann::json shaders_json, std::unordered_map<std::string, shader_definition>& shaders);
 
             void set_shader_definitions(std::unordered_map<std::string, model::shader_definition> &definitions);
 

@@ -17,14 +17,7 @@ namespace nova {
 
             std::ifstream config_file(filename);
             if(config_file.is_open()) {
-                std::string buf;
-                std::string accum;
-
-                while(getline(config_file, buf)) {
-                    accum += buf;
-                }
-
-                options = nlohmann::json::parse(accum.c_str());
+                options = load_json_from_stream(config_file);
             }
         }
 
