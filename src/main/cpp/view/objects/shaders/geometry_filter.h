@@ -44,8 +44,8 @@ namespace nova {
 
             std::vector<geometry_type> geometry_types;
 
-            std::vector<std::string>> names;
-            std::vector<std::string>> name_parts;
+            std::vector<std::string> names;
+            std::vector<std::string> name_parts;
 
             std::experimental::optional<bool> should_be_solid;
             std::experimental::optional<bool> should_be_transparent;

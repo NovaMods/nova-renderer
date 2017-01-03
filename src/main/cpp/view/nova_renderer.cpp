@@ -77,7 +77,7 @@ namespace nova {
 
         void nova_renderer::render_gui() {
             // Bind all the GUI data
-            gl_shader_program& gui_shader = shaders["gui"];
+            gl_shader_program& gui_shader = (*shaders)["gui"];
             gui_shader.bind();
 
             std::vector<render_object*> gui_geometry = meshes.get_meshes_for_filter(gui_shader.get_filter());
@@ -183,10 +183,10 @@ namespace nova {
 
             if(loaded_shaderpack.is_new()) {
                 auto resource = loaded_shaderpack.get_resource();
-                shaders.set_shader_definitions(resource);
-                shaders.upload_shaders();
+                shaders->set_shader_definitions(resource);
+                shaders->upload_shaders();
 
-                auto &loaded_shaders = shaders.get_loaded_shaders();
+                auto &loaded_shaders = shaders->get_loaded_shaders();
                 link_up_uniform_buffers(loaded_shaders, ubo_manager);
             }
         }

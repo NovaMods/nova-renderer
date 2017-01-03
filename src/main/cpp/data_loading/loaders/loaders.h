@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <utils/export.h>
 #include "shader_source_structs.h"
+#include "view/objects/shaders/shaderpack.h"
 
 namespace nova {
     namespace model {
@@ -23,7 +24,7 @@ namespace nova {
          * \param shaderpack_name The name of the shaderpack to load
          * \return The loaded shaderpack
          */
-        NOVA_API std::unordered_map<std::string, shader_definition> load_shaderpack(const std::string& shaderpack_name);
+        NOVA_API view::shaderpack load_shaderpack(const std::string& shaderpack_name);
     }
 }
 
