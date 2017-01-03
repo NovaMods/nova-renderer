@@ -12,7 +12,7 @@
 #include "loaders.h"
 #include "shader_loading.h"
 #include "loader_utils.h"
-#include "view/objects/shaders/shaderpack/h"
+#include "view/objects/shaders/shaderpack.h"
 
 namespace nova {
     namespace model {
@@ -37,7 +37,7 @@ namespace nova {
                 ".vert.spv"
         };
 
-        nova::view::shaderpack load_shaderpack(const std::string& shaderpack_name) {
+        view::shaderpack load_shaderpack(const std::string& shaderpack_name) {
             // TODO: Make shaderpacks take a bunch of shader definitions and
             // the shaders.json file's data in the constructor, and figure
             // everything out from there

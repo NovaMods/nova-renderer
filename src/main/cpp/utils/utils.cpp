@@ -40,8 +40,6 @@ namespace nova {
             accum += buf;
         }
 
-        stream.close();
-
         return nlohmann::json::parse(accum.c_str());
     }
 }
