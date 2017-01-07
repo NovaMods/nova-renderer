@@ -17,8 +17,7 @@
 #include <view/nova_renderer.h>
 #include "nova.h"
 
-using namespace nova::view;
-using namespace nova::model;
+using namespace nova;
 
 #define TEXTURE_MANAGER nova_renderer::instance->get_model().get_texture_manager()
 

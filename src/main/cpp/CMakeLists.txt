@@ -96,7 +96,6 @@ set(NOVA_HEADERS
         data_loading/loaders/shader_source_structs.h
         data_loading/geometry_cache/mesh_definition.h
         data_loading/geometry_cache/builders/mesh_builder.h
-        data_loading/loaded_resource.h
         )
 
 set(NOVA_SOURCE
@@ -127,11 +126,13 @@ set(NOVA_SOURCE
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
 
-        view/objects/shaders/shader_facade.cpp
+        view/objects/shaders/shaderpack.cpp
         view/objects/mesh_accessor.cpp
         data_loading/physics/AABB.cpp
         data_loading/geometry_cache/mesh_definition.cpp
-        data_loading/geometry_cache/builders/mesh_builder.cpp)
+        data_loading/geometry_cache/builders/mesh_builder.cpp
+        view/objects/shaders/geometry_filter.cpp
+        )
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small

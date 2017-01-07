@@ -17,15 +17,13 @@
 #include "view/objects/shaders/shaderpack.h"
 
 namespace nova {
-    namespace model {
-        /*!
-         * \brief Loads the shaderpack with the given name
-         *
-         * \param shaderpack_name The name of the shaderpack to load
-         * \return The loaded shaderpack
-         */
-        NOVA_API view::shaderpack load_shaderpack(const std::string& shaderpack_name);
-    }
+    /*!
+     * \brief Loads the shaderpack with the given name
+     *
+     * \param shaderpack_name The name of the shaderpack to load
+     * \return The loaded shaderpack
+     */
+    NOVA_API shaderpack load_shaderpack(const std::string &shaderpack_name);
 }
 
 #endif //RENDERER_LOADERS_H
