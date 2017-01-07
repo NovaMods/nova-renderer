@@ -12,55 +12,53 @@
 #include "data_loading/settings.h"
 
 namespace nova {
-    namespace view {
+    /*!
+     * \brief Represents a GLFW window with an OpenGL context
+     *
+     * In OpenGL, the window is responsible for maintaining the OpenGL context, or the context has to be bound to a window,
+     * or something. I'm not entirely sure, but I do know that the window and OpenGL context are pretty closely coupled.
+     *
+     * Point is, this class is pretty important and you shouldn't leave home without it
+     */
+    class glfw_gl_window : public iwindow {
+    public:
         /*!
-         * \brief Represents a GLFW window with an OpenGL context
-         *
-         * In OpenGL, the window is responsible for maintaining the OpenGL context, or the context has to be bound to a window,
-         * or something. I'm not entirely sure, but I do know that the window and OpenGL context are pretty closely coupled.
-         *
-         * Point is, this class is pretty important and you shouldn't leave home without it
+         * \brief Creates a window and a corresponding OpenGL context
          */
-        class glfw_gl_window : public iwindow {
-        public:
-            /*!
-             * \brief Creates a window and a corresponding OpenGL context
-             */
-            glfw_gl_window();
+        glfw_gl_window();
 
-            ~glfw_gl_window();
+        ~glfw_gl_window();
 
-            /**
-             * iwindow methods
-             */
+        /**
+         * iwindow methods
+         */
 
-            virtual int init();
+        virtual int init();
 
-            virtual void destroy();
+        virtual void destroy();
 
-            virtual void end_frame();
+        virtual void end_frame();
 
-            virtual void set_fullscreen(bool fullscreen);
+        virtual void set_fullscreen(bool fullscreen);
 
-            virtual glm::vec2 get_size();
+        virtual glm::vec2 get_size();
 
-            virtual bool should_close();
+        virtual bool should_close();
 
-            /**
-             * iconfig_change_listener methods
-             */
+        /**
+         * iconfig_change_listener methods
+         */
 
-            void on_config_change(nlohmann::json &new_config);
+        void on_config_change(nlohmann::json &new_config);
 
-            void on_config_loaded(nlohmann::json &config);
+        void on_config_loaded(nlohmann::json &config);
 
-        private:
-            GLFWwindow *window;
-            glm::ivec2 window_dimensions;
+    private:
+        GLFWwindow *window;
+        glm::ivec2 window_dimensions;
 
-            void set_framebuffer_size(glm::ivec2 new_framebuffer_size);
-        };
-    }
+        void set_framebuffer_size(glm::ivec2 new_framebuffer_size);
+    };
 }
 
 

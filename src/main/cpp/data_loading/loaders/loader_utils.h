@@ -11,16 +11,13 @@
 #include <string>
 
 namespace nova {
-    namespace model {
-        /*!
-         * \brief Checks if the given file is a zip file or not
-         *
-         * \param filename The name of the file to check
-         * \return True if the file is a zipfile, false otherwise
-         */
-        bool is_zip_file(const std::string& filename);
-    }
+    /*!
+     * \brief Checks if the given file is a zip file or not
+     *
+     * \param filename The name of the file to check
+     * \return True if the file is a zipfile, false otherwise
+     */
+    bool is_zip_file(const std::string &filename);
 }
-
 
 #endif //RENDERER_LOADER_UTILS_H

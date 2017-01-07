@@ -16,47 +16,45 @@
 #include "view/objects/gl_mesh.h"
 
 namespace nova {
-    namespace view {
-        /*!
-         * \brief Defines a single render pass
-         *
-         * There is a one-to-one corellation between render passes and shaders.
-         *
-         * I've separated the render passes from the shadow stage, gbuffer stage, and fullscreen stage because doing
-         * this allows me to set the uniforms on a per-stage bases, rather than specifying them on a per-shader basis.
-         * This will be faster when there's more than one render pass per stage, which is almost always
-         */
-        struct render_pass {
-            std::string shader_program_name;
+    /*!
+     * \brief Defines a single render pass
+     *
+     * There is a one-to-one corellation between render passes and shaders.
+     *
+     * I've separated the render passes from the shadow stage, gbuffer stage, and fullscreen stage because doing
+     * this allows me to set the uniforms on a per-stage bases, rather than specifying them on a per-shader basis.
+     * This will be faster when there's more than one render pass per stage, which is almost always
+     */
+    struct render_pass {
+        std::string shader_program_name;
 
-            std::vector<gl_mesh> meshes_to_draw;
-        };
-        struct shadow_stage {
-            std::vector<render_pass> meshes_to_draw;
+        std::vector<gl_mesh> meshes_to_draw;
+    };
+    struct shadow_stage {
+        std::vector<render_pass> meshes_to_draw;
 
-            shadow_pass_textures textures;
-        };
+        shadow_pass_textures textures;
+    };
 
-        struct gbuffer_stage {
-            std::vector<render_pass> meshes_to_draw;
+    struct gbuffer_stage {
+        std::vector<render_pass> meshes_to_draw;
 
-            gbuffer_pass_textures textures;
-        };
+        gbuffer_pass_textures textures;
+    };
 
-        struct fullscreen_stage {
-            std::vector<render_pass> meshes_to_draw;
+    struct fullscreen_stage {
+        std::vector<render_pass> meshes_to_draw;
 
-            fullscreen_pass_textures textures;
-        };
+        fullscreen_pass_textures textures;
+    };
 
-        struct render_command {
-            std::vector<shadow_stage> shadow_passes;
-            std::vector<gbuffer_stage> gbuffer_passes;
-            std::vector<fullscreen_stage> fullscreen_passes;
+    struct render_command {
+        std::vector<shadow_stage> shadow_passes;
+        std::vector<gbuffer_stage> gbuffer_passes;
+        std::vector<fullscreen_stage> fullscreen_passes;
 
-            per_frame_uniforms uniforms;
-        };
-    }
+        per_frame_uniforms uniforms;
+    };
 }
 
 #endif //RENDERER_RENDER_PASS_H
