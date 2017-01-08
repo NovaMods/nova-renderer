@@ -8,9 +8,8 @@
 
 #include <glad/glad.h>
 #include <vector>
-#include <data_loading/geometry_cache/mesh_definition.h>
-#include "data_loading/physics/AABB.h"
-#include "utils/export.h"
+#include "../../data_loading/geometry_cache/mesh_definition.h"
+#include "../../data_loading/physics/AABB.h"
 
 namespace nova {
     /*!
@@ -34,7 +33,7 @@ namespace nova {
      * Buffers of this type can hold positions, positions and texture coordinates, or positions, texture coordinates,
      * lightmap coordinates, normals, and tangents.
      */
-    class NOVA_API gl_mesh {
+    class gl_mesh {
     public:
         gl_mesh();
 

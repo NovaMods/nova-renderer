@@ -10,10 +10,9 @@
 #include <atomic>
 
 #include <mutex>
-#include <data_loading/geometry_cache/mesh_definition.h>
-
-#include "view/objects/gl_mesh.h"
-#include "mc_interface/mc_gui_objects.h"
+#include "../../../utils/export.h"
+#include "../mesh_definition.h"
+#include "../../../mc_interface/mc_gui_objects.h"
 
 namespace nova {
     /*!

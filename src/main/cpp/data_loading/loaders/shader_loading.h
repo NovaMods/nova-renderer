@@ -11,8 +11,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <utils/export.h>
-#include <view/objects/shaders/shaderpack.h>
 
 #include "shader_source_structs.h"
 
@@ -27,8 +25,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    shaderpack
-    load_sources_from_zip_file(const std::string &shaderpack_name, const std::vector<std::string> &shader_names);
+    shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, const std::vector<std::string> &shader_names);
 
     /*!
      * \brief Loads the source file of all the shaders with the provided names
@@ -40,8 +37,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    NOVA_API shaderpack
-    load_sources_from_folder(const std::string &shaderpack_name, const std::vector<std::string> &shader_names);
+    shaderpack load_sources_from_folder(const std::string &shaderpack_name, const std::vector<std::string> &shader_names);
 
     /*!
      * \brief Tries to load a single shader file from a folder

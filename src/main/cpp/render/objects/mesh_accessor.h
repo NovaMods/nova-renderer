@@ -12,10 +12,9 @@
 #include <mutex>
 #include <functional>
 #include <unordered_map>
-#include "data_loading/geometry_cache/builders/mesh_builder.h"
-#include "mc_interface/mc_objects.h"
 #include "render_object.h"
-#include "view/render_pass.h"
+#include "../../data_loading/geometry_cache/builders/mesh_builder.h"
+#include "shaders/geometry_filter.h"
 
 namespace nova {
     /*!
@@ -37,14 +36,15 @@ namespace nova {
          */
         void update();
 
-        std::vector<render_object *> get_meshes_for_filter(std::function<bool(const render_object &)>& filter);
+        std::vector<render_object *> get_meshes_for_filter(geometry_filter& filter);
     private:
         std::vector<render_object> renderable_objects;
+        std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
 
-        mesh_builder &mesh_builder;
+        mesh_builder &builder;
 
         void update_gui_mesh();
     };
-}
+};
 
 #endif //RENDERER_GEOMETRY_CACHE_H

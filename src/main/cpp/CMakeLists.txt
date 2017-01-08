@@ -55,26 +55,24 @@ include_directories(SYSTEM
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
 
-include_directories(${CMAKE_CURRENT_LIST_DIR})
-
 # Setup the nova-core library.
 set(NOVA_HEADERS
 
         data_loading/geometry_cache/builders/gui_geometry_builder.h
 
-        view/objects/shaders/uniform_buffer_definitions.h
+        render/objects/shaders/uniform_buffer_definitions.h
 
         mc_interface/nova.h
-        view/nova_renderer.h
-        data_loading/texture_manager.h
+        render/nova_renderer.h
+        render/objects/textures/texture_manager.h
         utils/types.h
 
-        view/objects/shaders/gl_shader_program.h
-        view/objects/gl_uniform_buffer.h
-        view/objects/gl_mesh.h
-        data_loading/texture2D.h
+        render/objects/shaders/gl_shader_program.h
+        render/objects/gl_uniform_buffer.h
+        render/objects/gl_mesh.h
+        render/objects/textures/texture2D.h
 
-        view/windowing/glfw_gl_window.h
+        render/windowing/glfw_gl_window.h
 
         interfaces/iwindow.h
 
@@ -87,10 +85,10 @@ set(NOVA_HEADERS
         data_loading/loaders/shader_loading.h
         data_loading/data_model.h
         data_loading/loaders/loader_utils.h
-        view/objects/mesh_accessor.h
-        view/render_pass.h
-        view/objects/shaders/shader_facade.h
-        view/objects/render_object.h
+        render/objects/mesh_accessor.h
+        render/render_pass.h
+        render/objects/shaders/shader_facade.h
+        render/objects/render_object.h
 
         data_loading/physics/AABB.h
         data_loading/loaders/shader_source_structs.h
@@ -102,18 +100,18 @@ set(NOVA_SOURCE
 
         data_loading/geometry_cache/builders/gui_geometry_builder.cpp
 
-        view/nova_renderer.cpp
+        render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
-        data_loading/texture_manager.cpp
-        view/uniform_buffer_store.cpp
+        render/objects/textures/texture_manager.cpp
+        render/uniform_buffer_store.cpp
         data_loading/geometry_cache/builders/gui_geometry_builder.cpp
 
-        view/objects/shaders/gl_shader_program.cpp
-        view/objects/gl_uniform_buffer.cpp
-        view/objects/gl_mesh.cpp
-        data_loading/texture2D.cpp
+        render/objects/shaders/gl_shader_program.cpp
+        render/objects/gl_uniform_buffer.cpp
+        render/objects/gl_mesh.cpp
+        render/objects/textures/texture2D.cpp
 
-        view/windowing/glfw_gl_window.cpp
+        render/windowing/glfw_gl_window.cpp
 
         utils/utils.cpp
 
@@ -126,12 +124,12 @@ set(NOVA_SOURCE
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
 
-        view/objects/shaders/shaderpack.cpp
-        view/objects/mesh_accessor.cpp
+        render/objects/shaders/shaderpack.cpp
+        render/objects/mesh_accessor.cpp
         data_loading/physics/AABB.cpp
         data_loading/geometry_cache/mesh_definition.cpp
         data_loading/geometry_cache/builders/mesh_builder.cpp
-        view/objects/shaders/geometry_filter.cpp
+        render/objects/shaders/geometry_filter.cpp
         )
 
 # For now just put everthing in a single nova source group
@@ -182,10 +180,7 @@ set(TEST_SOURCE_FILES
         test/model/texture_manager_test.cpp
         )
 
-set(TEST_HEADERS
-        )
-
-source_group("test" FILES ${TEST_SOURCE_FILES} ${TEST_HEADERS})
+source_group("test" FILES ${TEST_SOURCE_FILES})
 
 add_executable(nova-test ${TEST_SOURCE_FILES})
 add_dependencies(nova-test nova-renderer)

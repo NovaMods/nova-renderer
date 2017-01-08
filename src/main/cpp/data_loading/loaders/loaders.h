@@ -12,9 +12,7 @@
 
 #include <string>
 #include <unordered_map>
-#include <utils/export.h>
-#include "shader_source_structs.h"
-#include "view/objects/shaders/shaderpack.h"
+#include "../../render/objects/shaders/shaderpack.h"
 
 namespace nova {
     /*!
@@ -23,7 +21,7 @@ namespace nova {
      * \param shaderpack_name The name of the shaderpack to load
      * \return The loaded shaderpack
      */
-    NOVA_API shaderpack load_shaderpack(const std::string &shaderpack_name);
+    shaderpack load_shaderpack(const std::string &shaderpack_name);
 }
 
 #endif //RENDERER_LOADERS_H

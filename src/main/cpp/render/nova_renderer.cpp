@@ -3,10 +3,11 @@
 //
 
 #include "nova_renderer.h"
+#include "../utils/utils.h"
+#include "../data_loading/loaders/loaders.h"
 
 #define ELPP_THREAD_SAFE
 #include <easylogging++.h>
-#include <utils/utils.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -178,15 +179,20 @@ namespace nova {
     }
 
     void nova_renderer::check_for_new_shaders() {
+        // TODO: Make this happen when the shaders are loaded
+        // TODO: Rework shader loading logic
         auto &loaded_shaderpack = model.get_loaded_shaderpack();
+        auto &loaded_shaders = loaded_shaderpack.get_loaded_shaders();
+        link_up_uniform_buffers(loaded_shaders, ubo_manager);
+    }
 
-        if(loaded_shaderpack.is_new()) {
-            auto resource = loaded_shaderpack.get_resource();
-            shaders->set_shader_definitions(resource);
-            shaders->upload_shaders();
-
-            auto &loaded_shaders = shaders->get_loaded_shaders();
-            link_up_uniform_buffers(loaded_shaders, ubo_manager);
+    void nova_renderer::on_config_change(nlohmann::json &new_config) {
+        auto& shaderpack_name = new_config["loadedShaderpack"];
+        if(shaderpack_name != shaders->get_name()) {
+            LOG(INFO) << "Loading shaderpack " << shaderpack_name;
+            shaders = std::make_unique(load_shaderpack(shaderpack_name));
+            LOG(INFO) << "Loading complete";
+        }
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, const uniform_buffer_store &ubos) {

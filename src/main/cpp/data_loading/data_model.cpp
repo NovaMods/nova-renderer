@@ -57,18 +57,18 @@ namespace nova {
             try {
                 LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
                 loaded_shaderpack_name = new_shaderpack_name;
-                loaded_shaderpack = load_shaderpack(new_shaderpack_name);
+                *loaded_shaderpack = load_shaderpack(new_shaderpack_name);
 
             } catch(std::exception &e) {
                 LOG(ERROR) << "Could not load shaderpack " << new_shaderpack_name << ". Reason: " << e.what() << ". Falling back to default shaderpack";
                 loaded_shaderpack_name = "default";
-                loaded_shaderpack = load_shaderpack(loaded_shaderpack_name);
+                *loaded_shaderpack = load_shaderpack(loaded_shaderpack_name);
             }
         }
     }
 
     shaderpack &data_model::get_loaded_shaderpack() {
-        return loaded_shaderpack;
+        return *loaded_shaderpack;
     }
 
     void data_model::trigger_config_update() {
@@ -78,11 +78,6 @@ namespace nova {
 
     texture_manager &data_model::get_texture_manager() {
         return textures;
-    }
-
-    void data_model::set_gui_screen(mc_gui_screen *screen) {
-        meshes.build_geometry(*screen);
-        LOG(DEBUG) << "Geometry re-built";
     }
 
     settings &data_model::get_render_settings() {

@@ -8,7 +8,7 @@
 #ifndef RENDERER_NOVA_H
 #define RENDERER_NOVA_H
 
-#include "utils/export.h"
+#include "../utils/export.h"
 
 extern "C" {
 

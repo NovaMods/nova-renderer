@@ -14,13 +14,12 @@
 #include <functional>
 #include <unordered_map>
 #include <initializer_list>
-#include <utils/export.h>
 #include <mutex>
 #include <optional.hpp>
 
-#include "view/objects/render_object.h"
 #include "gl_shader_program.h"
 #include "geometry_filter.h"
+#include "../../../data_loading/loaders/shader_source_structs.h"
 
 namespace nova {
     /*!
@@ -39,7 +38,7 @@ namespace nova {
          * \param shaderpack_name The name of the shaderpcack to load
          *
          */
-        shaderpack(nlohmann::json shaders_json, std::vector<shader_definition> &shaders);
+        shaderpack(std::string name, nlohmann::json shaders_json, std::vector<shader_definition> &shaders);
 
         /*!
          * \brief Move constructor
@@ -52,6 +51,10 @@ namespace nova {
 
         std::unordered_map<std::string, gl_shader_program> &get_loaded_shaders();
 
+        void operator=(const shaderpack& other);
+
+        std::string& get_name();
+
     private:
         /*!
          * \brief Holds the functions used to modify a geometry_filter
@@ -63,6 +66,8 @@ namespace nova {
         static std::unordered_map<std::string, std::function<void(geometry_filter&)>> filter_modifying_functions;
 
         std::unordered_map<std::string, gl_shader_program> loaded_shaders;
+
+        std::string name;
     };
 }
 

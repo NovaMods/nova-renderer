@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <exception>
 
-#include <utils/export.h>
 #include <json.hpp>
 #include <fstream>
 
@@ -37,7 +36,7 @@ namespace nova {
     /*!
      * \brief Simple exception to represent that a resouce can not be found
      */
-    class NOVA_API resource_not_found : public std::exception {
+    class resource_not_found : public std::exception {
     public:
         resource_not_found(const std::string& msg);
         virtual const char * what() const noexcept;

@@ -7,9 +7,9 @@
 
 
 #include <glad/glad.h>
+#include <json.hpp>
 #include "GLFW/glfw3.h"
-#include "interfaces/iwindow.h"
-#include "data_loading/settings.h"
+#include "../../interfaces/iwindow.h"
 
 namespace nova {
     /*!

@@ -8,10 +8,11 @@
 #define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
-#include "utils/utils.h"
 #include "loaders.h"
 #include "shader_loading.h"
 #include "loader_utils.h"
+#include "../../render/objects/shaders/shaderpack.h"
+#include "../../utils/utils.h"
 
 namespace nova {
     /*!
@@ -118,7 +119,7 @@ namespace nova {
                 }
 
                 if(!found_fallback) {
-                    LOG(WARNING) << "Could not find fallback shader " << def.fallback_name << " for shader " << def.name
+                    LOG(WARNING) << "Could not find fallback shader " << *def.fallback_name << " for shader " << def.name
                                  << ".";
                 }
             } else {
