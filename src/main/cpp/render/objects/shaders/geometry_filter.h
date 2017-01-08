@@ -4,8 +4,7 @@
 #include <vector>
 #include <string>
 #include <optional.hpp>
-
-#include "view/objects/render_object.h"
+#include "../render_object.h"
 
 namespace nova {
     /*!

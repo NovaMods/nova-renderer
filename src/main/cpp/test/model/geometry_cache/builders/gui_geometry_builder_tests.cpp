@@ -7,14 +7,12 @@
 
 #include <vector>
 #include <gtest/gtest.h>
-
-#include <data_loading/geometry_cache/builders/gui_geometry_builder.h>
-#include <view/nova_renderer.h>
+#include "../../../../mc_interface/mc_gui_objects.h"
 
 TEST(gui_geometry_builder, add_vertex_test) {
     auto vertex_buffer = std::vector<float>{};
 
-    nova::model::add_vertex(vertex_buffer, 5, 5, 0.5, 0.5);
+    nova::add_vertex(vertex_buffer, 5, 5, 0.5, 0.5);
 
     EXPECT_EQ(vertex_buffer.size(), 5);
 
@@ -30,7 +28,7 @@ TEST(gui_geometry_builder, add_vertices_from_button_test) {
     auto button = mc_gui_button{0, 0, 100, 100, "Main Menu", false};
     auto uvs = std::vector<float>{0, 0, 0, 1, 1, 0, 1, 1};
 
-    nova::model::add_vertices_from_button(vertex_buffer, button, uvs);
+    nova::add_vertices_from_button(vertex_buffer, button, uvs);
 
     EXPECT_EQ(vertex_buffer.size(), 20);
 

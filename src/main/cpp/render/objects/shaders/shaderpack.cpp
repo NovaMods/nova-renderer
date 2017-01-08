@@ -9,7 +9,9 @@
 #include "shaderpack.h"
 
 namespace nova {
-    shaderpack::shaderpack(nlohmann::json shaders_json, std::vector<shader_definition> &shaders) {
+    std::unordered_map<std::string, std::function<void(geometry_filter&)>> shaderpack::filter_modifying_functions;
+
+    shaderpack::shaderpack(std::string name, nlohmann::json shaders_json, std::vector<shader_definition> &shaders) {
         // This is gross, but CLion keeps yelling at me
         filter_modifying_functions["solid"] = accept_solid;
         filter_modifying_functions["not_solid"] = reject_solid;
@@ -33,5 +35,9 @@ namespace nova {
 
     std::unordered_map<std::string, gl_shader_program> &shaderpack::get_loaded_shaders() {
         return loaded_shaders;
+    }
+
+    void shaderpack::operator=(const shaderpack &other) {
+        loaded_shaders = other.loaded_shaders;
     }
 }

@@ -4,10 +4,10 @@
  */
 
 #include "settings.h"
+#include "../utils/utils.h"
+
 #define ELPP_THREAD_SAFE
 #include <easylogging++.h>
-
-#include "utils/utils.h"
 
 namespace nova {
     settings::settings(std::string filename) {

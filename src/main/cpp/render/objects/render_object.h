@@ -10,7 +10,8 @@
 
 #include <string>
 #include <memory>
-#include "view/objects/gl_mesh.h"
+
+#include "gl_mesh.h"
 
 namespace nova {
     enum class geometry_type {

@@ -8,10 +8,10 @@
 #ifndef RENDERER_MESH_BUILDER_H
 #define RENDERER_MESH_BUILDER_H
 
-#include <mc_interface/mc_objects.h>
-#include <data_loading/geometry_cache/mesh_definition.h>
 #include <unordered_map>
 #include <mutex>
+#include "../../../mc_interface/mc_objects.h"
+#include "../mesh_definition.h"
 
 namespace nova {
     /*!

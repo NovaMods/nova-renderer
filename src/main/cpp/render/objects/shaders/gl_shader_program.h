@@ -13,9 +13,10 @@
 #include <vector>
 
 #include <glad/glad.h>
-#include "data_loading/loaders/shader_source_structs.h"
-#include "view/objects/gl_uniform_buffer.h"
-#include "view/objects/render_object.h"
+#include "../../../utils/export.h"
+#include "../../../data_loading/loaders/shader_source_structs.h"
+#include "../gl_uniform_buffer.h"
+#include "geometry_filter.h"
 
 
 namespace nova {
@@ -99,9 +100,9 @@ namespace nova {
 
         void link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept;
 
-        void set_filter(std::function<bool(const render_object &)> filter) noexcept;
+        void set_filter(geometry_filter filter) noexcept;
 
-        std::function<bool(const render_object&)>& get_filter() noexcept;
+        geometry_filter& get_filter() noexcept;
 
     private:
         std::string name;
@@ -114,7 +115,7 @@ namespace nova {
          * Since there's a one-to-one correallation between shaders and filters, I thought it'd be best to put the
          * filter with the shader
          */
-        std::function<bool(const render_object&)> filter;
+        geometry_filter filter;
 
         void create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type);
 

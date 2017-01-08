@@ -6,6 +6,7 @@
 #include <algorithm>
 #define ELPP_THREAD_SAFE
 #include <easylogging++.h>
+#include <glad/glad.h>
 #include "gui_geometry_builder.h"
 
 

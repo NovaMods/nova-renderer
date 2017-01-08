@@ -6,7 +6,7 @@
 #define RENDERER_WINDOW_H
 
 #include <glm/glm.hpp>
-#include "data_loading/settings.h"
+#include "../data_loading/settings.h"
 
 /*
  * !\brief Represents a window that can be drawn to.

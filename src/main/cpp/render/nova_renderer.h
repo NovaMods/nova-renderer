@@ -7,19 +7,11 @@
 
 #include <memory>
 #include <thread>
-#include <view/objects/mesh_accessor.h>
-#include <data_loading/data_model.h>
-#include <view/objects/shaders/shaderpack.h>
-#include "utils/export.h"
-
-#include "interfaces/iwindow.h"
-#include "mc_interface/mc_objects.h"
-
-#include "mc_interface/nova.h"
-#include "data_loading/texture_manager.h"
-#include "data_loading/settings.h"
-#include "view/uniform_buffer_store.h"
-#include "view/windowing/glfw_gl_window.h"
+#include "objects/shaders/gl_shader_program.h"
+#include "uniform_buffer_store.h"
+#include "../data_loading/data_model.h"
+#include "windowing/glfw_gl_window.h"
+#include "objects/mesh_accessor.h"
 
 namespace nova {
     /*!
@@ -29,15 +21,8 @@ namespace nova {
      *
      * This class is kinda a facade and kinda a God class that holds all the everything that the mod needs. I'd like it to
      * be more of a facade but idk. Facades are hard.
-     *
-     * This class's instance runs completely in a separate thread. Whatever you want to use it for, it runs in a separate
-     * thread. Calling froman application with a million threads already? Too bad, separate thread.
-     *
-     * I'm not worried about data races. Data moves into this thread, then gets rendered. The only data racey thing are the
-     * flags that specify rendering commands are available. However, I'm using atomics for those, so I don't expect too many
-     * problems. If I notice the renderer missing render commands, I'll re-evaluate the data integrity scheme
      */
-    class NOVA_API nova_renderer {
+    class nova_renderer : public iconfig_listener {
     public:
         /*!
          * \brief A singleton for the nova_renderer instance
@@ -88,6 +73,12 @@ namespace nova {
         bool should_end();
 
         data_model &get_model();
+
+        // Overrides from iconfig_listener
+
+        void on_config_change(nlohmann::json& new_config);
+
+        void on_config_loaded(nlohmann::json& config);
 
     private:
         data_model model;

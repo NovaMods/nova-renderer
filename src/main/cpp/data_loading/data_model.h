@@ -9,16 +9,15 @@
 #define RENDERER_MODEL_H
 
 #include <atomic>
-#include "data_loading/geometry_cache/builders/mesh_builder.h"
-#include "data_loading/loaders/shader_source_structs.h"
-#include "view/objects/shaders/shaderpack.h"
 #include "settings.h"
-#include "texture_manager.h"
+#include "../render/objects/shaders/shaderpack.h"
+#include "../render/objects/textures/texture_manager.h"
+#include "geometry_cache/builders/mesh_builder.h"
 
 
 namespace nova {
     /*!
-     * \brief Holds all the data in the Model, providing methods to access the various pieces of data
+     * \brief Holds all the data in Nova, providing methods to access the various pieces of data
      *
      * This is also the class that the Minecraft interface goes through to send data to the Nova Renderer
      */
@@ -32,16 +31,6 @@ namespace nova {
          * Useful when you register a new thing and want to make sure it gets all the latest data
          */
         void trigger_config_update();
-
-        /*!
-         * \brief Sets the current GUI screen
-         *
-         * Note that this method can trigger a GUI geometry rebuild if the sent screen is different from the
-         * current screen. This may or may not be important to know, but I feel like I should say it
-         *
-         * \param screen
-         */
-        void set_gui_screen(mc_gui_screen *screen);
 
         shaderpack &get_loaded_shaderpack();
 
@@ -59,7 +48,7 @@ namespace nova {
 
     private:
         settings render_settings;
-        shaderpack loaded_shaderpack;
+        std::unique_ptr<shaderpack> loaded_shaderpack;
         texture_manager textures;
         std::string loaded_shaderpack_name;
         mesh_builder meshes;
