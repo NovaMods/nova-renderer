@@ -104,7 +104,7 @@ namespace nova {
 
         warn_for_missing_fallbacks(sources);
 
-        return shaderpack(shaders_json, sources);
+        return shaderpack(shaderpack_name, shaders_json, sources);
     }
 
     void warn_for_missing_fallbacks(std::vector<shader_definition> sources) {
@@ -232,6 +232,6 @@ namespace nova {
     ) {
         LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
         auto fake_vector = std::vector<shader_definition>{};
-        return {{}, fake_vector};
+        return {"", {}, fake_vector};
     }
 }

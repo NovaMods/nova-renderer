@@ -190,9 +190,13 @@ namespace nova {
         auto& shaderpack_name = new_config["loadedShaderpack"];
         if(shaderpack_name != shaders->get_name()) {
             LOG(INFO) << "Loading shaderpack " << shaderpack_name;
-            shaders = std::make_unique(load_shaderpack(shaderpack_name));
+            shaders = std::make_unique<shaderpack>(load_shaderpack(shaderpack_name));
             LOG(INFO) << "Loading complete";
         }
+    }
+
+    void nova_renderer::on_config_loaded(nlohmann::json &config) {
+        // TODO: Probably want to do some setup here, don't need to do that now
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, const uniform_buffer_store &ubos) {
