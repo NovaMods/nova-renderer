@@ -40,4 +40,8 @@ namespace nova {
     void shaderpack::operator=(const shaderpack &other) {
         loaded_shaders = other.loaded_shaders;
     }
+
+    std::string &shaderpack::get_name() {
+        return name;
+    }
 }
