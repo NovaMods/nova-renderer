@@ -14,10 +14,9 @@ INITIALIZE_EASYLOGGINGPP
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer::nova_renderer() : meshes(model.get_mesh_builder()) {
-
-        model.get_render_settings().register_change_listener(&ubo_manager);
-        model.trigger_config_update();
+    nova_renderer::nova_renderer() : render_settings("config/config.json") {
+        render_settings.register_change_listener(&ubo_manager);
+        trigger_config_update();
 
         enable_debug();
 
@@ -30,14 +29,7 @@ namespace nova {
         game_window.destroy();
     }
 
-    void nova_renderer::update() {
-        check_for_new_shaders();
-        meshes.update();
-    }
-
     void nova_renderer::render_frame() {
-        update();
-
         // Clear to the clear color
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -79,7 +71,7 @@ namespace nova {
         gl_shader_program &gui_shader = (*shaders)["gui"];
         gui_shader.bind();
 
-        std::vector<render_object *> gui_geometry = meshes.get_meshes_for_filter(gui_shader.get_filter());
+        std::vector<render_object *> gui_geometry = meshes.get_meshes_for_shader("gui");
         for(const auto *geom : gui_geometry) {
             geom->geometry->draw();
         }

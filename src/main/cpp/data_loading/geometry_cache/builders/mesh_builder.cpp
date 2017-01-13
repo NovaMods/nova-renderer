@@ -7,20 +7,10 @@
 
 #include <easylogging++.h>
 #include "mesh_builder.h"
-#include "gui_geometry_builder.h"
 
 namespace nova {
-    void mesh_builder::build_geometry(mc_gui_screen &screen) {
-        bool different = are_different_screens(screen, cur_gui_screen);
-        if(different) {
-            cur_gui_screen = screen;
-            gui_mesh = build_gui_geometry(screen);
-        }
-
-    }
-
-    mesh_definition &mesh_builder::get_gui_mesh() {
-        return gui_mesh;
+    mesh_definition build_geometry(mc_gui_screen &screen) {
+        return build_gui_geometry(screen);
     }
 
     bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) {

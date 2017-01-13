@@ -85,7 +85,7 @@ set(NOVA_HEADERS
         data_loading/loaders/shader_loading.h
         data_loading/data_model.h
         data_loading/loaders/loader_utils.h
-        render/objects/mesh_accessor.h
+        data_loading/geometry_cache/mesh_store.h
         render/render_pass.h
         render/objects/shaders/shader_facade.h
         render/objects/render_object.h
@@ -125,7 +125,7 @@ set(NOVA_SOURCE
         3rdparty/miniz/miniz.c
 
         render/objects/shaders/shaderpack.cpp
-        render/objects/mesh_accessor.cpp
+        data_loading/geometry_cache/mesh_store.cpp
         data_loading/physics/AABB.cpp
         data_loading/geometry_cache/mesh_definition.cpp
         data_loading/geometry_cache/builders/mesh_builder.cpp

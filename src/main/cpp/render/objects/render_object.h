@@ -37,13 +37,10 @@ namespace nova {
      * This provides a number of values that you can filter things by.
      */
     struct render_object {
-        bool is_block;
-        bool is_entity;
+        bool is_solid;
         bool is_transparent;
         bool is_cutout;
         bool is_emissive;
-        bool is_particle;
-        bool is_sky_object;
         unsigned char damage_level;
 
         geometry_type type;

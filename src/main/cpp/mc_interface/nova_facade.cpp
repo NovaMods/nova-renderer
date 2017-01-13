@@ -20,7 +20,7 @@
 
 using namespace nova;
 
-#define TEXTURE_MANAGER nova_renderer::instance->get_model().get_texture_manager()
+#define TEXTURE_MANAGER nova_renderer::instance->get_texture_manager()
 
 // runs in thread 5
 
@@ -49,7 +49,6 @@ NOVA_API int get_max_texture_size() {
 }
 
 NOVA_API void execute_frame() {
-    nova_renderer::instance->update();
     nova_renderer::instance->render_frame();
 }
 
@@ -58,11 +57,11 @@ NOVA_API bool should_close() {
 }
 
 NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen) {
-    nova_renderer::instance->get_model().get_mesh_builder().build_geometry(set_gui_screen->screen);
+    nova_renderer::instance->get_mesh_builder().build_geometry(set_gui_screen->screen);
 }
 
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value) {
-    settings& settings = nova_renderer::instance->get_model().get_render_settings();
+    settings& settings = nova_renderer::instance->get_render_settings();
     settings.get_options()[setting_name] = setting_value;
     settings.update_config_changed();
 }
