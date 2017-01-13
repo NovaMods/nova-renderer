@@ -11,7 +11,7 @@
 #include "uniform_buffer_store.h"
 #include "../data_loading/data_model.h"
 #include "windowing/glfw_gl_window.h"
-#include "objects/mesh_accessor.h"
+#include "../data_loading/geometry_cache/mesh_store.h"
 
 namespace nova {
     /*!
@@ -51,9 +51,11 @@ namespace nova {
         ~nova_renderer();
 
         /*!
-         * \brief Tells all the data holding things to check for new data
+         * \brief Explicitly tells the render_settings to send its data to all its registered listeners
+         *
+         * Useful when you register a new thing and want to make sure it gets all the latest data
          */
-        void update();
+        void trigger_config_update();
 
         /*!
          * \brief Renders a single frame
@@ -72,7 +74,11 @@ namespace nova {
          */
         bool should_end();
 
-        data_model &get_model();
+        settings& get_render_settings();
+
+        texture_manager& get_texture_manager();
+
+        mesh_store& get_mesh_store();
 
         // Overrides from iconfig_listener
 
@@ -81,11 +87,15 @@ namespace nova {
         void on_config_loaded(nlohmann::json& config);
 
     private:
-        data_model model;
+        settings render_settings;
 
         glfw_gl_window game_window;
 
-        mesh_accessor meshes;
+        std::unique_ptr<shaderpack> loaded_shaderpack;
+
+        texture_manager textures;
+
+        mesh_store meshes;
 
         uniform_buffer_store ubo_manager;
 
@@ -108,10 +118,7 @@ namespace nova {
 
         void init_opengl_state() const;
 
-        /*!
-         * \brief Checks if any new shaders have been loaded, and uploads them to the GPU
-         */
-        void check_for_new_shaders();
+        void load_new_shaderpack(const std::string &new_shaderpack_name) noexcept;
     };
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, const uniform_buffer_store &ubos);

@@ -25,13 +25,6 @@ namespace nova {
     public:
         data_model();
 
-        /*!
-         * \brief Explicitly tells the render_settings to send its data to all its registered listeners
-         *
-         * Useful when you register a new thing and want to make sure it gets all the latest data
-         */
-        void trigger_config_update();
-
         shaderpack &get_loaded_shaderpack();
 
         texture_manager &get_texture_manager();
@@ -53,7 +46,6 @@ namespace nova {
         std::string loaded_shaderpack_name;
         mesh_builder meshes;
 
-        void load_new_shaderpack(const std::string &new_shaderpack_name) noexcept;
     };
 }
 
