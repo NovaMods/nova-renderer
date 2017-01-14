@@ -146,7 +146,7 @@ TEST(shader_loading, load_sources_from_folder) {
 
     EXPECT_EQ(gui_shader.get_name(), "gui");
 
-    auto filter = gui_shader.get_filter();
+    auto& filter = gui_shader.get_filter();
 
     auto gui_type_pos = std::find_if(filter.geometry_types.begin(), filter.geometry_types.end(), [](auto type) {return type == nova::geometry_type::gui;});
     EXPECT_NE(gui_type_pos, filter.geometry_types.end());

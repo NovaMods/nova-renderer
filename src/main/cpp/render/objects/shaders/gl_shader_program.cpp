@@ -12,17 +12,15 @@
 #include "gl_shader_program.h"
 
 namespace nova {
-    gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {
+    gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name), filter(figure_out_filters(source.filters)) {
         create_shader(source.vertex_source, GL_VERTEX_SHADER);
         create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
 
         link();
-
-        figure_out_filters(source.filters);
     }
 
     gl_shader_program::gl_shader_program(gl_shader_program &&other) :
-            name(std::move(other.name)) {
+            name(std::move(other.name)), filter(std::move(other.filter)) {
 
         this->gl_name = other.gl_name;
 
@@ -168,7 +166,9 @@ namespace nova {
         return name;
     }
 
-    void gl_shader_program::figure_out_filters(std::vector<std::string> filter_names) {
+    geometry_filter figure_out_filters(std::vector<std::string> filter_names) {
+        geometry_filter filter = {};
+
         for(auto& filter_name : filter_names) {
             if(filter_name.find("geometry_type::") == 0) {
                 auto type_name_str = filter_name.substr(15);
@@ -188,6 +188,8 @@ namespace nova {
                 modify_function(filter);
             }
         }
+
+        return filter;
     }
 
     wrong_shader_version::wrong_shader_version(const std::string &version_line) :
