@@ -68,7 +68,7 @@ namespace nova {
 
     void nova_renderer::render_gui() {
         // Bind all the GUI data
-        gl_shader_program &gui_shader = (*shaders)["gui"];
+        gl_shader_program &gui_shader = (*loaded_shaderpack)["gui"];
         gui_shader.bind();
 
         std::vector<render_object *> gui_geometry = meshes.get_meshes_for_shader("gui");
@@ -166,29 +166,37 @@ namespace nova {
         glDebugMessageCallback(debug_logger, NULL);
     }
 
-    data_model &nova_renderer::get_model() {
-        return model;
-    }
-
-    void nova_renderer::check_for_new_shaders() {
-        // TODO: Make this happen when the shaders are loaded
-        // TODO: Rework shader loading logic
-        auto &loaded_shaderpack = model.get_loaded_shaderpack();
-        auto &loaded_shaders = loaded_shaderpack.get_loaded_shaders();
-        link_up_uniform_buffers(loaded_shaders, ubo_manager);
-    }
-
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
         auto& shaderpack_name = new_config["loadedShaderpack"];
-        if(shaderpack_name != shaders->get_name()) {
-            LOG(INFO) << "Loading shaderpack " << shaderpack_name;
-            shaders = std::make_unique<shaderpack>(load_shaderpack(shaderpack_name));
-            LOG(INFO) << "Loading complete";
-        }
+        load_new_shaderpack(shaderpack_name);
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
         // TODO: Probably want to do some setup here, don't need to do that now
+    }
+
+    void nova_renderer::trigger_config_update() {
+        render_settings.update_config_changed();
+    }
+
+    settings &nova_renderer::get_render_settings() {
+        return render_settings;
+    }
+
+    texture_manager &nova_renderer::get_texture_manager() {
+        return textures;
+    }
+
+    mesh_store &nova_renderer::get_mesh_store() {
+        return meshes;
+    }
+
+    void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
+        if(new_shaderpack_name != loaded_shaderpack->get_name()) {
+            LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
+            loaded_shaderpack = std::make_unique<shaderpack>(load_shaderpack(new_shaderpack_name));
+            LOG(INFO) << "Loading complete";
+        }
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, const uniform_buffer_store &ubos) {

@@ -9,9 +9,9 @@
 #include <thread>
 #include "objects/shaders/gl_shader_program.h"
 #include "uniform_buffer_store.h"
-#include "../data_loading/data_model.h"
 #include "windowing/glfw_gl_window.h"
 #include "../data_loading/geometry_cache/mesh_store.h"
+#include "objects/textures/texture_manager.h"
 
 namespace nova {
     /*!
@@ -99,8 +99,6 @@ namespace nova {
 
         uniform_buffer_store ubo_manager;
 
-        std::unique_ptr<shaderpack> shaders;
-
         /*!
          * \brief Renders the GUI of Minecraft
          */
@@ -118,7 +116,7 @@ namespace nova {
 
         void init_opengl_state() const;
 
-        void load_new_shaderpack(const std::string &new_shaderpack_name) noexcept;
+        void load_new_shaderpack(const std::string &new_shaderpack_name);
     };
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, const uniform_buffer_store &ubos);

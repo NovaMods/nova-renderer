@@ -72,7 +72,7 @@ namespace nova {
         /*!
          * \brief Constructs a gl_shader_program
          */
-        gl_shader_program(const std::string name, const shader_definition &source);
+        gl_shader_program(const shader_definition &source);
 
         gl_shader_program(gl_shader_program &other);
 
@@ -104,6 +104,8 @@ namespace nova {
 
         geometry_filter& get_filter() noexcept;
 
+        std::string& get_name() noexcept;
+
     private:
         std::string name;
 
@@ -125,6 +127,7 @@ namespace nova {
 
         void check_for_linking_errors();
 
+        void figure_out_filters(std::vector<std::string> filter_names);
     };
 }
 

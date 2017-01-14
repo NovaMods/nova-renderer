@@ -48,9 +48,6 @@ namespace nova {
         }
     }
 
-    /*!
-     * \brief Looks at the json data present in
-     */
     std::vector<shader_definition> get_shader_definitions(nlohmann::json &shaders_json) {
         // Check if the top-level element is an array or an object. If it's
         // an array, load all the elements of the array into shader
@@ -70,8 +67,6 @@ namespace nova {
 
         return definitions;
     }
-
-    void warn_for_missing_fallbacks(std::vector<shader_definition> shaders);
 
     shaderpack load_sources_from_folder(const std::string &shaderpack_name, const std::vector<std::string> &shader_names) {
         std::vector<shader_definition> sources;
@@ -182,8 +177,7 @@ namespace nova {
         }
     }
 
-    std::vector<shader_line>
-    load_shader_file(const std::string &shader_path, const std::vector<std::string> &extensions) {
+    std::vector<shader_line> load_shader_file(const std::string &shader_path, const std::vector<std::string> &extensions) {
         for(auto &extension : extensions) {
             auto full_shader_path = shader_path + extension;
             LOG(TRACE) << "Loading shader file " << full_shader_path;
@@ -226,10 +220,7 @@ namespace nova {
         return load_shader_file(file_to_include, {""});
     }
 
-    shaderpack load_sources_from_zip_file(
-            const std::string &shaderpack_name,
-            const std::vector<std::string> &shader_names
-    ) {
+    shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, const std::vector<std::string> &shader_names) {
         LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
         auto fake_vector = std::vector<shader_definition>{};
         return {"", {}, fake_vector};

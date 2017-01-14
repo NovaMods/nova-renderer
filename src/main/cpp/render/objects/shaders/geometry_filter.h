@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <optional.hpp>
+#include <unordered_map>
 #include "../render_object.h"
 
 namespace nova {
@@ -33,6 +34,15 @@ namespace nova {
      * need that, too bad.
      */
     struct geometry_filter {
+        /*!
+         * \brief Holds the functions used to modify a geometry_filter
+         *
+         * The idea here is that a list of filters will be provided in the shaders.json file. Each of those filters
+         * corresponds to either a function in this map, or a request to add a specific geometry_type, name, or
+         * name part to the filter.
+         */
+        static std::unordered_map<std::string, std::function<void(geometry_filter&)>> modifying_functions;
+
         std::vector<geometry_type> geometry_types;
 
         std::vector<std::string> names;
