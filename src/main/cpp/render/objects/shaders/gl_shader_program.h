@@ -114,7 +114,7 @@ namespace nova {
         /*!
          * \brief The filter that the renderer should use to get the geometry for this shader
          *
-         * Since there's a one-to-one correallation between shaders and filters, I thought it'd be best to put the
+         * Since there's a one-to-one correlation between shaders and filters, I thought it'd be best to put the
          * filter with the shader
          */
         geometry_filter filter;
@@ -126,9 +126,9 @@ namespace nova {
         void link();
 
         void check_for_linking_errors();
-
-        void figure_out_filters(std::vector<std::string> filter_names);
     };
+
+    geometry_filter figure_out_filters(std::vector<std::string> filter_names);
 }
 
 #endif //RENDERER_GL_SHADER_H
