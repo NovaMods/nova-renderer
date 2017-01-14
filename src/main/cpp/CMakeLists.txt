@@ -83,7 +83,6 @@ set(NOVA_HEADERS
         data_loading/settings.h
         data_loading/loaders/loaders.h
         data_loading/loaders/shader_loading.h
-        data_loading/data_model.h
         data_loading/loaders/loader_utils.h
         data_loading/geometry_cache/mesh_store.h
         render/render_pass.h
@@ -93,7 +92,6 @@ set(NOVA_HEADERS
         data_loading/physics/AABB.h
         data_loading/loaders/shader_source_structs.h
         data_loading/geometry_cache/mesh_definition.h
-        data_loading/geometry_cache/builders/mesh_builder.h
         )
 
 set(NOVA_SOURCE
@@ -117,7 +115,6 @@ set(NOVA_SOURCE
 
         data_loading/settings.cpp
         data_loading/loaders/shader_loading.cpp
-        data_loading/data_model.cpp
         data_loading/loaders/loader_utils.cpp
 
         # Need to compile third party stuff, too...
@@ -128,7 +125,6 @@ set(NOVA_SOURCE
         data_loading/geometry_cache/mesh_store.cpp
         data_loading/physics/AABB.cpp
         data_loading/geometry_cache/mesh_definition.cpp
-        data_loading/geometry_cache/builders/mesh_builder.cpp
         render/objects/shaders/geometry_filter.cpp
         )
 
@@ -144,7 +140,6 @@ target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT)
 target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT)
 
 add_library(nova-renderer SHARED $<TARGET_OBJECTS:nova-renderer-obj>)
-add_library(nova-renderer-static STATIC $<TARGET_OBJECTS:nova-renderer-obj>)
 
 # This is needed on MSVC otherwise the build files get spread out all over the place.
 # The only *problem* is that we wont be able to create multi-config builds. Personally
@@ -153,7 +148,6 @@ add_library(nova-renderer-static STATIC $<TARGET_OBJECTS:nova-renderer-obj>)
 # types so this should be fine.
 get_target_property(OUTPUT_DIR nova-renderer LIBRARY_OUTPUT_DIRECTORY)
 nova_set_all_target_outputs(nova-renderer ${OUTPUT_DIR})
-nova_set_all_target_outputs(nova-renderer-static ${OUTPUT_DIR})
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
@@ -166,7 +160,6 @@ if(GLFW_COMPILED)
 endif()
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
-target_link_libraries(nova-renderer-static ${COMMON_LINK_LIBS})
 
 # Setup the nova-test executable
 set(TEST_SOURCE_FILES
@@ -178,14 +171,13 @@ set(TEST_SOURCE_FILES
         test/model/shaders/shader_facade_test.cpp
         test/model/geometry_cache/builders/gui_geometry_builder_tests.cpp
         test/model/texture_manager_test.cpp
-        )
+        test/model/shaders/gl_shader_program_test.cpp utils/smart_enum.h)
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
 
-add_executable(nova-test ${TEST_SOURCE_FILES})
-add_dependencies(nova-test nova-renderer)
+add_executable(nova-test ${TEST_SOURCE_FILES} ${NOVA_SOURCE})
 target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
-target_link_libraries(nova-test nova-renderer gtest ${COMMON_LINK_LIBS})
+target_link_libraries(nova-test gtest ${COMMON_LINK_LIBS})
 set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # Needed for a similar reason as the libary

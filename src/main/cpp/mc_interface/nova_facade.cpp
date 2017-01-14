@@ -57,7 +57,7 @@ NOVA_API bool should_close() {
 }
 
 NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen) {
-    nova_renderer::instance->get_mesh_builder().build_geometry(set_gui_screen->screen);
+    nova_renderer::instance->get_mesh_store().add_gui_geometry(set_gui_screen->screen);
 }
 
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value) {

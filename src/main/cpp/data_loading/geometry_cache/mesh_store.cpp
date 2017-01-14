@@ -12,15 +12,13 @@
 #include "builders/gui_geometry_builder.h"
 
 namespace nova {
-    mesh_store::mesh_store() {}
-
     std::vector<render_object *> mesh_store::get_meshes_for_shader(std::string shader_name) {
         return renderables_grouped_by_shader[shader_name];
     }
 
     void mesh_store::add_gui_geometry(mc_gui_screen &screen) {
         if(are_different_screens(screen, cur_gui_screen)) {
-            remove_render_objects([](render_object& object) {return object.type == geometry_type::gui;});
+            remove_render_objects([](render_object* object) {return object->type == geometry_type::gui;});
 
             mesh_definition gui_mesh = build_gui_geometry(screen);
 
@@ -44,7 +42,7 @@ namespace nova {
         }
     }
 
-    void mesh_store::remove_render_objects(std::function<bool(render_object &)> filter) {
+    void mesh_store::remove_render_objects(std::function<bool(render_object*)> filter) {
         for(auto& group : renderables_grouped_by_shader) {
             std::remove_if(group.second.begin(), group.second.end(), filter);
         }

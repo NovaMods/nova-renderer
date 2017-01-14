@@ -13,9 +13,9 @@
 #include <functional>
 #include <unordered_map>
 #include "../../render/objects/render_object.h"
-#include "builders/mesh_builder.h"
 #include "../../render/objects/shaders/geometry_filter.h"
 #include "../../render/objects/shaders/shaderpack.h"
+#include "../../mc_interface/mc_gui_objects.h"
 
 namespace nova {
     /*!
@@ -25,8 +25,6 @@ namespace nova {
          */
     class mesh_store {
     public:
-        mesh_store();
-
         void add_gui_geometry(mc_gui_screen& screen);
 
         /*!
@@ -69,7 +67,7 @@ namespace nova {
          *
          * \param filter The function to use to decide which (if any) objects to remove
          */
-        void remove_render_objects(std::function<bool(render_object &)> fitler);
+        void remove_render_objects(std::function<bool(render_object*)> fitler);
 
         /*!
          * \brief Determines if a given obejct matches a given geometry filter

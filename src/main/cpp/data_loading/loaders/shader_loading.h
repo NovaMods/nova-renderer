@@ -50,8 +50,7 @@ namespace nova {
      * \param extensions A list of extensions to try
      * \return The full source of the shader file
      */
-    NOVA_API std::vector<shader_line>
-    load_shader_file(const std::string &shader_path, const std::vector<std::string> &extensions);
+    std::vector<shader_line> load_shader_file(const std::string &shader_path, const std::vector<std::string> &extensions);
 
     /*!
      * \brief Loads the shader file from the provided istream
@@ -60,13 +59,23 @@ namespace nova {
      * \param shader_path The path to the shader file (useful mostly for includes)
      * \return A list of shader_line objects
      */
-    NOVA_API std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
+    std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
 
-    NOVA_API std::vector<shader_line> load_included_file(const std::string &shader_path, const std::string &line);
+    std::vector<shader_line> load_included_file(const std::string &shader_path, const std::string &line);
 
     auto get_included_file_path(const std::string &shader_path, const std::string &included_file_name);
 
-    NOVA_API std::string get_filename_from_include(const std::string include_line);
+    std::string get_filename_from_include(const std::string include_line);
+
+    /*!
+     * \brief Figures out the names of the shaders to load into this shaderpack based on the given json structure
+     *
+     * \param shaders_json The JSON structure with the names of all the shaders to load
+     * \return A list of all the shader_definition objects described by the given JSON
+     */
+    std::vector<shader_definition> get_shader_definitions(nlohmann::json &shaders_json);
+
+    void warn_for_missing_fallbacks(std::vector<shader_definition> shaders);
 }
 
 #endif //RENDERER_SHADER_LOADING_H_H

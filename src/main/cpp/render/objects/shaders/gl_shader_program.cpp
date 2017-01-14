@@ -12,13 +12,13 @@
 #include "gl_shader_program.h"
 
 namespace nova {
-    gl_shader_program::gl_shader_program(const std::string name, const shader_definition &source) : name(name) {
-        // We can handle all the shader programs more or less independently
-
+    gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {
         create_shader(source.vertex_source, GL_VERTEX_SHADER);
         create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
 
         link();
+
+        figure_out_filters(source.filters);
     }
 
     gl_shader_program::gl_shader_program(gl_shader_program &&other) :
@@ -162,6 +162,32 @@ namespace nova {
 
     geometry_filter& gl_shader_program::get_filter() noexcept {
         return filter;
+    }
+
+    std::string &gl_shader_program::get_name() noexcept {
+        return name;
+    }
+
+    void gl_shader_program::figure_out_filters(std::vector<std::string> filter_names) {
+        for(auto& filter_name : filter_names) {
+            if(filter_name.find("geometry_type::") == 0) {
+                auto type_name_str = filter_name.substr(15);
+                auto type_name = geometry_type::from_string(type_name_str);
+                filter.geometry_types.push_back(type_name);
+
+            } else if(filter_name.find("name::") == 0) {
+                auto name = filter_name.substr(6);
+                filter.names.push_back(name);
+
+            } else if(filter_name.find("name_part::") == 0) {
+                auto name_part = filter_name.substr(11);
+                filter.name_parts.push_back(name_part);
+
+            } else {
+                auto modify_function = geometry_filter::modifying_functions[filter_name];
+                modify_function(filter);
+            }
+        }
     }
 
     wrong_shader_version::wrong_shader_version(const std::string &version_line) :

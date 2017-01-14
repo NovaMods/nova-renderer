@@ -56,14 +56,6 @@ namespace nova {
         std::string& get_name();
 
     private:
-        /*!
-         * \brief Holds the functions used to modify a geometry_filter
-         *
-         * The idea here is that a list of filters will be provided in the shaders.json file. Each of those filters
-         * corresponds to either a function in this map, or a request to add a specific geometry_type, name, or
-         * name part to the filter.
-         */
-        static std::unordered_map<std::string, std::function<void(geometry_filter&)>> filter_modifying_functions;
 
         std::unordered_map<std::string, gl_shader_program> loaded_shaders;
 

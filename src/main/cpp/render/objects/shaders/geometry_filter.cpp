@@ -1,6 +1,22 @@
 #include "geometry_filter.h"
 
 namespace nova {
+    // CLion says these lines are an error. CLion is stupid
+    std::unordered_map<std::string, std::function<void(geometry_filter&)>> geometry_filter::modifying_functions {
+            { "solid", accept_solid },
+            { "not_solid", reject_solid },
+            { "transparent", accept_transparent },
+            { "not_transparent", reject_transparent },
+            { "cutout", accept_cutout },
+            { "not_cutout", reject_cutout },
+            { "emissive", accept_emissive },
+            { "not_emissive", reject_emissive },
+            { "damaged", accept_damaged },
+            { "not_damaged", reject_damaged },
+            { "everything_else", accept_everything_else },
+            { "nothing_else", reject_everything_else }
+    };
+
     void accept_geometry_type(geometry_filter &filter, geometry_type type) {
         filter.geometry_types.push_back(type);
     }

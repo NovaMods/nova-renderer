@@ -12,24 +12,12 @@
 #include <memory>
 
 #include "gl_mesh.h"
+#include "../../utils/smart_enum.h"
+
 
 namespace nova {
-    enum class geometry_type {
-        block,
-        entity,
-        falling_block,
-        gui,
-        cloud,
-        sky_decoration,
-        selection_box,
-        glint,
-        weather,
-        hand,
-        fullscreen_quad,
-        particle,
-        lit_particle,
-        eyes,
-    };
+    SMART_ENUM(geometry_type, block, entity, falling_block, gui,  cloud, sky_decoration, selection_box,  glint, \
+               weather, hand, fullscreen_quad, particle, lit_particle, eyes)
 
     /*!
      * \brief Represents something that can be rendered
