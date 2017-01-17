@@ -9,8 +9,9 @@
 #include <gtest/gtest.h>
 #include "../../../../mc_interface/mc_gui_objects.h"
 #include "../../../../data_loading/geometry_cache/builders/gui_geometry_builder.h"
+#include "../../../test_utils.h"
 
-TEST(gui_geometry_builder, add_vertex_test) {
+TEST(gui_geometry_builder, add_vertex) {
     auto vertex_buffer = std::vector<float>{};
 
     nova::add_vertex(vertex_buffer, 5, 5, 0.5, 0.5);
@@ -24,7 +25,7 @@ TEST(gui_geometry_builder, add_vertex_test) {
     EXPECT_EQ(vertex_buffer[4], 0.5);
 }
 
-TEST(gui_geometry_builder, add_vertices_from_button_test) {
+TEST(gui_geometry_builder, add_vertices_from_button) {
     auto vertex_buffer = std::vector<float>{};
     auto button = mc_gui_button{0, 0, 100, 100, "Main Menu", false};
     auto uvs = std::vector<float>{0, 0, 0, 1, 1, 0, 1, 1};
@@ -46,7 +47,7 @@ TEST(gui_geometry_builder, add_vertices_from_button_test) {
     EXPECT_EQ(vertex_buffer[14], 0);
 }
 
-TEST(gui_geometry_builder, add_indices_with_offset_positive_test) {
+TEST(gui_geometry_builder, add_indices_with_offset_positive) {
     auto indices = std::vector<unsigned>{};
     auto start_pos = 3;
 
@@ -60,7 +61,7 @@ TEST(gui_geometry_builder, add_indices_with_offset_positive_test) {
     EXPECT_EQ(indices[5], 6);
 }
 
-TEST(gui_geometry_builder, add_indices_with_offset_negative_offset_test) {
+TEST(gui_geometry_builder, add_indices_with_offset_negative_offset) {
     auto indices = std::vector<unsigned>{};
     auto start_pos = -3;
 
@@ -74,9 +75,36 @@ TEST(gui_geometry_builder, add_indices_with_offset_negative_offset_test) {
     EXPECT_EQ(indices[5], 0);
 }
 
-TEST(gui_geometry_builder, build_gui_geometry_no_buttons_test) {
+TEST(gui_geometry_builder, build_gui_geometry_no_buttons) {
     mc_gui_screen gui = {};
     gui.num_buttons = 0;
 
     nova::mesh_definition gui_mesh = nova::build_gui_geometry(gui);
+
+    EXPECT_EQ(gui_mesh.vertex_data.size(), 0);
+    EXPECT_EQ(gui_mesh.indices.size(), 0);
+    EXPECT_EQ(gui_mesh.vertex_format, nova::format::POS_UV);
+}
+
+TEST(gui_geometry_builder, build_gui_geometry_one_button) {
+    mc_gui_screen gui = get_gui_screen_one_button();
+
+    nova::mesh_definition gui_mesh = nova::build_gui_geometry(gui);
+
+    EXPECT_EQ(gui_mesh.vertex_data.size(), 20);
+    auto expected_vertex_data = std::vector<float>{
+            0,     0, 0,  0,        0.3359375f,
+            100,   0, 0,  0.78125f, 0.3359375f,
+            0,   100, 0,  0.0f,     0.4156963f,
+            100, 100, 0,  0.78125f, 0.4156963f
+    };
+    EXPECT_EQ(gui_mesh.vertex_data, expected_vertex_data);
+
+    EXPECT_EQ(gui_mesh.indices.size(), 6);
+    auto expected_indices = std::vector<unsigned>{
+            0, 1, 2, 2, 1, 3
+    };
+    EXPECT_EQ(gui_mesh.indices, expected_indices);
+
+    EXPECT_EQ(gui_mesh.vertex_format, nova::format::POS_UV);
 }

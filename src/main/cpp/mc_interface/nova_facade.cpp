@@ -25,7 +25,7 @@ using namespace nova;
 // runs in thread 5
 
 NOVA_API void initialize() {
-    nova_renderer::init_instance();
+    nova_renderer::init();
 }
 
 NOVA_API void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type) {

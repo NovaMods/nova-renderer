@@ -153,7 +153,7 @@ TEST(shader_loading, load_sources_from_folder) {
 }
 
 TEST(shader_loading, load_shaderpack_folder) {
-    nova::nova_renderer::init_instance();
+    nova::nova_renderer::init();
 
     auto shaderpack_name = "default";
 
@@ -167,6 +167,8 @@ TEST(shader_loading, load_shaderpack_folder) {
 
     auto gui_type_pos = std::find_if(filter.geometry_types.begin(), filter.geometry_types.end(), [](auto type) {return type == nova::geometry_type::gui;});
     EXPECT_NE(gui_type_pos, filter.geometry_types.end());
+
+    nova::nova_renderer::deinit();
 }
 
 TEST(shader_loading, get_shader_definitions) {

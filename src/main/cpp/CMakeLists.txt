@@ -171,7 +171,7 @@ set(TEST_SOURCE_FILES
         test/model/shaders/shader_facade_test.cpp
         test/model/geometry_cache/builders/gui_geometry_builder_tests.cpp
         test/model/texture_manager_test.cpp
-        test/model/shaders/gl_shader_program_test.cpp utils/smart_enum.h)
+        test/model/shaders/gl_shader_program_test.cpp utils/smart_enum.h test/model/geometry_cache/mesh_store_test.cpp test/test_utils.cpp test/test_utils.h)
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
 
