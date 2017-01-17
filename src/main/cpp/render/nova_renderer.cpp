@@ -82,7 +82,7 @@ namespace nova {
         return game_window.should_close();
     }
 
-    void nova_renderer::init_instance() {
+    void nova_renderer::init() {
         instance = std::make_unique<nova_renderer>();
     }
 
@@ -197,6 +197,10 @@ namespace nova {
             loaded_shaderpack = std::make_unique<shaderpack>(load_shaderpack(new_shaderpack_name));
             LOG(INFO) << "Loading complete";
         }
+    }
+
+    void nova_renderer::deinit() {
+        instance.release();
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, const uniform_buffer_store &ubos) {

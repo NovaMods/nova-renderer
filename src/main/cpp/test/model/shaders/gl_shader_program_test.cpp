@@ -12,7 +12,7 @@ nlohmann::json get_gui_def_json();
 void add_shader_source_to_definition(nova::shader_definition& def);
 
 TEST(gl_shader_program, constructor_name_test) {
-    nova::nova_renderer::init_instance();
+    nova::nova_renderer::init();
 
     auto json = get_gui_def_json();
     nova::shader_definition def(json);
@@ -29,6 +29,7 @@ TEST(gl_shader_program, constructor_name_test) {
 
     EXPECT_EQ(filter.names.size(), 0);
     EXPECT_EQ(filter.name_parts.size(), 0);
+    nova::nova_renderer::deinit();
 }
 
 nlohmann::json get_gui_def_json() {

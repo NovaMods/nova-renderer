@@ -35,7 +35,12 @@ namespace nova {
         /*!
          * \brief Initializes the static instance of the Nova renderer
          */
-        static void init_instance();
+        static void init();
+
+        /*!
+         * \brief Shuts down Nova, cleaning up anything that needs cleaning
+         */
+        static void deinit();
 
         /*!
          * \brief Initiazes the nova_renderer
