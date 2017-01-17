@@ -146,12 +146,14 @@ namespace nova {
         this->name = other.name;
         this->added_shaders = other.added_shaders;
         this->gl_name = other.gl_name;
+        this->filter = other.filter;
     }
 
     gl_shader_program::gl_shader_program(const gl_shader_program &other) {
         this->name = other.name;
         this->added_shaders = other.added_shaders;
         this->gl_name = other.gl_name;
+        this->filter = other.filter;
     }
 
     void gl_shader_program::set_filter(geometry_filter filter) noexcept {
