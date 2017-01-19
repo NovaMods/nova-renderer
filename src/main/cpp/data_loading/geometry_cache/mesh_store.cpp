@@ -22,22 +22,22 @@ namespace nova {
 
             mesh_definition gui_mesh = build_gui_geometry(screen);
 
-            render_object gui = {};
-            gui.geometry = new gl_mesh(gui_mesh);
-            gui.type = geometry_type::gui;
-            gui.name = "gui";
-            gui.is_solid = true;
+            render_object *gui = new render_object();
+            gui->geometry = new gl_mesh(gui_mesh);
+            gui->type = geometry_type::gui;
+            gui->name = "gui";
+            gui->is_solid = true;
 
             sort_render_object(gui);
         }
     }
 
-    void mesh_store::sort_render_object(render_object &object) {
+    void mesh_store::sort_render_object(render_object *object) {
         auto& all_shaders = shaders->get_loaded_shaders();
         for(auto& entry : all_shaders) {
             auto& filter = entry.second.get_filter();
             if(matches_filter(object, filter)) {
-                renderables_grouped_by_shader[entry.first].push_back(&object);
+                renderables_grouped_by_shader[entry.first].push_back(object);
             }
         }
     }
@@ -48,15 +48,15 @@ namespace nova {
         }
     }
 
-    bool mesh_store::matches_filter(render_object &object, geometry_filter &filter) {
+    bool mesh_store::matches_filter(render_object *object, geometry_filter &filter) {
         for(auto& name : filter.names) {
-            if(object.name == name) {
+            if(object->name == name) {
                 return true;
             }
         }
 
         for(auto& name_part : filter.name_parts) {
-            if(object.name.find(name_part) != std::string::npos) {
+            if(object->name.find(name_part) != std::string::npos) {
                 return true;
             }
         }
@@ -64,7 +64,7 @@ namespace nova {
         bool matches = false;
         bool matches_geometry_type = false;
         for(auto& geom_type : filter.geometry_types) {
-            if(object.type == geom_type) {
+            if(object->type == geom_type) {
                 matches_geometry_type = true;
             }
         }
@@ -75,19 +75,19 @@ namespace nova {
         }
 
         if(filter.should_be_solid) {
-            matches |= *filter.should_be_solid && object.is_solid;
+            matches |= *filter.should_be_solid && object->is_solid;
         }
         if(filter.should_be_transparent) {
-            matches |= *filter.should_be_transparent && object.is_transparent;
+            matches |= *filter.should_be_transparent && object->is_transparent;
         }
         if(filter.should_be_cutout) {
-            matches |= *filter.should_be_cutout && object.is_cutout;
+            matches |= *filter.should_be_cutout && object->is_cutout;
         }
         if(filter.should_be_emissive) {
-            matches |= *filter.should_be_emissive&& object.is_emissive;
+            matches |= *filter.should_be_emissive&& object->is_emissive;
         }
         if(filter.should_be_damaged) {
-            matches |= *filter.should_be_damaged ? object.damage_level > 0 : object.damage_level == 0;
+            matches |= *filter.should_be_damaged ? object->damage_level > 0 : object->damage_level == 0;
         }
 
         return matches;
