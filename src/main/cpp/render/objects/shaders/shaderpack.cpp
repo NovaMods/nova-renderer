@@ -16,8 +16,6 @@ namespace nova {
         }
     }
 
-    shaderpack::shaderpack(shaderpack &&other) {}
-
     gl_shader_program &shaderpack::operator[](std::string key) {
         return loaded_shaders[key];
     }

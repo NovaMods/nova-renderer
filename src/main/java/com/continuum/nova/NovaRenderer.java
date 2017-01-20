@@ -518,9 +518,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.info("Native code initialized");
     }
 
-    public void updateRenderer() {
-    }
-
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
         if(NovaNative.INSTANCE.should_close()) {
             Minecraft.getMinecraft().shutdown();

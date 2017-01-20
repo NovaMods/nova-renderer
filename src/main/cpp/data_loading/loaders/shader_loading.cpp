@@ -77,8 +77,13 @@ namespace nova {
         // TODO: Load a default shaders.json file, store it somewhere
         // accessable, and load it if there isn't a shaders.json in the
         // shaderpack
-        nlohmann::json shaders_json = shaders_json_file.is_open() ? load_json_from_stream(shaders_json_file)
-                                                                  : nlohmann::json();
+        nlohmann::json shaders_json;
+        if(shaders_json_file.is_open()) {
+            shaders_json_file >> shaders_json;
+
+        } else {
+            shaders_json = get_default_shaders_json();
+        }
 
         // Figure out all the shader files that we need to load
         auto shaders = get_shader_definitions(shaders_json);
@@ -147,18 +152,6 @@ namespace nova {
         return file_path.substr(0, slash_pos);
     }
 
-    /*!
-     * \brief Extracts the filename from the #include line
-     *
-     * #include lines look like
-     *
-     * #include "shader.glsl"
-     *
-     * I need to get the bit inside the quotes
-     *
-     * \param include_line The line with the #include statement on it
-     * \return The filename that is being included
-     */
     std::string get_filename_from_include(const std::string include_line) {
         auto quote_pos = include_line.find('"');
         return include_line.substr(quote_pos + 1, include_line.size() - quote_pos - 2);
@@ -224,5 +217,21 @@ namespace nova {
         LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
         auto fake_vector = std::vector<shader_definition>{};
         return {"", {}, fake_vector};
+    }
+
+    nlohmann::json& get_default_shaders_json() {
+        static nlohmann::json default_shaders_json;
+
+        if(default_shaders_json.size() == 0) {
+            std::ifstream default_json_file("config/shaders.json");
+            if(default_json_file.is_open()) {
+                //default_json_file >> default_shaders_json;
+                default_shaders_json = load_json_from_stream(default_json_file);
+            } else {
+                LOG(ERROR) << "Could not open the default shader.json file from the config folder. Please download it from https://raw.githubusercontent.com/NovaMods/nova-renderer/master/jars/config/shaders.json";
+            }
+        }
+
+        return default_shaders_json;
     }
 }

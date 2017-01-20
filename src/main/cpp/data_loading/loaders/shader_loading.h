@@ -61,10 +61,39 @@ namespace nova {
      */
     std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
 
+    /*!
+     * \brief Loads a file that was requested through a #include statement
+     *
+     * This function will recursively include files. There's nothing to check for an infinite include loop, so try to
+     * not have any
+     *
+     * \param shader_path The path to the shader that includes the file
+     * \param line The line in the shader that contains the #include statement
+     * \return The full source of the included file
+     */
     std::vector<shader_line> load_included_file(const std::string &shader_path, const std::string &line);
 
+    /*!
+     * \brief Determines the full file path of an included file
+     *
+     * \param shader_path The path to the current shader
+     * \param included_file_name The name of the file to include
+     * \return The path to the included file
+     */
     auto get_included_file_path(const std::string &shader_path, const std::string &included_file_name);
 
+    /*!
+     * \brief Extracts the filename from the #include line
+     *
+     * #include lines look like
+     *
+     * #include "shader.glsl"
+     *
+     * I need to get the bit inside the quotes
+     *
+     * \param include_line The line with the #include statement on it
+     * \return The filename that is being included
+     */
     std::string get_filename_from_include(const std::string include_line);
 
     /*!
@@ -75,7 +104,22 @@ namespace nova {
      */
     std::vector<shader_definition> get_shader_definitions(nlohmann::json &shaders_json);
 
+    /*!
+     * \brief Prints our a warning for every shader described in the shaders.json file which does not specify a
+     * fallback shader
+     *
+     * \param shaders The list of shader definitions from the shaders.json file
+     */
     void warn_for_missing_fallbacks(std::vector<shader_definition> shaders);
+
+    /*!
+     * \brief Loads the default shader.json file from disk
+     *
+     * This function caches the shaders.json file, so it should only load once
+     *
+     * \return The default shader.json file, as a json data structure
+     */
+    nlohmann::json& get_default_shaders_json();
 }
 
 #endif //RENDERER_SHADER_LOADING_H_H

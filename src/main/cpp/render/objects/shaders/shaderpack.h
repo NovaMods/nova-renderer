@@ -40,13 +40,6 @@ namespace nova {
          */
         shaderpack(std::string name, nlohmann::json shaders_json, std::vector<shader_definition> &shaders);
 
-        /*!
-         * \brief Move constructor
-         *
-         * \param other The shaderpack to move from
-         */
-        shaderpack(shaderpack &&other);
-
         gl_shader_program &operator[](std::string key);
 
         std::unordered_map<std::string, gl_shader_program> &get_loaded_shaders();
