@@ -16,6 +16,9 @@ namespace nova {
 
     nova_renderer::nova_renderer() : render_settings("config/config.json") {
         render_settings.register_change_listener(&ubo_manager);
+        render_settings.register_change_listener(this);
+
+        render_settings.update_config_loaded();
         trigger_config_update();
 
         enable_debug();
@@ -192,11 +195,10 @@ namespace nova {
     }
 
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
-        if(new_shaderpack_name != loaded_shaderpack->get_name()) {
-            LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
-            loaded_shaderpack = std::make_unique<shaderpack>(load_shaderpack(new_shaderpack_name));
-            LOG(INFO) << "Loading complete";
-        }
+        LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
+        loaded_shaderpack = std::experimental::make_optional<shaderpack>(load_shaderpack(new_shaderpack_name));
+        meshes.set_shaderpack(*loaded_shaderpack);
+        LOG(INFO) << "Loading complete";
     }
 
     void nova_renderer::deinit() {

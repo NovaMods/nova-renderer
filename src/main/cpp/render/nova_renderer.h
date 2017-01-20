@@ -96,7 +96,7 @@ namespace nova {
 
         glfw_gl_window game_window;
 
-        std::unique_ptr<shaderpack> loaded_shaderpack;
+        std::experimental::optional<shaderpack> loaded_shaderpack;
 
         texture_manager textures;
 
