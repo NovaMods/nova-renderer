@@ -60,13 +60,6 @@ namespace nova {
     GLuint gl_uniform_buffer::get_gl_name() const noexcept {
         return gl_name;
     }
-
-    void gl_uniform_buffer::send_data(void *data, int size) {
-        bind();
-        GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-
-        memcpy(p, &data, size);
-    }
 }
 
 
