@@ -72,11 +72,16 @@ namespace nova {
     };
 
     /*!
-     * \brief Holds all the uniform variabled needed by the GUI
+     * \brief Holds all the uniform variables needed by the GUI
      */
     struct gui_uniforms {
         glm::mat4 gbufferModelView;
         glm::mat4 gbufferProjection;
+        GLfloat aspectRatio;
+        GLfloat viewWidth;
+        GLfloat viewHeight;
+        GLfloat frameTimeCounter;
+        GLint hideGUI;
     };
 
     /*!
