@@ -12,6 +12,7 @@ namespace nova {
     gl_uniform_buffer::gl_uniform_buffer(GLuint size) {
         glGenBuffers(1, &gl_name);
         bind();
+        LOG(INFO) << "Creating a buffer with size " << size;
         glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
     }
 

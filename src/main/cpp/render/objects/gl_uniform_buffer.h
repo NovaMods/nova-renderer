@@ -73,8 +73,8 @@ namespace nova {
             glBufferData(GL_UNIFORM_BUFFER, sizeof(T), &data, GL_DYNAMIC_DRAW);
 
             //GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-
-            //memcpy(p, &data, sizeof(T));
+            //memcpy(p - 48, &data, sizeof(T));
+            //glUnmapBuffer(GL_UNIFORM_BUFFER);
         }
 
         void operator=(gl_uniform_buffer &&old) noexcept;
