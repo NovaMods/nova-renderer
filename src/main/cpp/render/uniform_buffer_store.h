@@ -19,8 +19,8 @@ namespace nova {
     /*!
      * \brief Holds all the uniform buffers that Nova needs to use
      *
-     * The Uniform Buffer Store is kinda nice because it registers itself as a configuration change listenee,
-     * meaning that it will receive updates whenever a new configuratin is available. These updates are (currently)
+     * The Uniform Buffer Store is kinda nice because it registers itself as a configuration change listener,
+     * meaning that it will receive updates whenever a new configuration is available. These updates are (currently)
      * uploaded by the "update" stage of the renderer
      *
      * Ideally, all transfers of data from the CPU to GPU will happen in a separate thread, and the render thread

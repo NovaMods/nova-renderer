@@ -3,14 +3,14 @@
   <Options>
     <AllowVSync>true</AllowVSync>
     <AllowFullscreen>true</AllowFullscreen>
-    <APIValidation>false</APIValidation>
+    <APIValidation>true</APIValidation>
     <CaptureCallstacks>false</CaptureCallstacks>
     <CaptureCallstacksOnlyDraws>false</CaptureCallstacksOnlyDraws>
     <DelayForDebugger>0</DelayForDebugger>
-    <VerifyMapWrites>false</VerifyMapWrites>
+    <VerifyMapWrites>true</VerifyMapWrites>
     <HookIntoChildren>false</HookIntoChildren>
     <RefAllResources>false</RefAllResources>
-    <SaveAllInitials>false</SaveAllInitials>
+    <SaveAllInitials>true</SaveAllInitials>
     <CaptureAllCmdLists>false</CaptureAllCmdLists>
     <DebugOutputMute>true</DebugOutputMute>
   </Options>

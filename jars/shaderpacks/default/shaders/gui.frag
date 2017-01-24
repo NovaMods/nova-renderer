@@ -2,12 +2,12 @@
 
 layout(binding = 0) uniform sampler2D colortex;
 
-layout(std140) uniform gui_uniforms {
+layout(shared, std140) uniform gui_uniforms {
+    float viewWidth;
+    float viewHeight;
     mat4 gbufferModelView;
     mat4 gbufferProjection;
     float aspectRatio;
-    float viewWidth;
-    float viewHeight;
     float frameTimeCounter;
     int hideGUI;
 };

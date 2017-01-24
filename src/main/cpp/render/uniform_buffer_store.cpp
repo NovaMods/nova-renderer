@@ -82,9 +82,15 @@ namespace nova {
         gui_model_view = glm::scale(gui_model_view, glm::vec3(1.0f, -1.0f, 1.0f));
 
         gui_uniform_variables.gbufferModelView = gui_model_view;
+        gui_uniform_variables.gbufferProjection = glm::mat4(1);
         gui_uniform_variables.aspectRatio = view_width / view_height;
         gui_uniform_variables.viewHeight = view_height;
         gui_uniform_variables.viewWidth = view_width;
+
+        gui_uniform_variables = {};
+        gui_uniform_variables.viewWidth = view_width;
+
+        LOG(DEBUG) << "gui_uniform_variables buffer: " << gui_uniform_variables;
 
         buffers["gui_uniforms"].send_data(&gui_uniform_variables);
         LOG(DEBUG) << "Updated all uniforms";

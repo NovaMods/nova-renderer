@@ -105,10 +105,11 @@ namespace nova {
     void gl_shader_program::link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept {
         GLuint buffer_index = glGetUniformBlockIndex(gl_name, buffer.get_name().c_str());
         if(buffer_index == GL_INVALID_INDEX) {
-            LOG(ERROR) << buffer.get_name() << " is not a valid identifier for program " << gl_name;
+            LOG(ERROR) << buffer.get_name() << " is not a valid uniform buffer identifier for program " << gl_name;
             return;
         }
-        LOG(TRACE) << "Shader: " << gl_name << " index: " << buffer_index << " bind point " << buffer.get_bind_point();
+        LOG(TRACE) << "Shader: " << gl_name << " index: " << buffer_index << " bind point: " << buffer.get_bind_point();
+        //glBindBufferBase(GL_UNIFORM_BUFFER, buffer_index, buffer.get_gl_name());
         glUniformBlockBinding(gl_name, buffer_index, buffer.get_bind_point());
     }
 
