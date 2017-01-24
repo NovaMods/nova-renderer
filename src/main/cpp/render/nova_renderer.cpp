@@ -199,6 +199,9 @@ namespace nova {
         loaded_shaderpack = std::experimental::make_optional<shaderpack>(load_shaderpack(new_shaderpack_name));
         meshes.set_shaderpack(*loaded_shaderpack);
         LOG(INFO) << "Loading complete";
+
+        link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), ubo_manager);
+        LOG(INFO) << "Linked up UBOs";
     }
 
     void nova_renderer::deinit() {

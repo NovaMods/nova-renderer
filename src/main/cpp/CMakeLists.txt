@@ -143,6 +143,8 @@ target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT)
 target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT)
 
 add_library(nova-renderer SHARED $<TARGET_OBJECTS:nova-renderer-obj>)
+target_compile_definitions(nova-renderer PRIVATE ELPP_THREAD_SAFE)
+target_compile_definitions(nova-renderer PUBLIC ELPP_THREAD_SAFE)
 
 # This is needed on MSVC otherwise the build files get spread out all over the place.
 # The only *problem* is that we wont be able to create multi-config builds. Personally

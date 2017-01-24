@@ -109,8 +109,8 @@ namespace nova {
             return;
         }
         LOG(TRACE) << "Shader: " << gl_name << " index: " << buffer_index << " bind point: " << buffer.get_bind_point();
-        //glBindBufferBase(GL_UNIFORM_BUFFER, buffer_index, buffer.get_gl_name());
-        glUniformBlockBinding(gl_name, buffer_index, buffer.get_bind_point());
+        glBindBufferBase(GL_UNIFORM_BUFFER, buffer_index, buffer.get_gl_name());
+        //glUniformBlockBinding(gl_name, buffer_index, buffer.get_bind_point());
     }
 
     void gl_shader_program::create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type) {
