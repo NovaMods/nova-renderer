@@ -87,9 +87,6 @@ namespace nova {
         gui_uniform_variables.viewHeight = view_height;
         gui_uniform_variables.viewWidth = view_width;
 
-        gui_uniform_variables = {};
-        gui_uniform_variables.viewWidth = view_width;
-
         LOG(DEBUG) << "gui_uniform_variables buffer: " << gui_uniform_variables;
 
         buffers["gui_uniforms"].send_data(&gui_uniform_variables);

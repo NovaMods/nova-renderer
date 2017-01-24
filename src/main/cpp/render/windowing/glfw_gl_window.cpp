@@ -37,8 +37,10 @@ namespace nova {
         if(!window) {
             LOG(FATAL) << "Could not initialize window :(";
         }
-
         LOG(INFO) << "GLFW window created";
+
+        renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
+        LOG(INFO) << "Hooked into RenderDoc";
 
         glfwMakeContextCurrent(window);
         gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
@@ -55,8 +57,6 @@ namespace nova {
         glViewport(0, 0, window_dimensions.x, window_dimensions.y);
 
         glfwSetKeyCallback(window, key_callback);
-
-        renderdoc_manager = std::make_unique<RenderDocManager>(window, "nova/natives/");
 
         return 0;
     }
