@@ -56,6 +56,8 @@ namespace nova {
 
         glfwSetKeyCallback(window, key_callback);
 
+        renderdoc_manager = std::make_unique<RenderDocManager>(window, "nova/natives/");
+
         return 0;
     }
 

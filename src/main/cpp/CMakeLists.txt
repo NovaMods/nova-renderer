@@ -96,6 +96,10 @@ set(NOVA_HEADERS
         )
 
 set(NOVA_SOURCE
+        # Need to compile third party stuff, too...
+        3rdparty/glad/src/glad.c
+        3rdparty/miniz/miniz.c
+        3rdparty/renderdocapi/RenderDocManager.cpp
 
         data_loading/geometry_cache/builders/gui_geometry_builder.cpp
 
@@ -117,11 +121,6 @@ set(NOVA_SOURCE
         data_loading/settings.cpp
         data_loading/loaders/shader_loading.cpp
         data_loading/loaders/loader_utils.cpp
-
-        # Need to compile third party stuff, too...
-        3rdparty/glad/src/glad.c
-        3rdparty/miniz/miniz.c
-        3rdparty/renderdocapi/RenderDocManager.cpp
 
         render/objects/shaders/shaderpack.cpp
         data_loading/geometry_cache/mesh_store.cpp
