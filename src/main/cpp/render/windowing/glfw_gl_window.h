@@ -10,6 +10,7 @@
 #include <json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../interfaces/iwindow.h"
+#include <RenderDocManager.h>
 
 namespace nova {
     /*!
@@ -56,6 +57,7 @@ namespace nova {
     private:
         GLFWwindow *window;
         glm::ivec2 window_dimensions;
+        std::unique_ptr<RenderDocManager> renderdoc_manager;
 
         void set_framebuffer_size(glm::ivec2 new_framebuffer_size);
     };
