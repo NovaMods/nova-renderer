@@ -70,9 +70,11 @@ namespace nova {
         template <typename T>
         void send_data(T *data) {
             bind();
-            GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+            glBufferData(GL_UNIFORM_BUFFER, sizeof(T), &data, GL_DYNAMIC_DRAW);
 
-            memcpy(p, &data, sizeof(T));
+            //GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+
+            //memcpy(p, &data, sizeof(T));
         }
 
         void operator=(gl_uniform_buffer &&old) noexcept;

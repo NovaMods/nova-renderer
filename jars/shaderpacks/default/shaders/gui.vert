@@ -3,12 +3,12 @@
 layout(location = 0) in vec3 position_in;
 layout(location = 1) in vec2 uv_in;
 
-layout(std140) uniform gui_uniforms {
+layout(shared, std140) uniform gui_uniforms {
+    float viewWidth;
+    float viewHeight;
     mat4 gbufferModelView;
     mat4 gbufferProjection;
     float aspectRatio;
-    float viewWidth;
-    float viewHeight;
     float frameTimeCounter;
     int hideGUI;
 };
@@ -21,6 +21,6 @@ void main() {
     gl_Position.xy -= 1.0f;
     gl_Position.y *= -1;
     gl_Position.w = 1.0f;
-    
+
 	uv = uv_in;
 }

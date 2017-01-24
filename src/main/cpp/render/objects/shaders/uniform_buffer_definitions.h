@@ -15,6 +15,11 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
+#include <ostream>
+
+#define ELPP_THREAD_SAFE
+#include <easylogging++.h>
+
 namespace nova {
     /*!
      * \brief Holds all the uniform variables that are shared by all shader executions
@@ -75,11 +80,11 @@ namespace nova {
      * \brief Holds all the uniform variables needed by the GUI
      */
     struct gui_uniforms {
+        GLfloat viewWidth;
+        GLfloat viewHeight;
         glm::mat4 gbufferModelView;
         glm::mat4 gbufferProjection;
         GLfloat aspectRatio;
-        GLfloat viewWidth;
-        GLfloat viewHeight;
         GLfloat frameTimeCounter;
         GLint hideGUI;
     };
@@ -156,6 +161,10 @@ namespace nova {
         GLuint shadowcolor1;
         GLuint noisetex;
     };
+
+    el::base::Writer& operator<<(el::base::Writer& out, const glm::mat4& mat);
+
+    el::base::Writer& operator<<(el::base::Writer& out, gui_uniforms uniforms);
 }
 
 #endif //RENDERER_UNIFORM_BUFFERS_H
