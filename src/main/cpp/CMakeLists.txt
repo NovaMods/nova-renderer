@@ -51,6 +51,7 @@ include_directories(SYSTEM
         "${3RD_PARTY_DIR}/json/src"
         "${3RD_PARTY_DIR}/googletest/googletest/include"
         "${3RD_PARTY_DIR}/optional"
+        "${3RD_PARTY_DIR}/renderdocapi"
         )
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
@@ -120,6 +121,7 @@ set(NOVA_SOURCE
         # Need to compile third party stuff, too...
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
+        3rdparty/renderdocapi/RenderDocManager.cpp
 
         render/objects/shaders/shaderpack.cpp
         data_loading/geometry_cache/mesh_store.cpp
