@@ -19,6 +19,3 @@
 [submodule "src/main/cpp/3rdparty/optional"]
 	path = src/main/cpp/3rdparty/optional
 	url = https://github.com/akrzemi1/Optional.git
-[submodule "src/main/cpp/3rdparty/renderdocapi"]
-	path = src/main/cpp/3rdparty/renderdocapi
-	url = git@github.com:BlakeTheAwesome/RenderDoc-Manager.git
