@@ -110,7 +110,6 @@ set(NOVA_SOURCE
         data_loading/geometry_cache/builders/gui_geometry_builder.cpp
 
         render/objects/shaders/gl_shader_program.cpp
-        render/objects/gl_uniform_buffer.cpp
         render/objects/gl_mesh.cpp
         render/objects/textures/texture2D.cpp
 

@@ -124,7 +124,7 @@ namespace nova {
         void load_new_shaderpack(const std::string &new_shaderpack_name);
     };
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, const uniform_buffer_store &ubos);
+    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos);
 }
 
 #endif //RENDERER_VULKAN_MOD_H

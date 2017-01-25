@@ -208,7 +208,7 @@ namespace nova {
         instance.release();
     }
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, const uniform_buffer_store &ubos) {
+    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {
         nova::foreach(shaders, [&](auto shader) { ubos.register_all_buffers_with_shader(shader.second); });
     }
 }

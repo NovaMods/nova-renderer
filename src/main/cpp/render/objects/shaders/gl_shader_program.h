@@ -15,7 +15,6 @@
 #include <glad/glad.h>
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
-#include "../gl_uniform_buffer.h"
 #include "geometry_filter.h"
 
 
@@ -98,13 +97,13 @@ namespace nova {
          */
         void bind() noexcept;
 
-        void link_to_uniform_buffer(const gl_uniform_buffer &buffer) noexcept;
-
         void set_filter(geometry_filter filter) noexcept;
 
         geometry_filter& get_filter() noexcept;
 
         std::string& get_name() noexcept;
+
+        GLuint get_gl_name() const noexcept;
 
     private:
         std::string name;
