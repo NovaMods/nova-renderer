@@ -12,9 +12,9 @@
 #include "../data_loading/settings.h"
 #include "objects/shaders/gl_shader_program.h"
 #include "objects/shaders/uniform_buffer_definitions.h"
+#include "objects/gl_uniform_buffer.h"
 
 namespace nova {
-    class gl_uniform_buffer;
 
     /*!
      * \brief Holds all the uniform buffers that Nova needs to use
@@ -33,9 +33,7 @@ namespace nova {
          */
         uniform_buffer_store();
 
-        gl_uniform_buffer &operator[](std::string name);
-
-        void register_all_buffers_with_shader(gl_shader_program &shader) const noexcept;
+        void register_all_buffers_with_shader(const gl_shader_program &shader) noexcept;
 
         void update();
 
@@ -50,14 +48,11 @@ namespace nova {
         // Saved so that we can reference these values later
         nlohmann::json config;
 
-        std::unordered_map<std::string, gl_uniform_buffer> buffers;
-
         gui_uniforms gui_uniform_variables;
         per_frame_uniforms per_frame_uniform_variables;
 
-        void set_bind_points(nlohmann::json &config);
-
-        void create_ubos();
+        gl_uniform_buffer<gui_uniforms> gui_uniform_buffer;
+        gl_uniform_buffer<per_frame_uniforms> per_frame_uniforms_buffer;
 
         void update_gui_uniforms();
 

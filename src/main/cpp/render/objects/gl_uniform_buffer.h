@@ -8,80 +8,52 @@
 
 #include <string>
 #include <glad/glad.h>
+#include "shaders/gl_shader_program.h"
 
 namespace nova {
     /*!
-     * \brief Represents a uniform buffer, which can be used for whatever
+     * \brief A nice interface for uniform buffer objects
      */
+    template <typename T>
     class gl_uniform_buffer {
     public:
-        /*!
-         * \brief Initializes this uniform buffer, creating it on the GPU and whatnot
-         *
-         * \param size The number of bytes to allocate for this buffer
-         */
-        gl_uniform_buffer(GLuint size);
+        gl_uniform_buffer(std::string name) : name(name) {
+            glGenBuffers(1, &gl_name);
+            glNamedBufferStorage(gl_name, sizeof(T), nullptr, GL_DYNAMIC_STORAGE_BIT);
+        }
 
-        gl_uniform_buffer() {};
+        gl_uniform_buffer(gl_uniform_buffer &&old) noexcept {
+            gl_name = old.gl_name;
+            name = old.name;
 
-        gl_uniform_buffer(gl_uniform_buffer &&old) noexcept;
+            old.gl_name = 0;
+            old.name = "";
+        }
+
+        void link_to_shader(const gl_shader_program &shader) {
+            auto shader_gl_name = shader.get_gl_name();
+            auto ubo_index = glGetUniformBlockIndex(shader_gl_name, name.c_str());
+            glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
+            glBindBufferBase(GL_UNIFORM_BUFFER, ubo_index, gl_name);
+        }
+
+        void send_data(T &data) {
+            glNamedBufferSubData(gl_name, 0, sizeof(T), &data);
+        }
+
+        void bind() {
+            glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
+        }
 
         /*!
          * \brief Deallocates this uniform buffer
          */
-        ~gl_uniform_buffer();
-
-        /*!
-         * \brief Binds this uniform buffer so we can do things to it
-         *
-         * \param bindpoint The buffer thing to bind this buffer to
-         */
-        void bind();
-
-        /*!
-         * \brief Binds this buffer to the given bind point
-         *
-         * \param bind_point The bind point to bind this buffer to
-         */
-        void set_bind_point(GLuint bind_point);
-
-        void set_name(std::string name) noexcept;
-
-        /*!
-         * \brief Returns the binding point of this uniform block
-         */
-        GLuint get_bind_point() const noexcept;
-
-        /*!
-         * \brier Returns the OpenGL name for this uniform block
-         */
-        GLuint get_gl_name() const noexcept;
-
-        const std::string &get_name() const noexcept;
-
-        /*!
-         * \brief Uploads the given data to this UBO
-         *
-         * Note that absolutely no checking is done to make sure you're uploading the right data. You better know what
-         * you're doing.
-         *
-         * Note also that this function binds the UBO, so you don't need to bind it yourself.
-         */
-        template <typename T>
-        void send_data(T *data) {
-            bind();
-            glBufferData(GL_UNIFORM_BUFFER, sizeof(T), &data, GL_DYNAMIC_DRAW);
-
-            //GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-            //memcpy(p - 48, &data, sizeof(T));
-            //glUnmapBuffer(GL_UNIFORM_BUFFER);
+        ~gl_uniform_buffer() {
+            glDeleteBuffers(1, &gl_name);
         }
-
-        void operator=(gl_uniform_buffer &&old) noexcept;
 
     private:
         GLuint gl_name;
-        GLuint bind_point;
         std::string name;
     };
 }

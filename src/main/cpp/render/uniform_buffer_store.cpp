@@ -12,27 +12,8 @@
 #include "uniform_buffer_store.h"
 
 namespace nova {
-    uniform_buffer_store::uniform_buffer_store() {
-        create_ubos();
-
+    uniform_buffer_store::uniform_buffer_store() : gui_uniform_buffer("gui_uniforms"), per_frame_uniforms_buffer("per_frame_uniforms") {
         LOG(INFO) << "Initialized uniform buffer store";
-    }
-
-    void uniform_buffer_store::create_ubos() {
-        buffers.emplace("per_frame_uniforms", gl_uniform_buffer(sizeof(per_frame_uniforms)));
-        buffers.emplace("gui_uniforms", gl_uniform_buffer(sizeof(gui_uniforms)));
-    }
-
-    void uniform_buffer_store::set_bind_points(nlohmann::json &config) {
-        nlohmann::json &ubo_bind_points_node = config["uboBindPoints"];
-
-        LOG(INFO) << "Provided configuration: " << config;
-
-        for(auto &pair : buffers) {
-            unsigned int bind_point = ubo_bind_points_node[pair.first];
-            buffers[pair.first].set_bind_point(bind_point);
-            buffers[pair.first].set_name(pair.first);
-        }
     }
 
     void uniform_buffer_store::update() {
@@ -55,19 +36,11 @@ namespace nova {
         update_per_frame_uniforms();
     }
 
-    void uniform_buffer_store::on_config_loaded(nlohmann::json &config) {
-        // Set up initial configuration, which right now means setting the bind points for all the UBOs
-        set_bind_points(config);
-    }
+    void uniform_buffer_store::on_config_loaded(nlohmann::json &config) {}
 
-    gl_uniform_buffer &uniform_buffer_store::operator[](std::string name) {
-        return buffers[name];
-    }
-
-    void uniform_buffer_store::register_all_buffers_with_shader(gl_shader_program &shader) const noexcept {
-        for(auto &buffer : buffers) {
-            shader.link_to_uniform_buffer(buffer.second);
-        }
+    void uniform_buffer_store::register_all_buffers_with_shader(const gl_shader_program &shader) noexcept {
+        gui_uniform_buffer.link_to_shader(shader);
+        per_frame_uniforms_buffer.link_to_shader(shader);
     }
 
     void uniform_buffer_store::update_gui_uniforms() {
@@ -89,13 +62,13 @@ namespace nova {
 
         LOG(DEBUG) << "gui_uniform_variables buffer: " << gui_uniform_variables;
 
-        buffers["gui_uniforms"].send_data(&gui_uniform_variables);
+        gui_uniform_buffer.send_data(gui_uniform_variables);
         LOG(DEBUG) << "Updated all uniforms";
     }
 
     void uniform_buffer_store::update_per_frame_uniforms() {
         // TODO: Fill in the per frame uniforms
-        buffers["per_frame_uniforms"].send_data(&per_frame_uniform_variables);
+        per_frame_uniforms_buffer.send_data(per_frame_uniform_variables);
     }
 }
 
