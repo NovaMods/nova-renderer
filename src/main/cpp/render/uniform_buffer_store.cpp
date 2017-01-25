@@ -60,15 +60,16 @@ namespace nova {
         gui_uniform_variables.viewHeight = view_height;
         gui_uniform_variables.viewWidth = view_width;
 
-        LOG(DEBUG) << "gui_uniform_variables buffer: " << gui_uniform_variables;
+        LOG(TRACE) << "gui_uniform_variables buffer: " << gui_uniform_variables;
 
         gui_uniform_buffer.send_data(gui_uniform_variables);
-        LOG(DEBUG) << "Updated all uniforms";
+        LOG(DEBUG) << "Updated GUI UBO";
     }
 
     void uniform_buffer_store::update_per_frame_uniforms() {
         // TODO: Fill in the per frame uniforms
         per_frame_uniforms_buffer.send_data(per_frame_uniform_variables);
+        LOG(DEBUG) << "Updated per frame UBO";
     }
 }
 

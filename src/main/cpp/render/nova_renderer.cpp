@@ -201,7 +201,7 @@ namespace nova {
         LOG(INFO) << "Loading complete";
 
         link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), ubo_manager);
-        LOG(INFO) << "Linked up UBOs";
+        LOG(DEBUG) << "Linked up UBOs";
     }
 
     void nova_renderer::deinit() {
