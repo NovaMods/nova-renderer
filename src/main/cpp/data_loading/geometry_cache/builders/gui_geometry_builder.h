@@ -23,7 +23,7 @@ namespace nova {
      */
     NOVA_API mesh_definition build_gui_geometry(mc_gui_screen &cur_screen);
 
-    NOVA_API void add_indices_with_offset(std::vector<unsigned> &indices, unsigned start_pos);
+    NOVA_API void add_indices_with_offset(std::vector<unsigned short> &indices, unsigned short start_pos);
 
     /*!
      * \brief Adds all the vertices from the given button to the given vertex buffer. uvs holds the uv

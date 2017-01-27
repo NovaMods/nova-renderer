@@ -53,7 +53,7 @@ namespace nova {
          */
         void set_data(std::vector<float> data, format data_format, usage data_usage);
 
-        void set_index_array(std::vector<unsigned> data, usage data_usage);
+        void set_index_array(std::vector<unsigned short> data, usage data_usage);
 
         void set_active();
 

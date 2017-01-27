@@ -71,7 +71,7 @@ namespace nova {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
     }
 
-    void gl_mesh::set_index_array(std::vector<unsigned> data, usage data_usage) {
+    void gl_mesh::set_index_array(std::vector<unsigned short> data, usage data_usage) {
         glBindVertexArray(vertex_array);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
         GLenum buffer_usage = translate_usage(data_usage);
