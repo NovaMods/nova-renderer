@@ -28,13 +28,13 @@ public class AtlasGenerator {
             // Write the image so we can verify we're reading it in correctly
             // From this code, I know that the data in the image is loaded, although it looks like the red and blue
             // channels are swapped
-            try {
+            /*try {
                 String[] splitPath = imageName.name.split("/");
                 File imageFile = new File(splitPath[splitPath.length - 1]);
                 ImageIO.write(imageName.image, "png", imageFile);
             } catch(IOException e) {
                 LOG.warn("Could not write image " + imageName, e);
-            }
+            }*/
 
             for(Texture texture : textures) {
                 if(texture.addImage(imageName.image, imageName.name, padding)) {

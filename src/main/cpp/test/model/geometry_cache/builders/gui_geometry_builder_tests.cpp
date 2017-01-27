@@ -48,10 +48,10 @@ TEST(gui_geometry_builder, add_vertices_from_button) {
 }
 
 TEST(gui_geometry_builder, add_indices_with_offset_positive) {
-    auto indices = std::vector<unsigned>{};
+    auto indices = std::vector<unsigned short>{};
     auto start_pos = 3;
 
-    nova::add_indices_with_offset(indices, (unsigned int) start_pos);
+    nova::add_indices_with_offset(indices, (unsigned short) start_pos);
 
     EXPECT_EQ(indices[0], 3);
     EXPECT_EQ(indices[1], 4);
@@ -62,10 +62,10 @@ TEST(gui_geometry_builder, add_indices_with_offset_positive) {
 }
 
 TEST(gui_geometry_builder, add_indices_with_offset_negative_offset) {
-    auto indices = std::vector<unsigned>{};
+    auto indices = std::vector<unsigned short>{};
     auto start_pos = -3;
 
-    nova::add_indices_with_offset(indices, (unsigned int) start_pos);
+    nova::add_indices_with_offset(indices, (unsigned short) start_pos);
 
     EXPECT_EQ(indices[0], 4294967293);
     EXPECT_EQ(indices[1], 4294967294);
@@ -101,7 +101,7 @@ TEST(gui_geometry_builder, build_gui_geometry_one_button) {
     EXPECT_EQ(gui_mesh.vertex_data, expected_vertex_data);
 
     EXPECT_EQ(gui_mesh.indices.size(), 6);
-    auto expected_indices = std::vector<unsigned>{
+    auto expected_indices = std::vector<unsigned short>{
             0, 1, 2, 2, 1, 3
     };
     EXPECT_EQ(gui_mesh.indices, expected_indices);

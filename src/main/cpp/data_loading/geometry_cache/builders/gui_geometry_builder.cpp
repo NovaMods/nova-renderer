@@ -32,9 +32,9 @@ namespace nova {
         vertex_buffer.reserve((unsigned long long int) (cur_screen.num_buttons * 4 *
                                                         5));    // cur_screen.num_buttons buttons * 4 vertices per button * 5 elements per vertex
 
-        std::vector<unsigned> indices;
+        std::vector<unsigned short> indices;
         indices.reserve((unsigned long long int) (cur_screen.num_buttons * 6)); // six entries per button
-        unsigned start_pos = 0;
+        unsigned short start_pos = 0;
 
         for(int i = 0; i < cur_screen.num_buttons; i++) {
             mc_gui_button &button = cur_screen.buttons[i];
@@ -66,7 +66,7 @@ namespace nova {
     }
 
 
-    void add_indices_with_offset(std::vector<unsigned> &indices, unsigned start_pos) {
+    void add_indices_with_offset(std::vector<unsigned short> &indices, unsigned short start_pos) {
         static auto index_buffer = std::vector<unsigned short>{
                 0, 1, 2,
                 2, 1, 3

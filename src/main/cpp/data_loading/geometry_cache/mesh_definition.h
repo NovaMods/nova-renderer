@@ -36,7 +36,7 @@ namespace nova {
      */
     struct mesh_definition {
         std::vector<float> vertex_data;
-        std::vector<unsigned> indices;
+        std::vector<unsigned short> indices;
         format vertex_format;
     };
 }
