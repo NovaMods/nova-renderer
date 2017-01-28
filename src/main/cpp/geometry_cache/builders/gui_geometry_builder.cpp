@@ -11,16 +11,17 @@
 
 
 namespace nova {
-    mesh_definition build_gui_geometry(mc_gui_screen &cur_screen) {
+	mesh_definition build_gui_geometry(mc_gui_screen &cur_screen) {
+		
         // The UV coordinates for a pressed and an unpressed GUI button
-        static auto basic_pressed_uvs = std::vector<float>{
+        static auto basic_hovered_uvs = std::vector<float>{
                 0.0f, 0.3359375f,
                 0.78125f, 0.3359375f,
                 0.0f, 0.4156963f,
                 0.78125f, 0.4156963f
         };
 
-        static auto basic_hovered_uvs = std::vector<float>{
+        static auto basic_unpressed_uvs = std::vector<float>{
                 0.0f, 0.2578112f,
                 0.78125, 0.2578112f,
                 0.0f, 0.3359375f,
@@ -39,14 +40,9 @@ namespace nova {
         for(int i = 0; i < cur_screen.num_buttons; i++) {
             mc_gui_button &button = cur_screen.buttons[i];
 
-            // TODO: More switches to figure out exactly which UVs we should use
-            std::vector<float> &uv_buffer = basic_hovered_uvs;  // TODO: Change when we get the unpressed UVs
-            if(button.is_pressed) {
-                uv_buffer = basic_pressed_uvs;
-            }
-
+           
             // Generate the vertexes from the button's position
-            add_vertices_from_button(vertex_buffer, button, uv_buffer);
+            add_vertices_from_button(vertex_buffer, button);
 
             add_indices_with_offset(indices, start_pos);
 
@@ -77,27 +73,32 @@ namespace nova {
         }
     }
 
-    void add_vertices_from_button(std::vector<GLfloat> &vertex_buffer, const mc_gui_button &button,
-                                  const std::vector<GLfloat> &uvs) {
+    void add_vertices_from_button(std::vector<GLfloat> &vertex_buffer, const mc_gui_button &button) {
+		int i = 1;
+		if (button.is_pressed) {
+			i = 0;
+		}
+		float texY = 46 + i * 20;
+		float texX = 0;
         add_vertex(
                 vertex_buffer,
                 button.x_position, button.y_position,
-                uvs[0], uvs[1]
+                texX*factor, texY*factor
         );
         add_vertex(
                 vertex_buffer,
                 button.x_position + button.width, button.y_position,
-                uvs[2], uvs[3]
+			(texX + 199)*factor, texY*factor
         );
         add_vertex(
                 vertex_buffer,
                 button.x_position, button.y_position + button.height,
-                uvs[4], uvs[5]
+			texX*factor, (texY + 20)*factor
         );
         add_vertex(
                 vertex_buffer,
                 button.x_position + button.width, button.y_position + button.height,
-                uvs[6], uvs[7]
+			(texX + 199)*factor, (texY + 20)*factor
         );
     }
 
