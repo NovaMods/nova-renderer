@@ -13,14 +13,14 @@
 namespace nova {
     mesh_definition build_gui_geometry(mc_gui_screen &cur_screen) {
         // The UV coordinates for a pressed and an unpressed GUI button
-        static auto basic_unpressed_uvs = std::vector<float>{
+        static auto basic_pressed_uvs = std::vector<float>{
                 0.0f, 0.3359375f,
                 0.78125f, 0.3359375f,
                 0.0f, 0.4156963f,
                 0.78125f, 0.4156963f
         };
 
-        static auto basic_pressed_uvs = std::vector<float>{
+        static auto basic_hovered_uvs = std::vector<float>{
                 0.0f, 0.2578112f,
                 0.78125, 0.2578112f,
                 0.0f, 0.3359375f,
@@ -40,7 +40,7 @@ namespace nova {
             mc_gui_button &button = cur_screen.buttons[i];
 
             // TODO: More switches to figure out exactly which UVs we should use
-            std::vector<float> &uv_buffer = basic_unpressed_uvs;
+            std::vector<float> &uv_buffer = basic_hovered_uvs;  // TODO: Change when we get the unpressed UVs
             if(button.is_pressed) {
                 uv_buffer = basic_pressed_uvs;
             }

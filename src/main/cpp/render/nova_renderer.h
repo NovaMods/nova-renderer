@@ -10,7 +10,7 @@
 #include "objects/shaders/gl_shader_program.h"
 #include "uniform_buffer_store.h"
 #include "windowing/glfw_gl_window.h"
-#include "../data_loading/geometry_cache/mesh_store.h"
+#include "../geometry_cache/mesh_store.h"
 #include "objects/textures/texture_manager.h"
 
 namespace nova {

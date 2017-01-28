@@ -59,7 +59,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
 # Setup the nova-core library.
 set(NOVA_HEADERS
 
-        data_loading/geometry_cache/builders/gui_geometry_builder.h
+        geometry_cache/builders/gui_geometry_builder.h
 
         render/objects/shaders/uniform_buffer_definitions.h
 
@@ -85,14 +85,14 @@ set(NOVA_HEADERS
         data_loading/loaders/loaders.h
         data_loading/loaders/shader_loading.h
         data_loading/loaders/loader_utils.h
-        data_loading/geometry_cache/mesh_store.h
+        geometry_cache/mesh_store.h
         render/render_pass.h
         render/objects/shaders/shader_facade.h
         render/objects/render_object.h
 
         data_loading/physics/AABB.h
         data_loading/loaders/shader_source_structs.h
-        data_loading/geometry_cache/mesh_definition.h
+        geometry_cache/mesh_definition.h
         )
 
 set(NOVA_SOURCE
@@ -101,13 +101,13 @@ set(NOVA_SOURCE
         3rdparty/miniz/miniz.c
         3rdparty/renderdocapi/RenderDocManager.cpp
 
-        data_loading/geometry_cache/builders/gui_geometry_builder.cpp
+        geometry_cache/builders/gui_geometry_builder.cpp
 
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
         render/objects/textures/texture_manager.cpp
         render/uniform_buffer_store.cpp
-        data_loading/geometry_cache/builders/gui_geometry_builder.cpp
+        geometry_cache/builders/gui_geometry_builder.cpp
 
         render/objects/shaders/gl_shader_program.cpp
         render/objects/gl_mesh.cpp
@@ -122,9 +122,9 @@ set(NOVA_SOURCE
         data_loading/loaders/loader_utils.cpp
 
         render/objects/shaders/shaderpack.cpp
-        data_loading/geometry_cache/mesh_store.cpp
+        geometry_cache/mesh_store.cpp
         data_loading/physics/AABB.cpp
-        data_loading/geometry_cache/mesh_definition.cpp
+        geometry_cache/mesh_definition.cpp
         render/objects/shaders/geometry_filter.cpp
 
         render/objects/shaders/uniform_buffers_definitions.cpp

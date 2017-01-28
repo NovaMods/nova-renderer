@@ -172,27 +172,30 @@ public interface NovaNative extends Library {
         }
     }
 
-    enum AtlasType {
-        TERRAIN,
-        ENTITIES,
-        GUI,
-        PARTICLES,
-        EFFECTS,
-        FONT,
-        NUM_ATLASES
-    }
-
     enum TextureType {
-        ALBEDO,
-        NORMAL,
-        SPECULAR
+        GUI,
+        OPTIONS_BACKGROUND,
+        FONT,
+        TERRAIN_COLOR,
+        TERRAIN_NORMALMAP,
+        TERRAIN_DATA,
+        ENTITIES_COLOR,
+        ENTITIES_NORMALMAP,
+        ENTITIES_DATA,
+        ITEMS,
+        WORLD_DATA,
+        PARTICLES,
+        WEATHER,
+        SKY,
+        END_SKY,
+        CLOUDS
     }
 
     void initialize();
 
     void execute_frame();
 
-    void add_texture(mc_atlas_texture texture, int atlas_type, int texture_type);
+    void add_texture(mc_atlas_texture texture, int texture_type);
 
     void add_texture_location(mc_texture_atlas_location location);
 
