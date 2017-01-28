@@ -21,6 +21,8 @@ namespace nova {
         glBindTexture(GL_TEXTURE_2D, gl_name);
         glTexImage2D(
                 GL_TEXTURE_2D, 0, format, dimensions[0], dimensions[1], 0, format, GL_FLOAT, pixel_data.data());
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glBindTexture(GL_TEXTURE_2D, (GLuint) previous_texture);
     }
 
