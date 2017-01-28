@@ -38,7 +38,7 @@ namespace nova {
         locations.clear();
     }
 
-    void texture_manager::add_texture(mc_atlas_texture &new_texture, atlas_type type, texture_type data_type) {
+    void texture_manager::add_texture(mc_atlas_texture &new_texture, texture_type data_type) {
         // TODO:
         // Create an OpenGL texture from the given texture
         // Save it to the list of atlas textures
@@ -79,21 +79,17 @@ namespace nova {
         texture.set_data(pixel_data, dimensions, format);
         LOG(DEBUG) << "Texture data sent to GPU";
 
-        atlases[std::pair<atlas_type, texture_type>(type, data_type)] = texture;
+        atlases[data_type] = texture;
         LOG(DEBUG) << "Texture added to atlas";
     }
 
     void texture_manager::add_texture_location(mc_texture_atlas_location &location) {
-        std::string tex_name(location.name);
-        glm::vec2 min_uv(location.min_u, location.min_v);
-        glm::vec2 max_uv(location.max_u, location.max_v);
-
         texture_location tex_loc = {
-                min_uv,
-                max_uv
+                { location.min_u, location.min_v },
+                { location.max_u, location.max_v }
         };
 
-        locations[tex_name] = tex_loc;
+        locations[location.name] = tex_loc;
     }
 
 
@@ -102,9 +98,8 @@ namespace nova {
         return locations[texture_name];
     }
 
-    texture2D &texture_manager::get_texture_atlas(atlas_type atlas, texture_type type) {
-        auto key = std::pair<atlas_type, texture_type>(atlas, type);
-        return atlases[key];
+    texture2D &texture_manager::get_texture_atlas(texture_type type) {
+        return atlases[type];
     }
 
     int texture_manager::get_max_texture_size() {

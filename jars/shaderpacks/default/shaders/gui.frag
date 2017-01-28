@@ -17,7 +17,9 @@ in vec2 uv;
 out vec3 color;
 
 void main() {
-    color = texture(colortex, uv).rgb;
-
-    color = vec3(1, 0, 1);
+    if(textureSize(colortex, 0).x > 0) {
+        color = texture(colortex, uv).rgb;
+    } else {
+        color = vec3(1, 0, 1);
+    }
 }

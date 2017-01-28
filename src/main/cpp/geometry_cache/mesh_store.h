@@ -12,10 +12,10 @@
 #include <mutex>
 #include <functional>
 #include <unordered_map>
-#include "../../render/objects/render_object.h"
-#include "../../render/objects/shaders/geometry_filter.h"
-#include "../../render/objects/shaders/shaderpack.h"
-#include "../../mc_interface/mc_gui_objects.h"
+#include "../render/objects/render_object.h"
+#include "../render/objects/shaders/geometry_filter.h"
+#include "../render/objects/shaders/shaderpack.h"
+#include "../mc_interface/mc_gui_objects.h"
 
 namespace nova {
     /*!

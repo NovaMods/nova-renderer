@@ -8,7 +8,7 @@
 
 #include <glad/glad.h>
 #include <vector>
-#include "../../data_loading/geometry_cache/mesh_definition.h"
+#include "../../geometry_cache/mesh_definition.h"
 #include "../../data_loading/physics/AABB.h"
 
 namespace nova {

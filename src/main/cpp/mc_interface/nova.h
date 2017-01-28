@@ -29,7 +29,7 @@ NOVA_API void initialize();
  *
  * \param texture The texture to add to the renderer
  */
-NOVA_API void add_texture(mc_atlas_texture & texture, int atlas_type, int texture_type);
+NOVA_API void add_texture(mc_atlas_texture & texture, int texture_type);
 
 /*!
  * \brief Adds the given location to the list of texture locations

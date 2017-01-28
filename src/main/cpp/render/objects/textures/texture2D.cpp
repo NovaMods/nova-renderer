@@ -25,10 +25,6 @@ namespace nova {
     }
 
     void texture2D::bind(unsigned int binding) {
-        if(binding < GL_TEXTURE0 || binding > GL_TEXTURE31) {
-            throw std::invalid_argument("binding must be a valid OpenGL texture binding");
-        }
-
         if(binding != current_location) {
             glBindTextureUnit(binding, gl_name);
             current_location = binding;

@@ -12,56 +12,75 @@
 #include <glm/glm.hpp>
 #include "../../../mc_interface/mc_objects.h"
 #include "texture2D.h"
+#include "../../../utils/smart_enum.h"
 
 namespace nova {
-/*!
- * \brief Holds all the textures that the Nova Renderer can deal with
- *
- * This class does a few things. I'm going to walk you through a couple usage scenarios because it's way easier for me
- * to explain things that way
- *
- * \par Loading a resource pack:
- * When MC loads a resource pack, the Java Nova code should reset the texture manager. That clears out all existing
- * textures, freeing up the VRAM and RAM they used. Next, the Nova Renderer loops through all the textures it cares
- * about, which is super gross because I have to hardcode the values it cares about but I don't know a better way to do
- * is yet, and gets each texture from the resource pack. It sends each texture to the texture manager by way of
- * nova_renderer#add_texture(mc_atlas_texture). Once all textures have been loaded, the Nova Renderer calls
- * nova_renderer#finalize_textures, which tells the texture manager (this thing) to stitch as many textures as possible
- * into a texture atlas and generate a mapping from texture place in the atlas to texture name, such that someone can
- * call texture_manager#get_texture_location(std::string) and get back a texture_location struct, which has the GL ID
- * of the requested texture, the minimum UV coordinates that refer to that texture, and the maximum UV coordinates that
- * refer to that texture. This is useful mostly when building chunk geometry, so I can assign the right UV coordinates
- * to each triangle.
- *
- * \par Rendering the world:
- * This class won't perform a lot of actions while rendering the world. Mostly I'll just be like "I need the terrain
- * texture" or "I really need the entity texture". I'm going to be using texture atlases as much as possible. Anyway,
- * I'll ask the texture manager for a certain texture atlas, and the texture manager will give it back to me. Then, I
- * can bind that texture and render my pants off.
- */
+    /*!
+     * \brief Holds all the textures that the Nova Renderer can deal with
+     *
+     * This class does a few things. I'm going to walk you through a couple usage scenarios because it's way easier for
+     * me to explain things that way
+     *
+     * \par Loading a resource pack:
+     * When MC loads a resource pack, the Java Nova code should reset the texture manager. That clears out all existing
+     * textures, freeing up the VRAM and RAM they used. Next, the Nova Renderer loops through all the textures it cares
+     * about, which is super gross because I have to hardcode the values it cares about but I don't know a better way to
+     * do is yet, and gets each texture from the resource pack. It sends each texture to the texture manager by way of
+     * nova_renderer#add_texture(mc_atlas_texture). Once all textures have been loaded, the Nova Renderer calls
+     * nova_renderer#finalize_textures, which tells the texture manager (this thing) to stitch as many textures as
+     * possible into a texture atlas and generate a mapping from texture place in the atlas to texture name, such that
+     * someone can call texture_manager#get_texture_location(std::string) and get back a texture_location struct, which
+     * has the GL ID of the requested texture, the minimum UV coordinates that refer to that texture, and the maximum
+     * UV coordinates that refer to that texture. This is useful mostly when building chunk geometry, so I can assign
+     * the right UV coordinates to each triangle.
+     *
+     * \par Rendering the world:
+     * This class won't perform a lot of actions while rendering the world. Mostly I'll just be like "I need the terrain
+     * texture" or "I really need the entity texture". I'm going to be using texture atlases as much as possible.
+     * Anyway, I'll ask the texture manager for a certain texture atlas, and the texture manager will give it back to
+     * me. Then, I can bind that texture and render my pants off.
+     */
     class texture_manager {
     public:
         /*!
          * \brief Identifies which atlas a texture is
+         *
+         * | 0 | GUI |
+| 1 | assets/minecraft/textures/gui/options_background.png |
+| 2 | Font |
+| 3 | Terrain Color |
+| 4 | Terrain Normalmap |
+| 5 | Terrain Data |
+| 6 | Entities Color |
+| 7 | Entities Normalmap |
+| 8 | Entities Data |
+| 9 | Items |
+| 10 | World Data |
+| 11 | Particles |
+| 12 | Weather |
+| 13 | Sky |
+| 14 | assets/minecraft/textures/environment/end_sky.png |
+| 15 | assets/minecraft/textures/environment/clouds.png |
          */
-        enum class atlas_type {
-            TERRAIN = 0,    //!< The atlas for textures used by the terrain
-            ENTITIES = 1,   //!< The atlas for textures used by entities
-            GUI = 2,        //!< The atlas for textures used by the GUI
-            PARTICLES = 3,  //!< The atlas for textures used by particles
-            EFFECTS = 4,    //!< The atlas for textures used by effects, such as the underwater overlay
-            FONT = 5,       //!< The atlas for textures in the current font
-            NUM_ATLASES = 6,
-        };
-
-        /*!
-         * \brief Identifies which sort of data is stored in each texture atlas
-         */
-        enum class texture_type {
-            ALBEDO = 0,     //!< The texture holds albedo information. I expect at least one albedo texture for each atlas
-            NORMAL = 1,     //!< The texture holds normals. I expect there will only be a normals texture for terrain and entities. Maybe particles later on
-            SPECULAR = 2,   //!< The texture holds specular data. Same expectations as normals
-        };
+        SMART_ENUM(
+                texture_type,
+                gui,
+                options_background,
+                font,
+                terrain_color,
+                terrain_normalmap,
+                terrain_data,
+                entities_color,
+                entities_normalmap,
+                entities_data,
+                items,
+                world_data,
+                particles,
+                weather,
+                sky,
+                end_sky,
+                clouds
+        )
 
         /*!
          * \brief Tells you the min/max UV coordinates of a texture in an atlas
@@ -102,9 +121,10 @@ namespace nova {
          * The texture is not put into an atlas immediately. Rather, it is held in a staging area until #finalize_textures
          * is called. Then it's put into an atlas
          *
-         * \param make_texture_2D The new texture
+         * \param new_texture The new texture
+         * \param data_type The type of texture we're dealing with
          */
-        void add_texture(mc_atlas_texture &new_texture, atlas_type type, texture_type data_type);
+        void add_texture(mc_atlas_texture &new_texture, texture_type data_type);
 
         /*!
          * \brief Adds the given texture location to the list of texture locations
@@ -129,7 +149,7 @@ namespace nova {
          * \param type The type of data that should be in the atlas
          * \return A pointer to the atlas texture
          */
-        texture2D &get_texture_atlas(atlas_type atlas, texture_type type);
+        texture2D &get_texture_atlas(texture_type type);
 
         /*!
          * \brief Returns the maximum texture size supported by OpenGL on the current platform
@@ -141,7 +161,12 @@ namespace nova {
         int get_max_texture_size();
 
     private:
-        std::map<std::pair<atlas_type, texture_type>, texture2D> atlases;
+        std::map<texture_type, texture2D> atlases;
+
+        /*!
+         * \brief A map from the name of a texture according to Minecraft and the UV coordinates it takes up in its
+         * texture atlas
+         */
         std::map<std::string, texture_location> locations;
 
         int max_texture_size = -1;

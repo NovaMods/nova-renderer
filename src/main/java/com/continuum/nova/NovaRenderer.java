@@ -11,6 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -428,7 +429,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private int renderChunkDistance = 4;
 
     @Override
-    public void onResourceManagerReload(IResourceManager resourceManager) {
+    public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
         if(firstLoad) {
             firstLoad = false;
         }
@@ -436,13 +437,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.reset_texture_manager();
         int maxAtlasSize = NovaNative.INSTANCE.get_max_texture_size();
         maxAtlasSize = 8096;    // TODO Figure out why the above line doesn't work
-        addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATION, NovaNative.AtlasType.TERRAIN, NovaNative.TextureType.ALBEDO, resourceManager, maxAtlasSize);
-        //addTextures(GUI_ALBEDO_TEXTURES_LOCATIONS, NovaNative.AtlasType.GUI, NovaNative.TextureType.ALBEDO, resourceManager, maxAtlasSize);
+        addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATION, NovaNative.TextureType.TERRAIN_COLOR, resourceManager, maxAtlasSize);
+        addTextures(GUI_ALBEDO_TEXTURES_LOCATIONS, NovaNative.TextureType.GUI, resourceManager, maxAtlasSize);
     }
 
     private void addTextures(
             List<ResourceLocation> locations,
-            NovaNative.AtlasType atlasType,
             NovaNative.TextureType textureType,
             IResourceManager resourceManager,
             int maxAtlasSize
@@ -472,16 +472,16 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                 byte[] imageData = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
                 LOG.info("The image has " + imageData.length + " separate pixels");
 
-                /*for(int i = 0; i < imageData.length; i += 4) {
+                for(int i = 0; i < imageData.length; i += 4) {
                     byte a = imageData[i];
                     byte b = imageData[i + 1];
                     byte g = imageData[i + 2];
                     byte r = imageData[i + 3];
-                    imageData[i] = r;
-                    imageData[i + 1] = r;
-                    imageData[i + 2] = r;
-                    imageData[i + 3] = a;
-                }*/
+                    imageData[i] = a;
+                    imageData[i + 1] = b;
+                    imageData[i + 2] = g;
+                    imageData[i + 3] = r;
+                }
 
                 NovaNative.mc_atlas_texture atlasTex = new NovaNative.mc_atlas_texture(
                         image.getWidth(),
@@ -489,7 +489,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                         image.getColorModel().getNumComponents(),
                         imageData
                 );
-                NovaNative.INSTANCE.add_texture(atlasTex, atlasType.ordinal(), textureType.ordinal());
+                NovaNative.INSTANCE.add_texture(atlasTex, textureType.ordinal());
                 Map<String, Rectangle> rectangleMap = texture.getRectangleMap();
 
                 for(String texName : rectangleMap.keySet()) {
@@ -527,8 +527,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void setGuiScreen(GuiScreen guiScreenIn) {
         LOG.info("Changing GUI screen");
-        NovaNative.mc_set_gui_screen_command set_gui_screen = RenderCommandBuilder.createSetGuiScreenCommand(guiScreenIn);
-        NovaNative.INSTANCE.send_change_gui_screen_command(set_gui_screen);
+        NovaNative.mc_set_gui_screen_command setGuiScreenCommand = RenderCommandBuilder.createSetGuiScreenCommand(guiScreenIn);
+        NovaNative.INSTANCE.send_change_gui_screen_command(setGuiScreenCommand);
         LOG.info("Gui screen change successful");
     }
 }

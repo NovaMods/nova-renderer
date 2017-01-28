@@ -102,7 +102,7 @@ namespace nova {
                 glEnableVertexAttribArray(1);   // Texture UV
 
                 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void *) 0);
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void *) 0);
+                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void *) (3 * sizeof(GLfloat)));
 
                 break;
 
@@ -114,10 +114,10 @@ namespace nova {
                 glEnableVertexAttribArray(4);   // Tangent
 
                 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GL_FLOAT), (void *) 0);
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GL_FLOAT), (void *) 0);
-                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GL_FLOAT), (void *) 0);
-                glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GL_FLOAT), (void *) 0);
-                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GL_FLOAT), (void *) 0);
+                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GL_FLOAT), (void *) (3 * sizeof(GLfloat)));
+                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GL_FLOAT), (void *) (5 * sizeof(GLfloat)));
+                glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GL_FLOAT), (void *) (7 * sizeof(GLfloat)));
+                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GL_FLOAT), (void *) (9 * sizeof(GLfloat)));
 
                 break;
         }
