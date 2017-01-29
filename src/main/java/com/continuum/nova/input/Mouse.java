@@ -1,8 +1,9 @@
-package com.continuum.nova;
+package com.continuum.nova.input;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.continuum.nova.NovaNative;
 import com.continuum.nova.NovaNative.MouseButtonEvent;
 import com.continuum.nova.NovaNative.MousePositionEvent;
 

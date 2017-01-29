@@ -30,6 +30,7 @@ NOVA_API void initialize();
  */
 NOVA_API void add_texture(mc_atlas_texture & texture, int texture_type);
 
+
 /*!
  * \brief Adds the given location to the list of texture locations
  *
@@ -89,6 +90,7 @@ NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value);
 
 NOVA_API struct MouseButtonEvent  getNextMouseButtonEvent();
+
 NOVA_API struct MousePositionEvent  getNextMousePositionEvent();
 
 };  // End extern C
