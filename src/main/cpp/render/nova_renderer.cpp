@@ -26,7 +26,10 @@ namespace nova {
         init_opengl_state();
     }
 
-    void nova_renderer::init_opengl_state() const { glClearColor(0.0, 0.0, 0.0, 1.0); }
+    void nova_renderer::init_opengl_state() const {
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glEnable(GL_TEXTURE_2D);
+    }
 
     nova_renderer::~nova_renderer() {
         game_window.destroy();
