@@ -4,6 +4,7 @@ import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.utils.RenderCommandBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
@@ -29,11 +30,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
 
-    private final List<ResourceLocation> GUI_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<ResourceLocation>() {{
-            add(new ResourceLocation("textures/gui/widgets.png"));
-    }};
+    private static final List<ResourceLocation> GUI_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
 
-    private final List<ResourceLocation> TERRAIN_ALBEDO_TEXTURES_LOCATION = new ArrayList<ResourceLocation>() {{
+    private static final List<ResourceLocation> TERRAIN_ALBEDO_TEXTURES_LOCATION = new ArrayList<ResourceLocation>() {{
             //add(new ResourceLocation("textures/blocks/anvil_base.png"));
             //add(new ResourceLocation("textures/blocks/anvil_top_damaged_0.png"));
             //add(new ResourceLocation("textures/blocks/anvil_top_damaged_1.png"));
@@ -426,7 +425,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }};
 
     private boolean firstLoad = true;
-    private int renderChunkDistance = 4;
+
+    private TextureMap guiAtlas = new TextureMap("textures/gui");
+
+    public NovaRenderer() {
+        GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("textures/gui/widgets.png"));
+
+        GUI_ALBEDO_TEXTURES_LOCATIONS.forEach(guiAtlas::registerSprite);
+    }
 
     @Override
     public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
@@ -439,6 +445,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         maxAtlasSize = 8096;    // TODO Figure out why the above line doesn't work
         addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATION, NovaNative.TextureType.TERRAIN_COLOR, resourceManager, maxAtlasSize);
         addTextures(GUI_ALBEDO_TEXTURES_LOCATIONS, NovaNative.TextureType.GUI, resourceManager, maxAtlasSize);
+
+        guiAtlas.loadTextureAtlas(resourceManager);
     }
 
     private void addTextures(
