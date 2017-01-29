@@ -95,8 +95,8 @@ function New-NovaEnvironment {
 
     # Apply our patch file
     Write-Host "Injecting Nova into Minecraft..."
-    Set-Location src\main\resources\patches
-    ..\..\..\..\runtime\bin\applydiff.exe -p0 -i .\nova.patch
+    Set-Location src\main\java\net
+    ..\..\..\..\runtime\bin\applydiff.exe -p1 -i ..\..\resources\patches\nova.patch
     Set-Location ..\..\..\..\
 
     Write-Host "Downloading dependencies..."
