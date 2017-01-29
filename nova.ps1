@@ -95,8 +95,8 @@ function New-NovaEnvironment {
 
     # Apply our patch file
     Write-Host "Injecting Nova into Minecraft..."
-    Set-Location src\main\resources\patches
-    ..\..\..\..\runtime\bin\applydiff.exe -p0 -i .\nova.patch
+    Set-Location src\main\java\net
+    ..\..\..\..\runtime\bin\applydiff.exe -p1 -i ..\..\resources\patches\nova.patch
     Set-Location ..\..\..\..\
 
     Write-Host "Downloading dependencies..."
@@ -261,24 +261,8 @@ function Invoke-Nova {
 ################################################################################
 
 function New-Patches {
-    Set-Location "../"
-    New-Item "mcp-raw" -ItemType Directory >$null 2>&1
-    Set-Location mcp-raw
-
-    $wc = New-Object System.Net.WebClient
-    $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "mcp.zip")
-    Unzip -zipfile "mcp.zip" -outpath "$PSScriptRoot\..\mcp-raw"
-    cmd.exe /C "decompile.bat"
-
-    git init
-    git add -A :/
-    git commit -m "Commit of initial MC code"
-
-    robocopy "..\Nova-Renderer\src\main\java\net" "src\minecraft\net" "*" /S /PURGE
-
-    git diff >> nova.patch
-
-    Set-Location "..\Nova-Renderer"
+    Set-Location src\main\java\net
+    git diff origin/minecraft-1.10-mcp > ..\..\..\..\src\main\resources\patches\nova.patch 
 }
 
 ################################################################################
