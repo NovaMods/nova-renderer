@@ -48,6 +48,8 @@ namespace nova {
      * \param v The v texture coordinate of the vertex
      */
     NOVA_API void add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v);
+
+	void create_rectangle(std::vector<GLfloat> &vertex_buffer, int xpos, int ypos, int texX, int texY, int width, int height);
 }
 
 #endif //RENDERER_GUI_RENDERER_H
