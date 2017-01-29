@@ -110,7 +110,7 @@ set(NOVA_SOURCE
         render/uniform_buffer_store.cpp
         geometry_cache/builders/gui_geometry_builder.cpp
 
-	input/InputHandler.cpp
+        input/InputHandler.cpp
 
         render/objects/shaders/gl_shader_program.cpp
         render/objects/gl_mesh.cpp
@@ -134,7 +134,7 @@ set(NOVA_SOURCE
         )
 
 if (WIN32)
-	set(NOVA_SOURCE "${NOVA_SOURCE} 3rdparty/renderdocapi/RenderDocManager.cpp ")
+    set(NOVA_SOURCE ${NOVA_SOURCE} 3rdparty/renderdocapi/RenderDocManager.cpp)
 endif (WIN32)
 
 if (UNIX)
