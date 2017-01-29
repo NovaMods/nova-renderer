@@ -113,4 +113,17 @@ struct mc_set_gui_screen_command {
     mc_gui_screen screen;
 };
 
+struct MouseButtonEvent {
+	int button;
+	int action;
+	int mods;
+	int filled;
+};
+
+
+struct MousePositionEvent {
+	int xpos;
+	int ypos;
+	int filled;
+};
 #endif //RENDERER_MC_OBJECTS_H

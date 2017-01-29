@@ -75,7 +75,7 @@ namespace nova {
 
     void add_vertices_from_button(std::vector<GLfloat> &vertex_buffer, const mc_gui_button &button) {
 		int i = 1;
-		if (button.is_pressed) {
+		if (button.enabled != 1) {
 			i = 0;
 		}
 		float texY = 46 + i * 20;

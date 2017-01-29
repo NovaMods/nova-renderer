@@ -193,6 +193,14 @@ namespace nova {
         return textures;
     }
 
+	glfw_gl_window &nova_renderer::getGameWindow() {
+		return game_window;
+	}
+
+	InputHandler &nova_renderer::getInputHandler() {
+		return inputHandler;
+	}
+
     mesh_store &nova_renderer::get_mesh_store() {
         return meshes;
     }
