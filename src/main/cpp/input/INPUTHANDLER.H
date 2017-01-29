@@ -7,13 +7,13 @@
 #include <queue>
 #include <mutex>
 #include "../mc_interface/mc_objects.h"
-using namespace std;
+
 namespace nova {
 
 	void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 	void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-		
+
 	void MousePositionCallback(GLFWwindow *window, double xpos, double ypos);
 
 	class InputHandler {
@@ -25,12 +25,12 @@ namespace nova {
 		void queueMousePositionEvent(struct MousePositionEvent  e);
 		struct MousePositionEvent dequeueMousePositionEvent();
 	private:
-		queue<struct MouseButtonEvent> mouseButtonEventQueue;
-		queue<struct MousePositionEvent> mousePositionEventQueue;
-		mutex lockButton;
-		mutex lockPosition;
+		std::queue<struct MouseButtonEvent> mouseButtonEventQueue;
+		std::queue<struct MousePositionEvent> mousePositionEventQueue;
+		std::mutex lockButton;
+		std::mutex lockPosition;
 	};
 
-}
 
+}
 #endif
