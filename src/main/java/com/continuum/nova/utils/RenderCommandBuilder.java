@@ -25,13 +25,14 @@ public class RenderCommandBuilder {
         NovaNative.mc_set_gui_screen_command set_gui_screen_command = new NovaNative.mc_set_gui_screen_command();
         int cur_button = 0;
 
-        for(GuiButton button : curScreen.getButtonList()) {
+        for (GuiButton button : curScreen.getButtonList()) {
             NovaNative.mc_gui_button new_button = new NovaNative.mc_gui_button();
             new_button.x_position = button.xPosition;
             new_button.y_position = button.yPosition;
             new_button.width = button.getButtonWidth();
             new_button.height = button.getButtonHeight();
             new_button.text = button.displayString;
+            new_button.enabled = button.enabled ? 1 : 0;
             set_gui_screen_command.screen.buttons[cur_button] = new_button;
             cur_button++;
         }
@@ -52,9 +53,9 @@ public class RenderCommandBuilder {
         int chunkCountY = 16;
         int chunkCountZ = renderChunkDistance;
 
-        for(int x = 0; x < chunkCountX; x++) {
-            for(int y = 0; y < chunkCountY; y++) {
-                for(int z = 0; z < chunkCountZ; z++) {
+        for (int x = 0; x < chunkCountX; x++) {
+            for (int y = 0; y < chunkCountY; y++) {
+                for (int z = 0; z < chunkCountZ; z++) {
                     BlockPos pos = new BlockPos(x * 16, y * 16, z * 16);
                     renderableChunks.add(makeChunk(world, pos));
                 }
