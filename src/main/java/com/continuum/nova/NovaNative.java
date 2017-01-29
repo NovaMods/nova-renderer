@@ -192,6 +192,7 @@ public interface NovaNative extends Library {
             return Arrays.asList("xpos", "ypos","filled");
         }
     }
+
     enum TextureType {
         GUI,
         OPTIONS_BACKGROUND,
