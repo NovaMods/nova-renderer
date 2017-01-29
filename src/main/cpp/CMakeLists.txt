@@ -101,7 +101,6 @@ set(NOVA_SOURCE
         # Need to compile third party stuff, too...
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
-        3rdparty/renderdocapi/RenderDocManager.cpp
 
         geometry_cache/builders/gui_geometry_builder.cpp
 
@@ -111,9 +110,8 @@ set(NOVA_SOURCE
         render/uniform_buffer_store.cpp
         geometry_cache/builders/gui_geometry_builder.cpp
 
-		input/InputHandler.cpp
+	input/InputHandler.cpp
 
-		
         render/objects/shaders/gl_shader_program.cpp
         render/objects/gl_mesh.cpp
         render/objects/textures/texture2D.cpp
@@ -134,6 +132,13 @@ set(NOVA_SOURCE
 
         render/objects/shaders/uniform_buffers_definitions.cpp
         )
+
+if (WIN32)
+	set(NOVA_SOURCE "${NOVA_SOURCE} 3rdparty/renderdocapi/RenderDocManager.cpp ")
+endif (WIN32)
+
+if (UNIX)
+endif (UNIX)
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
