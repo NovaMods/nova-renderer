@@ -261,24 +261,8 @@ function Invoke-Nova {
 ################################################################################
 
 function New-Patches {
-    Set-Location "../"
-    New-Item "mcp-raw" -ItemType Directory >$null 2>&1
-    Set-Location mcp-raw
-
-    $wc = New-Object System.Net.WebClient
-    $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "mcp.zip")
-    Unzip -zipfile "mcp.zip" -outpath "$PSScriptRoot\..\mcp-raw"
-    cmd.exe /C "decompile.bat"
-
-    git init
-    git add -A :/
-    git commit -m "Commit of initial MC code"
-
-    robocopy "..\Nova-Renderer\src\main\java\net" "src\minecraft\net" "*" /S /PURGE
-
-    git diff >> nova.patch
-
-    Set-Location "..\Nova-Renderer"
+    Set-Location src\main\java\net
+    git diff minecraft-1.10-mcp > ..\..\..\..\src\main\resources\patches\nova.patch 
 }
 
 ################################################################################
