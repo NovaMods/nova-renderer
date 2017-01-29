@@ -45,22 +45,22 @@ namespace nova {
         /*!
          * \brief Identifies which atlas a texture is
          *
-         * | 0 | GUI |
-| 1 | assets/minecraft/textures/gui/options_background.png |
-| 2 | Font |
-| 3 | Terrain Color |
-| 4 | Terrain Normalmap |
-| 5 | Terrain Data |
-| 6 | Entities Color |
-| 7 | Entities Normalmap |
-| 8 | Entities Data |
-| 9 | Items |
-| 10 | World Data |
-| 11 | Particles |
-| 12 | Weather |
-| 13 | Sky |
-| 14 | assets/minecraft/textures/environment/end_sky.png |
-| 15 | assets/minecraft/textures/environment/clouds.png |
+         *  | 0 | GUI |
+         *  | 1 | assets/minecraft/textures/gui/options_background.png |
+         *  | 2 | Font |
+         *  | 3 | Terrain Color |
+         *  | 4 | Terrain Normalmap |
+         *  | 5 | Terrain Data |
+         *  | 6 | Entities Color |
+         *  | 7 | Entities Normalmap |
+         *  | 8 | Entities Data |
+         *  | 9 | Items |
+         *  | 10 | World Data |
+         *  | 11 | Particles |
+         *  | 12 | Weather |
+         *  | 13 | Sky |
+         *  | 14 | assets/minecraft/textures/environment/end_sky.png |
+         *  | 15 | assets/minecraft/textures/environment/clouds.png |
          */
         SMART_ENUM(
                 texture_type,

@@ -22,7 +22,7 @@ namespace nova {
     }
 
     void texture_manager::reset() {
-        if(atlases.empty()) {
+        if(!atlases.empty()) {
             // Nothing to deallocate, let's just return
             return;
         }

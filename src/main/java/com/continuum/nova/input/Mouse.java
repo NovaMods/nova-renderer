@@ -1,4 +1,4 @@
-package com.continuum.nova;
+package com.continuum.nova.input;
 //
 // Source code recreated from a .class file by IntelliJ IDEA
 // (powered by Fernflower decompiler)
@@ -9,6 +9,7 @@ import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.continuum.nova.NovaNative;
 import com.continuum.nova.NovaNative.MouseButtonEvent;
 import com.continuum.nova.NovaNative.MousePositionEvent;
 
