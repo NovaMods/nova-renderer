@@ -101,7 +101,7 @@ start_nova() {
 }
 
 create_patch() {
-    (cd src/main/java/net/; git diff minecraft-1.10-mcp ) > src/main/resources/patches/nova.patch
+    (cd src/main/java/net/; git diff origin/minecraft-1.10-mcp ) > src/main/resources/patches/nova.patch
 }
 
 case $1 in
