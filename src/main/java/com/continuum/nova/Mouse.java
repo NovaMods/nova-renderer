@@ -1,11 +1,5 @@
 package com.continuum.nova;
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by Fernflower decompiler)
-//
 
-
-import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +8,6 @@ import com.continuum.nova.NovaNative.MousePositionEvent;
 
 
 public class Mouse {
-    public static final int EVENT_SIZE = 22;
     private static boolean created;
     private static int x;
     private static int y;
@@ -65,7 +58,6 @@ public class Mouse {
                 buttonName[i] = "BUTTON" + i;
                 buttonMap.put(buttonName[i], Integer.valueOf(i));
             }
-
             initialized = true;
         }
     }
@@ -82,13 +74,10 @@ public class Mouse {
             initialize();
             created = true;
         }
-
     }
 
     public static boolean isCreated() {
-
         return created;
-
     }
 
     public static void destroy() {
@@ -98,23 +87,16 @@ public class Mouse {
 
     public static boolean isButtonDown(int button) {
         return false;
-
     }
 
     public static String getButtonName(int button) {
-
         return button < buttonName.length && button >= 0 ? buttonName[button] : null;
-
     }
 
     public static int getButtonIndex(String buttonName) {
-
         Integer ret = (Integer) buttonMap.get(buttonName);
         return ret == null ? -1 : ret.intValue();
-
     }
-
-    private static boolean lastResult = false;
 
     public static boolean next() {
         MouseButtonEvent e = NovaNative.INSTANCE.getNextMouseButtonEvent();
@@ -138,100 +120,72 @@ public class Mouse {
             event_y = p.ypos;
             System.out.println("mouse position: xpos: "+p.xpos+ ";ypos: "+p.ypos);
         }
-
         return true;
-
     }
 
     public static int getEventButton() {
-
         return eventButton;
-
     }
 
     public static boolean getEventButtonState() {
-
         return eventState;
-
     }
 
 
     public static int getEventX() {
-
         return event_x;
-
     }
 
     public static int getEventY() {
-
         return event_y;
-
     }
 
     public static int getEventDWheel() {
-
         return event_dwheel;
-
     }
 
     public static long getEventNanoseconds() {
-
         return event_nanos;
-
     }
 
     public static int getX() {
         next();
         return event_x;
-
     }
 
     public static int getY() {
         next();
         return y;
-
     }
 
     public static int getDX() {
-
         int result = dx;
         dx = 0;
         return result;
-
     }
 
     public static int getDY() {
-
         int result = dy;
         dy = 0;
         return result;
-
     }
 
     public static int getDWheel() {
-
         int result = dwheel;
         dwheel = 0;
         return result;
-
     }
 
     public static int getButtonCount() {
-
         return buttonCount;
-
     }
 
     public static boolean hasWheel() {
-
         return hasWheel;
-
     }
 
     public static boolean isGrabbed() {
-
         return isGrabbed;
-
     }
 
     public static void setGrabbed(boolean grab) {
