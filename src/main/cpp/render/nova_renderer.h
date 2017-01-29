@@ -12,7 +12,7 @@
 #include "windowing/glfw_gl_window.h"
 #include "../geometry_cache/mesh_store.h"
 #include "objects/textures/texture_manager.h"
-
+#include "../input/InputHandler.h"
 namespace nova {
     /*!
      * \brief Initializes everything this mod needs, creating its own window
@@ -83,6 +83,10 @@ namespace nova {
 
         texture_manager& get_texture_manager();
 
+		InputHandler& getInputHandler();
+
+		glfw_gl_window& getGameWindow();
+
         mesh_store& get_mesh_store();
 
         // Overrides from iconfig_listener
@@ -99,6 +103,8 @@ namespace nova {
         std::experimental::optional<shaderpack> loaded_shaderpack;
 
         texture_manager textures;
+
+		InputHandler inputHandler;
 
         mesh_store meshes;
 

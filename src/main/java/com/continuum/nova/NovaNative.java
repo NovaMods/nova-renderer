@@ -82,10 +82,10 @@ public interface NovaNative extends Library {
         public int height;
         public String text;
         public boolean is_pressed;
-
+        public int enabled;
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("x_position", "y_position", "width", "height", "is_pressed");
+            return Arrays.asList("x_position", "y_position", "width", "height", "is_pressed","enabled");
         }
     }
 
@@ -172,6 +172,26 @@ public interface NovaNative extends Library {
         }
     }
 
+    class MouseButtonEvent extends Structure implements Structure.ByValue {
+        public int button;
+        public int action;
+        public int mods;
+        public int filled;
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("button", "action", "mods","filled");
+        }
+    }
+
+    class MousePositionEvent extends Structure implements Structure.ByValue {
+        public int xpos;
+        public int ypos;
+        public int filled;
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("xpos", "ypos","filled");
+        }
+    }
     enum TextureType {
         GUI,
         OPTIONS_BACKGROUND,
@@ -206,4 +226,9 @@ public interface NovaNative extends Library {
     boolean should_close();
 
     void send_change_gui_screen_command(mc_set_gui_screen_command set_gui_screen);
+
+    MouseButtonEvent getNextMouseButtonEvent();
+
+    MousePositionEvent getNextMousePositionEvent();
+
 }
