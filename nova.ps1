@@ -274,11 +274,11 @@ function New-Patches {
     git add -A :/
     git commit -m "Commit of initial MC code"
 
-    robocopy "..\Nova Renderer\src\main\java\net" "src\minecraft\net" "*" /S /PURGE
+    robocopy "..\Nova-Renderer\src\main\java\net" "src\minecraft\net" "*" /S /PURGE
 
     git diff >> nova.patch
 
-    Set-Location "..\Nova Renderer"
+    Set-Location "..\Nova-Renderer"
 }
 
 ################################################################################
