@@ -207,6 +207,11 @@ gradle-app.setting
 !.vscode/tasks.json
 !.vscode/launch.json
 
+###VS folder
+nova-renderer-obj.dir/
+nova-renderer.dir/
+nova-test.dir/
+x64/
 
 .idea/modules/
 mappingviewer/

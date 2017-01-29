@@ -24,6 +24,7 @@ struct mc_gui_button {
     int height;
     const char * text;
     bool is_pressed;
+	int enabled;
 };
 
 /*!

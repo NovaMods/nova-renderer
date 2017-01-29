@@ -12,16 +12,17 @@
  * \author David
  */
 
+#include "glad/glad.h"
 #include "nova.h"
 #include "../utils/export.h"
 #include "../render/nova_renderer.h"
 #include "../render/objects/textures/texture_manager.h"
 #include "../data_loading/settings.h"
-
+#include "../input/InputHandler.h"
 using namespace nova;
 
 #define TEXTURE_MANAGER nova_renderer::instance->get_texture_manager()
-
+#define INPUT_HANDLER nova_renderer::instance->getInputHandler()
 // runs in thread 5
 
 NOVA_API void initialize() {
@@ -64,3 +65,12 @@ NOVA_API void set_string_setting(const char * setting_name, const char * setting
     settings.get_options()[setting_name] = setting_value;
     settings.update_config_changed();
 }
+
+NOVA_API struct MouseButtonEvent  getNextMouseButtonEvent() {
+	return INPUT_HANDLER.dequeueMouseButtonEvent();
+}
+
+NOVA_API struct MousePositionEvent  getNextMousePositionEvent() {
+	return INPUT_HANDLER.dequeueMousePositionEvent();
+}
+

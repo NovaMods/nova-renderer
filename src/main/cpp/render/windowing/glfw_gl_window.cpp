@@ -7,15 +7,13 @@
 
 #define ELPP_THREAD_SAFE
 #include <easylogging++.h>
-
+#include "../../input/InputHandler.h"
 namespace nova {
     void error_callback(int error, const char *description) {
         LOG(ERROR) << "Error " << error << ": " << description;
     }
 
-    void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    }
-
+    
     glfw_gl_window::glfw_gl_window() {
         initialize_logging();
 
@@ -57,7 +55,8 @@ namespace nova {
         glViewport(0, 0, window_dimensions.x, window_dimensions.y);
 
         glfwSetKeyCallback(window, key_callback);
-
+		glfwSetMouseButtonCallback(window, MouseButtonCallback);
+		glfwSetCursorPosCallback(window, MousePositionCallback);
         return 0;
     }
 

@@ -74,7 +74,9 @@ set(NOVA_HEADERS
         render/objects/textures/texture2D.h
 
         render/windowing/glfw_gl_window.h
-
+		
+		input/InputHandler.h
+		
         interfaces/iwindow.h
 
         mc_interface/mc_gui_objects.h
@@ -109,6 +111,9 @@ set(NOVA_SOURCE
         render/uniform_buffer_store.cpp
         geometry_cache/builders/gui_geometry_builder.cpp
 
+		input/InputHandler.cpp
+
+		
         render/objects/shaders/gl_shader_program.cpp
         render/objects/gl_mesh.cpp
         render/objects/textures/texture2D.cpp

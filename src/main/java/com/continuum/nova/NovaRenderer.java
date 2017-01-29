@@ -472,7 +472,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
         }
 
-        List<AtlasGenerator.Texture> atlases = gen.Run(maxAtlasSize, maxAtlasSize, 1, images);
+        List<AtlasGenerator.Texture> atlases = gen.Run(maxAtlasSize, maxAtlasSize, 0, images);
 
         for(AtlasGenerator.Texture texture : atlases) {
             try {
