@@ -21,10 +21,8 @@ import java.awt.image.DataBufferByte;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
     public static final String MODID = "Nova Renderer";
@@ -61,6 +59,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             TextureAtlasSprite textureAtlasSprite = textureMapIn.registerSprite(location);
             guiSpriteLocations.put(location, textureAtlasSprite);
         }));
+
+        uploadTextureMapIcons(guiSpriteLocations.values());
+    }
+
+    private void uploadTextureMapIcons(Collection<TextureAtlasSprite> guiSpriteLocations) {
+
     }
 
     private void addTextures(List<ResourceLocation> locations, NovaNative.TextureType textureType,  IResourceManager resourceManager, int maxAtlasSize) {

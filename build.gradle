@@ -70,7 +70,7 @@ dependencies {
 
     // Add all the dependencies that Minecraft has
     compile files(
-    		'jars/versions/1.10/1.10.jar',
+            'src/main/java/mc',
             'jars/libraries/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar',
             'jars/libraries/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar',
             'jars/libraries/com/google/guava/guava/17.0/guava-17.0.jar',
