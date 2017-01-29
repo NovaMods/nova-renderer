@@ -2,7 +2,7 @@
 ##### A complete replacement for Minecraft's renderer
 
 [Follow us on Twitter!](https://twitter.com/NovaRendererMC)  
-[Talk to us on Discord!](https://discordapp.com/invite/014ux6siiDogn9FLz)
+[Talk to us on Discord!](https://discordapp.com/invite/014ux6siiDogn9FLz)  
 [There's even a blog now!](https://continuum.graphics/blog/?category=Nova)
 
 ### Development status
