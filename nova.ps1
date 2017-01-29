@@ -96,7 +96,7 @@ function New-NovaEnvironment {
     # Apply our patch file
     Write-Host "Injecting Nova into Minecraft..."
     Set-Location src\main\resources\patches
-    ..\..\..\..\runtime\bin\applydiff.exe -p0 -i .\nova.diff
+    ..\..\..\..\runtime\bin\applydiff.exe -p0 -i .\nova.patch
     Set-Location ..\..\..\..\
 
     Write-Host "Downloading dependencies..."
@@ -274,11 +274,11 @@ function New-Patches {
     git add -A :/
     git commit -m "Commit of initial MC code"
 
-    robocopy "..\Nova Renderer\src\main\java\net" "src\minecraft\net" "*" /S /PURGE
+    robocopy "..\Nova-Renderer\src\main\java\net" "src\minecraft\net" "*" /S /PURGE
 
     git diff >> nova.patch
 
-    Set-Location "..\Nova Renderer"
+    Set-Location "..\Nova-Renderer"
 }
 
 ################################################################################

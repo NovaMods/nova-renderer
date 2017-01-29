@@ -13,7 +13,6 @@
 extern "C" {
 
 #include "mc_objects.h"
-
 /*!
  * \brief Initializes the Nova Renderer
  */
@@ -88,6 +87,9 @@ NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui
  * \param setting_value The desired value of the setting
  */
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value);
+
+NOVA_API struct MouseButtonEvent  getNextMouseButtonEvent();
+NOVA_API struct MousePositionEvent  getNextMousePositionEvent();
 
 };  // End extern C
     // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.
