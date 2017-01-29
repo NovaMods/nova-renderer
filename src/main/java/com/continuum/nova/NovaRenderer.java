@@ -477,10 +477,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     byte b = imageData[i + 1];
                     byte g = imageData[i + 2];
                     byte r = imageData[i + 3];
-                    imageData[i] = a;
-                    imageData[i + 1] = b;
-                    imageData[i + 2] = g;
-                    imageData[i + 3] = r;
+                    imageData[i] = r;
+                    imageData[i + 1] = g;
+                    imageData[i + 2] = b;
+                    imageData[i + 3] = a;
                 }
 
                 NovaNative.mc_atlas_texture atlasTex = new NovaNative.mc_atlas_texture(
