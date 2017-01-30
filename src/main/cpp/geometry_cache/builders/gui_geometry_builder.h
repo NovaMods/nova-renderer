@@ -6,10 +6,7 @@
 #ifndef RENDERER_GUI_RENDERER_H
 #define RENDERER_GUI_RENDERER_H
 
-#include <memory>
-#include <atomic>
-
-#include <mutex>
+#include <glm/glm.hpp>
 #include "../../utils/export.h"
 #include "../mesh_definition.h"
 #include "../../mc_interface/mc_gui_objects.h"
@@ -34,7 +31,7 @@ namespace nova {
      * \param button The button to get vertices from
      * \param uvs The uv coordinates to use for this button
      */
-    NOVA_API void add_vertices_from_button(std::vector<float> &vertex_buffer, const mc_gui_button &button, const std::vector<float> uvs);
+    NOVA_API void add_vertices_from_button(std::vector<float> &vertex_buffer, const mc_gui_button &button, const std::vector<glm::vec2> uvs);
 
     /*!
      * \brief Adds the vertex with the given parameters to the given vertex buffer
@@ -47,7 +44,7 @@ namespace nova {
      * \param u The u texture coordiante of the vertex
      * \param v The v texture coordinate of the vertex
      */
-    NOVA_API void add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v);
+    NOVA_API void add_vertex(std::vector<float> &vertex_buffer, int x, int y, glm::vec2 uv);
 }
 
 #endif //RENDERER_GUI_RENDERER_H
