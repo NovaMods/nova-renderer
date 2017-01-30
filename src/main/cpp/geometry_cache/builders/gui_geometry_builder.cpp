@@ -8,18 +8,19 @@
 #include <easylogging++.h>
 #include <glad/glad.h>
 #include "gui_geometry_builder.h"
+#include "../../mc_interface/mc_objects.h"
+#include "../../render/nova_renderer.h"
 
 
 namespace nova {
-	mesh_definition build_gui_geometry(mc_gui_screen &cur_screen) {
-
-		// The UV coordinates for a pressed and an unpressed GUI button
-		static auto basic_hovered_uvs = std::vector<float>{
-				0.0f, 0.3359375f,
-				0.78125f, 0.3359375f,
-				0.0f, 0.4156963f,
-				0.78125f, 0.4156963f
-		};
+    mesh_definition build_gui_geometry(mc_gui_screen &cur_screen) {
+        // The UV coordinates for a pressed and an unpressed GUI button
+        static auto basic_hovered_uvs = std::vector<float>{
+                0.0f, 0.3359375f,
+                0.78125f, 0.3359375f,
+                0.0f, 0.4156963f,
+                0.78125f, 0.4156963f
+        };
 
 		static auto basic_unpressed_uvs = std::vector<float>{
 				0.0f, 0.2578112f,
@@ -40,9 +41,31 @@ namespace nova {
 		for (int i = 0; i < cur_screen.num_buttons; i++) {
 			mc_gui_button &button = cur_screen.buttons[i];
 
+            std::vector<float> uv_buffer = basic_hovered_uvs;  // TODO: Change when we get the unpressed UVs
+            if(button.is_pressed) {
+                uv_buffer = basic_unpressed_uvs;
+            }
 
-			// Generate the vertexes from the button's position
-			add_vertices_from_button(vertex_buffer, button);
+            // Scale the UVs in the uv buffer to match what's in the texture atlas
+            const texture_manager::texture_location widgets_location = nova_renderer::instance->get_texture_manager().get_texture_location("minecraft:gui/widgets");
+            glm::vec2 size = widgets_location.max - widgets_location.min;
+
+            // It's inefficient to scale the UVs for every button, and to copy the UVs for every button. Better to scale
+            // the static vector in this function, but then we'd have to un-scale and re-scale whenever a new
+            // resourcepack is loaded... this is kinda gross but it should work and the infrequency of changing GUI
+            // screens, coupled with a lot number of buttons per screen, should make this work kinda alright
+            // TODO: This code makes UVs really really small. Fix it.
+            for(int cur_uv = 0; cur_uv < uv_buffer.size(); cur_uv++) {
+                if(cur_uv % 2 == 0) {
+                    uv_buffer[cur_uv] = uv_buffer[cur_uv] * size.x + widgets_location.min.x;
+
+                } else {
+                    uv_buffer[cur_uv] = uv_buffer[cur_uv] * size.y + widgets_location.min.y;
+                }
+            }
+
+            // Generate the vertexes from the button's position
+            add_vertices_from_button(vertex_buffer, button, uv_buffer);
 
 			add_indices_with_offset(indices, start_pos);
 			add_indices_with_offset(indices, start_pos + 4);

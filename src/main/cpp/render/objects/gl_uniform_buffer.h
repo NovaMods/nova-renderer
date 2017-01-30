@@ -18,9 +18,8 @@ namespace nova {
     class gl_uniform_buffer {
     public:
         gl_uniform_buffer(std::string name) : name(name) {
-            glGenBuffers(1, &gl_name);
-			bind();
-			glNamedBufferStorage(gl_name, sizeof(T), nullptr, GL_DYNAMIC_STORAGE_BIT);
+            glCreateBuffers(1, &gl_name);
+            glNamedBufferStorage(gl_name, sizeof(T), nullptr, GL_DYNAMIC_STORAGE_BIT);
         }
 
         gl_uniform_buffer(gl_uniform_buffer &&old) noexcept {

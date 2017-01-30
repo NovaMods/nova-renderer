@@ -73,5 +73,9 @@ namespace nova {
         per_frame_uniforms_buffer.send_data(per_frame_uniform_variables);
         LOG(DEBUG) << "Updated per frame UBO";
     }
+
+    gl_uniform_buffer<gui_uniforms>& uniform_buffer_store::get_gui_buffer() {
+        return gui_uniform_buffer;
+    }
 }
 

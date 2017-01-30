@@ -21,10 +21,8 @@ import java.awt.image.DataBufferByte;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
     public static final String MODID = "Nova Renderer";
@@ -56,10 +54,66 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         int maxAtlasSize = NovaNative.INSTANCE.get_max_texture_size();
         addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATIONS, NovaNative.TextureType.TERRAIN_COLOR, resourceManager, maxAtlasSize);
 
+        addGuiAtlas(resourceManager);
+    }
+
+    private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
         guiAtlas.loadSprites(resourceManager, textureMapIn -> GUI_ALBEDO_TEXTURES_LOCATIONS.forEach(location -> {
             TextureAtlasSprite textureAtlasSprite = textureMapIn.registerSprite(location);
             guiSpriteLocations.put(location, textureAtlasSprite);
         }));
+
+        NovaNative.mc_atlas_texture guiAtlasTexture = getFullImage(guiAtlas.getWidth(), guiAtlas.getHeight(), guiSpriteLocations.values());
+
+        NovaNative.INSTANCE.add_texture(guiAtlasTexture, NovaNative.TextureType.GUI.ordinal());
+
+        for(TextureAtlasSprite sprite : guiSpriteLocations.values()) {
+            NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
+                    sprite.getIconName(),
+                    sprite.getMinU(),
+                    sprite.getMinV(),
+                    sprite.getMaxU(),
+                    sprite.getMaxV()
+            );
+
+            NovaNative.INSTANCE.add_texture_location(location);
+        }
+    }
+
+    private NovaNative.mc_atlas_texture getFullImage(int atlasWidth, int atlasHeight, Collection<TextureAtlasSprite> sprites) {
+        byte[] imageData = new byte[atlasWidth * atlasHeight * 4];
+
+        for(TextureAtlasSprite sprite : sprites) {
+            LOG.debug("Looking at sprite " + sprite.getIconName());
+            int startY = sprite.getOriginY() * atlasWidth * 4;
+            int startPos = sprite.getOriginX() * 4 + startY;
+
+            int[] data = sprite.getFrameTextureData(0)[0];
+            for(int y = 0; y < sprite.getIconHeight(); y++) {
+                for(int x = 0; x < sprite.getIconWidth(); x++) {
+                    // Reverse the order of the color channels
+                    int pixel = data[y * sprite.getIconWidth() + x];
+
+                    byte red    = (byte)( pixel        & 0xFF);
+                    byte green  = (byte)((pixel >>  8) & 0xFF);
+                    byte blue   = (byte)((pixel >> 16) & 0xFF);
+                    byte alpha  = (byte)((pixel >> 24) & 0xFF);
+
+                    int imageDataBasePos = startPos + x * 4 + y * atlasWidth * 4;
+                    imageData[imageDataBasePos]     = red;
+                    imageData[imageDataBasePos + 1] = green;
+                    imageData[imageDataBasePos + 2] = blue;
+                    imageData[imageDataBasePos + 3] = alpha;
+                }
+            }
+        }
+
+        return new NovaNative.mc_atlas_texture(
+                atlasWidth,
+                atlasHeight,
+                4,
+                imageData
+        );
     }
 
     private void addTextures(List<ResourceLocation> locations, NovaNative.TextureType textureType,  IResourceManager resourceManager, int maxAtlasSize) {
@@ -157,7 +211,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/resource_packs"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/server_selection"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/spectator_widgets"));
-        GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/stream_indicator"));
+        // GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/stream_indicator")); // non-square texture, breaks
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/widgets"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/world_selection"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/achievement/achievement_background"));

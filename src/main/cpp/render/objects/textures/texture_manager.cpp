@@ -93,8 +93,7 @@ namespace nova {
     }
 
 
-    const texture_manager::texture_location &
-    texture_manager::get_texture_location(const std::string &texture_name) {
+    const texture_manager::texture_location &texture_manager::get_texture_location(const std::string &texture_name) {
         return locations[texture_name];
     }
 
