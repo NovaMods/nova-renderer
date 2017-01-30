@@ -83,9 +83,9 @@ namespace nova {
 
         texture_manager& get_texture_manager();
 
-        InputHandler& getInputHandler();
+        input_handler& get_input_handler();
 
-        glfw_gl_window& getGameWindow();
+        glfw_gl_window& get_game_window();
 
         mesh_store& get_mesh_store();
 
@@ -104,7 +104,7 @@ namespace nova {
 
         texture_manager textures;
 
-        InputHandler inputHandler;
+		input_handler input_handler;
 
         mesh_store meshes;
 
