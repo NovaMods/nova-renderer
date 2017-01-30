@@ -100,9 +100,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     byte alpha  = (byte)((pixel >> 24) & 0xFF);
 
                     int imageDataBasePos = startPos + x * 4 + y * atlasWidth * 4;
-                    imageData[imageDataBasePos]     = red;
+                    imageData[imageDataBasePos]     =blue ;
                     imageData[imageDataBasePos + 1] = green;
-                    imageData[imageDataBasePos + 2] = blue;
+                    imageData[imageDataBasePos + 2] = red;
                     imageData[imageDataBasePos + 3] = alpha;
                 }
             }
