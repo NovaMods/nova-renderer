@@ -220,3 +220,6 @@ reobf/
 target/
 
 *.png
+/src/main/java/net/
+/.idea/inspectionProfiles
+/.idea/inspectionProfiles/Project_Default.xml

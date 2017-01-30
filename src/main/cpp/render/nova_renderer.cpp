@@ -14,21 +14,23 @@ INITIALIZE_EASYLOGGINGPP
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer::nova_renderer() : render_settings("config/config.json") {
-        render_settings.register_change_listener(&ubo_manager);
-        render_settings.register_change_listener(this);
+    nova_renderer::nova_renderer(){
+		enable_debug();
+		render_settings->register_change_listener(&ubo_manager);
+		render_settings->register_change_listener(&game_window);
+        render_settings->register_change_listener(this);
 
-        render_settings.update_config_loaded();
-        trigger_config_update();
-
-        enable_debug();
+        render_settings->update_config_loaded();
+		render_settings->update_config_changed();
+       
 
         init_opengl_state();
+		
     }
 
     void nova_renderer::init_opengl_state() const {
         glClearColor(0.0, 0.0, 0.0, 1.0);
-        glEnable(GL_TEXTURE_2D);
+       
     }
 
     nova_renderer::~nova_renderer() {
@@ -91,8 +93,12 @@ namespace nova {
         return game_window.should_close();
     }
 
+	std::unique_ptr<settings> nova_renderer::render_settings;
+
     void nova_renderer::init() {
-        instance = std::make_unique<nova_renderer>();
+		render_settings = std::make_unique<settings>("config/config.json");
+	
+		instance = std::make_unique<nova_renderer>();
     }
 
     std::string translate_debug_source(GLenum source) {
@@ -176,7 +182,8 @@ namespace nova {
     }
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
-        auto& shaderpack_name = new_config["loadedShaderpack"];
+		
+		auto& shaderpack_name = new_config["loadedShaderpack"];
         load_new_shaderpack(shaderpack_name);
     }
 
@@ -184,12 +191,8 @@ namespace nova {
         // TODO: Probably want to do some setup here, don't need to do that now
     }
 
-    void nova_renderer::trigger_config_update() {
-        render_settings.update_config_changed();
-    }
-
     settings &nova_renderer::get_render_settings() {
-        return render_settings;
+        return *render_settings;
     }
 
     texture_manager &nova_renderer::get_texture_manager() {
@@ -209,11 +212,12 @@ namespace nova {
     }
 
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
+		
         LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
         loaded_shaderpack = std::experimental::make_optional<shaderpack>(load_shaderpack(new_shaderpack_name));
         meshes.set_shaderpack(*loaded_shaderpack);
         LOG(INFO) << "Loading complete";
-
+		
         link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), ubo_manager);
         LOG(DEBUG) << "Linked up UBOs";
     }
