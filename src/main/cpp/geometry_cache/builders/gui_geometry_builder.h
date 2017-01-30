@@ -15,7 +15,7 @@
 #include "../../mc_interface/mc_gui_objects.h"
 
 namespace nova {
-	static const float factor = 0.00390625F;
+    static const float factor = 0.00390625F;
     /*!
      * \brief Constructs the geometry needed to render the current GUI screen
      *
@@ -34,7 +34,7 @@ namespace nova {
      * \param button The button to get vertices from
      * \param uvs The uv coordinates to use for this button
      */
-    NOVA_API void add_vertices_from_button(std::vector<float> &vertex_buffer, const mc_gui_button &button);
+    NOVA_API void add_vertices_from_button(std::vector<float> &vertex_buffer, const mc_gui_button &button, const std::vector<float> uvs);
 
     /*!
      * \brief Adds the vertex with the given parameters to the given vertex buffer
