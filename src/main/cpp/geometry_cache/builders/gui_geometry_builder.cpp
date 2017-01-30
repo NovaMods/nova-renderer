@@ -29,39 +29,40 @@ namespace nova {
 				0.78125f, 0.3359375f
 		};
 
-		// We need to make a vertex buffer with the positions and texture coordinates of all the gui elements
-		std::vector<float> vertex_buffer;
-		vertex_buffer.reserve((unsigned long long int) (cur_screen.num_buttons * 2 * 4 *
-			5));    // cur_screen.num_buttons buttons * 4 vertices per button * 5 elements per vertex
+        static auto basic_pressed_uvs = std::vector<glm::vec2>{
+                { 0.0f,         0.1803921f },
+                { 0.7803921f,   0.1803921f },
+                { 0.0f,         0.2549019f },
+                { 0.7803921f,   0.2549019f }
+        };
+
+        // We need to make a vertex buffer with the positions and texture coordinates of all the gui elements
+        std::vector<float> vertex_buffer;
+        vertex_buffer.reserve((unsigned long long int) (cur_screen.num_buttons * 4 *
+                                                        5));    // cur_screen.num_buttons buttons * 4 vertices per button * 5 elements per vertex
 
 		std::vector<unsigned short> indices;
 		indices.reserve((unsigned long long int) (cur_screen.num_buttons * 2 * 6)); // six entries per button
 		unsigned short start_pos = 0;
 
-		for (int i = 0; i < cur_screen.num_buttons; i++) {
-			mc_gui_button &button = cur_screen.buttons[i];
+        // Scale the UVs in the uv buffer to match what's in the texture atlas
+        const texture_manager::texture_location widgets_location = nova_renderer::instance->get_texture_manager().get_texture_location("minecraft:gui/widgets");
+        glm::vec2 widgets_size = widgets_location.max - widgets_location.min;
 
-            std::vector<float> uv_buffer = basic_hovered_uvs;  // TODO: Change when we get the unpressed UVs
+        for(int i = 0; i < cur_screen.num_buttons; i++) {
+            mc_gui_button &button = cur_screen.buttons[i];
+
+            auto uv_buffer = basic_unpressed_uvs;
             if(button.is_pressed) {
-                uv_buffer = basic_unpressed_uvs;
+                uv_buffer = basic_pressed_uvs;
             }
-
-            // Scale the UVs in the uv buffer to match what's in the texture atlas
-            const texture_manager::texture_location widgets_location = nova_renderer::instance->get_texture_manager().get_texture_location("minecraft:gui/widgets");
-            glm::vec2 size = widgets_location.max - widgets_location.min;
 
             // It's inefficient to scale the UVs for every button, and to copy the UVs for every button. Better to scale
             // the static vector in this function, but then we'd have to un-scale and re-scale whenever a new
             // resourcepack is loaded... this is kinda gross but it should work and the infrequency of changing GUI
             // screens, coupled with a lot number of buttons per screen, should make this work kinda alright
-            // TODO: This code makes UVs really really small. Fix it.
             for(int cur_uv = 0; cur_uv < uv_buffer.size(); cur_uv++) {
-                if(cur_uv % 2 == 0) {
-                    uv_buffer[cur_uv] = uv_buffer[cur_uv] * size.x + widgets_location.min.x;
-
-                } else {
-                    uv_buffer[cur_uv] = uv_buffer[cur_uv] * size.y + widgets_location.min.y;
-                }
+                uv_buffer[cur_uv] = (uv_buffer[cur_uv] * widgets_size) + widgets_location.min;
             }
 
             // Generate the vertexes from the button's position
@@ -133,14 +134,14 @@ namespace nova {
 		);
 	}
 
-	void add_vertex(std::vector<float> &vertex_buffer, int x, int y, float u, float v) {
-		vertex_buffer.push_back(static_cast<float>(x));
-		vertex_buffer.push_back(static_cast<float>(y));
-		vertex_buffer.push_back(0.0f);
+    void add_vertex(std::vector<float> &vertex_buffer, int x, int y, glm::vec2 uv) {
+        vertex_buffer.push_back(static_cast<float>(x));
+        vertex_buffer.push_back(static_cast<float>(y));
+        vertex_buffer.push_back(0.0f);
 
-		vertex_buffer.push_back(u);
-		vertex_buffer.push_back(v);
-	}
+        vertex_buffer.push_back(uv.s);
+        vertex_buffer.push_back(uv.t);
+    }
 }
 
 
