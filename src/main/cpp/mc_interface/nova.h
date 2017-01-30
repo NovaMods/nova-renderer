@@ -89,9 +89,13 @@ NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui
  */
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value);
 
-NOVA_API struct MouseButtonEvent  getNextMouseButtonEvent();
+NOVA_API struct mouse_button_event  get_next_mouse_button_event();
 
-NOVA_API struct MousePositionEvent  getNextMousePositionEvent();
+NOVA_API struct mouse_position_event  get_next_mouse_position_event();
+
+NOVA_API struct key_press_event  get_next_key_press_event();
+
+NOVA_API struct key_char_event  get_next_key_char_event();
 
 };  // End extern C
     // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.

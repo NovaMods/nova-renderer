@@ -107,7 +107,7 @@ namespace nova {
             glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
             // Hardcoded until I get everything moved to the proper thread
-            max_texture_size = 8096;
+			LOG(DEBUG) << "max texturesize reported by gpu: " << max_texture_size;
         }
         return max_texture_size;
     }

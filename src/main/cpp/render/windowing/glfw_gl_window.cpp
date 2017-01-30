@@ -55,9 +55,11 @@ namespace nova {
         glViewport(0, 0, window_dimensions.x, window_dimensions.y);
 
         glfwSetKeyCallback(window, key_callback);
-		glfwSetMouseButtonCallback(window, MouseButtonCallback);
-		glfwSetCursorPosCallback(window, MousePositionCallback);
-        return 0;
+		glfwSetCharCallback(window, key_character_callback);
+		glfwSetMouseButtonCallback(window, mouse_button_callback);
+		glfwSetCursorPosCallback(window, mouse_position_callback);
+        
+		return 0;
     }
 
     glfw_gl_window::~glfw_gl_window() {

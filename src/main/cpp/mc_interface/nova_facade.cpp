@@ -22,7 +22,7 @@
 using namespace nova;
 
 #define TEXTURE_MANAGER nova_renderer::instance->get_texture_manager()
-#define INPUT_HANDLER nova_renderer::instance->getInputHandler()
+#define INPUT_HANDLER nova_renderer::instance->get_input_handler()
 // runs in thread 5
 
 NOVA_API void initialize() {
@@ -45,7 +45,7 @@ NOVA_API void add_texture_location(mc_texture_atlas_location location) {
 }
 
 NOVA_API int get_max_texture_size() {
-    return 8096;//TEXTURE_MANAGER.get_max_texture_size();
+    return TEXTURE_MANAGER.get_max_texture_size();
 }
 
 NOVA_API void execute_frame() {
@@ -66,11 +66,21 @@ NOVA_API void set_string_setting(const char * setting_name, const char * setting
     settings.update_config_changed();
 }
 
-NOVA_API struct MouseButtonEvent  getNextMouseButtonEvent() {
-	return INPUT_HANDLER.dequeueMouseButtonEvent();
+NOVA_API struct mouse_button_event  get_next_mouse_button_event() {
+	return INPUT_HANDLER.dequeue_mouse_button_event();
 }
 
-NOVA_API struct MousePositionEvent  getNextMousePositionEvent() {
-	return INPUT_HANDLER.dequeueMousePositionEvent();
+NOVA_API struct mouse_position_event  get_next_mouse_position_event() {
+	return INPUT_HANDLER.dequeue_mouse_position_event();
+}
+
+NOVA_API struct key_press_event get_next_key_press_event()
+{
+	return INPUT_HANDLER.dequeue_key_press_event();
+}
+
+NOVA_API struct key_char_event get_next_key_char_event()
+{
+	return  INPUT_HANDLER.dequeue_key_char_event();
 }
 
