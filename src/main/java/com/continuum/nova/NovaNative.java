@@ -85,7 +85,7 @@ public interface NovaNative extends Library {
         public int enabled;
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("x_position", "y_position", "width", "height", "is_pressed","enabled");
+            return Arrays.asList("x_position", "y_position", "width", "height","text", "is_pressed","enabled");
         }
     }
 
