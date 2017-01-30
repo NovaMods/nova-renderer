@@ -91,8 +91,8 @@ namespace nova {
          * have. if you're making the terrain, you know you need the terrain texture.
          */
         struct texture_location {
-            glm::ivec2 min;     //!< The minimum UV coordinate of the requested texture in its atlas
-            glm::ivec2 max;     //!< The maximum UV coordinate of the requested texture in its atlas
+            glm::vec2 min;     //!< The minimum UV coordinate of the requested texture in its atlas
+            glm::vec2 max;     //!< The maximum UV coordinate of the requested texture in its atlas
         };
 
         /*!

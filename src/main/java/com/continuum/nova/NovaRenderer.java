@@ -81,17 +81,17 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
     }
 
-    private NovaNative.mc_atlas_texture getFullImage(int width, int height, Collection<TextureAtlasSprite> sprites) {
-        byte[] imageData = new byte[width * height * 4];
+    private NovaNative.mc_atlas_texture getFullImage(int atlasWidth, int atlasHeight, Collection<TextureAtlasSprite> sprites) {
+        byte[] imageData = new byte[atlasWidth * atlasHeight * 4];
 
         for(TextureAtlasSprite sprite : sprites) {
             LOG.debug("Looking at sprite " + sprite.getIconName());
-            int startY = sprite.getOriginY() * width;
-            int startPos = sprite.getOriginX() + startY;
+            int startY = sprite.getOriginY() * atlasWidth * 4;
+            int startPos = sprite.getOriginX() * 4 + startY;
 
             int[] data = sprite.getFrameTextureData(0)[0];
             for(int y = 0; y < sprite.getIconHeight(); y++) {
-                for(int x = 0; x < sprite.getIconWidth(); x += 4) {
+                for(int x = 0; x < sprite.getIconWidth(); x++) {
                     // Reverse the order of the color channels
                     int pixel = data[y * sprite.getIconWidth() + x];
 
@@ -100,17 +100,18 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     byte blue   = (byte)((pixel >> 16) & 0xFF);
                     byte alpha  = (byte)((pixel >> 24) & 0xFF);
 
-                    imageData[startPos + x + y * width + 3] = red;
-                    imageData[startPos + x + y * width + 2] = green;
-                    imageData[startPos + x + y * width + 1] = blue;
-                    imageData[startPos + x + y * width]     = alpha;
+                    int imageDataBasePos = startPos + x * 4 + y * atlasWidth * 4;
+                    imageData[imageDataBasePos]     = red;
+                    imageData[imageDataBasePos + 1] = green;
+                    imageData[imageDataBasePos + 2] = blue;
+                    imageData[imageDataBasePos + 3] = alpha;
                 }
             }
         }
 
         return new NovaNative.mc_atlas_texture(
-                width,
-                height,
+                atlasWidth,
+                atlasHeight,
                 4,
                 imageData
         );
