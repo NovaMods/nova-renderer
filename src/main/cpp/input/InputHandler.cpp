@@ -22,7 +22,9 @@ namespace nova {
 	}
 
 
-	input_handler::input_handler() {};
+	input_handler::input_handler() {
+		create_keymap();
+	};
 
 	input_handler::~input_handler() {};
 
@@ -69,6 +71,7 @@ namespace nova {
 		if (key_press_event_queue.size() != 0) {
 			struct key_press_event e = key_press_event_queue.front();
 			key_press_event_queue.pop();
+			e.key =(int) keymap[e.key];
 			return e;
 		}
 		return {0,0,0,0,0};

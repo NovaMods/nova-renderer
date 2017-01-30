@@ -173,7 +173,7 @@ public class Keyboard {
         }
     }
 
-    public static void create(InputImplementation impl) throws LWJGLException {
+    public static void create() {
         if (!created) {
             created = true;
             initialize();
@@ -228,7 +228,7 @@ public class Keyboard {
         current_event.character = (char) c.unicode_char;
         current_event.state = p.action!=0;
         current_event.repeat = p.action == 2;
-
+        System.out.println("Key: "+getKeyName(p.key)+"; Char: "+current_event.character+"; state: "+p.action +"; repeat: "+current_event.repeat);
         return true;
     }
 

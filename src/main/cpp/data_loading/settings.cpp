@@ -13,10 +13,10 @@ namespace nova {
     settings::settings(std::string filename) {
         LOG(INFO) << "Loading config from " << filename;
 
-        std::ifstream config_file(filename);
-        if(config_file.is_open()) {
-            options = load_json_from_stream(config_file);
-        }
+		std::ifstream config_file(filename);
+		if(config_file.is_open()) {
+			options = load_json_from_stream(config_file);
+		}
     }
 
     void settings::register_change_listener(iconfig_listener *new_listener) {

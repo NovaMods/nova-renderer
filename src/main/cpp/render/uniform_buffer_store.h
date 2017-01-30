@@ -45,8 +45,6 @@ namespace nova {
         virtual void on_config_loaded(nlohmann::json &config);
 
     private:
-        // Saved so that we can reference these values later
-        nlohmann::json config;
 
         gui_uniforms gui_uniform_variables;
         per_frame_uniforms per_frame_uniform_variables;
@@ -54,7 +52,7 @@ namespace nova {
         gl_uniform_buffer<gui_uniforms> gui_uniform_buffer;
         gl_uniform_buffer<per_frame_uniforms> per_frame_uniforms_buffer;
 
-        void update_gui_uniforms();
+        void update_gui_uniforms(nlohmann::json &config);
 
         void update_per_frame_uniforms();
     };
