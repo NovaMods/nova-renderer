@@ -44,6 +44,8 @@ namespace nova {
 
         virtual void on_config_loaded(nlohmann::json &config);
 
+        gl_uniform_buffer <gui_uniforms>& get_gui_buffer();
+
     private:
 
         gui_uniforms gui_uniform_variables;
