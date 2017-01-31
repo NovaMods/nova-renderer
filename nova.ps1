@@ -197,15 +197,21 @@ function New-VisualStudioBuild {
 
     if(Test-Command -command "devenv.exe") {
         # Visual Studio is probably installed, hopefully they have the correct version
-        Invoke-CMake -generator "Visual Studio 14 2015"
+        New-Item target -ItemType Directory >$null 2>&1
+        New-Item target\cpp-msvc -ItemType Directory >$null 2>&1
+        Set-Location target\cpp-msvc
+        
+        cmake -G "Visual Studio 14 2015 Win64" ../../src/main/cpp
 
         # Compile the code
         # TODO: Verify that this is the actual name of the solution file
-        devenv NovaRenderer.sln /Build Debug
+        devenv renderer.sln /Build Debug
 
         # Copy the DLL to the correct location
         # TODO: Verify that this is the name of the DLL
-        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "nova-renderer.dll"
+        robocopy "." "..\..\jars\versions\1.10\1.10-natives\libnova-renderer.dll" "nova-renderer.dll"
+        Set-Location ..\..
+
     } else {
         Write-Error "Could not call the Visual Studio make tool, unable to build Nova. Please enstall Visual Stusio 2015 and ensure that devenv.exe is on your path"
     }

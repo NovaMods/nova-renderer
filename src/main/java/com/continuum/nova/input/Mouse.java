@@ -155,7 +155,7 @@ public class Mouse {
 
     public static int getY() {
         next();
-        return y;
+        return event_y;
     }
 
     public static int getDX() {
