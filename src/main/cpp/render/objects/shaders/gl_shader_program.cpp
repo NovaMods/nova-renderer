@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <algorithm>
 
-#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include <malloc.h>
 #include "gl_shader_program.h"

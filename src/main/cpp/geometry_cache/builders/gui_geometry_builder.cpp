@@ -4,7 +4,6 @@
  */
 
 #include <algorithm>
-#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include <glad/glad.h>
 #include "gui_geometry_builder.h"
@@ -29,7 +28,7 @@ namespace nova {
                 { 0.7803921f,  0.3333333f }
         };
 
-        static auto basic_pressed_uvs = std::vector<glm::vec2>{
+        static auto basic_disabled_uvs = std::vector<glm::vec2>{
                 { 0.0f,         0.1803921f },
                 { 0.7803921f,   0.1803921f },
                 { 0.0f,         0.2549019f },
@@ -54,7 +53,7 @@ namespace nova {
 
             auto uv_buffer = basic_unpressed_uvs;
             if(button.is_pressed) {
-                uv_buffer = basic_pressed_uvs;
+                uv_buffer = basic_disabled_uvs;
             }
 
             // It's inefficient to scale the UVs for every button, and to copy the UVs for every button. Better to scale

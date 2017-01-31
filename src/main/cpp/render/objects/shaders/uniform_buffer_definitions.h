@@ -17,7 +17,6 @@
 
 #include <ostream>
 
-#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
 namespace nova {

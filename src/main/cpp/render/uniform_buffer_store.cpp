@@ -4,7 +4,6 @@
  */
 
 #include <fstream>
-#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
