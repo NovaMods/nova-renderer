@@ -54,8 +54,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
 
         NovaNative.INSTANCE.reset_texture_manager();
+        int maxAtlasSize = NovaNative.INSTANCE.get_max_texture_size();
+        addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATIONS, NovaNative.TextureType.TERRAIN_COLOR, resourceManager, maxAtlasSize);
 
-        addBlockAtlas(resourceManager);
+        //addBlockAtlas(resourceManager);
         addGuiAtlas(resourceManager);
     }
 
@@ -111,9 +113,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     byte alpha  = (byte)((pixel >> 24) & 0xFF);
 
                     int imageDataBasePos = startPos + x * 4 + y * atlasWidth * 4;
-                    imageData[imageDataBasePos]     = red;
+                    imageData[imageDataBasePos]     =blue ;
                     imageData[imageDataBasePos + 1] = green;
-                    imageData[imageDataBasePos + 2] = blue;
+                    imageData[imageDataBasePos + 2] = red;
                     imageData[imageDataBasePos + 3] = alpha;
                 }
             }
