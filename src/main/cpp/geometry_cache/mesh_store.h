@@ -16,6 +16,7 @@
 #include "../render/objects/shaders/geometry_filter.h"
 #include "../render/objects/shaders/shaderpack.h"
 #include "../mc_interface/mc_gui_objects.h"
+#include "../mc_interface/mc_objects.h"
 
 namespace nova {
     /*!
@@ -26,6 +27,7 @@ namespace nova {
     class mesh_store {
     public:
         void add_gui_geometry(mc_gui_screen& screen);
+        void add_gui_buffers(mc_gui_send_buffer_command* command);
 
         /*!
          * \brief Sets the shaderpack reference to the given shaderpack

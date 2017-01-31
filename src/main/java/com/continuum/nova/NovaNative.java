@@ -2,6 +2,7 @@ package com.continuum.nova;
 
 import com.sun.jna.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -172,6 +173,19 @@ public interface NovaNative extends Library {
         }
     }
 
+    class mc_gui_send_buffer_command extends Structure {
+        public String texture_name;
+        public int index_buffer_size;
+        public int vertex_buffer_size;
+        public Pointer index_buffer; // int[]
+        public Pointer vertex_buffer; // float[]
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer");
+        }
+    }
+
     class mouse_button_event extends Structure implements Structure.ByValue {
         public int button;
         public int action;
@@ -248,6 +262,8 @@ public interface NovaNative extends Library {
     boolean should_close();
 
     void send_change_gui_screen_command(mc_set_gui_screen_command set_gui_screen);
+
+    void send_gui_buffer_command(mc_gui_send_buffer_command command);
 
     mouse_button_event get_next_mouse_button_event();
 
