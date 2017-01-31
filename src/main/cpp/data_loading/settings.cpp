@@ -6,7 +6,6 @@
 #include "settings.h"
 #include "../utils/utils.h"
 
-#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
 namespace nova {

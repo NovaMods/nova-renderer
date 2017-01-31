@@ -39,6 +39,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private TextureMap guiAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> guiSpriteLocations = new HashMap<>();
 
+    private TextureMap blockAtlas = new TextureMap("textures");
+    private Map<ResourceLocation, TextureAtlasSprite> blockSpriteLocations = new HashMap<>();
+
     public NovaRenderer() {
         addBlockTextureLocations();
         addGuiTextureLocations();
@@ -51,24 +54,31 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
 
         NovaNative.INSTANCE.reset_texture_manager();
-        int maxAtlasSize = NovaNative.INSTANCE.get_max_texture_size();
-        maxAtlasSize = 8096;    // TODO Figure out why the above line doesn't work
-        addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATIONS, NovaNative.TextureType.TERRAIN_COLOR, resourceManager, maxAtlasSize);
 
+        addBlockAtlas(resourceManager);
         addGuiAtlas(resourceManager);
     }
 
+    private void addBlockAtlas(@Nonnull IResourceManager resourceManager) {
+        addAtlas(resourceManager, blockAtlas, TERRAIN_ALBEDO_TEXTURES_LOCATIONS, blockSpriteLocations, NovaNative.TextureType.TERRAIN_COLOR);
+    }
+
     private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
-        guiAtlas.loadSprites(resourceManager, textureMapIn -> GUI_ALBEDO_TEXTURES_LOCATIONS.forEach(location -> {
+        addAtlas(resourceManager, guiAtlas, GUI_ALBEDO_TEXTURES_LOCATIONS, guiSpriteLocations, NovaNative.TextureType.GUI);
+    }
+
+    private void addAtlas(@Nonnull IResourceManager resourceManager, TextureMap atlas, List<ResourceLocation> resoruces,
+                          Map<ResourceLocation, TextureAtlasSprite> spriteLocations, NovaNative.TextureType textureType) {
+        atlas.loadSprites(resourceManager, textureMapIn -> resoruces.forEach(location -> {
             TextureAtlasSprite textureAtlasSprite = textureMapIn.registerSprite(location);
-            guiSpriteLocations.put(location, textureAtlasSprite);
+            spriteLocations.put(location, textureAtlasSprite);
         }));
 
-        NovaNative.mc_atlas_texture guiAtlasTexture = getFullImage(guiAtlas.getWidth(), guiAtlas.getHeight(), guiSpriteLocations.values());
+        NovaNative.mc_atlas_texture guiAtlasTexture = getFullImage(atlas.getWidth(), atlas.getHeight(), spriteLocations.values());
 
-        NovaNative.INSTANCE.add_texture(guiAtlasTexture, NovaNative.TextureType.GUI.ordinal());
+        NovaNative.INSTANCE.add_texture(guiAtlasTexture, textureType.ordinal());
 
-        for(TextureAtlasSprite sprite : guiSpriteLocations.values()) {
+        for(TextureAtlasSprite sprite : spriteLocations.values()) {
             NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
                     sprite.getIconName(),
                     sprite.getMinU(),

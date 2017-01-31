@@ -5,7 +5,6 @@
 #include "glfw_gl_window.h"
 #include "../../utils/utils.h"
 
-#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include "../../input/InputHandler.h"
 namespace nova {

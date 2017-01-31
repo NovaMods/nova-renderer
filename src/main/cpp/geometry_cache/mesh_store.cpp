@@ -6,7 +6,6 @@
  */
 
 #include <algorithm>
-#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include "mesh_store.h"
 #include "builders/gui_geometry_builder.h"

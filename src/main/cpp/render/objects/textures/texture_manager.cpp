@@ -4,7 +4,6 @@
  */
 
 #include <algorithm>
-#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 #include "texture_manager.h"
 
@@ -81,6 +80,10 @@ namespace nova {
 
         atlases[data_type] = texture;
         LOG(DEBUG) << "Texture added to atlas";
+
+        // We should only need to bind the texture once, since each texture has a unique binding location
+        unsigned int bind_location = (unsigned int) data_type;
+        texture.bind(bind_location);
     }
 
     void texture_manager::add_texture_location(mc_texture_atlas_location &location) {

@@ -6,7 +6,6 @@
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
 
-#define ELPP_THREAD_SAFE
 #include <easylogging++.h>
 
 INITIALIZE_EASYLOGGINGPP
@@ -77,9 +76,7 @@ namespace nova {
         gl_shader_program &gui_shader = (*loaded_shaderpack)["gui"];
         gui_shader.bind();
 
-        auto gui_atlas = textures.get_texture_atlas(texture_manager::texture_type::gui);
-        gui_atlas.bind(0);
-
+        // Render GUI objects
         std::vector<render_object *> gui_geometry = meshes.get_meshes_for_shader("gui");
         for(const auto *geom : gui_geometry) {
             geom->geometry->draw();
