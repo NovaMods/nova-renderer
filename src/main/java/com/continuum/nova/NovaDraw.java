@@ -77,7 +77,7 @@ public class NovaDraw {
         draw(texture, indexBuffer, vertices);
     }
 
-    public static void novaDrawScreen(GuiScreen screen) {
+    static void computeCorrectMousePosition() {
         Minecraft mc = Minecraft.getMinecraft();
 
         // compute mouse position (from EntityRenderer.java)
@@ -89,6 +89,10 @@ public class NovaDraw {
         // set mouse position
         mouseX = k1;
         mouseY = l1;
+    }
+
+    public static void novaDrawScreen(GuiScreen screen) {
+        computeCorrectMousePosition();
 
         if (screen.checkStateChanged()) {
             clearBuffers();
@@ -96,22 +100,7 @@ public class NovaDraw {
 
             for (ResourceLocation texture : buffers.keySet()) {
                 Buffers b = buffers.get(texture);
-
-                NovaNative.mc_gui_send_buffer_command command = new NovaNative.mc_gui_send_buffer_command();
-                command.texture_name = texture.getResourcePath();
-                command.index_buffer_size = b.IndexBuffer.size();
-                command.index_buffer = new Memory(command.index_buffer_size * Native.getNativeSize(Integer.TYPE));
-                for (int i = 0; i < command.index_buffer_size; i++) {
-                    Integer k = b.IndexBuffer.get(i);
-                    command.index_buffer.setInt(i * Native.getNativeSize(Integer.TYPE), (int) (k != null ? k : 0));
-                }
-                command.vertex_buffer_size = b.VertexBuffer.size();
-                command.vertex_buffer = new Memory(command.vertex_buffer_size * Native.getNativeSize(Float.TYPE));
-                for (int i = 0; i < command.vertex_buffer_size; i++) {
-                    Float k = b.VertexBuffer.get(i);
-                    command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (float) (k != null ? k : 0));
-                }
-                NovaNative.INSTANCE.send_gui_buffer_command(command);
+                NovaNative.INSTANCE.send_gui_buffer_command(b.toNativeCommand(texture));
             }
         }
     }
@@ -158,6 +147,30 @@ public class NovaDraw {
             Collections.addAll(VertexBuffer, vertexBuffer);
 
             return this;
+        }
+
+        public NovaNative.mc_gui_send_buffer_command toNativeCommand(ResourceLocation texture) {
+            // create a new struct
+            NovaNative.mc_gui_send_buffer_command command = new NovaNative.mc_gui_send_buffer_command();
+            command.texture_name = texture.getResourcePath();
+
+            // assign the index buffer
+            command.index_buffer_size = IndexBuffer.size();
+            command.index_buffer = new Memory(command.index_buffer_size * Native.getNativeSize(Integer.TYPE));
+            for (int i = 0; i < command.index_buffer_size; i++) {
+                Integer k = IndexBuffer.get(i);
+                command.index_buffer.setInt(i * Native.getNativeSize(Integer.TYPE), (int) (k != null ? k : 0));
+            }
+
+            // assign the vertex buffer
+            command.vertex_buffer_size = VertexBuffer.size();
+            command.vertex_buffer = new Memory(command.vertex_buffer_size * Native.getNativeSize(Float.TYPE));
+            for (int i = 0; i < command.vertex_buffer_size; i++) {
+                Float k = VertexBuffer.get(i);
+                command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (float) (k != null ? k : 0));
+            }
+
+            return command;
         }
     }
 
