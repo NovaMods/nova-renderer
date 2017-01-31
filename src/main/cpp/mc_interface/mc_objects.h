@@ -9,7 +9,7 @@
 #define RENDERER_MC_OBJECTS_H
 
 #include "mc_gui_objects.h"
-
+#include <cstdint>
 /*!
  * \brief Holds the information that comes from MC textures
  */
@@ -113,7 +113,7 @@ struct mc_set_gui_screen_command {
     mc_gui_screen screen;
 };
 
-struct MouseButtonEvent {
+struct mouse_button_event {
 	int button;
 	int action;
 	int mods;
@@ -121,9 +121,24 @@ struct MouseButtonEvent {
 };
 
 
-struct MousePositionEvent {
+struct mouse_position_event {
 	int xpos;
 	int ypos;
 	int filled;
+};
+
+struct key_press_event {
+	int key;
+	int scancode;
+	int action;
+	int mods;
+	int filled;
+
+};
+
+struct key_char_event {
+	std::uint64_t unicode_char;
+	int filled;
+
 };
 #endif //RENDERER_MC_OBJECTS_H

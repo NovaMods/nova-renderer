@@ -7,6 +7,7 @@
 
 #include <easylogging++.h>
 #include "../../input/InputHandler.h"
+#include "../nova_renderer.h"
 namespace nova {
     void error_callback(int error, const char *description) {
         LOG(ERROR) << "Error " << error << ": " << description;
@@ -21,16 +22,21 @@ namespace nova {
         if(!glfwInit()) {
             LOG(FATAL) << "Could not initialize GLFW";
         }
-
-        init();
+		init();
     }
 
     int glfw_gl_window::init() {
+
+		nlohmann::json &config = nova_renderer::get_render_settings().get_options();
+
+		float view_width = config["settings"]["viewWidth"];
+		float view_height = config["settings"]["viewHeight"];
+
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        window = glfwCreateWindow(640, 480, "Minecraft Nova Renderer", NULL, NULL);
+        window = glfwCreateWindow((int)view_width, (int)view_height, "Minecraft Nova Renderer", NULL, NULL);
         if(!window) {
             LOG(FATAL) << "Could not initialize window :(";
         }
@@ -54,9 +60,12 @@ namespace nova {
         glViewport(0, 0, window_dimensions.x, window_dimensions.y);
 
         glfwSetKeyCallback(window, key_callback);
-		glfwSetMouseButtonCallback(window, MouseButtonCallback);
-		glfwSetCursorPosCallback(window, MousePositionCallback);
-        return 0;
+		glfwSetCharCallback(window, key_character_callback);
+		glfwSetMouseButtonCallback(window, mouse_button_callback);
+		glfwSetCursorPosCallback(window, mouse_position_callback);
+		glfwSwapInterval(0);
+		
+		return 0;
     }
 
     glfw_gl_window::~glfw_gl_window() {
@@ -87,7 +96,7 @@ namespace nova {
 
         glm::ivec2 new_window_size;
         glfwGetFramebufferSize(window, &new_window_size.x, &new_window_size.y);
-
+		
         if(new_window_size != window_dimensions) {
             set_framebuffer_size(new_window_size);
         }
@@ -104,6 +113,6 @@ namespace nova {
     }
 
     void glfw_gl_window::on_config_loaded(nlohmann::json &config) {
-        // Don't do anything, we don't rely on any read-only config values... yet
+		//glfwSetWindowSize(window, config["viewWidth"], config["viewHeight"]);
     }
 }

@@ -56,13 +56,6 @@ namespace nova {
         ~nova_renderer();
 
         /*!
-         * \brief Explicitly tells the render_settings to send its data to all its registered listeners
-         *
-         * Useful when you register a new thing and want to make sure it gets all the latest data
-         */
-        void trigger_config_update();
-
-        /*!
          * \brief Renders a single frame
          *
          * This method runs in a separate thread from the rest of the methods in this class. This is because the other
@@ -79,13 +72,13 @@ namespace nova {
          */
         bool should_end();
 
-        settings& get_render_settings();
+        static settings& get_render_settings();
 
         texture_manager& get_texture_manager();
 
-        InputHandler& getInputHandler();
+        input_handler& get_input_handler();
 
-        glfw_gl_window& getGameWindow();
+        glfw_gl_window& get_game_window();
 
         mesh_store& get_mesh_store();
 
@@ -96,7 +89,8 @@ namespace nova {
         void on_config_loaded(nlohmann::json& config);
 
     private:
-        settings render_settings;
+
+		static std::unique_ptr<settings> render_settings;
 
         glfw_gl_window game_window;
 
@@ -104,7 +98,7 @@ namespace nova {
 
         texture_manager textures;
 
-        InputHandler inputHandler;
+		input_handler input_handler;
 
         mesh_store meshes;
 

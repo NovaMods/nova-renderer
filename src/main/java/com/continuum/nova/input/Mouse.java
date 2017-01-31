@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.continuum.nova.NovaNative;
-import com.continuum.nova.NovaNative.MouseButtonEvent;
-import com.continuum.nova.NovaNative.MousePositionEvent;
+import com.continuum.nova.NovaNative.mouse_button_event;
+import com.continuum.nova.NovaNative.mouse_position_event;
 
 
 public class Mouse {
@@ -100,8 +100,8 @@ public class Mouse {
     }
 
     public static boolean next() {
-        MouseButtonEvent e = NovaNative.INSTANCE.getNextMouseButtonEvent();
-        MousePositionEvent p = NovaNative.INSTANCE.getNextMousePositionEvent();
+        mouse_button_event e = NovaNative.INSTANCE.get_next_mouse_button_event();
+        mouse_position_event p = NovaNative.INSTANCE.get_next_mouse_position_event();
         if (e.filled == 0 && p.filled==0){
             return false;
         }
@@ -119,7 +119,6 @@ public class Mouse {
             dy += p.ypos -event_y;
             event_x = p.xpos;
             event_y = p.ypos;
-            System.out.println("mouse position: xpos: "+p.xpos+ ";ypos: "+p.ypos);
         }
         return true;
     }

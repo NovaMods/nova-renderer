@@ -85,7 +85,7 @@ public interface NovaNative extends Library {
         public int enabled;
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("x_position", "y_position", "width", "height", "is_pressed","enabled");
+            return Arrays.asList("x_position", "y_position", "width", "height","text", "is_pressed","enabled");
         }
     }
 
@@ -172,7 +172,7 @@ public interface NovaNative extends Library {
         }
     }
 
-    class MouseButtonEvent extends Structure implements Structure.ByValue {
+    class mouse_button_event extends Structure implements Structure.ByValue {
         public int button;
         public int action;
         public int mods;
@@ -183,13 +183,34 @@ public interface NovaNative extends Library {
         }
     }
 
-    class MousePositionEvent extends Structure implements Structure.ByValue {
+    class mouse_position_event extends Structure implements Structure.ByValue {
         public int xpos;
         public int ypos;
         public int filled;
         @Override
         protected List<String> getFieldOrder() {
             return Arrays.asList("xpos", "ypos","filled");
+        }
+    }
+
+    class key_press_event extends Structure implements Structure.ByValue {
+        public int key;
+        public int scancode;
+        public int action;
+        public int mods;
+        public int filled;
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("key", "scancode", "action","mods","filled");
+        }
+    }
+
+    class key_char_event extends Structure implements Structure.ByValue {
+        public long unicode_char;
+        public int filled;
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("unicode_char","filled");
         }
     }
 
@@ -228,8 +249,12 @@ public interface NovaNative extends Library {
 
     void send_change_gui_screen_command(mc_set_gui_screen_command set_gui_screen);
 
-    MouseButtonEvent getNextMouseButtonEvent();
+    mouse_button_event get_next_mouse_button_event();
 
-    MousePositionEvent getNextMousePositionEvent();
+    mouse_position_event get_next_mouse_position_event();
+
+    key_press_event get_next_key_press_event();
+
+    key_char_event get_next_key_char_event();
 
 }
