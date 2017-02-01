@@ -77,6 +77,11 @@ NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui
 
 NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command);
 
+/*!
+* \brief Removes all gui render objects and thereby deletes all the buffers
+*/
+NOVA_API void clear_gui_buffers();
+
 /**
  * Settings updates
  */
