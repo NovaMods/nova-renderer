@@ -79,6 +79,7 @@ namespace nova {
         // Render GUI objects
         std::vector<render_object *> gui_geometry = meshes.get_meshes_for_shader("gui");
         for(const auto *geom : gui_geometry) {
+            geom->geometry->set_active();
             geom->geometry->draw();
         }
     }
