@@ -36,24 +36,24 @@ namespace nova {
 
     void print_buffers(std::string texture_name, std::vector<float>& vertex_buffer, std::vector<unsigned short>& index_buffer) {
         // debug
-        std::cout << std::endl;
-        std::cout << "texture name: " << texture_name << std::endl;
-        std::cout << "new buffers:" << std::endl;
+        LOG(DEBUG) << "texture name: " << texture_name << std::endl;
+        LOG(DEBUG) << "new buffers:" << std::endl;
         for (int i = 0; i + 4 < vertex_buffer.size(); i += 5) {
-            std::cout << "  vertex ";
+            std::ostringstream ss;
+            ss << "  vertex ";
             for (int k = 0; k < 5; k++) {
-                std::cout << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(12) << std::fixed << std::setprecision(5) << vertex_buffer[i + k] << "  ";
+                ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(12) << std::fixed << std::setprecision(5) << vertex_buffer[i + k] << "  ";
             }
-            std::cout << std::endl;
+            LOG(DEBUG) << ss.str();
         }
         for (int i = 0; i + 2 < index_buffer.size(); i += 3) {
-            std::cout << "  index ";
+            std::ostringstream ss;
+            ss << "  index ";
             for (int k = 0; k < 3; k++) {
-                std::cout << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(8) << index_buffer[i + k] << "  ";
+                ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(8) << index_buffer[i + k] << "  ";
             }
-            std::cout << std::endl;
+            LOG(DEBUG) << ss.str();
         }
-        std::cout << std::endl;
     }
 
     void mesh_store::add_gui_buffers(mc_gui_send_buffer_command* command) {
@@ -64,7 +64,6 @@ namespace nova {
         texture_name = "minecraft:" + texture_name;
         const texture_manager::texture_location tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(texture_name);
         glm::vec2 tex_size = tex_location.max - tex_location.min;
-        std::cout << "tex_location.min: " << tex_location.min.x << "," << tex_location.min.y << std::endl;
 
         std::vector<float> vertex_buffer(command->vertex_buffer_size);
         for (int i = 0; i + 4 < command->vertex_buffer_size; i += 5) {
