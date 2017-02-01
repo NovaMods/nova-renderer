@@ -80,7 +80,7 @@ namespace nova {
         }
 
         // debug
-        print_buffers(texture_name, vertex_buffer, index_buffer);
+        //print_buffers(texture_name, vertex_buffer, index_buffer);
 
         mesh_definition cur_screen_buffer;
         cur_screen_buffer.vertex_data = vertex_buffer;
@@ -94,6 +94,21 @@ namespace nova {
         gui->is_solid = true;
 
         sort_render_object(gui);
+    }
+
+    void mesh_store::remove_gui_render_objects(){
+        for (auto& group : renderables_grouped_by_shader) {
+            auto copied_objects = group.second;
+            for (auto render_obj : copied_objects) {
+                if (render_obj->name == "gui") {
+                    group.second.erase(std::remove(group.second.begin(), group.second.end(), render_obj), group.second.end());
+                    delete render_obj->geometry;
+                    delete render_obj;
+
+                }
+            }
+        }
+
     }
 
     void mesh_store::sort_render_object(render_object *object) {
