@@ -233,6 +233,23 @@ public interface NovaNative extends Library {
         CLOUDS
     }
 
+    enum GeometryType {
+        BLOCK,
+        ENTITY,
+        FALLING_BLOCK,
+        GUI,
+        CLOUD,
+        SKY_DECORATION,
+        SELECTION_BOX,
+        GLINT,
+        WEATHER,
+        HAND,
+        FULLSCREEN_QUAD,
+        PARTICLE,
+        LIT_PARTICLE,
+        EYES
+    }
+
     void initialize();
 
     void execute_frame();
