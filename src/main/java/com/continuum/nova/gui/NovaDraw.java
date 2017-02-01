@@ -1,5 +1,6 @@
-package com.continuum.nova;
+package com.continuum.nova.gui;
 
+import com.continuum.nova.NovaNative;
 import com.continuum.nova.input.Mouse;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -15,18 +16,23 @@ public class NovaDraw {
 
     private static int mouseX, mouseY;
 
+    static HashMap<ResourceLocation, Buffers> buffers = new HashMap<>();
+
+    /**
+     * private constructor cause this class only has static things
+     */
+    private NovaDraw() {}
+
+    static void clearBuffers() {
+        buffers.clear();
+    }
+
     public static int getMouseX() {
         return mouseX;
     }
 
     public static int getMouseY() {
         return mouseY;
-    }
-
-    static HashMap<ResourceLocation, Buffers> buffers = new HashMap<>();
-
-    static void clearBuffers() {
-        buffers.clear();
     }
 
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Float[] vertexbuffer) {
@@ -98,8 +104,9 @@ public class NovaDraw {
             clearBuffers();
             screen.drawNova();
 
-            for (ResourceLocation texture : buffers.keySet()) {
-                Buffers b = buffers.get(texture);
+            for (Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
+                Buffers b = entry.getValue();
+                ResourceLocation texture = entry.getKey();
                 NovaNative.INSTANCE.send_gui_buffer_command(b.toNativeCommand(texture));
             }
         }
@@ -120,7 +127,7 @@ public class NovaDraw {
             this.v = v;
         }
 
-        public Vertex(int x, int y, float z, float u, float v) {
+        public Vertex(float x, float y, float z, float u, float v) {
             this.x = x;
             this.y = y;
             this.z = z;

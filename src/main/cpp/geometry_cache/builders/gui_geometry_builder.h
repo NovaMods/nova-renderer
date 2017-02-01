@@ -24,16 +24,6 @@ namespace nova {
     NOVA_API void add_indices_with_offset(std::vector<unsigned short> &indices, unsigned short start_pos);
 
     /*!
-     * \brief Adds all the vertices from the given button to the given vertex buffer. uvs holds the uv
-     * coordinates for this button
-     *
-     * \param vertex_buffer The vertex buffer to add vertices to
-     * \param button The button to get vertices from
-     * \param uvs The uv coordinates to use for this button
-     */
-    NOVA_API void add_vertices_from_button(std::vector<float> &vertex_buffer, const mc_gui_button &button, const std::vector<glm::vec2> uvs);
-
-    /*!
      * \brief Adds the vertex with the given parameters to the given vertex buffer
      *
      * Note that the z position of the vertices is always set to 0. This is maybe what I want.

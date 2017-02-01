@@ -84,11 +84,6 @@ namespace nova {
 		}
 	}
 
-	void add_vertices_from_button(std::vector<GLfloat> &vertex_buffer, const mc_gui_button &button, const std::vector<glm::vec2> uvs) {
-
-
-	}
-
 	void create_rectangle(std::vector<GLfloat> &vertex_buffer, int xpos, int ypos, float texX, float texY, int width, int height, glm::vec2 atlas_scale_vector) {
 		add_vertex(
 			vertex_buffer,
