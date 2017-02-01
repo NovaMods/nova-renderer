@@ -54,7 +54,7 @@ public class NovaDraw {
         }
     }
 
-    public static void drawRectangle(ResourceLocation texture, int x, int y, int w, int h, float texX, float texY, float texW, float texH) {
+    public static void drawRectangle(ResourceLocation texture, int x, int y, int width, int height, float texX, float texY, float texWidth, float texHeight) {
         Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
         Vertex[] vertices = new Vertex[]{
                 new Vertex(
@@ -62,16 +62,16 @@ public class NovaDraw {
                         texX, texY
                 ),
                 new Vertex(
-                        x + w, y,
-                        texX + texW, texY
+                        x + width, y,
+                        texX + texWidth, texY
                 ),
                 new Vertex(
-                        x, y + h,
-                        texX, texY + texH
+                        x, y + height,
+                        texX, texY + texHeight
                 ),
                 new Vertex(
-                        x + w, y + h,
-                        texX + texW, texY + texH
+                        x + width, y + height,
+                        texX + texWidth, texY + texHeight
                 )
         };
         draw(texture, indexBuffer, vertices);
@@ -130,21 +130,21 @@ public class NovaDraw {
     }
 
     static class Buffers {
-        public List<Integer> IndexBuffer = new ArrayList<>();
-        public List<Float> VertexBuffer = new ArrayList<>();
+        public List<Integer> indexBuffer = new ArrayList<>();
+        public List<Float> vertexBuffer = new ArrayList<>();
 
         public Buffers add(Integer[] indexBuffer, Float[] vertexBuffer) {
             //System.out.println("write index: " + Arrays.toString(indexBuffer));
             //System.out.println("write vertex: " + Arrays.toString(vertexBuffer));
 
             // add index buffer
-            int indexbuffer_size = VertexBuffer.size() / 5;
+            int indexbuffer_size = this.vertexBuffer.size() / 5;
             for (int index : indexBuffer) {
-                IndexBuffer.add(index + indexbuffer_size);
+                this.indexBuffer.add(index + indexbuffer_size);
             }
 
             // add vertex buffer
-            Collections.addAll(VertexBuffer, vertexBuffer);
+            Collections.addAll(this.vertexBuffer, vertexBuffer);
 
             return this;
         }
@@ -155,19 +155,19 @@ public class NovaDraw {
             command.texture_name = texture.getResourcePath();
 
             // assign the index buffer
-            command.index_buffer_size = IndexBuffer.size();
+            command.index_buffer_size = this.indexBuffer.size();
             command.index_buffer = new Memory(command.index_buffer_size * Native.getNativeSize(Integer.TYPE));
             for (int i = 0; i < command.index_buffer_size; i++) {
-                Integer k = IndexBuffer.get(i);
-                command.index_buffer.setInt(i * Native.getNativeSize(Integer.TYPE), (int) (k != null ? k : 0));
+                Integer index = this.indexBuffer.get(i);
+                command.index_buffer.setInt(i * Native.getNativeSize(Integer.TYPE), (int) (index != null ? index : 0));
             }
 
             // assign the vertex buffer
-            command.vertex_buffer_size = VertexBuffer.size();
+            command.vertex_buffer_size = this.vertexBuffer.size();
             command.vertex_buffer = new Memory(command.vertex_buffer_size * Native.getNativeSize(Float.TYPE));
             for (int i = 0; i < command.vertex_buffer_size; i++) {
-                Float k = VertexBuffer.get(i);
-                command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (float) (k != null ? k : 0));
+                Float vertex = this.vertexBuffer.get(i);
+                command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (float) (vertex != null ? vertex : 0));
             }
 
             return command;
