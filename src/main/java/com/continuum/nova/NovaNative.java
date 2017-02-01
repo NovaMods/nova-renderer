@@ -273,4 +273,6 @@ public interface NovaNative extends Library {
 
     key_char_event get_next_key_char_event();
 
+    void clear_gui_buffers();
+
 }

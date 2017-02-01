@@ -47,6 +47,12 @@ namespace nova {
          */
         std::vector<render_object *> get_meshes_for_shader(std::string shader_name);
 
+
+        /*!
+        * \brief Removes all gui render objects and thereby deletes all the buffers
+        */
+        void remove_gui_render_objects();
+
     private:
         std::unordered_map<std::string, std::vector<render_object*>> renderables_grouped_by_shader;
 
@@ -60,6 +66,7 @@ namespace nova {
          * \param object The render_object to sort
          */
         void sort_render_object(render_object *object);
+
 
         /*!
          * \brief Removes all the render_objects from the lists of render_objects that match the given fitler funciton
