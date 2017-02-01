@@ -32,12 +32,12 @@ public class NovaDraw {
     /**
      * Add data to the indexBuffer and vertexBuffer which is associated with the specified texture.
      *
-     * @param texture the texture by which the index buffers and vertex buffers are grouped
-     * @param indexBuffer index buffer data
+     * @param texture      the texture by which the index buffers and vertex buffers are grouped
+     * @param indexBuffer  index buffer data
      * @param vertexbuffer vertex buffer data
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Float[] vertexbuffer) {
-        if (buffers.containsKey(texture)) {
+        if(buffers.containsKey(texture)) {
             buffers.get(texture).add(indexBuffer, vertexbuffer);
         } else {
             buffers.put(texture, new Buffers().add(indexBuffer, vertexbuffer));
@@ -47,9 +47,9 @@ public class NovaDraw {
     /**
      * Add data to the indexBuffer and vertexBuffer which is associated with the specified texture.
      *
-     * @param texture the texture by which the index buffers and vertex buffers are grouped
+     * @param texture     the texture by which the index buffers and vertex buffers are grouped
      * @param indexBuffer index buffer data
-     * @param vertices the vertices as Vertex objects
+     * @param vertices    the vertices as Vertex objects
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Vertex[] vertices) {
         Float[] vertexbuffer = new Float[vertices.length * 5];
@@ -61,7 +61,7 @@ public class NovaDraw {
             vertexbuffer[v * 5 + 4] = vertices[v].v;
         }
 
-        if (buffers.containsKey(texture)) {
+        if(buffers.containsKey(texture)) {
             buffers.get(texture).add(indexBuffer, vertexbuffer);
         } else {
             buffers.put(texture, new Buffers().add(indexBuffer, vertexbuffer));
@@ -70,20 +70,20 @@ public class NovaDraw {
 
     /**
      * Add the vertices and indices for a rectangle.
-     *
+     * <p>
      * Minecrafts GUI classes frequently call "drawTexturedModalRect" to draw textured rectangles.
      * These calls can be easily converted to calls to this function.
      * The only real difference is that minecraft uses texture coordinates in pixels and we use uv coordinates,
      * but they can be converted by dividing them by 256.
      *
-     * @param texture the texture
-     * @param x screen coordinates in pixel
-     * @param y screen coordinates in pixel
-     * @param width screen coordinates in pixel
-     * @param height screen coordinates in pixel
-     * @param texX texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
-     * @param texY texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
-     * @param texWidth texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
+     * @param texture   the texture
+     * @param x         screen coordinates in pixel
+     * @param y         screen coordinates in pixel
+     * @param width     screen coordinates in pixel
+     * @param height    screen coordinates in pixel
+     * @param texX      texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
+     * @param texY      texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
+     * @param texWidth  texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      * @param texHeight texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      */
     public static void drawRectangle(ResourceLocation texture, int x, int y, int width, int height, float texX, float texY, float texWidth, float texHeight) {
@@ -111,7 +111,7 @@ public class NovaDraw {
 
     /**
      * This code is from the EntityRenderer class.
-     *
+     * <p>
      * We can't use Mouse.getX/Y() because for example, the GuiButton's hovered state depends on the comparison
      * of the button's yPosition and the mouseY value.
      * This mouseY value is expected to be upside down.
@@ -139,7 +139,7 @@ public class NovaDraw {
     public static void novaDrawScreen(GuiScreen screen) {
         computeCorrectMousePosition();
 
-        if (screen.checkStateChanged()) {
+        if(screen.checkStateChanged()) {
             clearBuffers();
             screen.drawNova();
 
@@ -176,7 +176,7 @@ public class NovaDraw {
 
     /**
      * This class aggregates the index and vertex buffers of all GUI elements which share the same texture.
-     *
+     * <p>
      * It is only used internally in NovaDraw.
      */
     static class Buffers {
@@ -201,7 +201,7 @@ public class NovaDraw {
 
         /**
          * Generate a native struct which can be sent to c++.
-         *
+         * <p>
          * Native memory is allocated here so that the index and vertex buffers can be dynamically sized
          * (this is the only way to achieve that, otherwise we would have to specify a fixed array size
          * with a maximum number of vertices.)
