@@ -46,6 +46,7 @@ setup_nova() {
     else
         cp -r src/minecraft/net/* src/main/java/net/
     fi
+    cp -r src/minecraft/mcp src/main/java/
     echo "Unpacked MCP"
 
     rm -rf src/minecraft
@@ -106,7 +107,7 @@ create_patch() {
 
 case $1 in
 "setup")
-    setup_nova
+    setup_nova "$@"
     ;;
 "setup-dev")
     setup_nova dev
