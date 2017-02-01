@@ -27,6 +27,7 @@ public class NovaDraw {
 
     static void clearBuffers() {
         buffers.clear();
+        NovaNative.INSTANCE.clear_gui_buffers();
     }
 
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Float[] vertexbuffer) {
