@@ -1,5 +1,5 @@
 {
-  "id": "1.10 - Nova",
+  "id": "1.10-Nova",
   "time": "2016-07-22T10:46:23+02:00",
   "releaseTime": "2016-06-08T15:06:18+02:00",
   "type": "release",
@@ -483,7 +483,7 @@
         }
       }
     },
-	 {
+    {
       "name": "com.continuum.nova:nova-renderer:0.3",
       "natives": {
         "windows": "natives-windows"
@@ -492,21 +492,13 @@
         "exclude": [
           "META-INF/"
         ]
-      },
-      "downloads": {
-        "classifiers": {
-          "natives-windows": {
-            "url": "https://libraries.minecraft.net/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar",
-            "sha1": "385ee093e01f587f30ee1c8a2ee7d408fd732e16",
-            "size": 155179
-          }
-        }
       }
     }
   ],
   "mainClass": "net.minecraft.client.main.Main",
   "minimumLauncherVersion": 18,
   "assets": "1.10",
+  "downloads": {},
   "assetIndex": {
     "totalSize": 122198775,
     "id": "1.10",

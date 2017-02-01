@@ -26,7 +26,7 @@ jar {
 task createJars(type: Jar) {
 	
 	archiveName = "nova-renderer-"+ version +"-natives-windows.jar"
-	from 'target/nova-renderer.dll'
+	from 'jars/versions/1.10/1.10-natives/libnova-renderer.dll'
 }
 task fatjar(type: Jar) {
     manifest {
