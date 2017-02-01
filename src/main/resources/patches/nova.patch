@@ -1,16 +1,17 @@
 diff --git a/minecraft/client/Minecraft.java b/minecraft/client/Minecraft.java
-index ad84c84..25f9083 100644
+index ad84c84..01aadf8 100644
 --- a/minecraft/client/Minecraft.java
 +++ b/minecraft/client/Minecraft.java
-@@ -1,5 +1,7 @@
+@@ -1,5 +1,8 @@
  package net.minecraft.client;
  
++import com.continuum.nova.NovaDraw;
 +import com.continuum.nova.NovaNative;
 +import com.continuum.nova.NovaRenderer;
  import com.google.common.collect.Lists;
  import com.google.common.collect.Queues;
  import com.google.common.collect.Sets;
-@@ -21,7 +23,6 @@ import java.net.Proxy;
+@@ -21,7 +24,6 @@ import java.net.Proxy;
  import java.net.SocketAddress;
  import java.nio.ByteBuffer;
  import java.nio.ByteOrder;
@@ -18,7 +19,7 @@ index ad84c84..25f9083 100644
  import java.text.DecimalFormat;
  import java.text.MessageFormat;
  import java.text.SimpleDateFormat;
-@@ -147,7 +148,6 @@ import net.minecraft.server.MinecraftServer;
+@@ -147,7 +149,6 @@ import net.minecraft.server.MinecraftServer;
  import net.minecraft.server.integrated.IntegratedServer;
  import net.minecraft.server.management.PlayerProfileCache;
  import net.minecraft.stats.AchievementList;
@@ -26,12 +27,14 @@ index ad84c84..25f9083 100644
  import net.minecraft.stats.StatisticsManager;
  import net.minecraft.tileentity.TileEntity;
  import net.minecraft.tileentity.TileEntitySkull;
-@@ -190,11 +190,9 @@ import org.apache.logging.log4j.Logger;
+@@ -189,12 +190,10 @@ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
  import org.lwjgl.LWJGLException;
  import org.lwjgl.Sys;
- import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Keyboard;
 -import org.lwjgl.input.Mouse;
 -import org.lwjgl.opengl.ContextCapabilities;
++import com.continuum.nova.input.Keyboard;
 +import com.continuum.nova.input.Mouse;
  import org.lwjgl.opengl.Display;
  import org.lwjgl.opengl.DisplayMode;
@@ -39,7 +42,7 @@ index ad84c84..25f9083 100644
  import org.lwjgl.opengl.OpenGLException;
  import org.lwjgl.opengl.PixelFormat;
  import org.lwjgl.util.glu.GLU;
-@@ -216,7 +214,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -216,7 +215,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
      private ServerData currentServerData;
  
      /** The RenderEngine instance used by Minecraft */
@@ -48,7 +51,7 @@ index ad84c84..25f9083 100644
  
      /**
       * Set to 'this' in Minecraft constructor; used by some settings get methods
-@@ -383,6 +381,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -383,6 +382,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
      /** Profiler currently displayed in the debug screen pie chart */
      private String debugProfilerName = "root";
  
@@ -57,17 +60,18 @@ index ad84c84..25f9083 100644
      public Minecraft(GameConfiguration gameConfig)
      {
          theMinecraft = this;
-@@ -408,6 +408,9 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -408,6 +409,10 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          this.jvm64bit = isJvm64bit();
          this.theIntegratedServer = null;
  
 +        nova.preInit();
-+	Mouse.create();
++        Mouse.create();
++        Keyboard.create();
 +
          if (gameConfig.serverInfo.serverName != null)
          {
              this.serverName = gameConfig.serverInfo.serverName;
-@@ -507,25 +510,25 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -507,25 +512,25 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          LOGGER.info("LWJGL Version: {}", new Object[] {Sys.getVersion()});
          this.setWindowIcon();
          this.setInitialDisplayMode();
@@ -102,7 +106,7 @@ index ad84c84..25f9083 100644
  
          if (this.gameSettings.language != null)
          {
-@@ -533,27 +536,24 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -533,27 +538,24 @@ public class Minecraft implements IThreadListener, ISnooperInfo
              this.fontRendererObj.setBidiFlag(this.mcLanguageManager.isCurrentLanguageBidirectional());
          }
  
@@ -140,7 +144,7 @@ index ad84c84..25f9083 100644
          GlStateManager.enableTexture2D();
          GlStateManager.shadeModel(7425);
          GlStateManager.clearDepth(1.0D);
-@@ -565,18 +565,24 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -565,18 +567,24 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          GlStateManager.matrixMode(5889);
          GlStateManager.loadIdentity();
          GlStateManager.matrixMode(5888);
@@ -170,7 +174,7 @@ index ad84c84..25f9083 100644
          this.itemRenderer = new ItemRenderer(this);
          this.mcResourceManager.registerReloadListener(this.renderItem);
          this.entityRenderer = new EntityRenderer(this, this.mcResourceManager);
-@@ -587,7 +593,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -587,7 +595,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          this.mcResourceManager.registerReloadListener(this.renderGlobal);
          this.guiAchievement = new GuiAchievement(this);
          GlStateManager.viewport(0, 0, this.displayWidth, this.displayHeight);
@@ -179,7 +183,7 @@ index ad84c84..25f9083 100644
          this.checkGLError("Post startup");
          this.ingameGUI = new GuiIngame(this);
  
-@@ -600,7 +606,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -600,7 +608,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
              this.displayGuiScreen(new GuiMainMenu());
          }
  
@@ -188,7 +192,7 @@ index ad84c84..25f9083 100644
          this.mojangLogo = null;
          this.loadingScreen = new LoadingScreenRenderer(this);
          this.debugRenderer = new DebugRenderer(this);
-@@ -1022,7 +1028,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1022,7 +1030,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
              this.setIngameNotInFocus();
              KeyBinding.unPressAllKeys();
  
@@ -197,7 +201,7 @@ index ad84c84..25f9083 100644
              {
                  ;
              }
-@@ -1030,13 +1036,14 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1030,13 +1038,14 @@ public class Minecraft implements IThreadListener, ISnooperInfo
              while (Keyboard.next())
              {
                  ;
@@ -213,7 +217,7 @@ index ad84c84..25f9083 100644
          }
          else
          {
-@@ -1147,7 +1154,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1147,7 +1156,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          this.mcProfiler.startSection("render");
          GlStateManager.pushMatrix();
          GlStateManager.clear(16640);
@@ -222,17 +226,18 @@ index ad84c84..25f9083 100644
          this.mcProfiler.startSection("display");
          GlStateManager.enableTexture2D();
          this.mcProfiler.endSection();
-@@ -1155,7 +1162,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1155,7 +1164,9 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          if (!this.skipRenderWorld)
          {
              this.mcProfiler.endStartSection("gameRenderer");
 -            this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
 +            //this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
++            NovaDraw.novaDrawScreen(currentScreen);
 +            nova.updateCameraAndRender(timer.renderPartialTicks, i, this);
              this.mcProfiler.endSection();
          }
  
-@@ -1178,13 +1186,13 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1178,13 +1189,13 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          }
  
          this.guiAchievement.updateAchievementWindow();
@@ -249,7 +254,7 @@ index ad84c84..25f9083 100644
          GlStateManager.popMatrix();
          this.mcProfiler.startSection("root");
          this.updateDisplay();
-@@ -1224,14 +1232,14 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1224,14 +1235,14 @@ public class Minecraft implements IThreadListener, ISnooperInfo
      public void updateDisplay()
      {
          this.mcProfiler.startSection("display_update");
@@ -266,7 +271,7 @@ index ad84c84..25f9083 100644
          {
              int i = this.displayWidth;
              int j = this.displayHeight;
-@@ -1252,7 +1260,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1252,7 +1263,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
  
                  this.resize(this.displayWidth, this.displayHeight);
              }
@@ -275,7 +280,7 @@ index ad84c84..25f9083 100644
      }
  
      public int getLimitFramerate()
-@@ -1783,7 +1791,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1783,7 +1794,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
  
          if (!this.isGamePaused)
          {
@@ -284,7 +289,7 @@ index ad84c84..25f9083 100644
          }
  
          if (this.currentScreen == null && this.thePlayer != null)
-@@ -2980,7 +2988,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2980,7 +2991,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          playerSnooper.addStatToSnooper("opengl_vendor", GlStateManager.glGetString(7936));
          playerSnooper.addStatToSnooper("client_brand", ClientBrandRetriever.getClientModName());
          playerSnooper.addStatToSnooper("launched_version", this.launchedVersion);
@@ -293,7 +298,7 @@ index ad84c84..25f9083 100644
          playerSnooper.addStatToSnooper("gl_caps[ARB_arrays_of_arrays]", Boolean.valueOf(contextcapabilities.GL_ARB_arrays_of_arrays));
          playerSnooper.addStatToSnooper("gl_caps[ARB_base_instance]", Boolean.valueOf(contextcapabilities.GL_ARB_base_instance));
          playerSnooper.addStatToSnooper("gl_caps[ARB_blend_func_extended]", Boolean.valueOf(contextcapabilities.GL_ARB_blend_func_extended));
-@@ -3084,7 +3092,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3084,7 +3095,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          GlStateManager.glGetError();
          playerSnooper.addStatToSnooper("gl_caps[gl_max_array_texture_layers]", Integer.valueOf(GlStateManager.glGetInteger(35071)));
          GlStateManager.glGetError();
@@ -302,7 +307,7 @@ index ad84c84..25f9083 100644
          GameProfile gameprofile = this.session.getProfile();
  
          if (gameprofile != null && gameprofile.getId() != null)
-@@ -3096,20 +3104,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3096,20 +3107,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
      /**
       * Used in the usage snooper.
       */
@@ -325,7 +330,7 @@ index ad84c84..25f9083 100644
      }
  
      /**
-@@ -3220,7 +3216,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3220,7 +3219,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
  
      public TextureManager getTextureManager()
      {
@@ -334,11 +339,48 @@ index ad84c84..25f9083 100644
      }
  
      public IResourceManager getResourceManager()
+diff --git a/minecraft/client/gui/Gui.java b/minecraft/client/gui/Gui.java
+index 58e6a77..a0cd082 100644
+--- a/minecraft/client/gui/Gui.java
++++ b/minecraft/client/gui/Gui.java
+@@ -214,4 +214,25 @@ public class Gui
+         vertexbuffer.pos((double)x, (double)y, 0.0D).tex((double)(u * f), (double)(v * f1)).endVertex();
+         tessellator.draw();
+     }
++
++
++    public void drawNova() {
++    }
++
++    int previousState = -1;
++
++    public int getPreviousState() {
++        return previousState;
++    }
++
++    public boolean checkStateChanged() {
++        int state = getCurrentState();
++        boolean result = state != previousState;
++        previousState = state;
++        return result;
++    }
++
++    public int getCurrentState() {
++        return 0;
++    }
+ }
 diff --git a/minecraft/client/gui/GuiButton.java b/minecraft/client/gui/GuiButton.java
-index 93eccc5..0925579 100644
+index 93eccc5..a4535de 100644
 --- a/minecraft/client/gui/GuiButton.java
 +++ b/minecraft/client/gui/GuiButton.java
-@@ -155,4 +155,8 @@ public class GuiButton extends Gui
+@@ -1,5 +1,6 @@
+ package net.minecraft.client.gui;
+ 
++import com.continuum.nova.NovaDraw;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.audio.PositionedSoundRecord;
+ import net.minecraft.client.audio.SoundHandler;
+@@ -155,4 +156,41 @@ public class GuiButton extends Gui
      {
          this.width = width;
      }
@@ -346,16 +388,80 @@ index 93eccc5..0925579 100644
 +    public int getButtonHeight() {
 +        return height;
 +    }
++
++    @Override
++    public int getCurrentState() {
++        int mouseX = NovaDraw.getMouseX(), mouseY = NovaDraw.getMouseY();
++        this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
++        return (visible ? 1 : 0) + (hovered ? 2 : 0);
++    }
++
++    float[] std_button_loc = {
++            0.0f, 0.2578112f,
++            0.78125f, 0.3359375f
++    };
++    float widgetsTextureFactor = 0.00390625F;
++
++    public void drawNova() {
++        if (this.visible) {
++            float offsetY = !enabled ? -0.078125f : hovered ? 0.078125f : 0;
++            NovaDraw.drawRectangle(
++                    BUTTON_TEXTURES,
++                    xPosition, yPosition,
++                    width / 2, height,
++                    std_button_loc[0], std_button_loc[1] + offsetY,
++                    width / 2 * widgetsTextureFactor, height * widgetsTextureFactor
++            );
++            NovaDraw.drawRectangle(
++                    BUTTON_TEXTURES,
++                    xPosition + width / 2, yPosition,
++                    width / 2, height,
++                    std_button_loc[2] - ((width / 2) * widgetsTextureFactor), std_button_loc[1] + offsetY,
++                    (width / 2) * widgetsTextureFactor, height * widgetsTextureFactor
++            );
++        }
++    }
+ }
+diff --git a/minecraft/client/gui/GuiButtonLanguage.java b/minecraft/client/gui/GuiButtonLanguage.java
+index e0dd308..9bc8481 100644
+--- a/minecraft/client/gui/GuiButtonLanguage.java
++++ b/minecraft/client/gui/GuiButtonLanguage.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.client.gui;
+ 
++import com.continuum.nova.NovaDraw;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.renderer.GlStateManager;
+ 
+@@ -30,4 +31,17 @@ public class GuiButtonLanguage extends GuiButton
+             this.drawTexturedModalRect(this.xPosition, this.yPosition, 0, i, this.width, this.height);
+         }
+     }
++
++
++    public void drawNova() {
++        if (this.visible) {
++            NovaDraw.drawRectangle(
++                    BUTTON_TEXTURES,
++                    xPosition, yPosition,
++                    width, height,
++                    0, 0.4140625f + (hovered ? 0.078125f : 0),
++                    width * widgetsTextureFactor, height * widgetsTextureFactor
++            );
++        }
++    }
  }
 diff --git a/minecraft/client/gui/GuiChat.java b/minecraft/client/gui/GuiChat.java
-index 394b393..97f1ddc 100644
+index 394b393..1435e9a 100644
 --- a/minecraft/client/gui/GuiChat.java
 +++ b/minecraft/client/gui/GuiChat.java
-@@ -13,7 +13,7 @@ import net.minecraft.util.text.TextComponentString;
+@@ -12,8 +12,8 @@ import net.minecraft.util.text.ITextComponent;
+ import net.minecraft.util.text.TextComponentString;
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
- import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Keyboard;
 -import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Keyboard;
 +import com.continuum.nova.input.Mouse;
  
  public class GuiChat extends GuiScreen implements ITabCompleter
@@ -373,11 +479,57 @@ index a09d020..938919a 100644
  
  public class GuiClickableScrolledSelectionListProxy extends GuiSlot
  {
+diff --git a/minecraft/client/gui/GuiCommandBlock.java b/minecraft/client/gui/GuiCommandBlock.java
+index ec7e43b..3c3c00f 100644
+--- a/minecraft/client/gui/GuiCommandBlock.java
++++ b/minecraft/client/gui/GuiCommandBlock.java
+@@ -12,7 +12,7 @@ import net.minecraft.util.ITabCompleter;
+ import net.minecraft.util.TabCompleter;
+ import net.minecraft.util.math.BlockPos;
+ import net.minecraft.util.text.ITextComponent;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiCommandBlock extends GuiScreen implements ITabCompleter
+ {
+diff --git a/minecraft/client/gui/GuiCreateWorld.java b/minecraft/client/gui/GuiCreateWorld.java
+index e4b46a9..7735d90 100644
+--- a/minecraft/client/gui/GuiCreateWorld.java
++++ b/minecraft/client/gui/GuiCreateWorld.java
+@@ -10,7 +10,7 @@ import net.minecraft.world.WorldType;
+ import net.minecraft.world.storage.ISaveFormat;
+ import net.minecraft.world.storage.WorldInfo;
+ import org.apache.commons.lang3.StringUtils;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiCreateWorld extends GuiScreen
+ {
+diff --git a/minecraft/client/gui/GuiFlatPresets.java b/minecraft/client/gui/GuiFlatPresets.java
+index 5aaeab1..49dcb75 100644
+--- a/minecraft/client/gui/GuiFlatPresets.java
++++ b/minecraft/client/gui/GuiFlatPresets.java
+@@ -21,7 +21,7 @@ import net.minecraft.item.ItemStack;
+ import net.minecraft.world.biome.Biome;
+ import net.minecraft.world.gen.FlatGeneratorInfo;
+ import net.minecraft.world.gen.FlatLayerInfo;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiFlatPresets extends GuiScreen
+ {
 diff --git a/minecraft/client/gui/GuiMainMenu.java b/minecraft/client/gui/GuiMainMenu.java
-index 2249b2b..b0d6739 100644
+index 2249b2b..fd92c56 100644
 --- a/minecraft/client/gui/GuiMainMenu.java
 +++ b/minecraft/client/gui/GuiMainMenu.java
-@@ -156,12 +156,11 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -1,5 +1,6 @@
+ package net.minecraft.client.gui;
+ 
++import com.continuum.nova.NovaDraw;
+ import com.google.common.collect.Lists;
+ import java.io.BufferedReader;
+ import java.io.Closeable;
+@@ -156,12 +157,11 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
          this.updateCounter = RANDOM.nextFloat();
          this.openGLWarning1 = "";
  
@@ -392,20 +544,108 @@ index 2249b2b..b0d6739 100644
      }
  
      /**
-diff --git a/minecraft/client/gui/GuiScreen.java b/minecraft/client/gui/GuiScreen.java
-index f10ce2e..61c779a 100644
---- a/minecraft/client/gui/GuiScreen.java
-+++ b/minecraft/client/gui/GuiScreen.java
-@@ -40,7 +40,7 @@ import org.apache.commons.lang3.StringUtils;
+@@ -629,6 +629,7 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+         }
+     }
+ 
++
+     /**
+      * Called when the screen is unloaded. Used to disable keyboard repeat events
+      */
+@@ -639,4 +640,35 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+             this.realmsNotification.onGuiClosed();
+         }
+     }
++
++
++    @Override
++    public void drawNova() {
++        
++        int titleStartPosX = (this.width / 2) - 137;
++
++        NovaDraw.drawRectangle(
++                MINECRAFT_TITLE_TEXTURES,
++                titleStartPosX, 30,
++                155, 30,
++                0, 0,
++                0.60546875f, 0.171875f
++        );
++        NovaDraw.drawRectangle(
++                MINECRAFT_TITLE_TEXTURES,
++                titleStartPosX + 155, 30,
++                155, 30,
++                0, 45 / 256.0f,
++                0.60546875f, 0.171875f
++        );
++
++
++        super.drawNova();
++    }
++
++    @Override
++    public void drawNovaBackground(){
++        // draw background here
++        // empty so that it doesn't draw options_background like the other GuiScreens
++    }
+ }
+diff --git a/minecraft/client/gui/GuiMultiplayer.java b/minecraft/client/gui/GuiMultiplayer.java
+index 47c0f09..fef0adb 100644
+--- a/minecraft/client/gui/GuiMultiplayer.java
++++ b/minecraft/client/gui/GuiMultiplayer.java
+@@ -13,7 +13,7 @@ import net.minecraft.client.network.ServerPinger;
+ import net.minecraft.client.resources.I18n;
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
- import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiMultiplayer extends GuiScreen implements GuiYesNoCallback
+ {
+diff --git a/minecraft/client/gui/GuiRepair.java b/minecraft/client/gui/GuiRepair.java
+index 3be1834..dda3c4c 100644
+--- a/minecraft/client/gui/GuiRepair.java
++++ b/minecraft/client/gui/GuiRepair.java
+@@ -18,7 +18,7 @@ import net.minecraft.network.PacketBuffer;
+ import net.minecraft.network.play.client.CPacketCustomPayload;
+ import net.minecraft.util.ResourceLocation;
+ import net.minecraft.world.World;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiRepair extends GuiContainer implements IContainerListener
+ {
+diff --git a/minecraft/client/gui/GuiScreen.java b/minecraft/client/gui/GuiScreen.java
+index f10ce2e..e3e884d 100644
+--- a/minecraft/client/gui/GuiScreen.java
++++ b/minecraft/client/gui/GuiScreen.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.client.gui;
+ 
++import com.continuum.nova.NovaDraw;
+ import com.google.common.base.Splitter;
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Sets;
+@@ -39,8 +40,8 @@ import net.minecraft.util.text.event.HoverEvent;
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+-import org.lwjgl.input.Keyboard;
 -import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Keyboard;
 +import com.continuum.nova.input.Mouse;
  
  public abstract class GuiScreen extends Gui implements GuiYesNoCallback
  {
-@@ -774,4 +774,10 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
+@@ -95,6 +96,8 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
+         }
+     }
+ 
++    
++
+     /**
+      * Fired when a key is typed (except F11 which toggles full screen). This is the equivalent of
+      * KeyListener.keyTyped(KeyEvent e). Args : character (character on the key), keyCode (lwjgl Keyboard key code)
+@@ -774,4 +777,56 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
      {
          this.setWorldAndResolution(mcIn, w, h);
      }
@@ -413,9 +653,107 @@ index f10ce2e..61c779a 100644
 +    public List<GuiButton> getButtonList() {
 +        return buttonList;
 +    }
++
++
++    @Override
++    public boolean checkStateChanged() {
++        boolean result = false;
++
++        if (super.checkStateChanged()) result = true;
++
++        for (int i = 0; i < this.buttonList.size(); ++i) {
++            if (((GuiButton) this.buttonList.get(i)).checkStateChanged()) {
++                result = true;
++            }
++        }
++
++        for (int j = 0; j < this.labelList.size(); ++j) {
++            if (((GuiLabel) this.labelList.get(j)).checkStateChanged()) {
++                result = true;
++            }
++        }
++
++        return result;
++    }
++
++    @Override
++    public void drawNova() {
++
++        drawNovaBackground();
++
++        for (int i = 0; i < this.buttonList.size(); ++i) {
++            ((GuiButton) this.buttonList.get(i)).drawNova();
++        }
++
++        for (int j = 0; j < this.labelList.size(); ++j) {
++            ((GuiLabel) this.labelList.get(j)).drawNova();
++        }
++    }
++
++    public void drawNovaBackground(){
++        NovaDraw.drawRectangle(
++                OPTIONS_BACKGROUND,
++                0, 0,
++                width, height,
++                0, 0,
++                1, 1
++        );
++    }
  }
 +
 +
+diff --git a/minecraft/client/gui/GuiScreenAddServer.java b/minecraft/client/gui/GuiScreenAddServer.java
+index 69b5162..cb75773 100644
+--- a/minecraft/client/gui/GuiScreenAddServer.java
++++ b/minecraft/client/gui/GuiScreenAddServer.java
+@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
+ import net.minecraft.client.multiplayer.ServerData;
+ import net.minecraft.client.resources.I18n;
+ import net.minecraft.util.StringUtils;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiScreenAddServer extends GuiScreen
+ {
+diff --git a/minecraft/client/gui/GuiScreenBook.java b/minecraft/client/gui/GuiScreenBook.java
+index 7428bc1..bb08391 100644
+--- a/minecraft/client/gui/GuiScreenBook.java
++++ b/minecraft/client/gui/GuiScreenBook.java
+@@ -25,7 +25,7 @@ import net.minecraft.util.text.TextFormatting;
+ import net.minecraft.util.text.event.ClickEvent;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiScreenBook extends GuiScreen
+ {
+diff --git a/minecraft/client/gui/GuiScreenCustomizePresets.java b/minecraft/client/gui/GuiScreenCustomizePresets.java
+index dd9fcdc..249371a 100644
+--- a/minecraft/client/gui/GuiScreenCustomizePresets.java
++++ b/minecraft/client/gui/GuiScreenCustomizePresets.java
+@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+ import net.minecraft.client.resources.I18n;
+ import net.minecraft.util.ResourceLocation;
+ import net.minecraft.world.gen.ChunkProviderSettings;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiScreenCustomizePresets extends GuiScreen
+ {
+diff --git a/minecraft/client/gui/GuiScreenServerList.java b/minecraft/client/gui/GuiScreenServerList.java
+index 0ea5063..45ba060 100644
+--- a/minecraft/client/gui/GuiScreenServerList.java
++++ b/minecraft/client/gui/GuiScreenServerList.java
+@@ -3,7 +3,7 @@ package net.minecraft.client.gui;
+ import java.io.IOException;
+ import net.minecraft.client.multiplayer.ServerData;
+ import net.minecraft.client.resources.I18n;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiScreenServerList extends GuiScreen
+ {
 diff --git a/minecraft/client/gui/GuiSlot.java b/minecraft/client/gui/GuiSlot.java
 index a776ae3..c534a0c 100644
 --- a/minecraft/client/gui/GuiSlot.java
@@ -428,6 +766,19 @@ index a776ae3..c534a0c 100644
 +import com.continuum.nova.input.Mouse;
  
  public abstract class GuiSlot
+ {
+diff --git a/minecraft/client/gui/GuiWorldEdit.java b/minecraft/client/gui/GuiWorldEdit.java
+index be8341b..a3257e1 100644
+--- a/minecraft/client/gui/GuiWorldEdit.java
++++ b/minecraft/client/gui/GuiWorldEdit.java
+@@ -6,7 +6,7 @@ import net.minecraft.client.resources.I18n;
+ import net.minecraft.world.storage.ISaveFormat;
+ import net.minecraft.world.storage.WorldInfo;
+ import org.apache.commons.io.FileUtils;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiWorldEdit extends GuiScreen
  {
 diff --git a/minecraft/client/gui/achievement/GuiAchievements.java b/minecraft/client/gui/achievement/GuiAchievements.java
 index d5c281b..e03e425 100644
@@ -455,18 +806,72 @@ index f27da54..5e3cd26 100644
  
  public class GuiStats extends GuiScreen implements IProgressMeter
  {
-diff --git a/minecraft/client/gui/inventory/GuiContainerCreative.java b/minecraft/client/gui/inventory/GuiContainerCreative.java
-index d5f4733..e5fac6d 100644
---- a/minecraft/client/gui/inventory/GuiContainerCreative.java
-+++ b/minecraft/client/gui/inventory/GuiContainerCreative.java
-@@ -32,7 +32,7 @@ import net.minecraft.util.ResourceLocation;
+diff --git a/minecraft/client/gui/inventory/GuiContainer.java b/minecraft/client/gui/inventory/GuiContainer.java
+index 8a7a7a7..a28d438 100644
+--- a/minecraft/client/gui/inventory/GuiContainer.java
++++ b/minecraft/client/gui/inventory/GuiContainer.java
+@@ -18,7 +18,7 @@ import net.minecraft.item.ItemStack;
+ import net.minecraft.util.ResourceLocation;
  import net.minecraft.util.math.MathHelper;
  import net.minecraft.util.text.TextFormatting;
- import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public abstract class GuiContainer extends GuiScreen
+ {
+diff --git a/minecraft/client/gui/inventory/GuiContainerCreative.java b/minecraft/client/gui/inventory/GuiContainerCreative.java
+index d5f4733..fe281a9 100644
+--- a/minecraft/client/gui/inventory/GuiContainerCreative.java
++++ b/minecraft/client/gui/inventory/GuiContainerCreative.java
+@@ -31,8 +31,8 @@ import net.minecraft.item.ItemStack;
+ import net.minecraft.util.ResourceLocation;
+ import net.minecraft.util.math.MathHelper;
+ import net.minecraft.util.text.TextFormatting;
+-import org.lwjgl.input.Keyboard;
 -import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Keyboard;
 +import com.continuum.nova.input.Mouse;
  
  public class GuiContainerCreative extends InventoryEffectRenderer
+ {
+diff --git a/minecraft/client/gui/inventory/GuiEditCommandBlockMinecart.java b/minecraft/client/gui/inventory/GuiEditCommandBlockMinecart.java
+index 2740773..2f02c09 100644
+--- a/minecraft/client/gui/inventory/GuiEditCommandBlockMinecart.java
++++ b/minecraft/client/gui/inventory/GuiEditCommandBlockMinecart.java
+@@ -14,7 +14,7 @@ import net.minecraft.util.ITabCompleter;
+ import net.minecraft.util.TabCompleter;
+ import net.minecraft.util.math.BlockPos;
+ import net.minecraft.util.text.ITextComponent;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiEditCommandBlockMinecart extends GuiScreen implements ITabCompleter
+ {
+diff --git a/minecraft/client/gui/inventory/GuiEditSign.java b/minecraft/client/gui/inventory/GuiEditSign.java
+index 502326e..25fcef2 100644
+--- a/minecraft/client/gui/inventory/GuiEditSign.java
++++ b/minecraft/client/gui/inventory/GuiEditSign.java
+@@ -13,7 +13,7 @@ import net.minecraft.network.play.client.CPacketUpdateSign;
+ import net.minecraft.tileentity.TileEntitySign;
+ import net.minecraft.util.ChatAllowedCharacters;
+ import net.minecraft.util.text.TextComponentString;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiEditSign extends GuiScreen
+ {
+diff --git a/minecraft/client/gui/inventory/GuiEditStructure.java b/minecraft/client/gui/inventory/GuiEditStructure.java
+index aa61ec4..d664dd1 100644
+--- a/minecraft/client/gui/inventory/GuiEditStructure.java
++++ b/minecraft/client/gui/inventory/GuiEditStructure.java
+@@ -20,7 +20,7 @@ import net.minecraft.util.Rotation;
+ import net.minecraft.util.math.BlockPos;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class GuiEditStructure extends GuiScreen
  {
 diff --git a/minecraft/client/renderer/EntityRenderer.java b/minecraft/client/renderer/EntityRenderer.java
 index 25e1fb8..1ab04c9 100644
@@ -1974,36 +2379,90 @@ index a2f6de3..1c5bc41 100644
          GlStateManager.enableTexture2D();
      }
 diff --git a/minecraft/client/renderer/texture/Stitcher.java b/minecraft/client/renderer/texture/Stitcher.java
-index d2a4361..81b2d04 100644
+index d2a4361..d4179cb 100644
 --- a/minecraft/client/renderer/texture/Stitcher.java
 +++ b/minecraft/client/renderer/texture/Stitcher.java
-@@ -99,56 +99,56 @@ public class Stitcher
+@@ -11,7 +11,7 @@ import net.minecraft.util.math.MathHelper;
+ public class Stitcher
+ {
+     private final int mipmapLevelStitcher;
+-    private final Set<Stitcher.Holder> setStitchHolders = Sets.<Stitcher.Holder>newHashSetWithExpectedSize(256);
++    private final Set<Stitcher.Holder> spriteHolders = Sets.<Stitcher.Holder>newHashSetWithExpectedSize(256);
+     private final List<Stitcher.Slot> stitchSlots = Lists.<Stitcher.Slot>newArrayListWithCapacity(256);
+     private int currentWidth;
+     private int currentHeight;
+@@ -39,29 +39,24 @@ public class Stitcher
+         return this.currentHeight;
+     }
+ 
+-    public void addSprite(TextureAtlasSprite textureAtlas)
+-    {
+-        Stitcher.Holder stitcher$holder = new Stitcher.Holder(textureAtlas, this.mipmapLevelStitcher);
++    public void addSprite(TextureAtlasSprite newSprite) {
++        Stitcher.Holder spriteHolder = new Stitcher.Holder(newSprite, this.mipmapLevelStitcher);
+ 
+-        if (this.maxTileDimension > 0)
+-        {
+-            stitcher$holder.setNewDimension(this.maxTileDimension);
++        if (this.maxTileDimension > 0) {
++            spriteHolder.setNewDimension(this.maxTileDimension);
+         }
+ 
+-        this.setStitchHolders.add(stitcher$holder);
++        this.spriteHolders.add(spriteHolder);
+     }
+ 
+-    public void doStitch()
+-    {
+-        Stitcher.Holder[] astitcher$holder = (Stitcher.Holder[])this.setStitchHolders.toArray(new Stitcher.Holder[this.setStitchHolders.size()]);
+-        Arrays.sort((Object[])astitcher$holder);
++    public void doStitch() {
++        Stitcher.Holder[] spriteHoldersArray = this.spriteHolders.toArray(new Stitcher.Holder[this.spriteHolders.size()]);
++        Arrays.sort(spriteHoldersArray);
+ 
+-        for (Stitcher.Holder stitcher$holder : astitcher$holder)
+-        {
+-            if (!this.allocateSlot(stitcher$holder))
+-            {
+-                String s = String.format("Unable to fit: %s - size: %dx%d - Maybe try a lowerresolution resourcepack?", new Object[] {stitcher$holder.getAtlasSprite().getIconName(), Integer.valueOf(stitcher$holder.getAtlasSprite().getIconWidth()), Integer.valueOf(stitcher$holder.getAtlasSprite().getIconHeight())});
+-                throw new StitcherException(stitcher$holder, s);
++        for (Stitcher.Holder holder : spriteHoldersArray) {
++            if(!this.allocateSlot(holder)) {
++                String s = String.format("Unable to fit: %s - size: %dx%d - Maybe try a lowerresolution resourcepack?", holder.getAtlasSprite().getIconName(), Integer.valueOf(holder.getAtlasSprite().getIconWidth()), Integer.valueOf(holder.getAtlasSprite().getIconHeight()));
++                throw new StitcherException(holder, s);
+             }
+         }
+ 
+@@ -99,56 +94,51 @@ public class Stitcher
      /**
       * Attempts to find space for specified tile
       */
 -    private boolean allocateSlot(Stitcher.Holder p_94310_1_)
-+    private boolean allocateSlot(Stitcher.Holder holderToInsert)
-     {
+-    {
 -        TextureAtlasSprite textureatlassprite = p_94310_1_.getAtlasSprite();
-+        TextureAtlasSprite textureatlassprite = holderToInsert.getAtlasSprite();
-         boolean flag = textureatlassprite.getIconWidth() != textureatlassprite.getIconHeight();
+-        boolean flag = textureatlassprite.getIconWidth() != textureatlassprite.getIconHeight();
++    private boolean allocateSlot(Stitcher.Holder holderToInsert) {
++        TextureAtlasSprite sprite = holderToInsert.getAtlasSprite();
++        boolean spriteIsSquare = sprite.getIconWidth() != sprite.getIconHeight();
  
-         for (int i = 0; i < this.stitchSlots.size(); ++i)
-         {
+-        for (int i = 0; i < this.stitchSlots.size(); ++i)
+-        {
 -            if (((Stitcher.Slot)this.stitchSlots.get(i)).addSlot(p_94310_1_))
-+            if (((Stitcher.Slot)this.stitchSlots.get(i)).addSlot(holderToInsert))
-             {
+-            {
++        for(Stitcher.Slot slot : this.stitchSlots) {
++            if(slot.addSlot(holderToInsert)) {
                  return true;
              }
  
-             if (flag)
-             {
+-            if (flag)
+-            {
 -                p_94310_1_.rotate();
++            if(spriteIsSquare) {
 +                holderToInsert.rotate();
  
 -                if (((Stitcher.Slot)this.stitchSlots.get(i)).addSlot(p_94310_1_))
-+                if (((Stitcher.Slot)this.stitchSlots.get(i)).addSlot(holderToInsert))
-                 {
+-                {
++                if(slot.addSlot(holderToInsert)) {
                      return true;
                  }
  
@@ -2054,7 +2513,7 @@ index d2a4361..81b2d04 100644
              boolean flag;
  
              if (flag3 ^ flag4)
-@@ -157,33 +157,33 @@ public class Stitcher
+@@ -157,33 +147,33 @@ public class Stitcher
              }
              else
              {
@@ -2097,6 +2556,225 @@ index d2a4361..81b2d04 100644
              this.stitchSlots.add(stitcher$slot);
              return true;
          }
+@@ -244,7 +234,7 @@ public class Stitcher
+ 
+         public String toString()
+         {
+-            return "Holder{width=" + this.width + ", height=" + this.height + '}';
++            return "Holder{name=" + theTexture.getIconName() + ", width=" + this.width + ", height=" + this.height + '}';
+         }
+ 
+         public int compareTo(Stitcher.Holder p_compareTo_1_)
+@@ -306,72 +296,56 @@ public class Stitcher
+             return this.originY;
+         }
+ 
+-        public boolean addSlot(Stitcher.Holder holderIn)
+-        {
+-            if (this.holder != null)
+-            {
++        public boolean addSlot(Stitcher.Holder holderIn) {
++            if (this.holder != null) {
+                 return false;
+-            }
+-            else
+-            {
++
++            } else {
+                 int i = holderIn.getWidth();
+                 int j = holderIn.getHeight();
+ 
+-                if (i <= this.width && j <= this.height)
+-                {
+-                    if (i == this.width && j == this.height)
+-                    {
++                if (i <= this.width && j <= this.height) {
++                    if (i == this.width && j == this.height) {
+                         this.holder = holderIn;
+                         return true;
+-                    }
+-                    else
+-                    {
+-                        if (this.subSlots == null)
+-                        {
++
++                    } else {
++                        if (this.subSlots == null) {
+                             this.subSlots = Lists.<Stitcher.Slot>newArrayListWithCapacity(1);
+                             this.subSlots.add(new Stitcher.Slot(this.originX, this.originY, i, j));
+                             int k = this.width - i;
+                             int l = this.height - j;
+ 
+-                            if (l > 0 && k > 0)
+-                            {
++                            if (l > 0 && k > 0) {
+                                 int i1 = Math.max(this.height, k);
+                                 int j1 = Math.max(this.width, l);
+ 
+-                                if (i1 >= j1)
+-                                {
++                                if (i1 >= j1) {
+                                     this.subSlots.add(new Stitcher.Slot(this.originX, this.originY + j, i, l));
+                                     this.subSlots.add(new Stitcher.Slot(this.originX + i, this.originY, k, this.height));
+-                                }
+-                                else
+-                                {
++
++                                } else {
+                                     this.subSlots.add(new Stitcher.Slot(this.originX + i, this.originY, k, j));
+                                     this.subSlots.add(new Stitcher.Slot(this.originX, this.originY + j, this.width, l));
+                                 }
+-                            }
+-                            else if (k == 0)
+-                            {
++
++                            } else if (k == 0) {
+                                 this.subSlots.add(new Stitcher.Slot(this.originX, this.originY + j, i, l));
+-                            }
+-                            else if (l == 0)
+-                            {
++
++                            } else if (l == 0) {
+                                 this.subSlots.add(new Stitcher.Slot(this.originX + i, this.originY, k, j));
+                             }
+                         }
+ 
+-                        for (Stitcher.Slot stitcher$slot : this.subSlots)
+-                        {
+-                            if (stitcher$slot.addSlot(holderIn))
+-                            {
++                        for (Stitcher.Slot stitcher$slot : this.subSlots) {
++                            if (stitcher$slot.addSlot(holderIn)) {
+                                 return true;
+                             }
+                         }
+ 
+                         return false;
+                     }
+-                }
+-                else
+-                {
++                } else {
+                     return false;
+                 }
+             }
+diff --git a/minecraft/client/renderer/texture/TextureAtlasSprite.java b/minecraft/client/renderer/texture/TextureAtlasSprite.java
+index 4b545cb..4226d0d 100644
+--- a/minecraft/client/renderer/texture/TextureAtlasSprite.java
++++ b/minecraft/client/renderer/texture/TextureAtlasSprite.java
+@@ -239,7 +239,7 @@ public class TextureAtlasSprite
+ 
+     public int[][] getFrameTextureData(int index)
+     {
+-        return (int[][])this.framesTextureData.get(index);
++        return this.framesTextureData.get(index);
+     }
+ 
+     public int getFrameCount()
+@@ -252,73 +252,62 @@ public class TextureAtlasSprite
+         this.width = newWidth;
+     }
+ 
+-    public void setIconHeight(int newHeight)
+-    {
++    public void setIconHeight(int newHeight) {
+         this.height = newHeight;
+     }
+ 
+-    public void loadSprite(PngSizeInfo sizeInfo, boolean p_188538_2_) throws IOException
+-    {
++    public void setAndValidateSize(PngSizeInfo sizeInfo, boolean isAnimated) throws IOException {
+         this.resetSprite();
+         this.width = sizeInfo.pngWidth;
+         this.height = sizeInfo.pngHeight;
+ 
+-        if (p_188538_2_)
+-        {
++        if(isAnimated) {
+             this.height = this.width;
+-        }
+-        else if (sizeInfo.pngHeight != sizeInfo.pngWidth)
+-        {
++
++        } else if(sizeInfo.pngHeight != sizeInfo.pngWidth) {
+             throw new RuntimeException("broken aspect ratio and not an animation");
+         }
+     }
+ 
+-    public void loadSpriteFrames(IResource resource, int mipmaplevels) throws IOException
+-    {
++    public void loadSpriteFrames(IResource resource, int mipmaplevels) throws IOException {
+         BufferedImage bufferedimage = TextureUtil.readBufferedImage(resource.getInputStream());
+-        AnimationMetadataSection animationmetadatasection = (AnimationMetadataSection)resource.getMetadata("animation");
+-        int[][] aint = new int[mipmaplevels][];
+-        aint[0] = new int[bufferedimage.getWidth() * bufferedimage.getHeight()];
+-        bufferedimage.getRGB(0, 0, bufferedimage.getWidth(), bufferedimage.getHeight(), aint[0], 0, bufferedimage.getWidth());
++        AnimationMetadataSection animationData = resource.getMetadata("animation");
++        int[][] textureData = new int[mipmaplevels][];
++        textureData[0] = new int[bufferedimage.getWidth() * bufferedimage.getHeight()];
++        bufferedimage.getRGB(0, 0, bufferedimage.getWidth(), bufferedimage.getHeight(), textureData[0], 0, bufferedimage.getWidth());
+ 
+-        if (animationmetadatasection == null)
+-        {
+-            this.framesTextureData.add(aint);
+-        }
+-        else
+-        {
+-            int i = bufferedimage.getHeight() / this.width;
++        if (animationData == null) {
++            this.framesTextureData.add(textureData);
+ 
+-            if (animationmetadatasection.getFrameCount() > 0)
+-            {
+-                Iterator iterator = animationmetadatasection.getFrameIndexSet().iterator();
++        } else {
++            // All the frames are in a line in the y-direction. Because each frame is square, the height divided by the
++            // width is the total number of frames
++            int numFrames = bufferedimage.getHeight() / this.width;
+ 
+-                while (iterator.hasNext())
+-                {
+-                    int j = ((Integer)iterator.next()).intValue();
++            if (animationData.getFrameCount() > 0) {
++                Iterator iterator = animationData.getFrameIndexSet().iterator();
+ 
+-                    if (j >= i)
+-                    {
+-                        throw new RuntimeException("invalid frameindex " + j);
++                while(iterator.hasNext()) {
++                    int frameIndex = ((Integer)iterator.next()).intValue();
++
++                    if(frameIndex >= numFrames) {
++                        throw new RuntimeException("invalid frameindex " + frameIndex);
+                     }
+ 
+-                    this.allocateFrameTextureData(j);
+-                    this.framesTextureData.set(j, getFrameTextureData(aint, this.width, this.width, j));
++                    this.allocateFrameTextureData(frameIndex);
++                    this.framesTextureData.set(frameIndex, getFrameTextureData(textureData, this.width, this.width, frameIndex));
+                 }
+ 
+-                this.animationMetadata = animationmetadatasection;
+-            }
+-            else
+-            {
++                this.animationMetadata = animationData;
++            } else {
+                 List<AnimationFrame> list = Lists.<AnimationFrame>newArrayList();
+ 
+-                for (int k = 0; k < i; ++k)
+-                {
+-                    this.framesTextureData.add(getFrameTextureData(aint, this.width, this.width, k));
++                for (int k = 0; k < numFrames; ++k) {
++                    this.framesTextureData.add(getFrameTextureData(textureData, this.width, this.width, k));
+                     list.add(new AnimationFrame(k, -1));
+                 }
+ 
+-                this.animationMetadata = new AnimationMetadataSection(list, this.width, this.height, animationmetadatasection.getFrameTime(), animationmetadatasection.isInterpolate());
++                this.animationMetadata = new AnimationMetadataSection(list, this.width, this.height, animationData.getFrameTime(), animationData.isInterpolate());
+             }
+         }
+     }
 diff --git a/minecraft/client/renderer/texture/TextureManager.java b/minecraft/client/renderer/texture/TextureManager.java
 index e05a522..b161006 100644
 --- a/minecraft/client/renderer/texture/TextureManager.java
@@ -2136,9 +2814,25 @@ index e05a522..b161006 100644
  
          this.mapTextureCounters.put(name, integer);
 diff --git a/minecraft/client/renderer/texture/TextureMap.java b/minecraft/client/renderer/texture/TextureMap.java
-index 9d91fa2..4df5d73 100644
+index 9d91fa2..1954710 100644
 --- a/minecraft/client/renderer/texture/TextureMap.java
 +++ b/minecraft/client/renderer/texture/TextureMap.java
+@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.texture;
+ 
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Maps;
++
+ import java.io.Closeable;
+ import java.io.IOException;
+ import java.util.List;
+@@ -9,7 +10,6 @@ import java.util.Map;
+ import java.util.Map.Entry;
+ import javax.annotation.Nullable;
+ import net.minecraft.client.Minecraft;
+-import net.minecraft.client.renderer.StitcherException;
+ import net.minecraft.client.resources.IResource;
+ import net.minecraft.client.resources.IResourceManager;
+ import net.minecraft.crash.CrashReport;
 @@ -22,8 +22,10 @@ import org.apache.commons.io.IOUtils;
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
@@ -2152,8 +2846,13 @@ index 9d91fa2..4df5d73 100644
      private static final Logger LOGGER = LogManager.getLogger();
      public static final ResourceLocation LOCATION_MISSING_TEXTURE = new ResourceLocation("missingno");
      public static final ResourceLocation LOCATION_BLOCKS_TEXTURE = new ResourceLocation("textures/atlas/blocks.png");
-@@ -37,11 +39,10 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+@@ -35,13 +37,15 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+     private int mipmapLevels;
+     private final TextureAtlasSprite missingImage;
  
++    private int width;
++    private int height;
++
      public TextureMap(String basePathIn)
      {
 -        this(basePathIn, (ITextureMapPopulator)null);
@@ -2166,7 +2865,7 @@ index 9d91fa2..4df5d73 100644
          this.listAnimatedSprites = Lists.<TextureAtlasSprite>newArrayList();
          this.mapRegisteredSprites = Maps.<String, TextureAtlasSprite>newHashMap();
          this.mapUploadedSprites = Maps.<String, TextureAtlasSprite>newHashMap();
-@@ -60,16 +61,19 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+@@ -60,16 +64,19 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
          this.missingImage.setFramesTextureData(Lists.newArrayList(new int[][][] {aint1}));
      }
  
@@ -2192,7 +2891,7 @@ index 9d91fa2..4df5d73 100644
          this.mapRegisteredSprites.clear();
          iconCreatorIn.registerSprites(this);
          this.initMissingImage();
-@@ -77,8 +81,7 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+@@ -77,94 +84,72 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
          this.loadTextureAtlas(resourceManager);
      }
  
@@ -2202,25 +2901,26 @@ index 9d91fa2..4df5d73 100644
          int i = Minecraft.getGLMaximumTextureSize();
          Stitcher stitcher = new Stitcher(i, i, 0, this.mipmapLevels);
          this.mapUploadedSprites.clear();
-@@ -86,51 +89,44 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+         this.listAnimatedSprites.clear();
          int j = Integer.MAX_VALUE;
-         int k = 1 << this.mipmapLevels;
+-        int k = 1 << this.mipmapLevels;
++        int mipLevel0Size = 1 << this.mipmapLevels;
  
 -        for (Entry<String, TextureAtlasSprite> entry : this.mapRegisteredSprites.entrySet())
 -        {
 -            TextureAtlasSprite textureatlassprite = (TextureAtlasSprite)entry.getValue();
+-            ResourceLocation resourcelocation = this.getResourceLocation(textureatlassprite);
+-            IResource iresource = null;
 +        for(Entry<String, TextureAtlasSprite> entry : this.mapRegisteredSprites.entrySet()) {
-+            TextureAtlasSprite textureatlassprite = entry.getValue();
-             ResourceLocation resourcelocation = this.getResourceLocation(textureatlassprite);
-             IResource iresource = null;
++            TextureAtlasSprite sprite = entry.getValue();
++            ResourceLocation spriteLocation = this.getResourceLocation(sprite);
  
 -            try
 -            {
-+            try {
-                 PngSizeInfo pngsizeinfo = PngSizeInfo.makeFromResource(resourceManager.getResource(resourcelocation));
-                 iresource = resourceManager.getResource(resourcelocation);
-                 boolean flag = iresource.getMetadata("animation") != null;
-                 textureatlassprite.loadSprite(pngsizeinfo, flag);
+-                PngSizeInfo pngsizeinfo = PngSizeInfo.makeFromResource(resourceManager.getResource(resourcelocation));
+-                iresource = resourceManager.getResource(resourcelocation);
+-                boolean flag = iresource.getMetadata("animation") != null;
+-                textureatlassprite.loadSprite(pngsizeinfo, flag);
 -            }
 -            catch (RuntimeException runtimeexception)
 -            {
@@ -2236,47 +2936,51 @@ index 9d91fa2..4df5d73 100644
 -            {
 -                IOUtils.closeQuietly((Closeable)iresource);
 -            }
++            try(IResource spriteResource = resourceManager.getResource(spriteLocation)) {
++                PngSizeInfo spriteSizeInfo = PngSizeInfo.makeFromResource(spriteResource);
++                boolean isAnimated = spriteResource.getMetadata("animation") != null;
++                sprite.setAndValidateSize(spriteSizeInfo, isAnimated);
  
 -            j = Math.min(j, Math.min(textureatlassprite.getIconWidth(), textureatlassprite.getIconHeight()));
 -            int lvt_11_2_ = Math.min(Integer.lowestOneBit(textureatlassprite.getIconWidth()), Integer.lowestOneBit(textureatlassprite.getIconHeight()));
-+                // Moved this bit up to remove the continue statements
-+                j = Math.min(j, Math.min(textureatlassprite.getIconWidth(), textureatlassprite.getIconHeight()));
-+                int lvt_11_2_ = Math.min(Integer.lowestOneBit(textureatlassprite.getIconWidth()), Integer.lowestOneBit(textureatlassprite.getIconHeight()));
++                // Moved this code up to remove the continue statements
++                j = Math.min(j, Math.min(sprite.getIconWidth(), sprite.getIconHeight()));
++                int lvt_11_2_ = Math.min(Integer.lowestOneBit(sprite.getIconWidth()), Integer.lowestOneBit(sprite.getIconHeight()));
  
 -            if (lvt_11_2_ < k)
 -            {
 -                LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", new Object[] {resourcelocation, Integer.valueOf(textureatlassprite.getIconWidth()), Integer.valueOf(textureatlassprite.getIconHeight()), Integer.valueOf(MathHelper.calculateLogBaseTwo(k)), Integer.valueOf(MathHelper.calculateLogBaseTwo(lvt_11_2_))});
 -                k = lvt_11_2_;
-+                if (lvt_11_2_ < k) {
-+                    LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", resourcelocation, textureatlassprite.getIconWidth(), textureatlassprite.getIconHeight(), MathHelper.calculateLogBaseTwo(k), MathHelper.calculateLogBaseTwo(lvt_11_2_));
-+                    k = lvt_11_2_;
+-            }
++                if (lvt_11_2_ < mipLevel0Size) {
++                    LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", spriteLocation, sprite.getIconWidth(), sprite.getIconHeight(), MathHelper.calculateLogBaseTwo(mipLevel0Size), MathHelper.calculateLogBaseTwo(lvt_11_2_));
++                    mipLevel0Size = lvt_11_2_;
 +                }
 +
-+                stitcher.addSprite(textureatlassprite);
-+
-+            } catch (RuntimeException runtimeexception) {
-+                LOGGER.error("Unable to parse metadata from {}", resourcelocation, runtimeexception);
-+
-+            } catch (IOException ioexception) {
-+                LOGGER.error("Using missing texture, unable to load {}", resourcelocation, ioexception);
-+
-+            } finally {
-+                IOUtils.closeQuietly(iresource);
-             }
++                stitcher.addSprite(sprite);
  
 -            stitcher.addSprite(textureatlassprite);
++            } catch (RuntimeException runtimeexception) {
++                LOGGER.error("Unable to parse metadata from {}", spriteLocation, runtimeexception);
++
++            } catch (IOException ioexception) {
++                LOGGER.error("Using missing texture, unable to load {}", spriteLocation, ioexception);
++
++            }
          }
  
-         int l = Math.min(j, k);
+-        int l = Math.min(j, k);
++        int l = Math.min(j, mipLevel0Size);
          int i1 = MathHelper.calculateLogBaseTwo(l);
  
 -        if (i1 < this.mipmapLevels)
 -        {
+-            LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[] {this.basePath, Integer.valueOf(this.mipmapLevels), Integer.valueOf(i1), Integer.valueOf(l)});
 +        if (i1 < this.mipmapLevels) {
-             LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[] {this.basePath, Integer.valueOf(this.mipmapLevels), Integer.valueOf(i1), Integer.valueOf(l)});
++            LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", this.basePath, this.mipmapLevels, i1, l);
              this.mipmapLevels = i1;
          }
-@@ -138,33 +134,21 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+ 
          this.missingImage.generateMipmaps(this.mipmapLevels);
          stitcher.addSprite(this.missingImage);
  
@@ -2291,6 +2995,9 @@ index 9d91fa2..4df5d73 100644
 +        stitcher.doStitch();
  
 -        LOGGER.info("Created: {}x{} {}-atlas", new Object[] {Integer.valueOf(stitcher.getCurrentWidth()), Integer.valueOf(stitcher.getCurrentHeight()), this.basePath});
++        width = stitcher.getCurrentWidth();
++        height = stitcher.getCurrentHeight();
++
 +        LOGGER.info("Created: {}x{} {}-atlas", stitcher.getCurrentWidth(), stitcher.getCurrentHeight(), this.basePath);
          TextureUtil.allocateTextureImpl(this.getGlTextureId(), this.mipmapLevels, stitcher.getCurrentWidth(), stitcher.getCurrentHeight());
          Map<String, TextureAtlasSprite> map = Maps.<String, TextureAtlasSprite>newHashMap(this.mapRegisteredSprites);
@@ -2316,7 +3023,7 @@ index 9d91fa2..4df5d73 100644
                      CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Stitching texture atlas");
                      CrashReportCategory crashreportcategory = crashreport.makeCategory("Texture being stitched together");
                      crashreportcategory.addCrashSection("Atlas path", this.basePath);
-@@ -179,8 +163,7 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+@@ -179,8 +164,7 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
              }
          }
  
@@ -2326,6 +3033,20 @@ index 9d91fa2..4df5d73 100644
              textureatlassprite2.copyFrom(this.missingImage);
          }
      }
+@@ -253,10 +237,9 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+         }
+     }
+ 
+-    private ResourceLocation getResourceLocation(TextureAtlasSprite p_184396_1_)
+-    {
+-        ResourceLocation resourcelocation = new ResourceLocation(p_184396_1_.getIconName());
+-        return new ResourceLocation(resourcelocation.getResourceDomain(), String.format("%s/%s%s", new Object[] {this.basePath, resourcelocation.getResourcePath(), ".png"}));
++    private ResourceLocation getResourceLocation(TextureAtlasSprite sprite) {
++        ResourceLocation resourcelocation = new ResourceLocation(sprite.getIconName());
++        return new ResourceLocation(resourcelocation.getResourceDomain(), String.format("%s/%s%s", this.basePath, resourcelocation.getResourcePath(), ".png"));
+     }
+ 
+     public TextureAtlasSprite getAtlasSprite(String iconName)
 @@ -281,18 +264,14 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
          }
      }
@@ -2351,8 +3072,32 @@ index 9d91fa2..4df5d73 100644
                  textureatlassprite = TextureAtlasSprite.makeAtlasSprite(location);
                  this.mapRegisteredSprites.put(location.toString(), textureatlassprite);
              }
+@@ -301,8 +280,8 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+         }
+     }
+ 
+-    public void tick()
+-    {
++    @Override
++    public void tick() {
+         this.updateAnimations();
+     }
+ 
+@@ -315,4 +294,12 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+     {
+         return this.missingImage;
+     }
++
++    public int getWidth() {
++        return width;
++    }
++
++    public int getHeight() {
++        return height;
++    }
+ }
 diff --git a/minecraft/client/renderer/texture/TextureUtil.java b/minecraft/client/renderer/texture/TextureUtil.java
-index b0a0490..352abf2 100644
+index b0a0490..c37cd0a 100644
 --- a/minecraft/client/renderer/texture/TextureUtil.java
 +++ b/minecraft/client/renderer/texture/TextureUtil.java
 @@ -32,7 +32,7 @@ public class TextureUtil
@@ -2364,6 +3109,52 @@ index b0a0490..352abf2 100644
      }
  
      public static void deleteTexture(int textureId)
+@@ -51,35 +51,35 @@ public class TextureUtil
+         uploadTextureSub(0, p_110988_1_, p_110988_2_, p_110988_3_, 0, 0, false, false, false);
+     }
+ 
+-    public static int[][] generateMipmapData(int p_147949_0_, int p_147949_1_, int[][] p_147949_2_)
++    public static int[][] generateMipmapData(int mipLevel, int width, int[][] imageData)
+     {
+-        int[][] aint = new int[p_147949_0_ + 1][];
+-        aint[0] = p_147949_2_[0];
++        int[][] aint = new int[mipLevel + 1][];
++        aint[0] = imageData[0];
+ 
+-        if (p_147949_0_ > 0)
++        if (mipLevel > 0)
+         {
+             boolean flag = false;
+ 
+-            for (int i = 0; i < p_147949_2_.length; ++i)
++            for (int i = 0; i < imageData.length; ++i)
+             {
+-                if (p_147949_2_[0][i] >> 24 == 0)
++                if (imageData[0][i] >> 24 == 0)
+                 {
+                     flag = true;
+                     break;
+                 }
+             }
+ 
+-            for (int l1 = 1; l1 <= p_147949_0_; ++l1)
++            for (int l1 = 1; l1 <= mipLevel; ++l1)
+             {
+-                if (p_147949_2_[l1] != null)
++                if (imageData[l1] != null)
+                 {
+-                    aint[l1] = p_147949_2_[l1];
++                    aint[l1] = imageData[l1];
+                 }
+                 else
+                 {
+                     int[] aint1 = aint[l1 - 1];
+                     int[] aint2 = new int[aint1.length >> 2];
+-                    int j = p_147949_1_ >> l1;
++                    int j = width >> l1;
+                     int k = aint2.length / j;
+                     int l = j << 1;
+ 
 @@ -160,29 +160,29 @@ public class TextureUtil
          return (int)((double)f4 * 255.0D);
      }
@@ -2437,16 +3228,201 @@ index b0a0490..352abf2 100644
          }
      }
  
+diff --git a/minecraft/client/resources/DefaultResourcePack.java b/minecraft/client/resources/DefaultResourcePack.java
+index a1adb4b..c4df3ef 100644
+--- a/minecraft/client/resources/DefaultResourcePack.java
++++ b/minecraft/client/resources/DefaultResourcePack.java
+@@ -27,24 +27,18 @@ public class DefaultResourcePack implements IResourcePack
+     public InputStream getInputStream(ResourceLocation location) throws IOException
+     {
+         InputStream inputstream = this.getResourceStream(location);
+-
+         if (inputstream != null)
+         {
+             return inputstream;
+         }
+-        else
+-        {
+-            InputStream inputstream1 = this.getInputStreamAssets(location);
+ 
+-            if (inputstream1 != null)
+-            {
+-                return inputstream1;
+-            }
+-            else
+-            {
+-                throw new FileNotFoundException(location.getResourcePath());
+-            }
++        inputstream = this.getInputStreamAssets(location);
++        if (inputstream != null)
++        {
++            return inputstream;
+         }
++
++        return new FileResource(location).getInputStream();
+     }
+ 
+     @Nullable
+diff --git a/minecraft/client/resources/FileResource.java b/minecraft/client/resources/FileResource.java
+new file mode 100644
+index 0000000..984b3e7
+--- /dev/null
++++ b/minecraft/client/resources/FileResource.java
+@@ -0,0 +1,65 @@
++package net.minecraft.client.resources;
++
++import net.minecraft.client.resources.data.IMetadataSection;
++import net.minecraft.util.ResourceLocation;
++
++import javax.annotation.Nullable;
++import java.io.FileInputStream;
++import java.io.FileNotFoundException;
++import java.io.InputStream;
++
++/**
++ * Created by Tobias Schulz on 1/31/2017.
++ */
++public class FileResource implements IResource {
++    ResourceLocation location;
++
++    public FileResource(ResourceLocation location) {
++        this.location = location;
++    }
++
++    public ResourceLocation getResourceLocation() {
++        return location;
++    }
++
++    public InputStream getInputStream() {
++        String[] assetPaths = new String[] {
++                "assets",
++                "temp/src/minecraft/assets/minecraft",
++                "../assets",
++                "../temp/src/minecraft/assets/minecraft",
++        };
++
++        InputStream inputstream;
++
++        for (String assetPath : assetPaths) {
++            //System.out.println(location.getResourcePath());
++            try {
++                inputstream = new FileInputStream(assetPath + "/" + location.getResourcePath());
++                if (inputstream != null) {
++                    return inputstream;
++                }
++            } catch (Exception ex) {}
++        }
++        //System.out.println("not found"+location.getResourcePath());
++
++        return null;
++        // throw new FileNotFoundException(location.getResourcePath());
++    }
++
++    public boolean hasMetadata() {
++        return false;
++    }
++
++    @Nullable
++    public <T extends IMetadataSection> T getMetadata(String sectionName) {
++        return null;
++    }
++
++    public String getResourcePackName() {
++        return "";
++    }
++
++    public void close() {
++    }
++}
+diff --git a/minecraft/client/resources/SimpleReloadableResourceManager.java b/minecraft/client/resources/SimpleReloadableResourceManager.java
+index 85ca400..e905295 100644
+--- a/minecraft/client/resources/SimpleReloadableResourceManager.java
++++ b/minecraft/client/resources/SimpleReloadableResourceManager.java
+@@ -8,9 +8,8 @@ import com.google.common.collect.Maps;
+ import com.google.common.collect.Sets;
+ import java.io.FileNotFoundException;
+ import java.io.IOException;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Set;
++import java.nio.file.FileStore;
++import java.util.*;
+ import javax.annotation.Nullable;
+ import net.minecraft.client.resources.data.MetadataSerializer;
+ import net.minecraft.util.ResourceLocation;
+@@ -59,11 +58,15 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
+ 
+         if (iresourcemanager != null)
+         {
+-            return iresourcemanager.getResource(location);
++            try {
++                return iresourcemanager.getResource(location);
++            } catch (IOException ex) {
++                return new FileResource(location);
++            }
+         }
+         else
+         {
+-            throw new FileNotFoundException(location.toString());
++            return new FileResource(location);
+         }
+     }
+ 
+@@ -73,11 +76,15 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
+ 
+         if (iresourcemanager != null)
+         {
+-            return iresourcemanager.getAllResources(location);
++            try {
++                return iresourcemanager.getAllResources(location);
++            } catch (IOException ex) {
++                return Collections.singletonList(new FileResource(location));
++            }
+         }
+         else
+         {
+-            throw new FileNotFoundException(location.toString());
++            return Collections.singletonList(new FileResource(location));
+         }
+     }
+ 
 diff --git a/minecraft/client/settings/GameSettings.java b/minecraft/client/settings/GameSettings.java
-index 206bf51..3f957f0 100644
+index 206bf51..2aff8d0 100644
 --- a/minecraft/client/settings/GameSettings.java
 +++ b/minecraft/client/settings/GameSettings.java
-@@ -36,7 +36,7 @@ import org.apache.commons.lang3.ArrayUtils;
+@@ -35,8 +35,8 @@ import org.apache.commons.io.IOUtils;
+ import org.apache.commons.lang3.ArrayUtils;
  import org.apache.logging.log4j.LogManager;
  import org.apache.logging.log4j.Logger;
- import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Keyboard;
 -import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Keyboard;
 +import com.continuum.nova.input.Mouse;
  import org.lwjgl.opengl.Display;
  
  public class GameSettings
+diff --git a/minecraft/client/settings/KeyBinding.java b/minecraft/client/settings/KeyBinding.java
+index b4047b4..6178d2f 100644
+--- a/minecraft/client/settings/KeyBinding.java
++++ b/minecraft/client/settings/KeyBinding.java
+@@ -6,7 +6,7 @@ import java.util.List;
+ import java.util.Set;
+ import net.minecraft.client.resources.I18n;
+ import net.minecraft.util.IntHashMap;
+-import org.lwjgl.input.Keyboard;
++import com.continuum.nova.input.Keyboard;
+ 
+ public class KeyBinding implements Comparable<KeyBinding>
+ {
+diff --git a/minecraft/util/text/translation/LanguageMap.java b/minecraft/util/text/translation/LanguageMap.java
+index 04931bb..68c4fcf 100644
+--- a/minecraft/util/text/translation/LanguageMap.java
++++ b/minecraft/util/text/translation/LanguageMap.java
+@@ -38,6 +38,7 @@ public class LanguageMap
+         {
+             InputStream inputstream = LanguageMap.class.getResourceAsStream("/assets/minecraft/lang/en_US.lang");
+ 
++            if (inputstream == null) return;
+             for (String s : IOUtils.readLines(inputstream, Charsets.UTF_8))
+             {
+                 if (!s.isEmpty() && s.charAt(0) != 35)
