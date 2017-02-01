@@ -11,6 +11,9 @@
 .PARAMETER build
     Compiles the native code, moves the output DLL to the correct directory, then compiles the Java code
 
+.PARAMETER install
+    installs Nova in Mincraft launcher
+	
 .PARAMETER nativeOnly
     Only compiles the C++ code. Does not compile the Java code
 
@@ -51,7 +54,8 @@
 param (
     [switch]$setup = $false,
     [switch]$build = $false,
-    [switch]$clean = $false,
+    [switch]$install = $false,
+	[switch]$clean = $false,
     [switch]$run = $false,
     [switch]$nativeOnly = $false,
     [switch]$makePatches = $false,
@@ -98,7 +102,7 @@ function New-NovaEnvironment {
     # Apply our patch file
     Write-Host "Injecting Nova into Minecraft..."
     Set-Location src\main\java\net
-    ..\..\..\..\runtime\bin\applydiff.exe -p1 -i ..\..\resources\patches\nova.patch
+    ..\..\..\..\runtime\bin\applydiff.exe -p1 -i ..\..\..\..\patches\nova.patch
     Set-Location ..\..\..\..\
 
     Write-Host "Downloading dependencies..."
@@ -147,7 +151,7 @@ function New-NovaCode([string]$buildEnvironment) {
     if($nativeOnly -eq $false) {
         # Compile the Java code
 
-        gradle fatjar
+        gradle fatjar createJars
 
         if($LASTEXITCODE -ne 0) {
             Write-Error "Gradle invocation failed, aborting"
@@ -197,7 +201,7 @@ function New-VisualStudioBuild {
         Builds the C++ code in Nova, using Visual Studio 2015 to compile the code
     #>
 
-    if(Test-Command -command "devenv.exe") {
+    if(Test-Command -command "msbuild.exe") {
         # Visual Studio is probably installed, hopefully they have the correct version
         New-Item target -ItemType Directory >$null 2>&1
         New-Item target\cpp-msvc -ItemType Directory >$null 2>&1
@@ -207,7 +211,7 @@ function New-VisualStudioBuild {
 
         # Compile the code
         # TODO: Verify that this is the actual name of the solution file
-        devenv renderer.sln /Build Debug
+        devenv renderer.sln /p:Configuration=Debug
 
         # Copy the DLL to the correct location
         # TODO: Verify that this is the name of the DLL
@@ -215,7 +219,7 @@ function New-VisualStudioBuild {
         Set-Location ..\..
 
     } else {
-        Write-Error "Could not call the Visual Studio make tool, unable to build Nova. Please enstall Visual Stusio 2015 and ensure that devenv.exe is on your path"
+        Write-Error "Could not call the Visual Studio make tool, unable to build Nova. Please enstall Visual Stusio 2015 and ensure that msbuild.exe is on your path"
     }
 }
 
@@ -269,8 +273,40 @@ function Invoke-Nova {
 
 function New-Patches {
     Set-Location src\main\java\net
-    git diff origin/minecraft-1.10-mcp > ..\..\..\..\src\main\resources\patches\nova.patch 
+    git diff origin/minecraft-1.10-mcp > ..\..\..\..\patches\nova.patch 
 }
+
+################################################################################
+#  install nova in minecraft launcher                                                             #
+################################################################################
+
+function install-Nova {
+    if (Test-Path  $Env:APPDATA\.minecraft\launcher_profiles.json){
+		robocopy "jars\config" "$Env:APPDATA\.minecraft\config" /s
+		robocopy "jars\shaderpacks" "$Env:APPDATA\.minecraft\shaderpacks" /s
+		robocopy "." "$Env:APPDATA\.minecraft\versions\1.10-nova" "1.10-nova.json"
+		$version_config = Get-Content $Env:APPDATA\.minecraft\versions\1.10-nova\1.10-nova.json | ConvertFrom-Json
+		[string]$version
+		ForEach ($libary in $version_con.libaries){
+			if ($libary.name.StartsWith("com.continuum.nova:nova-renderer:"){
+				$version = $libary.name.Replace("com.continuum.nova:nova-renderer:","")
+			}
+		}
+		robocopy "build\libs" "$Env:APPDATA\.minecraft\versions\1.10-nova" "1.10-Nova.jar"
+		robocopy "build\libs" "$Env:APPDATA\.minecraft\libraries\com\continuum\nova\nova-renderer\$version" "nova-renderer-$version-natives-windows.jar"
+		
+		$launcher_config = Get-Content $Env:APPDATA\.minecraft\launcher_profiles.json | ConvertFrom-Json
+		$sNovaProfile  = '{"name": "Nova","lastVersionId": "1.10-Nova"}'		
+		$jsonNovaProfile = ConvertFrom-Json($sNovaProfile)
+		$launcher_config.profiles | Add-Member 'Nova' $jsonNovaProfile 
+		$launcher_config.selectedProfile='Nova'
+		$launcher_config | ConvertTo-Json | Set-Content $Env:APPDATA\.minecraft\launcher_profiles_test.json 
+	} else {
+		 Write-Error "Could not find locate .mincraft folder, did you run Mincraft at least once ?"
+	}
+   
+}
+
 
 ################################################################################
 #  Main                                                                        #
@@ -286,6 +322,11 @@ if($makePatches -eq $true) {
 
 if($build -eq $true) {
     New-NovaCode -buildEnvironment $buildEnvironment
+}
+
+if($install -eq $true) {
+    New-NovaCode -buildEnvironment "msvc"
+	install-Nova
 }
 
 if($clean -eq $true) {
