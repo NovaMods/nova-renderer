@@ -153,6 +153,10 @@ target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT)
 
 add_library(nova-renderer SHARED $<TARGET_OBJECTS:nova-renderer-obj>)
 
+if (WIN32)
+    set_target_properties(nova-renderer PROPERTIES PREFIX "")
+endif (WIN32)
+
 # This is needed on MSVC otherwise the build files get spread out all over the place.
 # The only *problem* is that we wont be able to create multi-config builds. Personally
 # I dont see this as a problem currently. This will make the location more predictable
@@ -173,6 +177,11 @@ endif()
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 
+if (WIN32)
+add_custom_command(TARGET nova-renderer
+                   POST_BUILD
+                   COMMAND copy /Y "nova-renderer.dll" "..\\..\\jars\\versions\\1.10\\1.10-natives")
+endif (WIN32)
 # Setup the nova-test executable
 set(TEST_SOURCE_FILES
         3rdparty/glad/src/glad.c
