@@ -19,7 +19,7 @@ namespace nova {
     }
 
     void mesh_store::add_gui_geometry(mc_gui_screen &screen) {
-        if (are_different_screens(screen, cur_gui_screen)) {
+        if(are_different_screens(screen, cur_gui_screen)) {
             remove_render_objects([](render_object* object) {return object->type == geometry_type::gui; });
 
             mesh_definition gui_mesh = build_gui_geometry(screen);
@@ -38,18 +38,18 @@ namespace nova {
         // debug
         LOG(DEBUG) << "texture name: " << texture_name << std::endl;
         LOG(DEBUG) << "new buffers:" << std::endl;
-        for (int i = 0; i + 4 < vertex_buffer.size(); i += 5) {
+        for(int i = 0; i + 4 < vertex_buffer.size(); i += 5) {
             std::ostringstream ss;
             ss << "  vertex ";
-            for (int k = 0; k < 5; k++) {
+            for(int k = 0; k < 5; k++) {
                 ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(12) << std::fixed << std::setprecision(5) << vertex_buffer[i + k] << "  ";
             }
             LOG(DEBUG) << ss.str();
         }
-        for (int i = 0; i + 2 < index_buffer.size(); i += 3) {
+        for(int i = 0; i + 2 < index_buffer.size(); i += 3) {
             std::ostringstream ss;
             ss << "  index ";
-            for (int k = 0; k < 3; k++) {
+            for(int k = 0; k < 3; k++) {
                 ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(8) << index_buffer[i + k] << "  ";
             }
             LOG(DEBUG) << ss.str();
@@ -66,15 +66,15 @@ namespace nova {
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         std::vector<float> vertex_buffer(command->vertex_buffer_size);
-        for (int i = 0; i + 4 < command->vertex_buffer_size; i += 5) {
+        for(int i = 0; i + 4 < command->vertex_buffer_size; i += 5) {
             vertex_buffer[i] = command->vertex_buffer[i];
-            vertex_buffer[i+1] = command->vertex_buffer[i+1];
-            vertex_buffer[i+2] = command->vertex_buffer[i+2];
-            vertex_buffer[i+3] = command->vertex_buffer[i+3] * tex_size.x + tex_location.min.x;
-            vertex_buffer[i+4] = command->vertex_buffer[i+4] * tex_size.y + tex_location.min.y;
+            vertex_buffer[i + 1] = command->vertex_buffer[i + 1];
+            vertex_buffer[i + 2] = command->vertex_buffer[i + 2];
+            vertex_buffer[i + 3] = command->vertex_buffer[i + 3] * tex_size.x + tex_location.min.x;
+            vertex_buffer[i + 4] = command->vertex_buffer[i + 4] * tex_size.y + tex_location.min.y;
         }
         std::vector<unsigned short> index_buffer(command->index_buffer_size);
-        for (int i = 0; i < command->index_buffer_size; i++) {
+        for(int i = 0; i < command->index_buffer_size; i++) {
             index_buffer[i] = (unsigned short)command->index_buffer[i];
         }
 
@@ -95,11 +95,11 @@ namespace nova {
         sort_render_object(gui);
     }
 
-    void mesh_store::remove_gui_render_objects(){
-        for (auto& group : renderables_grouped_by_shader) {
+    void mesh_store::remove_gui_render_objects() {
+        for(auto& group : renderables_grouped_by_shader) {
             auto copied_objects = group.second;
-            for (auto render_obj : copied_objects) {
-                if (render_obj->name == "gui") {
+            for(auto render_obj : copied_objects) {
+                if(render_obj->name == "gui") {
                     group.second.erase(std::remove(group.second.begin(), group.second.end(), render_obj), group.second.end());
                     delete render_obj->geometry;
                     delete render_obj;
@@ -112,9 +112,9 @@ namespace nova {
 
     void mesh_store::sort_render_object(render_object *object) {
         auto& all_shaders = shaders->get_loaded_shaders();
-        for (auto& entry : all_shaders) {
+        for(auto& entry : all_shaders) {
             auto& filter = entry.second.get_filter();
-            if (matches_filter(object, filter)) {
+            if(matches_filter(object, filter)) {
                 renderables_grouped_by_shader[entry.first].push_back(object);
             }
         }
@@ -198,9 +198,9 @@ namespace nova {
 
     bool are_different_buttons(const mc_gui_button &button1, const mc_gui_button &button2) {
         bool same_rect = button1.x_position == button2.x_position &&
-                         button1.y_position == button2.y_position &&
-                         button1.width == button2.width &&
-                         button1.height == button2.height;
+            button1.y_position == button2.y_position &&
+            button1.width == button2.width &&
+            button1.height == button2.height;
 
         bool same_text = !are_different_strings(button1.text, button2.text);
 
