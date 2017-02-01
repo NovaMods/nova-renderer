@@ -75,6 +75,8 @@ NOVA_API bool should_close();
  */
 NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen);
 
+NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command);
+
 /**
  * Settings updates
  */

@@ -72,6 +72,14 @@ struct mc_render_gui_params {
     mc_gui_screen cur_screen;
 };
 
+struct mc_gui_send_buffer_command {
+    const char *texture_name;  //!< The resource name of the texture.
+	int index_buffer_size;
+	int vertex_buffer_size;
+	int* index_buffer;
+    float* vertex_buffer;
+};
+
 /*!
  * \brief Holds all the settings that are exposed from the Minecraft options menu
  */
@@ -112,6 +120,8 @@ struct mc_add_chunk_command {
 struct mc_set_gui_screen_command {
     mc_gui_screen screen;
 };
+
+
 
 struct mouse_button_event {
 	int button;

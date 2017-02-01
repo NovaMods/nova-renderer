@@ -1,14 +1,17 @@
 /*!
- * \brief
- *
- * \author ddubois 
- * \date 27-Sep-16.
- */
+* \brief
+*
+* \author ddubois
+* \date 27-Sep-16.
+*/
 
 #include <algorithm>
 #include <easylogging++.h>
+#include <regex>
 #include "mesh_store.h"
 #include "builders/gui_geometry_builder.h"
+#include "../../../render/objects/textures/texture_manager.h"
+#include "../../../render/nova_renderer.h"
 
 namespace nova {
     std::vector<render_object *> mesh_store::get_meshes_for_shader(std::string shader_name) {
@@ -16,8 +19,8 @@ namespace nova {
     }
 
     void mesh_store::add_gui_geometry(mc_gui_screen &screen) {
-        if(are_different_screens(screen, cur_gui_screen)) {
-            remove_render_objects([](render_object* object) {return object->type == geometry_type::gui;});
+        if (are_different_screens(screen, cur_gui_screen)) {
+            remove_render_objects([](render_object* object) {return object->type == geometry_type::gui; });
 
             mesh_definition gui_mesh = build_gui_geometry(screen);
 
@@ -31,11 +34,73 @@ namespace nova {
         }
     }
 
+    void print_buffers(std::string texture_name, std::vector<float>& vertex_buffer, std::vector<unsigned short>& index_buffer) {
+        // debug
+        std::cout << std::endl;
+        std::cout << "texture name: " << texture_name << std::endl;
+        std::cout << "new buffers:" << std::endl;
+        for (int i = 0; i + 4 < vertex_buffer.size(); i += 5) {
+            std::cout << "  vertex ";
+            for (int k = 0; k < 5; k++) {
+                std::cout << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(12) << std::fixed << std::setprecision(5) << vertex_buffer[i + k] << "  ";
+            }
+            std::cout << std::endl;
+        }
+        for (int i = 0; i + 2 < index_buffer.size(); i += 3) {
+            std::cout << "  index ";
+            for (int k = 0; k < 3; k++) {
+                std::cout << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(8) << index_buffer[i + k] << "  ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    void mesh_store::add_gui_buffers(mc_gui_send_buffer_command* command) {
+
+        std::string texture_name(command->texture_name);
+        texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
+        texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
+        texture_name = "minecraft:" + texture_name;
+        const texture_manager::texture_location tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(texture_name);
+        glm::vec2 tex_size = tex_location.max - tex_location.min;
+        std::cout << "tex_location.min: " << tex_location.min.x << "," << tex_location.min.y << std::endl;
+
+        std::vector<float> vertex_buffer(command->vertex_buffer_size);
+        for (int i = 0; i + 4 < command->vertex_buffer_size; i += 5) {
+            vertex_buffer[i] = command->vertex_buffer[i];
+            vertex_buffer[i+1] = command->vertex_buffer[i+1];
+            vertex_buffer[i+2] = command->vertex_buffer[i+2];
+            vertex_buffer[i+3] = command->vertex_buffer[i+3] * tex_size.x + tex_location.min.x;
+            vertex_buffer[i+4] = command->vertex_buffer[i+4] * tex_size.y + tex_location.min.y;
+        }
+        std::vector<unsigned short> index_buffer(command->index_buffer_size);
+        for (int i = 0; i < command->index_buffer_size; i++) {
+            index_buffer[i] = (unsigned short)command->index_buffer[i];
+        }
+
+        // debug
+        print_buffers(texture_name, vertex_buffer, index_buffer);
+
+        mesh_definition cur_screen_buffer;
+        cur_screen_buffer.vertex_data = vertex_buffer;
+        cur_screen_buffer.indices = index_buffer;
+        cur_screen_buffer.vertex_format = format::POS_UV;
+
+        render_object *gui = new render_object();
+        gui->geometry = new gl_mesh(cur_screen_buffer);
+        gui->type = geometry_type::gui;
+        gui->name = "gui";
+        gui->is_solid = true;
+
+        sort_render_object(gui);
+    }
+
     void mesh_store::sort_render_object(render_object *object) {
         auto& all_shaders = shaders->get_loaded_shaders();
-        for(auto& entry : all_shaders) {
+        for (auto& entry : all_shaders) {
             auto& filter = entry.second.get_filter();
-            if(matches_filter(object, filter)) {
+            if (matches_filter(object, filter)) {
                 renderables_grouped_by_shader[entry.first].push_back(object);
             }
         }
