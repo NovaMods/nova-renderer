@@ -27,6 +27,7 @@ public class NovaDraw {
 
     static void clearBuffers() {
         buffers.clear();
+        NovaNative.INSTANCE.clear_gui_buffers();
     }
 
     /**
@@ -158,11 +159,7 @@ public class NovaDraw {
         public float v;
 
         public Vertex(int x, int y, float u, float v) {
-            this.x = x;
-            this.y = y;
-            this.z = 0;
-            this.u = u;
-            this.v = v;
+            this(x,y,0,u,v);
         }
 
         public Vertex(int x, int y, float z, float u, float v) {
