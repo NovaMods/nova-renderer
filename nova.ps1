@@ -87,6 +87,8 @@ function New-NovaEnvironment {
     Set-Location ".."
     cmd.exe /C "$PSScriptRoot/decompile.bat"
     robocopy "src\minecraft" "src\main\java" "*" /s
+	robocopy "temp\src\minecraft\assets" "src\main\resources\assets" /s
+	robocopy "temp\src\minecraft" "src\main\resources" "pack.png"
     Write-Host "Unpacked MCP"
 
     # Clean up the intermediary files

@@ -25,6 +25,7 @@ jar {
 
 task createJars(type: Jar) {
 	
+	archiveName = "nova-renderer-"+ version +"-natives-windows.jar"
 	from 'target/nova-renderer.dll'
 }
 task fatjar(type: Jar) {
@@ -33,7 +34,7 @@ task fatjar(type: Jar) {
                    'Implementation-Version': version,
                    'Main-Class': 'Start'
     }
-    baseName = project.name + "-all"
+    archiveName = "1.10-Nova.jar"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
@@ -43,6 +44,9 @@ sourceSets {
     main {
         java {
             srcDirs = ["src/main/java"]
+        }
+		resources {
+            srcDirs = ['src/main/resources']
         }
     }
 }
@@ -73,9 +77,9 @@ dependencies {
         )
     }
 
-	compile files(
-			'jars/versions/1.10/1.10.jar'
-	)
+	//compile files(
+	//		'jars/versions/1.10/1.10.jar'
+	//)
     // Add all the dependencies that Minecraft has
     compileOnly files(
             'jars/libraries/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar',
