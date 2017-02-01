@@ -1,0 +1,2452 @@
+diff --git a/minecraft/client/Minecraft.java b/minecraft/client/Minecraft.java
+index ad84c84..25f9083 100644
+--- a/minecraft/client/Minecraft.java
++++ b/minecraft/client/Minecraft.java
+@@ -1,5 +1,7 @@
+ package net.minecraft.client;
+ 
++import com.continuum.nova.NovaNative;
++import com.continuum.nova.NovaRenderer;
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Queues;
+ import com.google.common.collect.Sets;
+@@ -21,7 +23,6 @@ import java.net.Proxy;
+ import java.net.SocketAddress;
+ import java.nio.ByteBuffer;
+ import java.nio.ByteOrder;
+-import java.nio.IntBuffer;
+ import java.text.DecimalFormat;
+ import java.text.MessageFormat;
+ import java.text.SimpleDateFormat;
+@@ -147,7 +148,6 @@ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.integrated.IntegratedServer;
+ import net.minecraft.server.management.PlayerProfileCache;
+ import net.minecraft.stats.AchievementList;
+-import net.minecraft.stats.IStatStringFormat;
+ import net.minecraft.stats.StatisticsManager;
+ import net.minecraft.tileentity.TileEntity;
+ import net.minecraft.tileentity.TileEntitySkull;
+@@ -190,11 +190,9 @@ import org.apache.logging.log4j.Logger;
+ import org.lwjgl.LWJGLException;
+ import org.lwjgl.Sys;
+ import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Mouse;
+-import org.lwjgl.opengl.ContextCapabilities;
++import com.continuum.nova.input.Mouse;
+ import org.lwjgl.opengl.Display;
+ import org.lwjgl.opengl.DisplayMode;
+-import org.lwjgl.opengl.GLContext;
+ import org.lwjgl.opengl.OpenGLException;
+ import org.lwjgl.opengl.PixelFormat;
+ import org.lwjgl.util.glu.GLU;
+@@ -216,7 +214,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+     private ServerData currentServerData;
+ 
+     /** The RenderEngine instance used by Minecraft */
+-    private TextureManager renderEngine;
++    private TextureManager textureManager;
+ 
+     /**
+      * Set to 'this' in Minecraft constructor; used by some settings get methods
+@@ -383,6 +381,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+     /** Profiler currently displayed in the debug screen pie chart */
+     private String debugProfilerName = "root";
+ 
++    private NovaRenderer nova = new NovaRenderer();
++
+     public Minecraft(GameConfiguration gameConfig)
+     {
+         theMinecraft = this;
+@@ -408,6 +408,9 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+         this.jvm64bit = isJvm64bit();
+         this.theIntegratedServer = null;
+ 
++        nova.preInit();
++	Mouse.create();
++
+         if (gameConfig.serverInfo.serverName != null)
+         {
+             this.serverName = gameConfig.serverInfo.serverName;
+@@ -507,25 +510,25 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+         LOGGER.info("LWJGL Version: {}", new Object[] {Sys.getVersion()});
+         this.setWindowIcon();
+         this.setInitialDisplayMode();
+-        this.createDisplay();
+-        OpenGlHelper.initializeTextures();
+-        this.framebufferMc = new Framebuffer(this.displayWidth, this.displayHeight, true);
+-        this.framebufferMc.setFramebufferColor(0.0F, 0.0F, 0.0F, 0.0F);
++        //this.createDisplay();
++        //OpenGlHelper.initializeTextures();
++        //this.framebufferMc = new Framebuffer(this.displayWidth, this.displayHeight, true);
++        //this.framebufferMc.setFramebufferColor(0.0F, 0.0F, 0.0F, 0.0F);
+         this.registerMetadataSerializers();
+         this.mcResourcePackRepository = new ResourcePackRepository(this.fileResourcepacks, new File(this.mcDataDir, "server-resource-packs"), this.mcDefaultResourcePack, this.metadataSerializer_, this.gameSettings);
+         this.mcResourceManager = new SimpleReloadableResourceManager(this.metadataSerializer_);
+         this.mcLanguageManager = new LanguageManager(this.metadataSerializer_, this.gameSettings.language);
+         this.mcResourceManager.registerReloadListener(this.mcLanguageManager);
+         this.refreshResources();
+-        this.renderEngine = new TextureManager(this.mcResourceManager);
+-        this.mcResourceManager.registerReloadListener(this.renderEngine);
+-        this.drawSplashScreen(this.renderEngine);
+-        this.skinManager = new SkinManager(this.renderEngine, new File(this.fileAssets, "skins"), this.sessionService);
++        this.textureManager = new TextureManager(this.mcResourceManager);
++        this.mcResourceManager.registerReloadListener(this.textureManager);
++        this.drawSplashScreen(this.textureManager);
++        this.skinManager = new SkinManager(this.textureManager, new File(this.fileAssets, "skins"), this.sessionService);
+         this.saveLoader = new AnvilSaveConverter(new File(this.mcDataDir, "saves"), this.dataFixer);
+         this.mcSoundHandler = new SoundHandler(this.mcResourceManager, this.gameSettings);
+         this.mcResourceManager.registerReloadListener(this.mcSoundHandler);
+         this.mcMusicTicker = new MusicTicker(this);
+-        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii.png"), this.renderEngine, false);
++        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii.png"), this.textureManager, false);
+ 
+         if (this.gameSettings.language != null)
+         {
+@@ -533,27 +536,24 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+             this.fontRendererObj.setBidiFlag(this.mcLanguageManager.isCurrentLanguageBidirectional());
+         }
+ 
+-        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii_sga.png"), this.renderEngine, false);
++        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii_sga.png"), this.textureManager, false);
+         this.mcResourceManager.registerReloadListener(this.fontRendererObj);
+         this.mcResourceManager.registerReloadListener(this.standardGalacticFontRenderer);
+         this.mcResourceManager.registerReloadListener(new GrassColorReloadListener());
+         this.mcResourceManager.registerReloadListener(new FoliageColorReloadListener());
+-        AchievementList.OPEN_INVENTORY.setStatStringFormatter(new IStatStringFormat()
+-        {
+-            public String formatString(String str)
++        mcResourceManager.registerReloadListener(nova);
++        AchievementList.OPEN_INVENTORY.setStatStringFormatter(str -> {
++            try
+             {
+-                try
+-                {
+-                    return String.format(str, new Object[] {GameSettings.getKeyDisplayString(Minecraft.this.gameSettings.keyBindInventory.getKeyCode())});
+-                }
+-                catch (Exception exception)
+-                {
+-                    return "Error: " + exception.getLocalizedMessage();
+-                }
++                return String.format(str, GameSettings.getKeyDisplayString(Minecraft.this.gameSettings.keyBindInventory.getKeyCode()));
++            }
++            catch (Exception exception)
++            {
++                return "Error: " + exception.getLocalizedMessage();
+             }
+         });
+         this.mouseHelper = new MouseHelper();
+-        this.checkGLError("Pre startup");
++        /*this.checkGLError("Pre startup");
+         GlStateManager.enableTexture2D();
+         GlStateManager.shadeModel(7425);
+         GlStateManager.clearDepth(1.0D);
+@@ -565,18 +565,24 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+         GlStateManager.matrixMode(5889);
+         GlStateManager.loadIdentity();
+         GlStateManager.matrixMode(5888);
+-        this.checkGLError("Startup");
++        this.checkGLError("Startup");*/
++
++
++
+         this.textureMapBlocks = new TextureMap("textures");
+         this.textureMapBlocks.setMipmapLevels(this.gameSettings.mipmapLevels);
+-        this.renderEngine.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
+-        this.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
++
++
++
++        this.textureManager.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
++        this.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+         this.textureMapBlocks.setBlurMipmapDirect(false, this.gameSettings.mipmapLevels > 0);
+         this.modelManager = new ModelManager(this.textureMapBlocks);
+         this.mcResourceManager.registerReloadListener(this.modelManager);
+         this.blockColors = BlockColors.init();
+         this.itemColors = ItemColors.init(this.blockColors);
+-        this.renderItem = new RenderItem(this.renderEngine, this.modelManager, this.itemColors);
+-        this.renderManager = new RenderManager(this.renderEngine, this.renderItem);
++        this.renderItem = new RenderItem(this.textureManager, this.modelManager, this.itemColors);
++        //this.renderManager = new RenderManager(this.textureManager, this.renderItem);
+         this.itemRenderer = new ItemRenderer(this);
+         this.mcResourceManager.registerReloadListener(this.renderItem);
+         this.entityRenderer = new EntityRenderer(this, this.mcResourceManager);
+@@ -587,7 +593,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+         this.mcResourceManager.registerReloadListener(this.renderGlobal);
+         this.guiAchievement = new GuiAchievement(this);
+         GlStateManager.viewport(0, 0, this.displayWidth, this.displayHeight);
+-        this.effectRenderer = new ParticleManager(this.theWorld, this.renderEngine);
++        this.effectRenderer = new ParticleManager(this.theWorld, this.textureManager);
+         this.checkGLError("Post startup");
+         this.ingameGUI = new GuiIngame(this);
+ 
+@@ -600,7 +606,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+             this.displayGuiScreen(new GuiMainMenu());
+         }
+ 
+-        this.renderEngine.deleteTexture(this.mojangLogo);
++        this.textureManager.deleteTexture(this.mojangLogo);
+         this.mojangLogo = null;
+         this.loadingScreen = new LoadingScreenRenderer(this);
+         this.debugRenderer = new DebugRenderer(this);
+@@ -1022,7 +1028,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+             this.setIngameNotInFocus();
+             KeyBinding.unPressAllKeys();
+ 
+-            while (Mouse.next())
++            /*while (Mouse.next())
+             {
+                 ;
+             }
+@@ -1030,13 +1036,14 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+             while (Keyboard.next())
+             {
+                 ;
+-            }
++            }*/
+ 
+             ScaledResolution scaledresolution = new ScaledResolution(this);
+             int i = scaledresolution.getScaledWidth();
+             int j = scaledresolution.getScaledHeight();
+             ((GuiScreen)guiScreenIn).setWorldAndResolution(this, i, j);
+             this.skipRenderWorld = false;
++            nova.setGuiScreen(guiScreenIn);
+         }
+         else
+         {
+@@ -1147,7 +1154,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+         this.mcProfiler.startSection("render");
+         GlStateManager.pushMatrix();
+         GlStateManager.clear(16640);
+-        this.framebufferMc.bindFramebuffer(true);
++        //this.framebufferMc.bindFramebuffer(true);
+         this.mcProfiler.startSection("display");
+         GlStateManager.enableTexture2D();
+         this.mcProfiler.endSection();
+@@ -1155,7 +1162,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+         if (!this.skipRenderWorld)
+         {
+             this.mcProfiler.endStartSection("gameRenderer");
+-            this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
++            //this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
++            nova.updateCameraAndRender(timer.renderPartialTicks, i, this);
+             this.mcProfiler.endSection();
+         }
+ 
+@@ -1178,13 +1186,13 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+         }
+ 
+         this.guiAchievement.updateAchievementWindow();
+-        this.framebufferMc.unbindFramebuffer();
++        //this.framebufferMc.unbindFramebuffer();
+         GlStateManager.popMatrix();
+         GlStateManager.pushMatrix();
+-        this.framebufferMc.framebufferRender(this.displayWidth, this.displayHeight);
++        //this.framebufferMc.framebufferRender(this.displayWidth, this.displayHeight);
+         GlStateManager.popMatrix();
+         GlStateManager.pushMatrix();
+-        this.entityRenderer.renderStreamIndicator(this.timer.renderPartialTicks);
++        //this.entityRenderer.renderStreamIndicator(this.timer.renderPartialTicks);
+         GlStateManager.popMatrix();
+         this.mcProfiler.startSection("root");
+         this.updateDisplay();
+@@ -1224,14 +1232,14 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+     public void updateDisplay()
+     {
+         this.mcProfiler.startSection("display_update");
+-        Display.update();
++        //Display.update();
+         this.mcProfiler.endSection();
+         this.checkWindowResize();
+     }
+ 
+     protected void checkWindowResize()
+     {
+-        if (!this.fullscreen && Display.wasResized())
++        /*if (!this.fullscreen && Display.wasResized())
+         {
+             int i = this.displayWidth;
+             int j = this.displayHeight;
+@@ -1252,7 +1260,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+ 
+                 this.resize(this.displayWidth, this.displayHeight);
+             }
+-        }
++        }*/
+     }
+ 
+     public int getLimitFramerate()
+@@ -1783,7 +1791,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+ 
+         if (!this.isGamePaused)
+         {
+-            this.renderEngine.tick();
++            this.textureManager.tick();
+         }
+ 
+         if (this.currentScreen == null && this.thePlayer != null)
+@@ -2980,7 +2988,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+         playerSnooper.addStatToSnooper("opengl_vendor", GlStateManager.glGetString(7936));
+         playerSnooper.addStatToSnooper("client_brand", ClientBrandRetriever.getClientModName());
+         playerSnooper.addStatToSnooper("launched_version", this.launchedVersion);
+-        ContextCapabilities contextcapabilities = GLContext.getCapabilities();
++        /*ContextCapabilities contextcapabilities = GLContext.getCapabilities();
+         playerSnooper.addStatToSnooper("gl_caps[ARB_arrays_of_arrays]", Boolean.valueOf(contextcapabilities.GL_ARB_arrays_of_arrays));
+         playerSnooper.addStatToSnooper("gl_caps[ARB_base_instance]", Boolean.valueOf(contextcapabilities.GL_ARB_base_instance));
+         playerSnooper.addStatToSnooper("gl_caps[ARB_blend_func_extended]", Boolean.valueOf(contextcapabilities.GL_ARB_blend_func_extended));
+@@ -3084,7 +3092,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+         GlStateManager.glGetError();
+         playerSnooper.addStatToSnooper("gl_caps[gl_max_array_texture_layers]", Integer.valueOf(GlStateManager.glGetInteger(35071)));
+         GlStateManager.glGetError();
+-        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));
++        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));*/
+         GameProfile gameprofile = this.session.getProfile();
+ 
+         if (gameprofile != null && gameprofile.getId() != null)
+@@ -3096,20 +3104,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+     /**
+      * Used in the usage snooper.
+      */
+-    public static int getGLMaximumTextureSize()
+-    {
+-        for (int i = 16384; i > 0; i >>= 1)
+-        {
+-            GlStateManager.glTexImage2D(32868, 0, 6408, i, i, 0, 6408, 5121, (IntBuffer)null);
+-            int j = GlStateManager.glGetTexLevelParameteri(32868, 0, 4096);
+-
+-            if (j != 0)
+-            {
+-                return i;
+-            }
+-        }
+-
+-        return -1;
++    public static int getGLMaximumTextureSize() {
++        return NovaNative.INSTANCE.get_max_texture_size();
+     }
+ 
+     /**
+@@ -3220,7 +3216,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+ 
+     public TextureManager getTextureManager()
+     {
+-        return this.renderEngine;
++        return this.textureManager;
+     }
+ 
+     public IResourceManager getResourceManager()
+diff --git a/minecraft/client/gui/GuiButton.java b/minecraft/client/gui/GuiButton.java
+index 93eccc5..0925579 100644
+--- a/minecraft/client/gui/GuiButton.java
++++ b/minecraft/client/gui/GuiButton.java
+@@ -155,4 +155,8 @@ public class GuiButton extends Gui
+     {
+         this.width = width;
+     }
++
++    public int getButtonHeight() {
++        return height;
++    }
+ }
+diff --git a/minecraft/client/gui/GuiChat.java b/minecraft/client/gui/GuiChat.java
+index 394b393..97f1ddc 100644
+--- a/minecraft/client/gui/GuiChat.java
++++ b/minecraft/client/gui/GuiChat.java
+@@ -13,7 +13,7 @@ import net.minecraft.util.text.TextComponentString;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Mouse;
+ 
+ public class GuiChat extends GuiScreen implements ITabCompleter
+ {
+diff --git a/minecraft/client/gui/GuiClickableScrolledSelectionListProxy.java b/minecraft/client/gui/GuiClickableScrolledSelectionListProxy.java
+index a09d020..938919a 100644
+--- a/minecraft/client/gui/GuiClickableScrolledSelectionListProxy.java
++++ b/minecraft/client/gui/GuiClickableScrolledSelectionListProxy.java
+@@ -3,7 +3,7 @@ package net.minecraft.client.gui;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.realms.RealmsClickableScrolledSelectionList;
+ import net.minecraft.realms.Tezzelator;
+-import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Mouse;
+ 
+ public class GuiClickableScrolledSelectionListProxy extends GuiSlot
+ {
+diff --git a/minecraft/client/gui/GuiMainMenu.java b/minecraft/client/gui/GuiMainMenu.java
+index 2249b2b..b0d6739 100644
+--- a/minecraft/client/gui/GuiMainMenu.java
++++ b/minecraft/client/gui/GuiMainMenu.java
+@@ -156,12 +156,11 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+         this.updateCounter = RANDOM.nextFloat();
+         this.openGLWarning1 = "";
+ 
+-        if (!GLContext.getCapabilities().OpenGL20 && !OpenGlHelper.areShadersSupported())
+-        {
++        /*if(!GLContext.getCapabilities().OpenGL20 && !OpenGlHelper.areShadersSupported()) {
+             this.openGLWarning1 = I18n.format("title.oldgl1", new Object[0]);
+             this.openGLWarning2 = I18n.format("title.oldgl2", new Object[0]);
+             this.openGLWarningLink = "https://help.mojang.com/customer/portal/articles/325948?ref=game";
+-        }
++        }*/
+     }
+ 
+     /**
+diff --git a/minecraft/client/gui/GuiScreen.java b/minecraft/client/gui/GuiScreen.java
+index f10ce2e..61c779a 100644
+--- a/minecraft/client/gui/GuiScreen.java
++++ b/minecraft/client/gui/GuiScreen.java
+@@ -40,7 +40,7 @@ import org.apache.commons.lang3.StringUtils;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Mouse;
+ 
+ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
+ {
+@@ -774,4 +774,10 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
+     {
+         this.setWorldAndResolution(mcIn, w, h);
+     }
++
++    public List<GuiButton> getButtonList() {
++        return buttonList;
++    }
+ }
++
++
+diff --git a/minecraft/client/gui/GuiSlot.java b/minecraft/client/gui/GuiSlot.java
+index a776ae3..c534a0c 100644
+--- a/minecraft/client/gui/GuiSlot.java
++++ b/minecraft/client/gui/GuiSlot.java
+@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.Tessellator;
+ import net.minecraft.client.renderer.VertexBuffer;
+ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+ import net.minecraft.util.math.MathHelper;
+-import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Mouse;
+ 
+ public abstract class GuiSlot
+ {
+diff --git a/minecraft/client/gui/achievement/GuiAchievements.java b/minecraft/client/gui/achievement/GuiAchievements.java
+index d5c281b..e03e425 100644
+--- a/minecraft/client/gui/achievement/GuiAchievements.java
++++ b/minecraft/client/gui/achievement/GuiAchievements.java
+@@ -21,7 +21,7 @@ import net.minecraft.stats.StatisticsManager;
+ import net.minecraft.util.ResourceLocation;
+ import net.minecraft.util.math.MathHelper;
+ import net.minecraft.util.text.TextComponentTranslation;
+-import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Mouse;
+ 
+ public class GuiAchievements extends GuiScreen implements IProgressMeter
+ {
+diff --git a/minecraft/client/gui/achievement/GuiStats.java b/minecraft/client/gui/achievement/GuiStats.java
+index f27da54..5e3cd26 100644
+--- a/minecraft/client/gui/achievement/GuiStats.java
++++ b/minecraft/client/gui/achievement/GuiStats.java
+@@ -27,7 +27,7 @@ import net.minecraft.stats.StatBase;
+ import net.minecraft.stats.StatCrafting;
+ import net.minecraft.stats.StatList;
+ import net.minecraft.stats.StatisticsManager;
+-import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Mouse;
+ 
+ public class GuiStats extends GuiScreen implements IProgressMeter
+ {
+diff --git a/minecraft/client/gui/inventory/GuiContainerCreative.java b/minecraft/client/gui/inventory/GuiContainerCreative.java
+index d5f4733..e5fac6d 100644
+--- a/minecraft/client/gui/inventory/GuiContainerCreative.java
++++ b/minecraft/client/gui/inventory/GuiContainerCreative.java
+@@ -32,7 +32,7 @@ import net.minecraft.util.ResourceLocation;
+ import net.minecraft.util.math.MathHelper;
+ import net.minecraft.util.text.TextFormatting;
+ import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Mouse;
+ 
+ public class GuiContainerCreative extends InventoryEffectRenderer
+ {
+diff --git a/minecraft/client/renderer/EntityRenderer.java b/minecraft/client/renderer/EntityRenderer.java
+index 25e1fb8..1ab04c9 100644
+--- a/minecraft/client/renderer/EntityRenderer.java
++++ b/minecraft/client/renderer/EntityRenderer.java
+@@ -69,7 +69,7 @@ import net.minecraft.world.World;
+ import net.minecraft.world.biome.Biome;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+-import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Mouse;
+ import org.lwjgl.opengl.Display;
+ import org.lwjgl.opengl.GLContext;
+ import org.lwjgl.util.glu.Project;
+@@ -2085,4 +2085,16 @@ public class EntityRenderer implements IResourceManagerReloadListener
+         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+         GlStateManager.popMatrix();
+     }
++
++    public float getFogColorRed() {
++        return fogColorRed;
++    }
++
++    public float getFogColorGreen() {
++        return fogColorRed;
++    }
++
++    public float getFogColorBlue() {
++        return fogColorBlue;
++    }
+ }
+diff --git a/minecraft/client/renderer/GlStateManager.java b/minecraft/client/renderer/GlStateManager.java
+index b3d40a0..d0840e2 100644
+--- a/minecraft/client/renderer/GlStateManager.java
++++ b/minecraft/client/renderer/GlStateManager.java
+@@ -1,17 +1,14 @@
+ package net.minecraft.client.renderer;
+ 
+-import java.nio.ByteBuffer;
+-import java.nio.FloatBuffer;
+-import java.nio.IntBuffer;
+-import javax.annotation.Nullable;
+ import org.lwjgl.BufferUtils;
+ import org.lwjgl.opengl.GL11;
+-import org.lwjgl.opengl.GL13;
+-import org.lwjgl.opengl.GL12;
+-import org.lwjgl.opengl.GL14;
+-import org.lwjgl.opengl.GLContext;
+ import org.lwjgl.util.vector.Quaternion;
+ 
++import javax.annotation.Nullable;
++import java.nio.ByteBuffer;
++import java.nio.FloatBuffer;
++import java.nio.IntBuffer;
++
+ public class GlStateManager
+ {
+     private static final FloatBuffer BUF_FLOAT_16 = BufferUtils.createFloatBuffer(16);
+@@ -39,12 +36,12 @@ public class GlStateManager
+ 
+     public static void pushAttrib()
+     {
+-        GL11.glPushAttrib(8256);
++        //GL11.glPushAttrib(8256);
+     }
+ 
+     public static void popAttrib()
+     {
+-        GL11.glPopAttrib();
++        //GL11.glPopAttrib();
+     }
+ 
+     public static void disableAlpha()
+@@ -63,7 +60,7 @@ public class GlStateManager
+         {
+             alphaState.func = func;
+             alphaState.ref = ref;
+-            GL11.glAlphaFunc(func, ref);
++            //GL11.glAlphaFunc(func, ref);
+         }
+     }
+ 
+@@ -103,23 +100,23 @@ public class GlStateManager
+         {
+             colorMaterialState.face = face;
+             colorMaterialState.mode = mode;
+-            GL11.glColorMaterial(face, mode);
++            //GL11.glColorMaterial(face, mode);
+         }
+     }
+ 
+     public static void glLight(int light, int pname, FloatBuffer params)
+     {
+-        GL11.glLight(light, pname, params);
++        //GL11.glLight(light, pname, params);
+     }
+ 
+     public static void glLightModel(int pname, FloatBuffer params)
+     {
+-        GL11.glLightModel(pname, params);
++        //GL11.glLightModel(pname, params);
+     }
+ 
+     public static void glNormal3f(float nx, float ny, float nz)
+     {
+-        GL11.glNormal3f(nx, ny, nz);
++        //GL11.glNormal3f(nx, ny, nz);
+     }
+ 
+     public static void disableDepth()
+@@ -137,7 +134,7 @@ public class GlStateManager
+         if (depthFunc != depthState.depthFunc)
+         {
+             depthState.depthFunc = depthFunc;
+-            GL11.glDepthFunc(depthFunc);
++            //GL11.glDepthFunc(depthFunc);
+         }
+     }
+ 
+@@ -146,7 +143,7 @@ public class GlStateManager
+         if (flagIn != depthState.maskEnabled)
+         {
+             depthState.maskEnabled = flagIn;
+-            GL11.glDepthMask(flagIn);
++            //GL11.glDepthMask(flagIn);
+         }
+     }
+ 
+@@ -171,7 +168,7 @@ public class GlStateManager
+         {
+             blendState.srcFactor = srcFactor;
+             blendState.dstFactor = dstFactor;
+-            GL11.glBlendFunc(srcFactor, dstFactor);
++            //GL11.glBlendFunc(srcFactor, dstFactor);
+         }
+     }
+ 
+@@ -194,12 +191,12 @@ public class GlStateManager
+ 
+     public static void glBlendEquation(int blendEquation)
+     {
+-        GL14.glBlendEquation(blendEquation);
++        //GL14.glBlendEquation(blendEquation);
+     }
+ 
+     public static void enableOutlineMode(int p_187431_0_)
+     {
+-        BUF_FLOAT_4.put(0, (float)(p_187431_0_ >> 16 & 255) / 255.0F);
++        /*BUF_FLOAT_4.put(0, (float)(p_187431_0_ >> 16 & 255) / 255.0F);
+         BUF_FLOAT_4.put(1, (float)(p_187431_0_ >> 8 & 255) / 255.0F);
+         BUF_FLOAT_4.put(2, (float)(p_187431_0_ >> 0 & 255) / 255.0F);
+         BUF_FLOAT_4.put(3, (float)(p_187431_0_ >> 24 & 255) / 255.0F);
+@@ -210,18 +207,18 @@ public class GlStateManager
+         glTexEnvi(8960, 34192, 768);
+         glTexEnvi(8960, 34162, 7681);
+         glTexEnvi(8960, 34184, 5890);
+-        glTexEnvi(8960, 34200, 770);
++        glTexEnvi(8960, 34200, 770);*/
+     }
+ 
+     public static void disableOutlineMode()
+     {
+-        glTexEnvi(8960, 8704, 8448);
++        /*glTexEnvi(8960, 8704, 8448);
+         glTexEnvi(8960, 34161, 8448);
+         glTexEnvi(8960, 34162, 8448);
+         glTexEnvi(8960, 34176, 5890);
+         glTexEnvi(8960, 34184, 5890);
+         glTexEnvi(8960, 34192, 768);
+-        glTexEnvi(8960, 34200, 770);
++        glTexEnvi(8960, 34200, 770);*/
+     }
+ 
+     public static void enableFog()
+@@ -244,7 +241,7 @@ public class GlStateManager
+         if (param != fogState.mode)
+         {
+             fogState.mode = param;
+-            GL11.glFogi(GL11.GL_FOG_MODE, param);
++            //GL11.glFogi(GL11.GL_FOG_MODE, param);
+         }
+     }
+ 
+@@ -253,7 +250,7 @@ public class GlStateManager
+         if (param != fogState.density)
+         {
+             fogState.density = param;
+-            GL11.glFogf(GL11.GL_FOG_DENSITY, param);
++            //GL11.glFogf(GL11.GL_FOG_DENSITY, param);
+         }
+     }
+ 
+@@ -262,7 +259,7 @@ public class GlStateManager
+         if (param != fogState.start)
+         {
+             fogState.start = param;
+-            GL11.glFogf(GL11.GL_FOG_START, param);
++            //GL11.glFogf(GL11.GL_FOG_START, param);
+         }
+     }
+ 
+@@ -271,18 +268,18 @@ public class GlStateManager
+         if (param != fogState.end)
+         {
+             fogState.end = param;
+-            GL11.glFogf(GL11.GL_FOG_END, param);
++            //GL11.glFogf(GL11.GL_FOG_END, param);
+         }
+     }
+ 
+     public static void glFog(int pname, FloatBuffer param)
+     {
+-        GL11.glFog(pname, param);
++        //GL11.glFog(pname, param);
+     }
+ 
+     public static void glFogi(int pname, int param)
+     {
+-        GL11.glFogi(pname, param);
++        //GL11.glFogi(pname, param);
+     }
+ 
+     public static void enableCull()
+@@ -305,13 +302,13 @@ public class GlStateManager
+         if (mode != cullState.mode)
+         {
+             cullState.mode = mode;
+-            GL11.glCullFace(mode);
++            //GL11.glCullFace(mode);
+         }
+     }
+ 
+     public static void glPolygonMode(int face, int mode)
+     {
+-        GL11.glPolygonMode(face, mode);
++        //GL11.glPolygonMode(face, mode);
+     }
+ 
+     public static void enablePolygonOffset()
+@@ -330,7 +327,7 @@ public class GlStateManager
+         {
+             polygonOffsetState.factor = factor;
+             polygonOffsetState.units = units;
+-            GL11.glPolygonOffset(factor, units);
++            //GL11.glPolygonOffset(factor, units);
+         }
+     }
+ 
+@@ -354,7 +351,7 @@ public class GlStateManager
+         if (opcode != colorLogicState.opcode)
+         {
+             colorLogicState.opcode = opcode;
+-            GL11.glLogicOp(opcode);
++            //GL11.glLogicOp(opcode);
+         }
+     }
+ 
+@@ -375,13 +372,13 @@ public class GlStateManager
+         if (param != glstatemanager$texgencoord.param)
+         {
+             glstatemanager$texgencoord.param = param;
+-            GL11.glTexGeni(glstatemanager$texgencoord.coord, GL11.GL_TEXTURE_GEN_MODE, param);
++            //GL11.glTexGeni(glstatemanager$texgencoord.coord, GL11.GL_TEXTURE_GEN_MODE, param);
+         }
+     }
+ 
+     public static void texGen(GlStateManager.TexGen texGen, int pname, FloatBuffer params)
+     {
+-        GL11.glTexGen(texGenCoord(texGen).coord, pname, params);
++        //GL11.glTexGen(texGenCoord(texGen).coord, pname, params);
+     }
+ 
+     private static GlStateManager.TexGenCoord texGenCoord(GlStateManager.TexGen texGen)
+@@ -426,32 +423,32 @@ public class GlStateManager
+ 
+     public static void glTexEnv(int p_187448_0_, int p_187448_1_, FloatBuffer p_187448_2_)
+     {
+-        GL11.glTexEnv(p_187448_0_, p_187448_1_, p_187448_2_);
++        //GL11.glTexEnv(p_187448_0_, p_187448_1_, p_187448_2_);
+     }
+ 
+     public static void glTexEnvi(int p_187399_0_, int p_187399_1_, int p_187399_2_)
+     {
+-        GL11.glTexEnvi(p_187399_0_, p_187399_1_, p_187399_2_);
++        //GL11.glTexEnvi(p_187399_0_, p_187399_1_, p_187399_2_);
+     }
+ 
+     public static void glTexEnvf(int p_187436_0_, int p_187436_1_, float p_187436_2_)
+     {
+-        GL11.glTexEnvf(p_187436_0_, p_187436_1_, p_187436_2_);
++        //GL11.glTexEnvf(p_187436_0_, p_187436_1_, p_187436_2_);
+     }
+ 
+     public static void glTexParameterf(int p_187403_0_, int p_187403_1_, float p_187403_2_)
+     {
+-        GL11.glTexParameterf(p_187403_0_, p_187403_1_, p_187403_2_);
++        //GL11.glTexParameterf(p_187403_0_, p_187403_1_, p_187403_2_);
+     }
+ 
+     public static void glTexParameteri(int p_187421_0_, int p_187421_1_, int p_187421_2_)
+     {
+-        GL11.glTexParameteri(p_187421_0_, p_187421_1_, p_187421_2_);
++        //GL11.glTexParameteri(p_187421_0_, p_187421_1_, p_187421_2_);
+     }
+ 
+     public static int glGetTexLevelParameteri(int p_187411_0_, int p_187411_1_, int p_187411_2_)
+     {
+-        return GL11.glGetTexLevelParameteri(p_187411_0_, p_187411_1_, p_187411_2_);
++        return 0;//GL11.glGetTexLevelParameteri(p_187411_0_, p_187411_1_, p_187411_2_);
+     }
+ 
+     public static int generateTexture()
+@@ -461,7 +458,7 @@ public class GlStateManager
+ 
+     public static void deleteTexture(int texture)
+     {
+-        GL11.glDeleteTextures(texture);
++        //GL11.glDeleteTextures(texture);
+ 
+         for (GlStateManager.TextureState glstatemanager$texturestate : textureState)
+         {
+@@ -477,28 +474,28 @@ public class GlStateManager
+         if (texture != textureState[activeTextureUnit].textureName)
+         {
+             textureState[activeTextureUnit].textureName = texture;
+-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
++            //GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
+         }
+     }
+ 
+     public static void glTexImage2D(int p_187419_0_, int p_187419_1_, int p_187419_2_, int p_187419_3_, int p_187419_4_, int p_187419_5_, int p_187419_6_, int p_187419_7_, @Nullable IntBuffer p_187419_8_)
+     {
+-        GL11.glTexImage2D(p_187419_0_, p_187419_1_, p_187419_2_, p_187419_3_, p_187419_4_, p_187419_5_, p_187419_6_, p_187419_7_, p_187419_8_);
++        //GL11.glTexImage2D(p_187419_0_, p_187419_1_, p_187419_2_, p_187419_3_, p_187419_4_, p_187419_5_, p_187419_6_, p_187419_7_, p_187419_8_);
+     }
+ 
+     public static void glTexSubImage2D(int p_187414_0_, int p_187414_1_, int p_187414_2_, int p_187414_3_, int p_187414_4_, int p_187414_5_, int p_187414_6_, int p_187414_7_, IntBuffer p_187414_8_)
+     {
+-        GL11.glTexSubImage2D(p_187414_0_, p_187414_1_, p_187414_2_, p_187414_3_, p_187414_4_, p_187414_5_, p_187414_6_, p_187414_7_, p_187414_8_);
++        //GL11.glTexSubImage2D(p_187414_0_, p_187414_1_, p_187414_2_, p_187414_3_, p_187414_4_, p_187414_5_, p_187414_6_, p_187414_7_, p_187414_8_);
+     }
+ 
+     public static void glCopyTexSubImage2D(int p_187443_0_, int p_187443_1_, int p_187443_2_, int p_187443_3_, int p_187443_4_, int p_187443_5_, int p_187443_6_, int p_187443_7_)
+     {
+-        GL11.glCopyTexSubImage2D(p_187443_0_, p_187443_1_, p_187443_2_, p_187443_3_, p_187443_4_, p_187443_5_, p_187443_6_, p_187443_7_);
++        //GL11.glCopyTexSubImage2D(p_187443_0_, p_187443_1_, p_187443_2_, p_187443_3_, p_187443_4_, p_187443_5_, p_187443_6_, p_187443_7_);
+     }
+ 
+     public static void glGetTexImage(int p_187433_0_, int p_187433_1_, int p_187433_2_, int p_187433_3_, IntBuffer p_187433_4_)
+     {
+-        GL11.glGetTexImage(p_187433_0_, p_187433_1_, p_187433_2_, p_187433_3_, p_187433_4_);
++        //GL11.glGetTexImage(p_187433_0_, p_187433_1_, p_187433_2_, p_187433_3_, p_187433_4_);
+     }
+ 
+     public static void enableNormalize()
+@@ -516,7 +513,7 @@ public class GlStateManager
+         if (mode != activeShadeModel)
+         {
+             activeShadeModel = mode;
+-            GL11.glShadeModel(mode);
++            //GL11.glShadeModel(mode);
+         }
+     }
+ 
+@@ -532,7 +529,7 @@ public class GlStateManager
+ 
+     public static void viewport(int x, int y, int width, int height)
+     {
+-        GL11.glViewport(x, y, width, height);
++        //GL11.glViewport(x, y, width, height);
+     }
+ 
+     public static void colorMask(boolean red, boolean green, boolean blue, boolean alpha)
+@@ -543,7 +540,7 @@ public class GlStateManager
+             colorMaskState.green = green;
+             colorMaskState.blue = blue;
+             colorMaskState.alpha = alpha;
+-            GL11.glColorMask(red, green, blue, alpha);
++            //GL11.glColorMask(red, green, blue, alpha);
+         }
+     }
+ 
+@@ -552,7 +549,7 @@ public class GlStateManager
+         if (depth != clearState.depth)
+         {
+             clearState.depth = depth;
+-            GL11.glClearDepth(depth);
++            //GL11.glClearDepth(depth);
+         }
+     }
+ 
+@@ -564,73 +561,71 @@ public class GlStateManager
+             clearState.color.green = green;
+             clearState.color.blue = blue;
+             clearState.color.alpha = alpha;
+-            GL11.glClearColor(red, green, blue, alpha);
++            //GL11.glClearColor(red, green, blue, alpha);
+         }
+     }
+ 
+     public static void clear(int mask)
+     {
+-        GL11.glClear(mask);
++        //GL11.glClear(mask);
+     }
+ 
+     public static void matrixMode(int mode)
+     {
+-        GL11.glMatrixMode(mode);
++        //GL11.glMatrixMode(mode);
+     }
+ 
+     public static void loadIdentity()
+     {
+-        GL11.glLoadIdentity();
++        //GL11.glLoadIdentity();
+     }
+ 
+     public static void pushMatrix()
+     {
+-        GL11.glPushMatrix();
++       //GL11.glPushMatrix();
+     }
+ 
+     public static void popMatrix()
+     {
+-        GL11.glPopMatrix();
++        //GL11.glPopMatrix();
+     }
+ 
+     public static void getFloat(int pname, FloatBuffer params)
+     {
+-        GL11.glGetFloat(pname, params);
++        //GL11.glGetFloat(pname, params);
+     }
+ 
+     public static void ortho(double left, double right, double bottom, double top, double zNear, double zFar)
+     {
+-        GL11.glOrtho(left, right, bottom, top, zNear, zFar);
++        //GL11.glOrtho(left, right, bottom, top, zNear, zFar);
+     }
+ 
+     public static void rotate(float angle, float x, float y, float z)
+     {
+-        GL11.glRotatef(angle, x, y, z);
++        //GL11.glRotatef(angle, x, y, z);
+     }
+ 
+-    public static void scale(float x, float y, float z)
+-    {
+-        GL11.glScalef(x, y, z);
++    public static void scale(float x, float y, float z){//GL11.glScalef(x, y, z);
+     }
+ 
+     public static void scale(double x, double y, double z)
+     {
+-        GL11.glScaled(x, y, z);
++        //GL11.glScaled(x, y, z);
+     }
+ 
+     public static void translate(float x, float y, float z)
+     {
+-        GL11.glTranslatef(x, y, z);
++        //GL11.glTranslatef(x, y, z);
+     }
+ 
+     public static void translate(double x, double y, double z)
+     {
+-        GL11.glTranslated(x, y, z);
++        //GL11.glTranslated(x, y, z);
+     }
+ 
+     public static void multMatrix(FloatBuffer matrix)
+     {
+-        GL11.glMultMatrix(matrix);
++        //GL11.glMultMatrix(matrix);
+     }
+ 
+     public static void rotate(Quaternion p_187444_0_)
+@@ -678,7 +673,7 @@ public class GlStateManager
+             colorState.green = colorGreen;
+             colorState.blue = colorBlue;
+             colorState.alpha = colorAlpha;
+-            GL11.glColor4f(colorRed, colorGreen, colorBlue, colorAlpha);
++            //GL11.glColor4f(colorRed, colorGreen, colorBlue, colorAlpha);
+         }
+     }
+ 
+@@ -689,12 +684,12 @@ public class GlStateManager
+ 
+     public static void glTexCoord2f(float p_187426_0_, float p_187426_1_)
+     {
+-        GL11.glTexCoord2f(p_187426_0_, p_187426_1_);
++        //GL11.glTexCoord2f(p_187426_0_, p_187426_1_);
+     }
+ 
+     public static void glVertex3f(float p_187435_0_, float p_187435_1_, float p_187435_2_)
+     {
+-        GL11.glVertex3f(p_187435_0_, p_187435_1_, p_187435_2_);
++        //GL11.glVertex3f(p_187435_0_, p_187435_1_, p_187435_2_);
+     }
+ 
+     public static void resetColor()
+@@ -707,122 +702,122 @@ public class GlStateManager
+ 
+     public static void glNormalPointer(int p_187446_0_, int p_187446_1_, ByteBuffer p_187446_2_)
+     {
+-        GL11.glNormalPointer(p_187446_0_, p_187446_1_, p_187446_2_);
++        //GL11.glNormalPointer(p_187446_0_, p_187446_1_, p_187446_2_);
+     }
+ 
+     public static void glTexCoordPointer(int p_187405_0_, int p_187405_1_, int p_187405_2_, int p_187405_3_)
+     {
+-        GL11.glTexCoordPointer(p_187405_0_, p_187405_1_, p_187405_2_, (long)p_187405_3_);
++        //GL11.glTexCoordPointer(p_187405_0_, p_187405_1_, p_187405_2_, (long)p_187405_3_);
+     }
+ 
+     public static void glTexCoordPointer(int p_187404_0_, int p_187404_1_, int p_187404_2_, ByteBuffer p_187404_3_)
+     {
+-        GL11.glTexCoordPointer(p_187404_0_, p_187404_1_, p_187404_2_, p_187404_3_);
++        //GL11.glTexCoordPointer(p_187404_0_, p_187404_1_, p_187404_2_, p_187404_3_);
+     }
+ 
+     public static void glVertexPointer(int p_187420_0_, int p_187420_1_, int p_187420_2_, int p_187420_3_)
+     {
+-        GL11.glVertexPointer(p_187420_0_, p_187420_1_, p_187420_2_, (long)p_187420_3_);
++        //GL11.glVertexPointer(p_187420_0_, p_187420_1_, p_187420_2_, (long)p_187420_3_);
+     }
+ 
+     public static void glVertexPointer(int p_187427_0_, int p_187427_1_, int p_187427_2_, ByteBuffer p_187427_3_)
+     {
+-        GL11.glVertexPointer(p_187427_0_, p_187427_1_, p_187427_2_, p_187427_3_);
++        //GL11.glVertexPointer(p_187427_0_, p_187427_1_, p_187427_2_, p_187427_3_);
+     }
+ 
+     public static void glColorPointer(int p_187406_0_, int p_187406_1_, int p_187406_2_, int p_187406_3_)
+     {
+-        GL11.glColorPointer(p_187406_0_, p_187406_1_, p_187406_2_, (long)p_187406_3_);
++        //GL11.glColorPointer(p_187406_0_, p_187406_1_, p_187406_2_, (long)p_187406_3_);
+     }
+ 
+     public static void glColorPointer(int p_187400_0_, int p_187400_1_, int p_187400_2_, ByteBuffer p_187400_3_)
+     {
+-        GL11.glColorPointer(p_187400_0_, p_187400_1_, p_187400_2_, p_187400_3_);
++        //GL11.glColorPointer(p_187400_0_, p_187400_1_, p_187400_2_, p_187400_3_);
+     }
+ 
+     public static void glDisableClientState(int p_187429_0_)
+     {
+-        GL11.glDisableClientState(p_187429_0_);
++        //GL11.glDisableClientState(p_187429_0_);
+     }
+ 
+     public static void glEnableClientState(int p_187410_0_)
+     {
+-        GL11.glEnableClientState(p_187410_0_);
++        //GL11.glEnableClientState(p_187410_0_);
+     }
+ 
+     public static void glBegin(int p_187447_0_)
+     {
+-        GL11.glBegin(p_187447_0_);
++        //GL11.glBegin(p_187447_0_);
+     }
+ 
+     public static void glEnd()
+     {
+-        GL11.glEnd();
++        //GL11.glEnd();
+     }
+ 
+     public static void glDrawArrays(int p_187439_0_, int p_187439_1_, int p_187439_2_)
+     {
+-        GL11.glDrawArrays(p_187439_0_, p_187439_1_, p_187439_2_);
++        //GL11.glDrawArrays(p_187439_0_, p_187439_1_, p_187439_2_);
+     }
+ 
+     public static void glLineWidth(float p_187441_0_)
+     {
+-        GL11.glLineWidth(p_187441_0_);
++        //GL11.glLineWidth(p_187441_0_);
+     }
+ 
+     public static void callList(int list)
+     {
+-        GL11.glCallList(list);
++        //GL11.glCallList(list);
+     }
+ 
+     public static void glDeleteLists(int p_187449_0_, int p_187449_1_)
+     {
+-        GL11.glDeleteLists(p_187449_0_, p_187449_1_);
++        //GL11.glDeleteLists(p_187449_0_, p_187449_1_);
+     }
+ 
+     public static void glNewList(int p_187423_0_, int p_187423_1_)
+     {
+-        GL11.glNewList(p_187423_0_, p_187423_1_);
++        //GL11.glNewList(p_187423_0_, p_187423_1_);
+     }
+ 
+     public static void glEndList()
+     {
+-        GL11.glEndList();
++        //GL11.glEndList();
+     }
+ 
+     public static int glGenLists(int p_187442_0_)
+     {
+-        return GL11.glGenLists(p_187442_0_);
++        return 1;//GL11.glGenLists(p_187442_0_);
+     }
+ 
+     public static void glPixelStorei(int p_187425_0_, int p_187425_1_)
+     {
+-        GL11.glPixelStorei(p_187425_0_, p_187425_1_);
++        //GL11.glPixelStorei(p_187425_0_, p_187425_1_);
+     }
+ 
+     public static void glReadPixels(int p_187413_0_, int p_187413_1_, int p_187413_2_, int p_187413_3_, int p_187413_4_, int p_187413_5_, IntBuffer p_187413_6_)
+     {
+-        GL11.glReadPixels(p_187413_0_, p_187413_1_, p_187413_2_, p_187413_3_, p_187413_4_, p_187413_5_, p_187413_6_);
++        //GL11.glReadPixels(p_187413_0_, p_187413_1_, p_187413_2_, p_187413_3_, p_187413_4_, p_187413_5_, p_187413_6_);
+     }
+ 
+     public static int glGetError()
+     {
+-        return GL11.glGetError();
++        return 0;//GL11.glGetError();
+     }
+ 
+     public static String glGetString(int p_187416_0_)
+     {
+-        return GL11.glGetString(p_187416_0_);
++        return "";//GL11.glGetString(p_187416_0_);
+     }
+ 
+     public static void glGetInteger(int p_187445_0_, IntBuffer p_187445_1_)
+     {
+-        GL11.glGetInteger(p_187445_0_, p_187445_1_);
++        //GL11.glGetInteger(p_187445_0_, p_187445_1_);
+     }
+ 
+     public static int glGetInteger(int p_187397_0_)
+     {
+-        return GL11.glGetInteger(p_187397_0_);
++        return 0;//GL11.glGetInteger(p_187397_0_);
+     }
+ 
+     public static void enableBlendProfile(GlStateManager.Profile p_187408_0_)
+@@ -926,11 +921,11 @@ public class GlStateManager
+ 
+                 if (state)
+                 {
+-                    GL11.glEnable(this.capability);
++                    //GL11.glEnable(this.capability);
+                 }
+                 else
+                 {
+-                    GL11.glDisable(this.capability);
++                    //GL11.glDisable(this.capability);
+                 }
+             }
+         }
+@@ -1157,7 +1152,7 @@ public class GlStateManager
+         DEFAULT {
+             public void apply()
+             {
+-                GlStateManager.disableAlpha();
++                /*GlStateManager.disableAlpha();
+                 GlStateManager.alphaFunc(519, 0.0F);
+                 GlStateManager.disableLighting();
+                 GL11.glLightModel(GL11.GL_LIGHT_MODEL_AMBIENT, (FloatBuffer)RenderHelper.setColorBuffer(0.2F, 0.2F, 0.2F, 1.0F));
+@@ -1255,7 +1250,7 @@ public class GlStateManager
+                 GL11.glLineWidth(1.0F);
+                 GL11.glNormal3f(0.0F, 0.0F, 1.0F);
+                 GL11.glPolygonMode(GL11.GL_FRONT, GL11.GL_FILL);
+-                GL11.glPolygonMode(GL11.GL_BACK, GL11.GL_FILL);
++                GL11.glPolygonMode(GL11.GL_BACK, GL11.GL_FILL);*/
+             }
+ 
+             public void clean()
+@@ -1265,8 +1260,8 @@ public class GlStateManager
+         PLAYER_SKIN {
+             public void apply()
+             {
+-                GlStateManager.enableBlend();
+-                GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
++                //GlStateManager.enableBlend();
++                //GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+             }
+ 
+             public void clean()
+@@ -1277,18 +1272,18 @@ public class GlStateManager
+         TRANSPARENT_MODEL {
+             public void apply()
+             {
+-                GlStateManager.color(1.0F, 1.0F, 1.0F, 0.15F);
++                /*GlStateManager.color(1.0F, 1.0F, 1.0F, 0.15F);
+                 GlStateManager.depthMask(false);
+                 GlStateManager.enableBlend();
+                 GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+-                GlStateManager.alphaFunc(516, 0.003921569F);
++                GlStateManager.alphaFunc(516, 0.003921569F);*/
+             }
+ 
+             public void clean()
+             {
+-                GlStateManager.disableBlend();
+-                GlStateManager.alphaFunc(516, 0.1F);
+-                GlStateManager.depthMask(true);
++                //GlStateManager.disableBlend();
++               // GlStateManager.alphaFunc(516, 0.1F);
++                //GlStateManager.depthMask(true);
+             }
+         };
+ 
+diff --git a/minecraft/client/renderer/OpenGlHelper.java b/minecraft/client/renderer/OpenGlHelper.java
+index a2f6de3..1c5bc41 100644
+--- a/minecraft/client/renderer/OpenGlHelper.java
++++ b/minecraft/client/renderer/OpenGlHelper.java
+@@ -13,21 +13,6 @@ import net.minecraft.util.Util;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ import org.lwjgl.Sys;
+-import org.lwjgl.opengl.ARBFramebufferObject;
+-import org.lwjgl.opengl.ARBMultitexture;
+-import org.lwjgl.opengl.ARBShaderObjects;
+-import org.lwjgl.opengl.ARBVertexBufferObject;
+-import org.lwjgl.opengl.ARBVertexShader;
+-import org.lwjgl.opengl.ContextCapabilities;
+-import org.lwjgl.opengl.EXTBlendFuncSeparate;
+-import org.lwjgl.opengl.EXTFramebufferObject;
+-import org.lwjgl.opengl.GL11;
+-import org.lwjgl.opengl.GL13;
+-import org.lwjgl.opengl.GL14;
+-import org.lwjgl.opengl.GL15;
+-import org.lwjgl.opengl.GL20;
+-import org.lwjgl.opengl.GL30;
+-import org.lwjgl.opengl.GLContext;
+ import oshi.SystemInfo;
+ import oshi.hardware.Processor;
+ 
+@@ -105,9 +90,6 @@ public class OpenGlHelper
+      */
+     public static void initializeTextures()
+     {
+-        ContextCapabilities contextcapabilities = GLContext.getCapabilities();
+-        arbMultitexture = contextcapabilities.GL_ARB_multitexture && !contextcapabilities.OpenGL13;
+-        arbTextureEnvCombine = contextcapabilities.GL_ARB_texture_env_combine && !contextcapabilities.OpenGL13;
+ 
+         if (arbMultitexture)
+         {
+@@ -171,124 +153,7 @@ public class OpenGlHelper
+             GL_OPERAND2_ALPHA = 34202;
+         }
+ 
+-        extBlendFuncSeparate = contextcapabilities.GL_EXT_blend_func_separate && !contextcapabilities.OpenGL14;
+-        openGL14 = contextcapabilities.OpenGL14 || contextcapabilities.GL_EXT_blend_func_separate;
+-        framebufferSupported = openGL14 && (contextcapabilities.GL_ARB_framebuffer_object || contextcapabilities.GL_EXT_framebuffer_object || contextcapabilities.OpenGL30);
+ 
+-        if (framebufferSupported)
+-        {
+-            logText = logText + "Using framebuffer objects because ";
+-
+-            if (contextcapabilities.OpenGL30)
+-            {
+-                logText = logText + "OpenGL 3.0 is supported and separate blending is supported.\n";
+-                framebufferType = OpenGlHelper.FboMode.BASE;
+-                GL_FRAMEBUFFER = 36160;
+-                GL_RENDERBUFFER = 36161;
+-                GL_COLOR_ATTACHMENT0 = 36064;
+-                GL_DEPTH_ATTACHMENT = 36096;
+-                GL_FRAMEBUFFER_COMPLETE = 36053;
+-                GL_FB_INCOMPLETE_ATTACHMENT = 36054;
+-                GL_FB_INCOMPLETE_MISS_ATTACH = 36055;
+-                GL_FB_INCOMPLETE_DRAW_BUFFER = 36059;
+-                GL_FB_INCOMPLETE_READ_BUFFER = 36060;
+-            }
+-            else if (contextcapabilities.GL_ARB_framebuffer_object)
+-            {
+-                logText = logText + "ARB_framebuffer_object is supported and separate blending is supported.\n";
+-                framebufferType = OpenGlHelper.FboMode.ARB;
+-                GL_FRAMEBUFFER = 36160;
+-                GL_RENDERBUFFER = 36161;
+-                GL_COLOR_ATTACHMENT0 = 36064;
+-                GL_DEPTH_ATTACHMENT = 36096;
+-                GL_FRAMEBUFFER_COMPLETE = 36053;
+-                GL_FB_INCOMPLETE_MISS_ATTACH = 36055;
+-                GL_FB_INCOMPLETE_ATTACHMENT = 36054;
+-                GL_FB_INCOMPLETE_DRAW_BUFFER = 36059;
+-                GL_FB_INCOMPLETE_READ_BUFFER = 36060;
+-            }
+-            else if (contextcapabilities.GL_EXT_framebuffer_object)
+-            {
+-                logText = logText + "EXT_framebuffer_object is supported.\n";
+-                framebufferType = OpenGlHelper.FboMode.EXT;
+-                GL_FRAMEBUFFER = 36160;
+-                GL_RENDERBUFFER = 36161;
+-                GL_COLOR_ATTACHMENT0 = 36064;
+-                GL_DEPTH_ATTACHMENT = 36096;
+-                GL_FRAMEBUFFER_COMPLETE = 36053;
+-                GL_FB_INCOMPLETE_MISS_ATTACH = 36055;
+-                GL_FB_INCOMPLETE_ATTACHMENT = 36054;
+-                GL_FB_INCOMPLETE_DRAW_BUFFER = 36059;
+-                GL_FB_INCOMPLETE_READ_BUFFER = 36060;
+-            }
+-        }
+-        else
+-        {
+-            logText = logText + "Not using framebuffer objects because ";
+-            logText = logText + "OpenGL 1.4 is " + (contextcapabilities.OpenGL14 ? "" : "not ") + "supported, ";
+-            logText = logText + "EXT_blend_func_separate is " + (contextcapabilities.GL_EXT_blend_func_separate ? "" : "not ") + "supported, ";
+-            logText = logText + "OpenGL 3.0 is " + (contextcapabilities.OpenGL30 ? "" : "not ") + "supported, ";
+-            logText = logText + "ARB_framebuffer_object is " + (contextcapabilities.GL_ARB_framebuffer_object ? "" : "not ") + "supported, and ";
+-            logText = logText + "EXT_framebuffer_object is " + (contextcapabilities.GL_EXT_framebuffer_object ? "" : "not ") + "supported.\n";
+-        }
+-
+-        openGL21 = contextcapabilities.OpenGL21;
+-        shadersAvailable = openGL21 || contextcapabilities.GL_ARB_vertex_shader && contextcapabilities.GL_ARB_fragment_shader && contextcapabilities.GL_ARB_shader_objects;
+-        logText = logText + "Shaders are " + (shadersAvailable ? "" : "not ") + "available because ";
+-
+-        if (shadersAvailable)
+-        {
+-            if (contextcapabilities.OpenGL21)
+-            {
+-                logText = logText + "OpenGL 2.1 is supported.\n";
+-                arbShaders = false;
+-                GL_LINK_STATUS = 35714;
+-                GL_COMPILE_STATUS = 35713;
+-                GL_VERTEX_SHADER = 35633;
+-                GL_FRAGMENT_SHADER = 35632;
+-            }
+-            else
+-            {
+-                logText = logText + "ARB_shader_objects, ARB_vertex_shader, and ARB_fragment_shader are supported.\n";
+-                arbShaders = true;
+-                GL_LINK_STATUS = 35714;
+-                GL_COMPILE_STATUS = 35713;
+-                GL_VERTEX_SHADER = 35633;
+-                GL_FRAGMENT_SHADER = 35632;
+-            }
+-        }
+-        else
+-        {
+-            logText = logText + "OpenGL 2.1 is " + (contextcapabilities.OpenGL21 ? "" : "not ") + "supported, ";
+-            logText = logText + "ARB_shader_objects is " + (contextcapabilities.GL_ARB_shader_objects ? "" : "not ") + "supported, ";
+-            logText = logText + "ARB_vertex_shader is " + (contextcapabilities.GL_ARB_vertex_shader ? "" : "not ") + "supported, and ";
+-            logText = logText + "ARB_fragment_shader is " + (contextcapabilities.GL_ARB_fragment_shader ? "" : "not ") + "supported.\n";
+-        }
+-
+-        shadersSupported = framebufferSupported && shadersAvailable;
+-        String s = GL11.glGetString(GL11.GL_VENDOR).toLowerCase();
+-        nvidia = s.contains("nvidia");
+-        arbVbo = !contextcapabilities.OpenGL15 && contextcapabilities.GL_ARB_vertex_buffer_object;
+-        vboSupported = contextcapabilities.OpenGL15 || arbVbo;
+-        logText = logText + "VBOs are " + (vboSupported ? "" : "not ") + "available because ";
+-
+-        if (vboSupported)
+-        {
+-            if (arbVbo)
+-            {
+-                logText = logText + "ARB_vertex_buffer_object is supported.\n";
+-                GL_STATIC_DRAW = 35044;
+-                GL_ARRAY_BUFFER = 34962;
+-            }
+-            else
+-            {
+-                logText = logText + "OpenGL 1.5 is supported.\n";
+-                GL_STATIC_DRAW = 35044;
+-                GL_ARRAY_BUFFER = 34962;
+-            }
+-        }
+-
+-        ati = s.contains("ati");
+ 
+         if (ati)
+         {
+@@ -325,31 +190,17 @@ public class OpenGlHelper
+ 
+     public static int glGetProgrami(int program, int pname)
+     {
+-        return arbShaders ? ARBShaderObjects.glGetObjectParameteriARB(program, pname) : GL20.glGetProgrami(program, pname);
++        return 0;//arbShaders ? ;//ARBShaderObjects.glGetObjectParameteriARB(program, pname) : GL20.glGetProgrami(program, pname);
+     }
+ 
+     public static void glAttachShader(int program, int shaderIn)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glAttachObjectARB(program, shaderIn);
+-        }
+-        else
+-        {
+-            GL20.glAttachShader(program, shaderIn);
+-        }
++
+     }
+ 
+     public static void glDeleteShader(int shaderIn)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glDeleteObjectARB(shaderIn);
+-        }
+-        else
+-        {
+-            GL20.glDeleteShader(shaderIn);
+-        }
++
+     }
+ 
+     /**
+@@ -357,282 +208,142 @@ public class OpenGlHelper
+      */
+     public static int glCreateShader(int type)
+     {
+-        return arbShaders ? ARBShaderObjects.glCreateShaderObjectARB(type) : GL20.glCreateShader(type);
++        return 0;// ? ARBShaderObjects.glCreateShaderObjectARB(type) : GL20.glCreateShader(type);
+     }
+ 
+     public static void glShaderSource(int shaderIn, ByteBuffer string)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glShaderSourceARB(shaderIn, string);
+-        }
+-        else
+-        {
+-            GL20.glShaderSource(shaderIn, string);
+-        }
++
+     }
+ 
+     public static void glCompileShader(int shaderIn)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glCompileShaderARB(shaderIn);
+-        }
+-        else
+-        {
+-            GL20.glCompileShader(shaderIn);
+-        }
++
+     }
+ 
+     public static int glGetShaderi(int shaderIn, int pname)
+     {
+-        return arbShaders ? ARBShaderObjects.glGetObjectParameteriARB(shaderIn, pname) : GL20.glGetShaderi(shaderIn, pname);
++        return 0;//arbShaders ? ARBShaderObjects.glGetObjectParameteriARB(shaderIn, pname) : GL20.glGetShaderi(shaderIn, pname);
+     }
+ 
+     public static String glGetShaderInfoLog(int shaderIn, int maxLength)
+     {
+-        return arbShaders ? ARBShaderObjects.glGetInfoLogARB(shaderIn, maxLength) : GL20.glGetShaderInfoLog(shaderIn, maxLength);
++        return "";//arbShaders ? ARBShaderObjects.glGetInfoLogARB(shaderIn, maxLength) : GL20.glGetShaderInfoLog(shaderIn, maxLength);
+     }
+ 
+     public static String glGetProgramInfoLog(int program, int maxLength)
+     {
+-        return arbShaders ? ARBShaderObjects.glGetInfoLogARB(program, maxLength) : GL20.glGetProgramInfoLog(program, maxLength);
++        return "";//arbShaders ? ARBShaderObjects.glGetInfoLogARB(program, maxLength) : GL20.glGetProgramInfoLog(program, maxLength);
+     }
+ 
+     public static void glUseProgram(int program)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUseProgramObjectARB(program);
+-        }
+-        else
+-        {
+-            GL20.glUseProgram(program);
+-        }
++
+     }
+ 
+     public static int glCreateProgram()
+     {
+-        return arbShaders ? ARBShaderObjects.glCreateProgramObjectARB() : GL20.glCreateProgram();
++        return 0;//arbShaders ? ARBShaderObjects.glCreateProgramObjectARB() : GL20.glCreateProgram();
+     }
+ 
+     public static void glDeleteProgram(int program)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glDeleteObjectARB(program);
+-        }
+-        else
+-        {
+-            GL20.glDeleteProgram(program);
+-        }
++
+     }
+ 
+     public static void glLinkProgram(int program)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glLinkProgramARB(program);
+-        }
+-        else
+-        {
+-            GL20.glLinkProgram(program);
+-        }
++
+     }
+ 
+     public static int glGetUniformLocation(int programObj, CharSequence name)
+     {
+-        return arbShaders ? ARBShaderObjects.glGetUniformLocationARB(programObj, name) : GL20.glGetUniformLocation(programObj, name);
++        return 0;//arbShaders ? ARBShaderObjects.glGetUniformLocationARB(programObj, name) : GL20.glGetUniformLocation(programObj, name);
+     }
+ 
+     public static void glUniform1(int location, IntBuffer values)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniform1ARB(location, values);
+-        }
+-        else
+-        {
+-            GL20.glUniform1(location, values);
+-        }
++
+     }
+ 
+     public static void glUniform1i(int location, int v0)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniform1iARB(location, v0);
+-        }
+-        else
+-        {
+-            GL20.glUniform1i(location, v0);
+-        }
++
+     }
+ 
+     public static void glUniform1(int location, FloatBuffer values)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniform1ARB(location, values);
+-        }
+-        else
+-        {
+-            GL20.glUniform1(location, values);
+-        }
++
+     }
+ 
+     public static void glUniform2(int location, IntBuffer values)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniform2ARB(location, values);
+-        }
+-        else
+-        {
+-            GL20.glUniform2(location, values);
+-        }
++
+     }
+ 
+     public static void glUniform2(int location, FloatBuffer values)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniform2ARB(location, values);
+-        }
+-        else
+-        {
+-            GL20.glUniform2(location, values);
+-        }
++
+     }
+ 
+     public static void glUniform3(int location, IntBuffer values)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniform3ARB(location, values);
+-        }
+-        else
+-        {
+-            GL20.glUniform3(location, values);
+-        }
++
+     }
+ 
+     public static void glUniform3(int location, FloatBuffer values)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniform3ARB(location, values);
+-        }
+-        else
+-        {
+-            GL20.glUniform3(location, values);
+-        }
++
+     }
+ 
+     public static void glUniform4(int location, IntBuffer values)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniform4ARB(location, values);
+-        }
+-        else
+-        {
+-            GL20.glUniform4(location, values);
+-        }
++
+     }
+ 
+     public static void glUniform4(int location, FloatBuffer values)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniform4ARB(location, values);
+-        }
+-        else
+-        {
+-            GL20.glUniform4(location, values);
+-        }
++
+     }
+ 
+     public static void glUniformMatrix2(int location, boolean transpose, FloatBuffer matrices)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniformMatrix2ARB(location, transpose, matrices);
+-        }
+-        else
+-        {
+-            GL20.glUniformMatrix2(location, transpose, matrices);
+-        }
++
+     }
+ 
+     public static void glUniformMatrix3(int location, boolean transpose, FloatBuffer matrices)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniformMatrix3ARB(location, transpose, matrices);
+-        }
+-        else
+-        {
+-            GL20.glUniformMatrix3(location, transpose, matrices);
+-        }
++
+     }
+ 
+     public static void glUniformMatrix4(int location, boolean transpose, FloatBuffer matrices)
+     {
+-        if (arbShaders)
+-        {
+-            ARBShaderObjects.glUniformMatrix4ARB(location, transpose, matrices);
+-        }
+-        else
+-        {
+-            GL20.glUniformMatrix4(location, transpose, matrices);
+-        }
++
+     }
+ 
+     public static int glGetAttribLocation(int program, CharSequence name)
+     {
+-        return arbShaders ? ARBVertexShader.glGetAttribLocationARB(program, name) : GL20.glGetAttribLocation(program, name);
++        return 0;//arbShaders ? ARBVertexShader.glGetAttribLocationARB(program, name) : GL20.glGetAttribLocation(program, name);
+     }
+ 
+     public static int glGenBuffers()
+     {
+-        return arbVbo ? ARBVertexBufferObject.glGenBuffersARB() : GL15.glGenBuffers();
++        return 0;//arbVbo ? ARBVertexBufferObject.glGenBuffersARB() : GL15.glGenBuffers();
+     }
+ 
+     public static void glBindBuffer(int target, int buffer)
+     {
+-        if (arbVbo)
+-        {
+-            ARBVertexBufferObject.glBindBufferARB(target, buffer);
+-        }
+-        else
+-        {
+-            GL15.glBindBuffer(target, buffer);
+-        }
++
+     }
+ 
+     public static void glBufferData(int target, ByteBuffer data, int usage)
+     {
+-        if (arbVbo)
+-        {
+-            ARBVertexBufferObject.glBufferDataARB(target, data, usage);
+-        }
+-        else
+-        {
+-            GL15.glBufferData(target, data, usage);
+-        }
++
+     }
+ 
+     public static void glDeleteBuffers(int buffer)
+     {
+-        if (arbVbo)
+-        {
+-            ARBVertexBufferObject.glDeleteBuffersARB(buffer);
+-        }
+-        else
+-        {
+-            GL15.glDeleteBuffers(buffer);
+-        }
++
+     }
+ 
+     public static boolean useVbo()
+@@ -644,19 +355,7 @@ public class OpenGlHelper
+     {
+         if (framebufferSupported)
+         {
+-            switch (framebufferType)
+-            {
+-                case BASE:
+-                    GL30.glBindFramebuffer(target, framebufferIn);
+-                    break;
+-
+-                case ARB:
+-                    ARBFramebufferObject.glBindFramebuffer(target, framebufferIn);
+-                    break;
+ 
+-                case EXT:
+-                    EXTFramebufferObject.glBindFramebufferEXT(target, framebufferIn);
+-            }
+         }
+     }
+ 
+@@ -664,19 +363,7 @@ public class OpenGlHelper
+     {
+         if (framebufferSupported)
+         {
+-            switch (framebufferType)
+-            {
+-                case BASE:
+-                    GL30.glBindRenderbuffer(target, renderbuffer);
+-                    break;
+ 
+-                case ARB:
+-                    ARBFramebufferObject.glBindRenderbuffer(target, renderbuffer);
+-                    break;
+-
+-                case EXT:
+-                    EXTFramebufferObject.glBindRenderbufferEXT(target, renderbuffer);
+-            }
+         }
+     }
+ 
+@@ -684,19 +371,7 @@ public class OpenGlHelper
+     {
+         if (framebufferSupported)
+         {
+-            switch (framebufferType)
+-            {
+-                case BASE:
+-                    GL30.glDeleteRenderbuffers(renderbuffer);
+-                    break;
+-
+-                case ARB:
+-                    ARBFramebufferObject.glDeleteRenderbuffers(renderbuffer);
+-                    break;
+ 
+-                case EXT:
+-                    EXTFramebufferObject.glDeleteRenderbuffersEXT(renderbuffer);
+-            }
+         }
+     }
+ 
+@@ -704,19 +379,7 @@ public class OpenGlHelper
+     {
+         if (framebufferSupported)
+         {
+-            switch (framebufferType)
+-            {
+-                case BASE:
+-                    GL30.glDeleteFramebuffers(framebufferIn);
+-                    break;
+ 
+-                case ARB:
+-                    ARBFramebufferObject.glDeleteFramebuffers(framebufferIn);
+-                    break;
+-
+-                case EXT:
+-                    EXTFramebufferObject.glDeleteFramebuffersEXT(framebufferIn);
+-            }
+         }
+     }
+ 
+@@ -731,20 +394,7 @@ public class OpenGlHelper
+         }
+         else
+         {
+-            switch (framebufferType)
+-            {
+-                case BASE:
+-                    return GL30.glGenFramebuffers();
+-
+-                case ARB:
+-                    return ARBFramebufferObject.glGenFramebuffers();
+-
+-                case EXT:
+-                    return EXTFramebufferObject.glGenFramebuffersEXT();
+-
+-                default:
+-                    return -1;
+-            }
++            return 0;
+         }
+     }
+ 
+@@ -756,20 +406,7 @@ public class OpenGlHelper
+         }
+         else
+         {
+-            switch (framebufferType)
+-            {
+-                case BASE:
+-                    return GL30.glGenRenderbuffers();
+-
+-                case ARB:
+-                    return ARBFramebufferObject.glGenRenderbuffers();
+-
+-                case EXT:
+-                    return EXTFramebufferObject.glGenRenderbuffersEXT();
+-
+-                default:
+-                    return -1;
+-            }
++            return -1;
+         }
+     }
+ 
+@@ -777,19 +414,7 @@ public class OpenGlHelper
+     {
+         if (framebufferSupported)
+         {
+-            switch (framebufferType)
+-            {
+-                case BASE:
+-                    GL30.glRenderbufferStorage(target, internalFormat, width, height);
+-                    break;
+ 
+-                case ARB:
+-                    ARBFramebufferObject.glRenderbufferStorage(target, internalFormat, width, height);
+-                    break;
+-
+-                case EXT:
+-                    EXTFramebufferObject.glRenderbufferStorageEXT(target, internalFormat, width, height);
+-            }
+         }
+     }
+ 
+@@ -797,24 +422,14 @@ public class OpenGlHelper
+     {
+         if (framebufferSupported)
+         {
+-            switch (framebufferType)
+-            {
+-                case BASE:
+-                    GL30.glFramebufferRenderbuffer(target, attachment, renderBufferTarget, renderBuffer);
+-                    break;
+-
+-                case ARB:
+-                    ARBFramebufferObject.glFramebufferRenderbuffer(target, attachment, renderBufferTarget, renderBuffer);
+-                    break;
+ 
+-                case EXT:
+-                    EXTFramebufferObject.glFramebufferRenderbufferEXT(target, attachment, renderBufferTarget, renderBuffer);
+-            }
+         }
+     }
+ 
+     public static int glCheckFramebufferStatus(int target)
+     {
++        return -1;
++        /*
+         if (!framebufferSupported)
+         {
+             return -1;
+@@ -835,11 +450,12 @@ public class OpenGlHelper
+                 default:
+                     return -1;
+             }
+-        }
++        }*/
+     }
+ 
+     public static void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level)
+     {
++        /*
+         if (framebufferSupported)
+         {
+             switch (framebufferType)
+@@ -856,6 +472,7 @@ public class OpenGlHelper
+                     EXTFramebufferObject.glFramebufferTexture2DEXT(target, attachment, textarget, texture, level);
+             }
+         }
++        */
+     }
+ 
+     /**
+@@ -865,11 +482,11 @@ public class OpenGlHelper
+     {
+         if (arbMultitexture)
+         {
+-            ARBMultitexture.glActiveTextureARB(texture);
++            //ARBMultitexture.glActiveTextureARB(texture);
+         }
+         else
+         {
+-            GL13.glActiveTexture(texture);
++            //GL13.glActiveTexture(texture);
+         }
+     }
+ 
+@@ -880,11 +497,11 @@ public class OpenGlHelper
+     {
+         if (arbMultitexture)
+         {
+-            ARBMultitexture.glClientActiveTextureARB(texture);
++            //ARBMultitexture.glClientActiveTextureARB(texture);
+         }
+         else
+         {
+-            GL13.glClientActiveTexture(texture);
++            //GL13.glClientActiveTexture(texture);
+         }
+     }
+ 
+@@ -895,11 +512,11 @@ public class OpenGlHelper
+     {
+         if (arbMultitexture)
+         {
+-            ARBMultitexture.glMultiTexCoord2fARB(target, p_77475_1_, t);
++            //ARBMultitexture.glMultiTexCoord2fARB(target, p_77475_1_, t);
+         }
+         else
+         {
+-            GL13.glMultiTexCoord2f(target, p_77475_1_, t);
++            //GL13.glMultiTexCoord2f(target, p_77475_1_, t);
+         }
+     }
+ 
+@@ -909,16 +526,16 @@ public class OpenGlHelper
+         {
+             if (extBlendFuncSeparate)
+             {
+-                EXTBlendFuncSeparate.glBlendFuncSeparateEXT(sFactorRGB, dFactorRGB, sfactorAlpha, dfactorAlpha);
++                //EXTBlendFuncSeparate.glBlendFuncSeparateEXT(sFactorRGB, dFactorRGB, sfactorAlpha, dfactorAlpha);
+             }
+             else
+             {
+-                GL14.glBlendFuncSeparate(sFactorRGB, dFactorRGB, sfactorAlpha, dfactorAlpha);
++                //GL14.glBlendFuncSeparate(sFactorRGB, dFactorRGB, sfactorAlpha, dfactorAlpha);
+             }
+         }
+         else
+         {
+-            GL11.glBlendFunc(sFactorRGB, dFactorRGB);
++            //GL11.glBlendFunc(sFactorRGB, dFactorRGB);
+         }
+     }
+ 
+@@ -938,7 +555,7 @@ public class OpenGlHelper
+         GlStateManager.depthMask(false);
+         Tessellator tessellator = Tessellator.getInstance();
+         VertexBuffer vertexbuffer = tessellator.getBuffer();
+-        GL11.glLineWidth(4.0F);
++        //GL11.glLineWidth(4.0F);
+         vertexbuffer.begin(1, DefaultVertexFormats.POSITION_COLOR);
+         vertexbuffer.pos(0.0D, 0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+         vertexbuffer.pos((double)p_188785_0_, 0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+@@ -947,7 +564,7 @@ public class OpenGlHelper
+         vertexbuffer.pos(0.0D, 0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+         vertexbuffer.pos(0.0D, 0.0D, (double)p_188785_0_).color(0, 0, 0, 255).endVertex();
+         tessellator.draw();
+-        GL11.glLineWidth(2.0F);
++        //GL11.glLineWidth(2.0F);
+         vertexbuffer.begin(1, DefaultVertexFormats.POSITION_COLOR);
+         vertexbuffer.pos(0.0D, 0.0D, 0.0D).color(255, 0, 0, 255).endVertex();
+         vertexbuffer.pos((double)p_188785_0_, 0.0D, 0.0D).color(255, 0, 0, 255).endVertex();
+@@ -956,7 +573,7 @@ public class OpenGlHelper
+         vertexbuffer.pos(0.0D, 0.0D, 0.0D).color(127, 127, 255, 255).endVertex();
+         vertexbuffer.pos(0.0D, 0.0D, (double)p_188785_0_).color(127, 127, 255, 255).endVertex();
+         tessellator.draw();
+-        GL11.glLineWidth(1.0F);
++        //GL11.glLineWidth(1.0F);
+         GlStateManager.depthMask(true);
+         GlStateManager.enableTexture2D();
+     }
+diff --git a/minecraft/client/renderer/texture/Stitcher.java b/minecraft/client/renderer/texture/Stitcher.java
+index d2a4361..81b2d04 100644
+--- a/minecraft/client/renderer/texture/Stitcher.java
++++ b/minecraft/client/renderer/texture/Stitcher.java
+@@ -99,56 +99,56 @@ public class Stitcher
+     /**
+      * Attempts to find space for specified tile
+      */
+-    private boolean allocateSlot(Stitcher.Holder p_94310_1_)
++    private boolean allocateSlot(Stitcher.Holder holderToInsert)
+     {
+-        TextureAtlasSprite textureatlassprite = p_94310_1_.getAtlasSprite();
++        TextureAtlasSprite textureatlassprite = holderToInsert.getAtlasSprite();
+         boolean flag = textureatlassprite.getIconWidth() != textureatlassprite.getIconHeight();
+ 
+         for (int i = 0; i < this.stitchSlots.size(); ++i)
+         {
+-            if (((Stitcher.Slot)this.stitchSlots.get(i)).addSlot(p_94310_1_))
++            if (((Stitcher.Slot)this.stitchSlots.get(i)).addSlot(holderToInsert))
+             {
+                 return true;
+             }
+ 
+             if (flag)
+             {
+-                p_94310_1_.rotate();
++                holderToInsert.rotate();
+ 
+-                if (((Stitcher.Slot)this.stitchSlots.get(i)).addSlot(p_94310_1_))
++                if (((Stitcher.Slot)this.stitchSlots.get(i)).addSlot(holderToInsert))
+                 {
+                     return true;
+                 }
+ 
+-                p_94310_1_.rotate();
++                holderToInsert.rotate();
+             }
+         }
+ 
+-        return this.expandAndAllocateSlot(p_94310_1_);
++        return this.expandAndAllocateSlot(holderToInsert);
+     }
+ 
+     /**
+      * Expand stitched texture in order to make space for specified tile
+      */
+-    private boolean expandAndAllocateSlot(Stitcher.Holder p_94311_1_)
++    private boolean expandAndAllocateSlot(Stitcher.Holder holderToInsert)
+     {
+-        int i = Math.min(p_94311_1_.getWidth(), p_94311_1_.getHeight());
+-        int j = Math.max(p_94311_1_.getWidth(), p_94311_1_.getHeight());
+-        int k = MathHelper.roundUpToPowerOfTwo(this.currentWidth);
+-        int l = MathHelper.roundUpToPowerOfTwo(this.currentHeight);
+-        int i1 = MathHelper.roundUpToPowerOfTwo(this.currentWidth + i);
+-        int j1 = MathHelper.roundUpToPowerOfTwo(this.currentHeight + i);
+-        boolean flag1 = i1 <= this.maxWidth;
+-        boolean flag2 = j1 <= this.maxHeight;
+-
+-        if (!flag1 && !flag2)
++        int minOfWidthAndHeight = Math.min(holderToInsert.getWidth(), holderToInsert.getHeight());
++        int maxOfWidthAndHeight = Math.max(holderToInsert.getWidth(), holderToInsert.getHeight());
++        int widthPowerOfTwo = MathHelper.roundUpToPowerOfTwo(this.currentWidth);
++        int heightPowerOfTwo = MathHelper.roundUpToPowerOfTwo(this.currentHeight);
++        int expandedWidth = MathHelper.roundUpToPowerOfTwo(this.currentWidth + minOfWidthAndHeight);
++        int expendedHeight = MathHelper.roundUpToPowerOfTwo(this.currentHeight + minOfWidthAndHeight);
++        boolean expandedWidthSmallEnough = expandedWidth <= this.maxWidth;
++        boolean expandedHeightSmallEnough = expendedHeight <= this.maxHeight;
++
++        if (!expandedWidthSmallEnough && !expandedHeightSmallEnough)
+         {
+             return false;
+         }
+         else
+         {
+-            boolean flag3 = flag1 && k != i1;
+-            boolean flag4 = flag2 && l != j1;
++            boolean flag3 = expandedWidthSmallEnough && widthPowerOfTwo != expandedWidth;
++            boolean flag4 = expandedHeightSmallEnough && heightPowerOfTwo != expendedHeight;
+             boolean flag;
+ 
+             if (flag3 ^ flag4)
+@@ -157,33 +157,33 @@ public class Stitcher
+             }
+             else
+             {
+-                flag = flag1 && k <= l;
++                flag = expandedWidthSmallEnough && widthPowerOfTwo <= heightPowerOfTwo;
+             }
+ 
+             Stitcher.Slot stitcher$slot;
+ 
+             if (flag)
+             {
+-                if (p_94311_1_.getWidth() > p_94311_1_.getHeight())
++                if (holderToInsert.getWidth() > holderToInsert.getHeight())
+                 {
+-                    p_94311_1_.rotate();
++                    holderToInsert.rotate();
+                 }
+ 
+                 if (this.currentHeight == 0)
+                 {
+-                    this.currentHeight = p_94311_1_.getHeight();
++                    this.currentHeight = holderToInsert.getHeight();
+                 }
+ 
+-                stitcher$slot = new Stitcher.Slot(this.currentWidth, 0, p_94311_1_.getWidth(), this.currentHeight);
+-                this.currentWidth += p_94311_1_.getWidth();
++                stitcher$slot = new Stitcher.Slot(this.currentWidth, 0, holderToInsert.getWidth(), this.currentHeight);
++                this.currentWidth += holderToInsert.getWidth();
+             }
+             else
+             {
+-                stitcher$slot = new Stitcher.Slot(0, this.currentHeight, this.currentWidth, p_94311_1_.getHeight());
+-                this.currentHeight += p_94311_1_.getHeight();
++                stitcher$slot = new Stitcher.Slot(0, this.currentHeight, this.currentWidth, holderToInsert.getHeight());
++                this.currentHeight += holderToInsert.getHeight();
+             }
+ 
+-            stitcher$slot.addSlot(p_94311_1_);
++            stitcher$slot.addSlot(holderToInsert);
+             this.stitchSlots.add(stitcher$slot);
+             return true;
+         }
+diff --git a/minecraft/client/renderer/texture/TextureManager.java b/minecraft/client/renderer/texture/TextureManager.java
+index e05a522..b161006 100644
+--- a/minecraft/client/renderer/texture/TextureManager.java
++++ b/minecraft/client/renderer/texture/TextureManager.java
+@@ -61,7 +61,7 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
+ 
+         try
+         {
+-            ((ITextureObject)textureObj).loadTexture(this.theResourceManager);
++            textureObj.loadTexture(this.theResourceManager);
+         }
+         catch (IOException ioexception)
+         {
+@@ -92,20 +92,20 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
+ 
+     public ITextureObject getTexture(ResourceLocation textureLocation)
+     {
+-        return (ITextureObject)this.mapTextureObjects.get(textureLocation);
++        return this.mapTextureObjects.get(textureLocation);
+     }
+ 
+     public ResourceLocation getDynamicTextureLocation(String name, DynamicTexture texture)
+     {
+-        Integer integer = (Integer)this.mapTextureCounters.get(name);
++        Integer integer = this.mapTextureCounters.get(name);
+ 
+         if (integer == null)
+         {
+-            integer = Integer.valueOf(1);
++            integer = 1;
+         }
+         else
+         {
+-            integer = Integer.valueOf(integer.intValue() + 1);
++            integer = integer + 1;
+         }
+ 
+         this.mapTextureCounters.put(name, integer);
+diff --git a/minecraft/client/renderer/texture/TextureMap.java b/minecraft/client/renderer/texture/TextureMap.java
+index 9d91fa2..4df5d73 100644
+--- a/minecraft/client/renderer/texture/TextureMap.java
++++ b/minecraft/client/renderer/texture/TextureMap.java
+@@ -22,8 +22,10 @@ import org.apache.commons.io.IOUtils;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+-public class TextureMap extends AbstractTexture implements ITickableTextureObject
+-{
++/**
++ * Generates a texture atlas through what's honeslty too complicated of a process, then uploads that texture to the GPU
++ */
++public class TextureMap extends AbstractTexture implements ITickableTextureObject {
+     private static final Logger LOGGER = LogManager.getLogger();
+     public static final ResourceLocation LOCATION_MISSING_TEXTURE = new ResourceLocation("missingno");
+     public static final ResourceLocation LOCATION_BLOCKS_TEXTURE = new ResourceLocation("textures/atlas/blocks.png");
+@@ -37,11 +39,10 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+ 
+     public TextureMap(String basePathIn)
+     {
+-        this(basePathIn, (ITextureMapPopulator)null);
++        this(basePathIn, null);
+     }
+ 
+-    public TextureMap(String basePathIn, @Nullable ITextureMapPopulator iconCreatorIn)
+-    {
++    public TextureMap(String basePathIn, @Nullable ITextureMapPopulator iconCreatorIn) {
+         this.listAnimatedSprites = Lists.<TextureAtlasSprite>newArrayList();
+         this.mapRegisteredSprites = Maps.<String, TextureAtlasSprite>newHashMap();
+         this.mapUploadedSprites = Maps.<String, TextureAtlasSprite>newHashMap();
+@@ -60,16 +61,19 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+         this.missingImage.setFramesTextureData(Lists.newArrayList(new int[][][] {aint1}));
+     }
+ 
+-    public void loadTexture(IResourceManager resourceManager) throws IOException
+-    {
+-        if (this.iconCreator != null)
+-        {
++    @Override
++    public void loadTexture(IResourceManager resourceManager) throws IOException {
++        if (this.iconCreator != null) {
+             this.loadSprites(resourceManager, this.iconCreator);
+         }
+     }
+ 
+-    public void loadSprites(IResourceManager resourceManager, ITextureMapPopulator iconCreatorIn)
+-    {
++    /**
++     * To any future maintainers of Nova: USE THIS METHOD! Do not use #loadTexture(IResourceManager) from above, it is a
++     * horrible method. It will not work unless you've called #TextureMap(String, ITextureMapPopulator) even though you
++     * might think it would work. Save yourself the trouble and never call #loadTexture(IResourceManager)
++     */
++    public void loadSprites(IResourceManager resourceManager, ITextureMapPopulator iconCreatorIn) {
+         this.mapRegisteredSprites.clear();
+         iconCreatorIn.registerSprites(this);
+         this.initMissingImage();
+@@ -77,8 +81,7 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+         this.loadTextureAtlas(resourceManager);
+     }
+ 
+-    public void loadTextureAtlas(IResourceManager resourceManager)
+-    {
++    public void loadTextureAtlas(IResourceManager resourceManager) {
+         int i = Minecraft.getGLMaximumTextureSize();
+         Stitcher stitcher = new Stitcher(i, i, 0, this.mipmapLevels);
+         this.mapUploadedSprites.clear();
+@@ -86,51 +89,44 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+         int j = Integer.MAX_VALUE;
+         int k = 1 << this.mipmapLevels;
+ 
+-        for (Entry<String, TextureAtlasSprite> entry : this.mapRegisteredSprites.entrySet())
+-        {
+-            TextureAtlasSprite textureatlassprite = (TextureAtlasSprite)entry.getValue();
++        for(Entry<String, TextureAtlasSprite> entry : this.mapRegisteredSprites.entrySet()) {
++            TextureAtlasSprite textureatlassprite = entry.getValue();
+             ResourceLocation resourcelocation = this.getResourceLocation(textureatlassprite);
+             IResource iresource = null;
+ 
+-            try
+-            {
++            try {
+                 PngSizeInfo pngsizeinfo = PngSizeInfo.makeFromResource(resourceManager.getResource(resourcelocation));
+                 iresource = resourceManager.getResource(resourcelocation);
+                 boolean flag = iresource.getMetadata("animation") != null;
+                 textureatlassprite.loadSprite(pngsizeinfo, flag);
+-            }
+-            catch (RuntimeException runtimeexception)
+-            {
+-                LOGGER.error("Unable to parse metadata from {}", new Object[] {resourcelocation, runtimeexception});
+-                continue;
+-            }
+-            catch (IOException ioexception)
+-            {
+-                LOGGER.error("Using missing texture, unable to load {}", new Object[] {resourcelocation, ioexception});
+-                continue;
+-            }
+-            finally
+-            {
+-                IOUtils.closeQuietly((Closeable)iresource);
+-            }
+ 
+-            j = Math.min(j, Math.min(textureatlassprite.getIconWidth(), textureatlassprite.getIconHeight()));
+-            int lvt_11_2_ = Math.min(Integer.lowestOneBit(textureatlassprite.getIconWidth()), Integer.lowestOneBit(textureatlassprite.getIconHeight()));
++                // Moved this bit up to remove the continue statements
++                j = Math.min(j, Math.min(textureatlassprite.getIconWidth(), textureatlassprite.getIconHeight()));
++                int lvt_11_2_ = Math.min(Integer.lowestOneBit(textureatlassprite.getIconWidth()), Integer.lowestOneBit(textureatlassprite.getIconHeight()));
+ 
+-            if (lvt_11_2_ < k)
+-            {
+-                LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", new Object[] {resourcelocation, Integer.valueOf(textureatlassprite.getIconWidth()), Integer.valueOf(textureatlassprite.getIconHeight()), Integer.valueOf(MathHelper.calculateLogBaseTwo(k)), Integer.valueOf(MathHelper.calculateLogBaseTwo(lvt_11_2_))});
+-                k = lvt_11_2_;
++                if (lvt_11_2_ < k) {
++                    LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", resourcelocation, textureatlassprite.getIconWidth(), textureatlassprite.getIconHeight(), MathHelper.calculateLogBaseTwo(k), MathHelper.calculateLogBaseTwo(lvt_11_2_));
++                    k = lvt_11_2_;
++                }
++
++                stitcher.addSprite(textureatlassprite);
++
++            } catch (RuntimeException runtimeexception) {
++                LOGGER.error("Unable to parse metadata from {}", resourcelocation, runtimeexception);
++
++            } catch (IOException ioexception) {
++                LOGGER.error("Using missing texture, unable to load {}", resourcelocation, ioexception);
++
++            } finally {
++                IOUtils.closeQuietly(iresource);
+             }
+ 
+-            stitcher.addSprite(textureatlassprite);
+         }
+ 
+         int l = Math.min(j, k);
+         int i1 = MathHelper.calculateLogBaseTwo(l);
+ 
+-        if (i1 < this.mipmapLevels)
+-        {
++        if (i1 < this.mipmapLevels) {
+             LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[] {this.basePath, Integer.valueOf(this.mipmapLevels), Integer.valueOf(i1), Integer.valueOf(l)});
+             this.mipmapLevels = i1;
+         }
+@@ -138,33 +134,21 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+         this.missingImage.generateMipmaps(this.mipmapLevels);
+         stitcher.addSprite(this.missingImage);
+ 
+-        try
+-        {
+-            stitcher.doStitch();
+-        }
+-        catch (StitcherException stitcherexception)
+-        {
+-            throw stitcherexception;
+-        }
++        stitcher.doStitch();
+ 
+-        LOGGER.info("Created: {}x{} {}-atlas", new Object[] {Integer.valueOf(stitcher.getCurrentWidth()), Integer.valueOf(stitcher.getCurrentHeight()), this.basePath});
++        LOGGER.info("Created: {}x{} {}-atlas", stitcher.getCurrentWidth(), stitcher.getCurrentHeight(), this.basePath);
+         TextureUtil.allocateTextureImpl(this.getGlTextureId(), this.mipmapLevels, stitcher.getCurrentWidth(), stitcher.getCurrentHeight());
+         Map<String, TextureAtlasSprite> map = Maps.<String, TextureAtlasSprite>newHashMap(this.mapRegisteredSprites);
+ 
+-        for (TextureAtlasSprite textureatlassprite1 : stitcher.getStichSlots())
+-        {
+-            if (textureatlassprite1 == this.missingImage || this.generateMipmaps(resourceManager, textureatlassprite1))
+-            {
++        for (TextureAtlasSprite textureatlassprite1 : stitcher.getStichSlots()) {
++            if (textureatlassprite1 == this.missingImage || this.generateMipmaps(resourceManager, textureatlassprite1)) {
+                 String s = textureatlassprite1.getIconName();
+                 map.remove(s);
+                 this.mapUploadedSprites.put(s, textureatlassprite1);
+ 
+-                try
+-                {
++                try {
+                     TextureUtil.uploadTextureMipmap(textureatlassprite1.getFrameTextureData(0), textureatlassprite1.getIconWidth(), textureatlassprite1.getIconHeight(), textureatlassprite1.getOriginX(), textureatlassprite1.getOriginY(), false, false);
+-                }
+-                catch (Throwable throwable)
+-                {
++                } catch (Throwable throwable) {
+                     CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Stitching texture atlas");
+                     CrashReportCategory crashreportcategory = crashreport.makeCategory("Texture being stitched together");
+                     crashreportcategory.addCrashSection("Atlas path", this.basePath);
+@@ -179,8 +163,7 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+             }
+         }
+ 
+-        for (TextureAtlasSprite textureatlassprite2 : map.values())
+-        {
++        for (TextureAtlasSprite textureatlassprite2 : map.values()) {
+             textureatlassprite2.copyFrom(this.missingImage);
+         }
+     }
+@@ -281,18 +264,14 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+         }
+     }
+ 
+-    public TextureAtlasSprite registerSprite(ResourceLocation location)
+-    {
+-        if (location == null)
+-        {
++    public TextureAtlasSprite registerSprite(ResourceLocation location) {
++        if(location == null) {
+             throw new IllegalArgumentException("Location cannot be null!");
+-        }
+-        else
+-        {
+-            TextureAtlasSprite textureatlassprite = (TextureAtlasSprite)this.mapRegisteredSprites.get(location);
+ 
+-            if (textureatlassprite == null)
+-            {
++        } else {
++            TextureAtlasSprite textureatlassprite = this.mapRegisteredSprites.get(location.toString());
++
++            if(textureatlassprite == null) {
+                 textureatlassprite = TextureAtlasSprite.makeAtlasSprite(location);
+                 this.mapRegisteredSprites.put(location.toString(), textureatlassprite);
+             }
+diff --git a/minecraft/client/renderer/texture/TextureUtil.java b/minecraft/client/renderer/texture/TextureUtil.java
+index b0a0490..352abf2 100644
+--- a/minecraft/client/renderer/texture/TextureUtil.java
++++ b/minecraft/client/renderer/texture/TextureUtil.java
+@@ -32,7 +32,7 @@ public class TextureUtil
+ 
+     public static int glGenTextures()
+     {
+-        return GlStateManager.generateTexture();
++        return 0;//GlStateManager.generateTexture();
+     }
+ 
+     public static void deleteTexture(int textureId)
+@@ -160,29 +160,29 @@ public class TextureUtil
+         return (int)((double)f4 * 255.0D);
+     }
+ 
+-    public static void uploadTextureMipmap(int[][] p_147955_0_, int p_147955_1_, int p_147955_2_, int p_147955_3_, int p_147955_4_, boolean p_147955_5_, boolean p_147955_6_)
++    public static void uploadTextureMipmap(int[][] textureData, int iconWidth, int iconHeight, int originX, int originY, boolean p_147955_5_, boolean p_147955_6_)
+     {
+-        for (int i = 0; i < p_147955_0_.length; ++i)
++        for (int i = 0; i < textureData.length; ++i)
+         {
+-            int[] aint = p_147955_0_[i];
+-            uploadTextureSub(i, aint, p_147955_1_ >> i, p_147955_2_ >> i, p_147955_3_ >> i, p_147955_4_ >> i, p_147955_5_, p_147955_6_, p_147955_0_.length > 1);
++            int[] aint = textureData[i];
++            uploadTextureSub(i, aint, iconWidth >> i, iconHeight >> i, originX >> i, originY >> i, p_147955_5_, p_147955_6_, textureData.length > 1);
+         }
+     }
+ 
+-    private static void uploadTextureSub(int p_147947_0_, int[] p_147947_1_, int p_147947_2_, int p_147947_3_, int p_147947_4_, int p_147947_5_, boolean p_147947_6_, boolean p_147947_7_, boolean p_147947_8_)
++    private static void uploadTextureSub(int mipLevelMaybe, int[] textureData, int width, int heigth, int x, int y, boolean p_147947_6_, boolean p_147947_7_, boolean p_147947_8_)
+     {
+-        int i = 4194304 / p_147947_2_;
++        int i = 4194304 / width;
+         setTextureBlurMipmap(p_147947_6_, p_147947_8_);
+         setTextureClamped(p_147947_7_);
+         int l;
+ 
+-        for (int j = 0; j < p_147947_2_ * p_147947_3_; j += p_147947_2_ * l)
++        for (int j = 0; j < width * heigth; j += width * l)
+         {
+-            int k = j / p_147947_2_;
+-            l = Math.min(i, p_147947_3_ - k);
+-            int i1 = p_147947_2_ * l;
+-            copyToBufferPos(p_147947_1_, j, i1);
+-            GlStateManager.glTexSubImage2D(3553, p_147947_0_, p_147947_4_, p_147947_5_ + k, p_147947_2_, l, 32993, 33639, DATA_BUFFER);
++            int k = j / width;
++            l = Math.min(i, heigth - k);
++            int i1 = width * l;
++            copyToBufferPos(textureData, j, i1);
++            GlStateManager.glTexSubImage2D(3553, mipLevelMaybe, x, y + k, width, l, 32993, 33639, DATA_BUFFER);
+         }
+     }
+ 
+@@ -197,22 +197,19 @@ public class TextureUtil
+         allocateTextureImpl(p_110991_0_, 0, p_110991_1_, p_110991_2_);
+     }
+ 
+-    public static void allocateTextureImpl(int p_180600_0_, int p_180600_1_, int p_180600_2_, int p_180600_3_)
+-    {
+-        deleteTexture(p_180600_0_);
+-        bindTexture(p_180600_0_);
++    public static void allocateTextureImpl(int glTextureName, int mipmapLevels, int width, int height) {
++        deleteTexture(glTextureName);
++        bindTexture(glTextureName);
+ 
+-        if (p_180600_1_ >= 0)
+-        {
+-            GlStateManager.glTexParameteri(3553, 33085, p_180600_1_);
++        if(mipmapLevels >= 0) {
++            GlStateManager.glTexParameteri(3553, 33085, mipmapLevels);
+             GlStateManager.glTexParameteri(3553, 33082, 0);
+-            GlStateManager.glTexParameteri(3553, 33083, p_180600_1_);
++            GlStateManager.glTexParameteri(3553, 33083, mipmapLevels);
+             GlStateManager.glTexParameterf(3553, 34049, 0.0F);
+         }
+ 
+-        for (int i = 0; i <= p_180600_1_; ++i)
+-        {
+-            GlStateManager.glTexImage2D(3553, i, 6408, p_180600_2_ >> i, p_180600_3_ >> i, 0, 32993, 33639, (IntBuffer)null);
++        for(int i = 0; i <= mipmapLevels; ++i) {
++            GlStateManager.glTexImage2D(3553, i, 6408, width >> i, height >> i, 0, 32993, 33639, (IntBuffer)null);
+         }
+     }
+ 
+diff --git a/minecraft/client/settings/GameSettings.java b/minecraft/client/settings/GameSettings.java
+index 206bf51..3f957f0 100644
+--- a/minecraft/client/settings/GameSettings.java
++++ b/minecraft/client/settings/GameSettings.java
+@@ -36,7 +36,7 @@ import org.apache.commons.lang3.ArrayUtils;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ import org.lwjgl.input.Keyboard;
+-import org.lwjgl.input.Mouse;
++import com.continuum.nova.input.Mouse;
+ import org.lwjgl.opengl.Display;
+ 
+ public class GameSettings
