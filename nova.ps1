@@ -11,6 +11,9 @@
 .PARAMETER build
     Compiles the native code, moves the output DLL to the correct directory, then compiles the Java code
 
+.PARAMETER install
+    installs Nova in Mincraft launcher
+	
 .PARAMETER nativeOnly
     Only compiles the C++ code. Does not compile the Java code
 
@@ -51,6 +54,7 @@
 param (
     [switch]$setup = $false,
     [switch]$build = $false,
+    [switch]$install = $false,
     [switch]$clean = $false,
     [switch]$run = $false,
     [switch]$nativeOnly = $false,
@@ -72,33 +76,38 @@ function New-NovaEnvironment {
 
     Write-Host "Downloading MCP..."
 
+    # Create MCP directory
     New-Item "mcp" -ItemType Directory
-    Write-Information "Created directory for MCP to live in"
     Set-Location "mcp"
-    Write-Information "Moved to MCP directory"
 
+    # Download MCP
     $wc = New-Object System.Net.WebClient
     $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
-    Write-Host "Downloaded MCP successfully"
 
+    # Extract MCP
     Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
     Remove-Item "mcp.zip"
-    robocopy "." "..\" "*" /s
-    Set-Location ".."
-    cmd.exe /C "$PSScriptRoot/decompile.bat"
-    robocopy "src\minecraft" "src\main\java" "*" /s
-    Write-Host "Unpacked MCP"
+    
+    # Decompile MCP
+    cmd.exe /C "$PSScriptRoot/mcp/decompile.bat"
 
-    # Clean up the intermediary files
-    Remove-Item "src\minecraft" -Recurse
-    Remove-Item "mcp" -Recurse
+    # Copy files from MCP to repository root directory
+    copy-item src\minecraft\* ..\src\main\java -force -recurse
+    copy-item temp\src\minecraft\assets ..\src\main\resources\assets -force -recurse
+    copy-item temp\src\minecraft\pack.png ..\src\main\resources\pack.png -force -recurse
+    copy-item jars\* ..\jars\ -force -recurse
+    Set-Location ".."
 
     # Apply our patch file
     Write-Host "Injecting Nova into Minecraft..."
     Set-Location src\main\java\net
-    ..\..\..\..\runtime\bin\applydiff.exe -p1 -i ..\..\resources\patches\nova.patch
+    ..\..\..\..\mcp\runtime\bin\applydiff.exe -p1 -i ..\..\..\..\patches\nova.patch
     Set-Location ..\..\..\..\
 
+    # Clean up the intermediary files
+    Remove-Item "mcp" -Recurse -Force
+
+    # Update git submodules
     Write-Host "Downloading dependencies..."
     git submodule update --init --recursive
 
@@ -145,7 +154,7 @@ function New-NovaCode([string]$buildEnvironment) {
     if($nativeOnly -eq $false) {
         # Compile the Java code
 
-        gradle fatjar
+        gradle fatjar createJars
 
         if($LASTEXITCODE -ne 0) {
             Write-Error "Gradle invocation failed, aborting"
@@ -174,13 +183,6 @@ function New-MinGWNovaBuild {
 
         # Compile the code
         mingw32-make -f Makefile nova-renderer
-
-        # Copy output DLL to the correct location
-        robocopy "." "..\..\jars\versions\1.10\1.10-natives\" "libnova-renderer.dll"
-
-        # $mcpLoc = Read-Host "Please enter the path to your MinGW installation. This should be the path to the folder with mingw-w64.bat in it"
-        # robocopy "$($mcpLoc)\mingw64\bin" "..\..\jars\versions\1.10\1.10-natives" "libstdc++-6.dll"
-
         Set-Location ..\..
 
     } else {
@@ -195,7 +197,7 @@ function New-VisualStudioBuild {
         Builds the C++ code in Nova, using Visual Studio 2015 to compile the code
     #>
 
-    if(Test-Command -command "devenv.exe") {
+    if(Test-Command -command "msbuild.exe") {
         # Visual Studio is probably installed, hopefully they have the correct version
         New-Item target -ItemType Directory >$null 2>&1
         New-Item target\cpp-msvc -ItemType Directory >$null 2>&1
@@ -205,15 +207,12 @@ function New-VisualStudioBuild {
 
         # Compile the code
         # TODO: Verify that this is the actual name of the solution file
-        devenv renderer.sln /Build Debug
+        msbuild renderer.sln /p:Configuration=Debug
 
-        # Copy the DLL to the correct location
-        # TODO: Verify that this is the name of the DLL
-        robocopy "." "..\..\jars\versions\1.10\1.10-natives\libnova-renderer.dll" "nova-renderer.dll"
         Set-Location ..\..
 
     } else {
-        Write-Error "Could not call the Visual Studio make tool, unable to build Nova. Please enstall Visual Stusio 2015 and ensure that devenv.exe is on your path"
+        Write-Error "Could not call the Visual Studio make tool, unable to build Nova. Please enstall Visual Stusio 2015 and ensure that msbuild.exe is on your path"
     }
 }
 
@@ -257,7 +256,7 @@ function Invoke-Nova {
     Write-Host "Launching Nova..."
 
     Set-Location "jars"
-    & java "-Djava.library.path=./versions/1.10/1.10-natives/" -classpath "..\build\classes\main;libraries;libraries/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar;libraries/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar;libraries/com/google/guava/guava/17.0/guava-17.0.jar;libraries/com/ibm/icu/icu4j-core-mojang/51.2/icu4j-core-mojang-51.2.jar;libraries/com/mojang/authlib/1.5.22/authlib-1.5.22.jar;libraries/com/mojang/netty/1.6/netty-1.6.jar;libraries/com/mojang/realms/1.9.1/realms-1.9.1.jar;libraries/com/paulscode/codecjorbis/20101023/codecjorbis-20101023.jar;libraries/com/paulscode/codecwav/20101023/codecwav-20101023.jar;libraries/com/paulscode/libraryjavasound/20101123/libraryjavasound-20101123.jar;libraries/com/paulscode/librarylwjglopenal/20100824/librarylwjglopenal-20100824.jar;libraries/com/paulscode/soundsystem/20120107/soundsystem-20120107.jar;libraries/commons-codec/commons-codec/1.9/commons-codec-1.9.jar;libraries/commons-io/commons-io/2.4/commons-io-2.4.jar;libraries/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar;libraries/io/netty/netty-all/4.0.23.Final/netty-all-4.0.23.Final.jar;libraries/it/unimi/dsi/fastutil/7.0.12_mojang/fastutil-7.0.12_mojang.jar;libraries/net/java/dev/jna/jna/3.4.0/jna-3.4.0.jar;libraries/net/java/dev/jna/platform/3.4.0/platform-3.4.0.jar;libraries/net/java/jinput/jinput/2.0.5/jinput-2.0.5.jar;libraries/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar;libraries/net/java/jutils/jutils/1.0.0/jutils-1.0.0.jar;libraries/net/sf/jopt-simple/jopt-simple/4.6/jopt-simple-4.6.jar;libraries/org/apache/commons/commons-compress/1.8.1/commons-compress-1.8.1.jar;libraries/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar;libraries/org/apache/httpcomponents/httpclient/4.3.3/httpclient-4.3.3.jar;libraries/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar;libraries/org/apache/logging/log4j/log4j-api/2.0-beta9/log4j-api-2.0-beta9.jar;libraries/org/apache/logging/log4j/log4j-core/2.0-beta9/log4j-core-2.0-beta9.jar;libraries/org/lwjgl/lwjgl/lwjgl/2.9.4-nightly-20150209/lwjgl-2.9.4-nightly-20150209.jar;libraries/org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209-natives-windows.jar;libraries/org/lwjgl/lwjgl/lwjgl_util/2.9.4-nightly-20150209/lwjgl_util-2.9.4-nightly-20150209.jar;libraries/oshi-project/oshi-core/1.1/oshi-core-1.1.jar;versions/1.10/1.10.jar -Djava.library.path=versions/1.10/1.10-natives" Start
+    & java "-Djava.library.path=./versions/1.10/1.10-natives/" -classpath "libraries;libraries/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar;libraries/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar;libraries/com/google/guava/guava/17.0/guava-17.0.jar;libraries/com/ibm/icu/icu4j-core-mojang/51.2/icu4j-core-mojang-51.2.jar;libraries/com/mojang/authlib/1.5.22/authlib-1.5.22.jar;libraries/com/mojang/netty/1.6/netty-1.6.jar;libraries/com/mojang/realms/1.9.1/realms-1.9.1.jar;libraries/com/paulscode/codecjorbis/20101023/codecjorbis-20101023.jar;libraries/com/paulscode/codecwav/20101023/codecwav-20101023.jar;libraries/com/paulscode/libraryjavasound/20101123/libraryjavasound-20101123.jar;libraries/com/paulscode/librarylwjglopenal/20100824/librarylwjglopenal-20100824.jar;libraries/com/paulscode/soundsystem/20120107/soundsystem-20120107.jar;libraries/commons-codec/commons-codec/1.9/commons-codec-1.9.jar;libraries/commons-io/commons-io/2.4/commons-io-2.4.jar;libraries/commons-logging/commons-logging/1.1.3/commons-logging-1.1.3.jar;libraries/io/netty/netty-all/4.0.23.Final/netty-all-4.0.23.Final.jar;libraries/it/unimi/dsi/fastutil/7.0.12_mojang/fastutil-7.0.12_mojang.jar;libraries/net/java/dev/jna/jna/3.4.0/jna-3.4.0.jar;libraries/net/java/dev/jna/platform/3.4.0/platform-3.4.0.jar;libraries/net/java/jinput/jinput/2.0.5/jinput-2.0.5.jar;libraries/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar;libraries/net/java/jutils/jutils/1.0.0/jutils-1.0.0.jar;libraries/net/sf/jopt-simple/jopt-simple/4.6/jopt-simple-4.6.jar;libraries/org/apache/commons/commons-compress/1.8.1/commons-compress-1.8.1.jar;libraries/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar;libraries/org/apache/httpcomponents/httpclient/4.3.3/httpclient-4.3.3.jar;libraries/org/apache/httpcomponents/httpcore/4.3.2/httpcore-4.3.2.jar;libraries/org/apache/logging/log4j/log4j-api/2.0-beta9/log4j-api-2.0-beta9.jar;libraries/org/apache/logging/log4j/log4j-core/2.0-beta9/log4j-core-2.0-beta9.jar;libraries/org/lwjgl/lwjgl/lwjgl/2.9.4-nightly-20150209/lwjgl-2.9.4-nightly-20150209.jar;libraries/org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209-natives-windows.jar;libraries/org/lwjgl/lwjgl/lwjgl_util/2.9.4-nightly-20150209/lwjgl_util-2.9.4-nightly-20150209.jar;libraries/oshi-project/oshi-core/1.1/oshi-core-1.1.jar;../build/libs/1.10-Nova.jar" Start
     Set-Location ".."
 }
 
@@ -267,8 +266,42 @@ function Invoke-Nova {
 
 function New-Patches {
     Set-Location src\main\java\net
-    git diff origin/minecraft-1.10-mcp > ..\..\..\..\src\main\resources\patches\nova.patch 
+    git diff origin/minecraft-1.10-mcp > ..\..\..\..\patches\nova.patch 
 }
+
+################################################################################
+#  install nova in minecraft launcher                                                             #
+################################################################################
+
+function install-Nova {
+    if (Test-Path  $Env:APPDATA\.minecraft\launcher_profiles.json){
+		new-item "$Env:APPDATA\.minecraft\versions\1.10-nova\" -ItemType Directory
+		copy-item "jars\config" "$Env:APPDATA\.minecraft\config" -force -recurse
+		copy-item "jars\shaderpacks" "$Env:APPDATA\.minecraft\shaderpacks" -force -recurse
+		copy-item "1.10-nova.json" "$Env:APPDATA\.minecraft\versions\1.10-nova\1.10-nova.json" -force
+		$version_config = Get-Content $Env:APPDATA\.minecraft\versions\1.10-nova\1.10-nova.json | ConvertFrom-Json
+		[string]$version
+		ForEach ($library in $version_config.libraries){
+			if ($library.name.StartsWith("com.continuum.nova:nova-renderer:")){
+				$version = $library.name.Replace("com.continuum.nova:nova-renderer:","")
+			}
+		}
+		copy-item "build\libs\1.10-Nova.jar" "$Env:APPDATA\.minecraft\versions\1.10-nova\" -force
+		new-item "$Env:APPDATA\.minecraft\libraries\com\continuum\nova\nova-renderer\$version\" -ItemType Directory
+		copy-item "build\libs\nova-renderer-$version-natives-windows.jar" "$Env:APPDATA\.minecraft\libraries\com\continuum\nova\nova-renderer\$version\" -force
+		
+		$launcher_config = Get-Content $Env:APPDATA\.minecraft\launcher_profiles.json | ConvertFrom-Json
+		$sNovaProfile  = '{"name": "Nova","lastVersionId": "1.10-Nova"}'		
+		$jsonNovaProfile = ConvertFrom-Json($sNovaProfile)
+		$launcher_config.profiles | Add-Member 'Nova' $jsonNovaProfile 
+		$launcher_config.selectedProfile='Nova'
+		$launcher_config | ConvertTo-Json | Set-Content $Env:APPDATA\.minecraft\launcher_profiles_test.json 
+	} else {
+		 Write-Error "Could not find locate .mincraft folder, did you run Mincraft at least once ?"
+	}
+   
+}
+
 
 ################################################################################
 #  Main                                                                        #
@@ -284,6 +317,11 @@ if($makePatches -eq $true) {
 
 if($build -eq $true) {
     New-NovaCode -buildEnvironment $buildEnvironment
+}
+
+if($install -eq $true) {
+    New-NovaCode -buildEnvironment "msvc"
+	install-Nova
 }
 
 if($clean -eq $true) {
