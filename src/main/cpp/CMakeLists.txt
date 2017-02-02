@@ -182,6 +182,12 @@ add_custom_command(TARGET nova-renderer
                    POST_BUILD
                    COMMAND copy /Y "nova-renderer.dll" "..\\..\\jars\\versions\\1.10\\1.10-natives")
 endif (WIN32)
+if (UNIX)
+add_custom_command(TARGET nova-renderer
+                   POST_BUILD
+                   COMMAND cp -f "libnova-renderer.so" "../../jars/versions/1.10/1.10-natives")
+endif (UNIX)
+
 # Setup the nova-test executable
 set(TEST_SOURCE_FILES
         3rdparty/glad/src/glad.c
