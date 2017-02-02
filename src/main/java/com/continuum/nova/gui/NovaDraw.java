@@ -1,5 +1,7 @@
-package com.continuum.nova;
+package com.continuum.nova.gui;
 
+import com.continuum.nova.NovaNative;
+import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.input.Mouse;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -9,11 +11,25 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class NovaDraw {
 
     private static int mouseX, mouseY;
+
+    static HashMap<ResourceLocation, Buffers> buffers = new HashMap<>();
+
+    /**
+     * private constructor cause this class only has static things
+     */
+    private NovaDraw() {}
+
+    private static void clearBuffers() {
+        buffers.clear();
+        NovaNative.INSTANCE.clear_gui_buffers();
+    }
 
     public static int getMouseX() {
         return mouseX;
@@ -21,13 +37,6 @@ public class NovaDraw {
 
     public static int getMouseY() {
         return mouseY;
-    }
-
-    static HashMap<ResourceLocation, Buffers> buffers = new HashMap<>();
-
-    static void clearBuffers() {
-        buffers.clear();
-        NovaNative.INSTANCE.clear_gui_buffers();
     }
 
     /**
@@ -53,13 +62,16 @@ public class NovaDraw {
      * @param vertices    the vertices as Vertex objects
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Vertex[] vertices) {
-        Float[] vertexbuffer = new Float[vertices.length * 5];
+        Float[] vertexbuffer = new Float[vertices.length * 8];
         for (int v = 0; v < vertices.length; v++) {
-            vertexbuffer[v * 5] = vertices[v].x;
-            vertexbuffer[v * 5 + 1] = vertices[v].y;
-            vertexbuffer[v * 5 + 2] = vertices[v].z;
-            vertexbuffer[v * 5 + 3] = vertices[v].u;
-            vertexbuffer[v * 5 + 4] = vertices[v].v;
+            vertexbuffer[v * 8] = vertices[v].x;
+            vertexbuffer[v * 8 + 1] = vertices[v].y;
+            vertexbuffer[v * 8 + 2] = vertices[v].z;
+            vertexbuffer[v * 8 + 3] = vertices[v].u;
+            vertexbuffer[v * 8 + 4] = vertices[v].v;
+            vertexbuffer[v * 8 + 5] = vertices[v].r;
+            vertexbuffer[v * 8 + 6] = vertices[v].g;
+            vertexbuffer[v * 8 + 7] = vertices[v].b;
         }
 
         if(buffers.containsKey(texture)) {
@@ -117,7 +129,7 @@ public class NovaDraw {
      * of the button's yPosition and the mouseY value.
      * This mouseY value is expected to be upside down.
      */
-    static void computeCorrectMousePosition() {
+    private static void computeCorrectMousePosition() {
         Minecraft mc = Minecraft.getMinecraft();
 
         // compute mouse position (from EntityRenderer.java)
@@ -144,30 +156,50 @@ public class NovaDraw {
             clearBuffers();
             screen.drawNova();
 
-            for (ResourceLocation texture : buffers.keySet()) {
-                Buffers b = buffers.get(texture);
+            for (Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
+                Buffers b = entry.getValue();
+                ResourceLocation texture = entry.getKey();
                 NovaNative.INSTANCE.send_gui_buffer_command(b.toNativeCommand(texture));
             }
         }
     }
 
     public static class Vertex {
+        // Position
         public float x;
         public float y;
         public float z;
+
+        // Texture coordinate
         public float u;
         public float v;
 
+        // Vertex color
+        public float r;
+        public float g;
+        public float b;
+
         public Vertex(int x, int y, float u, float v) {
-            this(x,y,0,u,v);
+            this(x, y, 0.1f, u, v);
         }
 
-        public Vertex(int x, int y, float z, float u, float v) {
+        private Vertex(float x, float y, float z, float u, float v) {
+            this(x, y, z, u, v, new Color(1.0f, 1.0f, 1.0f));
+        }
+
+        public Vertex(float x, float y, float z, float u, float v, Color color) {
+            if(color == null) {
+                color = new Color(255, 255, 255);
+            }
+
             this.x = x;
             this.y = y;
             this.z = z;
             this.u = u;
             this.v = v;
+            this.r = (float)color.getRed() / 255.f;
+            this.g = (float)color.getGreen() / 255.f;
+            this.b = (float)color.getBlue() / 255.f;
         }
     }
 
@@ -181,11 +213,8 @@ public class NovaDraw {
         public List<Float> vertexBuffer = new ArrayList<>();
 
         public Buffers add(Integer[] indexBuffer, Float[] vertexBuffer) {
-            //System.out.println("write index: " + Arrays.toString(indexBuffer));
-            //System.out.println("write vertex: " + Arrays.toString(vertexBuffer));
-
             // add index buffer
-            int indexbuffer_size = this.vertexBuffer.size() / 5;
+            int indexbuffer_size = this.vertexBuffer.size() / 8;    // 8 is the number of floats per vertex
             for (int index : indexBuffer) {
                 this.indexBuffer.add(index + indexbuffer_size);
             }
@@ -226,6 +255,9 @@ public class NovaDraw {
                 Float vertex = this.vertexBuffer.get(i);
                 command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (float) (vertex != null ? vertex : 0));
             }
+
+            NovaNative.TextureType atlasType = NovaRenderer.atlasTextureOfSprite(texture);
+            command.texture_atlas = atlasType.ordinal();
 
             return command;
         }
