@@ -138,6 +138,8 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
+    # -fpermissive will allow some nonconforming code to compile, like class members which have the same name as their types (nova::input_handler nova::nova_renderer::input_handler)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 endif (UNIX)
 
 # For now just put everthing in a single nova source group
