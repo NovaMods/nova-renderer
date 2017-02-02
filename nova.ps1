@@ -275,18 +275,20 @@ function New-Patches {
 
 function install-Nova {
     if (Test-Path  $Env:APPDATA\.minecraft\launcher_profiles.json){
-		robocopy "jars\config" "$Env:APPDATA\.minecraft\config" /s
-		robocopy "jars\shaderpacks" "$Env:APPDATA\.minecraft\shaderpacks" /s
-		robocopy "." "$Env:APPDATA\.minecraft\versions\1.10-nova" "1.10-nova.json"
+		new-item "$Env:APPDATA\.minecraft\versions\1.10-nova\" -ItemType Directory
+		copy-item "jars\config" "$Env:APPDATA\.minecraft\config" -force -recurse
+		copy-item "jars\shaderpacks" "$Env:APPDATA\.minecraft\shaderpacks" -force -recurse
+		copy-item "1.10-nova.json" "$Env:APPDATA\.minecraft\versions\1.10-nova\1.10-nova.json" -force
 		$version_config = Get-Content $Env:APPDATA\.minecraft\versions\1.10-nova\1.10-nova.json | ConvertFrom-Json
 		[string]$version
-		ForEach ($libary in $version_con.libaries){
-			if ($libary.name.StartsWith("com.continuum.nova:nova-renderer:")){
-				$version = $libary.name.Replace("com.continuum.nova:nova-renderer:","")
+		ForEach ($library in $version_config.libraries){
+			if ($library.name.StartsWith("com.continuum.nova:nova-renderer:")){
+				$version = $library.name.Replace("com.continuum.nova:nova-renderer:","")
 			}
 		}
-		robocopy "build\libs" "$Env:APPDATA\.minecraft\versions\1.10-nova" "1.10-Nova.jar"
-		robocopy "build\libs" "$Env:APPDATA\.minecraft\libraries\com\continuum\nova\nova-renderer\$version" "nova-renderer-$version-natives-windows.jar"
+		copy-item "build\libs\1.10-Nova.jar" "$Env:APPDATA\.minecraft\versions\1.10-nova\" -force
+		new-item "$Env:APPDATA\.minecraft\libraries\com\continuum\nova\nova-renderer\$version\" -ItemType Directory
+		copy-item "build\libs\nova-renderer-$version-natives-windows.jar" "$Env:APPDATA\.minecraft\libraries\com\continuum\nova\nova-renderer\$version\" -force
 		
 		$launcher_config = Get-Content $Env:APPDATA\.minecraft\launcher_profiles.json | ConvertFrom-Json
 		$sNovaProfile  = '{"name": "Nova","lastVersionId": "1.10-Nova"}'		
