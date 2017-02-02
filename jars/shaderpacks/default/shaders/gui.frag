@@ -13,8 +13,9 @@ layout(shared, std140) uniform gui_uniforms {
 };
 
 in vec2 uv;
+in vec3 color;
 
-out vec3 color;
+out vec3 color_out;
 
 void main() {
     if(textureSize(colortex, 0).x > 0) {
@@ -22,8 +23,8 @@ void main() {
         if(tex_sample.a < 0.5) {
             discard;
         }
-        color = vec3(tex_sample.rgb);
+        color_out = vec3(tex_sample.rgb) * color;
     } else {
-        color = vec3(1, 0, 1);
+        color_out = vec3(1, 0, 1);
     }
 }
