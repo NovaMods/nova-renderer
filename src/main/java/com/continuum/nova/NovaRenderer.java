@@ -207,7 +207,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
-        LOG.info("PID: " + pid);
+        LOG.error("PID: " + pid);
         NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
     }

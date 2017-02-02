@@ -32,7 +32,7 @@ namespace nova {
     fullscreen_quad, \
     particle, \
     lit_particle, \
-    eyes)
+    eyes);
 
     /*!
      * \brief Represents something that can be rendered
@@ -74,11 +74,13 @@ namespace nova {
          */
         std::string name;
 
-        gl_mesh *geometry;
+        gl_mesh geometry;
 
         texture_manager::texture_type color_texture;
         std::experimental::optional<texture_manager::texture_type> normalmap;
         std::experimental::optional<texture_manager::texture_type> data_texture;
+
+        //render_object(render_object&& other);
     };
 }
 
