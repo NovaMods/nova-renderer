@@ -92,6 +92,7 @@ namespace nova {
         gui->type = geometry_type::gui;
         gui->name = "gui";
         gui->is_solid = true;
+        gui->color_texture = texture_manager::texture_type::all_values()[command->texture_atlas];
 
         sort_render_object(gui);
     }
@@ -104,11 +105,9 @@ namespace nova {
                     group.second.erase(std::remove(group.second.begin(), group.second.end(), render_obj), group.second.end());
                     delete render_obj->geometry;
                     delete render_obj;
-
                 }
             }
         }
-
     }
 
     void mesh_store::sort_render_object(render_object *object) {

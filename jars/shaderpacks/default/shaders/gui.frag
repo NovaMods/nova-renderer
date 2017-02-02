@@ -18,7 +18,11 @@ out vec3 color;
 
 void main() {
     if(textureSize(colortex, 0).x > 0) {
-        color = texture(colortex, uv).rgb;
+        vec4 tex_sample = texture(colortex, uv);
+        if(tex_sample.a < 0.5) {
+            discard;
+        }
+        color = vec3(tex_sample.rgb);
     } else {
         color = vec3(1, 0, 1);
     }

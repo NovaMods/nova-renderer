@@ -38,10 +38,7 @@ namespace nova {
     }
 
     void texture_manager::add_texture(mc_atlas_texture &new_texture, texture_type data_type) {
-        // TODO:
-        // Create an OpenGL texture from the given texture
-        // Save it to the list of atlas textures
-        LOG(DEBUG) << "Creating a Texture2D for this atlas";
+        LOG(DEBUG) << "Creating a Texture2D for the " << data_type.to_string() << " atlas";
         texture2D texture;
 
         LOG(DEBUG) << "Converting the pixel data to a float";
@@ -80,10 +77,7 @@ namespace nova {
 
         atlases[data_type] = texture;
         LOG(DEBUG) << "Texture added to atlas";
-
-        // We should only need to bind the texture once, since each texture has a unique binding location
-        unsigned int bind_location = (unsigned int) data_type;
-        texture.bind(bind_location);
+        LOG(DEBUG) << "Texture atlas " << data_type.to_string() << " is OpenGL texture " << texture.get_gl_name();
     }
 
     void texture_manager::add_texture_location(mc_texture_atlas_location &location) {
@@ -108,7 +102,6 @@ namespace nova {
         if(max_texture_size < 0) {
             glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
-            // Hardcoded until I get everything moved to the proper thread
 			LOG(DEBUG) << "max texturesize reported by gpu: " << max_texture_size;
         }
         return max_texture_size;
