@@ -20,10 +20,10 @@ namespace nova {
         // debug
         LOG(DEBUG) << "texture name: " << texture_name << std::endl;
         LOG(DEBUG) << "new buffers:" << std::endl;
-        for(int i = 0; i + 4 < vertex_buffer.size(); i += 5) {
+        for(int i = 0; i + 7 < vertex_buffer.size(); i += 8) {
             std::ostringstream ss;
             ss << "  vertex ";
-            for(int k = 0; k < 5; k++) {
+            for(int k = 0; k < 8; k++) {
                 ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(12) << std::fixed << std::setprecision(5) << vertex_buffer[i + k] << "  ";
             }
             LOG(DEBUG) << ss.str();
@@ -48,7 +48,7 @@ namespace nova {
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         std::vector<float> vertex_buffer(command->vertex_buffer_size);
-        for (int i = 0; i + 4 < command->vertex_buffer_size; i += 8) {
+        for (int i = 0; i + 7 < command->vertex_buffer_size; i += 8) {
             vertex_buffer[i]   = command->vertex_buffer[i];
             vertex_buffer[i+1] = command->vertex_buffer[i+1];
             vertex_buffer[i+2] = command->vertex_buffer[i+2];
