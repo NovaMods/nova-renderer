@@ -76,35 +76,39 @@ function New-NovaEnvironment {
 
     Write-Host "Downloading MCP..."
 
+    # Create MCP directory
     New-Item "mcp" -ItemType Directory
-    Write-Information "Created directory for MCP to live in"
     Set-Location "mcp"
-    Write-Information "Moved to MCP directory"
 
+    # Download MCP
     $wc = New-Object System.Net.WebClient
     $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
-    Write-Host "Downloaded MCP successfully"
 
+    # Extract MCP
     Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
     Remove-Item "mcp.zip"
-    robocopy "." "..\" "*" /s
-    Set-Location ".."
-    cmd.exe /C "$PSScriptRoot/decompile.bat"
-    robocopy "src\minecraft" "src\main\java" "*" /s
-	robocopy "temp\src\minecraft\assets" "src\main\resources\assets" /s
-	robocopy "temp\src\minecraft" "src\main\resources" "pack.png"
-    Write-Host "Unpacked MCP"
+    
+    # Decompile MCP
+    cmd.exe /C "$PSScriptRoot/mcp/decompile.bat"
 
-    # Clean up the intermediary files
-    Remove-Item "src\minecraft" -Recurse
-    Remove-Item "mcp" -Recurse
+    # Copy files from MCP to repository root directory
+    copy-item src\minecraft\* ..\src\main\java -force -recurse
+    copy-item temp\src\minecraft\assets ..\src\main\resources\assets -force -recurse
+    copy-item temp\src\minecraft\pack.png ..\src\main\resources\pack.png -force -recurse
+    copy-item jars\* ..\jars\ -force -recurse
+    Set-Location ".."
 
     # Apply our patch file
     Write-Host "Injecting Nova into Minecraft..."
     Set-Location src\main\java\net
-    ..\..\..\..\runtime\bin\applydiff.exe -p1 -i ..\..\..\..\patches\nova.patch
+    ..\..\..\..\mcp\runtime\bin\applydiff.exe -p1 -i ..\..\..\..\patches\nova.patch
     Set-Location ..\..\..\..\
 
+    # Clean up the intermediary files
+    Remove-Item "src\minecraft" -Recurse -Force
+    Remove-Item "mcp" -Recurse -Force
+
+    # Update git submodules
     Write-Host "Downloading dependencies..."
     git submodule update --init --recursive
 
