@@ -179,10 +179,11 @@ public interface NovaNative extends Library {
         public int vertex_buffer_size;
         public Pointer index_buffer; // int[]
         public Pointer vertex_buffer; // float[]
+        public int texture_atlas;
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer");
+            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "texture_atlas");
         }
     }
 
@@ -244,7 +245,8 @@ public interface NovaNative extends Library {
         WEATHER,
         SKY,
         END_SKY,
-        CLOUDS
+        CLOUDS,
+        NO_TEXTURE
     }
 
     enum GeometryType {

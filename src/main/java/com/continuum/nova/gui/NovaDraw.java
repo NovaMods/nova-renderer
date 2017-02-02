@@ -1,6 +1,7 @@
 package com.continuum.nova.gui;
 
 import com.continuum.nova.NovaNative;
+import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.input.Mouse;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -166,7 +167,7 @@ public class NovaDraw {
         public float v;
 
         public Vertex(int x, int y, float u, float v) {
-            this(x,y,0,u,v);
+            this(x, y, 0.1f, u, v);
         }
 
         public Vertex(float x, float y, float z, float u, float v) {
@@ -188,9 +189,6 @@ public class NovaDraw {
         public List<Float> vertexBuffer = new ArrayList<>();
 
         public Buffers add(Integer[] indexBuffer, Float[] vertexBuffer) {
-            //System.out.println("write index: " + Arrays.toString(indexBuffer));
-            //System.out.println("write vertex: " + Arrays.toString(vertexBuffer));
-
             // add index buffer
             int indexbuffer_size = this.vertexBuffer.size() / 5;
             for (int index : indexBuffer) {
@@ -233,6 +231,9 @@ public class NovaDraw {
                 Float vertex = this.vertexBuffer.get(i);
                 command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (float) (vertex != null ? vertex : 0));
             }
+
+            NovaNative.TextureType atlasType = NovaRenderer.atlasTextureOfSprite(texture);
+            command.texture_atlas = atlasType.ordinal();
 
             return command;
         }
