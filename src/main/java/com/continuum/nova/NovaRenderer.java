@@ -219,15 +219,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.execute_frame();
     }
 
-    public void setGuiScreen(GuiScreen guiScreenIn) {
-        /*
-        LOG.info("Changing GUI screen");
-        NovaNative.mc_set_gui_screen_command setGuiScreenCommand = RenderCommandBuilder.createSetGuiScreenCommand(guiScreenIn);
-        NovaNative.INSTANCE.send_change_gui_screen_command(setGuiScreenCommand);
-        LOG.info("Gui screen change successful");
-        */
-    }
-
     private void addGuiTextureLocations() {
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/bars"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/book"));

@@ -76,39 +76,6 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_gui_button extends Structure {
-        public int x_position;
-        public int y_position;
-        public int width;
-        public int height;
-        public String text;
-        public boolean is_pressed;
-        public int enabled;
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("x_position", "y_position", "width", "height","text", "is_pressed","enabled");
-        }
-    }
-
-    class mc_gui_screen extends Structure {
-        public mc_gui_button[] buttons = new mc_gui_button[22];
-        public int num_buttons;
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("buttons", "num_buttons");
-        }
-    }
-
-    class mc_render_menu_params extends Structure {
-        public mc_gui_screen cur_screen;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Collections.singletonList("cur_screen");
-        }
-    }
-
     class mc_render_world_params extends Structure {
         public double camera_x;
         public double camera_y;
@@ -161,15 +128,6 @@ public interface NovaNative extends Library {
         @Override
         protected List<String> getFieldOrder() {
             return Arrays.asList("new_chunk", "chunk_x", "chunk_y", "chunk_z");
-        }
-    }
-
-    class mc_set_gui_screen_command extends Structure {
-        public mc_gui_screen screen;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Collections.singletonList("screen");
         }
     }
 
@@ -279,8 +237,6 @@ public interface NovaNative extends Library {
     void reset_texture_manager();
 
     boolean should_close();
-
-    void send_change_gui_screen_command(mc_set_gui_screen_command set_gui_screen);
 
     void send_gui_buffer_command(mc_gui_send_buffer_command command);
 

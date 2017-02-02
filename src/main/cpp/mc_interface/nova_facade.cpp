@@ -56,10 +56,6 @@ NOVA_API bool should_close() {
     return nova_renderer::instance->should_end();
 }
 
-NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen) {
-    nova_renderer::instance->get_mesh_store().add_gui_geometry(set_gui_screen->screen);
-}
-
 NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command) {
     nova_renderer::instance->get_mesh_store().add_gui_buffers(command);
 }
