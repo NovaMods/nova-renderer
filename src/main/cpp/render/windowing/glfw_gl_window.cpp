@@ -103,13 +103,17 @@ namespace nova {
     }
 
     void glfw_gl_window::set_framebuffer_size(glm::ivec2 new_framebuffer_size) {
+        nlohmann::json &settings = nova_renderer::instance->get_render_settings().get_options();
+        settings["settings"]["viewWidth"] = new_framebuffer_size.x;
+        settings["settings"]["viewHeight"] = new_framebuffer_size.y;
         window_dimensions = new_framebuffer_size;
         glViewport(0, 0, window_dimensions.x, window_dimensions.y);
+        nova_renderer::instance->get_render_settings().update_config_changed();
     }
 
     void glfw_gl_window::on_config_change(nlohmann::json &new_config) {
         LOG(INFO) << "gl_glfw_window received the updated config";
-        glfwSetWindowSize(window, new_config["viewWidth"], new_config["viewHeight"]);
+        //glfwSetWindowSize(window, new_config["viewWidth"], new_config["viewHeight"]);
     }
 
     void glfw_gl_window::on_config_loaded(nlohmann::json &config) {

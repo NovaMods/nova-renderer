@@ -19,6 +19,8 @@
 #include "../render/objects/textures/texture_manager.h"
 #include "../data_loading/settings.h"
 #include "../input/InputHandler.h"
+#include "../render/windowing/glfw_gl_window.h"
+
 using namespace nova;
 
 #define TEXTURE_MANAGER nova_renderer::instance->get_texture_manager()
@@ -62,6 +64,12 @@ NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui
 
 NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command) {
     nova_renderer::instance->get_mesh_store().add_gui_buffers(command);
+}
+
+NOVA_API struct window_size get_window_size()
+{
+    glm::vec2 size = nova_renderer::instance->get_game_window().get_size();
+    return {(int )size.y,(int)size.x};
 }
 
 NOVA_API void clear_gui_buffers() {

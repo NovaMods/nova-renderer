@@ -151,4 +151,9 @@ struct key_char_event {
 	int filled;
 
 };
+
+struct window_size {
+    int height;
+    int width;
+};
 #endif //RENDERER_MC_OBJECTS_H

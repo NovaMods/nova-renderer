@@ -228,6 +228,16 @@ public interface NovaNative extends Library {
         }
     }
 
+
+    class window_size extends Structure implements Structure.ByValue{
+        public int height;
+        public int width;
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("height","width");
+        }
+    }
     enum TextureType {
         GUI,
         OPTIONS_BACKGROUND,
@@ -275,4 +285,5 @@ public interface NovaNative extends Library {
 
     void clear_gui_buffers();
 
+    window_size get_window_size();
 }
