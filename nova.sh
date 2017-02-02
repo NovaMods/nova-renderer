@@ -26,37 +26,34 @@ setup_nova() {
     echo "Begin setup of Nova"
 
     echo "Downloading MCP"
-    mkdir mcp
-    cd mcp
-    wget http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip
-    unzip mcp931.zip
-    echo "Extracted MCP"
-    cp -r * ..
-    cd ..
+    rm -rf mcp && mkdir mcp && (cd mcp
+        wget http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip && unzip mcp931.zip
+        rm -f mcp*.zip
 
-    ./decompile.sh
-    if [ $? != "0" ]; then
-        echo "MCP failed to decompile Minecraft. Check the above text for errors"
-        exit -1
-    fi
+        echo "Decompile MCP"
+        ./decompile.sh
+        if [ $? != "0" ]; then
+            echo "MCP failed to decompile Minecraft. Check the above text for errors"
+            exit -1
+        fi
 
-    if [ x"$1" = x"dev" ]
-    then
-        (cd src/main/java ; git clone git@github.com:NovaMods/Minecraft-Source.git net)
-    else
-        cp -r src/minecraft/net/* src/main/java/net/
-    fi
-    cp -r src/minecraft/mcp src/main/java/
+        echo "Copy files from MCP"
+        test -d ../src/main/java/net/.git || (mkdir ../src/main/java/net/ ; cp -r src/minecraft/net/* ../src/main/java/net/)
+        mkdir -p ../src/main/resources/assets
+        cp -rf temp/src/minecraft/assets/ ../src/main/resources/assets
+        cp -rf temp/src/minecraft/pack.png ../src/main/resources/pack.png
+        cp -rf src/minecraft/mcp ../src/main/java/
+        cp -rf jars/* ../jars/
+    )
+
     echo "Unpacked MCP"
-
-    rm -rf src/minecraft
     rm -rf mcp
 
     echo "If patch file is UTF-16, convert it to UTF-8"
-    file src/main/resources/patches/nova.patch | grep UTF-16 && (iconv --from-code UTF-16 --to-code UTF-8 src/main/resources/patches/nova.patch > x && mv x src/main/resources/patches/nova.patch)
+    file patches/nova.patch | grep UTF-16 && (iconv --from-code UTF-16 --to-code UTF-8 patches/nova.patch > x && mv x patches/nova.patch)
 
     echo "Injecting MCP into Minecraft..."
-    (cd src/main/java/net ; patch -p1 ) < src/main/resources/patches/nova.patch
+    (cd src/main/java/net ; patch -p1 ) < patches/nova.patch
     if [ $? != "0" ]; then
         echo "Failed to apply patches. Tell DethRaid about it and give him the full console log"
         exit -2
@@ -77,13 +74,13 @@ compile_native_code() {
     mkdir -p target/cpp
     cd target/cpp
 
-    cmake -g "Unix Makefiles" ../../src/main/cpp
+    cmake -DCMAKE_BUILD_TYPE=Debug -g "Unix Makefiles" ../../src/main/cpp
     if [ $? != "0" ]; then
         echo "Failed to execute CMake. Possibly you're missing the Vulkan library, which GLFW requires because it's stupid"
         exit -3
     fi
 
-    make -f Makefile nova-renderer
+    make -f Makefile -j 4 nova-renderer
     if [ $? != "0" ]; then
         echo "Could not compile Nova. Please submit a GitHub issue with the full console log so DethRaid can fix it"
         return -4
@@ -102,7 +99,8 @@ start_nova() {
 }
 
 create_patch() {
-    (cd src/main/java/net/; git diff origin/minecraft-1.10-mcp ) > src/main/resources/patches/nova.patch
+    (cd src/main/java/net/; git diff origin/minecraft-1.10-mcp ) > patches/nova.patch
+    file patches/nova.patch | grep UTF-16 && (iconv --from-code UTF-16 --to-code UTF-8 patches/nova.patch > x && mv x patches/nova.patch)
 }
 
 case $1 in

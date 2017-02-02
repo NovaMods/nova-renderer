@@ -76,39 +76,6 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_gui_button extends Structure {
-        public int x_position;
-        public int y_position;
-        public int width;
-        public int height;
-        public String text;
-        public boolean is_pressed;
-        public int enabled;
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("x_position", "y_position", "width", "height","text", "is_pressed","enabled");
-        }
-    }
-
-    class mc_gui_screen extends Structure {
-        public mc_gui_button[] buttons = new mc_gui_button[22];
-        public int num_buttons;
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("buttons", "num_buttons");
-        }
-    }
-
-    class mc_render_menu_params extends Structure {
-        public mc_gui_screen cur_screen;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Collections.singletonList("cur_screen");
-        }
-    }
-
     class mc_render_world_params extends Structure {
         public double camera_x;
         public double camera_y;
@@ -164,25 +131,17 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_set_gui_screen_command extends Structure {
-        public mc_gui_screen screen;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Collections.singletonList("screen");
-        }
-    }
-
     class mc_gui_send_buffer_command extends Structure {
         public String texture_name;
         public int index_buffer_size;
         public int vertex_buffer_size;
         public Pointer index_buffer; // int[]
         public Pointer vertex_buffer; // float[]
+        public int texture_atlas;
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer");
+            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "texture_atlas");
         }
     }
 
@@ -254,7 +213,25 @@ public interface NovaNative extends Library {
         WEATHER,
         SKY,
         END_SKY,
-        CLOUDS
+        CLOUDS,
+        NO_TEXTURE
+    }
+
+    enum GeometryType {
+        BLOCK,
+        ENTITY,
+        FALLING_BLOCK,
+        GUI,
+        CLOUD,
+        SKY_DECORATION,
+        SELECTION_BOX,
+        GLINT,
+        WEATHER,
+        HAND,
+        FULLSCREEN_QUAD,
+        PARTICLE,
+        LIT_PARTICLE,
+        EYES
     }
 
     void initialize();
@@ -270,8 +247,6 @@ public interface NovaNative extends Library {
     void reset_texture_manager();
 
     boolean should_close();
-
-    void send_change_gui_screen_command(mc_set_gui_screen_command set_gui_screen);
 
     void send_gui_buffer_command(mc_gui_send_buffer_command command);
 

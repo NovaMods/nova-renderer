@@ -59,8 +59,6 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
 # Setup the nova-core library.
 set(NOVA_HEADERS
 
-        geometry_cache/builders/gui_geometry_builder.h
-
         render/objects/shaders/uniform_buffer_definitions.h
 
         mc_interface/nova.h
@@ -102,13 +100,10 @@ set(NOVA_SOURCE
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
 
-        geometry_cache/builders/gui_geometry_builder.cpp
-
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
         render/objects/textures/texture_manager.cpp
         render/uniform_buffer_store.cpp
-        geometry_cache/builders/gui_geometry_builder.cpp
 
         input/InputHandler.cpp
 
@@ -138,6 +133,7 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g")
 endif (UNIX)
 
 # For now just put everthing in a single nova source group
@@ -182,6 +178,12 @@ add_custom_command(TARGET nova-renderer
                    POST_BUILD
                    COMMAND copy /Y "nova-renderer.dll" "..\\..\\jars\\versions\\1.10\\1.10-natives")
 endif (WIN32)
+if (UNIX)
+add_custom_command(TARGET nova-renderer
+                   POST_BUILD
+                   COMMAND cp -f "libnova-renderer.so" "../../jars/versions/1.10/1.10-natives")
+endif (UNIX)
+
 # Setup the nova-test executable
 set(TEST_SOURCE_FILES
         3rdparty/glad/src/glad.c
