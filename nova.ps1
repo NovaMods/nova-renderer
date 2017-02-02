@@ -55,7 +55,7 @@ param (
     [switch]$setup = $false,
     [switch]$build = $false,
     [switch]$install = $false,
-	[switch]$clean = $false,
+    [switch]$clean = $false,
     [switch]$run = $false,
     [switch]$nativeOnly = $false,
     [switch]$makePatches = $false,
