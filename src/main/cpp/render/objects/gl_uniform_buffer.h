@@ -31,7 +31,7 @@ namespace nova {
         }
 
         void link_to_shader(const gl_shader_program &shader) {
-            auto shader_gl_name = shader.get_gl_name();
+            auto shader_gl_name = shader.gl_name;
             auto ubo_index = glGetUniformBlockIndex(shader_gl_name, name.c_str());
             glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
             glBindBufferBase(GL_UNIFORM_BUFFER, ubo_index, gl_name);

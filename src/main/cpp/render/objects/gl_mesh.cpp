@@ -4,6 +4,7 @@
  */
 
 #include <stdexcept>
+#include <easylogging++.h>
 #include "gl_mesh.h"
 
 namespace nova {
@@ -103,6 +104,19 @@ namespace nova {
 
                 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void *) 0);
                 glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GL_FLOAT), (void *) (3 * sizeof(GLfloat)));
+
+                break;
+
+            case format::POS_UV_COLOR:
+                glEnableVertexAttribArray(0);   // Position
+                glEnableVertexAttribArray(1);   // Texture UV
+                glEnableVertexAttribArray(2);   // Vertex color
+
+                LOG(INFO) << "Stride is " << 8 * sizeof(GL_FLOAT);
+
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (void *) 0);
+                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (void *) (3 * sizeof(GLfloat)));
+                glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (void *) (5 * sizeof(GLfloat)));
 
                 break;
 

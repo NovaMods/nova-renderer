@@ -68,13 +68,6 @@ NOVA_API void execute_frame();
  */
 NOVA_API bool should_close();
 
-/*!
- * \brief Sets the GUI screen that Nova should render
- *
- * \param set_gui_screen The command to set the GUI screen
- */
-NOVA_API void send_change_gui_screen_command(mc_set_gui_screen_command * set_gui_screen);
-
 NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command);
 
 /*!
