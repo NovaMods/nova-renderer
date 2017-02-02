@@ -9,29 +9,11 @@
 #include <easylogging++.h>
 #include <regex>
 #include "mesh_store.h"
-#include "builders/gui_geometry_builder.h"
-#include "../../../render/objects/textures/texture_manager.h"
 #include "../../../render/nova_renderer.h"
 
 namespace nova {
     std::vector<render_object *> mesh_store::get_meshes_for_shader(std::string shader_name) {
         return renderables_grouped_by_shader[shader_name];
-    }
-
-    void mesh_store::add_gui_geometry(mc_gui_screen &screen) {
-        if (are_different_screens(screen, cur_gui_screen)) {
-            remove_render_objects([](render_object* object) {return object->type == geometry_type::gui; });
-
-            mesh_definition gui_mesh = build_gui_geometry(screen);
-
-            render_object *gui = new render_object();
-            gui->geometry = new gl_mesh(gui_mesh);
-            gui->type = geometry_type::gui;
-            gui->name = "gui";
-            gui->is_solid = true;
-
-            sort_render_object(gui);
-        }
     }
 
     void print_buffers(std::string texture_name, std::vector<float>& vertex_buffer, std::vector<unsigned short>& index_buffer) {
@@ -57,21 +39,24 @@ namespace nova {
     }
 
     void mesh_store::add_gui_buffers(mc_gui_send_buffer_command* command) {
-
         std::string texture_name(command->texture_name);
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
         texture_name = "minecraft:" + texture_name;
+        LOG(DEBUG) << "Recieved GUI buffer with texture " << texture_name;
         const texture_manager::texture_location tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(texture_name);
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         std::vector<float> vertex_buffer(command->vertex_buffer_size);
-        for (int i = 0; i + 4 < command->vertex_buffer_size; i += 5) {
-            vertex_buffer[i] = command->vertex_buffer[i];
+        for (int i = 0; i + 4 < command->vertex_buffer_size; i += 8) {
+            vertex_buffer[i]   = command->vertex_buffer[i];
             vertex_buffer[i+1] = command->vertex_buffer[i+1];
             vertex_buffer[i+2] = command->vertex_buffer[i+2];
             vertex_buffer[i+3] = command->vertex_buffer[i+3] * tex_size.x + tex_location.min.x;
             vertex_buffer[i+4] = command->vertex_buffer[i+4] * tex_size.y + tex_location.min.y;
+            vertex_buffer[i+5] = command->vertex_buffer[i+5];
+            vertex_buffer[i+6] = command->vertex_buffer[i+6];
+            vertex_buffer[i+7] = command->vertex_buffer[i+7];
         }
         std::vector<unsigned short> index_buffer(command->index_buffer_size);
         for (int i = 0; i < command->index_buffer_size; i++) {
@@ -84,13 +69,14 @@ namespace nova {
         mesh_definition cur_screen_buffer;
         cur_screen_buffer.vertex_data = vertex_buffer;
         cur_screen_buffer.indices = index_buffer;
-        cur_screen_buffer.vertex_format = format::POS_UV;
+        cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
         render_object *gui = new render_object();
         gui->geometry = new gl_mesh(cur_screen_buffer);
         gui->type = geometry_type::gui;
         gui->name = "gui";
         gui->is_solid = true;
+        gui->color_texture = texture_manager::texture_type::all_values()[command->texture_atlas];
 
         sort_render_object(gui);
     }
@@ -103,11 +89,9 @@ namespace nova {
                     group.second.erase(std::remove(group.second.begin(), group.second.end(), render_obj), group.second.end());
                     delete render_obj->geometry;
                     delete render_obj;
-
                 }
             }
         }
-
     }
 
     void mesh_store::sort_render_object(render_object *object) {
@@ -175,55 +159,4 @@ namespace nova {
         shaders = &new_shaderpack;
     }
 
-    bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2) {
-        if(screen1.num_buttons != screen2.num_buttons) {
-            return true;
-        }
-
-        for(int i = 0; i < MAX_NUM_BUTTONS; i++) {
-            if(i >= screen1.num_buttons || i >= screen2.num_buttons) {
-                break;
-            }
-            LOG(TRACE) << "Checking button " << i << " for similarity";
-            if(are_different_buttons(screen1.buttons[i], screen2.buttons[i])) {
-                LOG(TRACE) << "Button " << i << " is different";
-                return true;
-            }
-
-            LOG(TRACE) << "Button " << i << " is the same in both screens";
-        }
-
-        return false;
-    }
-
-    bool are_different_buttons(const mc_gui_button &button1, const mc_gui_button &button2) {
-        bool same_rect = button1.x_position == button2.x_position &&
-                         button1.y_position == button2.y_position &&
-                         button1.width == button2.width &&
-                         button1.height == button2.height;
-
-        bool same_text = !are_different_strings(button1.text, button2.text);
-
-        bool same_pressed = button1.is_pressed == button2.is_pressed;
-
-        return !same_rect || !same_text || !same_pressed;
-    }
-
-    bool are_different_strings(const char *text1, const char *text2) {
-        if(text1 == nullptr && text2 == nullptr) {
-            // They're both null, and null equals null, so they're the same
-            // If this causes problems I'll change it
-            return false;
-        }
-
-        if(text1 == nullptr) {
-            return true;
-        }
-
-        if(text2 == nullptr) {
-            return true;
-        }
-
-        return strcmp(text1, text2) != 0;
-    }
 }

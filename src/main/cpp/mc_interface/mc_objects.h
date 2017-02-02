@@ -78,6 +78,7 @@ struct mc_gui_send_buffer_command {
 	int vertex_buffer_size;
 	int* index_buffer;
     float* vertex_buffer;
+	int texture_atlas;	//!< The texture atlas to use when rendering this object
 };
 
 /*!

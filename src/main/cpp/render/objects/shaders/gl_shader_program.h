@@ -97,13 +97,9 @@ namespace nova {
          */
         void bind() noexcept;
 
-        void set_filter(geometry_filter filter) noexcept;
-
         geometry_filter& get_filter() noexcept;
 
         std::string& get_name() noexcept;
-
-        GLuint get_gl_name() const noexcept;
 
     private:
         std::string name;

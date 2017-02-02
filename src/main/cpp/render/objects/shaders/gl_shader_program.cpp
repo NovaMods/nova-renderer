@@ -145,20 +145,12 @@ namespace nova {
         this->filter = other.filter;
     }
 
-    void gl_shader_program::set_filter(geometry_filter filter) noexcept {
-        this->filter = filter;
-    }
-
     geometry_filter& gl_shader_program::get_filter() noexcept {
         return filter;
     }
 
     std::string &gl_shader_program::get_name() noexcept {
         return name;
-    }
-
-    GLuint gl_shader_program::get_gl_name() const noexcept {
-        return gl_name;
     }
 
     geometry_filter figure_out_filters(std::vector<std::string> filter_names) {
