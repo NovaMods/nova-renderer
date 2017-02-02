@@ -44,7 +44,7 @@ setup_nova() {
     then
         (cd src/main/java ; git clone git@github.com:NovaMods/Minecraft-Source.git net)
     else
-	test -d src/main/java/net/.git || cp -r src/minecraft/net/ src/main/java/net/
+	test -d src/main/java/net/.git || (mkdir src/main/java/net/ ; cp -r src/minecraft/net/* src/main/java/net/)
     fi
     cp -r src/minecraft/mcp src/main/java/
     echo "Unpacked MCP"
