@@ -79,7 +79,8 @@ namespace nova {
                 weather,
                 sky,
                 end_sky,
-                clouds
+                clouds,
+                no_texture
         )
 
         /*!
