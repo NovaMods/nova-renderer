@@ -236,6 +236,22 @@ public class NovaDraw {
          * @return the native struct
          */
         public NovaNative.mc_gui_send_buffer_command toNativeCommand(ResourceLocation texture) {
+
+            int scalefactor = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor();
+
+            if(scalefactor == 2){
+                scalefactor  =1;
+            }
+
+            //scale vertices
+            for(int index=0;index< vertexBuffer.size()-1;index+=8){
+                float scaledVertexXpos = vertexBuffer.get(index) * scalefactor;
+                float scaledVertexYpos = vertexBuffer.get(index+1) *scalefactor;
+                vertexBuffer.set(index,scaledVertexXpos);
+                vertexBuffer.set(index+1,scaledVertexYpos);
+
+            }
+
             // create a new struct
             NovaNative.mc_gui_send_buffer_command command = new NovaNative.mc_gui_send_buffer_command();
             command.texture_name = texture.getResourcePath();
