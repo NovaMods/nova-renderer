@@ -105,7 +105,6 @@ function New-NovaEnvironment {
     Set-Location ..\..\..\..\
 
     # Clean up the intermediary files
-    Remove-Item "src\minecraft" -Recurse -Force
     Remove-Item "mcp" -Recurse -Force
 
     # Update git submodules
@@ -208,7 +207,7 @@ function New-VisualStudioBuild {
 
         # Compile the code
         # TODO: Verify that this is the actual name of the solution file
-        devenv renderer.sln /p:Configuration=Debug
+        msbuild renderer.sln /p:Configuration=Debug
 
         Set-Location ..\..
 
