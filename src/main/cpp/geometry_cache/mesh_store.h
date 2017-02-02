@@ -26,7 +26,6 @@ namespace nova {
          */
     class mesh_store {
     public:
-        void add_gui_geometry(mc_gui_screen& screen);
         void add_gui_buffers(mc_gui_send_buffer_command* command);
 
         /*!
@@ -56,7 +55,6 @@ namespace nova {
     private:
         std::unordered_map<std::string, std::vector<render_object*>> renderables_grouped_by_shader;
 
-        mc_gui_screen cur_gui_screen;
         shaderpack* shaders;
 
         /*!
@@ -88,36 +86,6 @@ namespace nova {
         bool matches_filter(render_object *object, geometry_filter &filter);
     };
 
-    /*!
-     * \brief Compares two mc_gui_screen objects, determining if they represent the same visual data
-     *
-     * I'l like to have had this function in the same header file as the mc_gui_screen struct. However, I need
-     * mc_gui_screen to be a C struct so I can properly assign to it from Java. The compiler yelled at me about "You
-     * can't compare structs" so I couldn't use the == operator and here we are.
-     */
-    bool are_different_screens(const mc_gui_screen &screen1, const mc_gui_screen &screen2);
-
-    /*!
-     * \brief Determines whether or not the two given buttons are the same
-     *
-     * Two buttons are the same if they have the same position, size, and pressed status. If they can be drawn using
-     * the exact same geometry and texture, then they are the same.
-     *
-     * \param button1 The first button to compare
-     * \param button2 The second button to compare
-     *
-     * \return True if the buttons are the same, false otherwise
-     */
-    bool are_different_buttons(const mc_gui_button &button1, const mc_gui_button &button2);
-
-    /*!
-     * \brief Compares two C strings, taking special care to not crash if one or both of the strings is null
-     *
-     * \param text1 The first string to compare
-     * \param text2  The second string to compare
-     * \return True is the strings are different, false otherwise
-     */
-    bool are_different_strings(const char *text1, const char *text2);
 };
 
 #endif //RENDERER_GEOMETRY_CACHE_H

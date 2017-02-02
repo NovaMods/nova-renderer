@@ -27,7 +27,12 @@ namespace nova {
 
     void nova_renderer::init_opengl_state() const {
         glClearColor(0.0, 0.0, 0.0, 1.0);
-       
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glClearDepth(1.0);
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     nova_renderer::~nova_renderer() {
@@ -36,7 +41,7 @@ namespace nova {
 
     void nova_renderer::render_frame() {
         // Clear to the clear color
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         render_shadow_pass();
 
@@ -79,6 +84,8 @@ namespace nova {
         // Render GUI objects
         std::vector<render_object *> gui_geometry = meshes.get_meshes_for_shader("gui");
         for(const auto *geom : gui_geometry) {
+            auto color_texture = textures.get_texture_atlas(geom->color_texture);
+            color_texture.bind(0);
             geom->geometry->set_active();
             geom->geometry->draw();
         }
