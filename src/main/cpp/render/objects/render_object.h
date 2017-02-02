@@ -10,9 +10,11 @@
 
 #include <string>
 #include <memory>
+#include <optional.hpp>
 
 #include "gl_mesh.h"
 #include "../../utils/smart_enum.h"
+#include "textures/texture_manager.h"
 
 
 namespace nova {
@@ -73,6 +75,10 @@ namespace nova {
         std::string name;
 
         gl_mesh *geometry;
+
+        texture_manager::texture_type color_texture;
+        std::experimental::optional<texture_manager::texture_type> normalmap;
+        std::experimental::optional<texture_manager::texture_type> data_texture;
     };
 }
 

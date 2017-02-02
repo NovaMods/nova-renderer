@@ -4,6 +4,7 @@
 
 #include "texture2D.h"
 #include <stdexcept>
+#include <easylogging++.h>
 
 namespace nova {
     texture2D::texture2D() {
@@ -28,10 +29,8 @@ namespace nova {
     }
 
     void texture2D::bind(unsigned int binding) {
-        if(binding != current_location) {
-            glBindTextureUnit(binding, gl_name);
-            current_location = binding;
-        }
+        glBindTextureUnit(binding, gl_name);
+        current_location = binding;
     }
 
     void texture2D::unbind() {

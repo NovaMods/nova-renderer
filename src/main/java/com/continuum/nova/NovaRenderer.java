@@ -30,21 +30,24 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
 
-    private static final List<ResourceLocation> GUI_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
-
-    private static final List<ResourceLocation> TERRAIN_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
-
     private boolean firstLoad = true;
 
+    private static final List<ResourceLocation> GUI_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap guiAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> guiSpriteLocations = new HashMap<>();
 
+    private static final List<ResourceLocation> TERRAIN_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap blockAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> blockSpriteLocations = new HashMap<>();
+
+    private static final List<ResourceLocation> FONT_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
+    private TextureMap fontAtlas = new TextureMap("textures");
+    private Map<ResourceLocation, TextureAtlasSprite> fontSpriteLocations = new HashMap<>();
 
     public NovaRenderer() {
         addBlockTextureLocations();
         addGuiTextureLocations();
+        addFontTextureLocations();
     }
 
     @Override
@@ -56,9 +59,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.reset_texture_manager();
         int maxAtlasSize = NovaNative.INSTANCE.get_max_texture_size();
         addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATIONS, NovaNative.TextureType.TERRAIN_COLOR, resourceManager, maxAtlasSize);
+        LOG.debug("Created block color atlas");
 
         //addBlockAtlas(resourceManager);
         addGuiAtlas(resourceManager);
+        addFontAtlas(resourceManager);
     }
 
     private void addBlockAtlas(@Nonnull IResourceManager resourceManager) {
@@ -67,6 +72,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
         addAtlas(resourceManager, guiAtlas, GUI_ALBEDO_TEXTURES_LOCATIONS, guiSpriteLocations, NovaNative.TextureType.GUI);
+        LOG.debug("Created GUI atlas");
+    }
+
+    private void addFontAtlas(@Nonnull IResourceManager resourceManager) {
+        addAtlas(resourceManager, fontAtlas, FONT_ALBEDO_TEXTURES_LOCATIONS, fontSpriteLocations, NovaNative.TextureType.FONT);
+        LOG.debug("Created font atlas");
     }
 
     private void addAtlas(@Nonnull IResourceManager resourceManager, TextureMap atlas, List<ResourceLocation> resoruces,
@@ -206,15 +217,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             Minecraft.getMinecraft().shutdown();
         }
         NovaNative.INSTANCE.execute_frame();
-    }
-
-    public void setGuiScreen(GuiScreen guiScreenIn) {
-        /*
-        LOG.info("Changing GUI screen");
-        NovaNative.mc_set_gui_screen_command setGuiScreenCommand = RenderCommandBuilder.createSetGuiScreenCommand(guiScreenIn);
-        NovaNative.INSTANCE.send_change_gui_screen_command(setGuiScreenCommand);
-        LOG.info("Gui screen change successful");
-        */
     }
 
     private void addGuiTextureLocations() {
@@ -655,5 +657,249 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         TERRAIN_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("textures/blocks/wool_colored_white.png"));
         TERRAIN_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("textures/blocks/wool_colored_yellow.png"));
         TERRAIN_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("textures/blocks/wwool_colored_pink.png"));
+    }
+
+    private void addFontTextureLocations() {
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/ascii"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/ascii_sga"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_00"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_01"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_02"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_03"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_04"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_05"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_06"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_07"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_09"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_0a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_0b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_0c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_0d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_0e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_0f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_10"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_11"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_12"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_13"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_14"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_15"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_16"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_17"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_18"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_19"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_1a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_1b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_1c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_1d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_1e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_1f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_20"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_21"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_22"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_23"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_24"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_25"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_26"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_27"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_28"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_29"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_2a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_2b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_2c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_2d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_2e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_2f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_30"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_31"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_32"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_33"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_34"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_35"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_36"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_37"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_38"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_39"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_3a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_3b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_3c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_3d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_3e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_3f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_40"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_41"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_42"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_43"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_44"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_45"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_46"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_47"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_48"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_49"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_4a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_4b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_4c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_4d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_4e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_4f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_50"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_51"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_52"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_53"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_54"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_55"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_56"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_57"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_58"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_59"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_5a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_5b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_5c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_5d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_5e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_5f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_60"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_61"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_62"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_63"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_64"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_65"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_66"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_67"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_68"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_69"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_6a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_6b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_6c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_6d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_6e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_6f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_70"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_71"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_72"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_73"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_74"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_75"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_76"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_77"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_78"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_79"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_7a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_7b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_7c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_7d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_7e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_7f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_80"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_81"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_82"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_83"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_84"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_85"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_86"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_87"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_88"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_89"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_8a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_8b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_8c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_8d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_8e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_8f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_90"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_91"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_92"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_93"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_94"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_95"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_96"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_97"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_98"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_99"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_9a"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_9b"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_9c"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_9d"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_9e"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_9f"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a0"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a1"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a2"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a3"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a4"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a5"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a6"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a7"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a8"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_a9"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_aa"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_ab"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_ac"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_ad"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_ae"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_af"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b0"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b1"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b2"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b3"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b4"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b5"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b6"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b7"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b8"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_b9"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_ba"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_bb"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_bc"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_bd"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_be"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_bf"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c0"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c1"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c2"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c3"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c4"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c5"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c6"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c7"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c8"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_c9"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_ca"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_cb"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_cc"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_cd"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_ce"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_cf"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_d0"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_d1"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_d2"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_d3"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_d4"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_d5"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_d6"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_d7"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_f9"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_fa"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_fb"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_fc"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_fd"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_fe"));
+        FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_ff"));
+    }
+
+    public static NovaNative.TextureType atlasTextureOfSprite(ResourceLocation texture) {
+        LOG.info("Need to get atlas that " + texture + " is in");
+        if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(texture)) {
+            LOG.info("It's in the terrain");
+            return NovaNative.TextureType.TERRAIN_COLOR;
+        } else if(GUI_ALBEDO_TEXTURES_LOCATIONS.contains(texture)) {
+            LOG.info("It's in the gui");
+            return NovaNative.TextureType.GUI;
+        } else if(FONT_ALBEDO_TEXTURES_LOCATIONS.contains(texture)) {
+            LOG.info("It's in the font");
+            return NovaNative.TextureType.FONT;
+        }
+
+        LOG.error("Texture " + texture + " requested, but it's not in at atlas that Nova knows about");
+        return NovaNative.TextureType.NO_TEXTURE;
     }
 }
