@@ -42,7 +42,7 @@ namespace nova {
         }
         LOG(INFO) << "GLFW window created";
 
-        //renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
+        renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
         LOG(INFO) << "Hooked into RenderDoc";
 
         glfwMakeContextCurrent(window);

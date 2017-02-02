@@ -55,7 +55,7 @@ namespace nova {
 
         void set_index_array(std::vector<unsigned short> data, usage data_usage);
 
-        void set_active();
+        void set_active() const;
 
         void draw() const;
 

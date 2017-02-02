@@ -66,7 +66,7 @@ namespace nova {
         }
     }
 
-    void gl_mesh::set_active() {
+    void gl_mesh::set_active() const {
         glBindVertexArray(vertex_array);
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
@@ -76,7 +76,7 @@ namespace nova {
         glBindVertexArray(vertex_array);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
         GLenum buffer_usage = translate_usage(data_usage);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned), data.data(), buffer_usage);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned short), data.data(), buffer_usage);
 
         num_indices = (unsigned int) data.size();
     }
