@@ -200,7 +200,7 @@ namespace nova {
 	}
 
 	input_handler &nova_renderer::get_input_handler() {
-		return input_handler;
+		return inputs;
 	}
 
     mesh_store &nova_renderer::get_mesh_store() {
