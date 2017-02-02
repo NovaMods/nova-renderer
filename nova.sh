@@ -74,13 +74,13 @@ compile_native_code() {
     mkdir -p target/cpp
     cd target/cpp
 
-    cmake -g "Unix Makefiles" ../../src/main/cpp
+    cmake -DCMAKE_BUILD_TYPE=Debug -g "Unix Makefiles" ../../src/main/cpp
     if [ $? != "0" ]; then
         echo "Failed to execute CMake. Possibly you're missing the Vulkan library, which GLFW requires because it's stupid"
         exit -3
     fi
 
-    make -f Makefile nova-renderer
+    make -f Makefile -j 4 nova-renderer
     if [ $? != "0" ]; then
         echo "Could not compile Nova. Please submit a GitHub issue with the full console log so DethRaid can fix it"
         return -4

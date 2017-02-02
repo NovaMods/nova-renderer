@@ -229,7 +229,6 @@ target/
 /.vscode/settings.json
 /*.log
 /*.lck
-/src/main/resources/assets/minecraft
 
 ### Minecraft textures, copied from mcp
 src/main/resources
