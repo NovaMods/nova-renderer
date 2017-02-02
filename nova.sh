@@ -53,10 +53,10 @@ setup_nova() {
     rm -rf mcp
 
     echo "If patch file is UTF-16, convert it to UTF-8"
-    file src/main/resources/patches/nova.patch | grep UTF-16 && (iconv --from-code UTF-16 --to-code UTF-8 src/main/resources/patches/nova.patch > x && mv x src/main/resources/patches/nova.patch)
+    file patches/nova.patch | grep UTF-16 && (iconv --from-code UTF-16 --to-code UTF-8 patches/nova.patch > x && mv x patches/nova.patch)
 
     echo "Injecting MCP into Minecraft..."
-    (cd src/main/java/net ; patch -p1 ) < src/main/resources/patches/nova.patch
+    (cd src/main/java/net ; patch -p1 ) < patches/nova.patch
     if [ $? != "0" ]; then
         echo "Failed to apply patches. Tell DethRaid about it and give him the full console log"
         exit -2
