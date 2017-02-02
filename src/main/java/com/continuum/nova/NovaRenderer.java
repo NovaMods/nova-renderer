@@ -2,6 +2,8 @@ package com.continuum.nova;
 
 import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.utils.RenderCommandBuilder;
+import com.continuum.nova.NovaNative.window_size;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -41,6 +43,13 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private TextureMap blockAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> blockSpriteLocations = new HashMap<>();
+
+    private int height;
+
+    private int width;
+
+    private boolean resized;
+
 
     public NovaRenderer() {
         addBlockTextureLocations();
@@ -199,6 +208,33 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.info("PID: " + pid);
         NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
+        updateWindowSize();
+    }
+
+    public  void updateWindowSize(){
+        window_size size = NovaNative.INSTANCE.get_window_size();
+        int oldHeight = height;
+        int oldWidth = width;
+        if (oldHeight != size.height || oldWidth != size.width){
+            resized = true;
+        } else {
+            resized = false;
+        }
+        height = size.height;
+        width = size.width;
+
+    }
+
+    public int getHeight(){
+        return height;
+    }
+
+    public int getWidth(){
+        return width;
+    }
+
+    public boolean wasResized(){
+        return resized;
     }
 
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
@@ -206,6 +242,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             Minecraft.getMinecraft().shutdown();
         }
         NovaNative.INSTANCE.execute_frame();
+        updateWindowSize();
     }
 
     public void setGuiScreen(GuiScreen guiScreenIn) {
