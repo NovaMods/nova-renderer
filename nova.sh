@@ -26,30 +26,27 @@ setup_nova() {
     echo "Begin setup of Nova"
 
     echo "Downloading MCP"
-    mkdir mcp
-    cd mcp
-    wget http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip
-    unzip mcp931.zip
-    echo "Extracted MCP"
-    cp -r * ..
-    cd ..
+    rm -rf mcp && mkdir mcp && (cd mcp
+        wget http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip && unzip mcp931.zip
+        rm -f mcp*.zip
 
-    ./decompile.sh
-    if [ $? != "0" ]; then
-        echo "MCP failed to decompile Minecraft. Check the above text for errors"
-        exit -1
-    fi
+        echo "Decompile MCP"
+        ./decompile.sh
+        if [ $? != "0" ]; then
+            echo "MCP failed to decompile Minecraft. Check the above text for errors"
+            exit -1
+        fi
 
-    if [ x"$1" = x"dev" ]
-    then
-        (cd src/main/java ; git clone git@github.com:NovaMods/Minecraft-Source.git net)
-    else
-        cp -r src/minecraft/net/ src/main/java/net/
-    fi
-    cp -r src/minecraft/mcp src/main/java/
+        echo "Copy files from MCP"
+        test -d ../src/main/java/net/.git || (mkdir ../src/main/java/net/ ; cp -r src/minecraft/net/* ../src/main/java/net/)
+        mkdir -p ../src/main/resources/assets
+        cp -rf temp/src/minecraft/assets/ ../src/main/resources/assets
+        cp -rf temp/src/minecraft/pack.png ../src/main/resources/pack.png
+        cp -rf src/minecraft/mcp ../src/main/java/
+        cp -rf jars/* ../jars/
+    )
+
     echo "Unpacked MCP"
-
-    rm -rf src/minecraft
     rm -rf mcp
 
     echo "If patch file is UTF-16, convert it to UTF-8"
