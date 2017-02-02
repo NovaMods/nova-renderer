@@ -102,7 +102,8 @@ start_nova() {
 }
 
 create_patch() {
-    (cd src/main/java/net/; git diff origin/minecraft-1.10-mcp ) > src/main/resources/patches/nova.patch
+    (cd src/main/java/net/; git diff origin/minecraft-1.10-mcp ) > patches/nova.patch
+    file patches/nova.patch | grep UTF-16 && (iconv --from-code UTF-16 --to-code UTF-8 patches/nova.patch > x && mv x patches/nova.patch)
 }
 
 case $1 in
