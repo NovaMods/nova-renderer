@@ -98,7 +98,7 @@ namespace nova {
 
         texture_manager textures;
 
-		input_handler input_handler;
+		input_handler inputs;
 
         mesh_store meshes;
 

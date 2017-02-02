@@ -133,6 +133,7 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g")
 endif (UNIX)
 
 # For now just put everthing in a single nova source group
@@ -147,6 +148,10 @@ target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT)
 target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT)
 
 add_library(nova-renderer SHARED $<TARGET_OBJECTS:nova-renderer-obj>)
+
+if (WIN32)
+    set_target_properties(nova-renderer PROPERTIES PREFIX "")
+endif (WIN32)
 
 # This is needed on MSVC otherwise the build files get spread out all over the place.
 # The only *problem* is that we wont be able to create multi-config builds. Personally
@@ -167,6 +172,17 @@ if(GLFW_COMPILED)
 endif()
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
+
+if (WIN32)
+add_custom_command(TARGET nova-renderer
+                   POST_BUILD
+                   COMMAND copy /Y "nova-renderer.dll" "..\\..\\jars\\versions\\1.10\\1.10-natives")
+endif (WIN32)
+if (UNIX)
+add_custom_command(TARGET nova-renderer
+                   POST_BUILD
+                   COMMAND cp -f "libnova-renderer.so" "../../jars/versions/1.10/1.10-natives")
+endif (UNIX)
 
 # Setup the nova-test executable
 set(TEST_SOURCE_FILES

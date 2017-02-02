@@ -136,8 +136,8 @@ public class NovaDraw {
         final ScaledResolution scaledresolution = new ScaledResolution(mc);
         int i1 = scaledresolution.getScaledWidth();
         int j1 = scaledresolution.getScaledHeight();
-        final int k1 = Mouse.getX() * i1 / mc.displayWidth;
-        final int l1 = j1 - Mouse.getY() * j1 / mc.displayHeight - 1;
+        final int k1 = Mouse.getEventX() * i1 / mc.displayWidth;
+        final int l1 = j1 - Mouse.getEventY() * j1 / mc.displayHeight - 1;
         // set mouse position
         mouseX = k1;
         mouseY = l1;

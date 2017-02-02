@@ -18,16 +18,23 @@ jar {
                    'Implementation-Version': version,
                    'Main-Class': 'Start'
     }
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+	
 }
 
+
+task createJars(type: Jar) {
+	
+	archiveName = "nova-renderer-"+ version +"-natives-windows.jar"
+	from 'jars/versions/1.10/1.10-natives/libnova-renderer.dll'
+}
 task fatjar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': 'Nova Renderer',
                    'Implementation-Version': version,
                    'Main-Class': 'Start'
     }
-    baseName = project.name + "-all"
+    archiveName = "1.10-Nova.jar"
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
@@ -37,6 +44,9 @@ sourceSets {
     main {
         java {
             srcDirs = ["src/main/java"]
+        }
+		resources {
+            srcDirs = ['src/main/resources']
         }
     }
 }
@@ -50,27 +60,28 @@ repositories {
 // In this section you declare the dependencies for your production and test code
 dependencies {
     // Uses ASM for transforming Minecraft's source code
-    compile group: 'org.ow2.asm', name: 'asm', version: '5.1'
+    compileOnly group: 'org.ow2.asm', name: 'asm', version: '5.1'
 
     // JNA, for calling the C++ code
-    compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
+    compileOnly group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
 
     if (org.gradle.internal.os.OperatingSystem.current().isLinux()) {
-        compile files( 
+        compileOnly files( 
             'jars/libraries/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-linux.jar',
             'jars/libraries/org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209-natives-linux.jar'
         )
     } else if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-        compile files( 
+        compileOnly files( 
             'jars/libraries/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar',
             'jars/libraries/org/lwjgl/lwjgl/lwjgl-platform/2.9.4-nightly-20150209/lwjgl-platform-2.9.4-nightly-20150209-natives-windows.jar'
         )
     }
 
-
+	//compile files(
+	//		'jars/versions/1.10/1.10.jar'
+	//)
     // Add all the dependencies that Minecraft has
-    compile files(
-            'jars/versions/1.10/1.10.jar',
+    compileOnly files(
             'jars/libraries/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar',
             'jars/libraries/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar',
             'jars/libraries/com/google/guava/guava/17.0/guava-17.0.jar',

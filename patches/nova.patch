@@ -1,11 +1,11 @@
 diff --git a/minecraft/client/Minecraft.java b/minecraft/client/Minecraft.java
-index ad84c84..01aadf8 100644
+index ad84c84..4722746 100644
 --- a/minecraft/client/Minecraft.java
 +++ b/minecraft/client/Minecraft.java
 @@ -1,5 +1,8 @@
  package net.minecraft.client;
  
-+import com.continuum.nova.NovaDraw;
++import com.continuum.nova.gui.NovaDraw;
 +import com.continuum.nova.NovaNative;
 +import com.continuum.nova.NovaRenderer;
  import com.google.common.collect.Lists;
@@ -102,16 +102,16 @@ index ad84c84..01aadf8 100644
          this.mcResourceManager.registerReloadListener(this.mcSoundHandler);
          this.mcMusicTicker = new MusicTicker(this);
 -        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii.png"), this.renderEngine, false);
-+        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii.png"), this.textureManager, false);
++        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii"), this.textureManager, false);
  
          if (this.gameSettings.language != null)
          {
-@@ -533,27 +538,24 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -533,27 +538,15 @@ public class Minecraft implements IThreadListener, ISnooperInfo
              this.fontRendererObj.setBidiFlag(this.mcLanguageManager.isCurrentLanguageBidirectional());
          }
  
 -        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii_sga.png"), this.renderEngine, false);
-+        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii_sga.png"), this.textureManager, false);
++        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii_sga"), this.textureManager, false);
          this.mcResourceManager.registerReloadListener(this.fontRendererObj);
          this.mcResourceManager.registerReloadListener(this.standardGalacticFontRenderer);
          this.mcResourceManager.registerReloadListener(new GrassColorReloadListener());
@@ -119,10 +119,7 @@ index ad84c84..01aadf8 100644
 -        AchievementList.OPEN_INVENTORY.setStatStringFormatter(new IStatStringFormat()
 -        {
 -            public String formatString(String str)
-+        mcResourceManager.registerReloadListener(nova);
-+        AchievementList.OPEN_INVENTORY.setStatStringFormatter(str -> {
-+            try
-             {
+-            {
 -                try
 -                {
 -                    return String.format(str, new Object[] {GameSettings.getKeyDisplayString(Minecraft.this.gameSettings.keyBindInventory.getKeyCode())});
@@ -131,20 +128,17 @@ index ad84c84..01aadf8 100644
 -                {
 -                    return "Error: " + exception.getLocalizedMessage();
 -                }
-+                return String.format(str, GameSettings.getKeyDisplayString(Minecraft.this.gameSettings.keyBindInventory.getKeyCode()));
-+            }
-+            catch (Exception exception)
-+            {
-+                return "Error: " + exception.getLocalizedMessage();
-             }
-         });
+-            }
+-        });
++        mcResourceManager.registerReloadListener(nova);
++        AchievementList.OPEN_INVENTORY.setStatStringFormatter(str -> String.format(str, GameSettings.getKeyDisplayString(Minecraft.this.gameSettings.keyBindInventory.getKeyCode())));
          this.mouseHelper = new MouseHelper();
 -        this.checkGLError("Pre startup");
 +        /*this.checkGLError("Pre startup");
          GlStateManager.enableTexture2D();
          GlStateManager.shadeModel(7425);
          GlStateManager.clearDepth(1.0D);
-@@ -565,18 +567,24 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -565,18 +558,24 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          GlStateManager.matrixMode(5889);
          GlStateManager.loadIdentity();
          GlStateManager.matrixMode(5888);
@@ -174,7 +168,7 @@ index ad84c84..01aadf8 100644
          this.itemRenderer = new ItemRenderer(this);
          this.mcResourceManager.registerReloadListener(this.renderItem);
          this.entityRenderer = new EntityRenderer(this, this.mcResourceManager);
-@@ -587,7 +595,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -587,7 +586,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          this.mcResourceManager.registerReloadListener(this.renderGlobal);
          this.guiAchievement = new GuiAchievement(this);
          GlStateManager.viewport(0, 0, this.displayWidth, this.displayHeight);
@@ -183,7 +177,7 @@ index ad84c84..01aadf8 100644
          this.checkGLError("Post startup");
          this.ingameGUI = new GuiIngame(this);
  
-@@ -600,7 +608,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -600,7 +599,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
              this.displayGuiScreen(new GuiMainMenu());
          }
  
@@ -192,69 +186,69 @@ index ad84c84..01aadf8 100644
          this.mojangLogo = null;
          this.loadingScreen = new LoadingScreenRenderer(this);
          this.debugRenderer = new DebugRenderer(this);
-@@ -1022,7 +1030,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1015,27 +1014,17 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+             this.ingameGUI.getChatGUI().clearChatMessages();
+         }
+ 
+-        this.currentScreen = (GuiScreen)guiScreenIn;
++        this.currentScreen = guiScreenIn;
+ 
+         if (guiScreenIn != null)
+         {
              this.setIngameNotInFocus();
              KeyBinding.unPressAllKeys();
  
 -            while (Mouse.next())
-+            /*while (Mouse.next())
-             {
-                 ;
-             }
-@@ -1030,13 +1038,14 @@ public class Minecraft implements IThreadListener, ISnooperInfo
-             while (Keyboard.next())
-             {
-                 ;
+-            {
+-                ;
 -            }
-+            }*/
- 
+-
+-            while (Keyboard.next())
+-            {
+-                ;
+-            }
+-
              ScaledResolution scaledresolution = new ScaledResolution(this);
              int i = scaledresolution.getScaledWidth();
              int j = scaledresolution.getScaledHeight();
-             ((GuiScreen)guiScreenIn).setWorldAndResolution(this, i, j);
+-            ((GuiScreen)guiScreenIn).setWorldAndResolution(this, i, j);
++            guiScreenIn.setWorldAndResolution(this, i, j);
              this.skipRenderWorld = false;
-+            nova.setGuiScreen(guiScreenIn);
          }
          else
-         {
-@@ -1147,7 +1156,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1147,7 +1136,6 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          this.mcProfiler.startSection("render");
          GlStateManager.pushMatrix();
          GlStateManager.clear(16640);
 -        this.framebufferMc.bindFramebuffer(true);
-+        //this.framebufferMc.bindFramebuffer(true);
          this.mcProfiler.startSection("display");
          GlStateManager.enableTexture2D();
          this.mcProfiler.endSection();
-@@ -1155,7 +1164,9 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1155,7 +1143,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          if (!this.skipRenderWorld)
          {
              this.mcProfiler.endStartSection("gameRenderer");
 -            this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
-+            //this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
 +            NovaDraw.novaDrawScreen(currentScreen);
 +            nova.updateCameraAndRender(timer.renderPartialTicks, i, this);
              this.mcProfiler.endSection();
          }
  
-@@ -1178,13 +1189,13 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1178,13 +1167,10 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          }
  
          this.guiAchievement.updateAchievementWindow();
 -        this.framebufferMc.unbindFramebuffer();
-+        //this.framebufferMc.unbindFramebuffer();
          GlStateManager.popMatrix();
          GlStateManager.pushMatrix();
 -        this.framebufferMc.framebufferRender(this.displayWidth, this.displayHeight);
-+        //this.framebufferMc.framebufferRender(this.displayWidth, this.displayHeight);
          GlStateManager.popMatrix();
          GlStateManager.pushMatrix();
 -        this.entityRenderer.renderStreamIndicator(this.timer.renderPartialTicks);
-+        //this.entityRenderer.renderStreamIndicator(this.timer.renderPartialTicks);
          GlStateManager.popMatrix();
          this.mcProfiler.startSection("root");
          this.updateDisplay();
-@@ -1224,14 +1235,14 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1224,14 +1210,14 @@ public class Minecraft implements IThreadListener, ISnooperInfo
      public void updateDisplay()
      {
          this.mcProfiler.startSection("display_update");
@@ -271,7 +265,7 @@ index ad84c84..01aadf8 100644
          {
              int i = this.displayWidth;
              int j = this.displayHeight;
-@@ -1252,7 +1263,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1252,7 +1238,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
  
                  this.resize(this.displayWidth, this.displayHeight);
              }
@@ -280,7 +274,7 @@ index ad84c84..01aadf8 100644
      }
  
      public int getLimitFramerate()
-@@ -1783,7 +1794,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1783,7 +1769,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
  
          if (!this.isGamePaused)
          {
@@ -289,7 +283,7 @@ index ad84c84..01aadf8 100644
          }
  
          if (this.currentScreen == null && this.thePlayer != null)
-@@ -2980,7 +2991,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2980,7 +2966,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          playerSnooper.addStatToSnooper("opengl_vendor", GlStateManager.glGetString(7936));
          playerSnooper.addStatToSnooper("client_brand", ClientBrandRetriever.getClientModName());
          playerSnooper.addStatToSnooper("launched_version", this.launchedVersion);
@@ -298,7 +292,7 @@ index ad84c84..01aadf8 100644
          playerSnooper.addStatToSnooper("gl_caps[ARB_arrays_of_arrays]", Boolean.valueOf(contextcapabilities.GL_ARB_arrays_of_arrays));
          playerSnooper.addStatToSnooper("gl_caps[ARB_base_instance]", Boolean.valueOf(contextcapabilities.GL_ARB_base_instance));
          playerSnooper.addStatToSnooper("gl_caps[ARB_blend_func_extended]", Boolean.valueOf(contextcapabilities.GL_ARB_blend_func_extended));
-@@ -3084,7 +3095,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3084,7 +3070,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
          GlStateManager.glGetError();
          playerSnooper.addStatToSnooper("gl_caps[gl_max_array_texture_layers]", Integer.valueOf(GlStateManager.glGetInteger(35071)));
          GlStateManager.glGetError();
@@ -307,7 +301,7 @@ index ad84c84..01aadf8 100644
          GameProfile gameprofile = this.session.getProfile();
  
          if (gameprofile != null && gameprofile.getId() != null)
-@@ -3096,20 +3107,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3096,20 +3082,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
      /**
       * Used in the usage snooper.
       */
@@ -330,7 +324,7 @@ index ad84c84..01aadf8 100644
      }
  
      /**
-@@ -3220,7 +3219,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3220,7 +3194,7 @@ public class Minecraft implements IThreadListener, ISnooperInfo
  
      public TextureManager getTextureManager()
      {
@@ -339,17 +333,617 @@ index ad84c84..01aadf8 100644
      }
  
      public IResourceManager getResourceManager()
+diff --git a/minecraft/client/gui/FontRenderer.java b/minecraft/client/gui/FontRenderer.java
+index 6439aa9..8c28a0c 100644
+--- a/minecraft/client/gui/FontRenderer.java
++++ b/minecraft/client/gui/FontRenderer.java
+@@ -1,8 +1,11 @@
+ package net.minecraft.client.gui;
+ 
++import com.continuum.nova.gui.NovaDraw;
+ import com.ibm.icu.text.ArabicShaping;
+ import com.ibm.icu.text.ArabicShapingException;
+ import com.ibm.icu.text.Bidi;
++
++import java.awt.*;
+ import java.awt.image.BufferedImage;
+ import java.io.Closeable;
+ import java.io.IOException;
+@@ -17,16 +20,19 @@ import net.minecraft.client.renderer.VertexBuffer;
+ import net.minecraft.client.renderer.texture.TextureManager;
+ import net.minecraft.client.renderer.texture.TextureUtil;
+ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
++import net.minecraft.client.resources.IReloadableResourceManager;
+ import net.minecraft.client.resources.IResource;
+ import net.minecraft.client.resources.IResourceManager;
+ import net.minecraft.client.resources.IResourceManagerReloadListener;
+ import net.minecraft.client.settings.GameSettings;
+ import net.minecraft.util.ResourceLocation;
+ import org.apache.commons.io.IOUtils;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
+ 
+-public class FontRenderer implements IResourceManagerReloadListener
+-{
++public class FontRenderer implements IResourceManagerReloadListener {
+     private static final ResourceLocation[] UNICODE_PAGE_LOCATIONS = new ResourceLocation[256];
++    private static final Logger LOG = LogManager.getLogger(FontRenderer.class);
+ 
+     /** Array of width of all the characters in default.png */
+     private final int[] charWidth = new int[256];
+@@ -44,11 +50,11 @@ public class FontRenderer implements IResourceManagerReloadListener
+      * Array of RGB triplets defining the 16 standard chat colors followed by 16 darker version of the same colors for
+      * drop shadows.
+      */
+-    private final int[] colorCode = new int[32];
++    private final int[] colorCodes = new int[32];
+     private final ResourceLocation locationFontTexture;
+ 
+     /** The RenderEngine used to load and setup glyph textures. */
+-    private final TextureManager renderEngine;
++    private final TextureManager textureManager;
+ 
+     /** Current X coordinate at which to draw the next character. */
+     private float posX;
+@@ -90,6 +96,8 @@ public class FontRenderer implements IResourceManagerReloadListener
+     /** Set if the "o" style (italic) is active in currently rendering string */
+     private boolean italicStyle;
+ 
++    private Color color;
++
+     /**
+      * Set if the "n" style (underlined) is active in currently rendering string
+      */
+@@ -103,9 +111,8 @@ public class FontRenderer implements IResourceManagerReloadListener
+     public FontRenderer(GameSettings gameSettingsIn, ResourceLocation location, TextureManager textureManagerIn, boolean unicode)
+     {
+         this.locationFontTexture = location;
+-        this.renderEngine = textureManagerIn;
++        this.textureManager = textureManagerIn;
+         this.unicodeFlag = unicode;
+-        textureManagerIn.bindTexture(this.locationFontTexture);
+ 
+         for (int i = 0; i < 32; ++i)
+         {
+@@ -136,80 +143,59 @@ public class FontRenderer implements IResourceManagerReloadListener
+                 i1 /= 4;
+             }
+ 
+-            this.colorCode[i] = (k & 255) << 16 | (l & 255) << 8 | i1 & 255;
++            this.colorCodes[i] = (k & 255) << 16 | (l & 255) << 8 | i1 & 255;
+         }
+ 
+         this.readGlyphSizes();
+     }
+ 
+-    public void onResourceManagerReload(IResourceManager resourceManager)
+-    {
+-        this.readFontTexture();
++    @Override
++    public void onResourceManagerReload(IResourceManager resourceManager) {
++        readFontTexture(resourceManager);
+     }
+ 
+-    private void readFontTexture()
+-    {
+-        IResource iresource = null;
++    private void readFontTexture(IResourceManager resourceManager) {
+         BufferedImage bufferedimage;
+ 
+-        try
+-        {
+-            iresource = Minecraft.getMinecraft().getResourceManager().getResource(this.locationFontTexture);
++        String path = locationFontTexture.getResourcePath();
++        ResourceLocation fontTextureLocation = new ResourceLocation("textures/" + path + ".png");
++
++        try(IResource iresource = resourceManager.getResource(fontTextureLocation)) {
+             bufferedimage = TextureUtil.readBufferedImage(iresource.getInputStream());
+-        }
+-        catch (IOException ioexception)
+-        {
++        } catch(IOException ioexception) {
+             throw new RuntimeException(ioexception);
+         }
+-        finally
+-        {
+-            IOUtils.closeQuietly((Closeable)iresource);
+-        }
+ 
+-        int lvt_3_1_ = bufferedimage.getWidth();
+-        int lvt_4_1_ = bufferedimage.getHeight();
+-        int[] lvt_5_1_ = new int[lvt_3_1_ * lvt_4_1_];
+-        bufferedimage.getRGB(0, 0, lvt_3_1_, lvt_4_1_, lvt_5_1_, 0, lvt_3_1_);
+-        int lvt_6_1_ = lvt_4_1_ / 16;
+-        int lvt_7_1_ = lvt_3_1_ / 16;
++        int imageWidth = bufferedimage.getWidth();
++        int imageHeight = bufferedimage.getHeight();
++        int[] imageSize = new int[imageWidth * imageHeight];
++        bufferedimage.getRGB(0, 0, imageWidth, imageHeight, imageSize, 0, imageWidth);
++        int pixelHeightOrChars = imageHeight / 16;   // Cause there's 16 chars in the x and y direction
++        int pixelWidthOfChars = imageWidth / 16;
+         boolean lvt_8_1_ = true;
+-        float lvt_9_1_ = 8.0F / (float)lvt_7_1_;
+-
+-        for (int lvt_10_1_ = 0; lvt_10_1_ < 256; ++lvt_10_1_)
+-        {
+-            int j1 = lvt_10_1_ % 16;
+-            int k1 = lvt_10_1_ / 16;
+-
+-            if (lvt_10_1_ == 32)
+-            {
+-                this.charWidth[lvt_10_1_] = 4;
++        float lvt_9_1_ = 8.0F / (float) pixelWidthOfChars;
++        for(int i = 0; i < 256; ++i) {
++            int x = i % 16;
++            int y = i / 16;
++            if(i == 32) {
++                this.charWidth[i] = 4;
+             }
+-
+-            int l1;
+-
+-            for (l1 = lvt_7_1_ - 1; l1 >= 0; --l1)
+-            {
+-                int i2 = j1 * lvt_7_1_ + l1;
++            int charsLeftInLine;
++            for(charsLeftInLine = pixelWidthOfChars - 1; charsLeftInLine >= 0; --charsLeftInLine) {
++                int posInCharArray = x * pixelWidthOfChars + charsLeftInLine;
+                 boolean flag1 = true;
+-
+-                for (int j2 = 0; j2 < lvt_6_1_ && flag1; ++j2)
+-                {
+-                    int k2 = (k1 * lvt_7_1_ + j2) * lvt_3_1_;
+-
+-                    if ((lvt_5_1_[i2 + k2] >> 24 & 255) != 0)
+-                    {
++                for(int curX = 0; curX < pixelHeightOrChars && flag1; ++curX) {
++                    int k2 = (y * pixelWidthOfChars + curX) * imageWidth;
++                    if((imageSize[posInCharArray + k2] >> 24 & 255) != 0) {
+                         flag1 = false;
+                     }
+                 }
+-
+-                if (!flag1)
+-                {
++                if(!flag1) {
+                     break;
+                 }
+             }
+-
+-            ++l1;
+-            this.charWidth[lvt_10_1_] = (int)(0.5D + (double)((float)l1 * lvt_9_1_)) + 1;
++            ++charsLeftInLine;
++            this.charWidth[i] = (int) (0.5 + ((float) charsLeftInLine * lvt_9_1_)) + 2;
+         }
+     }
+ 
+@@ -235,14 +221,10 @@ public class FontRenderer implements IResourceManagerReloadListener
+     /**
+      * Render the given char
+      */
+-    private float renderChar(char ch, boolean italic)
+-    {
+-        if (ch == 32)
+-        {
++    private float renderChar(char ch, boolean italic) {
++        if (ch == 32) {
+             return 4.0F;
+-        }
+-        else
+-        {
++        } else {
+             int i = "\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".indexOf(ch);
+             return i != -1 && !this.unicodeFlag ? this.renderDefaultChar(i, italic) : this.renderUnicodeChar(ch, italic);
+         }
+@@ -251,24 +233,24 @@ public class FontRenderer implements IResourceManagerReloadListener
+     /**
+      * Render a single character with the default.png font at current (posX,posY) location...
+      */
+-    private float renderDefaultChar(int ch, boolean italic)
+-    {
++    private float renderDefaultChar(int ch, boolean italic) {
+         int i = ch % 16 * 8;
+         int j = ch / 16 * 8;
+         int k = italic ? 1 : 0;
+-        this.renderEngine.bindTexture(this.locationFontTexture);
+         int l = this.charWidth[ch];
+         float f = (float)l - 0.01F;
+-        GlStateManager.glBegin(5);
+-        GlStateManager.glTexCoord2f((float)i / 128.0F, (float)j / 128.0F);
+-        GlStateManager.glVertex3f(this.posX + (float)k, this.posY, 0.0F);
+-        GlStateManager.glTexCoord2f((float)i / 128.0F, ((float)j + 7.99F) / 128.0F);
+-        GlStateManager.glVertex3f(this.posX - (float)k, this.posY + 7.99F, 0.0F);
+-        GlStateManager.glTexCoord2f(((float)i + f - 1.0F) / 128.0F, (float)j / 128.0F);
+-        GlStateManager.glVertex3f(this.posX + f - 1.0F + (float)k, this.posY, 0.0F);
+-        GlStateManager.glTexCoord2f(((float)i + f - 1.0F) / 128.0F, ((float)j + 7.99F) / 128.0F);
+-        GlStateManager.glVertex3f(this.posX + f - 1.0F - (float)k, this.posY + 7.99F, 0.0F);
+-        GlStateManager.glEnd();
++
++        NovaDraw.Vertex[] vertices = new NovaDraw.Vertex[]{
++                new NovaDraw.Vertex(this.posX + (float)k, this.posY, 0.0F, (float) i / 128.0F, (float) j / 128.0F, color),
++                new NovaDraw.Vertex(this.posX - (float)k, this.posY + 7.99F, 0.0F, (float)i / 128.0F, ((float)j + 7.99F) / 128.0F, color),
++                new NovaDraw.Vertex(this.posX + f - 1.0F + (float)k, this.posY, 0.0F, ((float)i + f - 1.0F) / 128.0F, (float)j / 128.0F, color),
++                new NovaDraw.Vertex(this.posX + f - 1.0F - (float)k, this.posY + 7.99F, 0.0F, ((float)i + f - 1.0F) / 128.0F, ((float)j + 7.99F) / 128.0F, color)
++        };
++
++        Integer[] indices = new Integer[] {0, 1, 2, 2, 1, 3};
++
++        NovaDraw.draw(locationFontTexture, indices, vertices);
++
+         return (float)l;
+     }
+ 
+@@ -287,24 +269,20 @@ public class FontRenderer implements IResourceManagerReloadListener
+      */
+     private void loadGlyphTexture(int page)
+     {
+-        this.renderEngine.bindTexture(this.getUnicodePageLocation(page));
++        this.textureManager.bindTexture(this.getUnicodePageLocation(page));
+     }
+ 
+     /**
+      * Render a single Unicode character at current (posX,posY) location using one of the /font/glyph_XX.png files...
+      */
+-    private float renderUnicodeChar(char ch, boolean italic)
+-    {
++    private float renderUnicodeChar(char ch, boolean italic) {
+         int i = this.glyphWidth[ch] & 255;
+ 
+-        if (i == 0)
+-        {
++        if (i == 0) {
+             return 0.0F;
+-        }
+-        else
+-        {
+-            int j = ch / 256;
+-            this.loadGlyphTexture(j);
++        } else {
++            int page = ch / 256;
++            this.loadGlyphTexture(page);
+             int k = i >>> 4;
+             int l = i & 15;
+             float f = (float)k;
+@@ -313,16 +291,20 @@ public class FontRenderer implements IResourceManagerReloadListener
+             float f3 = (float)((ch & 255) / 16 * 16);
+             float f4 = f1 - f - 0.02F;
+             float f5 = italic ? 1.0F : 0.0F;
+-            GlStateManager.glBegin(5);
+-            GlStateManager.glTexCoord2f(f2 / 256.0F, f3 / 256.0F);
+-            GlStateManager.glVertex3f(this.posX + f5, this.posY, 0.0F);
+-            GlStateManager.glTexCoord2f(f2 / 256.0F, (f3 + 15.98F) / 256.0F);
+-            GlStateManager.glVertex3f(this.posX - f5, this.posY + 7.99F, 0.0F);
+-            GlStateManager.glTexCoord2f((f2 + f4) / 256.0F, f3 / 256.0F);
+-            GlStateManager.glVertex3f(this.posX + f4 / 2.0F + f5, this.posY, 0.0F);
+-            GlStateManager.glTexCoord2f((f2 + f4) / 256.0F, (f3 + 15.98F) / 256.0F);
+-            GlStateManager.glVertex3f(this.posX + f4 / 2.0F - f5, this.posY + 7.99F, 0.0F);
+-            GlStateManager.glEnd();
++
++            ResourceLocation glyphTexture = getUnicodePageLocation(page);
++
++            NovaDraw.Vertex[] vertices = new NovaDraw.Vertex[]{
++                    new NovaDraw.Vertex(this.posX + f5, this.posY, 0.0F, f2 / 256.0F, f3 / 256.0F, color),
++                    new NovaDraw.Vertex(this.posX - f5, this.posY + 7.99F, 0.0F, f2 / 256.0F, (f3 + 15.98F) / 256.0F, color),
++                    new NovaDraw.Vertex(this.posX + f4 / 2.0F + f5, this.posY, 0.0F, (f2 + f4) / 256.0F, f3 / 256.0F, color),
++                    new NovaDraw.Vertex(this.posX + f4 / 2.0F - f5, this.posY + 7.99F, 0.0F, (f2 + f4) / 256.0F, (f3 + 15.98F) / 256.0F, color)
++            };
++
++            Integer[] indices = new Integer[] {0, 1, 2, 2, 1, 3};
++
++            NovaDraw.draw(glyphTexture, indices, vertices);
++
+             return (f1 - f) / 2.0F + 1.0F;
+         }
+     }
+@@ -346,19 +328,15 @@ public class FontRenderer implements IResourceManagerReloadListener
+     /**
+      * Draws the specified string.
+      */
+-    public int drawString(String text, float x, float y, int color, boolean dropShadow)
+-    {
++    public int drawString(String text, float x, float y, int color, boolean dropShadow) {
+         GlStateManager.enableAlpha();
+         this.resetStyles();
+         int i;
+ 
+-        if (dropShadow)
+-        {
+-            i = this.renderString(text, x + 1.0F, y + 1.0F, color, true);
+-            i = Math.max(i, this.renderString(text, x, y, color, false));
+-        }
+-        else
+-        {
++        if (dropShadow) {
++            i = this.renderString(text, x, y, color, false);
++            i = Math.max(i, this.renderString(text, x + 1.0F, y + 1.0F, color, true));
++        } else {
+             i = this.renderString(text, x, y, color, false);
+         }
+ 
+@@ -397,125 +375,97 @@ public class FontRenderer implements IResourceManagerReloadListener
+     /**
+      * Render a single line string at the current (posX,posY) and update posX
+      */
+-    private void renderStringAtPos(String text, boolean shadow)
+-    {
+-        for (int i = 0; i < text.length(); ++i)
+-        {
+-            char c0 = text.charAt(i);
++    private void renderStringAtPos(String text, boolean shadow) {
++        for (int i = 0; i < text.length(); ++i) {
++            char currentChar = text.charAt(i);
+ 
+-            if (c0 == 167 && i + 1 < text.length())
+-            {
++            if (currentChar == 167 && i + 1 < text.length()) {
+                 int i1 = "0123456789abcdefklmnor".indexOf(text.toLowerCase(Locale.ENGLISH).charAt(i + 1));
+ 
+-                if (i1 < 16)
+-                {
++                if (i1 < 16) {
+                     this.randomStyle = false;
+                     this.boldStyle = false;
+                     this.strikethroughStyle = false;
+                     this.underlineStyle = false;
+                     this.italicStyle = false;
+ 
+-                    if (i1 < 0 || i1 > 15)
+-                    {
++                    if(i1 < 0 || i1 > 15) {
+                         i1 = 15;
+                     }
+ 
+-                    if (shadow)
+-                    {
++                    if(shadow) {
+                         i1 += 16;
+                     }
+ 
+-                    int j1 = this.colorCode[i1];
+-                    this.textColor = j1;
+-                    GlStateManager.color((float)(j1 >> 16) / 255.0F, (float)(j1 >> 8 & 255) / 255.0F, (float)(j1 & 255) / 255.0F, this.alpha);
+-                }
+-                else if (i1 == 16)
+-                {
++                    int colorCode = this.colorCodes[i1];
++                    this.textColor = colorCode;
++                    color = new Color(colorCode >> 16, colorCode >> 8 & 255, colorCode & 255, this.alpha);
++                } else if(i1 == 16) {
+                     this.randomStyle = true;
+-                }
+-                else if (i1 == 17)
+-                {
++                } else if(i1 == 17) {
+                     this.boldStyle = true;
+-                }
+-                else if (i1 == 18)
+-                {
++                } else if(i1 == 18) {
+                     this.strikethroughStyle = true;
+-                }
+-                else if (i1 == 19)
+-                {
++                } else if(i1 == 19) {
+                     this.underlineStyle = true;
+-                }
+-                else if (i1 == 20)
+-                {
++                } else if(i1 == 20) {
+                     this.italicStyle = true;
+-                }
+-                else if (i1 == 21)
+-                {
++                } else if(i1 == 21) {
+                     this.randomStyle = false;
+                     this.boldStyle = false;
+                     this.strikethroughStyle = false;
+                     this.underlineStyle = false;
+                     this.italicStyle = false;
+-                    GlStateManager.color(this.red, this.blue, this.green, this.alpha);
++                    color = new Color(red, green, blue, alpha);
+                 }
+ 
+                 ++i;
+-            }
+-            else
+-            {
+-                int j = "\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".indexOf(c0);
++            } else {
++                int characterIndex = "\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".indexOf(currentChar);
+ 
+-                if (this.randomStyle && j != -1)
+-                {
+-                    int k = this.getCharWidth(c0);
++                if(this.randomStyle && characterIndex != -1) {
++                    int currentCharWidth = this.getCharWidth(currentChar);
+                     char c1;
+ 
+-                    while (true)
+-                    {
+-                        j = this.fontRandom.nextInt("\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".length());
+-                        c1 = "\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".charAt(j);
++                    while(true) {
++                        characterIndex = this.fontRandom.nextInt("\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".length());
++                        c1 = "\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".charAt(characterIndex);
+ 
+-                        if (k == this.getCharWidth(c1))
+-                        {
++                        if(currentCharWidth == this.getCharWidth(c1)) {
+                             break;
+                         }
+                     }
+ 
+-                    c0 = c1;
++                    currentChar = c1;
+                 }
+ 
+                 float f1 = this.unicodeFlag ? 0.5F : 1.0F;
+-                boolean flag = (c0 == 0 || j == -1 || this.unicodeFlag) && shadow;
++                boolean shiftForShadow = (currentChar == 0 || characterIndex == -1 || this.unicodeFlag) && shadow;
+ 
+-                if (flag)
+-                {
++                if (shiftForShadow) {
+                     this.posX -= f1;
+                     this.posY -= f1;
+                 }
+ 
+-                float f = this.renderChar(c0, this.italicStyle);
++                float f = this.renderChar(currentChar, this.italicStyle);
+ 
+-                if (flag)
+-                {
++                if (shiftForShadow) {
+                     this.posX += f1;
+                     this.posY += f1;
+                 }
+ 
+-                if (this.boldStyle)
+-                {
++                if (this.boldStyle) {
+                     this.posX += f1;
+ 
+-                    if (flag)
+-                    {
++                    if(shiftForShadow) {
+                         this.posX -= f1;
+                         this.posY -= f1;
+                     }
+ 
+-                    this.renderChar(c0, this.italicStyle);
++                    this.renderChar(currentChar, this.italicStyle);
+                     this.posX -= f1;
+ 
+-                    if (flag)
+-                    {
++                    if(shiftForShadow) {
+                         this.posX += f1;
+                         this.posY += f1;
+                     }
+@@ -523,31 +473,29 @@ public class FontRenderer implements IResourceManagerReloadListener
+                     ++f;
+                 }
+ 
+-                if (this.strikethroughStyle)
+-                {
++                if (this.strikethroughStyle) {
+                     Tessellator tessellator = Tessellator.getInstance();
+                     VertexBuffer vertexbuffer = tessellator.getBuffer();
+                     GlStateManager.disableTexture2D();
+                     vertexbuffer.begin(7, DefaultVertexFormats.POSITION);
+-                    vertexbuffer.pos((double)this.posX, (double)(this.posY + (float)(this.FONT_HEIGHT / 2)), 0.0D).endVertex();
+-                    vertexbuffer.pos((double)(this.posX + f), (double)(this.posY + (float)(this.FONT_HEIGHT / 2)), 0.0D).endVertex();
+-                    vertexbuffer.pos((double)(this.posX + f), (double)(this.posY + (float)(this.FONT_HEIGHT / 2) - 1.0F), 0.0D).endVertex();
+-                    vertexbuffer.pos((double)this.posX, (double)(this.posY + (float)(this.FONT_HEIGHT / 2) - 1.0F), 0.0D).endVertex();
++                    vertexbuffer.pos((double)this.posX,         (double)(this.posY + (float)(this.FONT_HEIGHT / 2)),        0.0D).endVertex();
++                    vertexbuffer.pos((double)(this.posX + f),   (double)(this.posY + (float)(this.FONT_HEIGHT / 2)),        0.0D).endVertex();
++                    vertexbuffer.pos((double)(this.posX + f),   (double)(this.posY + (float)(this.FONT_HEIGHT / 2) - 1.0F), 0.0D).endVertex();
++                    vertexbuffer.pos((double)this.posX,         (double)(this.posY + (float)(this.FONT_HEIGHT / 2) - 1.0F), 0.0D).endVertex();
+                     tessellator.draw();
+                     GlStateManager.enableTexture2D();
+                 }
+ 
+-                if (this.underlineStyle)
+-                {
++                if (this.underlineStyle) {
+                     Tessellator tessellator1 = Tessellator.getInstance();
+                     VertexBuffer vertexbuffer1 = tessellator1.getBuffer();
+                     GlStateManager.disableTexture2D();
+                     vertexbuffer1.begin(7, DefaultVertexFormats.POSITION);
+                     int l = this.underlineStyle ? -1 : 0;
+-                    vertexbuffer1.pos((double)(this.posX + (float)l), (double)(this.posY + (float)this.FONT_HEIGHT), 0.0D).endVertex();
+-                    vertexbuffer1.pos((double)(this.posX + f), (double)(this.posY + (float)this.FONT_HEIGHT), 0.0D).endVertex();
+-                    vertexbuffer1.pos((double)(this.posX + f), (double)(this.posY + (float)this.FONT_HEIGHT - 1.0F), 0.0D).endVertex();
+-                    vertexbuffer1.pos((double)(this.posX + (float)l), (double)(this.posY + (float)this.FONT_HEIGHT - 1.0F), 0.0D).endVertex();
++                    vertexbuffer1.pos((double)(this.posX + (float)l),   (double)(this.posY + (float)this.FONT_HEIGHT),          0.0D).endVertex();
++                    vertexbuffer1.pos((double)(this.posX + f),          (double)(this.posY + (float)this.FONT_HEIGHT),          0.0D).endVertex();
++                    vertexbuffer1.pos((double)(this.posX + f),          (double)(this.posY + (float)this.FONT_HEIGHT - 1.0F),   0.0D).endVertex();
++                    vertexbuffer1.pos((double)(this.posX + (float)l),   (double)(this.posY + (float)this.FONT_HEIGHT - 1.0F),   0.0D).endVertex();
+                     tessellator1.draw();
+                     GlStateManager.enableTexture2D();
+                 }
+@@ -574,26 +522,19 @@ public class FontRenderer implements IResourceManagerReloadListener
+     /**
+      * Render single line string by setting GL color, current (posX,posY), and calling renderStringAtPos()
+      */
+-    private int renderString(String text, float x, float y, int color, boolean dropShadow)
+-    {
+-        if (text == null)
+-        {
++    private int renderString(String text, float x, float y, int color, boolean dropShadow) {
++        if(text == null) {
+             return 0;
+-        }
+-        else
+-        {
+-            if (this.bidiFlag)
+-            {
++        } else {
++            if(this.bidiFlag) {
+                 text = this.bidiReorder(text);
+             }
+ 
+-            if ((color & -67108864) == 0)
+-            {
++            if((color & -67108864) == 0) {
+                 color |= -16777216;
+             }
+ 
+-            if (dropShadow)
+-            {
++            if(dropShadow) {
+                 color = (color & 16579836) >> 2 | color & -16777216;
+             }
+ 
+@@ -601,7 +542,7 @@ public class FontRenderer implements IResourceManagerReloadListener
+             this.blue = (float)(color >> 8 & 255) / 255.0F;
+             this.green = (float)(color & 255) / 255.0F;
+             this.alpha = (float)(color >> 24 & 255) / 255.0F;
+-            GlStateManager.color(this.red, this.blue, this.green, this.alpha);
++            this.color = new Color(red, green, blue, alpha);
+             this.posX = x;
+             this.posY = y;
+             this.renderStringAtPos(text, dropShadow);
+@@ -991,6 +932,6 @@ public class FontRenderer implements IResourceManagerReloadListener
+     public int getColorCode(char character)
+     {
+         int i = "0123456789abcdef".indexOf(character);
+-        return i >= 0 && i < this.colorCode.length ? this.colorCode[i] : -1;
++        return i >= 0 && i < this.colorCodes.length ? this.colorCodes[i] : -1;
+     }
+ }
 diff --git a/minecraft/client/gui/Gui.java b/minecraft/client/gui/Gui.java
-index 58e6a77..a0cd082 100644
+index 58e6a77..af2753b 100644
 --- a/minecraft/client/gui/Gui.java
 +++ b/minecraft/client/gui/Gui.java
-@@ -214,4 +214,25 @@ public class Gui
+@@ -137,15 +137,13 @@ public class Gui
+      */
+     public void drawTexturedModalRect(int x, int y, int textureX, int textureY, int width, int height)
+     {
+-        float f = 0.00390625F;
+-        float f1 = 0.00390625F;
+         Tessellator tessellator = Tessellator.getInstance();
+         VertexBuffer vertexbuffer = tessellator.getBuffer();
+         vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX);
+-        vertexbuffer.pos((double)(x + 0), (double)(y + height), (double)this.zLevel).tex((double)((float)(textureX + 0) * 0.00390625F), (double)((float)(textureY + height) * 0.00390625F)).endVertex();
+-        vertexbuffer.pos((double)(x + width), (double)(y + height), (double)this.zLevel).tex((double)((float)(textureX + width) * 0.00390625F), (double)((float)(textureY + height) * 0.00390625F)).endVertex();
+-        vertexbuffer.pos((double)(x + width), (double)(y + 0), (double)this.zLevel).tex((double)((float)(textureX + width) * 0.00390625F), (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
+-        vertexbuffer.pos((double)(x + 0), (double)(y + 0), (double)this.zLevel).tex((double)((float)(textureX + 0) * 0.00390625F), (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
++        vertexbuffer.pos((double)(x + 0),       (double)(y + height),   (double)this.zLevel).tex((double)((float)(textureX + 0) * 0.00390625F),     (double)((float)(textureY + height) * 0.00390625F)).endVertex();
++        vertexbuffer.pos((double)(x + width),   (double)(y + height),   (double)this.zLevel).tex((double)((float)(textureX + width) * 0.00390625F), (double)((float)(textureY + height) * 0.00390625F)).endVertex();
++        vertexbuffer.pos((double)(x + width),   (double)(y + 0),        (double)this.zLevel).tex((double)((float)(textureX + width) * 0.00390625F), (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
++        vertexbuffer.pos((double)(x + 0),       (double)(y + 0),        (double)this.zLevel).tex((double)((float)(textureX + 0) * 0.00390625F),     (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
+         tessellator.draw();
+     }
+ 
+@@ -214,4 +212,26 @@ public class Gui
          vertexbuffer.pos((double)x, (double)y, 0.0D).tex((double)(u * f), (double)(v * f1)).endVertex();
          tessellator.draw();
      }
 +
 +
 +    public void drawNova() {
++        // TODO: This method should be made abstract when all GUI things implement it
 +    }
 +
 +    int previousState = -1;
@@ -370,17 +964,72 @@ index 58e6a77..a0cd082 100644
 +    }
  }
 diff --git a/minecraft/client/gui/GuiButton.java b/minecraft/client/gui/GuiButton.java
-index 93eccc5..a4535de 100644
+index 93eccc5..36a7156 100644
 --- a/minecraft/client/gui/GuiButton.java
 +++ b/minecraft/client/gui/GuiButton.java
 @@ -1,5 +1,6 @@
  package net.minecraft.client.gui;
  
-+import com.continuum.nova.NovaDraw;
++import com.continuum.nova.gui.NovaDraw;
  import net.minecraft.client.Minecraft;
  import net.minecraft.client.audio.PositionedSoundRecord;
  import net.minecraft.client.audio.SoundHandler;
-@@ -155,4 +156,41 @@ public class GuiButton extends Gui
+@@ -9,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
+ 
+ public class GuiButton extends Gui
+ {
+-    protected static final ResourceLocation BUTTON_TEXTURES = new ResourceLocation("textures/gui/widgets.png");
++    protected static final ResourceLocation BUTTON_TEXTURES = new ResourceLocation("gui/widgets");
+ 
+     /** Button width in pixels */
+     protected int width;
+@@ -46,6 +47,7 @@ public class GuiButton extends Gui
+         this.enabled = true;
+         this.visible = true;
+         this.id = buttonId;
++        System.out.println("Created a button with id " + id);
+         this.xPosition = x;
+         this.yPosition = y;
+         this.width = widthIn;
+@@ -80,29 +82,29 @@ public class GuiButton extends Gui
+     {
+         if (this.visible)
+         {
+-            FontRenderer fontrenderer = mc.fontRendererObj;
+             mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
+             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+             this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+-            int i = this.getHoverState(this.hovered);
++            int hoverState = this.getHoverState(this.hovered);
+             GlStateManager.enableBlend();
+             GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+             GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+-            this.drawTexturedModalRect(this.xPosition, this.yPosition, 0, 46 + i * 20, this.width / 2, this.height);
+-            this.drawTexturedModalRect(this.xPosition + this.width / 2, this.yPosition, 200 - this.width / 2, 46 + i * 20, this.width / 2, this.height);
++            this.drawTexturedModalRect(this.xPosition, this.yPosition, 0, 46 + hoverState * 20, this.width / 2, this.height);
++            this.drawTexturedModalRect(this.xPosition + this.width / 2, this.yPosition, 200 - this.width / 2, 46 + hoverState * 20, this.width / 2, this.height);
+             this.mouseDragged(mc, mouseX, mouseY);
+-            int j = 14737632;
++            int color = 14737632;
+ 
+             if (!this.enabled)
+             {
+-                j = 10526880;
++                color = 10526880;
+             }
+             else if (this.hovered)
+             {
+-                j = 16777120;
++                color = 16777120;
+             }
+ 
+-            this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, j);
++            FontRenderer fontrenderer = mc.fontRendererObj;
++            this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, color);
+         }
+     }
+ 
+@@ -155,4 +157,51 @@ public class GuiButton extends Gui
      {
          this.width = width;
      }
@@ -419,21 +1068,39 @@ index 93eccc5..a4535de 100644
 +                    std_button_loc[2] - ((width / 2) * widgetsTextureFactor), std_button_loc[1] + offsetY,
 +                    (width / 2) * widgetsTextureFactor, height * widgetsTextureFactor
 +            );
++
++            int color = 14737632;
++            if(!this.enabled) {
++                color = 10526880;
++            } else if(this.hovered) {
++                color = 16777120;
++            }
++
++            FontRenderer fontrenderer = Minecraft.getMinecraft().fontRendererObj;
++            this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, color);
 +        }
 +    }
  }
 diff --git a/minecraft/client/gui/GuiButtonLanguage.java b/minecraft/client/gui/GuiButtonLanguage.java
-index e0dd308..9bc8481 100644
+index e0dd308..d01c1bf 100644
 --- a/minecraft/client/gui/GuiButtonLanguage.java
 +++ b/minecraft/client/gui/GuiButtonLanguage.java
 @@ -1,5 +1,6 @@
  package net.minecraft.client.gui;
  
-+import com.continuum.nova.NovaDraw;
++import com.continuum.nova.gui.NovaDraw;
  import net.minecraft.client.Minecraft;
  import net.minecraft.client.renderer.GlStateManager;
  
-@@ -30,4 +31,17 @@ public class GuiButtonLanguage extends GuiButton
+@@ -13,6 +14,7 @@ public class GuiButtonLanguage extends GuiButton
+     /**
+      * Draws this button to the screen.
+      */
++    @Override
+     public void drawButton(Minecraft mc, int mouseX, int mouseY)
+     {
+         if (this.visible)
+@@ -30,4 +32,17 @@ public class GuiButtonLanguage extends GuiButton
              this.drawTexturedModalRect(this.xPosition, this.yPosition, 0, i, this.width, this.height);
          }
      }
@@ -519,17 +1186,33 @@ index 5aaeab1..49dcb75 100644
  public class GuiFlatPresets extends GuiScreen
  {
 diff --git a/minecraft/client/gui/GuiMainMenu.java b/minecraft/client/gui/GuiMainMenu.java
-index 2249b2b..fd92c56 100644
+index 2249b2b..f838ecc 100644
 --- a/minecraft/client/gui/GuiMainMenu.java
 +++ b/minecraft/client/gui/GuiMainMenu.java
 @@ -1,5 +1,6 @@
  package net.minecraft.client.gui;
  
-+import com.continuum.nova.NovaDraw;
++import com.continuum.nova.gui.NovaDraw;
  import com.google.common.collect.Lists;
  import java.io.BufferedReader;
  import java.io.Closeable;
-@@ -156,12 +157,11 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -13,7 +14,6 @@ import java.util.Random;
+ import java.util.concurrent.atomic.AtomicInteger;
+ import net.minecraft.client.Minecraft;
+ import net.minecraft.client.renderer.GlStateManager;
+-import net.minecraft.client.renderer.OpenGlHelper;
+ import net.minecraft.client.renderer.Tessellator;
+ import net.minecraft.client.renderer.VertexBuffer;
+ import net.minecraft.client.renderer.texture.DynamicTexture;
+@@ -32,7 +32,6 @@ import org.apache.commons.io.Charsets;
+ import org.apache.commons.io.IOUtils;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+-import org.lwjgl.opengl.GLContext;
+ import org.lwjgl.util.glu.Project;
+ 
+ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -156,12 +155,11 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
          this.updateCounter = RANDOM.nextFloat();
          this.openGLWarning1 = "";
  
@@ -544,7 +1227,7 @@ index 2249b2b..fd92c56 100644
      }
  
      /**
-@@ -629,6 +629,7 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -629,6 +627,7 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
          }
      }
  
@@ -552,7 +1235,7 @@ index 2249b2b..fd92c56 100644
      /**
       * Called when the screen is unloaded. Used to disable keyboard repeat events
       */
-@@ -639,4 +640,35 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -639,4 +638,35 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
              this.realmsNotification.onGuiClosed();
          }
      }
@@ -615,13 +1298,13 @@ index 3be1834..dda3c4c 100644
  public class GuiRepair extends GuiContainer implements IContainerListener
  {
 diff --git a/minecraft/client/gui/GuiScreen.java b/minecraft/client/gui/GuiScreen.java
-index f10ce2e..e3e884d 100644
+index f10ce2e..92ea4e4 100644
 --- a/minecraft/client/gui/GuiScreen.java
 +++ b/minecraft/client/gui/GuiScreen.java
 @@ -1,5 +1,6 @@
  package net.minecraft.client.gui;
  
-+import com.continuum.nova.NovaDraw;
++import com.continuum.nova.gui.NovaDraw;
  import com.google.common.base.Splitter;
  import com.google.common.collect.Lists;
  import com.google.common.collect.Sets;
@@ -636,8 +1319,20 @@ index f10ce2e..e3e884d 100644
  
  public abstract class GuiScreen extends Gui implements GuiYesNoCallback
  {
-@@ -95,6 +96,8 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
-         }
+@@ -84,17 +85,11 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
+      */
+     public void drawScreen(int mouseX, int mouseY, float partialTicks)
+     {
+-        for (int i = 0; i < this.buttonList.size(); ++i)
+-        {
+-            ((GuiButton)this.buttonList.get(i)).drawButton(this.mc, mouseX, mouseY);
+-        }
+-
+-        for (int j = 0; j < this.labelList.size(); ++j)
+-        {
+-            ((GuiLabel)this.labelList.get(j)).drawLabel(this.mc, mouseX, mouseY);
+-        }
++        //labelList.forEach(label -> label.drawLabel(this.mc, mouseX, mouseY));
      }
  
 +    
@@ -645,7 +1340,7 @@ index f10ce2e..e3e884d 100644
      /**
       * Fired when a key is typed (except F11 which toggles full screen). This is the equivalent of
       * KeyListener.keyTyped(KeyEvent e). Args : character (character on the key), keyCode (lwjgl Keyboard key code)
-@@ -774,4 +777,56 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
+@@ -774,4 +769,47 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
      {
          this.setWorldAndResolution(mcIn, w, h);
      }
@@ -654,7 +1349,6 @@ index f10ce2e..e3e884d 100644
 +        return buttonList;
 +    }
 +
-+
 +    @Override
 +    public boolean checkStateChanged() {
 +        boolean result = false;
@@ -662,14 +1356,14 @@ index f10ce2e..e3e884d 100644
 +        if (super.checkStateChanged()) result = true;
 +
 +        for (int i = 0; i < this.buttonList.size(); ++i) {
-+            if (((GuiButton) this.buttonList.get(i)).checkStateChanged()) {
-+                result = true;
++            if (this.buttonList.get(i).checkStateChanged()) {
++                return true;
 +            }
 +        }
 +
 +        for (int j = 0; j < this.labelList.size(); ++j) {
-+            if (((GuiLabel) this.labelList.get(j)).checkStateChanged()) {
-+                result = true;
++            if (this.labelList.get(j).checkStateChanged()) {
++                return true;
 +            }
 +        }
 +
@@ -678,16 +1372,8 @@ index f10ce2e..e3e884d 100644
 +
 +    @Override
 +    public void drawNova() {
-+
 +        drawNovaBackground();
-+
-+        for (int i = 0; i < this.buttonList.size(); ++i) {
-+            ((GuiButton) this.buttonList.get(i)).drawNova();
-+        }
-+
-+        for (int j = 0; j < this.labelList.size(); ++j) {
-+            ((GuiLabel) this.labelList.get(j)).drawNova();
-+        }
++        buttonList.forEach(GuiButton::drawNova);
 +    }
 +
 +    public void drawNovaBackground(){
@@ -2378,6 +3064,44 @@ index a2f6de3..1c5bc41 100644
          GlStateManager.depthMask(true);
          GlStateManager.enableTexture2D();
      }
+diff --git a/minecraft/client/renderer/Tessellator.java b/minecraft/client/renderer/Tessellator.java
+index fe6b417..d33ff61 100644
+--- a/minecraft/client/renderer/Tessellator.java
++++ b/minecraft/client/renderer/Tessellator.java
+@@ -2,7 +2,7 @@ package net.minecraft.client.renderer;
+ 
+ public class Tessellator
+ {
+-    private final VertexBuffer worldRenderer;
++    private final VertexBuffer worldBuffer;
+     private final WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
+ 
+     /** The static instance of the Tessellator. */
+@@ -15,7 +15,7 @@ public class Tessellator
+ 
+     public Tessellator(int bufferSize)
+     {
+-        this.worldRenderer = new VertexBuffer(bufferSize);
++        this.worldBuffer = new VertexBuffer(bufferSize);
+     }
+ 
+     /**
+@@ -23,12 +23,12 @@ public class Tessellator
+      */
+     public void draw()
+     {
+-        this.worldRenderer.finishDrawing();
+-        this.vboUploader.draw(this.worldRenderer);
++        this.worldBuffer.finishDrawing();
++        this.vboUploader.draw(this.worldBuffer);
+     }
+ 
+     public VertexBuffer getBuffer()
+     {
+-        return this.worldRenderer;
++        return this.worldBuffer;
+     }
+ }
 diff --git a/minecraft/client/renderer/texture/Stitcher.java b/minecraft/client/renderer/texture/Stitcher.java
 index d2a4361..d4179cb 100644
 --- a/minecraft/client/renderer/texture/Stitcher.java

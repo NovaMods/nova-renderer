@@ -20,18 +20,18 @@ namespace nova {
         // debug
         LOG(DEBUG) << "texture name: " << texture_name << std::endl;
         LOG(DEBUG) << "new buffers:" << std::endl;
-        for (int i = 0; i + 4 < vertex_buffer.size(); i += 5) {
+        for(int i = 0; i + 7 < vertex_buffer.size(); i += 8) {
             std::ostringstream ss;
             ss << "  vertex ";
-            for (int k = 0; k < 5; k++) {
+            for(int k = 0; k < 8; k++) {
                 ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(12) << std::fixed << std::setprecision(5) << vertex_buffer[i + k] << "  ";
             }
             LOG(DEBUG) << ss.str();
         }
-        for (int i = 0; i + 2 < index_buffer.size(); i += 3) {
+        for(int i = 0; i + 2 < index_buffer.size(); i += 3) {
             std::ostringstream ss;
             ss << "  index ";
-            for (int k = 0; k < 3; k++) {
+            for(int k = 0; k < 3; k++) {
                 ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(8) << index_buffer[i + k] << "  ";
             }
             LOG(DEBUG) << ss.str();
@@ -48,7 +48,7 @@ namespace nova {
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         std::vector<float> vertex_buffer(command->vertex_buffer_size);
-        for (int i = 0; i + 4 < command->vertex_buffer_size; i += 8) {
+        for (int i = 0; i + 7 < command->vertex_buffer_size; i += 8) {
             vertex_buffer[i]   = command->vertex_buffer[i];
             vertex_buffer[i+1] = command->vertex_buffer[i+1];
             vertex_buffer[i+2] = command->vertex_buffer[i+2];
@@ -59,7 +59,7 @@ namespace nova {
             vertex_buffer[i+7] = command->vertex_buffer[i+7];
         }
         std::vector<unsigned short> index_buffer(command->index_buffer_size);
-        for (int i = 0; i < command->index_buffer_size; i++) {
+        for(int i = 0; i < command->index_buffer_size; i++) {
             index_buffer[i] = (unsigned short)command->index_buffer[i];
         }
 
@@ -81,11 +81,11 @@ namespace nova {
         sort_render_object(gui);
     }
 
-    void mesh_store::remove_gui_render_objects(){
-        for (auto& group : renderables_grouped_by_shader) {
+    void mesh_store::remove_gui_render_objects() {
+        for(auto& group : renderables_grouped_by_shader) {
             auto copied_objects = group.second;
-            for (auto render_obj : copied_objects) {
-                if (render_obj->name == "gui") {
+            for(auto render_obj : copied_objects) {
+                if(render_obj->name == "gui") {
                     group.second.erase(std::remove(group.second.begin(), group.second.end(), render_obj), group.second.end());
                     delete render_obj->geometry;
                     delete render_obj;
@@ -96,9 +96,9 @@ namespace nova {
 
     void mesh_store::sort_render_object(render_object *object) {
         auto& all_shaders = shaders->get_loaded_shaders();
-        for (auto& entry : all_shaders) {
+        for(auto& entry : all_shaders) {
             auto& filter = entry.second.get_filter();
-            if (matches_filter(object, filter)) {
+            if(matches_filter(object, filter)) {
                 renderables_grouped_by_shader[entry.first].push_back(object);
             }
         }
