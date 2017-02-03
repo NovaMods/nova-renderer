@@ -197,7 +197,7 @@ set(TEST_SOURCE_FILES
         test/model/shaders/gl_shader_program_test.cpp
         test/model/geometry_cache/mesh_store_test.cpp
         test/test_utils.cpp
-        test/test_utils.h render/objects/render_object.cpp)
+        test/test_utils.h)
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
 
