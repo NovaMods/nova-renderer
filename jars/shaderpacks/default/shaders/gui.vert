@@ -4,14 +4,14 @@ layout(location = 0) in vec3 position_in;
 layout(location = 1) in vec2 uv_in;
 layout(location = 2) in vec3 color_in;
 
-layout(std140,binding =0) uniform gui_uniforms {
+layout(binding = 0,std140) uniform gui_uniforms {
     float viewWidth;
     float viewHeight;
     mat4 gbufferModelView;
-    mat4 gbufferProjection;
-    float aspectRatio;
-    float frameTimeCounter;
-    int hideGUI;
+    //mat4 gbufferProjection;
+    //float aspectRatio;
+    //float frameTimeCounter;
+    //int hideGUI;
 };
 
 out vec2 uv;

@@ -6,10 +6,10 @@ layout(shared, std140) uniform gui_uniforms {
     float viewWidth;
     float viewHeight;
     mat4 gbufferModelView;
-    mat4 gbufferProjection;
-    float aspectRatio;
-    float frameTimeCounter;
-    int hideGUI;
+    //mat4 gbufferProjection;
+    //float aspectRatio;
+    //float frameTimeCounter;
+    //int hideGUI;
 };
 
 in vec2 uv;
