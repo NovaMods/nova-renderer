@@ -72,7 +72,7 @@ namespace nova {
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
         render_object gui;
-        gui.geometry = gl_mesh(cur_screen_buffer);
+        gui.geometry.reset(new gl_mesh(cur_screen_buffer));
         gui.type = geometry_type::gui;
         gui.name = "gui";
         gui.is_solid = true;
@@ -83,8 +83,8 @@ namespace nova {
 
     void mesh_store::remove_gui_render_objects() {
         for(auto& group : renderables_grouped_by_shader) {
-            auto& copied_objects = group.second;
-            std::remove_if(copied_objects.begin(), copied_objects.end(), [](auto& render_obj) {return render_obj.type == geometry_type::gui;});
+            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), [](auto& render_obj) {return render_obj.type == geometry_type::gui;});
+            group.second.erase(removed_elements, group.second.end());
         }
     }
 

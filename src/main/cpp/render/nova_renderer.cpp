@@ -88,8 +88,8 @@ namespace nova {
                 auto color_texture = textures.get_texture_atlas(geom.color_texture);
                 color_texture.bind(0);
             }
-            geom.geometry.set_active();
-            geom.geometry.draw();
+            geom.geometry->set_active();
+            geom.geometry->draw();
         }
     }
 
