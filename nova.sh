@@ -103,6 +103,51 @@ create_patch() {
     file patches/nova.patch | grep UTF-16 && (iconv --from-code UTF-16 --to-code UTF-8 patches/nova.patch > x && mv x patches/nova.patch)
 }
 
+tracing_nova_add() {
+    find src/main/cpp -name "*.cpp" | grep -v 3rdparty |\
+    while read f
+    do
+        cat "$f" | perl -e '
+        use strict;
+        use warnings;
+        print "#include <iostream> // NOVA TRACING\r\n";
+        while (my $line = <STDIN>) {
+            print $line;
+            if ($line =~ /::.*?\(.*\)/ && $line =~ /{/ && $line !~ /}/ && $line !~ /std::function/) {
+                my $a = $line;
+                $a =~ s/[^a-zA-Z0-9.:_-]//gm;
+                print "std::cout << \"$a\" << std::endl; // NOVA TRACING\r\n";
+            }
+        }
+        ' > x && mv x "$f"
+    done
+}
+
+tracing_nova_remove() {
+    find src/main/cpp -name "*.cpp" | grep -v 3rdparty |\
+    while read f
+    do
+        cat "$f" | grep -v 'NOVA TRACING' > x && mv x "$f"
+    done
+}
+
+tracing_nova() {
+    echo $1
+    if [ x"$1" = x"add" ]
+    then
+        tracing_nova_add
+    elif [ x"$1" = x"remove" ]
+    then
+        tracing_nova_remove
+    elif [ x"$1" = x"replace" ]
+    then
+        tracing_nova_remove
+        tracing_nova_add
+    else
+        echo "Usage: $0 tracing [add|remove]"
+    fi
+}
+
 case $1 in
 "setup")
     setup_nova "$@"
@@ -115,6 +160,10 @@ case $1 in
     ;;
 "build")
     compile_all
+    ;;
+"tracing")
+    shift
+    tracing_nova "$@"
     ;;
 "start")
     start_nova
