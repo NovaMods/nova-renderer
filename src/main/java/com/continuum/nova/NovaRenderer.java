@@ -207,7 +207,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
-        LOG.info("PID: " + pid);
+        LOG.error("PID: " + pid);
         NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
     }
@@ -887,19 +887,21 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public static NovaNative.TextureType atlasTextureOfSprite(ResourceLocation texture) {
-        LOG.info("Need to get atlas that " + texture + " is in");
-        if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(texture)) {
+        ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png","").replace("textures/",""));
+
+        LOG.info("Need to get atlas that " + strippedLocation + " is in");
+        if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the terrain");
             return NovaNative.TextureType.TERRAIN_COLOR;
-        } else if(GUI_ALBEDO_TEXTURES_LOCATIONS.contains(texture)) {
+        } else if(GUI_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the gui");
             return NovaNative.TextureType.GUI;
-        } else if(FONT_ALBEDO_TEXTURES_LOCATIONS.contains(texture)) {
+        } else if(FONT_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the font");
             return NovaNative.TextureType.FONT;
         }
 
-        LOG.error("Texture " + texture + " requested, but it's not in at atlas that Nova knows about");
+        LOG.error("Texture " + strippedLocation + " requested, but it's not in at atlas that Nova knows about");
         return NovaNative.TextureType.NO_TEXTURE;
     }
 }
