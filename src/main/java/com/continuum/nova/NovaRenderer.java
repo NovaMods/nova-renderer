@@ -216,7 +216,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
-        LOG.info("PID: " + pid);
+        LOG.error("PID: " + pid);
         NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
         updateWindowSize();
@@ -925,7 +925,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public static NovaNative.TextureType atlasTextureOfSprite(ResourceLocation texture) {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png","").replace("textures/",""));
-        LOG.info("Need to get atlas that " + texture + " is in");
+
+        LOG.info("Need to get atlas that " + strippedLocation + " is in");
         if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the terrain");
             return NovaNative.TextureType.TERRAIN_COLOR;

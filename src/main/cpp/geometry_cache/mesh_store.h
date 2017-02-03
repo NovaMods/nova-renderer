@@ -44,7 +44,7 @@ namespace nova {
          * \param shader_name The name of the shader to get meshes for
          * \return All the meshes that should be rendered with the given name
          */
-        std::vector<render_object *> get_meshes_for_shader(std::string shader_name);
+        std::vector<render_object>& get_meshes_for_shader(std::string shader_name);
 
 
         /*!
@@ -53,7 +53,7 @@ namespace nova {
         void remove_gui_render_objects();
 
     private:
-        std::unordered_map<std::string, std::vector<render_object*>> renderables_grouped_by_shader;
+        std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
 
         shaderpack* shaders;
 
@@ -63,7 +63,7 @@ namespace nova {
          *
          * \param object The render_object to sort
          */
-        void sort_render_object(render_object *object);
+        void sort_render_object(render_object& object);
 
 
         /*!
@@ -74,7 +74,7 @@ namespace nova {
          *
          * \param filter The function to use to decide which (if any) objects to remove
          */
-        void remove_render_objects(std::function<bool(render_object*)> fitler);
+        void remove_render_objects(std::function<bool(render_object&)> fitler);
 
         /*!
          * \brief Determines if a given obejct matches a given geometry filter
@@ -83,7 +83,7 @@ namespace nova {
          * \param filter The filter to check the object agains
          * \return True if the object matches, false if not
          */
-        bool matches_filter(render_object *object, geometry_filter &filter);
+        bool matches_filter(render_object& object, geometry_filter &filter);
     };
 
 };

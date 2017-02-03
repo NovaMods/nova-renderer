@@ -12,7 +12,7 @@
 #include "../../../render/nova_renderer.h"
 
 namespace nova {
-    std::vector<render_object *> mesh_store::get_meshes_for_shader(std::string shader_name) {
+    std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
         return renderables_grouped_by_shader[shader_name];
     }
 
@@ -71,54 +71,48 @@ namespace nova {
         cur_screen_buffer.indices = index_buffer;
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
-        render_object *gui = new render_object();
-        gui->geometry = new gl_mesh(cur_screen_buffer);
-        gui->type = geometry_type::gui;
-        gui->name = "gui";
-        gui->is_solid = true;
-        gui->color_texture = texture_manager::texture_type::all_values()[command->texture_atlas];
+        render_object gui;
+        gui.geometry.reset(new gl_mesh(cur_screen_buffer));
+        gui.type = geometry_type::gui;
+        gui.name = "gui";
+        gui.is_solid = true;
+        gui.color_texture = texture_manager::texture_type::all_values()[command->texture_atlas];
 
         sort_render_object(gui);
     }
 
     void mesh_store::remove_gui_render_objects() {
         for(auto& group : renderables_grouped_by_shader) {
-            auto copied_objects = group.second;
-            for(auto render_obj : copied_objects) {
-                if(render_obj->name == "gui") {
-                    group.second.erase(std::remove(group.second.begin(), group.second.end(), render_obj), group.second.end());
-                    delete render_obj->geometry;
-                    delete render_obj;
-                }
-            }
+            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), [](auto& render_obj) {return render_obj.type == geometry_type::gui;});
+            group.second.erase(removed_elements, group.second.end());
         }
     }
 
-    void mesh_store::sort_render_object(render_object *object) {
+    void mesh_store::sort_render_object(render_object& object) {
         auto& all_shaders = shaders->get_loaded_shaders();
         for(auto& entry : all_shaders) {
             auto& filter = entry.second.get_filter();
             if(matches_filter(object, filter)) {
-                renderables_grouped_by_shader[entry.first].push_back(object);
+                renderables_grouped_by_shader[entry.first].push_back(std::move(object));
             }
         }
     }
 
-    void mesh_store::remove_render_objects(std::function<bool(render_object*)> filter) {
+    void mesh_store::remove_render_objects(std::function<bool(render_object&)> filter) {
         for(auto& group : renderables_grouped_by_shader) {
             std::remove_if(group.second.begin(), group.second.end(), filter);
         }
     }
 
-    bool mesh_store::matches_filter(render_object *object, geometry_filter &filter) {
+    bool mesh_store::matches_filter(render_object& object, geometry_filter &filter) {
         for(auto& name : filter.names) {
-            if(object->name == name) {
+            if(object.name == name) {
                 return true;
             }
         }
 
         for(auto& name_part : filter.name_parts) {
-            if(object->name.find(name_part) != std::string::npos) {
+            if(object.name.find(name_part) != std::string::npos) {
                 return true;
             }
         }
@@ -126,7 +120,7 @@ namespace nova {
         bool matches = false;
         bool matches_geometry_type = false;
         for(auto& geom_type : filter.geometry_types) {
-            if(object->type == geom_type) {
+            if(object.type == geom_type) {
                 matches_geometry_type = true;
             }
         }
@@ -137,19 +131,19 @@ namespace nova {
         }
 
         if(filter.should_be_solid) {
-            matches |= *filter.should_be_solid && object->is_solid;
+            matches |= *filter.should_be_solid && object.is_solid;
         }
         if(filter.should_be_transparent) {
-            matches |= *filter.should_be_transparent && object->is_transparent;
+            matches |= *filter.should_be_transparent && object.is_transparent;
         }
         if(filter.should_be_cutout) {
-            matches |= *filter.should_be_cutout && object->is_cutout;
+            matches |= *filter.should_be_cutout && object.is_cutout;
         }
         if(filter.should_be_emissive) {
-            matches |= *filter.should_be_emissive&& object->is_emissive;
+            matches |= *filter.should_be_emissive&& object.is_emissive;
         }
         if(filter.should_be_damaged) {
-            matches |= *filter.should_be_damaged ? object->damage_level > 0 : object->damage_level == 0;
+            matches |= *filter.should_be_damaged ? object.damage_level > 0 : object.damage_level == 0;
         }
 
         return matches;
