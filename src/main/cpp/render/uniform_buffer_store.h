@@ -52,7 +52,7 @@ namespace nova {
         per_frame_uniforms per_frame_uniform_variables;
 
         gl_uniform_buffer<gui_uniforms> gui_uniform_buffer;
-        gl_uniform_buffer<per_frame_uniforms> per_frame_uniforms_buffer;
+        //gl_uniform_buffer<per_frame_uniforms> per_frame_uniforms_buffer;
 
         void update_gui_uniforms(nlohmann::json &config);
 

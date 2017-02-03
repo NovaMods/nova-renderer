@@ -261,4 +261,8 @@ public interface NovaNative extends Library {
     void clear_gui_buffers();
 
     window_size get_window_size();
+
+    void set_string_setting(String setting,String value);
+
+    void set_float_setting(String setting_name, float setting_value);
 }

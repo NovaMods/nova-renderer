@@ -74,7 +74,13 @@ NOVA_API void clear_gui_buffers() {
 
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value) {
     settings& settings = nova_renderer::instance->get_render_settings();
-    settings.get_options()[setting_name] = setting_value;
+    settings.get_options()["settings"][setting_name] = setting_value;
+    settings.update_config_changed();
+}
+
+NOVA_API void set_float_setting(const char * setting_name, float setting_value) {
+    settings& settings = nova_renderer::instance->get_render_settings();
+    settings.get_options()["settings"][setting_name] = setting_value;
     settings.update_config_changed();
 }
 

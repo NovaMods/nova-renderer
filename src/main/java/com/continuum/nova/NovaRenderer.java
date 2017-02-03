@@ -6,6 +6,7 @@ import com.continuum.nova.NovaNative.window_size;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
@@ -47,7 +48,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private int width;
 
     private boolean resized;
-
+    private int scalefactor;
 
     private static final List<ResourceLocation> FONT_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap fontAtlas = new TextureMap("textures");
@@ -254,6 +255,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
         NovaNative.INSTANCE.execute_frame();
         updateWindowSize();
+        int scalefactor = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor()*2;
+        if (scalefactor!=this.scalefactor) {
+            NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
+            this.scalefactor = scalefactor;
+        }
     }
 
     private void addGuiTextureLocations() {
