@@ -99,28 +99,33 @@ public class NovaDraw {
      * @param texWidth  texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      * @param texHeight texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      */
-    public static void drawRectangle(ResourceLocation texture, int x, int y, int width, int height, float texX, float texY, float texWidth, float texHeight) {
+    public static void drawRectangle(ResourceLocation texture, int x, int y, float z, int width, int height, float texX, float texY, float texWidth, float texHeight) {
         Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
         Vertex[] vertices = new Vertex[]{
                 new Vertex(
-                        x, y,
+                        x, y, z,
                         texX, texY
                 ),
                 new Vertex(
-                        x + width, y,
+                        x + width, y, z,
                         texX + texWidth, texY
                 ),
                 new Vertex(
-                        x, y + height,
+                        x, y + height, z,
                         texX, texY + texHeight
                 ),
                 new Vertex(
-                        x + width, y + height,
+                        x + width, y + height, z,
                         texX + texWidth, texY + texHeight
                 )
         };
         draw(texture, indexBuffer, vertices);
     }
+
+    public static void drawRectangle(ResourceLocation texture, int x, int y, int width, int height, float texX, float texY, float texWidth, float texHeight) {
+        drawRectangle(texture, x, y, 0.5f, width, height, texX, texY, texWidth, texHeight);
+    }
+
 
     /**
      * This code is from the EntityRenderer class.
@@ -180,7 +185,7 @@ public class NovaDraw {
         public float b;
 
         public Vertex(int x, int y, float u, float v) {
-            this(x, y, 0.1f, u, v);
+            this(x, y, 0.5f, u, v);
         }
 
         private Vertex(float x, float y, float z, float u, float v) {
