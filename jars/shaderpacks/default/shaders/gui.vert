@@ -19,7 +19,7 @@ out vec3 color;
 
 void main() {
 	gl_Position.xyz = position_in / vec3(viewWidth, viewHeight, 1.0f);
-    gl_Position.xy *= 4.0f;
+    //gl_Position.xy *= 4.0f;
     gl_Position.xy -= 1.0f;
     gl_Position.y *= -1;
     gl_Position.w = 1.0f;

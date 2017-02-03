@@ -924,7 +924,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public static NovaNative.TextureType atlasTextureOfSprite(ResourceLocation texture) {
-        ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png",""));
+        ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png","").replace("textures/",""));
         LOG.info("Need to get atlas that " + texture + " is in");
         if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the terrain");
