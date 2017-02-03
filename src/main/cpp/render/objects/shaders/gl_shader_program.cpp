@@ -63,6 +63,7 @@ namespace nova {
 
             if(log_size > 0) {
                 glDeleteShader(shader_to_check);
+                LOG(ERROR) << error_log.data();
                 throw compilation_error(error_log.data(), line_map);
             }
         }

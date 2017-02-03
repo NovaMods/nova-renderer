@@ -93,6 +93,15 @@ NOVA_API void clear_gui_buffers();
  * \param setting_value The desired value of the setting
  */
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value);
+/*!
+* \brief Sets a float setting to a specified value
+*
+* This is super useful when, say, changing the loaded shaderpack
+*
+* \param setting_name The name of the setting to update
+* \param setting_value The desired value of the setting
+*/
+NOVA_API void set_float_setting(const char * setting_name, float setting_value);
 
 NOVA_API struct mouse_button_event  get_next_mouse_button_event();
 
