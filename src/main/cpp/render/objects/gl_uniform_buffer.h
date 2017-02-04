@@ -39,7 +39,7 @@ namespace nova {
         }
 
         void send_data(T &data) {
-            LOG(TRACE) << "sending date with size: " << sizeof(T) << "to ubo " << name ;
+            LOG(TRACE) << "sending date with size: " << sizeof(T) << " to ubo " << name;
             glNamedBufferSubData(gl_name, 0, sizeof(T), &data);
         }
 
@@ -51,7 +51,9 @@ namespace nova {
          * \brief Deallocates this uniform buffer
          */
         ~gl_uniform_buffer() {
-            glDeleteBuffers(1, &gl_name);
+            if(glfwGetCurrentContext() != NULL) {
+                glDeleteBuffers(1, &gl_name);
+            }
         }
 
     private:

@@ -84,6 +84,11 @@ NOVA_API void clear_gui_buffers();
  * Settings updates
  */
 
+ /*!
+ * \brief Sets the fullscreen mode to 
+ * \param fullscreen true if 1, false otherwise
+ */
+NOVA_API void set_fullscreen(int fullscreen);
 /*!
  * \brief Sets a string setting to a specified value
  *
