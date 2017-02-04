@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.awt.*;
 import java.util.*;
@@ -159,7 +158,7 @@ public class NovaDraw {
 
         if(screen.checkStateChanged()) {
             clearBuffers();
-            screen.drawNova();
+            screen.drawNova(mouseX, mouseY);
 
             for (Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
                 Buffers b = entry.getValue();
