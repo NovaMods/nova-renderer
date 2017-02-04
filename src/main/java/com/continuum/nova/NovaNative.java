@@ -234,6 +234,11 @@ public interface NovaNative extends Library {
         EYES
     }
 
+    enum NativeBoolean{
+        FALSE,
+        TRUE
+    }
+
     void initialize();
 
     void execute_frame();
