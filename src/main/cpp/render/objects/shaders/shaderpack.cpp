@@ -10,7 +10,7 @@
 
 namespace nova {
     shaderpack::shaderpack(std::string name, nlohmann::json shaders_json, std::vector<shader_definition> &shaders) {
-
+        this->name = name;
         for(auto& shader : shaders) {
             loaded_shaders.emplace(shader.name, gl_shader_program(shader));
         }

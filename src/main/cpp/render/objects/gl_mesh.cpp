@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <easylogging++.h>
 #include "gl_mesh.h"
+#include "../windowing/glfw_gl_window.h"
 
 namespace nova {
     gl_mesh::gl_mesh() : vertex_array(0), vertex_buffer(0), indices(0), num_indices(0) {
@@ -31,12 +32,16 @@ namespace nova {
 
     void gl_mesh::destroy() {
         if(vertex_buffer != 0) {
-            glDeleteBuffers(1, &vertex_buffer);
+            if(glfwGetCurrentContext() != NULL) {
+                glDeleteBuffers(1, &vertex_buffer);
+            }
             vertex_buffer = 0;
         }
 
         if(indices != 0) {
-            glDeleteBuffers(1, &indices);
+            if(glfwGetCurrentContext() != NULL) {
+                glDeleteBuffers(1, &indices);
+            }
             indices = 0;
         }
     }

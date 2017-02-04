@@ -71,6 +71,11 @@ NOVA_API bool should_close();
 NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command);
 
 /*!
+* \brief Gets the current window size
+*/
+NOVA_API struct window_size get_window_size();
+
+/*!
 * \brief Removes all gui render objects and thereby deletes all the buffers
 */
 NOVA_API void clear_gui_buffers();
@@ -79,6 +84,11 @@ NOVA_API void clear_gui_buffers();
  * Settings updates
  */
 
+ /*!
+ * \brief Sets the fullscreen mode to 
+ * \param fullscreen true if 1, false otherwise
+ */
+NOVA_API void set_fullscreen(int fullscreen);
 /*!
  * \brief Sets a string setting to a specified value
  *
@@ -88,6 +98,15 @@ NOVA_API void clear_gui_buffers();
  * \param setting_value The desired value of the setting
  */
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value);
+/*!
+* \brief Sets a float setting to a specified value
+*
+* This is super useful when, say, changing the loaded shaderpack
+*
+* \param setting_name The name of the setting to update
+* \param setting_value The desired value of the setting
+*/
+NOVA_API void set_float_setting(const char * setting_name, float setting_value);
 
 NOVA_API struct mouse_button_event  get_next_mouse_button_event();
 
