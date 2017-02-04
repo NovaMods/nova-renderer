@@ -10,15 +10,15 @@
 
 namespace nova {
     el::base::Writer &operator<<(el::base::Writer &out, gui_uniforms uniforms) {
-        out << "gbufferModelView: " << uniforms.gbufferModelView
-            << " gbufferProjection:" << uniforms.gbufferProjection
+        out << "gbufferModelView: \n" << uniforms.gbufferModelView
+            << " gbufferProjection: \n" << uniforms.gbufferProjection
             << " aspectRatio: " << uniforms.aspectRatio
             << " viewWidth: " << uniforms.viewWidth
             << " viewHeight: " << uniforms.viewHeight
             << " frameTimeCounter: " << uniforms.frameTimeCounter
             << " hideGUI: " << uniforms.hideGUI;
 
-        return out;
+        return out; 
     }
 
     el::base::Writer &operator<<(el::base::Writer &out, const glm::mat4 &mat) {
