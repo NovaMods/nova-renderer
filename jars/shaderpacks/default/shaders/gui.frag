@@ -2,14 +2,14 @@
 
 layout(binding = 0) uniform sampler2D colortex;
 
-layout(shared, std140) uniform gui_uniforms {
-    float viewWidth;
-    float viewHeight;
+layout(std140) uniform gui_uniforms {
     mat4 gbufferModelView;
-    //mat4 gbufferProjection;
-    //float aspectRatio;
-    //float frameTimeCounter;
-    //int hideGUI;
+    mat4 gbufferProjection;
+	float viewWidth;
+    float viewHeight;
+    float aspectRatio;
+    float frameTimeCounter;
+    int hideGUI;
 };
 
 in vec2 uv;

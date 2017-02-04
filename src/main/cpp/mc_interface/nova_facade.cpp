@@ -54,6 +54,14 @@ NOVA_API void execute_frame() {
     nova_renderer::instance->render_frame();
 }
 
+NOVA_API void set_fullscreen(int fullscreen) {
+    bool temp_bool = false;
+    if(fullscreen == 1) {
+        temp_bool = true;
+    }
+    nova_renderer::instance->get_game_window().set_fullscreen(temp_bool);
+}
+
 NOVA_API bool should_close() {
     return nova_renderer::instance->should_end();
 }

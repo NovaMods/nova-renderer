@@ -265,4 +265,6 @@ public interface NovaNative extends Library {
     void set_string_setting(String setting,String value);
 
     void set_float_setting(String setting_name, float setting_value);
+
+    void set_fullscreen(int fullscreen);
 }

@@ -69,16 +69,50 @@ namespace nova {
     }
 
     glfw_gl_window::~glfw_gl_window() {
-        glfwTerminate();
+        destroy();
+        
     }
 
     void glfw_gl_window::destroy() {
         glfwDestroyWindow(window);
+        glfwTerminate();
         window = NULL;
     }
 
     void glfw_gl_window::set_fullscreen(bool fullscreen) {
         // TODO: RAVEN WRIT THIS
+        
+        GLFWmonitor* monitor = NULL;
+        int xPos = 0;
+        int yPos = 0;
+        int width;
+        int height;
+
+        if(fullscreen) {
+            int oldXpos;
+            int oldYpos;
+            
+            glfwGetWindowPos(window, &oldXpos, &oldYpos);
+            
+            windowed_window_parameters.xPos = oldXpos;
+            windowed_window_parameters.yPos = oldYpos;
+            windowed_window_parameters.width = window_dimensions.x;
+            windowed_window_parameters.height = window_dimensions.y;
+
+            monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+            width = mode->width;
+            height = mode->height;
+        }
+        else {
+            xPos=windowed_window_parameters.xPos;
+            yPos= windowed_window_parameters.yPos;
+            width =windowed_window_parameters.width ;
+            height =windowed_window_parameters.height;
+        }
+
+        glfwSetWindowMonitor(window, monitor, xPos, yPos, width, height, GLFW_DONT_CARE);
+        set_framebuffer_size({width,height});
     }
 
     bool glfw_gl_window::should_close() {
@@ -101,6 +135,8 @@ namespace nova {
             set_framebuffer_size(new_window_size);
         }
     }
+
+    
 
     void glfw_gl_window::set_framebuffer_size(glm::ivec2 new_framebuffer_size) {
         nlohmann::json &settings = nova_renderer::instance->get_render_settings().get_options();
