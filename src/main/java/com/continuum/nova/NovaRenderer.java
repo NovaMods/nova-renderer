@@ -61,13 +61,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATIONS, NovaNative.TextureType.TERRAIN_COLOR, resourceManager, maxAtlasSize);
         LOG.debug("Created block color atlas");
 
-        //addBlockAtlas(resourceManager);
         addGuiAtlas(resourceManager);
         addFontAtlas(resourceManager);
-    }
-
-    private void addBlockAtlas(@Nonnull IResourceManager resourceManager) {
-        addAtlas(resourceManager, blockAtlas, TERRAIN_ALBEDO_TEXTURES_LOCATIONS, blockSpriteLocations, NovaNative.TextureType.TERRAIN_COLOR);
     }
 
     private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
