@@ -14,9 +14,14 @@ namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
     nova_renderer::nova_renderer(){
-		enable_debug();
-		render_settings->register_change_listener(&ubo_manager);
-		render_settings->register_change_listener(&game_window);
+        game_window = std::make_unique<glfw_gl_window>();
+        enable_debug();
+        ubo_manager = std::make_unique<uniform_buffer_store>();
+        textures = std::make_unique<texture_manager>();
+        meshes = std::make_unique<mesh_store>();
+        inputs = std::make_unique<input_handler>();
+		render_settings->register_change_listener(ubo_manager.get());
+		render_settings->register_change_listener(game_window.get());
         render_settings->register_change_listener(this);
 
         render_settings->update_config_loaded();
@@ -36,7 +41,13 @@ namespace nova {
     }
 
     nova_renderer::~nova_renderer() {
-        game_window.destroy();
+
+        inputs.reset();
+        meshes.reset();
+        textures.reset();
+        ubo_manager.reset();
+        game_window.reset();
+
     }
 
     void nova_renderer::render_frame() {
@@ -57,7 +68,7 @@ namespace nova {
         // stencil buffer when the GUI screen changes
         render_gui();
 
-        game_window.end_frame();
+        game_window->end_frame();
     }
 
     void nova_renderer::render_shadow_pass() {
@@ -82,10 +93,10 @@ namespace nova {
         gui_shader.bind();
 
         // Render GUI objects
-        std::vector<render_object>& gui_geometry = meshes.get_meshes_for_shader("gui");
+        std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
         for(const auto& geom : gui_geometry) {
             if (geom.color_texture != texture_manager::texture_type::no_texture) {
-                auto color_texture = textures.get_texture_atlas(geom.color_texture);
+                auto color_texture = textures->get_texture_atlas(geom.color_texture);
                 color_texture.bind(0);
             }
             geom.geometry->set_active();
@@ -95,7 +106,7 @@ namespace nova {
 
     bool nova_renderer::should_end() {
         // If the window wants to close, the user probably clicked on the "X" button
-        return game_window.should_close();
+        return game_window->should_close();
     }
 
 	std::unique_ptr<settings> nova_renderer::render_settings;
@@ -189,7 +200,10 @@ namespace nova {
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
 		
 		auto& shaderpack_name = new_config["loadedShaderpack"];
-        load_new_shaderpack(shaderpack_name);
+        if(!loaded_shaderpack.has_value() || (loaded_shaderpack.has_value() && shaderpack_name != loaded_shaderpack.value().get_name())) {
+            load_new_shaderpack(shaderpack_name);
+            
+        }
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
@@ -201,29 +215,29 @@ namespace nova {
     }
 
     texture_manager &nova_renderer::get_texture_manager() {
-        return textures;
+        return *textures;
     }
 
 	glfw_gl_window &nova_renderer::get_game_window() {
-		return game_window;
+		return *game_window;
 	}
 
 	input_handler &nova_renderer::get_input_handler() {
-		return inputs;
+		return *inputs;
 	}
 
     mesh_store &nova_renderer::get_mesh_store() {
-        return meshes;
+        return *meshes;
     }
 
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
 		
         LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
         loaded_shaderpack = std::experimental::make_optional<shaderpack>(load_shaderpack(new_shaderpack_name));
-        meshes.set_shaderpack(*loaded_shaderpack);
+        meshes->set_shaderpack(*loaded_shaderpack);
         LOG(INFO) << "Loading complete";
 		
-        link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), ubo_manager);
+        link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), *ubo_manager);
         LOG(DEBUG) << "Linked up UBOs";
     }
 

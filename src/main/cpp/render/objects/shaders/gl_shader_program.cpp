@@ -63,6 +63,7 @@ namespace nova {
 
             if(log_size > 0) {
                 glDeleteShader(shader_to_check);
+                LOG(ERROR) << error_log.data();
                 throw compilation_error(error_log.data(), line_map);
             }
         }
@@ -129,13 +130,6 @@ namespace nova {
         check_for_shader_errors(shader_name, shader_source);
 
         added_shaders.push_back(shader_name);
-    }
-
-    gl_shader_program::gl_shader_program(gl_shader_program &other) {
-        this->name = other.name;
-        this->added_shaders = other.added_shaders;
-        this->gl_name = other.gl_name;
-        this->filter = other.filter;
     }
 
     gl_shader_program::gl_shader_program(const gl_shader_program &other) {

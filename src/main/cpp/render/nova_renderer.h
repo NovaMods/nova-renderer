@@ -90,19 +90,20 @@ namespace nova {
 
     private:
 
-		static std::unique_ptr<settings> render_settings;
+		static std::unique_ptr<settings> render_settings; 
 
-        glfw_gl_window game_window;
+        std::unique_ptr<glfw_gl_window> game_window;
 
         std::experimental::optional<shaderpack> loaded_shaderpack;
 
-        texture_manager textures;
+        std::unique_ptr<texture_manager> textures;
 
-		input_handler inputs;
+        std::unique_ptr<input_handler> inputs;
 
-        mesh_store meshes;
+        std::unique_ptr<mesh_store> meshes;
 
-        uniform_buffer_store ubo_manager;
+        std::unique_ptr<uniform_buffer_store> ubo_manager;
+
 
         /*!
          * \brief Renders the GUI of Minecraft

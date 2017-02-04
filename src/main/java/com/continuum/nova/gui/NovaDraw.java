@@ -241,6 +241,8 @@ public class NovaDraw {
          * @return the native struct
          */
         public NovaNative.mc_gui_send_buffer_command toNativeCommand(ResourceLocation texture) {
+
+
             // create a new struct
             NovaNative.mc_gui_send_buffer_command command = new NovaNative.mc_gui_send_buffer_command();
             command.texture_name = texture.getResourcePath();

@@ -187,6 +187,16 @@ public interface NovaNative extends Library {
         }
     }
 
+
+    class window_size extends Structure implements Structure.ByValue{
+        public int height;
+        public int width;
+
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("height","width");
+        }
+    }
     enum TextureType {
         GUI,
         OPTIONS_BACKGROUND,
@@ -224,6 +234,11 @@ public interface NovaNative extends Library {
         EYES
     }
 
+    enum NativeBoolean{
+        FALSE,
+        TRUE
+    }
+
     void initialize();
 
     void execute_frame();
@@ -250,4 +265,11 @@ public interface NovaNative extends Library {
 
     void clear_gui_buffers();
 
+    window_size get_window_size();
+
+    void set_string_setting(String setting,String value);
+
+    void set_float_setting(String setting_name, float setting_value);
+
+    void set_fullscreen(int fullscreen);
 }
