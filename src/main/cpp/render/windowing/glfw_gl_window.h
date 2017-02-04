@@ -13,6 +13,13 @@
 #include <RenderDocManager.h>
 
 namespace nova {
+    struct window_parameters {
+        int xPos;
+        int yPos;
+        int width;
+        int height;
+    };
+    
     /*!
      * \brief Represents a GLFW window with an OpenGL context
      *
@@ -58,7 +65,7 @@ namespace nova {
         GLFWwindow *window;
         glm::ivec2 window_dimensions;
         std::unique_ptr<RenderDocManager> renderdoc_manager;
-
+        struct window_parameters windowed_window_parameters;
         void set_framebuffer_size(glm::ivec2 new_framebuffer_size);
     };
 }

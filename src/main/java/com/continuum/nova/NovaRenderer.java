@@ -2,8 +2,11 @@ package com.continuum.nova;
 
 import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.utils.RenderCommandBuilder;
+import com.continuum.nova.NovaNative.window_size;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
@@ -39,6 +42,13 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private static final List<ResourceLocation> TERRAIN_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap blockAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> blockSpriteLocations = new HashMap<>();
+
+    private int height;
+
+    private int width;
+
+    private boolean resized;
+    private int scalefactor;
 
     private static final List<ResourceLocation> FONT_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap fontAtlas = new TextureMap("textures");
@@ -205,6 +215,33 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.error("PID: " + pid);
         NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
+        updateWindowSize();
+    }
+
+    public  void updateWindowSize(){
+        window_size size = NovaNative.INSTANCE.get_window_size();
+        int oldHeight = height;
+        int oldWidth = width;
+        if (oldHeight != size.height || oldWidth != size.width){
+            resized = true;
+        } else {
+            resized = false;
+        }
+        height = size.height;
+        width = size.width;
+
+    }
+
+    public int getHeight(){
+        return height;
+    }
+
+    public int getWidth(){
+        return width;
+    }
+
+    public boolean wasResized(){
+        return resized;
     }
 
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
@@ -212,6 +249,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             Minecraft.getMinecraft().shutdown();
         }
         NovaNative.INSTANCE.execute_frame();
+        updateWindowSize();
+        int scalefactor = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor()*2;
+        if (scalefactor!=this.scalefactor) {
+            NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
+            this.scalefactor = scalefactor;
+        }
     }
 
     private void addGuiTextureLocations() {

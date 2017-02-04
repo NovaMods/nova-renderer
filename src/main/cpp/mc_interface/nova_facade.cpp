@@ -19,6 +19,8 @@
 #include "../render/objects/textures/texture_manager.h"
 #include "../data_loading/settings.h"
 #include "../input/InputHandler.h"
+#include "../render/windowing/glfw_gl_window.h"
+
 using namespace nova;
 
 #define TEXTURE_MANAGER nova_renderer::instance->get_texture_manager()
@@ -52,6 +54,14 @@ NOVA_API void execute_frame() {
     nova_renderer::instance->render_frame();
 }
 
+NOVA_API void set_fullscreen(int fullscreen) {
+    bool temp_bool = false;
+    if(fullscreen == 1) {
+        temp_bool = true;
+    }
+    nova_renderer::instance->get_game_window().set_fullscreen(temp_bool);
+}
+
 NOVA_API bool should_close() {
     return nova_renderer::instance->should_end();
 }
@@ -60,13 +70,25 @@ NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command) {
     nova_renderer::instance->get_mesh_store().add_gui_buffers(command);
 }
 
+NOVA_API struct window_size get_window_size()
+{
+    glm::vec2 size = nova_renderer::instance->get_game_window().get_size();
+    return {(int )size.y,(int)size.x};
+}
+
 NOVA_API void clear_gui_buffers() {
     nova_renderer::instance->get_mesh_store().remove_gui_render_objects();
 }
 
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value) {
     settings& settings = nova_renderer::instance->get_render_settings();
-    settings.get_options()[setting_name] = setting_value;
+    settings.get_options()["settings"][setting_name] = setting_value;
+    settings.update_config_changed();
+}
+
+NOVA_API void set_float_setting(const char * setting_name, float setting_value) {
+    settings& settings = nova_renderer::instance->get_render_settings();
+    settings.get_options()["settings"][setting_name] = setting_value;
     settings.update_config_changed();
 }
 

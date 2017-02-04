@@ -143,9 +143,9 @@ source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE} ${MINIZ_SOURCE})
 set_target_properties(nova-renderer-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
-target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT)
+target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)
 
-target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT)
+target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
 
 add_library(nova-renderer SHARED $<TARGET_OBJECTS:nova-renderer-obj>)
 
