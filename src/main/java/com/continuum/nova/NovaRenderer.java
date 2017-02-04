@@ -32,6 +32,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public static final String VERSION = "0.0.3";
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
+    public static final ResourceLocation WHITE_TEXTURE_GUI_LOCATION = new ResourceLocation("white_gui");
 
     private boolean firstLoad = true;
 
@@ -76,6 +77,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
+        guiAtlas.createWhiteTexture(WHITE_TEXTURE_GUI_LOCATION);
         addAtlas(resourceManager, guiAtlas, GUI_ALBEDO_TEXTURES_LOCATIONS, guiSpriteLocations, NovaNative.TextureType.GUI);
         LOG.debug("Created GUI atlas");
     }
@@ -92,6 +94,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             spriteLocations.put(location, textureAtlasSprite);
         }));
 
+        Optional<TextureAtlasSprite> whiteImage = atlas.getWhiteImage();
+        whiteImage.ifPresent(image -> spriteLocations.put(image.getLocation(), image));
+
         NovaNative.mc_atlas_texture guiAtlasTexture = getFullImage(atlas.getWidth(), atlas.getHeight(), spriteLocations.values());
 
         NovaNative.INSTANCE.add_texture(guiAtlasTexture, textureType.ordinal());
@@ -104,6 +109,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     sprite.getMaxU(),
                     sprite.getMaxV()
             );
+
+            LOG.info("Adding a sprite with name " + sprite.getIconName());
 
             NovaNative.INSTANCE.add_texture_location(location);
         }
@@ -129,7 +136,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     byte alpha  = (byte)((pixel >> 24) & 0xFF);
 
                     int imageDataBasePos = startPos + x * 4 + y * atlasWidth * 4;
-                    imageData[imageDataBasePos]     =blue ;
+                    imageData[imageDataBasePos]     = blue;
                     imageData[imageDataBasePos + 1] = green;
                     imageData[imageDataBasePos + 2] = red;
                     imageData[imageDataBasePos + 3] = alpha;
@@ -212,13 +219,13 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
-        LOG.error("PID: " + pid);
+        LOG.info("PID: " + pid);
         NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
         updateWindowSize();
     }
 
-    public  void updateWindowSize(){
+    private void updateWindowSize(){
         window_size size = NovaNative.INSTANCE.get_window_size();
         int oldHeight = height;
         int oldWidth = width;
