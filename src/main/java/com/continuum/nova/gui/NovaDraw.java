@@ -10,6 +10,8 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.util.*;
@@ -21,6 +23,7 @@ public class NovaDraw {
 
     static HashMap<ResourceLocation, Buffers> buffers = new HashMap<>();
 
+    private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
     /**
      * private constructor cause this class only has static things
      */
@@ -74,11 +77,7 @@ public class NovaDraw {
             vertexbuffer[v * 8 + 7] = vertices[v].b;
         }
 
-        if(buffers.containsKey(texture)) {
-            buffers.get(texture).add(indexBuffer, vertexbuffer);
-        } else {
-            buffers.put(texture, new Buffers().add(indexBuffer, vertexbuffer));
-        }
+        draw(texture,indexBuffer,vertexbuffer);
     }
 
     /**
@@ -99,33 +98,41 @@ public class NovaDraw {
      * @param texWidth  texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      * @param texHeight texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      */
-    public static void drawRectangle(ResourceLocation texture, int x, int y, float z, int width, int height, float texX, float texY, float texWidth, float texHeight) {
+    public static void drawRectangle(ResourceLocation texture, int x, int y, float z, int width, int height, float texX, float texY, float texWidth, float texHeight, Color vertexColor) {
         Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
         Vertex[] vertices = new Vertex[]{
                 new Vertex(
                         x, y, z,
-                        texX, texY
+                        texX, texY,
+                        vertexColor
                 ),
                 new Vertex(
                         x + width, y, z,
-                        texX + texWidth, texY
+                        texX + texWidth, texY,
+                        vertexColor
                 ),
                 new Vertex(
                         x, y + height, z,
-                        texX, texY + texHeight
+                        texX, texY + texHeight,
+                        vertexColor
                 ),
                 new Vertex(
                         x + width, y + height, z,
-                        texX + texWidth, texY + texHeight
+                        texX + texWidth, texY + texHeight,
+                        vertexColor
                 )
         };
         draw(texture, indexBuffer, vertices);
+
     }
 
-    public static void drawRectangle(ResourceLocation texture, int x, int y, int width, int height, float texX, float texY, float texWidth, float texHeight) {
-        drawRectangle(texture, x, y, 0.5f, width, height, texX, texY, texWidth, texHeight);
+    public static void drawRectangle(ResourceLocation texture, int x, int y, int width, int height, float texX, float texY, float texWidth, float texHeight  ) {
+        drawRectangle(texture, x, y, 0.5f, width, height, texX, texY, texWidth, texHeight,Color.white);
     }
 
+    public static void drawRectangle(ResourceLocation texture, int x, int y, int width, int height, float texX, float texY, float texWidth, float texHeight ,Color vertexColor ) {
+        drawRectangle(texture, x, y, 0.5f, width, height, texX, texY, texWidth, texHeight,vertexColor);
+    }
 
     /**
      * This code is from the EntityRenderer class.
@@ -156,7 +163,6 @@ public class NovaDraw {
      */
     public static void novaDrawScreen(GuiScreen screen) {
         computeCorrectMousePosition();
-
         if(screen.checkStateChanged()) {
             clearBuffers();
             screen.drawNova();
@@ -164,8 +170,15 @@ public class NovaDraw {
             for (Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
                 Buffers b = entry.getValue();
                 ResourceLocation texture = entry.getKey();
-                NovaNative.INSTANCE.send_gui_buffer_command(b.toNativeCommand(texture));
+                long timeWithAlloc = System.nanoTime();
+                NovaNative.mc_gui_send_buffer_command command = b.toNativeCommand(texture);
+                long timePrev = System.nanoTime();
+                NovaNative.INSTANCE.send_gui_buffer_command(command);
+                long end = System.nanoTime();
+                LOG.info("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
+
             }
+
         }
     }
 

@@ -35,6 +35,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private boolean firstLoad = true;
 
+    private static final List<ResourceLocation> BACKGROUND_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
+    private TextureMap backgroundAtlas = new TextureMap("textures");
+    private Map<ResourceLocation, TextureAtlasSprite> backgroundSpriteLocations = new HashMap<>();
+
     private static final List<ResourceLocation> GUI_ALBEDO_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap guiAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> guiSpriteLocations = new HashMap<>();
@@ -55,6 +59,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private Map<ResourceLocation, TextureAtlasSprite> fontSpriteLocations = new HashMap<>();
 
     public NovaRenderer() {
+        addBackgroundTextureLocations();
         addBlockTextureLocations();
         addGuiTextureLocations();
         addFontTextureLocations();
@@ -72,12 +77,18 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.debug("Created block color atlas");
 
         //addBlockAtlas(resourceManager);
+        addBackgroundAtlas(resourceManager);
         addGuiAtlas(resourceManager);
         addFontAtlas(resourceManager);
     }
 
     private void addBlockAtlas(@Nonnull IResourceManager resourceManager) {
         addAtlas(resourceManager, blockAtlas, TERRAIN_ALBEDO_TEXTURES_LOCATIONS, blockSpriteLocations, NovaNative.TextureType.TERRAIN_COLOR);
+    }
+
+    private void addBackgroundAtlas(@Nonnull IResourceManager resourceManager) {
+        addAtlas(resourceManager, backgroundAtlas, BACKGROUND_ALBEDO_TEXTURES_LOCATIONS, backgroundSpriteLocations, NovaNative.TextureType.OPTIONS_BACKGROUND);
+        LOG.debug("Created Background atlas");
     }
 
     private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
@@ -90,9 +101,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.debug("Created font atlas");
     }
 
-    private void addAtlas(@Nonnull IResourceManager resourceManager, TextureMap atlas, List<ResourceLocation> resoruces,
+    private void addAtlas(@Nonnull IResourceManager resourceManager, TextureMap atlas, List<ResourceLocation> resources,
                           Map<ResourceLocation, TextureAtlasSprite> spriteLocations, NovaNative.TextureType textureType) {
-        atlas.loadSprites(resourceManager, textureMapIn -> resoruces.forEach(location -> {
+
+        atlas.loadSprites(resourceManager, textureMapIn -> resources.forEach(location -> {
             TextureAtlasSprite textureAtlasSprite = textureMapIn.registerSprite(location);
             spriteLocations.put(location, textureAtlasSprite);
         }));
@@ -262,12 +274,15 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
     }
 
+    private void addBackgroundTextureLocations(){
+        BACKGROUND_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/options_background"));
+    }
+
     private void addGuiTextureLocations() {
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/bars"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/book"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/demo_background"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/icons"));
-        GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/options_background"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/resource_packs"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/server_selection"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/spectator_widgets"));
@@ -933,7 +948,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png","").replace("textures/",""));
 
         LOG.info("Need to get atlas that " + strippedLocation + " is in");
-        if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+        if (BACKGROUND_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+            LOG.info("It's in the terrain");
+            return NovaNative.TextureType.OPTIONS_BACKGROUND;
+        }else if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the terrain");
             return NovaNative.TextureType.TERRAIN_COLOR;
         } else if(GUI_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
