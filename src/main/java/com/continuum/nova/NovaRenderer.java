@@ -1,8 +1,10 @@
 package com.continuum.nova;
 
+import com.continuum.nova.input.Mouse;
 import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.utils.RenderCommandBuilder;
 import com.continuum.nova.NovaNative.window_size;
+import com.continuum.nova.gui.NovaDraw;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -265,6 +267,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         if(NovaNative.INSTANCE.should_close()) {
             Minecraft.getMinecraft().shutdown();
         }
+
+        if (Minecraft.getMinecraft().currentScreen != null ) {
+
+        }
+        NovaDraw.novaDrawScreen(Minecraft.getMinecraft().currentScreen,renderPartialTicks);
+
         NovaNative.INSTANCE.execute_frame();
         updateWindowSize();
         int scalefactor = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor()*2;

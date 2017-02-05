@@ -161,25 +161,25 @@ public class NovaDraw {
      *
      * @param screen the gui screen
      */
-    public static void novaDrawScreen(GuiScreen screen) {
+    public static void novaDrawScreen(GuiScreen screen, float renderPartialTicks) {
         computeCorrectMousePosition();
-        if(screen.checkStateChanged()) {
-            clearBuffers();
-            screen.drawNova();
 
-            for (Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
-                Buffers b = entry.getValue();
-                ResourceLocation texture = entry.getKey();
-                long timeWithAlloc = System.nanoTime();
-                NovaNative.mc_gui_send_buffer_command command = b.toNativeCommand(texture);
-                long timePrev = System.nanoTime();
-                NovaNative.INSTANCE.send_gui_buffer_command(command);
-                long end = System.nanoTime();
-                LOG.info("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
+        clearBuffers();
+        screen.drawScreen(mouseX, mouseY, renderPartialTicks);
 
-            }
+        for (Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
+            Buffers b = entry.getValue();
+            ResourceLocation texture = entry.getKey();
+            long timeWithAlloc = System.nanoTime();
+            NovaNative.mc_gui_send_buffer_command command = b.toNativeCommand(texture);
+            long timePrev = System.nanoTime();
+            NovaNative.INSTANCE.send_gui_buffer_command(command);
+            long end = System.nanoTime();
+            LOG.info("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
 
         }
+
+
     }
 
     public static class Vertex {
