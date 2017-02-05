@@ -9,6 +9,7 @@
 #include <string>
 #include <glad/glad.h>
 #include "shaders/gl_shader_program.h"
+#include <GLFW/glfw3.h>
 
 namespace nova {
     /*!
