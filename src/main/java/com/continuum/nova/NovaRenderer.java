@@ -7,6 +7,7 @@ import com.continuum.nova.NovaNative.window_size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
@@ -24,6 +25,7 @@ import java.awt.image.DataBufferByte;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.Buffer;
 import java.util.*;
 import java.util.List;
 
@@ -55,6 +57,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private TextureMap fontAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> fontSpriteLocations = new HashMap<>();
 
+    private IResourceManager resourceManager;
+
     public NovaRenderer() {
         addBlockTextureLocations();
         addGuiTextureLocations();
@@ -63,13 +67,15 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     @Override
     public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
+        this.resourceManager = resourceManager;
+
         if(firstLoad) {
             firstLoad = false;
         }
 
         NovaNative.INSTANCE.reset_texture_manager();
         int maxAtlasSize = NovaNative.INSTANCE.get_max_texture_size();
-        addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATIONS, NovaNative.TextureType.TERRAIN_COLOR, resourceManager, maxAtlasSize);
+        addTextures(TERRAIN_ALBEDO_TEXTURES_LOCATIONS, NovaNative.BLOCK_COLOR_ATLAS_NAME, resourceManager, maxAtlasSize);
         LOG.debug("Created block color atlas");
 
         addGuiAtlas(resourceManager);
@@ -78,17 +84,17 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
         guiAtlas.createWhiteTexture(WHITE_TEXTURE_GUI_LOCATION);
-        addAtlas(resourceManager, guiAtlas, GUI_ALBEDO_TEXTURES_LOCATIONS, guiSpriteLocations, NovaNative.TextureType.GUI);
+        addAtlas(resourceManager, guiAtlas, GUI_ALBEDO_TEXTURES_LOCATIONS, guiSpriteLocations, NovaNative.GUI_ATLAS_NAME);
         LOG.debug("Created GUI atlas");
     }
 
     private void addFontAtlas(@Nonnull IResourceManager resourceManager) {
-        addAtlas(resourceManager, fontAtlas, FONT_ALBEDO_TEXTURES_LOCATIONS, fontSpriteLocations, NovaNative.TextureType.FONT);
+        addAtlas(resourceManager, fontAtlas, FONT_ALBEDO_TEXTURES_LOCATIONS, fontSpriteLocations, NovaNative.FONT_ATLAS_NAME);
         LOG.debug("Created font atlas");
     }
 
     private void addAtlas(@Nonnull IResourceManager resourceManager, TextureMap atlas, List<ResourceLocation> resoruces,
-                          Map<ResourceLocation, TextureAtlasSprite> spriteLocations, NovaNative.TextureType textureType) {
+                          Map<ResourceLocation, TextureAtlasSprite> spriteLocations, String textureName) {
         atlas.loadSprites(resourceManager, textureMapIn -> resoruces.forEach(location -> {
             TextureAtlasSprite textureAtlasSprite = textureMapIn.registerSprite(location);
             spriteLocations.put(location, textureAtlasSprite);
@@ -97,9 +103,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Optional<TextureAtlasSprite> whiteImage = atlas.getWhiteImage();
         whiteImage.ifPresent(image -> spriteLocations.put(image.getLocation(), image));
 
-        NovaNative.mc_atlas_texture guiAtlasTexture = getFullImage(atlas.getWidth(), atlas.getHeight(), spriteLocations.values());
+        NovaNative.mc_atlas_texture atlasTexture = getFullImage(atlas.getWidth(), atlas.getHeight(), spriteLocations.values());
+        atlasTexture.setName(textureName);
 
-        NovaNative.INSTANCE.add_texture(guiAtlasTexture, textureType.ordinal());
+        NovaNative.INSTANCE.add_texture(atlasTexture);
 
         for(TextureAtlasSprite sprite : spriteLocations.values()) {
             NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
@@ -152,7 +159,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         );
     }
 
-    private void addTextures(List<ResourceLocation> locations, NovaNative.TextureType textureType,  IResourceManager resourceManager, int maxAtlasSize) {
+    private void addTextures(List<ResourceLocation> locations, String textureName, IResourceManager resourceManager, int maxAtlasSize) {
         AtlasGenerator gen = new AtlasGenerator();
         List<AtlasGenerator.ImageName> images = new ArrayList<>();
 
@@ -175,19 +182,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         for(AtlasGenerator.Texture texture : atlases) {
             try {
                 BufferedImage image = texture.getImage();
-                byte[] imageData = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-                LOG.info("The image has " + imageData.length + " separate pixels");
 
-                for(int i = 0; i < imageData.length; i += 4) {
-                    byte a = imageData[i];
-                    byte b = imageData[i + 1];
-                    byte g = imageData[i + 2];
-                    byte r = imageData[i + 3];
-                    imageData[i] = r;
-                    imageData[i + 1] = g;
-                    imageData[i + 2] = b;
-                    imageData[i + 3] = a;
-                }
+                byte[] imageData = getImageData(image);
 
                 NovaNative.mc_atlas_texture atlasTex = new NovaNative.mc_atlas_texture(
                         image.getWidth(),
@@ -195,7 +191,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                         image.getColorModel().getNumComponents(),
                         imageData
                 );
-                NovaNative.INSTANCE.add_texture(atlasTex, textureType.ordinal());
+                atlasTex.setName(textureName);
+                NovaNative.INSTANCE.add_texture(atlasTex);
                 Map<String, Rectangle> rectangleMap = texture.getRectangleMap();
 
                 for(String texName : rectangleMap.keySet()) {
@@ -213,6 +210,21 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                 LOG.error("Could not process a texture", e);
             }
         }
+    }
+
+    private byte[] getImageData(BufferedImage image) {
+        byte[] imageData = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+        for(int i = 0; i < imageData.length; i += 4) {
+            byte a = imageData[i];
+            byte b = imageData[i + 1];
+            byte g = imageData[i + 2];
+            byte r = imageData[i + 3];
+            imageData[i] = r;
+            imageData[i + 1] = g;
+            imageData[i + 2] = b;
+            imageData[i + 3] = a;
+        }
+        return imageData;
     }
 
     public void preInit() {
@@ -931,22 +943,41 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         FONT_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("font/unicode_page_ff"));
     }
 
-    public static NovaNative.TextureType atlasTextureOfSprite(ResourceLocation texture) {
+    public static String atlasTextureOfSprite(ResourceLocation texture) {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png","").replace("textures/",""));
 
         LOG.info("Need to get atlas that " + strippedLocation + " is in");
         if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the terrain");
-            return NovaNative.TextureType.TERRAIN_COLOR;
+            return NovaNative.BLOCK_COLOR_ATLAS_NAME;
         } else if(GUI_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the gui");
-            return NovaNative.TextureType.GUI;
+            return NovaNative.GUI_ATLAS_NAME;
         } else if(FONT_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the font");
-            return NovaNative.TextureType.FONT;
+            return NovaNative.FONT_ATLAS_NAME;
         }
 
-        LOG.error("Texture " + strippedLocation + " requested, but it's not in at atlas that Nova knows about");
-        return NovaNative.TextureType.NO_TEXTURE;
+        LOG.info("Texture " + strippedLocation + " requested, but it's not in at atlas that Nova knows about");
+        return texture.toString();
+    }
+
+    /**
+     * Loads the specified texture, adding it to Minecraft as a texture outside of an atlas
+     *
+     * @param location The location of the texture
+     * @param image The texture itself
+     */
+    public void loadTexture(ResourceLocation location, BufferedImage image) {
+        if(resourceManager == null) {
+            LOG.error("Trying to load texture " + location + " but there's no resource manager");
+            return;
+        }
+
+        byte[] imageData = getImageData(image);
+
+        NovaNative.mc_atlas_texture tex = new NovaNative.mc_atlas_texture(image.getWidth(), image.getHeight(), 4, imageData);
+        tex.setName(location.toString());
+        NovaNative.INSTANCE.add_texture(tex);
     }
 }

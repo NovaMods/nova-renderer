@@ -48,7 +48,7 @@ namespace nova {
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         std::vector<float> vertex_buffer(command->vertex_buffer_size);
-        for (int i = 0; i + 7 < command->vertex_buffer_size; i += 8) {
+        for (int i = 0; i + 8 < command->vertex_buffer_size; i += 9) {
             vertex_buffer[i]   = command->vertex_buffer[i];
             vertex_buffer[i+1] = command->vertex_buffer[i+1];
             vertex_buffer[i+2] = command->vertex_buffer[i+2];
@@ -57,6 +57,7 @@ namespace nova {
             vertex_buffer[i+5] = command->vertex_buffer[i+5];
             vertex_buffer[i+6] = command->vertex_buffer[i+6];
             vertex_buffer[i+7] = command->vertex_buffer[i+7];
+            vertex_buffer[i+8] = command->vertex_buffer[i+8];
         }
         std::vector<unsigned short> index_buffer(command->index_buffer_size);
         for(int i = 0; i < command->index_buffer_size; i++) {
@@ -71,12 +72,12 @@ namespace nova {
         cur_screen_buffer.indices = index_buffer;
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
-        render_object gui;
+        render_object gui = {};
         gui.geometry.reset(new gl_mesh(cur_screen_buffer));
         gui.type = geometry_type::gui;
         gui.name = "gui";
         gui.is_solid = true;
-        gui.color_texture = texture_manager::texture_type::all_values()[command->texture_atlas];
+        gui.color_texture = command->atlas_name;
 
         sort_render_object(gui);
     }

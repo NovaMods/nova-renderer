@@ -13,18 +13,18 @@ layout(std140) uniform gui_uniforms {
 };
 
 in vec2 uv;
-in vec3 color;
+in vec4 color;
 
-out vec3 color_out;
+out vec4 color_out;
 
 void main() {
     if(textureSize(colortex, 0).x > 0) {
         vec4 tex_sample = texture(colortex, uv);
-        if(tex_sample.a < 0.5) {
+        if(tex_sample.a < 0.01) {
             discard;
         }
-        color_out = vec3(tex_sample.rgb) * color;
+        color_out = tex_sample * color;
     } else {
-        color_out = vec3(1, 0, 1);
+        color_out = vec4(1, 0, 1, 1);
     }
 }
