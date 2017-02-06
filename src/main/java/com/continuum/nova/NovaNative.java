@@ -2,29 +2,36 @@ package com.continuum.nova;
 
 import com.sun.jna.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public interface NovaNative extends Library {
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
+
+    String GUI_ATLAS_NAME = "gui";
+    String BLOCK_COLOR_ATLAS_NAME = "block_color";
+    String FONT_ATLAS_NAME = "font";
 
     class mc_atlas_texture extends Structure {
         public int width;
         public int height;
         public int num_components;
         public Pointer texture_data;
+        public String name;
 
         public mc_atlas_texture(int width, int height, int num_components, byte[] texture_data) {
             this.width = width;
             this.height = height;
             this.num_components = num_components;
-            this.texture_data = new Memory(width * height * num_components * Native.getNativeSize(Byte.TYPE));
 
+            this.texture_data = new Memory(width * height * num_components * Native.getNativeSize(Byte.TYPE));
             for(int i = 0; i < width * height * num_components; i++) {
                 this.texture_data.setByte(i, texture_data[i]);
             }
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         @Override
@@ -137,11 +144,11 @@ public interface NovaNative extends Library {
         public int vertex_buffer_size;
         public Pointer index_buffer; // int[]
         public Pointer vertex_buffer; // float[]
-        public int texture_atlas;
+        public String atlas_name;
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "texture_atlas");
+            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "sprite_name");
         }
     }
 
@@ -187,7 +194,6 @@ public interface NovaNative extends Library {
         }
     }
 
-
     class window_size extends Structure implements Structure.ByValue{
         public int height;
         public int width;
@@ -196,25 +202,6 @@ public interface NovaNative extends Library {
         protected List<String> getFieldOrder() {
             return Arrays.asList("height","width");
         }
-    }
-    enum TextureType {
-        GUI,
-        OPTIONS_BACKGROUND,
-        FONT,
-        TERRAIN_COLOR,
-        TERRAIN_NORMALMAP,
-        TERRAIN_DATA,
-        ENTITIES_COLOR,
-        ENTITIES_NORMALMAP,
-        ENTITIES_DATA,
-        ITEMS,
-        WORLD_DATA,
-        PARTICLES,
-        WEATHER,
-        SKY,
-        END_SKY,
-        CLOUDS,
-        NO_TEXTURE
     }
 
     enum GeometryType {
@@ -243,7 +230,7 @@ public interface NovaNative extends Library {
 
     void execute_frame();
 
-    void add_texture(mc_atlas_texture texture, int texture_type);
+    void add_texture(mc_atlas_texture texture);
 
     void add_texture_location(mc_texture_atlas_location location);
 
