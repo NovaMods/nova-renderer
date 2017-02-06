@@ -61,16 +61,17 @@ public class NovaDraw {
      * @param vertices    the vertices as Vertex objects
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Vertex[] vertices) {
-        Float[] vertexbuffer = new Float[vertices.length * 8];
+        Float[] vertexbuffer = new Float[vertices.length * 9];
         for (int v = 0; v < vertices.length; v++) {
-            vertexbuffer[v * 8] = vertices[v].x;
-            vertexbuffer[v * 8 + 1] = vertices[v].y;
-            vertexbuffer[v * 8 + 2] = vertices[v].z;
-            vertexbuffer[v * 8 + 3] = vertices[v].u;
-            vertexbuffer[v * 8 + 4] = vertices[v].v;
-            vertexbuffer[v * 8 + 5] = vertices[v].r;
-            vertexbuffer[v * 8 + 6] = vertices[v].g;
-            vertexbuffer[v * 8 + 7] = vertices[v].b;
+            vertexbuffer[v * 9] = vertices[v].x;
+            vertexbuffer[v * 9 + 1] = vertices[v].y;
+            vertexbuffer[v * 9 + 2] = vertices[v].z;
+            vertexbuffer[v * 9 + 3] = vertices[v].u;
+            vertexbuffer[v * 9 + 4] = vertices[v].v;
+            vertexbuffer[v * 9 + 5] = vertices[v].r;
+            vertexbuffer[v * 9 + 6] = vertices[v].g;
+            vertexbuffer[v * 9 + 7] = vertices[v].b;
+            vertexbuffer[v * 9 + 8] = vertices[v].a;
         }
 
         if(buffers.containsKey(texture)) {
@@ -182,6 +183,7 @@ public class NovaDraw {
         public float r;
         public float g;
         public float b;
+        public float a;
 
         public Vertex(int x, int y, float u, float v) {
             this(x, y, 0.5f, u, v);
@@ -204,6 +206,7 @@ public class NovaDraw {
             this.r = (float)color.getRed() / 255.f;
             this.g = (float)color.getGreen() / 255.f;
             this.b = (float)color.getBlue() / 255.f;
+            this.a = (float)color.getAlpha() / 255.f;
         }
     }
 
@@ -218,7 +221,7 @@ public class NovaDraw {
 
         public Buffers add(Integer[] indexBuffer, Float[] vertexBuffer) {
             // add index buffer
-            int indexbuffer_size = this.vertexBuffer.size() / 8;    // 8 is the number of floats per vertex
+            int indexbuffer_size = this.vertexBuffer.size() / 9;    // 9 is the number of floats per vertex
             for (int index : indexBuffer) {
                 this.indexBuffer.add(index + indexbuffer_size);
             }
@@ -240,8 +243,6 @@ public class NovaDraw {
          * @return the native struct
          */
         public NovaNative.mc_gui_send_buffer_command toNativeCommand(ResourceLocation texture) {
-
-
             // create a new struct
             NovaNative.mc_gui_send_buffer_command command = new NovaNative.mc_gui_send_buffer_command();
             command.texture_name = texture.getResourcePath();
@@ -262,8 +263,7 @@ public class NovaDraw {
                 command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (float) (vertex != null ? vertex : 0));
             }
 
-            NovaNative.TextureType atlasType = NovaRenderer.atlasTextureOfSprite(texture);
-            command.texture_atlas = atlasType.ordinal();
+            command.atlas_name =  NovaRenderer.atlasTextureOfSprite(texture);
 
             return command;
         }
