@@ -95,8 +95,8 @@ namespace nova {
         // Render GUI objects
         std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
         for(const auto& geom : gui_geometry) {
-            if (geom.color_texture != texture_manager::texture_type::no_texture) {
-                auto color_texture = textures->get_texture_atlas(geom.color_texture);
+            if (geom.color_texture != "") {
+                auto color_texture = textures->get_texture(geom.color_texture);
                 color_texture.bind(0);
             }
             geom.geometry->set_active();

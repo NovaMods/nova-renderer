@@ -7,7 +7,7 @@
 #define RENDERER_TEXTURE_RECEIVER_H
 
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include "../../../mc_interface/mc_objects.h"
@@ -123,9 +123,8 @@ namespace nova {
          * is called. Then it's put into an atlas
          *
          * \param new_texture The new texture
-         * \param data_type The type of texture we're dealing with
          */
-        void add_texture(mc_atlas_texture &new_texture, texture_type data_type);
+        void add_texture(mc_atlas_texture &new_texture);
 
         /*!
          * \brief Adds the given texture location to the list of texture locations
@@ -146,11 +145,10 @@ namespace nova {
         /*!
          * \brief Returns a pointer to the specified atlas
          *
-         * \param atlas The type of atlas to get
-         * \param type The type of data that should be in the atlas
+         * \param texture_name The name of the texture to get
          * \return A pointer to the atlas texture
          */
-        texture2D &get_texture_atlas(texture_type type);
+        texture2D &get_texture(std::string texture_name);
 
         /*!
          * \brief Returns the maximum texture size supported by OpenGL on the current platform
@@ -162,13 +160,13 @@ namespace nova {
         int get_max_texture_size();
 
     private:
-        std::map<texture_type, texture2D> atlases;
+        std::unordered_map<std::string, texture2D> atlases;
 
         /*!
          * \brief A map from the name of a texture according to Minecraft and the UV coordinates it takes up in its
          * texture atlas
          */
-        std::map<std::string, texture_location> locations;
+        std::unordered_map<std::string, texture_location> locations;
 
         int max_texture_size = -1;
     };
