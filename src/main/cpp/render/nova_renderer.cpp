@@ -37,6 +37,7 @@ namespace nova {
         glDepthFunc(GL_LESS);
         glClearDepth(1.0);
 
+        glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 

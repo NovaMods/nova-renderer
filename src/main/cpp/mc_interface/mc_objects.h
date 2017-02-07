@@ -139,6 +139,12 @@ struct mouse_position_event {
 	int filled;
 };
 
+struct mouse_scroll_event {
+    double xoffset;
+    double yoffset;
+    int filled;
+};
+
 struct key_press_event {
 	int key;
 	int scancode;

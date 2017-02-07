@@ -9,6 +9,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -21,6 +24,12 @@ public class NovaDraw {
 
     static HashMap<ResourceLocation, Buffers> buffers = new HashMap<>();
 
+    private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
+
+    private static final float zIncrement = 0.0001f;
+
+    private static float currentZ;
+
     /**
      * private constructor cause this class only has static things
      */
@@ -29,6 +38,7 @@ public class NovaDraw {
     private static void clearBuffers() {
         buffers.clear();
         NovaNative.INSTANCE.clear_gui_buffers();
+        currentZ = 0.9999f;
     }
 
     public static int getMouseX() {
@@ -54,6 +64,10 @@ public class NovaDraw {
         }
     }
 
+    public static void incrementZ(){
+        currentZ = Math.max(currentZ - zIncrement, 0);
+    }
+
     /**
      * Add data to the indexBuffer and vertexBuffer which is associated with the specified texture.
      *
@@ -62,11 +76,12 @@ public class NovaDraw {
      * @param vertices    the vertices as Vertex objects
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Vertex[] vertices) {
+
         Float[] vertexbuffer = new Float[vertices.length * 9];
         for (int v = 0; v < vertices.length; v++) {
             vertexbuffer[v * 9] = vertices[v].x;
             vertexbuffer[v * 9 + 1] = vertices[v].y;
-            vertexbuffer[v * 9 + 2] = vertices[v].z;
+            vertexbuffer[v * 9 + 2] = currentZ;
             vertexbuffer[v * 9 + 3] = vertices[v].u;
             vertexbuffer[v * 9 + 4] = vertices[v].v;
             vertexbuffer[v * 9 + 5] = vertices[v].r;
@@ -75,11 +90,7 @@ public class NovaDraw {
             vertexbuffer[v * 9 + 8] = vertices[v].a;
         }
 
-        if(buffers.containsKey(texture)) {
-            buffers.get(texture).add(indexBuffer, vertexbuffer);
-        } else {
-            buffers.put(texture, new Buffers().add(indexBuffer, vertexbuffer));
-        }
+        draw(texture,indexBuffer,vertexbuffer);
     }
 
     /**
@@ -100,33 +111,37 @@ public class NovaDraw {
      * @param texWidth  texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      * @param texHeight texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      */
-    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, float z, Rectangle2D.Float textureCoords) {
+    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords,Color vertexColor) {
         Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
         Vertex[] vertices = new Vertex[]{
                 new Vertex(
-                        rect.x, rect.y, z,
-                        textureCoords.x, textureCoords.y
+                        rect.x, rect.y,
+                        textureCoords.x, textureCoords.y,
+						vertexColor
                 ),
                 new Vertex(
-                        rect.x + rect.width, rect.y, z,
-                        textureCoords.x + textureCoords.width, textureCoords.y
+                        rect.x + rect.width, rect.y,
+                        textureCoords.x + textureCoords.width, textureCoords.y,
+						vertexColor
                 ),
                 new Vertex(
-                        rect.x, rect.y + rect.height, z,
-                        textureCoords.x, textureCoords.y + textureCoords.height
+                        rect.x, rect.y + rect.height,
+                        textureCoords.x, textureCoords.y + textureCoords.height,
+						vertexColor
                 ),
                 new Vertex(
-                        rect.x + rect.width, rect.y + rect.height, z,
-                        textureCoords.x + textureCoords.width, textureCoords.y + textureCoords.height
+                        rect.x + rect.width, rect.y + rect.height,
+                        textureCoords.x + textureCoords.width, textureCoords.y + textureCoords.height,
+						vertexColor
                 )
         };
         draw(texture, indexBuffer, vertices);
+
     }
 
     public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords) {
-        drawRectangle(texture, rect, 0.5f, textureCoords);
+        drawRectangle(texture, rect, textureCoords,Color.white);
     }
-
 
     /**
      * This code is from the EntityRenderer class.
@@ -155,26 +170,31 @@ public class NovaDraw {
      *
      * @param screen the gui screen
      */
-    public static void novaDrawScreen(GuiScreen screen) {
+    public static void novaDrawScreen(GuiScreen screen, float renderPartialTicks) {
         computeCorrectMousePosition();
 
-        if(screen.checkStateChanged()) {
-            clearBuffers();
-            screen.drawNova(mouseX, mouseY);
+        clearBuffers();
+        screen.drawScreen(mouseX, mouseY, renderPartialTicks);
 
-            for (Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
-                Buffers b = entry.getValue();
-                ResourceLocation texture = entry.getKey();
-                NovaNative.INSTANCE.send_gui_buffer_command(b.toNativeCommand(texture));
-            }
+        for (Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
+            Buffers b = entry.getValue();
+            ResourceLocation texture = entry.getKey();
+            long timeWithAlloc = System.nanoTime();
+            NovaNative.mc_gui_send_buffer_command command = b.toNativeCommand(texture);
+            long timePrev = System.nanoTime();
+            NovaNative.INSTANCE.send_gui_buffer_command(command);
+            long end = System.nanoTime();
+            LOG.info("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
+            Memory.purge();
         }
+
+
     }
 
     public static class Vertex {
         // Position
         public float x;
         public float y;
-        public float z;
 
         // Texture coordinate
         public float u;
@@ -186,22 +206,13 @@ public class NovaDraw {
         public float b;
         public float a;
 
-        public Vertex(int x, int y, float u, float v) {
-            this(x, y, 0.5f, u, v);
-        }
-
-        private Vertex(float x, float y, float z, float u, float v) {
-            this(x, y, z, u, v, new Color(1.0f, 1.0f, 1.0f));
-        }
-
-        public Vertex(float x, float y, float z, float u, float v, Color color) {
+        public Vertex(float x, float y, float u, float v, Color color) {
             if(color == null) {
                 color = new Color(255, 255, 255);
             }
 
             this.x = x;
             this.y = y;
-            this.z = z;
             this.u = u;
             this.v = v;
             this.r = (float)color.getRed() / 255.f;

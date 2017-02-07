@@ -24,7 +24,7 @@ namespace nova {
 
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
+        
         glBindTexture(GL_TEXTURE_2D, (GLuint) previous_texture);
     }
 

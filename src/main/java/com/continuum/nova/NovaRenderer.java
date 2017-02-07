@@ -1,7 +1,9 @@
 package com.continuum.nova;
 
+import com.continuum.nova.input.Mouse;
 import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.NovaNative.window_size;
+import com.continuum.nova.gui.NovaDraw;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -68,7 +70,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
         this.resourceManager = resourceManager;
 
-        if(firstLoad) {
+        if (firstLoad) {
             firstLoad = false;
         }
 
@@ -88,17 +90,17 @@ public class NovaRenderer implements IResourceManagerReloadListener {
      * @param resourceManager
      */
     private void addFreeTextures(IResourceManager resourceManager) {
-        for(ResourceLocation loc : FREE_TEXTURES) {
+        for (ResourceLocation loc : FREE_TEXTURES) {
             try {
                 IResource texture = resourceManager.getResource(loc);
                 BufferedInputStream in = new BufferedInputStream(texture.getInputStream());
                 BufferedImage image = ImageIO.read(in);
-                if(image != null) {
+                if (image != null) {
                     loadTexture(loc, image);
                 } else {
                     LOG.error("Free texture " + loc + " has no data!");
                 }
-            } catch(IOException e) {
+            } catch (IOException e) {
                 LOG.error("Could not load free texture " + loc, e);
             }
         }
@@ -130,7 +132,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         NovaNative.INSTANCE.add_texture(atlasTexture);
 
-        for(TextureAtlasSprite sprite : spriteLocations.values()) {
+        for (TextureAtlasSprite sprite : spriteLocations.values()) {
             NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
                     sprite.getIconName(),
                     sprite.getMinU(),
@@ -148,24 +150,24 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private NovaNative.mc_atlas_texture getFullImage(int atlasWidth, int atlasHeight, Collection<TextureAtlasSprite> sprites) {
         byte[] imageData = new byte[atlasWidth * atlasHeight * 4];
 
-        for(TextureAtlasSprite sprite : sprites) {
+        for (TextureAtlasSprite sprite : sprites) {
             LOG.debug("Looking at sprite " + sprite.getIconName());
             int startY = sprite.getOriginY() * atlasWidth * 4;
             int startPos = sprite.getOriginX() * 4 + startY;
 
             int[] data = sprite.getFrameTextureData(0)[0];
-            for(int y = 0; y < sprite.getIconHeight(); y++) {
-                for(int x = 0; x < sprite.getIconWidth(); x++) {
+            for (int y = 0; y < sprite.getIconHeight(); y++) {
+                for (int x = 0; x < sprite.getIconWidth(); x++) {
                     // Reverse the order of the color channels
                     int pixel = data[y * sprite.getIconWidth() + x];
 
-                    byte red    = (byte)( pixel        & 0xFF);
-                    byte green  = (byte)((pixel >>  8) & 0xFF);
-                    byte blue   = (byte)((pixel >> 16) & 0xFF);
-                    byte alpha  = (byte)((pixel >> 24) & 0xFF);
+                    byte red = (byte) (pixel & 0xFF);
+                    byte green = (byte) ((pixel >> 8) & 0xFF);
+                    byte blue = (byte) ((pixel >> 16) & 0xFF);
+                    byte alpha = (byte) ((pixel >> 24) & 0xFF);
 
                     int imageDataBasePos = startPos + x * 4 + y * atlasWidth * 4;
-                    imageData[imageDataBasePos]     = blue;
+                    imageData[imageDataBasePos] = blue;
                     imageData[imageDataBasePos + 1] = green;
                     imageData[imageDataBasePos + 2] = red;
                     imageData[imageDataBasePos + 3] = alpha;
@@ -185,23 +187,23 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         AtlasGenerator gen = new AtlasGenerator();
         List<AtlasGenerator.ImageName> images = new ArrayList<>();
 
-        for(ResourceLocation textureLocation : locations) {
+        for (ResourceLocation textureLocation : locations) {
             try {
                 IResource texture = resourceManager.getResource(textureLocation);
                 BufferedInputStream in = new BufferedInputStream(texture.getInputStream());
                 BufferedImage image = ImageIO.read(in);
 
-                if(image != null) {
+                if (image != null) {
                     images.add(new AtlasGenerator.ImageName(image, textureLocation.toString()));
                 }
-            } catch(IOException e) {
+            } catch (IOException e) {
                 LOG.warn("IOException when loading texture " + textureLocation.toString(), e);
             }
         }
 
         List<AtlasGenerator.Texture> atlases = gen.Run(maxAtlasSize, maxAtlasSize, 0, images);
 
-        for(AtlasGenerator.Texture texture : atlases) {
+        for (AtlasGenerator.Texture texture : atlases) {
             try {
                 BufferedImage image = texture.getImage();
 
@@ -217,7 +219,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                 NovaNative.INSTANCE.add_texture(atlasTex);
                 Map<String, Rectangle> rectangleMap = texture.getRectangleMap();
 
-                for(String texName : rectangleMap.keySet()) {
+                for (String texName : rectangleMap.keySet()) {
                     Rectangle rect = rectangleMap.get(texName);
                     NovaNative.mc_texture_atlas_location atlasLoc = new NovaNative.mc_texture_atlas_location(
                             texName,
@@ -228,25 +230,32 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     );
                     NovaNative.INSTANCE.add_texture_location(atlasLoc);
                 }
-            } catch(AtlasGenerator.Texture.WrongNumComponentsException e) {
+            } catch (AtlasGenerator.Texture.WrongNumComponentsException e) {
                 LOG.error("Could not process a texture", e);
             }
         }
     }
 
     private byte[] getImageData(BufferedImage image) {
-        byte[] imageData = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-        for(int i = 0; i < imageData.length; i += 4) {
-            byte a = imageData[i];
-            byte b = imageData[i + 1];
-            byte g = imageData[i + 2];
-            byte r = imageData[i + 3];
-            imageData[i] = r;
-            imageData[i + 1] = g;
-            imageData[i + 2] = b;
-            imageData[i + 3] = a;
-        }
-        return imageData;
+
+        byte[] convertedImageData = new byte[image.getWidth()*image.getHeight()*4];
+            int counter = 0;
+            for (int y = 0; y < image.getHeight(); y ++) {
+                    for (int x = 0;x<image.getWidth();x++) {
+
+                        Color c = new Color(image.getRGB(x,y),image.getColorModel().hasAlpha());
+
+                        convertedImageData[counter] =(byte) (c.getRed());
+                        convertedImageData[counter + 1] = (byte)(c.getGreen());
+                        convertedImageData[counter + 2] = (byte)(c.getBlue());
+                        convertedImageData[counter + 3] = (byte) (image.getColorModel().getNumComponents() == 3 ? 255 : c.getAlpha());
+                        counter+=4;
+                    }
+            }
+            return convertedImageData;
+
+
+
     }
 
     public void preInit() {
@@ -259,11 +268,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         updateWindowSize();
     }
 
-    private void updateWindowSize(){
+    private void updateWindowSize() {
         window_size size = NovaNative.INSTANCE.get_window_size();
         int oldHeight = height;
         int oldWidth = width;
-        if (oldHeight != size.height || oldWidth != size.width){
+        if (oldHeight != size.height || oldWidth != size.width) {
             resized = true;
         } else {
             resized = false;
@@ -273,26 +282,33 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     }
 
-    public int getHeight(){
+    public int getHeight() {
         return height;
     }
 
-    public int getWidth(){
+    public int getWidth() {
         return width;
     }
 
-    public boolean wasResized(){
+    public boolean wasResized() {
         return resized;
     }
 
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
-        if(NovaNative.INSTANCE.should_close()) {
+        if (NovaNative.INSTANCE.should_close()) {
             Minecraft.getMinecraft().shutdown();
         }
+
+        if (Minecraft.getMinecraft().currentScreen != null) {
+
+            NovaDraw.novaDrawScreen(Minecraft.getMinecraft().currentScreen, renderPartialTicks);
+
+        }
+
         NovaNative.INSTANCE.execute_frame();
         updateWindowSize();
-        int scalefactor = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor()*2;
-        if (scalefactor!=this.scalefactor) {
+        int scalefactor = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor() * 2;
+        if (scalefactor != this.scalefactor) {
             NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
             this.scalefactor = scalefactor;
         }
@@ -303,7 +319,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/book"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/demo_background"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/icons"));
-        GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/options_background"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/resource_packs"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/server_selection"));
         GUI_ALBEDO_TEXTURES_LOCATIONS.add(new ResourceLocation("gui/spectator_widgets"));
@@ -967,19 +982,20 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void initFreeTextures() {
         FREE_TEXTURES.add(new ResourceLocation("textures/misc/unknown_server.png"));
+        FREE_TEXTURES.add(new ResourceLocation("textures/gui/options_background.png"));
     }
 
     public static String atlasTextureOfSprite(ResourceLocation texture) {
-        ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png","").replace("textures/",""));
+        ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
 
         LOG.info("Need to get atlas that " + strippedLocation + " is in");
-        if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+        if (TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the terrain");
             return NovaNative.BLOCK_COLOR_ATLAS_NAME;
-        } else if(GUI_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+        } else if (GUI_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
             LOG.info("It's in the gui");
             return NovaNative.GUI_ATLAS_NAME;
-        } else if(FONT_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+        } else if (FONT_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the font");
             return NovaNative.FONT_ATLAS_NAME;
         }
@@ -992,10 +1008,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
      * Loads the specified texture, adding it to Minecraft as a texture outside of an atlas
      *
      * @param location The location of the texture
-     * @param image The texture itself
+     * @param image    The texture itself
      */
     public void loadTexture(ResourceLocation location, BufferedImage image) {
-        if(resourceManager == null) {
+        if (resourceManager == null) {
             LOG.error("Trying to load texture " + location + " but there's no resource manager");
             return;
         }
