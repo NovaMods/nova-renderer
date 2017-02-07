@@ -301,8 +301,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         if (Minecraft.getMinecraft().currentScreen != null) {
 
+            NovaDraw.novaDrawScreen(Minecraft.getMinecraft().currentScreen, renderPartialTicks);
+
         }
-        NovaDraw.novaDrawScreen(Minecraft.getMinecraft().currentScreen, renderPartialTicks);
 
         NovaNative.INSTANCE.execute_frame();
         updateWindowSize();
@@ -991,7 +992,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         if (TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the terrain");
             return NovaNative.BLOCK_COLOR_ATLAS_NAME;
-        } else if (GUI_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+        } else if (GUI_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
             LOG.info("It's in the gui");
             return NovaNative.GUI_ATLAS_NAME;
         } else if (FONT_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {

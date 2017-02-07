@@ -11,7 +11,6 @@ public interface NovaNative extends Library {
     String GUI_ATLAS_NAME = "gui";
     String BLOCK_COLOR_ATLAS_NAME = "block_color";
     String FONT_ATLAS_NAME = "font";
-    String OPTIONS_BACKGROUND = "options_background";
 
     class mc_atlas_texture extends Structure {
         public int width;
