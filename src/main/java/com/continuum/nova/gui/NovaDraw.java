@@ -111,26 +111,26 @@ public class NovaDraw {
      * @param texWidth  texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      * @param texHeight texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      */
-    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, float z, Rectangle2D.Float textureCoords,Color vertexColor) {
+    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords,Color vertexColor) {
         Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
         Vertex[] vertices = new Vertex[]{
                 new Vertex(
-                        rect.x, rect.y, z,
+                        rect.x, rect.y,
                         textureCoords.x, textureCoords.y,
 						vertexColor
                 ),
                 new Vertex(
-                        rect.x + rect.width, rect.y, z,
+                        rect.x + rect.width, rect.y,
                         textureCoords.x + textureCoords.width, textureCoords.y,
 						vertexColor
                 ),
                 new Vertex(
-                        rect.x, rect.y + rect.height, z,
+                        rect.x, rect.y + rect.height,
                         textureCoords.x, textureCoords.y + textureCoords.height,
 						vertexColor
                 ),
                 new Vertex(
-                        rect.x + rect.width, rect.y + rect.height, z,
+                        rect.x + rect.width, rect.y + rect.height,
                         textureCoords.x + textureCoords.width, textureCoords.y + textureCoords.height,
 						vertexColor
                 )
@@ -140,11 +140,7 @@ public class NovaDraw {
     }
 
     public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords) {
-        drawRectangle(texture, rect, 0.5f, textureCoords,Color.white);
-    }
-
-     public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords,Color vertexColor) {
-        drawRectangle(texture, rect, 0.5f, textureCoords,vertexColor);
+        drawRectangle(texture, rect, textureCoords,Color.white);
     }
 
     /**
@@ -199,7 +195,6 @@ public class NovaDraw {
         // Position
         public float x;
         public float y;
-        public float z;
 
         // Texture coordinate
         public float u;
@@ -211,22 +206,13 @@ public class NovaDraw {
         public float b;
         public float a;
 
-        public Vertex(int x, int y, float u, float v) {
-            this(x, y, 0.5f, u, v);
-        }
-
-        private Vertex(float x, float y, float z, float u, float v) {
-            this(x, y, z, u, v, new Color(1.0f, 1.0f, 1.0f));
-        }
-
-        public Vertex(float x, float y, float z, float u, float v, Color color) {
+        public Vertex(float x, float y, float u, float v, Color color) {
             if(color == null) {
                 color = new Color(255, 255, 255);
             }
 
             this.x = x;
             this.y = y;
-            this.z = z;
             this.u = u;
             this.v = v;
             this.r = (float)color.getRed() / 255.f;
