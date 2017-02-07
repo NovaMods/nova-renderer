@@ -37,8 +37,9 @@ namespace nova {
         locations.clear();
     }
 
-    void texture_manager::add_texture(mc_atlas_texture &new_texture, texture_type data_type) {
-        LOG(DEBUG) << "Creating a Texture2D for the " << data_type.to_string() << " atlas";
+    void texture_manager::add_texture(mc_atlas_texture &new_texture) {
+        std::string texture_name = new_texture.name;
+        LOG(DEBUG) << "Creating a Texture2D for the " << texture_name << " atlas";
         texture2D texture;
 
         LOG(DEBUG) << "Converting the pixel data to a float";
@@ -75,9 +76,9 @@ namespace nova {
         texture.set_data(pixel_data, dimensions, format);
         LOG(DEBUG) << "Texture data sent to GPU";
 
-        atlases[data_type] = texture;
+        atlases[texture_name] = texture;
         LOG(DEBUG) << "Texture added to atlas";
-        LOG(DEBUG) << "Texture atlas " << data_type.to_string() << " is OpenGL texture " << texture.get_gl_name();
+        LOG(DEBUG) << "Texture atlas " << texture_name << " is OpenGL texture " << texture.get_gl_name();
     }
 
     void texture_manager::add_texture_location(mc_texture_atlas_location &location) {
@@ -90,12 +91,20 @@ namespace nova {
     }
 
 
-    const texture_manager::texture_location &texture_manager::get_texture_location(const std::string &texture_name) {
-        return locations[texture_name];
+    const texture_manager::texture_location texture_manager::get_texture_location(const std::string &texture_name) {
+        // If we haven't explicitly added a texture location for this texture, let's just assume that the texture isn't
+        // in an atlas and thus covers the whole (0 - 1) UV space
+
+        if(locations.find(texture_name) != locations.end()) {
+            return locations[texture_name];
+
+        } else {
+            return {{0, 0}, {1, 1}};
+        }
     }
 
-    texture2D &texture_manager::get_texture_atlas(texture_type type) {
-        return atlases[type];
+    texture2D &texture_manager::get_texture(std::string texture_name) {
+        return atlases[texture_name];
     }
 
     int texture_manager::get_max_texture_size() {

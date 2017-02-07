@@ -7,7 +7,7 @@
 #define RENDERER_TEXTURE_RECEIVER_H
 
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include "../../../mc_interface/mc_objects.h"
@@ -42,47 +42,6 @@ namespace nova {
      */
     class texture_manager {
     public:
-        /*!
-         * \brief Identifies which atlas a texture is
-         *
-         *  | 0 | GUI |
-         *  | 1 | assets/minecraft/textures/gui/options_background.png |
-         *  | 2 | Font |
-         *  | 3 | Terrain Color |
-         *  | 4 | Terrain Normalmap |
-         *  | 5 | Terrain Data |
-         *  | 6 | Entities Color |
-         *  | 7 | Entities Normalmap |
-         *  | 8 | Entities Data |
-         *  | 9 | Items |
-         *  | 10 | World Data |
-         *  | 11 | Particles |
-         *  | 12 | Weather |
-         *  | 13 | Sky |
-         *  | 14 | assets/minecraft/textures/environment/end_sky.png |
-         *  | 15 | assets/minecraft/textures/environment/clouds.png |
-         */
-        SMART_ENUM(
-                texture_type,
-                gui,
-                options_background,
-                font,
-                terrain_color,
-                terrain_normalmap,
-                terrain_data,
-                entities_color,
-                entities_normalmap,
-                entities_data,
-                items,
-                world_data,
-                particles,
-                weather,
-                sky,
-                end_sky,
-                clouds,
-                no_texture
-        )
-
         /*!
          * \brief Tells you the min/max UV coordinates of a texture in an atlas
          *
@@ -123,9 +82,8 @@ namespace nova {
          * is called. Then it's put into an atlas
          *
          * \param new_texture The new texture
-         * \param data_type The type of texture we're dealing with
          */
-        void add_texture(mc_atlas_texture &new_texture, texture_type data_type);
+        void add_texture(mc_atlas_texture &new_texture);
 
         /*!
          * \brief Adds the given texture location to the list of texture locations
@@ -141,16 +99,15 @@ namespace nova {
          * exact MC name of the texture
          * \return The location of the requested texture
          */
-        const texture_location &get_texture_location(const std::string &texture_name);
+        const texture_location get_texture_location(const std::string &texture_name);
 
         /*!
          * \brief Returns a pointer to the specified atlas
          *
-         * \param atlas The type of atlas to get
-         * \param type The type of data that should be in the atlas
+         * \param texture_name The name of the texture to get
          * \return A pointer to the atlas texture
          */
-        texture2D &get_texture_atlas(texture_type type);
+        texture2D &get_texture(std::string texture_name);
 
         /*!
          * \brief Returns the maximum texture size supported by OpenGL on the current platform
@@ -162,13 +119,13 @@ namespace nova {
         int get_max_texture_size();
 
     private:
-        std::map<texture_type, texture2D> atlases;
+        std::unordered_map<std::string, texture2D> atlases;
 
         /*!
          * \brief A map from the name of a texture according to Minecraft and the UV coordinates it takes up in its
          * texture atlas
          */
-        std::map<std::string, texture_location> locations;
+        std::unordered_map<std::string, texture_location> locations;
 
         int max_texture_size = -1;
     };

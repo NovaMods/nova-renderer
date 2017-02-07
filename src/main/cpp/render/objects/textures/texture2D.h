@@ -75,9 +75,9 @@ namespace nova {
          * \param dimensions An array of the dimensions in this texture. For a texture2D that array MUST have two elements
          * \param format The format of the texture data
          */
-        virtual void set_data(std::vector<float> &pixel_data, std::vector<int> &dimensions, GLenum format);
+        void set_data(std::vector<float> &pixel_data, std::vector<int> &dimensions, GLenum format);
 
-        virtual void set_filtering_parameters(texture_filtering_params &params);
+        void set_filtering_parameters(texture_filtering_params &params);
 
         /*!
          * \brief Returns the width of this texture

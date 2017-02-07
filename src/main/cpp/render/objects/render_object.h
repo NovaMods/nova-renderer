@@ -76,11 +76,9 @@ namespace nova {
 
         std::unique_ptr<gl_mesh> geometry;
 
-        texture_manager::texture_type color_texture;
-        std::experimental::optional<texture_manager::texture_type> normalmap;
-        std::experimental::optional<texture_manager::texture_type> data_texture;
-
-        //render_object(render_object&& other);
+        std::string color_texture;
+        std::experimental::optional<std::string> normalmap;
+        std::experimental::optional<std::string> data_texture;
     };
 }
 
