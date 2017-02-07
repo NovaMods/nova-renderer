@@ -1,6 +1,7 @@
 package com.continuum.nova.input;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import com.continuum.nova.NovaNative;
@@ -23,6 +24,7 @@ public class Mouse {
     private static boolean hasWheel;
     private static String[] buttonName;
     private static final Map<String, Integer> buttonMap = new HashMap(16);
+    private static final HashSet<Integer> buttonDownBuffer = new HashSet<>();
     private static boolean initialized;
     private static int eventButton;
     private static boolean eventState;
@@ -89,7 +91,7 @@ public class Mouse {
 
 
     public static boolean isButtonDown(int button) {
-        return false;
+        return buttonDownBuffer.contains(button);
     }
 
     public static String getButtonName(int button) {
@@ -109,6 +111,12 @@ public class Mouse {
             return false;
         }
         if (e.filled == 1){
+            if (e.action ==1){
+                buttonDownBuffer.add(e.button);
+
+            } else{
+                buttonDownBuffer.remove(e.button);
+            }
             eventButton = e.button;
             eventState = e.action == 1;
             LogManager.getRootLogger().info("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
