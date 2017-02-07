@@ -18,6 +18,7 @@ struct mc_atlas_texture {
     int height;
     int num_components;
     unsigned char * texture_data;
+	const char * name;
 };
 
 /*!
@@ -78,7 +79,7 @@ struct mc_gui_send_buffer_command {
 	int vertex_buffer_size;
 	int* index_buffer;
     float* vertex_buffer;
-	int texture_atlas;	//!< The texture atlas to use when rendering this object
+	const char* atlas_name;
 };
 
 /*!

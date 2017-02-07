@@ -31,11 +31,8 @@ NOVA_API void initialize() {
     nova_renderer::init();
 }
 
-NOVA_API void add_texture(mc_atlas_texture & texture, int texture_type) {
-    TEXTURE_MANAGER.add_texture(
-            texture,
-            nova::texture_manager::texture_type::all_values()[texture_type]
-    );
+NOVA_API void add_texture(mc_atlas_texture & texture) {
+    TEXTURE_MANAGER.add_texture(texture);
 }
 
 NOVA_API void reset_texture_manager() {
