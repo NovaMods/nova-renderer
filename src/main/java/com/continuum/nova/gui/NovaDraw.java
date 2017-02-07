@@ -11,6 +11,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 import java.util.List;
 
@@ -99,31 +100,31 @@ public class NovaDraw {
      * @param texWidth  texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      * @param texHeight texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      */
-    public static void drawRectangle(ResourceLocation texture, int x, int y, float z, int width, int height, float texX, float texY, float texWidth, float texHeight) {
+    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, float z, Rectangle2D.Float textureCoords) {
         Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
         Vertex[] vertices = new Vertex[]{
                 new Vertex(
-                        x, y, z,
-                        texX, texY
+                        rect.x, rect.y, z,
+                        textureCoords.x, textureCoords.y
                 ),
                 new Vertex(
-                        x + width, y, z,
-                        texX + texWidth, texY
+                        rect.x + rect.width, rect.y, z,
+                        textureCoords.x + textureCoords.width, textureCoords.y
                 ),
                 new Vertex(
-                        x, y + height, z,
-                        texX, texY + texHeight
+                        rect.x, rect.y + rect.height, z,
+                        textureCoords.x, textureCoords.y + textureCoords.height
                 ),
                 new Vertex(
-                        x + width, y + height, z,
-                        texX + texWidth, texY + texHeight
+                        rect.x + rect.width, rect.y + rect.height, z,
+                        textureCoords.x + textureCoords.width, textureCoords.y + textureCoords.height
                 )
         };
         draw(texture, indexBuffer, vertices);
     }
 
-    public static void drawRectangle(ResourceLocation texture, int x, int y, int width, int height, float texX, float texY, float texWidth, float texHeight) {
-        drawRectangle(texture, x, y, 0.5f, width, height, texX, texY, texWidth, texHeight);
+    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords) {
+        drawRectangle(texture, rect, 0.5f, textureCoords);
     }
 
 
