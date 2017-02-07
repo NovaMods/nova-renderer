@@ -24,6 +24,11 @@ public class NovaDraw {
     static HashMap<ResourceLocation, Buffers> buffers = new HashMap<>();
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
+
+    private static final float zIncrement = 0.0001f;
+
+    private static float currentZ;
+
     /**
      * private constructor cause this class only has static things
      */
@@ -32,6 +37,7 @@ public class NovaDraw {
     private static void clearBuffers() {
         buffers.clear();
         NovaNative.INSTANCE.clear_gui_buffers();
+        currentZ = 0.9999f;
     }
 
     public static int getMouseX() {
@@ -57,6 +63,10 @@ public class NovaDraw {
         }
     }
 
+    public static void incrementZ(){
+        currentZ = Math.max(currentZ - zIncrement, 0);
+    }
+
     /**
      * Add data to the indexBuffer and vertexBuffer which is associated with the specified texture.
      *
@@ -65,11 +75,12 @@ public class NovaDraw {
      * @param vertices    the vertices as Vertex objects
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Vertex[] vertices) {
+
         Float[] vertexbuffer = new Float[vertices.length * 9];
         for (int v = 0; v < vertices.length; v++) {
             vertexbuffer[v * 9] = vertices[v].x;
             vertexbuffer[v * 9 + 1] = vertices[v].y;
-            vertexbuffer[v * 9 + 2] = vertices[v].z;
+            vertexbuffer[v * 9 + 2] = currentZ;
             vertexbuffer[v * 9 + 3] = vertices[v].u;
             vertexbuffer[v * 9 + 4] = vertices[v].v;
             vertexbuffer[v * 9 + 5] = vertices[v].r;
@@ -177,7 +188,7 @@ public class NovaDraw {
             NovaNative.INSTANCE.send_gui_buffer_command(command);
             long end = System.nanoTime();
             LOG.info("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
-
+            Memory.purge();
         }
 
 

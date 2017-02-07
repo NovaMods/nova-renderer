@@ -111,6 +111,8 @@ NOVA_API struct mouse_button_event  get_next_mouse_button_event();
 
 NOVA_API struct mouse_position_event  get_next_mouse_position_event();
 
+NOVA_API struct mouse_scroll_event  get_next_mouse_scroll_event();
+
 NOVA_API struct key_press_event  get_next_key_press_event();
 
 NOVA_API struct key_char_event  get_next_key_char_event();

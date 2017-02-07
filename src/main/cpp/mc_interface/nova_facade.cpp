@@ -97,6 +97,10 @@ NOVA_API struct mouse_position_event  get_next_mouse_position_event() {
 	return INPUT_HANDLER.dequeue_mouse_position_event();
 }
 
+NOVA_API struct mouse_scroll_event  get_next_mouse_scroll_event() {
+    return INPUT_HANDLER.dequeue_mouse_scroll_event();
+}
+
 NOVA_API struct key_press_event get_next_key_press_event()
 {
 	return INPUT_HANDLER.dequeue_key_press_event();

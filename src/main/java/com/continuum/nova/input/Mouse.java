@@ -6,6 +6,8 @@ import java.util.Map;
 import com.continuum.nova.NovaNative;
 import com.continuum.nova.NovaNative.mouse_button_event;
 import com.continuum.nova.NovaNative.mouse_position_event;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class Mouse {
@@ -102,13 +104,14 @@ public class Mouse {
     public static boolean next() {
         mouse_button_event e = NovaNative.INSTANCE.get_next_mouse_button_event();
         mouse_position_event p = NovaNative.INSTANCE.get_next_mouse_position_event();
-        if (e.filled == 0 && p.filled==0){
+        NovaNative.mouse_scroll_event s = NovaNative.INSTANCE.get_next_mouse_scroll_event();
+        if (e.filled == 0 && p.filled==0 && s.filled == 0){
             return false;
         }
         if (e.filled == 1){
             eventButton = e.button;
             eventState = e.action == 1;
-            System.out.println("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
+            LogManager.getRootLogger().info("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
 
         }else{
             eventButton = -1;
@@ -119,6 +122,12 @@ public class Mouse {
             dy += p.ypos -event_y;
             event_x = p.xpos;
             event_y = p.ypos;
+        }
+        if(s.filled == 1){
+            event_dwheel = (int )s.yoffset;
+            LogManager.getRootLogger().info("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
+        }else{
+            event_dwheel = 0;
         }
         return true;
     }

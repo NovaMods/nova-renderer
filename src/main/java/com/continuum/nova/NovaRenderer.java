@@ -91,12 +91,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         addFontAtlas(resourceManager);
     }
 
-    private void addBlockAtlas(@Nonnull IResourceManager resourceManager) {
+  /*  private void addBlockAtlas(@Nonnull IResourceManager resourceManager) {
         addAtlas(resourceManager, blockAtlas, TERRAIN_ALBEDO_TEXTURES_LOCATIONS, blockSpriteLocations, NovaNative.TextureType.TERRAIN_COLOR);
-    }
+    }*/
 
     private void addBackgroundAtlas(@Nonnull IResourceManager resourceManager) {
-        addAtlas(resourceManager, backgroundAtlas, BACKGROUND_ALBEDO_TEXTURES_LOCATIONS, backgroundSpriteLocations, NovaNative.TextureType.OPTIONS_BACKGROUND);
+        addAtlas(resourceManager, backgroundAtlas, BACKGROUND_ALBEDO_TEXTURES_LOCATIONS, backgroundSpriteLocations, NovaNative.OPTIONS_BACKGROUND);
         LOG.debug("Created Background atlas");
     }
 
@@ -976,7 +976,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.info("Need to get atlas that " + strippedLocation + " is in");
         if (BACKGROUND_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the terrain");
-            return NovaNative.TextureType.OPTIONS_BACKGROUND;
+            return NovaNative.OPTIONS_BACKGROUND;
         }else if(TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             LOG.info("It's in the terrain");
             return NovaNative.BLOCK_COLOR_ATLAS_NAME;

@@ -157,6 +157,8 @@ namespace nova {
 
 	void mouse_position_callback(GLFWwindow *window, double xpos, double ypos);
 
+    void mouse_scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
+
 	class input_handler {
 	public:
 		input_handler();
@@ -165,6 +167,8 @@ namespace nova {
 		struct mouse_button_event dequeue_mouse_button_event();
 		void queue_mouse_position_event(struct mouse_position_event  e);
 		struct mouse_position_event dequeue_mouse_position_event();
+        void queue_mouse_scroll_event(struct mouse_scroll_event  e);
+        struct mouse_scroll_event dequeue_mouse_scroll_event();
 
 		void queue_key_press_event(struct key_press_event  e);
 		struct key_press_event dequeue_key_press_event();
@@ -175,8 +179,10 @@ namespace nova {
 		std::unordered_map<int, lwjgl_keycodes> keymap;
 		std::queue<struct mouse_button_event> mouse_button_event_queue;
 		std::queue<struct mouse_position_event> mouse_position_event_queue;
+        std::queue<struct mouse_scroll_event> mouse_scroll_event_queue;
 		std::mutex lock_button;
 		std::mutex lock_position;
+        std::mutex lock_scroll;
 
 		std::queue<struct key_press_event> key_press_event_queue;
 		std::queue<struct key_char_event> key_char_event_queue;
