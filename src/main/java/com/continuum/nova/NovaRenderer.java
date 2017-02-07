@@ -243,7 +243,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             for (int y = 0; y < image.getHeight(); y ++) {
                     for (int x = 0;x<image.getWidth();x++) {
 
-                        Color c = new Color(image.getRGB(x,y));
+                        Color c = new Color(image.getRGB(x,y),image.getColorModel().hasAlpha());
 
                         convertedImageData[counter] =(byte) (c.getRed());
                         convertedImageData[counter + 1] = (byte)(c.getGreen());
