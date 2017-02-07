@@ -15,8 +15,8 @@ namespace nova {
 
     gl_mesh::gl_mesh(mesh_definition &definition) {
         create();
-        set_data(definition.vertex_data, definition.vertex_format, usage::dynamic_draw);
-        set_index_array(definition.indices, usage::dynamic_draw);
+        set_data(definition.vertex_data, definition.vertex_format, usage::static_draw);
+        set_index_array(definition.indices, usage::static_draw);
     }
 
     gl_mesh::~gl_mesh() {
