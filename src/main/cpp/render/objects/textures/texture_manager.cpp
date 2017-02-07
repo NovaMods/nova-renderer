@@ -91,8 +91,16 @@ namespace nova {
     }
 
 
-    const texture_manager::texture_location &texture_manager::get_texture_location(const std::string &texture_name) {
-        return locations[texture_name];
+    const texture_manager::texture_location texture_manager::get_texture_location(const std::string &texture_name) {
+        // If we haven't explicitly added a texture location for this texture, let's just assume that the texture isn't
+        // in an atlas and thus covers the whole (0 - 1) UV space
+
+        if(locations.find(texture_name) != locations.end()) {
+            return locations[texture_name];
+
+        } else {
+            return {{0, 0}, {1, 1}};
+        }
     }
 
     texture2D &texture_manager::get_texture(std::string texture_name) {

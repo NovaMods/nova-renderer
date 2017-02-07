@@ -43,47 +43,6 @@ namespace nova {
     class texture_manager {
     public:
         /*!
-         * \brief Identifies which atlas a texture is
-         *
-         *  | 0 | GUI |
-         *  | 1 | assets/minecraft/textures/gui/options_background.png |
-         *  | 2 | Font |
-         *  | 3 | Terrain Color |
-         *  | 4 | Terrain Normalmap |
-         *  | 5 | Terrain Data |
-         *  | 6 | Entities Color |
-         *  | 7 | Entities Normalmap |
-         *  | 8 | Entities Data |
-         *  | 9 | Items |
-         *  | 10 | World Data |
-         *  | 11 | Particles |
-         *  | 12 | Weather |
-         *  | 13 | Sky |
-         *  | 14 | assets/minecraft/textures/environment/end_sky.png |
-         *  | 15 | assets/minecraft/textures/environment/clouds.png |
-         */
-        SMART_ENUM(
-                texture_type,
-                gui,
-                options_background,
-                font,
-                terrain_color,
-                terrain_normalmap,
-                terrain_data,
-                entities_color,
-                entities_normalmap,
-                entities_data,
-                items,
-                world_data,
-                particles,
-                weather,
-                sky,
-                end_sky,
-                clouds,
-                no_texture
-        )
-
-        /*!
          * \brief Tells you the min/max UV coordinates of a texture in an atlas
          *
          * The name of the texture in the atlas is used as a key in a hash map
@@ -140,7 +99,7 @@ namespace nova {
          * exact MC name of the texture
          * \return The location of the requested texture
          */
-        const texture_location &get_texture_location(const std::string &texture_name);
+        const texture_location get_texture_location(const std::string &texture_name);
 
         /*!
          * \brief Returns a pointer to the specified atlas
