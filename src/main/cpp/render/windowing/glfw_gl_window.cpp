@@ -63,6 +63,7 @@ namespace nova {
 		glfwSetCharCallback(window, key_character_callback);
 		glfwSetMouseButtonCallback(window, mouse_button_callback);
 		glfwSetCursorPosCallback(window, mouse_position_callback);
+        glfwSetScrollCallback(window, mouse_scroll_callback);
 		glfwSwapInterval(0);
 		
 		return 0;

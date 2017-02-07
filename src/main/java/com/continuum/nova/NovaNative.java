@@ -11,6 +11,7 @@ public interface NovaNative extends Library {
     String GUI_ATLAS_NAME = "gui";
     String BLOCK_COLOR_ATLAS_NAME = "block_color";
     String FONT_ATLAS_NAME = "font";
+    String OPTIONS_BACKGROUND = "options_background";
 
     class mc_atlas_texture extends Structure {
         public int width;
@@ -173,6 +174,16 @@ public interface NovaNative extends Library {
         }
     }
 
+    class mouse_scroll_event extends Structure implements Structure.ByValue {
+        public double xoffset;
+        public double yoffset;
+        public int filled;
+        @Override
+        protected List<String> getFieldOrder() {
+            return Arrays.asList("xoffset", "yoffset","filled");
+        }
+    }
+
     class key_press_event extends Structure implements Structure.ByValue {
         public int key;
         public int scancode;
@@ -245,6 +256,8 @@ public interface NovaNative extends Library {
     mouse_button_event get_next_mouse_button_event();
 
     mouse_position_event get_next_mouse_position_event();
+
+    mouse_scroll_event get_next_mouse_scroll_event();
 
     key_press_event get_next_key_press_event();
 

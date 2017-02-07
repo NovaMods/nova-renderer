@@ -21,6 +21,9 @@ namespace nova {
 		nova_renderer::instance->get_input_handler().queue_mouse_position_event({(int)xpos,(int) nova_renderer::instance->get_game_window().get_size().y-(int) ypos,1 });
 	}
 
+    void mouse_scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+        nova_renderer::instance->get_input_handler().queue_mouse_scroll_event({ xoffset,yoffset,1 });
+    }
 
 	input_handler::input_handler() {
 		create_keymap();
@@ -58,6 +61,21 @@ namespace nova {
 		}
 		return { 0,0,0 };
 	}
+
+    void input_handler::queue_mouse_scroll_event(struct mouse_scroll_event e) {
+        std::lock_guard<std::mutex> lock_guard(lock_scroll);
+        mouse_scroll_event_queue.push(e);
+    };
+
+    struct mouse_scroll_event input_handler::dequeue_mouse_scroll_event() {
+        std::lock_guard<std::mutex> lock_guard(lock_scroll);
+        if(mouse_scroll_event_queue.size() != 0) {
+            struct mouse_scroll_event e = mouse_scroll_event_queue.front();
+            mouse_scroll_event_queue.pop();
+            return e;
+        }
+        return { 0,0,0 };
+    }
 
 	void input_handler::queue_key_press_event(key_press_event e)
 	{
