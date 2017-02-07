@@ -111,7 +111,7 @@ public class NovaDraw {
      * @param texWidth  texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      * @param texHeight texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      */
-    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, float z, Rectangle2D.Float textureCoords,color vertexColor) {
+    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, float z, Rectangle2D.Float textureCoords,Color vertexColor) {
         Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
         Vertex[] vertices = new Vertex[]{
                 new Vertex(
@@ -143,7 +143,7 @@ public class NovaDraw {
         drawRectangle(texture, rect, 0.5f, textureCoords,Color.white);
     }
 
-     public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords,color vertexColor) {
+     public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords,Color vertexColor) {
         drawRectangle(texture, rect, 0.5f, textureCoords,vertexColor);
     }
 
