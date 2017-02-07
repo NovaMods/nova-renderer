@@ -79,8 +79,6 @@ namespace nova {
         std::string color_texture;
         std::experimental::optional<std::string> normalmap;
         std::experimental::optional<std::string> data_texture;
-
-        //render_object(render_object&& other);
     };
 }
 
