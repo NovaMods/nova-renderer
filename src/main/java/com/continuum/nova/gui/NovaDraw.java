@@ -5,6 +5,8 @@ import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.input.Mouse;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
+import glm.mat._4.Mat4;
+import glm.vec._4.Vec4;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
@@ -29,6 +31,9 @@ public class NovaDraw {
     private static final float zIncrement = 0.0001f;
 
     private static float currentZ;
+
+    private static Mat4 ModelMatrix = new Mat4();
+
 
     /**
      * private constructor cause this class only has static things
@@ -79,9 +84,12 @@ public class NovaDraw {
 
         Float[] vertexbuffer = new Float[vertices.length * 9];
         for (int v = 0; v < vertices.length; v++) {
-            vertexbuffer[v * 9] = vertices[v].x;
-            vertexbuffer[v * 9 + 1] = vertices[v].y;
-            vertexbuffer[v * 9 + 2] = currentZ;
+
+            Vec4 transformedVertex = ModelMatrix.mul(new Vec4(vertices[v].x,vertices[v].y,currentZ,1));
+
+            vertexbuffer[v * 9] = transformedVertex.x;
+            vertexbuffer[v * 9 + 1] = transformedVertex.y;
+            vertexbuffer[v * 9 + 2] = transformedVertex.z;
             vertexbuffer[v * 9 + 3] = vertices[v].u;
             vertexbuffer[v * 9 + 4] = vertices[v].v;
             vertexbuffer[v * 9 + 5] = vertices[v].r;
@@ -91,6 +99,22 @@ public class NovaDraw {
         }
 
         draw(texture,indexBuffer,vertexbuffer);
+    }
+
+    public static void translate( float x,float y,float z) {
+        ModelMatrix = ModelMatrix.translate(x,y,z);
+    }
+
+    public static void rotate(float deg, boolean x,boolean y,boolean z){
+        ModelMatrix = ModelMatrix.rotate((float) Math.toRadians(deg),x ? 1 : 0,y ? 1 : 0,z ? 1 : 0);
+    }
+
+    public static void scale( float x,float y,float z){
+        ModelMatrix = ModelMatrix.scale(x,y,z);
+    }
+
+    public static void resetMatrix(){
+        ModelMatrix = new Mat4();
     }
 
     /**
