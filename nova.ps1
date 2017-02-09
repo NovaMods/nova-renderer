@@ -266,7 +266,7 @@ function Invoke-Nova {
 
 function New-Patches {
     Set-Location src\main\java\net
-    git diff origin/minecraft-1.10-mcp > ..\..\..\..\patches\nova.patch 
+    git diff -U0 origin/minecraft-1.10-mcp > ..\..\..\..\patches\nova.patch
 }
 
 ################################################################################
