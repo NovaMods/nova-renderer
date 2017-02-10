@@ -126,14 +126,6 @@ public class NovaDraw {
      * but they can be converted by dividing them by 256.
      *
      * @param texture   the texture
-     * @param x         screen coordinates in pixel
-     * @param y         screen coordinates in pixel
-     * @param width     screen coordinates in pixel
-     * @param height    screen coordinates in pixel
-     * @param texX      texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
-     * @param texY      texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
-     * @param texWidth  texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
-     * @param texHeight texture / UV coordinates, relative to the original minecraft textures (not the texture atlas)
      */
     public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords,Color vertexColor) {
         Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
@@ -208,7 +200,7 @@ public class NovaDraw {
             long timePrev = System.nanoTime();
             NovaNative.INSTANCE.send_gui_buffer_command(command);
             long end = System.nanoTime();
-            LOG.info("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
+            //LOG.trace("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
             Memory.purge();
         }
 

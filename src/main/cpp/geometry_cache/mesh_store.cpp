@@ -43,7 +43,6 @@ namespace nova {
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
         texture_name = "minecraft:" + texture_name;
-        LOG(DEBUG) << "Recieved GUI buffer with texture " << texture_name;
         const texture_manager::texture_location tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(texture_name);
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 

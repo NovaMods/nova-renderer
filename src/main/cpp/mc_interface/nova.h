@@ -63,9 +63,16 @@ NOVA_API void execute_frame();
  * needs to be made aware of any window events. This function, and a couple others, poll the native code for any new
  * window events. This one triggers if the user decides to close Nova's renderer
  *
- * \return Trus if the window should close, false otherwise
+ * \return True if the window should close, false otherwise
  */
 NOVA_API bool should_close();
+
+/*!
+ * \brief Checks if the window has focus
+ *
+ * \return True if the GLFW window is active, false otherwise
+ */
+NOVA_API bool display_is_active();
 
 NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command);
 

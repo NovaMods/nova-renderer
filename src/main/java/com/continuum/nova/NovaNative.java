@@ -271,4 +271,6 @@ public interface NovaNative extends Library {
     void set_float_setting(String setting_name, float setting_value);
 
     void set_fullscreen(int fullscreen);
+
+    boolean display_is_active();
 }

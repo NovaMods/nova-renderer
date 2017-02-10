@@ -318,19 +318,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public static String atlasTextureOfSprite(ResourceLocation texture) {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
 
-        LOG.info("Need to get atlas that " + strippedLocation + " is in");
         if (TERRAIN_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
-            LOG.info("It's in the terrain");
             return NovaNative.BLOCK_COLOR_ATLAS_NAME;
         } else if (GUI_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
-            LOG.info("It's in the gui");
             return NovaNative.GUI_ATLAS_NAME;
         } else if (FONT_ALBEDO_TEXTURES_LOCATIONS.contains(strippedLocation)) {
-            LOG.info("It's in the font");
             return NovaNative.FONT_ATLAS_NAME;
         }
 
-        LOG.info("Texture " + strippedLocation + " requested, but it's not in at atlas that Nova knows about");
         return texture.toString();
     }
 

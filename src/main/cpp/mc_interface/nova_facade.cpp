@@ -63,6 +63,10 @@ NOVA_API bool should_close() {
     return nova_renderer::instance->should_end();
 }
 
+NOVA_API bool display_is_active() {
+    return nova_renderer::instance->get_game_window().is_active();
+}
+
 NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command) {
     nova_renderer::instance->get_mesh_store().add_gui_buffers(command);
 }

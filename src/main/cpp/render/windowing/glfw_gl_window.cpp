@@ -13,7 +13,13 @@ namespace nova {
         LOG(ERROR) << "Error " << error << ": " << description;
     }
 
-    
+    void window_focus_callback(GLFWwindow *window, int focused) {
+        LOG(DEBUG) << "Is the window active? " << focused;
+        glfw_gl_window::setActive((bool) focused);
+    }
+
+    bool glfw_gl_window::active;
+
     glfw_gl_window::glfw_gl_window() {
         initialize_logging();
 
@@ -64,6 +70,7 @@ namespace nova {
 		glfwSetMouseButtonCallback(window, mouse_button_callback);
 		glfwSetCursorPosCallback(window, mouse_position_callback);
         glfwSetScrollCallback(window, mouse_scroll_callback);
+        glfwSetWindowFocusCallback(window, window_focus_callback);
 		glfwSwapInterval(0);
 		
 		return 0;
@@ -137,8 +144,6 @@ namespace nova {
         }
     }
 
-    
-
     void glfw_gl_window::set_framebuffer_size(glm::ivec2 new_framebuffer_size) {
         nlohmann::json &settings = nova_renderer::instance->get_render_settings().get_options();
         settings["settings"]["viewWidth"] = new_framebuffer_size.x;
@@ -150,10 +155,16 @@ namespace nova {
 
     void glfw_gl_window::on_config_change(nlohmann::json &new_config) {
         LOG(INFO) << "gl_glfw_window received the updated config";
-        //glfwSetWindowSize(window, new_config["viewWidth"], new_config["viewHeight"]);
     }
 
     void glfw_gl_window::on_config_loaded(nlohmann::json &config) {
-		//glfwSetWindowSize(window, config["viewWidth"], config["viewHeight"]);
+    }
+
+    bool glfw_gl_window::is_active() {
+        return active;
+    }
+
+    void glfw_gl_window::setActive(bool active) {
+        glfw_gl_window::active = active;
     }
 }
