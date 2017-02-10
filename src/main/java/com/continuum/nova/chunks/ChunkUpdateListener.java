@@ -1,5 +1,6 @@
 package com.continuum.nova.chunks;
 
+import com.continuum.nova.NovaNative;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -39,12 +40,21 @@ public class ChunkUpdateListener implements IWorldEventListener {
         int xDist = x2 - x1 + 1;
         int yDist = y2 - y1 + 1;
         int zDist = z2 - z1 + 1;
-        Block[][][] blocks = new Block[xDist][yDist][zDist];
+        NovaNative.mc_chunk chunk = new NovaNative.mc_chunk();
+
         for(int x = x1; x <= x2; x++) {
             for(int y = y1; y <= y2; y++) {
                 for(int z = z1; z <= z2; z++) {
+                    int chunkX = x - x1;
+                    int chunkY = y - y1;
+                    int chunkZ = z - z1;
                     IBlockState blockState = world.getBlockState(new BlockPos(x, y, z));
-                    blocks[x - x1][y - y1][z - z1] = blockState.getBlock();
+
+                    NovaNative.mc_block nativeBlock = new NovaNative.mc_block();
+                    nativeBlock.block_id = Block.getIdFromBlock(blockState.getBlock());
+                    nativeBlock.is_on_fire = false;
+
+                    chunk.blocks[(chunkX + chunkY * 16) + chunkZ * 256] = nativeBlock;
                 }
             }
         }

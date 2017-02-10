@@ -75,7 +75,7 @@ public interface NovaNative extends Library {
         public long chunk_id;
 
         public boolean is_dirty;
-        public mc_block[] blocks = new mc_block[16 * 16 * 16];
+        public mc_block[] blocks = new mc_block[16 * 256 * 16];
 
         @Override
         public List<String> getFieldOrder() {
@@ -248,9 +248,13 @@ public interface NovaNative extends Library {
 
     void reset_texture_manager();
 
+    void add_chunk(mc_chunk chunk);
+
     boolean should_close();
 
     void send_gui_buffer_command(mc_gui_send_buffer_command command);
+
+    void clear_gui_buffers();
 
     mouse_button_event get_next_mouse_button_event();
 
@@ -262,15 +266,14 @@ public interface NovaNative extends Library {
 
     key_char_event get_next_key_char_event();
 
-    void clear_gui_buffers();
-
     window_size get_window_size();
+
+    void set_fullscreen(int fullscreen);
+
+    boolean display_is_active();
 
     void set_string_setting(String setting,String value);
 
     void set_float_setting(String setting_name, float setting_value);
 
-    void set_fullscreen(int fullscreen);
-
-    boolean display_is_active();
 }
