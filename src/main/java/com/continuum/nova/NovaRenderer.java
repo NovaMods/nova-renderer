@@ -1,6 +1,7 @@
 package com.continuum.nova;
 
 import com.continuum.nova.NovaNative.window_size;
+import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.gui.NovaDraw;
 import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.utils.Utils;
@@ -13,6 +14,7 @@ import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.IChunkProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,6 +60,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private IResourceManager resourceManager;
 
     private World world;
+
+    private ChunkUpdateListener chunkUpdateListener = new ChunkUpdateListener();
 
     public NovaRenderer() {
         // I put these in Utils to make this class smaller
@@ -330,7 +334,17 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void setWorld(World world) {
-        this.world = world;
+        if(world != null) {
+            this.world = world;
+            chunkUpdateListener.setWorld(world);
+
+            this.world.addEventListener(chunkUpdateListener);
+            loadChunks();
+        }
+    }
+
+    private void loadChunks() {
+        IChunkProvider chunkProvider = world.getChunkProvider();
     }
 
     /**

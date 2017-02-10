@@ -14,7 +14,6 @@ namespace nova {
     }
 
     void window_focus_callback(GLFWwindow *window, int focused) {
-        LOG(DEBUG) << "Is the window active? " << focused;
         glfw_gl_window::setActive((bool) focused);
     }
 
