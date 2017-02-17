@@ -10,6 +10,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorldEventListener;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,6 +20,11 @@ import org.apache.logging.log4j.Logger;
 public class ChunkUpdateListener implements IWorldEventListener {
     private static final Logger LOG = LogManager.getLogger(ChunkUpdateListener.class);
     private World world;
+
+    private long timeSpendInBlockRenderUpdate = 0;
+    private int numRenderUpdateThings = 0;
+
+    private NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
 
     public void setWorld(World world) {
         this.world = world;
@@ -36,11 +42,13 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
-        LOG.debug("Marking blocks in range (" + x1 + ", " + y1 + ", " + z1 + ") to (" + x2 + ", " + y2 + ", " + z2 + ") for render update");
+        long startTime = System.currentTimeMillis();
+        LOG.info("Marking blocks in range (" + x1 + ", " + y1 + ", " + z1 + ") to (" + x2 + ", " + y2 + ", " + z2 + ") for render update");
         int xDist = x2 - x1 + 1;
         int yDist = y2 - y1 + 1;
         int zDist = z2 - z1 + 1;
-        NovaNative.mc_chunk chunk = new NovaNative.mc_chunk();
+
+        Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(x1, y1, z1));
 
         for(int x = x1; x <= x2; x++) {
             for(int y = y1; y <= y2; y++) {
@@ -48,16 +56,19 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     int chunkX = x - x1;
                     int chunkY = y - y1;
                     int chunkZ = z - z1;
-                    IBlockState blockState = world.getBlockState(new BlockPos(x, y, z));
 
-                    NovaNative.mc_block nativeBlock = new NovaNative.mc_block();
-                    nativeBlock.block_id = Block.getIdFromBlock(blockState.getBlock());
-                    nativeBlock.is_on_fire = false;
-
-                    chunk.blocks[(chunkX + chunkY * 16) + chunkZ * 256] = nativeBlock;
+                    IBlockState blockState = mcChunk.getBlockState(x, y, z);
+                    updateChunk.blocks[(chunkX + chunkY * 16) + chunkZ * 256].block_id = Block.getIdFromBlock(blockState.getBlock());
+                    updateChunk.blocks[(chunkX + chunkY * 16) + chunkZ * 256].is_on_fire = false;
                 }
             }
         }
+        long deltaTime = System.currentTimeMillis() - startTime;
+        LOG.info("It took " + deltaTime + " milliseconds to update a " + xDist + "x" + yDist + "x" + zDist + " block of blocks");
+        timeSpendInBlockRenderUpdate += deltaTime;
+        numRenderUpdateThings++;
+
+        LOG.info("That's an average of " + (double)timeSpendInBlockRenderUpdate / (double)numRenderUpdateThings + " milliseconds per update for " + numRenderUpdateThings + " updates!");
     }
 
     @Override

@@ -77,6 +77,14 @@ public interface NovaNative extends Library {
         public boolean is_dirty;
         public mc_block[] blocks = new mc_block[16 * 256 * 16];
 
+        public mc_chunk() {
+            super();
+
+            for(int i = 0; i < 16 * 256 * 16; i++) {
+                blocks[i] = new NovaNative.mc_block();
+            }
+        }
+
         @Override
         public List<String> getFieldOrder() {
             return Arrays.asList("chunk_id", "is_dirty", "blocks");

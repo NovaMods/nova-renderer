@@ -61,7 +61,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private World world;
 
-    private ChunkUpdateListener chunkUpdateListener = new ChunkUpdateListener();
+    private ChunkUpdateListener chunkUpdateListener;
 
     public NovaRenderer() {
         // I put these in Utils to make this class smaller
@@ -271,6 +271,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
         updateWindowSize();
+
+        // Moved here so that it's initialized after the native code is loaded
+        chunkUpdateListener  = new ChunkUpdateListener();
     }
 
     private void updateWindowSize() {
