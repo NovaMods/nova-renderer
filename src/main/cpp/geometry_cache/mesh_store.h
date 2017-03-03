@@ -29,6 +29,13 @@ namespace nova {
         void add_gui_buffers(mc_gui_send_buffer_command* command);
 
         /*!
+         * \brief Adds a chunk to the mesh store if the chunk doesn't exist, or replaces the chunks if it does exist
+         *
+         * \param chunk The chunk to add or update
+         */
+        void add_or_update_chunk(mc_chunk& chunk);
+
+        /*!
          * \brief Sets the shaderpack reference to the given shaderpack
          *
          * This object needs to keep a reference to the current shaderpack so that it can apply all the right filters
@@ -46,7 +53,6 @@ namespace nova {
          */
         std::vector<render_object>& get_meshes_for_shader(std::string shader_name);
 
-
         /*!
         * \brief Removes all gui render objects and thereby deletes all the buffers
         */
@@ -54,6 +60,7 @@ namespace nova {
 
     private:
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
+        std::vector<mc_chunk> all_chunks;
 
         shaderpack* shaders;
 
@@ -77,13 +84,10 @@ namespace nova {
         void remove_render_objects(std::function<bool(render_object&)> fitler);
 
         /*!
-         * \brief Determines if a given obejct matches a given geometry filter
-         *
-         * \param object The object to check the matching of
-         * \param filter The filter to check the object agains
-         * \return True if the object matches, false if not
+         * \brief Creates geometry for the given chunk and adds it to the list of geometry to render
+         * \param chunk The chunk to generate geometry for
          */
-        bool matches_filter(render_object& object, geometry_filter &filter);
+        void generate_chunk_geometry(const mc_chunk &chunk) const;
     };
 
 };

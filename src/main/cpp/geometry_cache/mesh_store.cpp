@@ -10,6 +10,7 @@
 #include <regex>
 #include "mesh_store.h"
 #include "../../../render/nova_renderer.h"
+#include "builders/chunk_builder.h"
 
 namespace nova {
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
@@ -104,53 +105,31 @@ namespace nova {
         }
     }
 
-    bool mesh_store::matches_filter(render_object& object, geometry_filter &filter) {
-        for(auto& name : filter.names) {
-            if(object.name == name) {
-                return true;
-            }
-        }
-
-        for(auto& name_part : filter.name_parts) {
-            if(object.name.find(name_part) != std::string::npos) {
-                return true;
-            }
-        }
-
-        bool matches = false;
-        bool matches_geometry_type = false;
-        for(auto& geom_type : filter.geometry_types) {
-            if(object.type == geom_type) {
-                matches_geometry_type = true;
-            }
-        }
-
-        matches |= matches_geometry_type;
-        if(filter.geometry_types.size() == 0) {
-            matches = true;
-        }
-
-        if(filter.should_be_solid) {
-            matches |= *filter.should_be_solid && object.is_solid;
-        }
-        if(filter.should_be_transparent) {
-            matches |= *filter.should_be_transparent && object.is_transparent;
-        }
-        if(filter.should_be_cutout) {
-            matches |= *filter.should_be_cutout && object.is_cutout;
-        }
-        if(filter.should_be_emissive) {
-            matches |= *filter.should_be_emissive&& object.is_emissive;
-        }
-        if(filter.should_be_damaged) {
-            matches |= *filter.should_be_damaged ? object.damage_level > 0 : object.damage_level == 0;
-        }
-
-        return matches;
-    }
-
     void mesh_store::set_shaderpack(shaderpack &new_shaderpack) {
         shaders = &new_shaderpack;
+
+        renderables_grouped_by_shader.clear();
+        for(auto& chunk : all_chunks) {
+            generate_chunk_geometry(chunk);
+        }
     }
 
+    void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
+        remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});
+
+        generate_chunk_geometry(chunk);
+
+        // Save the chunk so that we can re-parse it when we get a new shaderpack
+        std::remove_if(all_chunks.begin(), all_chunks.end(), [&](mc_chunk& chunk1) {return chunk.chunk_id == chunk1.chunk_id;});
+        all_chunks.push_back(chunk);
+    }
+
+    void mesh_store::generate_chunk_geometry(const mc_chunk &chunk) const {
+        auto render_objects_from_chunk = get_renderables_from_chunk(chunk, *shaders);
+        for(auto& item : render_objects_from_chunk) {
+            if(item.second) {
+                renderables_grouped_by_shader[item.first].push_back(*item.second);
+            }
+        }
+    }
 }

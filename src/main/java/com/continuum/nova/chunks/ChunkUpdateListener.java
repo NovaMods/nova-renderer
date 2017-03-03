@@ -57,6 +57,7 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     int chunkY = y - y1;
                     int chunkZ = z - z1;
                     int idx = (chunkX + chunkY * 16) + chunkZ * 256;
+
                     NovaNative.mc_block curBlock = updateChunk.blocks[idx];
 
                     IBlockState blockState = mcChunk.getBlockState(x, y, z);
@@ -68,6 +69,8 @@ public class ChunkUpdateListener implements IWorldEventListener {
                 }
             }
         }
+        NovaNative.INSTANCE.add_chunk(updateChunk);
+
         long deltaTime = System.currentTimeMillis() - startTime;
         LOG.info("It took " + deltaTime + " milliseconds to update a " + xDist + "x" + yDist + "x" + zDist + " block of blocks");
         timeSpendInBlockRenderUpdate += deltaTime;

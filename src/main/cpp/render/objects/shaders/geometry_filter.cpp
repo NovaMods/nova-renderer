@@ -84,5 +84,50 @@ namespace nova {
         if(!filter.should_be_emissive) filter.should_be_emissive = true;
         if(!filter.should_be_damaged) filter.should_be_damaged = true;
     }
+
+    bool matches_filter(render_object& object, geometry_filter &filter) {
+        for(auto& name : filter.names) {
+            if(object.name == name) {
+                return true;
+            }
+        }
+
+        for(auto& name_part : filter.name_parts) {
+            if(object.name.find(name_part) != std::string::npos) {
+                return true;
+            }
+        }
+
+        bool matches = false;
+        bool matches_geometry_type = false;
+        for(auto& geom_type : filter.geometry_types) {
+            if(object.type == geom_type) {
+                matches_geometry_type = true;
+            }
+        }
+
+        matches |= matches_geometry_type;
+        if(filter.geometry_types.size() == 0) {
+            matches = true;
+        }
+
+        if(filter.should_be_solid) {
+            matches |= *filter.should_be_solid && object.is_solid;
+        }
+        if(filter.should_be_transparent) {
+            matches |= *filter.should_be_transparent && object.is_transparent;
+        }
+        if(filter.should_be_cutout) {
+            matches |= *filter.should_be_cutout && object.is_cutout;
+        }
+        if(filter.should_be_emissive) {
+            matches |= *filter.should_be_emissive&& object.is_emissive;
+        }
+        if(filter.should_be_damaged) {
+            matches |= *filter.should_be_damaged ? object.damage_level > 0 : object.damage_level == 0;
+        }
+
+        return matches;
+    }
 }
 

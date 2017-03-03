@@ -36,17 +36,18 @@ struct mc_texture_atlas_location {
  * \brief Represents a block in Minecraft, along with any attributes it might have
  */
 struct mc_block {
+	int block_id;
     bool is_on_fire;
-    int block_id;
+	int light_value;
+	int light_opacity;
+	float ao;
 };
 
 /*!
- * \brief Represents a chunk in Minecraft. It's really just a large array of blocks and an ID so I don't have to rebuild
- * the geometry every frame
+ * \brief Represents a chunk in Minecraft. It's really just a large array of blocks and an ID
  */
 struct mc_chunk {
     long chunk_id;  //!< Unique identifier for the chunk
-    bool is_dirty;  //!< Has the chunk changed since it was last sent to Nova?
     mc_block blocks[16 * 16 * 16];  //!< All the blocks in the chunk
 };
 

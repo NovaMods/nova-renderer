@@ -118,6 +118,15 @@ namespace nova {
      * \brief Tells the given filter to reject all geometry attributes that aren't explicitly allowed
      */
     void reject_everything_else(geometry_filter &filter);
+
+    /*!
+     * \brief Determines if a given object matches a given geometry filter
+     *
+     * \param object The object to check the matching of
+     * \param filter The filter to check the object agains
+     * \return True if the object matches, false if not
+     */
+    bool matches_filter(render_object& object, geometry_filter &filter);
 }
 
 #endif

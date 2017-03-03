@@ -62,22 +62,21 @@ public interface NovaNative extends Library {
     }
 
     class mc_block extends Structure {
-        public boolean is_on_fire;
         public int block_id;
+        public boolean is_on_fire;
         public int light_value;
         public int light_opacity;
         public float ao;
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("is_on_fire", "block_id");
+            return Arrays.asList("block_id", "is_on_fire", "light_value", "light_opacity", "ao");
         }
     }
 
     class mc_chunk extends Structure {
         public long chunk_id;
 
-        public boolean is_dirty;
         public mc_block[] blocks = new mc_block[16 * 256 * 16];
 
         public mc_chunk() {
@@ -90,7 +89,7 @@ public interface NovaNative extends Library {
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("chunk_id", "is_dirty", "blocks");
+            return Arrays.asList("chunk_id", "blocks");
         }
     }
 

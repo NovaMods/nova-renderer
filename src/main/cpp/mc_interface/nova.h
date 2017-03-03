@@ -18,6 +18,10 @@ extern "C" {
  */
 NOVA_API void initialize();
 
+/**
+ * Textures
+ */
+
 /*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture
  *
@@ -50,6 +54,16 @@ NOVA_API int get_max_texture_size();
  * from a new resource pack
  */
 NOVA_API void reset_texture_manager();
+
+/*!
+ * \brief Adds a chunk to Minecraft, or updates an existing chunk
+ *
+ * Chunks are identified by their chunk ID. Nova maintains a mapping from chunk ID to render_objects for that chunk.
+ * This lets Nova clean out the geometry for an old chunk to make room for a new chunk
+ *
+ * \param chunk The chunk to add to Nova
+ */
+NOVA_API void add_chunk(mc_chunk & chunk);
 
 /*!
  * \brief Updates the Nova Renderer and renders the current frame
@@ -113,6 +127,11 @@ NOVA_API void set_string_setting(const char * setting_name, const char * setting
 * \param setting_value The desired value of the setting
 */
 NOVA_API void set_float_setting(const char * setting_name, float setting_value);
+
+
+/**
+ * Pass mouse and key events to Minecraft
+ */
 
 NOVA_API struct mouse_button_event  get_next_mouse_button_event();
 
