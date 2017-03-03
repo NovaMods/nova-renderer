@@ -59,8 +59,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private IResourceManager resourceManager;
 
-    private World world;
-
     private ChunkUpdateListener chunkUpdateListener;
 
     public NovaRenderer() {
@@ -338,16 +336,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void setWorld(World world) {
         if(world != null) {
-            this.world = world;
             chunkUpdateListener.setWorld(world);
-
-            this.world.addEventListener(chunkUpdateListener);
-            loadChunks();
+            world.addEventListener(chunkUpdateListener);
         }
-    }
-
-    private void loadChunks() {
-        IChunkProvider chunkProvider = world.getChunkProvider();
     }
 
     /**

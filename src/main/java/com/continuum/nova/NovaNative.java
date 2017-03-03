@@ -64,6 +64,9 @@ public interface NovaNative extends Library {
     class mc_block extends Structure {
         public boolean is_on_fire;
         public int block_id;
+        public int light_value;
+        public int light_opacity;
+        public float ao;
 
         @Override
         public List<String> getFieldOrder() {

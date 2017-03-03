@@ -56,10 +56,15 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     int chunkX = x - x1;
                     int chunkY = y - y1;
                     int chunkZ = z - z1;
+                    int idx = (chunkX + chunkY * 16) + chunkZ * 256;
+                    NovaNative.mc_block curBlock = updateChunk.blocks[idx];
 
                     IBlockState blockState = mcChunk.getBlockState(x, y, z);
-                    updateChunk.blocks[(chunkX + chunkY * 16) + chunkZ * 256].block_id = Block.getIdFromBlock(blockState.getBlock());
-                    updateChunk.blocks[(chunkX + chunkY * 16) + chunkZ * 256].is_on_fire = false;
+                    curBlock.block_id = Block.getIdFromBlock(blockState.getBlock());
+                    curBlock.is_on_fire = false;
+                    curBlock.light_value = blockState.getLightValue();
+                    curBlock.light_opacity = blockState.getLightOpacity();
+                    curBlock.ao = blockState.getAmbientOcclusionLightValue();
                 }
             }
         }
