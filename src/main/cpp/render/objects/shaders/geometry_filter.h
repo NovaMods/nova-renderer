@@ -20,7 +20,7 @@ namespace nova {
      *
      * Now there's a simple data structure. Data is much easier to debug. No more stupid crashes for me!
      *
-     * (i hope)
+     * (I hope)
      *
      * There's a precidence for these filters:
      *  - If one of the optional values isn't set, then it's ignored.
@@ -34,15 +34,6 @@ namespace nova {
      * need that, too bad.
      */
     struct geometry_filter {
-        /*!
-         * \brief Holds the functions used to modify a geometry_filter
-         *
-         * The idea here is that a list of filters will be provided in the shaders.json file. Each of those filters
-         * corresponds to either a function in this map, or a request to add a specific geometry_type, name, or
-         * name part to the filter.
-         */
-        static std::unordered_map<std::string, std::function<void(geometry_filter&)>> modifying_functions;
-
         std::vector<geometry_type> geometry_types;
 
         std::vector<std::string> names;
@@ -54,6 +45,31 @@ namespace nova {
         std::experimental::optional<bool> should_be_cutout;
         std::experimental::optional<bool> should_be_emissive;
         std::experimental::optional<bool> should_be_damaged;
+
+        /*!
+         * \brief Determines if a given object matches a given geometry filter
+         *
+         * \param object The object to check the matching of
+         * \return True if the object matches, false if not
+         */
+        bool matches_filter(render_object& object);
+
+        /*!
+         * \brief Determines if a given block matches this filter
+         * \param block The block to check for a match
+         * \return True if the block matches, false otherwise
+         */
+        bool matches_filter(mc_block& block);
+
+    private:
+        /*!
+         * \brief Holds the functions used to modify a geometry_filter
+         *
+         * The idea here is that a list of filters will be provided in the shaders.json file. Each of those filters
+         * corresponds to either a function in this map, or a request to add a specific geometry_type, name, or
+         * name part to the filter.
+         */
+        static const std::unordered_map<std::string, std::function<void(geometry_filter&)>> modifying_functions;
     };
 
     /*
@@ -118,15 +134,6 @@ namespace nova {
      * \brief Tells the given filter to reject all geometry attributes that aren't explicitly allowed
      */
     void reject_everything_else(geometry_filter &filter);
-
-    /*!
-     * \brief Determines if a given object matches a given geometry filter
-     *
-     * \param object The object to check the matching of
-     * \param filter The filter to check the object agains
-     * \return True if the object matches, false if not
-     */
-    bool matches_filter(render_object& object, geometry_filter &filter);
 }
 
 #endif

@@ -62,7 +62,7 @@ public interface NovaNative extends Library {
     }
 
     class mc_block extends Structure {
-        public int block_id;
+        public String name;
         public boolean is_on_fire;
         public int light_value;
         public int light_opacity;
@@ -70,7 +70,7 @@ public interface NovaNative extends Library {
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("block_id", "is_on_fire", "light_value", "light_opacity", "ao");
+            return Arrays.asList("name", "is_on_fire", "light_value", "light_opacity", "ao");
         }
     }
 

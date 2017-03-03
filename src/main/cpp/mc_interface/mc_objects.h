@@ -36,11 +36,27 @@ struct mc_texture_atlas_location {
  * \brief Represents a block in Minecraft, along with any attributes it might have
  */
 struct mc_block {
-	int block_id;
+	const char * name;
     bool is_on_fire;
 	int light_value;
 	int light_opacity;
 	float ao;
+
+    // TODO: get some kind of material ID or something sot hat MC can tell us which blocks are transparent/cutout/whatevs
+
+    /*!
+     * \brief Checks if the block is solid or not
+     *
+     * This method (and the other methods on mc_block) are not resourcepack-aware. If you make a resourcepack where
+     * water is solid, good for you, but this method won't care
+     *
+     * \return Trus if the block is solid, false otherwise
+     */
+    bool is_solid();
+
+    bool is_transparent();
+    bool is_cutout();
+    bool is_emissive();
 };
 
 /*!
