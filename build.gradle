@@ -64,6 +64,8 @@ dependencies {
 
     // JNA, for calling the C++ code
     compileOnly group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
+    
+    compile group: 'io.github.java-graphics', name: 'glm', version: '1.0.1'
 
     if (org.gradle.internal.os.OperatingSystem.current().isLinux()) {
         compileOnly files( 
@@ -112,8 +114,7 @@ dependencies {
             'jars/libraries/org/apache/logging/log4j/log4j-core/2.0-beta9/log4j-core-2.0-beta9.jar',
             'jars/libraries/org/lwjgl/lwjgl/lwjgl/2.9.4-nightly-20150209/lwjgl-2.9.4-nightly-20150209.jar',
             'jars/libraries/org/lwjgl/lwjgl/lwjgl_util/2.9.4-nightly-20150209/lwjgl_util-2.9.4-nightly-20150209.jar',
-            'jars/libraries/oshi-project/oshi-core/1.1/oshi-core-1.1.jar',
-			'jars/libraries/glm-1.0.1.jar'
+            'jars/libraries/oshi-project/oshi-core/1.1/oshi-core-1.1.jar'
         )
 
     // Declare the dependency for your favourite test framework you want to use in your tests.
