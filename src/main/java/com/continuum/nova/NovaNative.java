@@ -67,10 +67,12 @@ public interface NovaNative extends Library {
         public int light_value;
         public int light_opacity;
         public float ao;
+        public boolean is_opaque;
+        public boolean blocks_light;
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("name", "is_on_fire", "light_value", "light_opacity", "ao");
+            return Arrays.asList("name", "is_on_fire", "light_value", "light_opacity", "ao", "is_opaque", "blocks_light");
         }
     }
 

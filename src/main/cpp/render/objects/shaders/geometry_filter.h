@@ -40,11 +40,8 @@ namespace nova {
         std::vector<std::string> name_parts;
 
         // Using a third-party library because CMake doesn't (yet) support C++17 (probably, updating tool is hard)
-        std::experimental::optional<bool> should_be_solid;
         std::experimental::optional<bool> should_be_transparent;
-        std::experimental::optional<bool> should_be_cutout;
         std::experimental::optional<bool> should_be_emissive;
-        std::experimental::optional<bool> should_be_damaged;
 
         /*!
          * \brief Determines if a given object matches a given geometry filter
@@ -52,14 +49,14 @@ namespace nova {
          * \param object The object to check the matching of
          * \return True if the object matches, false if not
          */
-        bool matches_filter(render_object& object);
+        bool matches(render_object &object);
 
         /*!
          * \brief Determines if a given block matches this filter
          * \param block The block to check for a match
          * \return True if the block matches, false otherwise
          */
-        bool matches_filter(mc_block& block);
+        bool matches(mc_block &block);
 
     private:
         /*!
@@ -105,25 +102,13 @@ namespace nova {
 
     void accept_name_part(geometry_filter &filter, std::string &name_part);
 
-    void accept_solid(geometry_filter &filter);
-
-    void reject_solid(geometry_filter &filter);
-
     void accept_transparent(geometry_filter &filter);
 
     void reject_transparent(geometry_filter &filter);
 
-    void accept_cutout(geometry_filter &filter);
-
-    void reject_cutout(geometry_filter &filter);
-
     void accept_emissive(geometry_filter &filter);
 
     void reject_emissive(geometry_filter &filter);
-
-    void accept_damaged(geometry_filter &filter);
-
-    void reject_damaged(geometry_filter &filter);
 
     /*!
      * \brief Tells the given filter to accept all geometry attributes that aren't explicitly rejected

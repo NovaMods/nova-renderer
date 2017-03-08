@@ -2,6 +2,7 @@ package com.continuum.nova.chunks;
 
 import com.continuum.nova.NovaNative;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -61,12 +62,16 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     NovaNative.mc_block curBlock = updateChunk.blocks[idx];
 
                     IBlockState blockState = mcChunk.getBlockState(x, y, z);
+                    Block block = blockState.getBlock();
+                    Material material = blockState.getMaterial();
 
-                    curBlock.name = blockState.getBlock().getUnlocalizedName();
+                    curBlock.name = block.getUnlocalizedName();
                     curBlock.is_on_fire = false;
                     curBlock.light_value = blockState.getLightValue();
                     curBlock.light_opacity = blockState.getLightOpacity();
                     curBlock.ao = blockState.getAmbientOcclusionLightValue();
+                    curBlock.is_opaque = material.isOpaque();
+                    curBlock.blocks_light = material.blocksLight();
                 }
             }
         }

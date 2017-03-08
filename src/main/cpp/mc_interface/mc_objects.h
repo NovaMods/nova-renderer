@@ -41,8 +41,8 @@ struct mc_block {
 	int light_value;
 	int light_opacity;
 	float ao;
-
-    // TODO: get some kind of material ID or something sot hat MC can tell us which blocks are transparent/cutout/whatevs
+    bool is_opaque;
+    bool blocks_light;
 
     /*!
      * \brief Checks if the block is solid or not
@@ -52,10 +52,7 @@ struct mc_block {
      *
      * \return Trus if the block is solid, false otherwise
      */
-    bool is_solid();
-
     bool is_transparent();
-    bool is_cutout();
     bool is_emissive();
 };
 
