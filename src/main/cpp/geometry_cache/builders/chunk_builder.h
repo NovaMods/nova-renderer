@@ -28,7 +28,7 @@ namespace nova {
      * \param shaders The shaderpack that will be used to render this chunk
      * \return A map from name of shader to render_object made for that shader
      */
-    std::unordered_map<std::string, optional<render_object>> get_renderables_from_chunk(mc_chunk& chunk, shaderpack& shaders);
+    std::unordered_map<std::string, optional<render_object>> get_renderables_from_chunk(const mc_chunk& chunk, shaderpack& shaders);
 
     /*!
      * \brief Creates a render_object that matches the provided filter
@@ -38,7 +38,7 @@ namespace nova {
      * \return A render_object which holds all the geometry to be rendered by the provided filter, or an empty optional
      * if nothing matches the filter
      */
-    optional<render_object> build_render_object_for_shader(mc_chunk& chunk, geometry_filter filter);
+    optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, geometry_filter filter);
 
     /*!
      * \brief Finds the indices of all the blocks that match the provided filter, and returns those indices
@@ -58,7 +58,7 @@ namespace nova {
      * \param blocks The blocks to create a mesh from
      * \return The mesh that was created from the blocks
      */
-    mesh_definition make_mesh_for_blocks(std::vector<int> blocks, mc_chunk& chunk);
+    mesh_definition make_mesh_for_blocks(std::vector<int> blocks, const mc_chunk& chunk);
 }
 
 

@@ -2,7 +2,7 @@
 
 namespace nova {
     // CLion says these lines are an error. CLion is stupid
-    const std::unordered_map<std::string, std::function<void(geometry_filter&)>> geometry_filter::modifying_functions {
+    std::unordered_map<std::string, std::function<void(geometry_filter&)>> geometry_filter::modifying_functions {
             { "transparent", accept_transparent },
             { "not_transparent", reject_transparent },
             { "emissive", accept_emissive },
@@ -11,7 +11,7 @@ namespace nova {
             { "nothing_else", reject_everything_else }
     };
 
-    bool geometry_filter::matches(render_object &object) {
+    bool geometry_filter::matches(const render_object &object) {
         for(auto& name : names) {
             if(object.name == name) {
                 return true;
@@ -47,7 +47,7 @@ namespace nova {
         return matches;
     }
 
-    bool geometry_filter::matches(mc_block &block) {
+    bool geometry_filter::matches(const mc_block &block) {
         if(std::find_if(names.begin(), names.end(), [&](auto& name) {return name == block.name;}) != names.end()) {
             return true;
         }

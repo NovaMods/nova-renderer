@@ -126,6 +126,9 @@ set(NOVA_SOURCE
         render/objects/shaders/geometry_filter.cpp
 
         render/objects/shaders/uniform_buffers_definitions.cpp
+        geometry_cache/builders/chunk_builder.cpp
+
+        mc_interface/mc_objects.cpp
         )
 
 if (WIN32)
@@ -192,7 +195,6 @@ set(TEST_SOURCE_FILES
 
         test/model/loaders/shader_loading_test.cpp
         test/model/shaders/shader_facade_test.cpp
-        test/model/geometry_cache/builders/gui_geometry_builder_tests.cpp
         test/model/texture_manager_test.cpp
         test/model/shaders/gl_shader_program_test.cpp
         test/model/geometry_cache/mesh_store_test.cpp

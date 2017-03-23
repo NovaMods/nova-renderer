@@ -84,7 +84,8 @@ namespace nova {
 
     void mesh_store::remove_gui_render_objects() {
         for(auto& group : renderables_grouped_by_shader) {
-            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), [](auto& render_obj) {return render_obj.type == geometry_type::gui;});
+            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(),
+                                                   [](auto& render_obj) {return render_obj.type == geometry_type::gui;});
             group.second.erase(removed_elements, group.second.end());
         }
     }
@@ -93,7 +94,7 @@ namespace nova {
         auto& all_shaders = shaders->get_loaded_shaders();
         for(auto& entry : all_shaders) {
             auto& filter = entry.second.get_filter();
-            if(matches_filter(object, filter)) {
+            if(filter.matches(object)) {
                 renderables_grouped_by_shader[entry.first].push_back(std::move(object));
             }
         }
@@ -124,11 +125,11 @@ namespace nova {
         all_chunks.push_back(chunk);
     }
 
-    void mesh_store::generate_chunk_geometry(const mc_chunk &chunk) const {
+    void mesh_store::generate_chunk_geometry(mc_chunk &chunk) {
         auto render_objects_from_chunk = get_renderables_from_chunk(chunk, *shaders);
         for(auto& item : render_objects_from_chunk) {
             if(item.second) {
-                renderables_grouped_by_shader[item.first].push_back(*item.second);
+                renderables_grouped_by_shader[item.first].push_back(std::move(*item.second));
             }
         }
     }

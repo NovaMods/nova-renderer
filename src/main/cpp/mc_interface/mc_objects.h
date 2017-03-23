@@ -52,8 +52,8 @@ struct mc_block {
      *
      * \return Trus if the block is solid, false otherwise
      */
-    bool is_transparent();
-    bool is_emissive();
+    bool is_transparent() const;
+    bool is_emissive() const;
 };
 
 /*!

@@ -87,7 +87,7 @@ namespace nova {
          * \brief Creates geometry for the given chunk and adds it to the list of geometry to render
          * \param chunk The chunk to generate geometry for
          */
-        void generate_chunk_geometry(const mc_chunk &chunk) const;
+        void generate_chunk_geometry(mc_chunk &chunk);
     };
 
 };

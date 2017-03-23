@@ -34,6 +34,15 @@ namespace nova {
      * need that, too bad.
      */
     struct geometry_filter {
+        /*!
+         * \brief Holds the functions used to modify a geometry_filter
+         *
+         * The idea here is that a list of filters will be provided in the shaders.json file. Each of those filters
+         * corresponds to either a function in this map, or a request to add a specific geometry_type, name, or
+         * name part to the filter.
+         */
+        static std::unordered_map<std::string, std::function<void(geometry_filter&)>> modifying_functions;
+
         std::vector<geometry_type> geometry_types;
 
         std::vector<std::string> names;
@@ -49,24 +58,14 @@ namespace nova {
          * \param object The object to check the matching of
          * \return True if the object matches, false if not
          */
-        bool matches(render_object &object);
+        bool matches(const render_object &object);
 
         /*!
          * \brief Determines if a given block matches this filter
          * \param block The block to check for a match
          * \return True if the block matches, false otherwise
          */
-        bool matches(mc_block &block);
-
-    private:
-        /*!
-         * \brief Holds the functions used to modify a geometry_filter
-         *
-         * The idea here is that a list of filters will be provided in the shaders.json file. Each of those filters
-         * corresponds to either a function in this map, or a request to add a specific geometry_type, name, or
-         * name part to the filter.
-         */
-        static const std::unordered_map<std::string, std::function<void(geometry_filter&)>> modifying_functions;
+        bool matches(const mc_block &block);
     };
 
     /*

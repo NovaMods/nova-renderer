@@ -120,7 +120,7 @@ public class NovaDraw {
     /**
      * Add the vertices and indices for a rectangle.
      * <p>
-     * Minecrafts GUI classes frequently call "drawTexturedModalRect" to draw textured rectangles.
+     * Minecraft's GUI classes frequently call "drawTexturedModalRect" to draw textured rectangles.
      * These calls can be easily converted to calls to this function.
      * The only real difference is that minecraft uses texture coordinates in pixels and we use uv coordinates,
      * but they can be converted by dividing them by 256.
