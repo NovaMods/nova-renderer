@@ -58,14 +58,14 @@ namespace nova {
          * \param object The object to check the matching of
          * \return True if the object matches, false if not
          */
-        bool matches(const render_object &object);
+        bool matches(const render_object &object) const;
 
         /*!
          * \brief Determines if a given block matches this filter
          * \param block The block to check for a match
          * \return True if the block matches, false otherwise
          */
-        bool matches(const mc_block &block);
+        bool matches(const mc_block &block) const;
     };
 
     /*

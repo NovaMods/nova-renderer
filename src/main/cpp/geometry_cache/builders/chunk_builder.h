@@ -1,5 +1,7 @@
 /*!
- * \brief
+ * \brief Contains a bunch of functions to generate the geometry for a chunk
+ *
+ * Due to a quirk of this system, it'll generate faces at chunk boundaries for blocks other than air
  *
  * \author ddubois 
  * \date 02-Mar-17.
@@ -17,6 +19,21 @@
 using namespace std::experimental;
 
 namespace nova {
+    /*!
+     * \brief Contains all the data needed for a single vertex in a block
+     */
+    struct block_vertex {
+        glm::vec3 position;
+        glm::vec2 uv;
+        glm::vec2 lightmap_uv;
+        glm::vec3 normal;
+        glm::vec3 tangent;
+    };
+
+    const int CHUNK_WIDTH = 16;
+    const int CHUNK_HEIGHT = 256;
+    const int CHUNK_DEPTH = 16;
+
     /*!
      * \brief Builds all the render objects needed to render the provided chunk with the provided shaderpack
      *
@@ -38,27 +55,47 @@ namespace nova {
      * \return A render_object which holds all the geometry to be rendered by the provided filter, or an empty optional
      * if nothing matches the filter
      */
-    optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, geometry_filter filter);
+    optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, const geometry_filter& filter);
 
     /*!
      * \brief Finds the indices of all the blocks that match the provided filter, and returns those indices
      *
      * \param chunk The chunk to look at the blocks of
      * \param filter The filter to match blocks against
-     * \return A list of all the indices of blocks that match the filter
+     * \return A list of all the positions of blocks that match the filter
      */
-    std::vector<int> get_blocks_that_match_filter(const mc_chunk &chunk, geometry_filter &filter);
+    std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_chunk &chunk, const geometry_filter& filter);
 
     /*!
      * \brief Makes a mesh_definition for all the provided blocks
      *
-     * The created mesh doesn't have any information about AO. We need the whole chunk to calculate AO, so it's
-     * calculated in a later step. The mesh_definition has space for the AO information, though
+     * This function will generate block faces at the interface between chunks (it won't generate them if the chunk
+     * in question has an air block at its edge, obviously). This is because I look at chunks one at a time because
+     * it's easy
      *
      * \param blocks The blocks to create a mesh from
      * \return The mesh that was created from the blocks
      */
-    mesh_definition make_mesh_for_blocks(std::vector<int> blocks, const mc_chunk& chunk);
+    mesh_definition make_mesh_for_blocks(const std::vector<glm::ivec3>& blocks, const mc_chunk& chunk);
+
+    /*!
+     * \brief Helper function to convert from nice easy vec3 to position in the blocks array
+     *
+     * \param pos The position to convert
+     * \return The index in the block array that corresponds to the pos
+     */
+    int pos_to_idx(const glm::ivec3& pos);
+
+    /*!
+     * \brief Checks if the block at the given position in the provided chunk is a block you can see through, and thus
+     * if a face is needed for the interface between the current block and the block we're checking
+     *
+     * \param block_pos The index in the blocks array of the block to check
+     * \param chunk The chunk to check the blocks in
+     * \return True if the block at the provided position is not fully opaque or is not within the given chunk, false
+     * otherwise
+     */
+    bool get_if_block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk &chunk);
 }
 
 

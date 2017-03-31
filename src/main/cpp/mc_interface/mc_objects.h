@@ -50,7 +50,7 @@ struct mc_block {
      * This method (and the other methods on mc_block) are not resourcepack-aware. If you make a resourcepack where
      * water is solid, good for you, but this method won't care
      *
-     * \return Trus if the block is solid, false otherwise
+     * \return True if the block is solid, false otherwise
      */
     bool is_transparent() const;
     bool is_emissive() const;
@@ -62,6 +62,27 @@ struct mc_block {
 struct mc_chunk {
     long chunk_id;  //!< Unique identifier for the chunk
     mc_block blocks[16 * 16 * 16];  //!< All the blocks in the chunk
+};
+
+/*!
+ * \brief Represents a single quad in Minecraft
+ */
+struct mc_quad {
+	int *vertex_data;
+	int num_vertex_data;
+	int tint_index;
+	const char * facing_direction;
+	const char * icon_name;
+};
+
+/*!
+ * \brief Represents a simple model (i.e. a model with only one variant (I think))
+ */
+struct mc_simple_model {
+	mc_quad * quads;
+	int num_quads;
+	bool ambient_occlusion;
+	const char * particle_texture;
 };
 
 /*!

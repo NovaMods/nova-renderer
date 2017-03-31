@@ -26,6 +26,7 @@ using namespace nova;
 #define NOVA_RENDERER nova_renderer::instance
 #define TEXTURE_MANAGER NOVA_RENDERER->get_texture_manager()
 #define INPUT_HANDLER NOVA_RENDERER->get_input_handler()
+#define MESH_STORE NOVA_RENDERER->get_mesh_store()
 // runs in thread 5
 
 NOVA_API void initialize() {
@@ -49,7 +50,15 @@ NOVA_API int get_max_texture_size() {
 }
 
 NOVA_API void add_chunk(mc_chunk & chunk) {
-    NOVA_RENDERER->get_mesh_store().add_or_update_chunk(chunk);
+    MESH_STORE.add_or_update_chunk(chunk);
+}
+
+NOVA_API void register_simple_model(const char * model_name, mc_simple_model * model) {
+    MESH_STORE.register_simple_model(std::string(model_name), &model);
+}
+
+NOVA_API void deregister_model(const char * model_name) {
+    MESH_STORE.deregister_model(std::string(model_name));
 }
 
 NOVA_API void execute_frame() {

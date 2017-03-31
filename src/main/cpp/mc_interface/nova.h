@@ -66,6 +66,21 @@ NOVA_API void reset_texture_manager();
 NOVA_API void add_chunk(mc_chunk & chunk);
 
 /*!
+ * \brief Registers a simple model with Nova
+ *
+ * \param model_name The string name of the model
+ * \param model The geometry for the model
+ */
+NOVA_API void register_simple_model(const char * model_name, mc_simple_model * model);
+
+/*!
+ * \brief Removes a model from Nova
+ *
+ * \param model_name The name of the model to remove
+ */
+NOVA_API void deregister_model(const char * model_name);
+
+/*!
  * \brief Updates the Nova Renderer and renders the current frame
  */
 NOVA_API void execute_frame();

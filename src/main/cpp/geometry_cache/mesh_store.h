@@ -58,8 +58,24 @@ namespace nova {
         */
         void remove_gui_render_objects();
 
+        /*!
+         * \brief Registers a simple model for later use
+         *
+         * \param model_name The name of the model
+         * \param model The model
+         */
+        void register_simple_model(std::string model_name, mc_simple_model& model);
+
+        /*!
+         * \brief Deregisters a model from Nova
+         *
+         * \param model_name The name of the model to remove
+         */
+        void deregister_model(std::string model_name);
+
     private:
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
+        std::unordered_map<std::string, mesh_definition> simple_models;
         std::vector<mc_chunk> all_chunks;
 
         shaderpack* shaders;

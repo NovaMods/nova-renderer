@@ -1,9 +1,14 @@
 package com.continuum.nova;
 
 import com.sun.jna.*;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.SimpleBakedModel;
+import net.minecraft.util.EnumFacing;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public interface NovaNative extends Library {
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
@@ -95,6 +100,52 @@ public interface NovaNative extends Library {
         }
     }
 
+    class mc_quad extends Structure {
+        public int[] vertex_data;
+        int num_vertex_data;
+        public int tint_index;
+        public String facing_direction;
+        public String icon_name;
+
+        public mc_quad(BakedQuad quad) {
+            vertex_data = quad.getVertexData();
+            num_vertex_data = vertex_data.length;
+            tint_index = quad.getTintIndex();
+            facing_direction = quad.getFace().getName();
+            icon_name = quad.getSprite().getIconName();
+        }
+
+        @Override
+        public List<String> getFieldOrder() {
+            return Arrays.asList("vertex_data", "num_vertex_data", "tint_index", "facing_direction", "icon_name");
+        }
+    }
+
+    class mc_simple_model extends Structure {
+        public mc_quad[] quads;
+        int num_quads;
+        public boolean ambient_occlusion;
+        public String particle_texture;
+
+        public mc_simple_model(SimpleBakedModel model) {
+            List<BakedQuad> bakedQuads = new ArrayList<>();
+            for(EnumFacing facing : EnumFacing.values()) {
+                bakedQuads.addAll(model.getQuads(null, facing, 0));
+            }
+
+            quads = bakedQuads.stream().map(mc_quad::new).collect(Collectors.toList()).toArray(new mc_quad[]{});
+            num_quads = quads.length;
+
+            ambient_occlusion = model.isAmbientOcclusion();
+            particle_texture = model.getParticleTexture().getIconName();
+        }
+
+        @Override
+        public List<String> getFieldOrder() {
+            return Arrays.asList("quads", "num_quads", "ambient_occlusion", "particle_texture");
+        }
+    }
+
     class mc_render_world_params extends Structure {
         public double camera_x;
         public double camera_y;
@@ -160,7 +211,7 @@ public interface NovaNative extends Library {
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "sprite_name");
+            return Arrays.asList("particle_texture", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "sprite_name");
         }
     }
 
@@ -288,4 +339,7 @@ public interface NovaNative extends Library {
 
     void set_float_setting(String setting_name, float setting_value);
 
+    void register_simple_model(String model_name, mc_simple_model model);
+
+    void deregister_model(String model_name);
 }

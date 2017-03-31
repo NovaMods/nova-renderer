@@ -11,7 +11,7 @@ namespace nova {
             { "nothing_else", reject_everything_else }
     };
 
-    bool geometry_filter::matches(const render_object &object) {
+    bool geometry_filter::matches(const render_object &object) const {
         for(auto& name : names) {
             if(object.name == name) {
                 return true;
@@ -47,7 +47,7 @@ namespace nova {
         return matches;
     }
 
-    bool geometry_filter::matches(const mc_block &block) {
+    bool geometry_filter::matches(const mc_block &block) const {
         if(std::find_if(names.begin(), names.end(), [&](auto& name) {return name == block.name;}) != names.end()) {
             return true;
         }

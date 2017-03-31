@@ -133,4 +133,8 @@ namespace nova {
             }
         }
     }
+
+    void mesh_store::register_simple_model(std::string model_name, mc_simple_model &model) {
+
+    }
 }

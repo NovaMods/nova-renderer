@@ -5,13 +5,18 @@ import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.gui.NovaDraw;
 import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.utils.Utils;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.SimpleBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
@@ -361,5 +366,20 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         NovaNative.mc_texture_atlas_location loc = new NovaNative.mc_texture_atlas_location(location.toString(), 0, 0, 1, 1);
         NovaNative.INSTANCE.add_texture_location(loc);
+    }
+
+    /**
+     * Registers a static model with Nova, so that Nova can use it for drawing
+     *
+     * @param key The ResourceLocation which identifies this model
+     * @param model The model to register
+     */
+    public void registerStaticModel(ResourceLocation key, IBakedModel model) {
+        String modelName = key.toString();
+
+        if(model instanceof SimpleBakedModel) {
+            NovaNative.mc_simple_model mc_model = new NovaNative.mc_simple_model((SimpleBakedModel) model);
+            NovaNative.register_simple_model(key.toString(), mc_model);
+        }
     }
 }
