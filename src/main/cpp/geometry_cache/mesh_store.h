@@ -62,9 +62,9 @@ namespace nova {
          * \brief Registers a simple model for later use
          *
          * \param model_name The name of the model
-         * \param model The model
+         * \param mc_model The model
          */
-        void register_simple_model(std::string model_name, mc_simple_model& model);
+        void register_model(std::string model_name, mc_simple_model &mc_model);
 
         /*!
          * \brief Deregisters a model from Nova
@@ -104,6 +104,8 @@ namespace nova {
          * \param chunk The chunk to generate geometry for
          */
         void generate_chunk_geometry(mc_chunk &chunk);
+
+        mesh_definition make_mesh_from_mc_model(mc_simple_model &model);
     };
 
 };

@@ -71,8 +71,8 @@ namespace nova {
     /*
      * A bunch of functions to operate on a geometry filter
      *
-     * These are separate functions and not methods because this way, it's easier to map them to the values stored
-     * in the shaders.json file
+     * These are separate functions and not methods because this way, it's easier to map them to the values stored in
+     * the shaders.json file
      */
 
     void accept_block(geometry_filter &filter);

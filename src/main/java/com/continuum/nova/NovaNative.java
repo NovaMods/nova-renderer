@@ -101,7 +101,7 @@ public interface NovaNative extends Library {
     }
 
     class mc_quad extends Structure {
-        public int[] vertex_data;
+        public int[] vertex_data = new int[1];
         int num_vertex_data;
         public int tint_index;
         public String facing_direction;
@@ -113,7 +113,12 @@ public interface NovaNative extends Library {
             tint_index = quad.getTintIndex();
             facing_direction = quad.getFace().getName();
             icon_name = quad.getSprite().getIconName();
+
+            allocateMemory();
         }
+
+        // For JNA
+        public mc_quad() {}
 
         @Override
         public List<String> getFieldOrder() {
@@ -122,7 +127,7 @@ public interface NovaNative extends Library {
     }
 
     class mc_simple_model extends Structure {
-        public mc_quad[] quads;
+        public mc_quad[] quads = new mc_quad[1];
         int num_quads;
         public boolean ambient_occlusion;
         public String particle_texture;
@@ -138,6 +143,12 @@ public interface NovaNative extends Library {
 
             ambient_occlusion = model.isAmbientOcclusion();
             particle_texture = model.getParticleTexture().getIconName();
+
+            if(num_quads == 0) {
+                quads = new mc_quad[]{new mc_quad()};
+                num_quads = 1;
+                allocateMemory();
+            }
         }
 
         @Override

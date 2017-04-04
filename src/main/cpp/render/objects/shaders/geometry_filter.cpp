@@ -101,6 +101,13 @@ namespace nova {
         filter.should_be_transparent = false;
     }
 
+    void accept_emissive(geometry_filter &filter) {
+        filter.should_be_emissive = true;
+    }
+
+    void reject_emissive(geometry_filter &filter) {
+        filter.should_be_emissive = false;
+    }
 
     void accept_everything_else(geometry_filter &filter) {
         if(!filter.should_be_transparent) filter.should_be_transparent = false;

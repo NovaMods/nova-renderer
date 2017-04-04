@@ -44,7 +44,7 @@ public class ChunkUpdateListener implements IWorldEventListener {
     @Override
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
         long startTime = System.currentTimeMillis();
-        LOG.info("Marking blocks in range (" + x1 + ", " + y1 + ", " + z1 + ") to (" + x2 + ", " + y2 + ", " + z2 + ") for render update");
+        LOG.trace("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
         int xDist = x2 - x1 + 1;
         int yDist = y2 - y1 + 1;
         int zDist = z2 - z1 + 1;
@@ -78,11 +78,15 @@ public class ChunkUpdateListener implements IWorldEventListener {
         NovaNative.INSTANCE.add_chunk(updateChunk);
 
         long deltaTime = System.currentTimeMillis() - startTime;
-        LOG.info("It took " + deltaTime + " milliseconds to update a " + xDist + "x" + yDist + "x" + zDist + " block of blocks");
+        LOG.trace("It took {}ms to update a {}x{}x{} block of blocks", deltaTime, xDist, yDist, zDist);
         timeSpendInBlockRenderUpdate += deltaTime;
         numRenderUpdateThings++;
 
-        LOG.info("That's an average of " + (double)timeSpendInBlockRenderUpdate / (double)numRenderUpdateThings + " milliseconds per update for " + numRenderUpdateThings + " updates!");
+        if(numRenderUpdateThings % 10 == 0) {
+            LOG.info("That's an average of {} milliseconds per update for {} updates! (total time {}ms)",
+                    (double) timeSpendInBlockRenderUpdate / (double) numRenderUpdateThings, numRenderUpdateThings,
+                    timeSpendInBlockRenderUpdate);
+        }
     }
 
     @Override

@@ -375,11 +375,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
      * @param model The model to register
      */
     public void registerStaticModel(ResourceLocation key, IBakedModel model) {
-        String modelName = key.toString();
-
         if(model instanceof SimpleBakedModel) {
             NovaNative.mc_simple_model mc_model = new NovaNative.mc_simple_model((SimpleBakedModel) model);
-            NovaNative.register_simple_model(key.toString(), mc_model);
+            NovaNative.INSTANCE.register_simple_model(key.toString(), mc_model);
         }
     }
 }

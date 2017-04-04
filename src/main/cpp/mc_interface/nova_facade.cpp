@@ -54,7 +54,7 @@ NOVA_API void add_chunk(mc_chunk & chunk) {
 }
 
 NOVA_API void register_simple_model(const char * model_name, mc_simple_model * model) {
-    MESH_STORE.register_simple_model(std::string(model_name), &model);
+    MESH_STORE.register_model(std::string(model_name), *model);
 }
 
 NOVA_API void deregister_model(const char * model_name) {

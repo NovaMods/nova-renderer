@@ -134,7 +134,17 @@ namespace nova {
         }
     }
 
-    void mesh_store::register_simple_model(std::string model_name, mc_simple_model &model) {
+    void mesh_store::register_model(std::string model_name, mc_simple_model &mc_model) {
+        mesh_definition model = make_mesh_from_mc_model(mc_model);
+    }
 
+    mesh_definition mesh_store::make_mesh_from_mc_model(mc_simple_model &model) {
+        mesh_definition mesh;
+
+        return mesh;
+    }
+
+    void mesh_store::deregister_model(std::string model_name) {
+        simple_models.erase(model_name);
     }
 }

@@ -62,7 +62,7 @@ namespace nova {
             auto should_make_front_face = get_if_block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk);
             auto should_make_back_face = get_if_block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk);
         }
-        return nullptr;
+        return mesh_definition{};
     }
 
     bool get_if_block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk &chunk) {
