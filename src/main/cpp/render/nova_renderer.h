@@ -13,6 +13,8 @@
 #include "../geometry_cache/mesh_store.h"
 #include "objects/textures/texture_manager.h"
 #include "../input/InputHandler.h"
+#include "objects/framebuffer.h"
+
 namespace nova {
     /*!
      * \brief Initializes everything this mod needs, creating its own window
@@ -94,7 +96,7 @@ namespace nova {
 
         std::unique_ptr<glfw_gl_window> game_window;
 
-        std::experimental::optional<shaderpack> loaded_shaderpack;
+        std::shared_ptr<shaderpack> loaded_shaderpack;
 
         std::unique_ptr<texture_manager> textures;
 
@@ -104,6 +106,14 @@ namespace nova {
 
         std::unique_ptr<uniform_buffer_store> ubo_manager;
 
+        std::vector<GLuint> shadow_depth_textures;
+        std::vector<GLuint> gbuffer_depth_textures;
+
+        std::unique_ptr<framebuffer> shadow_framebuffer;
+        std::unique_ptr<framebuffer> main_framebuffer;
+
+        framebuffer_builder shadow_framebuffer_builder;
+        framebuffer_builder main_framebuffer_builder;
 
         /*!
          * \brief Renders the GUI of Minecraft
@@ -123,6 +133,15 @@ namespace nova {
         void init_opengl_state() const;
 
         void load_new_shaderpack(const std::string &new_shaderpack_name);
+
+        void create_framebuffers_from_shaderpack();
+
+        /*!
+         * \brief Renders all the geometry that uses the specified shader, setting up textures and whatnot
+         *
+         * \param shader The shader to render things with
+         */
+        void render_shader(gl_shader_program& shader);
     };
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos);

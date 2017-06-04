@@ -9,6 +9,7 @@
 #define RENDERER_MESH_DEFINITION_H
 
 #include <vector>
+#include <glm/glm.hpp>
 
 namespace nova {
     /*!

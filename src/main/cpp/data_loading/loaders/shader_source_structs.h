@@ -45,6 +45,11 @@ namespace nova {
         std::vector<shader_line> fragment_source;
         // TODO: Figure out how to handle geometry and tessellation shaders
 
+        /*!
+         * \brief The framebuffer attachments that this shader writes to
+         */
+        std::vector<unsigned int> drawbuffers;
+
         shader_definition(nlohmann::json &json) {
             name = json["name"];
 

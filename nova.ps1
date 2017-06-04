@@ -39,7 +39,7 @@
     Sets up Nova, downloading MCP and using that to decompile Minecraft. Also applies the source code transformations which integrate Nova with Minecraft
 
 .EXAMPLE
-    nova -build -compiler mingw
+    nova -build -buildEnvironment mingw
     Builds Nova, using the MinGW build environment to compile the native code
 
 .EXAMPLE
@@ -180,9 +180,11 @@ function New-MinGWNovaBuild {
 
         # MinGW is probably installed, let's assume it is
         cmake -G "MinGW Makefiles" ../../src/main/cpp
+        Write-Host "Generated build files"
 
         # Compile the code
         mingw32-make -f Makefile nova-renderer
+        Write-Host "Compiled code"
         Set-Location ..\..
 
     } else {
@@ -194,16 +196,18 @@ function New-MinGWNovaBuild {
 function New-VisualStudioBuild {
     <#
     .SYNOPSIS
-        Builds the C++ code in Nova, using Visual Studio 2015 to compile the code
+        Builds the C++ code in Nova, using Visual Studio 2017 to compile the code
     #>
 
     if(Test-Command -command "msbuild.exe") {
+        # TODO: Fix this to more intelligently get Visual Studio
+        $env:Path += ";E:\Program Files (x86)\Visual Studio 2017\VC\Tools\MSVC\14.10.25017\bin\HostX64\x64;E:\Program Files (x86)\Visual Studio 2017\MSBuild\15.0\Bin"
         # Visual Studio is probably installed, hopefully they have the correct version
         New-Item target -ItemType Directory >$null 2>&1
         New-Item target\cpp-msvc -ItemType Directory >$null 2>&1
         Set-Location target\cpp-msvc
         
-        cmake -G "Visual Studio 14 2015 Win64" ../../src/main/cpp
+        cmake -G "Visual Studio 15 2017 Win64" ../../src/main/cpp
 
         # Compile the code
         # TODO: Verify that this is the actual name of the solution file
@@ -212,7 +216,7 @@ function New-VisualStudioBuild {
         Set-Location ..\..
 
     } else {
-        Write-Error "Could not call the Visual Studio make tool, unable to build Nova. Please enstall Visual Stusio 2015 and ensure that msbuild.exe is on your path"
+        Write-Error "Could not call the Visual Studio make tool, unable to build Nova. Please install Visual Studio and ensure that msbuild.exe is on your path"
     }
 }
 
@@ -270,7 +274,7 @@ function New-Patches {
 }
 
 ################################################################################
-#  install nova in minecraft launcher                                                             #
+#  install nova in minecraft launcher                                          #
 ################################################################################
 
 function install-Nova {

@@ -15,14 +15,20 @@ import net.minecraft.world.chunk.Chunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * @author ddubois
  */
 public class ChunkUpdateListener implements IWorldEventListener {
     private static final Logger LOG = LogManager.getLogger(ChunkUpdateListener.class);
-    private World world;
 
-    private long timeSpendInBlockRenderUpdate = 0;
+    private World world;
+    private Executor executor = Executors.newFixedThreadPool(10);
+
+    private long timeSpentInBlockRenderUpdate = 0;
     private int numRenderUpdateThings = 0;
 
     private NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
@@ -75,17 +81,20 @@ public class ChunkUpdateListener implements IWorldEventListener {
                 }
             }
         }
+
+        // Fire off the chunk building task
+        // executor.execute(() -> NovaNative.INSTANCE.add_chunk(updateChunk));
         NovaNative.INSTANCE.add_chunk(updateChunk);
 
         long deltaTime = System.currentTimeMillis() - startTime;
         LOG.trace("It took {}ms to update a {}x{}x{} block of blocks", deltaTime, xDist, yDist, zDist);
-        timeSpendInBlockRenderUpdate += deltaTime;
+        timeSpentInBlockRenderUpdate += deltaTime;
         numRenderUpdateThings++;
 
         if(numRenderUpdateThings % 10 == 0) {
-            LOG.info("That's an average of {} milliseconds per update for {} updates! (total time {}ms)",
-                    (double) timeSpendInBlockRenderUpdate / (double) numRenderUpdateThings, numRenderUpdateThings,
-                    timeSpendInBlockRenderUpdate);
+            LOG.info("It's taken an average of {}ms to update {} chunks",
+                    (float)timeSpentInBlockRenderUpdate / numRenderUpdateThings, numRenderUpdateThings);
+            LOG.info("Updating chunk in thread {}", Thread.currentThread().getId());
         }
     }
 

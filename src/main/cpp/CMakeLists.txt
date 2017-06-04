@@ -72,9 +72,9 @@ set(NOVA_HEADERS
         render/objects/textures/texture2D.h
 
         render/windowing/glfw_gl_window.h
-		
+
 		input/InputHandler.h
-		
+
         interfaces/iwindow.h
 
         mc_interface/mc_gui_objects.h
@@ -86,7 +86,6 @@ set(NOVA_HEADERS
         data_loading/loaders/shader_loading.h
         data_loading/loaders/loader_utils.h
         geometry_cache/mesh_store.h
-        render/render_pass.h
         render/objects/shaders/shader_facade.h
         render/objects/render_object.h
 
@@ -129,7 +128,7 @@ set(NOVA_SOURCE
         geometry_cache/builders/chunk_builder.cpp
 
         mc_interface/mc_objects.cpp
-        )
+        render/objects/framebuffer.cpp render/objects/framebuffer.h render/objects/camera.cpp render/objects/camera.h)
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} 3rdparty/renderdocapi/RenderDocManager.cpp)
@@ -195,11 +194,12 @@ set(TEST_SOURCE_FILES
 
         test/model/loaders/shader_loading_test.cpp
         test/model/shaders/shader_facade_test.cpp
+        test/model/geometry_cache/builders/chunk_builder_test.cpp
         test/model/texture_manager_test.cpp
         test/model/shaders/gl_shader_program_test.cpp
         test/model/geometry_cache/mesh_store_test.cpp
         test/test_utils.cpp
-        test/test_utils.h geometry_cache/builders/chunk_builder.cpp geometry_cache/builders/chunk_builder.h mc_interface/mc_objects.cpp test/model/geometry_cache/builders/chunk_builder_test.cpp)
+        test/test_utils.h)
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
 

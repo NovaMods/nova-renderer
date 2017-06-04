@@ -30,6 +30,19 @@ namespace nova {
         glm::vec3 tangent;
     };
 
+    struct block_face {
+        block_vertex vertices[4];
+    };
+
+    enum class face_id {
+        LEFT,
+        RIGHT,
+        BOTTOM,
+        TOP,
+        BACK,
+        FRONT,
+    };
+
     const int CHUNK_WIDTH = 16;
     const int CHUNK_HEIGHT = 256;
     const int CHUNK_DEPTH = 16;
@@ -78,6 +91,16 @@ namespace nova {
      */
     mesh_definition make_mesh_for_blocks(const std::vector<glm::ivec3>& blocks, const mc_chunk& chunk);
 
+	/*!
+	 * \brief Determines if the block in the provided chunk at the given position should be rendered with a simple cube
+	 * or if the block has a more complex model
+	 *
+	 * \param pos The position to check for the block at
+	 * \param chunk The chunk that has the block in question in it
+	 * \return True if the block at the provided position is a simple cube, false if it should use a more complex model
+	 */
+	bool is_cube(const glm::ivec3 pos, const mc_chunk& chunk);
+
     /*!
      * \brief Helper function to convert from nice easy vec3 to position in the blocks array
      *
@@ -95,7 +118,35 @@ namespace nova {
      * \return True if the block at the provided position is not fully opaque or is not within the given chunk, false
      * otherwise
      */
-    bool get_if_block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk &chunk);
+    bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk &chunk);
+
+	/*!
+	 * \brief Makes the geometry for the provided block in the given chunk
+	 */
+	std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk);
+
+    /*!
+     * \brief Adds a quad to this mesh definition
+     *
+     * The quad's normal is the offset, normalized. This method is useful mostly for adding faces for cubes
+     *
+     * \param offset The offset from the origin of the new quad
+     * \param size The size of the quad
+     */
+    block_face make_quad(const face_id which_face, const float size);
+
+    /*!
+     * \brief Gets the AO in the provided direction
+     *
+     * AO is computed from the blocks around the current block. AO will not compute correctly in the current version
+	 * because this function only deals with one chunk at a time and AO can be easily influenced by multiple chunks
+     *
+     * \param position The position of the block to get the AO for
+     * \param face_to_check The block face to get AO for
+     * \param chunk The chunk that the block lives in
+     * \return A float from 0 to 1. 0 means no AO, 1 means all the AO
+     */
+    float get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk);
 }
 
 

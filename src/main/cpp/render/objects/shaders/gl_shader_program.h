@@ -73,9 +73,7 @@ namespace nova {
          */
         gl_shader_program(const shader_definition &source);
 
-        gl_shader_program(gl_shader_program &other);
-
-        gl_shader_program(const gl_shader_program &other);
+		gl_shader_program(const gl_shader_program &other) = default;
 
         /**
          * \brief Move constructor

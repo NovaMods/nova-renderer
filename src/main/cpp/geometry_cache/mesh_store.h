@@ -43,7 +43,7 @@ namespace nova {
          *
          * \param new_shaderpack The new shaderpack to use for retrieving filters from
          */
-        void set_shaderpack(shaderpack& new_shaderpack);
+        void set_shaderpack(std::shared_ptr<shaderpack> new_shaderpack);
 
         /*!
          * \brief Retrieves the list of meshes that the shader with the provided name should render
@@ -78,7 +78,10 @@ namespace nova {
         std::unordered_map<std::string, mesh_definition> simple_models;
         std::vector<mc_chunk> all_chunks;
 
-        shaderpack* shaders;
+        std::shared_ptr<shaderpack> shaders;
+
+        float seconds_spent_updating_chunks = 0;
+        long total_chunks_updated = 0;
 
         /*!
          * \brief Puts the provided render object into all the proper lists, so that it can be rendered by the right

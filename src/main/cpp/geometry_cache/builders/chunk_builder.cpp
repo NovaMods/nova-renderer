@@ -1,5 +1,5 @@
 /*!
- * \brief
+ * \brief Provides definitions for all the functions needed to build geometry for a chunk
  *
  * \author ddubois 
  * \date 02-Mar-17.
@@ -7,9 +7,10 @@
 
 #include "chunk_builder.h"
 
+#include <easylogging++.h>
+
 namespace nova {
     std::unordered_map<std::string, optional<render_object>> get_renderables_from_chunk(const mc_chunk& chunk, shaderpack& shaders) {
-        // Step 1: figure out which blocks are rendered by which shader
         auto& all_shaders = shaders.get_loaded_shaders();
         auto final_geometry = std::unordered_map<std::string, optional<render_object>>{};
 
@@ -51,21 +52,78 @@ namespace nova {
     }
 
     mesh_definition make_mesh_for_blocks(const std::vector<glm::ivec3>& blocks, const mc_chunk& chunk) {
-        auto vertices = std::vector<block_vertex>{};
-        auto indices = std::vector<unsigned short>{};
+        auto mesh = mesh_definition{};
+        mesh.vertex_format = format::POS_UV_LIGHTMAPUV_NORMAL_TANGENT;
 
-        for(auto block_pos : blocks) {
-            auto should_make_top_face = get_if_block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk);
-            auto should_make_bottom_face = get_if_block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk);
-            auto should_make_right_face = get_if_block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk);
-            auto should_make_left_face = get_if_block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk);
-            auto should_make_front_face = get_if_block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk);
-            auto should_make_back_face = get_if_block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk);
+		auto vertices = std::vector<float>{};
+		auto indices = std::vector<unsigned short>{};
+		auto cur_index = 0;
+
+        for(const auto block_pos : blocks) {
+			auto idx = pos_to_idx(block_pos);
+
+			// Get the geometry for the block
+			std::vector<block_face> faces_for_block;
+			if(is_cube(block_pos, chunk)) {
+				faces_for_block = make_geometry_for_block(block_pos, chunk);
+			} else {
+				// Use the block model registry
+				LOG(WARNING) << "Block models not implimented. Fix it.";
+			}
+
+			// Put the geometry into our buffer
+			for(const auto& face : faces_for_block) {
+				for(int vert_idx = 0; vert_idx < 4; vert_idx ++) {
+					vertices.insert(vertices.end(), &face.vertices[vert_idx].position.x, &face.vertices[vert_idx].position.x + sizeof(block_vertex));
+				}
+				indices.push_back(0 + cur_index);
+				indices.push_back(1 + cur_index);
+				indices.push_back(2 + cur_index);
+				indices.push_back(1 + cur_index);
+				indices.push_back(2 + cur_index);
+				indices.push_back(3 + cur_index);
+
+				cur_index += 4;
+			}
         }
-        return mesh_definition{};
+
+		mesh.vertex_data = vertices;
+		mesh.indices = indices;
+
+		return mesh;
     }
 
-    bool get_if_block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk &chunk) {
+	std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk) {
+		auto faces_to_make = std::vector<face_id>{};
+		if(block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk)) {
+			faces_to_make.push_back(face_id::TOP);
+		}
+		if(block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk)) {
+			faces_to_make.push_back(face_id::BOTTOM);
+		}
+		if(block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk)) {
+			faces_to_make.push_back(face_id::RIGHT);
+		}
+		if(block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk)) {
+			faces_to_make.push_back(face_id::LEFT);
+		}
+		if(block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk)) {
+			faces_to_make.push_back(face_id::FRONT);
+		}
+		if(block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk)) {
+			faces_to_make.push_back(face_id::BACK);
+		}
+
+		auto quads = std::vector<block_face>{};
+		for(auto& face : faces_to_make) {
+			auto ao = get_ao_in_direction(block_pos, face, chunk);
+			quads.push_back(make_quad(face, 1));
+		}
+
+		return quads;
+	}
+
+    bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk &chunk) {
         // A separate check for each direction to increase code readability and debuggability
         if(block_pos.x < 0 || block_pos.x > CHUNK_WIDTH) {
             return true;
@@ -88,4 +146,89 @@ namespace nova {
     int pos_to_idx(const glm::ivec3& pos) {
         return pos.x + pos.y * CHUNK_WIDTH + pos.z * CHUNK_WIDTH * CHUNK_HEIGHT;
     }
+
+    block_face make_quad(const face_id which_face, const float size) {
+        auto offset = size / 2;
+
+        glm::vec3 positions[4];
+        glm::vec3 normal;
+        glm::vec3 tangent;
+        if(which_face == face_id::LEFT) {
+            // x = 0
+            positions[0] = glm::vec3{-offset, -size, -size};
+            positions[1] = glm::vec3{-offset, -size,  size};
+            positions[2] = glm::vec3{-offset,  size, -size};
+            positions[3] = glm::vec3{-offset,  size,  size};
+
+            normal = glm::vec3{-1, 0, 0};
+            tangent = glm::vec3{0, 0, 1};
+
+        } else if(which_face == face_id::RIGHT) {
+            // x = 0
+            positions[0] = glm::vec3{ offset, -size, -size};
+            positions[1] = glm::vec3{ offset, -size,  size};
+            positions[2] = glm::vec3{ offset,  size, -size};
+            positions[3] = glm::vec3{ offset,  size,  size};
+
+            normal = glm::vec3{1, 0, 0};
+            tangent = glm::vec3{0, 0, -1};
+
+        } else if(which_face == face_id::BOTTOM) {
+            // y = 0
+            positions[0] = glm::vec3{-size, -offset, -size};
+            positions[1] = glm::vec3{-size, -offset,  size};
+            positions[2] = glm::vec3{ size, -offset, -size};
+            positions[3] = glm::vec3{ size, -offset,  size};
+
+            normal = glm::vec3{0, -1, 0};
+            tangent = glm::vec3{-1, 0, 0};
+
+        } else if(which_face == face_id::TOP) {
+            // y = 0
+            positions[0] = glm::vec3{-size,  offset, -size};
+            positions[1] = glm::vec3{-size,  offset,  size};
+            positions[2] = glm::vec3{ size,  offset, -size};
+            positions[3] = glm::vec3{ size,  offset,  size};
+
+            normal = glm::vec3{0, 1, 0};
+            tangent = glm::vec3{1, 0, 0};
+
+        } else if(which_face == face_id::BACK) {
+            // z = 0
+            positions[0] = glm::vec3{-size, -size, -offset};
+            positions[1] = glm::vec3{-size,  size, -offset};
+            positions[2] = glm::vec3{ size, -size, -offset};
+            positions[3] = glm::vec3{ size,  size, -offset};
+
+            normal = glm::vec3{0, 0, -1};
+            tangent = glm::vec3{-1, 0, 0};
+
+        } else if(which_face == face_id::FRONT) {
+            // z = 0
+            positions[0] = glm::vec3{-size, -size,  offset};
+            positions[1] = glm::vec3{-size,  size,  offset};
+            positions[2] = glm::vec3{ size, -size,  offset};
+            positions[3] = glm::vec3{ size,  size,  offset};
+
+            normal = glm::vec3{0, 0, 1};
+            tangent = glm::vec3{1, 0, 0};
+        }
+
+        auto face = block_face{};
+        for(int i = 0; i < 4; i++) {
+            face.vertices[i].position = positions[i];
+            face.vertices[i].normal = normal;
+            face.vertices[i].tangent = tangent;
+        }
+
+        return face;
+    }
+
+	bool is_cube(const glm::ivec3 pos, const mc_chunk& chunk) {
+		return true;
+	}
+
+	float get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk) {
+		return 0;
+	}
 }

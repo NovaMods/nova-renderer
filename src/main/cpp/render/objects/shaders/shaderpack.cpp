@@ -17,7 +17,7 @@ namespace nova {
     }
 
     gl_shader_program &shaderpack::operator[](std::string key) {
-        return loaded_shaders[key];
+        return get_shader(key);
     }
 
     std::unordered_map<std::string, gl_shader_program> &shaderpack::get_loaded_shaders() {
@@ -30,5 +30,9 @@ namespace nova {
 
     std::string &shaderpack::get_name() {
         return name;
+    }
+
+    gl_shader_program &shaderpack::get_shader(std::string key) {
+        return loaded_shaders[key];
     }
 }

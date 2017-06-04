@@ -35,7 +35,7 @@ namespace nova {
 
             ASSERT_EQ(1, gui_meshes.size());
 
-            auto gui_mesh = gui_meshes[0];
+            auto& gui_mesh = gui_meshes[0];
 
             ASSERT_EQ(0, gui_mesh.parent_id);
             ASSERT_EQ(true, gui_mesh.is_solid);

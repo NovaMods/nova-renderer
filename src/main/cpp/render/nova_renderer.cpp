@@ -73,11 +73,16 @@ namespace nova {
     }
 
     void nova_renderer::render_shadow_pass() {
-
+        LOG(TRACE) << "Rendering shadow pass";
     }
 
     void nova_renderer::render_gbuffers() {
+        LOG(TRACE) << "Rendering gbuffer pass";
+        //main_framebuffer->bind();
 
+        // TODO: Get shaders with gbuffers prefix, draw transparents last, etc
+        auto& terrain_shader = loaded_shaderpack->get_shader("gbuffers_terrain");
+        render_shader(terrain_shader);
     }
 
     void nova_renderer::render_composite_passes() {
@@ -90,7 +95,7 @@ namespace nova {
 
     void nova_renderer::render_gui() {
         // Bind all the GUI data
-        gl_shader_program &gui_shader = (*loaded_shaderpack)["gui"];
+        auto &gui_shader = loaded_shaderpack->get_shader("gui");
         gui_shader.bind();
 
         // Render GUI objects
@@ -201,7 +206,7 @@ namespace nova {
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
 		
 		auto& shaderpack_name = new_config["loadedShaderpack"];
-        if(!loaded_shaderpack.has_value() || (loaded_shaderpack.has_value() && shaderpack_name != loaded_shaderpack.value().get_name())) {
+        if(!loaded_shaderpack || (loaded_shaderpack && shaderpack_name != loaded_shaderpack->get_name())) {
             load_new_shaderpack(shaderpack_name);
             
         }
@@ -234,16 +239,69 @@ namespace nova {
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
 		
         LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
-        loaded_shaderpack = std::experimental::make_optional<shaderpack>(load_shaderpack(new_shaderpack_name));
-        meshes->set_shaderpack(*loaded_shaderpack);
+        loaded_shaderpack = std::make_shared<shaderpack>(load_shaderpack(new_shaderpack_name));
+        meshes->set_shaderpack(loaded_shaderpack);
         LOG(INFO) << "Loading complete";
 		
         link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), *ubo_manager);
         LOG(DEBUG) << "Linked up UBOs";
+
+        create_framebuffers_from_shaderpack();
+    }
+
+    void nova_renderer::create_framebuffers_from_shaderpack() {
+        // TODO: Examine the shaderpack and determine what's needed
+        // For now, just create framebuffers with all possible attachments
+
+        auto settings = render_settings->get_options()["settings"];
+
+        main_framebuffer_builder.set_framebuffer_size(settings["view_width"], settings["view_height"])
+                                .enable_color_attachment(0)
+                                .enable_color_attachment(1)
+                                .enable_color_attachment(2)
+                                .enable_color_attachment(3)
+                                .enable_color_attachment(4)
+                                .enable_color_attachment(5)
+                                .enable_color_attachment(6)
+                                .enable_color_attachment(7);
+
+        main_framebuffer = std::make_unique<framebuffer>(main_framebuffer_builder.build());
+
+        shadow_framebuffer_builder.set_framebuffer_size(settings["shadowMapResolution"], settings["shadowMapResolution"])
+                                  .enable_color_attachment(0)
+                                  .enable_color_attachment(1)
+                                  .enable_color_attachment(2)
+                                  .enable_color_attachment(3);
+
+        shadow_framebuffer = std::make_unique<framebuffer>(shadow_framebuffer_builder.build());
+
     }
 
     void nova_renderer::deinit() {
         instance.release();
+    }
+
+    void nova_renderer::render_shader(gl_shader_program &shader) {
+        shader.bind();
+
+        auto& terrain_geometry = meshes->get_meshes_for_shader(shader.get_name());
+        for(auto& geom : terrain_geometry) {
+            if(geom.color_texture != "") {
+                auto color_texture = textures->get_texture(geom.color_texture);
+                color_texture.bind(0);
+            }
+
+            if(geom.normalmap) {
+                textures->get_texture(*geom.normalmap).bind(1);
+            }
+
+            if(geom.data_texture) {
+                textures->get_texture(*geom.data_texture).bind(2);
+            }
+
+            geom.geometry->set_active();
+            geom.geometry->draw();
+        }
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {
