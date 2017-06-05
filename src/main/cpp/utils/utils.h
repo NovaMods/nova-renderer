@@ -16,6 +16,9 @@
 #include <json.hpp>
 #include <fstream>
 
+#include <easylogging++.h>
+#include <glm/glm.hpp>
+
 /*!
  * \brief Initializes the logging system
  */
@@ -57,6 +60,33 @@ namespace nova {
      * use it after calling this function of you'll have a bad time
      */
     nlohmann::json load_json_from_stream(std::istream& stream);
+
+    /*!
+     * \brief Stream insertion for glm::ivec3
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::ivec3 &vec);
+
+    /*!
+     * \brief Stream insertion for glm::vec2
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec2 &vec);
+
+    /*!
+     * \brief Stream insertion for glm::vec3
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec3 &vec);
 }
 
 #endif //RENDERER_UTILS_H

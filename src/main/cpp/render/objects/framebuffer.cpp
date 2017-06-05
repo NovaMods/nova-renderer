@@ -24,10 +24,8 @@ namespace nova {
     }
 
     framebuffer::framebuffer(framebuffer&& other) {
-        for(int i = 0; i < other.color_attachments_map.size(); i++) {
-            color_attachments[i] = other.color_attachments[i];
-            other.color_attachments[i] = 0;
-        }
+        color_attachments = other.color_attachments;
+        other.color_attachments = nullptr;
 
         framebuffer_id = other.framebuffer_id;
         other.framebuffer_id = 0;

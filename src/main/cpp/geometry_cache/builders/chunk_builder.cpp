@@ -6,11 +6,13 @@
  */
 
 #include "chunk_builder.h"
+#include "../../utils/utils.h"
 
 #include <easylogging++.h>
 
 namespace nova {
     std::unordered_map<std::string, optional<render_object>> get_renderables_from_chunk(const mc_chunk& chunk, shaderpack& shaders) {
+        LOG(DEBUG) << "Getting the renderables from a chunk";
         auto& all_shaders = shaders.get_loaded_shaders();
         auto final_geometry = std::unordered_map<std::string, optional<render_object>>{};
 
@@ -59,8 +61,7 @@ namespace nova {
 		auto indices = std::vector<unsigned short>{};
 		auto cur_index = 0;
 
-        for(const auto block_pos : blocks) {
-			auto idx = pos_to_idx(block_pos);
+        for(const auto& block_pos : blocks) {
 
 			// Get the geometry for the block
 			std::vector<block_face> faces_for_block;
@@ -68,7 +69,7 @@ namespace nova {
 				faces_for_block = make_geometry_for_block(block_pos, chunk);
 			} else {
 				// Use the block model registry
-				LOG(WARNING) << "Block models not implimented. Fix it.";
+				LOG(WARNING) << "Block models not implemented. Fix it.";
 			}
 
 			// Put the geometry into our buffer
@@ -94,25 +95,26 @@ namespace nova {
     }
 
 	std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk) {
+        LOG(DEBUG) << "Adding faces for block " << block_pos;
 		auto faces_to_make = std::vector<face_id>{};
 		if(block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk)) {
-			faces_to_make.push_back(face_id::TOP);
-		}
+            faces_to_make.push_back(face_id::TOP);
+        }
 		if(block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk)) {
-			faces_to_make.push_back(face_id::BOTTOM);
-		}
+            faces_to_make.push_back(face_id::BOTTOM);
+        }
 		if(block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk)) {
-			faces_to_make.push_back(face_id::RIGHT);
-		}
+            faces_to_make.push_back(face_id::RIGHT);
+        }
 		if(block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk)) {
-			faces_to_make.push_back(face_id::LEFT);
-		}
+            faces_to_make.push_back(face_id::LEFT);
+        }
 		if(block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk)) {
-			faces_to_make.push_back(face_id::FRONT);
-		}
+            faces_to_make.push_back(face_id::FRONT);
+        }
 		if(block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk)) {
-			faces_to_make.push_back(face_id::BACK);
-		}
+            faces_to_make.push_back(face_id::BACK);
+        }
 
 		auto quads = std::vector<block_face>{};
 		for(auto& face : faces_to_make) {
@@ -125,15 +127,15 @@ namespace nova {
 
     bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk &chunk) {
         // A separate check for each direction to increase code readability and debuggability
-        if(block_pos.x < 0 || block_pos.x > CHUNK_WIDTH) {
+        if(block_pos.x < 0 || block_pos.x >= CHUNK_WIDTH) {
             return true;
         }
 
-        if(block_pos.y < 0 || block_pos.y > CHUNK_HEIGHT) {
+        if(block_pos.y < 0 || block_pos.y >= CHUNK_HEIGHT) {
             return true;
         }
 
-        if(block_pos.z < 0 || block_pos.z > CHUNK_DEPTH) {
+        if(block_pos.z < 0 || block_pos.z >= CHUNK_DEPTH) {
             return true;
         }
 
@@ -231,4 +233,11 @@ namespace nova {
 	float get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk) {
 		return 0;
 	}
+
+    el::base::Writer &operator<<(el::base::Writer &out, const block_vertex& vert) {
+        out << "block_vertex { position=" << vert.position << ", uv=" << vert.uv << ", lightmap_uv="
+            << vert.lightmap_uv << ", normal=" << vert.normal << ", tangent=" << vert.tangent << "}";
+
+        return out;
+    }
 }

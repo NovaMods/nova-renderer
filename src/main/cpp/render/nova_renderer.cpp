@@ -86,7 +86,7 @@ namespace nova {
     }
 
     void nova_renderer::render_composite_passes() {
-        LOG(INFO) << "Rendering composite passes";
+        LOG(TRACE) << "Rendering composite passes";
     }
 
     void nova_renderer::render_final_pass() {
@@ -254,7 +254,7 @@ namespace nova {
 
         auto settings = render_settings->get_options()["settings"];
 
-        main_framebuffer_builder.set_framebuffer_size(settings["view_width"], settings["view_height"])
+        main_framebuffer_builder.set_framebuffer_size(settings["viewWidth"], settings["viewHeight"])
                                 .enable_color_attachment(0)
                                 .enable_color_attachment(1)
                                 .enable_color_attachment(2)

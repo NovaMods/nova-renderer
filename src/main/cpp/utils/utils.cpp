@@ -41,5 +41,20 @@ namespace nova {
 
         return nlohmann::json::parse(accum.c_str());
     }
+
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::ivec3 &vec) {
+        out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+        return out;
+    }
+
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec2 &vec) {
+        out << "(" << vec.x << ", " << vec.y << ")";
+        return out;
+    }
+
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec3 &vec) {
+        out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+        return out;
+    }
 }
 

@@ -15,6 +15,7 @@
 #include <optional.hpp>
 #include "../../mc_interface/mc_objects.h"
 #include "../../render/objects/shaders/shaderpack.h"
+#include <easylogging++.h>
 
 using namespace std::experimental;
 
@@ -147,6 +148,15 @@ namespace nova {
      * \return A float from 0 to 1. 0 means no AO, 1 means all the AO
      */
     float get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk);
+
+    /*!
+     * \brief Prints a block_vertex object into the easylogging++ output stream
+     *
+     * \param out The output stream to print to
+     * \param vert The vertex to print
+     * \return The output stream that was provided
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const block_vertex& vert);
 }
 
 
