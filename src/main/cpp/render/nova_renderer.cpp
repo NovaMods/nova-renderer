@@ -86,14 +86,15 @@ namespace nova {
     }
 
     void nova_renderer::render_composite_passes() {
-
+        LOG(INFO) << "Rendering composite passes";
     }
 
     void nova_renderer::render_final_pass() {
-
+        LOG(TRACE) << "Rendering final pass";
     }
 
     void nova_renderer::render_gui() {
+        LOG(TRACE) << "Rendering GUI";
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
         gui_shader.bind();
@@ -204,11 +205,9 @@ namespace nova {
     }
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
-		
 		auto& shaderpack_name = new_config["loadedShaderpack"];
         if(!loaded_shaderpack || (loaded_shaderpack && shaderpack_name != loaded_shaderpack->get_name())) {
             load_new_shaderpack(shaderpack_name);
-            
         }
     }
 
@@ -282,6 +281,7 @@ namespace nova {
     }
 
     void nova_renderer::render_shader(gl_shader_program &shader) {
+        LOG(TRACE) << "Rendering everything for shader " << shader.get_name();
         shader.bind();
 
         auto& terrain_geometry = meshes->get_meshes_for_shader(shader.get_name());

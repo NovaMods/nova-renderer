@@ -8,12 +8,17 @@
 #include <algorithm>
 #include "shaderpack.h"
 
+#include <easylogging++.h>
+
 namespace nova {
     shaderpack::shaderpack(std::string name, nlohmann::json shaders_json, std::vector<shader_definition> &shaders) {
         this->name = name;
         for(auto& shader : shaders) {
+            LOG(TRACE) << "Adding shader " << shader.name;
             loaded_shaders.emplace(shader.name, gl_shader_program(shader));
         }
+
+        LOG(TRACE) << "Shaderpack created";
     }
 
     gl_shader_program &shaderpack::operator[](std::string key) {

@@ -24,7 +24,7 @@ void initialize_logging() {
 
 namespace nova {
     resource_not_found::resource_not_found(const std::string &msg) {
-        message = "Could not fine resource " + msg;
+        message = "Could not find resource " + msg;
     }
 
     const char * resource_not_found::what() const noexcept {
