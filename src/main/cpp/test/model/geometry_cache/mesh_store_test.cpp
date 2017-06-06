@@ -16,15 +16,28 @@ namespace nova {
 
         TEST_F(mesh_store_test, add_gui_geometry_test) {
             auto shaderpack_name = "default";
-            auto shaderpack = nova::load_shaderpack(shaderpack_name);
+            auto loaded_shaderpack = std::make_shared<shaderpack>(nova::load_shaderpack(shaderpack_name));
 
             nova::mesh_store meshes;
-            meshes.set_shaderpack(shaderpack);
+            meshes.set_shaderpack(loaded_shaderpack);
 
             mc_gui_send_buffer_command send_gui_buffer_command = {};
             send_gui_buffer_command.texture_name = "gui/widgets";
-            send_gui_buffer_command.vertex_buffer = {};
-            send_gui_buffer_command.index_buffer = {};
+            send_gui_buffer_command.vertex_buffer = new float[90]{
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+            };
+            send_gui_buffer_command.index_buffer = new int[10]{
+                    0, 1, 2, 1, 2, 3, 4, 5, 6, 4,
+            };
             send_gui_buffer_command.index_buffer_size = 10;
             send_gui_buffer_command.vertex_buffer_size = 10;
             send_gui_buffer_command.atlas_name = "gui";

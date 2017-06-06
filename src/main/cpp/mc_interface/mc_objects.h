@@ -10,6 +10,11 @@
 
 #include "mc_gui_objects.h"
 #include <cstdint>
+
+const int CHUNK_WIDTH = 16;
+const int CHUNK_HEIGHT = 256;
+const int CHUNK_DEPTH = 16;
+
 /*!
  * \brief Holds the information that comes from MC textures
  */
@@ -61,7 +66,7 @@ struct mc_block {
  */
 struct mc_chunk {
     long chunk_id;  //!< Unique identifier for the chunk
-    mc_block blocks[16 * 16 * 16];  //!< All the blocks in the chunk
+    mc_block blocks[CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH];  //!< All the blocks in the chunk
 };
 
 /*!

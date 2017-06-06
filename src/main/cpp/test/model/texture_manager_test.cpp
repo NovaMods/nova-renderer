@@ -7,6 +7,10 @@
 
 #include <gtest/gtest.h>
 
-TEST(texture_manager, get_max_texture_size_gtx_1080) {
+namespace nova {
+    namespace test {
+        TEST(texture_manager, get_max_texture_size_gtx_1080) {
 
+        }
+    }
 }

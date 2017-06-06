@@ -44,10 +44,6 @@ namespace nova {
         FRONT,
     };
 
-    const int CHUNK_WIDTH = 16;
-    const int CHUNK_HEIGHT = 256;
-    const int CHUNK_DEPTH = 16;
-
     /*!
      * \brief Builds all the render objects needed to render the provided chunk with the provided shaderpack
      *

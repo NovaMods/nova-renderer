@@ -193,7 +193,6 @@ set(TEST_SOURCE_FILES
         test/main.cpp
 
         test/model/loaders/shader_loading_test.cpp
-        test/model/shaders/shader_facade_test.cpp
         test/model/geometry_cache/builders/chunk_builder_test.cpp
         test/model/texture_manager_test.cpp
         test/model/shaders/gl_shader_program_test.cpp

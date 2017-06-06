@@ -43,9 +43,6 @@ namespace nova {
     }
 
     void uniform_buffer_store::update_gui_uniforms(nlohmann::json &config) {
-		
-       
-
 		float view_width = config["viewWidth"];
 		float view_height = config["viewHeight"];
         float scalefactor = config["scalefactor"];
@@ -55,10 +52,7 @@ namespace nova {
         gui_model_view = glm::scale(gui_model_view, glm::vec3(scalefactor, scalefactor, 1.0f));
         gui_model_view = glm::scale(gui_model_view, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
         gui_model_view = glm::scale(gui_model_view, glm::vec3(1.0f, -1.0f, 1.0f));
-        
-        
 
-     
         gui_uniform_variables.gbufferModelView = gui_model_view;
         gui_uniform_variables.gbufferProjection = glm::mat4(1);
         gui_uniform_variables.aspectRatio = view_width / view_height;

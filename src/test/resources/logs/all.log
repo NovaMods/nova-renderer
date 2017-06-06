@@ -159,3 +159,431 @@
 10:03:43 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
 10:03:43 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
 10:03:43 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:51:42 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:51:42 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:51:42 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:51:42 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:51:42 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:51:42 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:51:42 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:51:43 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:51:43 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:51:43 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:51:43 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:51:43 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:51:43 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:51:43 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:51:43 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:51:43 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:51:43 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:51:43 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:51:43 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:51:43 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:51:43 [TRACE] shader_loading.cpp 211 - Dealing with included file shaderpacks/default/shaders/gui.frag
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [TRACE] shader_loading.cpp 211 - Dealing with included file shaderpacks/default/shaders/gui.frag
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.zip
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.zip
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.docx
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.docx
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.fsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.fsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui_with_include.frag
+10:51:43 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui_with_include.frag
+10:51:43 [TRACE] shader_loading.cpp 211 - Dealing with included file shaderpacks/default/shaders/gui.frag
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/composite.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/composite.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/composite.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/composite.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/composite.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/composite.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader composite. Reason: Could not find resource shaderpacks/default/shaders/composite
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.vert
+10:51:43 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.fsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.fsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_basic.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_basic.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_basic.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_basic.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_basic.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_basic.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_basic. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_basic
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skybasic.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skybasic.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skybasic.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skybasic.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skybasic.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skybasic.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_skybasic. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_skybasic
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textured.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textured.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textured.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textured.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textured.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textured.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_textured. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_textured
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_spidereyes.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_spidereyes.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_spidereyes.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_spidereyes.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_spidereyes.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_spidereyes.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_spidereyes. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_spidereyes
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_armor_glint.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_armor_glint.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_armor_glint.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_armor_glint.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_armor_glint.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_armor_glint.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_armor_glint. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_armor_glint
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_clouds.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_clouds.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_clouds.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_clouds.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_clouds.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_clouds.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_clouds. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_clouds
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skytextured.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skytextured.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skytextured.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skytextured.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skytextured.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skytextured.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_skytextured. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_skytextured
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textures_lit.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textures_lit.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textures_lit.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textures_lit.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textures_lit.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textures_lit.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_textures_lit. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_textures_lit
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_entities.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_entities.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_entities.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_entities.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_entities.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_entities.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_entities. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_entities
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_hand.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_hand.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_hand.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_hand.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_hand.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_hand.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_hand. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_hand
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_weather.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_weather.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_weather.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_weather.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_weather.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_weather.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_weather. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_weather
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_terrain.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_terrain.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_terrain.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_terrain.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_terrain.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_terrain.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_terrain. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_terrain
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_damagedblock.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_damagedblock.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_damagedblock.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_damagedblock.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_damagedblock.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_damagedblock.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_damagedblock. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_damagedblock
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_water.vsh
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_water.vsh
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_water.vert
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_water.vert
+10:51:43 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_water.vert.spv
+10:51:43 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_water.vert.spv
+10:51:43 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_water. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_water
+10:51:43 [WARN ] shader_loading.cpp 121 - Could not find fallback shader gbuffers_textured for shader gui.
+10:51:43 [TRACE] shaderpack.cpp 17 - Adding shader gui
+10:51:43 [TRACE] gl_shader_program.cpp 34 - Created shader program 0
+10:51:43 [TRACE] shaderpack.cpp 21 - Shaderpack created
+10:51:43 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:51:43 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:51:43 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:51:43 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:51:43 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:51:43 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:51:43 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:52:14 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:52:14 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:52:14 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:52:14 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:52:14 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:52:14 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:52:14 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:52:14 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:52:14 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:52:14 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:52:14 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:52:14 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:52:14 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:52:14 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:52:15 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:52:15 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:52:15 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:52:15 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:52:15 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:52:15 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:52:15 [TRACE] shader_loading.cpp 211 - Dealing with included file shaderpacks/default/shaders/gui.frag
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [TRACE] shader_loading.cpp 211 - Dealing with included file shaderpacks/default/shaders/gui.frag
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.zip
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.zip
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.docx
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.docx
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.fsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.fsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui_with_include.frag
+10:52:15 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui_with_include.frag
+10:52:15 [TRACE] shader_loading.cpp 211 - Dealing with included file shaderpacks/default/shaders/gui.frag
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/composite.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/composite.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/composite.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/composite.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/composite.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/composite.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader composite. Reason: Could not find resource shaderpacks/default/shaders/composite
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.vert
+10:52:15 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.fsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gui.fsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [INFO ] shader_loading.cpp 179 - Loading shader file shaderpacks/default/shaders/gui.frag
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_basic.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_basic.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_basic.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_basic.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_basic.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_basic.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_basic. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_basic
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skybasic.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skybasic.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skybasic.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skybasic.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skybasic.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skybasic.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_skybasic. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_skybasic
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textured.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textured.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textured.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textured.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textured.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textured.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_textured. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_textured
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_spidereyes.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_spidereyes.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_spidereyes.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_spidereyes.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_spidereyes.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_spidereyes.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_spidereyes. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_spidereyes
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_armor_glint.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_armor_glint.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_armor_glint.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_armor_glint.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_armor_glint.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_armor_glint.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_armor_glint. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_armor_glint
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_clouds.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_clouds.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_clouds.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_clouds.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_clouds.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_clouds.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_clouds. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_clouds
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skytextured.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skytextured.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skytextured.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skytextured.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_skytextured.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_skytextured.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_skytextured. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_skytextured
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textures_lit.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textures_lit.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textures_lit.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textures_lit.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_textures_lit.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_textures_lit.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_textures_lit. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_textures_lit
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_entities.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_entities.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_entities.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_entities.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_entities.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_entities.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_entities. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_entities
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_hand.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_hand.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_hand.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_hand.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_hand.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_hand.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_hand. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_hand
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_weather.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_weather.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_weather.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_weather.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_weather.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_weather.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_weather. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_weather
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_terrain.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_terrain.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_terrain.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_terrain.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_terrain.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_terrain.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_terrain. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_terrain
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_damagedblock.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_damagedblock.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_damagedblock.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_damagedblock.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_damagedblock.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_damagedblock.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_damagedblock. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_damagedblock
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_water.vsh
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_water.vsh
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_water.vert
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_water.vert
+10:52:15 [TRACE] shader_loading.cpp 175 - Trying to load shader file shaderpacks/default/shaders/gbuffers_water.vert.spv
+10:52:15 [WARN ] shader_loading.cpp 182 - Could not read file shaderpacks/default/shaders/gbuffers_water.vert.spv
+10:52:15 [ERROR] shader_loading.cpp 100 - Could not load shader gbuffers_water. Reason: Could not find resource shaderpacks/default/shaders/gbuffers_water
+10:52:15 [WARN ] shader_loading.cpp 121 - Could not find fallback shader gbuffers_textured for shader gui.
+10:52:15 [TRACE] shaderpack.cpp 17 - Adding shader gui
+10:52:15 [TRACE] gl_shader_program.cpp 34 - Created shader program 0
+10:52:15 [TRACE] shaderpack.cpp 21 - Shaderpack created
+10:52:15 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:52:15 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:52:15 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:52:15 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:52:15 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:52:15 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:52:15 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:52:24 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:52:24 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:52:24 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:52:24 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:52:24 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:52:24 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:52:24 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:52:24 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:52:24 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:52:24 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:52:24 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:52:24 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:52:24 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:52:24 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:52:24 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:52:24 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:52:24 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:52:24 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:52:24 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:52:24 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:52:24 [FATAL] E:/Documents/nova-renderer/src/main/cpp/3rdparty/easyloggingpp/src/easylogging++.h 5627 - CRASH HANDLED; Application has crashed due to [SIGSEGV] signal
+10:52:24 [WARN ] E:/Documents/nova-renderer/src/main/cpp/3rdparty/easyloggingpp/src/easylogging++.h 5627 - Aborting application. Reason: Fatal log at [E:/Documents/nova-renderer/src/main/cpp/3rdparty/easyloggingpp/src/easylogging++.h:5627]
+10:53:21 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:53:21 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:53:21 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:53:21 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:53:21 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:53:21 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:53:21 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:53:21 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:53:21 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:53:21 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:53:21 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:53:21 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:53:21 [INFO ] texture_manager.cpp 14 - Texture manager created
+10:53:21 [INFO ] settings.cpp 13 - Loading config from config/config.json
+10:53:22 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+10:53:22 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+10:53:22 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+10:53:22 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+10:53:22 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+10:53:22 [INFO ] texture_manager.cpp 14 - Texture manager created
+11:01:16 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+11:01:16 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+11:01:16 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+11:01:16 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+11:01:16 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+11:01:16 [INFO ] texture_manager.cpp 14 - Texture manager created
+11:01:16 [INFO ] settings.cpp 13 - Loading config from config/config.json
+11:01:17 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+11:01:17 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+11:01:17 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+11:01:17 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+11:01:17 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+11:01:17 [INFO ] texture_manager.cpp 14 - Texture manager created
+11:01:17 [INFO ] settings.cpp 13 - Loading config from config/config.json
+11:01:17 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+11:01:17 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+11:01:17 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+11:01:17 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+11:01:17 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+11:01:17 [INFO ] texture_manager.cpp 14 - Texture manager created
+11:02:53 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+11:02:53 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+11:02:53 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+11:02:53 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+11:02:53 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+11:02:53 [INFO ] texture_manager.cpp 14 - Texture manager created
+11:02:53 [INFO ] settings.cpp 13 - Loading config from config/config.json
+11:02:53 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+11:02:53 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+11:02:53 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+11:02:53 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+11:02:53 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+11:02:53 [INFO ] texture_manager.cpp 14 - Texture manager created
+11:02:54 [INFO ] settings.cpp 13 - Loading config from config/config.json
+11:02:54 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+11:02:54 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+11:02:54 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+11:02:54 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+11:02:54 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+11:02:54 [INFO ] texture_manager.cpp 14 - Texture manager created
+11:04:57 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+11:04:57 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+11:04:57 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+11:04:57 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+11:04:57 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+11:04:57 [INFO ] texture_manager.cpp 14 - Texture manager created
+11:06:40 [INFO ] glfw_gl_window.cpp 48 - GLFW window created
+11:06:40 [INFO ] glfw_gl_window.cpp 62 - Vendor: NVIDIA Corporation
+11:06:40 [TRACE] objects/gl_uniform_buffer.h 23 - creating ubo gui_uniforms with size: 148
+11:06:40 [INFO ] uniform_buffer_store.cpp 16 - Initialized uniform buffer store
+11:06:40 [INFO ] texture_manager.cpp 12 - Creating the Texture Manager
+11:06:40 [INFO ] texture_manager.cpp 14 - Texture manager created

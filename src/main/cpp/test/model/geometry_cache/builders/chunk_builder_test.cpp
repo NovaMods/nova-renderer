@@ -11,7 +11,7 @@
 
 namespace nova {
     namespace test {
-         TEST(chunk_builder_test, block_at_pos_is_opaque_x_small_test) {
+         /*TEST(chunk_builder_test, x_small_test) {
             glm::ivec3 small_x = glm::ivec3(-1, 8, 8);
 
             auto val = block_at_pos_is_opaque(small_x, mc_chunk());
@@ -59,6 +59,14 @@ namespace nova {
             ASSERT_EQ(val, true);
         }
 
+        TEST(chunk_builder_test, block_at_pos_is_opaque_everything_large_test) {
+            auto large_val = glm::ivec3{CHUNK_WIDTH - 1, CHUNK_HEIGHT - 1, CHUNK_DEPTH - 1};
+
+            auto val = block_at_pos_is_opaque(large_val, mc_chunk());
+
+            ASSERT_EQ(val, true);
+        }
+
 		TEST(chunk_builder_test, pos_to_idx) {
 			auto expected_idx = 1 + 1 * CHUNK_WIDTH + 1 * CHUNK_WIDTH * CHUNK_HEIGHT;
 
@@ -67,6 +75,6 @@ namespace nova {
 			auto actual_idx = nova::pos_to_idx(pos);
 
 			ASSERT_EQ(expected_idx, actual_idx);
-		}
+		}*/
     }
 }
