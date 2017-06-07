@@ -6,9 +6,9 @@
  */
 
 #include <gtest/gtest.h>
-#include "../../../render/nova_renderer.h"
-#include "../../test_utils.h"
-#include "../../../data_loading/loaders/loaders.h"
+#include "../../render/nova_renderer.h"
+#include "../test_utils.h"
+#include "../../data_loading/loaders/loaders.h"
 
 namespace nova {
     namespace test {

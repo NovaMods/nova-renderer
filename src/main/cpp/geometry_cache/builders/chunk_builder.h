@@ -115,7 +115,7 @@ namespace nova {
      * \return True if the block at the provided position is not fully opaque or is not within the given chunk, false
      * otherwise
      */
-    bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk &chunk);
+    bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk);
 
 	/*!
 	 * \brief Makes the geometry for the provided block in the given chunk

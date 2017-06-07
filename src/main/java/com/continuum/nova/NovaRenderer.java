@@ -93,9 +93,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     /**
-     * Adds the texutres that just hang out without a texture atlas
+     * Adds the textures that just hang out without a texture atlas
      *
-     * @param resourceManager
+     * @param resourceManager The IResoruceManager to get the textures from
      */
     private void addFreeTextures(IResourceManager resourceManager) {
         for (ResourceLocation loc : FREE_TEXTURES) {

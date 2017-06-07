@@ -116,32 +116,24 @@ namespace nova {
     }
 
     void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
-        LOG(DEBUG) << "Adding chunk";
         auto start_time = std::clock();
 
         remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});
-        LOG(DEBUG) << "Removed old geometry";
 
         auto time_after_removing_objects = std::clock();
 
         generate_chunk_geometry(chunk);
-        LOG(DEBUG) << "Generated chunk geometry";
 
         auto time_after_generating_chunk_geometry = std::clock();
 
         // Save the chunk so that we can re-parse it when we get a new shaderpack
         std::remove_if(all_chunks.begin(), all_chunks.end(), [&](mc_chunk& chunk1) {return chunk.chunk_id == chunk1.chunk_id;});
-        LOG(DEBUG) << "Removed old geometry with this chunk's ID";
         auto time_after_removing_chunks = std::clock();
         all_chunks.push_back(chunk);
-        LOG(DEBUG) << "Added new chunk to list of chunks";
         auto time_after_adding_chunk = std::clock();
-        LOG(DEBUG) << "time_after_adding_chunks: " << time_after_adding_chunk;
 
         auto total_time = float(std::clock() - start_time) * 1000 / CLOCKS_PER_SEC;
-        LOG(DEBUG) << "total_time: " << total_time;
         total_chunks_updated += 1;
-        LOG(DEBUG) << "total_chunks_updated: " << total_chunks_updated;
 
         if(total_chunks_updated % 10 == 0) {
             LOG(INFO) << "We have spent:\n\t"
@@ -155,10 +147,8 @@ namespace nova {
 
     void mesh_store::generate_chunk_geometry(mc_chunk &chunk) {
         auto render_objects_from_chunk = get_renderables_from_chunk(chunk, *shaders);
-        LOG(TRACE) << "Created renderables from the chunk";
         for(auto& item : render_objects_from_chunk) {
             if(item.second) {
-                LOG(TRACE) << "Adding a renderable to the things to be rendered by " << item.first;
                 renderables_grouped_by_shader[item.first].push_back(std::move(*item.second));
             }
         }

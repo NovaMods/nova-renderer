@@ -77,6 +77,7 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     curBlock.light_opacity = blockState.getLightOpacity();
                     curBlock.ao = blockState.getAmbientOcclusionLightValue();
                     curBlock.is_opaque = material.isOpaque();
+                    //LOG.info("Block {} is opaque? {}", curBlock.name, curBlock.is_opaque);
                     curBlock.blocks_light = material.blocksLight();
                 }
             }

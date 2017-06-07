@@ -12,7 +12,6 @@
 
 namespace nova {
     std::unordered_map<std::string, optional<render_object>> get_renderables_from_chunk(const mc_chunk& chunk, shaderpack& shaders) {
-        LOG(DEBUG) << "Getting the renderables from a chunk";
         auto& all_shaders = shaders.get_loaded_shaders();
         auto final_geometry = std::unordered_map<std::string, optional<render_object>>{};
 
@@ -44,8 +43,10 @@ namespace nova {
             for(int y = 0; y < CHUNK_HEIGHT; y++) {
                 for(int x = 0; x < CHUNK_DEPTH; x++) {
                     int i = x + y * CHUNK_WIDTH + z * CHUNK_WIDTH * CHUNK_HEIGHT;
-                    if(filter.matches(chunk.blocks[i])) {
-                        blocks_that_match_filter.push_back(glm::ivec3(x, y, z));
+                    if(chunk.blocks[i].name != "tile.air") {
+                        if(filter.matches(chunk.blocks[i])) {
+                            blocks_that_match_filter.push_back(glm::ivec3(x, y, z));
+                        }
                     }
                 }
             }
@@ -95,7 +96,6 @@ namespace nova {
     }
 
 	std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk) {
-        LOG(DEBUG) << "Adding faces for block " << block_pos;
 		auto faces_to_make = std::vector<face_id>{};
 		if(block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk)) {
             faces_to_make.push_back(face_id::TOP);
@@ -125,7 +125,7 @@ namespace nova {
 		return quads;
 	}
 
-    bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk &chunk) {
+    bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk) {
         // A separate check for each direction to increase code readability and debuggability
         if(block_pos.x < 0 || block_pos.x >= CHUNK_WIDTH) {
             return true;
@@ -143,6 +143,7 @@ namespace nova {
         auto block = chunk.blocks[block_idx];
 
         return block.is_transparent();
+
     }
 
     int pos_to_idx(const glm::ivec3& pos) {

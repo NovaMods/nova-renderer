@@ -81,6 +81,7 @@ namespace nova {
         glBindVertexArray(vertex_array);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
         GLenum buffer_usage = translate_usage(data_usage);
+        LOG(INFO) << "Allocating n index buffer of size " << data.size() * sizeof(unsigned short);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned short), data.data(), buffer_usage);
 
         num_indices = (unsigned int) data.size();
