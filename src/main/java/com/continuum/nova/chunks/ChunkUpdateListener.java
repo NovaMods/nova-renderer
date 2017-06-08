@@ -33,6 +33,8 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     private NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
 
+    private boolean has_chunk = false;
+
     public void setWorld(World world) {
         this.world = world;
     }
@@ -49,6 +51,9 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
+        if(has_chunk) {
+            return;
+        }
         long startTime = System.currentTimeMillis();
         LOG.trace("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
         int xDist = x2 - x1 + 1;
@@ -79,6 +84,10 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     curBlock.is_opaque = material.isOpaque();
                     //LOG.info("Block {} is opaque? {}", curBlock.name, curBlock.is_opaque);
                     curBlock.blocks_light = material.blocksLight();
+
+                    if(!block.getUnlocalizedName().equals("tiles.air")) {
+                        has_chunk = true;
+                    }
                 }
             }
         }
