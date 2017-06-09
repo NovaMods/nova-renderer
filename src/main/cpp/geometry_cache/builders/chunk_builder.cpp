@@ -74,9 +74,10 @@ namespace nova {
 			}
 
 			// Put the geometry into our buffer
-			for(const auto& face : faces_for_block) {
+			for(auto& face : faces_for_block) {
 				for(int vert_idx = 0; vert_idx < 4; vert_idx ++) {
-					vertices.insert(vertices.end(), &face.vertices[vert_idx].position.x, &face.vertices[vert_idx].position.x + sizeof(block_vertex));
+                    face.vertices[vert_idx].position += glm::vec3{block_pos};
+					vertices.insert(vertices.end(), &face.vertices[vert_idx].position.x, &face.vertices[vert_idx].position.x + (sizeof(block_vertex) / sizeof(float)));
 				}
 				indices.push_back(0 + cur_index);
 				indices.push_back(1 + cur_index);
@@ -158,60 +159,60 @@ namespace nova {
         glm::vec3 tangent;
         if(which_face == face_id::LEFT) {
             // x = 0
-            positions[0] = glm::vec3{-offset, -size, -size};
-            positions[1] = glm::vec3{-offset, -size,  size};
-            positions[2] = glm::vec3{-offset,  size, -size};
-            positions[3] = glm::vec3{-offset,  size,  size};
+            positions[0] = glm::vec3{-offset, 0, 0};
+            positions[1] = glm::vec3{-offset, 0, size};
+            positions[2] = glm::vec3{-offset, size, 0};
+            positions[3] = glm::vec3{-offset, size, size};
 
             normal = glm::vec3{-1, 0, 0};
             tangent = glm::vec3{0, 0, 1};
 
         } else if(which_face == face_id::RIGHT) {
             // x = 0
-            positions[0] = glm::vec3{ offset, -size, -size};
-            positions[1] = glm::vec3{ offset, -size,  size};
-            positions[2] = glm::vec3{ offset,  size, -size};
-            positions[3] = glm::vec3{ offset,  size,  size};
+            positions[0] = glm::vec3{offset, 0, 0};
+            positions[1] = glm::vec3{offset, 0, size};
+            positions[2] = glm::vec3{offset, size, 0};
+            positions[3] = glm::vec3{offset, size, size};
 
             normal = glm::vec3{1, 0, 0};
             tangent = glm::vec3{0, 0, -1};
 
         } else if(which_face == face_id::BOTTOM) {
             // y = 0
-            positions[0] = glm::vec3{-size, -offset, -size};
-            positions[1] = glm::vec3{-size, -offset,  size};
-            positions[2] = glm::vec3{ size, -offset, -size};
-            positions[3] = glm::vec3{ size, -offset,  size};
+            positions[0] = glm::vec3{0, -offset, 0};
+            positions[1] = glm::vec3{0, -offset, size};
+            positions[2] = glm::vec3{size, -offset, 0};
+            positions[3] = glm::vec3{size, -offset, size};
 
             normal = glm::vec3{0, -1, 0};
             tangent = glm::vec3{-1, 0, 0};
 
         } else if(which_face == face_id::TOP) {
             // y = 0
-            positions[0] = glm::vec3{-size,  offset, -size};
-            positions[1] = glm::vec3{-size,  offset,  size};
-            positions[2] = glm::vec3{ size,  offset, -size};
-            positions[3] = glm::vec3{ size,  offset,  size};
+            positions[0] = glm::vec3{0, offset, 0};
+            positions[1] = glm::vec3{0, offset, size};
+            positions[2] = glm::vec3{size, offset, 0};
+            positions[3] = glm::vec3{size, offset, size};
 
             normal = glm::vec3{0, 1, 0};
             tangent = glm::vec3{1, 0, 0};
 
         } else if(which_face == face_id::BACK) {
             // z = 0
-            positions[0] = glm::vec3{-size, -size, -offset};
-            positions[1] = glm::vec3{-size,  size, -offset};
-            positions[2] = glm::vec3{ size, -size, -offset};
-            positions[3] = glm::vec3{ size,  size, -offset};
+            positions[0] = glm::vec3{0, 0, -offset};
+            positions[1] = glm::vec3{0, size, -offset};
+            positions[2] = glm::vec3{size, 0, -offset};
+            positions[3] = glm::vec3{size, size, -offset};
 
             normal = glm::vec3{0, 0, -1};
             tangent = glm::vec3{-1, 0, 0};
 
         } else if(which_face == face_id::FRONT) {
             // z = 0
-            positions[0] = glm::vec3{-size, -size,  offset};
-            positions[1] = glm::vec3{-size,  size,  offset};
-            positions[2] = glm::vec3{ size, -size,  offset};
-            positions[3] = glm::vec3{ size,  size,  offset};
+            positions[0] = glm::vec3{0, 0, offset};
+            positions[1] = glm::vec3{0, size, offset};
+            positions[2] = glm::vec3{size, 0, offset};
+            positions[3] = glm::vec3{size, size, offset};
 
             normal = glm::vec3{0, 0, 1};
             tangent = glm::vec3{1, 0, 0};

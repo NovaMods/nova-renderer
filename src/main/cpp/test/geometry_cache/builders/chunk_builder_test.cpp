@@ -98,6 +98,58 @@ namespace nova {
             ASSERT_EQ(faces.size(), 6);
         }
 
+        TEST(chunk_builder_test, make_mesh_for_blocks_one_block_vertex_sizes) {
+            auto block_pos = glm::ivec3{5, 5, 5};
+            auto block_poses = std::vector<glm::ivec3>{block_pos};
+
+            auto* chunk = new mc_chunk{};
+            auto block_idx = pos_to_idx(block_pos);
+
+            chunk->blocks[block_idx] = mc_block{"stone", false, 5, 0, 0.0, true, true};
+
+            auto mesh = make_mesh_for_blocks(block_poses, *chunk);
+
+            ASSERT_EQ(mesh.vertex_format, format::POS_UV_LIGHTMAPUV_NORMAL_TANGENT);
+            ASSERT_EQ(mesh.vertex_data.size(), 312);
+            ASSERT_EQ(mesh.indices.size(), 36);
+        }
+
+        TEST(chunk_builder_test, make_mesh_for_blocks_one_block_air_around_vertex_sizes) {
+            auto block_pos = glm::ivec3{5, 5, 5};
+            auto block_poses = std::vector<glm::ivec3>{block_pos};
+
+            auto* chunk = new mc_chunk{};
+            auto block_idx = pos_to_idx(block_pos);
+
+            for(int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH; i++) {
+                chunk->blocks[i] = mc_block{"tile.air", false, 3, 0, 0, false, false};
+            }
+
+            chunk->blocks[block_idx] = mc_block{"stone", false, 5, 0, 0.0, true, true};
+
+            auto mesh = make_mesh_for_blocks(block_poses, *chunk);
+
+            ASSERT_EQ(mesh.vertex_format, format::POS_UV_LIGHTMAPUV_NORMAL_TANGENT);
+            ASSERT_EQ(mesh.vertex_data.size(), 312);
+            ASSERT_EQ(mesh.indices.size(), 36);
+        }
+
+        TEST(chunk_builder_test, make_mesh_for_blocks_one_block_vertex_positions) {
+            auto block_pos = glm::ivec3{5, 5, 5};
+            auto block_poses = std::vector<glm::ivec3>{block_pos};
+
+            auto* chunk = new mc_chunk{};
+            auto block_idx = pos_to_idx(block_pos);
+
+            chunk->blocks[block_idx] = mc_block{"stone", false, 5, 0, 0.0, true, true};
+
+            auto mesh = make_mesh_for_blocks(block_poses, *chunk);
+
+            block_vertex* vert1 = (block_vertex *) &mesh.vertex_data[0];
+            auto compare = glm::vec3{0, 0.5f, 0} + glm::vec3{block_pos};
+            ASSERT_EQ(vert1->position, compare);
+        }
+
         TEST(chunk_builder_test, make_geometry_for_block_two_blocks) {
             auto block_pos = glm::ivec3{5, 5, 5};
             auto block_idx = pos_to_idx(block_pos);
