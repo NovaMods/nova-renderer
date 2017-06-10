@@ -7,6 +7,9 @@
 
 #include "mc_objects.h"
 
+#include <sstream>
+#include <json.hpp>
+
 bool mc_block::is_transparent() const {
     return !is_opaque;
 }

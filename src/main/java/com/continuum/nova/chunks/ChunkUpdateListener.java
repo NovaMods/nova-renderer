@@ -77,14 +77,12 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     Material material = blockState.getMaterial();
 
                     curBlock.name = block.getUnlocalizedName();
+                    LOG.info("block name: {} at ({}, {}, {})", block.getUnlocalizedName(), x, y, z);
                     curBlock.is_on_fire = false;
                     curBlock.light_value = blockState.getLightValue();
                     curBlock.light_opacity = blockState.getLightOpacity();
                     curBlock.ao = blockState.getAmbientOcclusionLightValue();
                     curBlock.is_opaque = material.isOpaque();
-                    if(!curBlock.name.equals("tile.air")) {
-                        LOG.info("Block {} is opaque? {}", curBlock.name, curBlock.is_opaque);
-                    }
                     curBlock.blocks_light = material.blocksLight();
 
                     if(!block.getUnlocalizedName().equals("tiles.air")) {

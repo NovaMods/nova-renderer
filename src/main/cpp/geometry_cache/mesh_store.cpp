@@ -11,6 +11,7 @@
 #include "mesh_store.h"
 #include "../../../render/nova_renderer.h"
 #include "builders/chunk_builder.h"
+#include "../utils/io.h"
 
 namespace nova {
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
@@ -116,6 +117,13 @@ namespace nova {
     }
 
     void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
+        LOG(INFO) << "received a chunk";
+        std::stringstream sstr;
+        sstr << chunk.chunk_id << ".chnk";
+        std::string chunk_id_str = sstr.str();
+        LOG(INFO) << "Saving chunk" << chunk_id_str;
+        save_chunk(chunk, chunk_id_str);
+        LOG(INFO) << "Saved chunk " << chunk.chunk_id;
         auto start_time = std::clock();
 
         remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});

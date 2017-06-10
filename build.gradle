@@ -39,7 +39,12 @@ task fatjar(type: Jar) {
     with jar
 }
 
+task buildDll(type: Exec) {
+    commandLine 'powershell', '-file', 'nova.ps1', '-build', '-nativeOnly'
+}
+
 task runNova(type: JavaExec) {
+    dependsOn buildDll
     classpath = sourceSets.main.runtimeClasspath
     main = "Start"
     jvmArgs = ["-Djava.library.path=versions/1.10/1.10-natives"]

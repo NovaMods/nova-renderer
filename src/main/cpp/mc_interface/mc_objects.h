@@ -23,7 +23,7 @@ struct mc_atlas_texture {
     int height;
     int num_components;
     unsigned char * texture_data;
-	char * name;
+	const char * name;
 };
 
 /*!
@@ -41,7 +41,7 @@ struct mc_texture_atlas_location {
  * \brief Represents a block in Minecraft, along with any attributes it might have
  */
 struct mc_block {
-	char * name;
+	const char * name;
     bool is_on_fire;
 	int light_value;
 	int light_opacity;
@@ -76,8 +76,8 @@ struct mc_quad {
 	int *vertex_data;
 	int num_vertex_data;
 	int tint_index;
-	char * facing_direction;
-	char * icon_name;
+	const char * facing_direction;
+	const char * icon_name;
 };
 
 /*!
@@ -87,7 +87,7 @@ struct mc_simple_model {
 	mc_quad * quads;
 	int num_quads;
 	bool ambient_occlusion;
-	char * particle_texture;
+	const char * particle_texture;
 };
 
 /*!
@@ -114,12 +114,12 @@ struct mc_render_gui_params {
 };
 
 struct mc_gui_send_buffer_command {
-    char *texture_name;  //!< The resource name of the texture.
+    const char *texture_name;  //!< The resource name of the texture.
 	int index_buffer_size;
 	int vertex_buffer_size;
 	int* index_buffer;
     float* vertex_buffer;
-	char* atlas_name;
+	const char * atlas_name;
 };
 
 /*!

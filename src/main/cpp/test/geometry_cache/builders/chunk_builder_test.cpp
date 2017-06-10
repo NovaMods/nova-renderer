@@ -12,7 +12,7 @@
 
 namespace nova {
     namespace test {
-         TEST(chunk_builder_test, x_small_test) {
+        TEST(chunk_builder_test, x_small_test) {
             glm::ivec3 small_x = glm::ivec3(-1, 8, 8);
 
             auto* chunk = new mc_chunk();
