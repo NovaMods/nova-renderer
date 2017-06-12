@@ -9,8 +9,13 @@
 
 namespace nova {
     nlohmann::json to_json(const mc_block& block) {
+        auto name_location = (long long)block.name;
+        auto name = block.name;
+        if(name_location == 0) {
+            name = "";
+        }
         return nlohmann::json{
-                {"name", block.name},
+                {"name", name},
                 {"is_on_fire", block.is_on_fire},
                 {"light_value", block.light_value},
                 {"light_opacity", block.light_opacity},
@@ -38,8 +43,8 @@ namespace nova {
 
         nlohmann::json blocks;
         int count = 0;
-        for(const auto& block : chunk.blocks) {
-            nlohmann::json block_json = to_json(block);
+        for(int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH; i++) {
+            nlohmann::json block_json = to_json(chunk.blocks[i]);
             blocks.push_back(block_json);
             count++;
         }
@@ -63,7 +68,6 @@ namespace nova {
         std::ofstream out(filename);
         nlohmann::json j = to_json(chunk);
         out << j.dump();
-        LOG(INFO) << "Wrote JSON to file";
     }
 
     std::shared_ptr<mc_chunk> load_chunk(const std::string filename) {

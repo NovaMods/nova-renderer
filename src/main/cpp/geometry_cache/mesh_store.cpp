@@ -18,7 +18,7 @@ namespace nova {
         return renderables_grouped_by_shader[shader_name];
     }
 
-    void print_buffers(std::string texture_name, std::vector<float>& vertex_buffer, std::vector<unsigned short>& index_buffer) {
+    void print_buffers(std::string texture_name, std::vector<float>& vertex_buffer, std::vector<unsigned int>& index_buffer) {
         // debug
         LOG(DEBUG) << "texture name: " << texture_name << std::endl;
         LOG(DEBUG) << "new buffers:" << std::endl;
@@ -60,9 +60,9 @@ namespace nova {
             vertex_buffer[i+7] = command->vertex_buffer[i+7];
             vertex_buffer[i+8] = command->vertex_buffer[i+8];
         }
-        std::vector<unsigned short> index_buffer(command->index_buffer_size);
+        std::vector<unsigned int> index_buffer(command->index_buffer_size);
         for(int i = 0; i < command->index_buffer_size; i++) {
-            index_buffer[i] = (unsigned short)command->index_buffer[i];
+            index_buffer[i] = (unsigned int)command->index_buffer[i];
         }
 
         // debug
@@ -117,13 +117,12 @@ namespace nova {
     }
 
     void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
-        LOG(INFO) << "received a chunk";
         std::stringstream sstr;
         sstr << chunk.chunk_id << ".chnk";
         std::string chunk_id_str = sstr.str();
-        LOG(INFO) << "Saving chunk" << chunk_id_str;
+        //LOG(INFO) << "Saving chunk" << chunk_id_str;
         save_chunk(chunk, chunk_id_str);
-        LOG(INFO) << "Saved chunk " << chunk.chunk_id;
+        //LOG(INFO) << "Saved chunk " << chunk.chunk_id;
         auto start_time = std::clock();
 
         remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});

@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public interface NovaNative extends Library {
+    int CHUNK_WIDTH     = 16;
+    int CHUNK_HEIGHT    = 256;
+    int CHUNK_DEPTH     = 16;
+
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
 
     String GUI_ATLAS_NAME = "gui";
@@ -84,12 +88,12 @@ public interface NovaNative extends Library {
     class mc_chunk extends Structure {
         public long chunk_id;
 
-        public mc_block[] blocks = new mc_block[16 * 256 * 16];
+        public mc_block[] blocks = new mc_block[CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH];
 
         public mc_chunk() {
             super();
 
-            for(int i = 0; i < 16 * 256 * 16; i++) {
+            for(int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH; i++) {
                 blocks[i] = new NovaNative.mc_block();
             }
         }

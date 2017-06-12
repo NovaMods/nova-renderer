@@ -77,19 +77,18 @@ namespace nova {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
     }
 
-    void gl_mesh::set_index_array(std::vector<unsigned short> data, usage data_usage) {
+    void gl_mesh::set_index_array(std::vector<unsigned int> data, usage data_usage) {
         glBindVertexArray(vertex_array);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
         GLenum buffer_usage = translate_usage(data_usage);
-        LOG(INFO) << "Allocating n index buffer of size " << data.size() * sizeof(unsigned short);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned short), data.data(), buffer_usage);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned int), data.data(), buffer_usage);
 
         num_indices = (unsigned int) data.size();
     }
 
     void gl_mesh::draw() const {
         if(num_indices > 0) {
-            glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_SHORT, 0);
+            glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
         }
     }
 

@@ -55,20 +55,22 @@ public class ChunkUpdateListener implements IWorldEventListener {
             return;
         }
         long startTime = System.currentTimeMillis();
-        LOG.trace("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
         int xDist = x2 - x1 + 1;
         int yDist = y2 - y1 + 1;
         int zDist = z2 - z1 + 1;
+        LOG.info("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
+        LOG.info("Size of chunk: ({}, {}, {})", xDist, yDist, zDist);
 
         Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(x1, y1, z1));
 
         for(int x = x1; x <= x2; x++) {
-            for(int y = y1; y <= y2; y++) {
+            for(int y = y1; y < y2; y++) {
                 for(int z = z1; z <= z2; z++) {
                     int chunkX = x - x1;
                     int chunkY = y - y1;
                     int chunkZ = z - z1;
-                    int idx = (chunkX + chunkY * 16) + chunkZ * 256;
+                    int idx = chunkX + chunkY * NovaNative.CHUNK_WIDTH + chunkZ * NovaNative.CHUNK_WIDTH * NovaNative.CHUNK_HEIGHT;
+                    LOG.info("Block position: ({}, {}, {}) at idx {}", chunkX, chunkY, chunkZ, idx);
 
                     NovaNative.mc_block curBlock = updateChunk.blocks[idx];
 
@@ -77,7 +79,6 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     Material material = blockState.getMaterial();
 
                     curBlock.name = block.getUnlocalizedName();
-                    LOG.info("block name: {} at ({}, {}, {})", block.getUnlocalizedName(), x, y, z);
                     curBlock.is_on_fire = false;
                     curBlock.light_value = blockState.getLightValue();
                     curBlock.light_opacity = blockState.getLightOpacity();
