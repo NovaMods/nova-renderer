@@ -40,7 +40,12 @@ namespace nova {
      * \param expression The expression to parse into a geometry filter
      * \return A geometry filter which will match the things specified in the given expression
      */
-    std::shared_ptr<igeometry_filter> parse_filter_expression(std::string expression);
+    std::shared_ptr<igeometry_filter> parse_filter_expression(const std::string& expression);
+
+    std::shared_ptr<igeometry_filter> make_filter_expression(std::vector<std::string>::reverse_iterator tokens_itr,
+                                                             std::vector<std::string>::reverse_iterator stopping_point);
+
+    std::shared_ptr<igeometry_filter> make_filter_from_token(const std::string& token);
 }
 
 #endif //RENDERER_GEOMETRY_FILTER_LOADING_H
