@@ -136,7 +136,7 @@ set(NOVA_SOURCE
         render/objects/camera.cpp
         utils/io.cpp
         data_loading/loaders/geometry_filter_loading.cpp
-        data_loading/loaders/shader_soruce_structs.cpp)
+        data_loading/loaders/shader_source_structs.cpp)
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} 3rdparty/renderdocapi/RenderDocManager.cpp)

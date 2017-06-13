@@ -42,7 +42,7 @@ namespace nova {
      */
     std::shared_ptr<igeometry_filter> parse_filter_expression(const std::string& expression);
 
-    std::shared_ptr<igeometry_filter> make_filter_expression(std::shared_ptr<igeometry_filter> previous_filte,
+    std::shared_ptr<igeometry_filter> make_filter_expression(std::shared_ptr<igeometry_filter> previous_filter,
                                                              std::vector<std::string>::iterator tokens_itr,
                                                              std::vector<std::string>::iterator end_itr);
 

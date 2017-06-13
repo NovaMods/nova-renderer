@@ -115,5 +115,29 @@ namespace nova {
             auto token = "invalid token";
             ASSERT_THROW(make_filter_from_token(token), std::runtime_error);
         }
+
+        TEST(geometry_filter_loading, make_filter_expression_and) {
+            auto tokens = std::vector<std::string>{"transparent", "AND", "not_emissive"};
+            auto previous_filter = make_filter_from_token(tokens[0]);
+            auto tokens_itr = tokens.begin() + 1;
+
+            auto filter = make_filter_expression(previous_filter, tokens_itr, tokens.end());
+
+            auto block = mc_block();
+            block.is_opaque = false;
+            block.light_value = 0;
+
+            ASSERT_TRUE(filter->matches(block));
+
+            block.is_opaque = true;
+            ASSERT_FALSE(filter->matches(block));
+
+            block.light_value = 16;
+            block.is_opaque = false;
+            ASSERT_FALSE(filter->matches(block));
+
+            block.is_opaque = true;
+            ASSERT_FALSE(filter->matches(block));
+        }
     }
 }
