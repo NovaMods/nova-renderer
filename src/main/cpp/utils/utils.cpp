@@ -42,6 +42,12 @@ namespace nova {
         return nlohmann::json::parse(accum.c_str());
     }
 
+    std::vector<std::string> split(const std::string &s, char delim) {
+        std::vector<std::string> elems;
+        split(s, delim, std::back_inserter(elems));
+        return elems;
+    }
+
     el::base::Writer &operator<<(el::base::Writer &out, const glm::ivec3 &vec) {
         out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
         return out;

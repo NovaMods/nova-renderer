@@ -70,7 +70,6 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     int chunkY = y - y1;
                     int chunkZ = z - z1;
                     int idx = chunkX + chunkY * NovaNative.CHUNK_WIDTH + chunkZ * NovaNative.CHUNK_WIDTH * NovaNative.CHUNK_HEIGHT;
-                    LOG.info("Block position: ({}, {}, {}) at idx {}", chunkX, chunkY, chunkZ, idx);
 
                     NovaNative.mc_block curBlock = updateChunk.blocks[idx];
 

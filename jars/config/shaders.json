@@ -3,116 +3,79 @@
     "shaders": [
         {
             "name": "composite",
-            "filters": [
-                "geometry_type::fullscreen_quad"
-            ]
+            "filters": "geometry_type::fullscreen_quad"
         },
         {
             "name": "gbuffers_basic",
-            "filters": [
-                "sky_object"
-            ]
+            "filters": "sky_object"
         },
         {
             "name": "gbuffers_skybasic",
-            "filters": [
-                "sky_object"
-            ],
+            "filters": "sky_object",
             "fallback": "gbuffers_basic"
         },
         {
             "name": "gbuffers_textured",
-            "filters": [
-                "geometry_type::particle"
-            ],
+            "filters": "geometry_type::particle",
             "fallback": "gbuffers_basic"
         },
         {
             "name": "gbuffers_spidereyes",
-            "filters": [
-                "geometry_type::eyes"
-            ],
+            "filters": "geometry_type::eyes",
             "fallback": "gbuffers_textured"
         },
         {
             "name": "gbuffers_armor_glint",
-            "filters": [
-                "geometry_type::glint"
-            ],
+            "filters": "geometry_type::glint",
             "fallback": "gbuffers_textured"
         },
         {
             "name": "gbuffers_clouds",
-            "filters": [
-                "geometry_type::cloud"
-            ],
+            "filters": "geometry_type::cloud",
             "fallback": "gbuffers_textured"
         },
         {
             "name": "gbuffers_skytextured",
-            "filters": [
-                "name::sun",
-                "name::moon"
-            ],
+            "filters": "name::sun OR name::moon",
             "fallback": "gbuffers_textured"
         },
         {
             "name": "gbuffers_textures_lit",
-            "filters": [
-                "geometry_type::lit_partcle",
-                "name::world_border"
-            ]
+            "filters": "geometry_type::lit_partcle OR name::world_border"
         },
         {
             "name": "gbuffers_entities",
-            "filters": [
-                "geometry_type::entity"
-            ],
+            "filters": "geometry_type::entity",
             "fallback": "gbuffers_textured_lit"
         },
         {
             "name": "gbuffers_hand",
-            "filters": [
-                "geometry_type::hand"
-            ],
+            "filters": "geometry_type::hand",
             "fallback": "gbuffers_textured_lit"
         },
         {
             "name": "gbuffers_weather",
-            "filters": [
-                "geometry_type::weather"
-            ],
+            "filters": "geometry_type::weather",
             "fallback": "gbuffers_textured_lit"
         },
         {
             "name": "gbuffers_terrain",
-            "filters": [
-                "geometry_type::block",
-                "not_transparent"
-            ],
+            "filters": "geometry_type::block AND not_transparent",
             "fallback": "gbuffers_textures_lit"
         },
         {
             "name": "gbuffers_damagedblock",
-            "filters": [
-                "geometry_type::block",
-                "damaged"
-            ],
+            "filters": "geometry_type::block AND damaged",
             "fallback": "gbuffers_terrain"
         },
         {
             "name": "gbuffers_water",
-            "filters": [
-                "geometry_type::block",
-                "transparent"
-            ],
+            "filters": "geometry_type::block AND transparent",
             "fallback": "gbuffers_terrain"
         },
         {
             "name": "gui",
-            "filters": [
-                "geometry_type::gui"
-            ],
+            "filters": "geometry_type::gui",
             "fallback": "gbuffers_textured"
         }
     ]

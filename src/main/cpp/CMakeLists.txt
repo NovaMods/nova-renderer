@@ -95,6 +95,7 @@ set(NOVA_HEADERS
         render/objects/camera.h
         render/objects/framebuffer.h
         utils/io.h
+        data_loading/loaders/geometry_filter_loading.h
         )
 
 set(NOVA_SOURCE
@@ -134,6 +135,7 @@ set(NOVA_SOURCE
         render/objects/framebuffer.cpp
         render/objects/camera.cpp
         utils/io.cpp
+        data_loading/loaders/geometry_filter_loading.cpp
         )
 
 if (WIN32)
@@ -204,7 +206,8 @@ set(TEST_SOURCE_FILES
         test/render/objects/shaders/gl_shader_program_test.cpp
         test/geometry_cache/mesh_store_test.cpp
         test/test_utils.cpp
-        test/test_utils.h test/utils/io_test.cpp)
+        test/test_utils.h
+        test/utils/io_test.cpp )
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
 

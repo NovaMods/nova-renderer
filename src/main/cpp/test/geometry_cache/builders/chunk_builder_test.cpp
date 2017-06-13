@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include <glm/glm.hpp>
 #include "../../../geometry_cache/builders/chunk_builder.h"
+#include "../../test_utils.h"
 #include <easylogging++.h>
 
 namespace nova {
@@ -146,7 +147,7 @@ namespace nova {
             auto mesh = make_mesh_for_blocks(block_poses, *chunk);
 
             block_vertex* vert1 = (block_vertex *) &mesh.vertex_data[0];
-            auto compare = glm::vec3{0, 0.5f, 0} + glm::vec3{block_pos};
+            auto compare = glm::vec3{0, 1, 0} + glm::vec3{block_pos};
             ASSERT_EQ(vert1->position, compare);
         }
 
@@ -164,6 +165,17 @@ namespace nova {
             auto faces = make_geometry_for_block(block_pos, *chunk);
 
             ASSERT_EQ(faces.size(), 5);
+        }
+
+        TEST(chunk_builder_test, get_blocks_that_match_filter_gbuffers_terrain_filter) {
+            auto chunk = load_test_chunk("0.chnk");
+
+            auto filter = geometry_filter{};
+            reject_transparent(filter);
+            accept_geometry_type(filter, geometry_type::block);
+
+            auto blocks_for_filter = get_blocks_that_match_filter(*chunk, filter);
+            ASSERT_EQ(blocks_for_filter.size(), 65535 - 50751);
         }
     }
 }

@@ -43,12 +43,14 @@ namespace nova {
             for(int y = 0; y < CHUNK_HEIGHT; y++) {
                 for(int x = 0; x < CHUNK_DEPTH; x++) {
                     int i = x + y * CHUNK_WIDTH + z * CHUNK_WIDTH * CHUNK_HEIGHT;
-                    if(chunk.blocks[i].name != "tile.air") {    // Explicitly skip Air
-                        if(filter.matches(chunk.blocks[i])) {
+                    auto cur_block = chunk.blocks[i];
+                    //if(std::strcmp(cur_block.name, "tile.air") != 0) {    // Explicitly skip Air
+                        if(filter.matches(cur_block)) {
+                            LOG(INFO) << "Adding block " << cur_block.name;
                             auto pos = glm::ivec3(x, y, z);
                             blocks_that_match_filter.push_back(pos);
                         }
-                    }
+                    //}
                 }
             }
         }

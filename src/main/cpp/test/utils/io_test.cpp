@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include "../../mc_interface/mc_objects.h"
 #include "../../utils/io.h"
+#include "../test_utils.h"
 
 namespace nova {
     namespace test {
