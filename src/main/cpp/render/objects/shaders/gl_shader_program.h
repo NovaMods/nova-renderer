@@ -95,7 +95,7 @@ namespace nova {
          */
         void bind() noexcept;
 
-        geometry_filter& get_filter() noexcept;
+        std::shared_ptr<igeometry_filter> get_filter() noexcept;
 
         std::string& get_name() noexcept;
 
@@ -110,7 +110,7 @@ namespace nova {
          * Since there's a one-to-one correlation between shaders and filters, I thought it'd be best to put the
          * filter with the shader
          */
-        geometry_filter filter;
+        std::shared_ptr<igeometry_filter> filter;
 
         void create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type);
 
@@ -120,8 +120,6 @@ namespace nova {
 
         void check_for_linking_errors();
     };
-
-    geometry_filter figure_out_filters(std::vector<std::string> filter_names);
 }
 
 #endif //RENDERER_GL_SHADER_H

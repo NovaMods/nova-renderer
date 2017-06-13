@@ -170,12 +170,11 @@ namespace nova {
         TEST(chunk_builder_test, get_blocks_that_match_filter_gbuffers_terrain_filter) {
             auto chunk = load_test_chunk("0.chnk");
 
-            auto filter = geometry_filter{};
-            reject_transparent(filter);
-            accept_geometry_type(filter, geometry_type::block);
+            auto filter = std::make_shared<and_geometry_filter>(std::make_shared<transparent_geometry_filter>(false),
+                                                                std::make_shared<geometry_type_geometry_filter>(geometry_type::block));
 
             auto blocks_for_filter = get_blocks_that_match_filter(*chunk, filter);
-            ASSERT_EQ(blocks_for_filter.size(), 65535 - 50751);
+            ASSERT_EQ(blocks_for_filter.size(), 14642);
         }
     }
 }

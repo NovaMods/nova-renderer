@@ -65,7 +65,7 @@ namespace nova {
      * \return A render_object which holds all the geometry to be rendered by the provided filter, or an empty optional
      * if nothing matches the filter
      */
-    optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, const igeometry_filter& filter);
+    optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, const std::shared_ptr<igeometry_filter> filter);
 
     /*!
      * \brief Finds the indices of all the blocks that match the provided filter, and returns those indices
@@ -74,7 +74,7 @@ namespace nova {
      * \param filter The filter to match blocks against
      * \return A list of all the positions of blocks that match the filter
      */
-    std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_chunk &chunk, const igeometry_filter& filter);
+    std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_chunk &chunk, const std::shared_ptr<igeometry_filter> filter);
 
     /*!
      * \brief Makes a mesh_definition for all the provided blocks

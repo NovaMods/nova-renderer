@@ -94,8 +94,8 @@ namespace nova {
     void mesh_store::sort_render_object(render_object& object) {
         auto& all_shaders = shaders->get_loaded_shaders();
         for(auto& entry : all_shaders) {
-            auto& filter = entry.second.get_filter();
-            if(filter.matches(object)) {
+            auto filter = entry.second.get_filter();
+            if(filter->matches(object)) {
                 renderables_grouped_by_shader[entry.first].push_back(std::move(object));
             }
         }

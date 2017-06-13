@@ -25,20 +25,13 @@ namespace nova {
 
             EXPECT_EQ(shader.get_name(), "gui");
 
-            auto filter = shader.get_filter();
-
-            ASSERT_EQ(filter.geometry_types.size(), 1);
-            EXPECT_EQ(filter.geometry_types[0], nova::geometry_type::gui);
-
-            EXPECT_EQ(filter.names.size(), 0);
-            EXPECT_EQ(filter.name_parts.size(), 0);
             nova::nova_renderer::deinit();
         }
 
         nlohmann::json get_gui_def_json() {
             return {
                     {"name",     "gui"},
-                    {"filters",  {"geometry_type::gui"}},
+                    {"filters",  "geometry_type::gui"},
                     {"fallback", "gbuffers_textured"}
             };
         };

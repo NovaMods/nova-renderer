@@ -136,7 +136,7 @@ set(NOVA_SOURCE
         render/objects/camera.cpp
         utils/io.cpp
         data_loading/loaders/geometry_filter_loading.cpp
-        )
+        data_loading/loaders/shader_soruce_structs.cpp)
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} 3rdparty/renderdocapi/RenderDocManager.cpp)
@@ -207,7 +207,7 @@ set(TEST_SOURCE_FILES
         test/geometry_cache/mesh_store_test.cpp
         test/test_utils.cpp
         test/test_utils.h
-        test/utils/io_test.cpp )
+        test/utils/io_test.cpp test/data_loading/loaders/geometry_filter_loading_test.cpp)
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
 

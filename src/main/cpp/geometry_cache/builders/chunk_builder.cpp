@@ -22,7 +22,7 @@ namespace nova {
         return final_geometry;
     }
 
-    optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, const geometry_filter& filter) {
+    optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, const std::shared_ptr<igeometry_filter> filter) {
         auto blocks_that_match_filter = get_blocks_that_match_filter(chunk, filter);
 
         if(blocks_that_match_filter.size() == 0) {
@@ -37,7 +37,7 @@ namespace nova {
         return make_optional(std::move(block_render_object));
     }
 
-    std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_chunk &chunk, const geometry_filter &filter) {
+    std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_chunk &chunk, const std::shared_ptr<igeometry_filter> filter) {
         auto blocks_that_match_filter = std::vector<glm::ivec3>{};
         for(int z = 0; z < CHUNK_WIDTH; z++) {
             for(int y = 0; y < CHUNK_HEIGHT; y++) {
@@ -45,7 +45,7 @@ namespace nova {
                     int i = x + y * CHUNK_WIDTH + z * CHUNK_WIDTH * CHUNK_HEIGHT;
                     auto cur_block = chunk.blocks[i];
                     //if(std::strcmp(cur_block.name, "tile.air") != 0) {    // Explicitly skip Air
-                        if(filter.matches(cur_block)) {
+                        if(filter->matches(cur_block)) {
                             LOG(INFO) << "Adding block " << cur_block.name;
                             auto pos = glm::ivec3(x, y, z);
                             blocks_that_match_filter.push_back(pos);

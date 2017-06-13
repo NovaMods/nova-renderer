@@ -7,11 +7,12 @@
 #include <algorithm>
 
 #include <easylogging++.h>
-#include <malloc.h>
 #include "gl_shader_program.h"
+#include "../../../data_loading/loaders/geometry_filter_loading.h"
 
 namespace nova {
-    gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name), filter(figure_out_filters(source.filters)) {
+    gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {
+        filter = parse_filter_expression(source.filter_expression);
         create_shader(source.vertex_source, GL_VERTEX_SHADER);
         create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
 
@@ -132,38 +133,12 @@ namespace nova {
         added_shaders.push_back(shader_name);
     }
 
-    geometry_filter& gl_shader_program::get_filter() noexcept {
+    std::shared_ptr<igeometry_filter> gl_shader_program::get_filter() noexcept {
         return filter;
     }
 
     std::string &gl_shader_program::get_name() noexcept {
         return name;
-    }
-
-    geometry_filter figure_out_filters(std::vector<std::string> filter_names) {
-        geometry_filter filter = {};
-
-        for(auto& filter_name : filter_names) {
-            if(filter_name.find("geometry_type::") == 0) {
-                auto type_name_str = filter_name.substr(15);
-                auto type_name = geometry_type::from_string(type_name_str);
-                filter.geometry_types.push_back(type_name);
-
-            } else if(filter_name.find("name::") == 0) {
-                auto name = filter_name.substr(6);
-                filter.names.push_back(name);
-
-            } else if(filter_name.find("name_part::") == 0) {
-                auto name_part = filter_name.substr(11);
-                filter.name_parts.push_back(name_part);
-
-            } else {
-                auto modify_function = geometry_filter::modifying_functions[filter_name];
-                modify_function(filter);
-            }
-        }
-
-        return filter;
     }
 
     wrong_shader_version::wrong_shader_version(const std::string &version_line) :

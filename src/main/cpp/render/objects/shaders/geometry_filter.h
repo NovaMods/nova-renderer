@@ -17,6 +17,8 @@ namespace nova {
          * \return True if the block matches, false if it does not
          */
         virtual bool matches(const mc_block& block) const = 0;
+
+        virtual bool matches(const render_object& obj) const = 0;
     };
 
     class and_geometry_filter : public igeometry_filter {
@@ -29,6 +31,8 @@ namespace nova {
          * \return True if the block matches both filters, false otherwise
          */
         bool matches(const mc_block& block) const;
+
+        bool matches(const render_object& obj) const;
 
     private:
         std::shared_ptr<igeometry_filter> filter1;
@@ -46,6 +50,8 @@ namespace nova {
          */
         bool matches(const mc_block& block) const;
 
+        bool matches(const render_object& obj) const;
+
     private:
         std::shared_ptr<igeometry_filter> filter1;
         std::shared_ptr<igeometry_filter> filter2;
@@ -56,14 +62,19 @@ namespace nova {
         name_geometry_filter(std::string name);
 
         bool matches(const mc_block& block) const;
+
+        bool matches(const render_object& obj) const;
     private:
         std::string name;
     };
 
     class name_part_geometry_filter : public igeometry_filter {
+    public:
         name_part_geometry_filter(std::string name_part);
 
         bool matches(const mc_block& block) const;
+
+        bool matches(const render_object& obj) const;
     private:
         std::string name_part;
     };
@@ -73,6 +84,8 @@ namespace nova {
         geometry_type_geometry_filter(geometry_type type);
 
         bool matches(const mc_block& block) const;
+
+        bool matches(const render_object& obj) const;
     private:
         geometry_type type;
     };
@@ -82,6 +95,8 @@ namespace nova {
         transparent_geometry_filter(bool should_be_transparent = true);
 
         bool matches(const mc_block& block) const;
+
+        bool matches(const render_object& obj) const;
     private:
         bool should_be_transparent;
     };
@@ -91,6 +106,8 @@ namespace nova {
         emissive_geometry_filter(bool should_be_emissive = true);
 
         bool matches(const mc_block& block) const;
+
+        bool matches(const render_object& obj) const;
     private:
         bool should_be_emissive;
     };

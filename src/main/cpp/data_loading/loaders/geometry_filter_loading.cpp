@@ -18,38 +18,40 @@ namespace nova {
             throw new std::runtime_error("Cannot have an even number of tokens. Check yourself and try again");
         }
 
-        auto tokens_itr = tokens.rbegin();
+        auto tokens_itr = tokens.begin();
 
         auto filter0 = make_filter_from_token(*tokens_itr);
-        if(tokens_itr == tokens.rend()) {
+        if(tokens_itr + 1 == tokens.end()) {
             return filter0;
         }
 
-        return make_filter_expression(++tokens_itr, tokens.rend());
+        return make_filter_expression(filter0, ++tokens_itr, tokens.end());
     }
 
-    std::shared_ptr<igeometry_filter> make_filter_expression(std::vector<std::string>::reverse_iterator tokens_itr,
-                                                             std::vector<std::string>::reverse_iterator stopping_point) {
-        bool look_for_another_expression = !(tokens_itr + 2 > stopping_point);
-        std::vector<std::string>::reverse_iterator next_expression_itr = tokens_itr + 1;
-
-        if(look_for_another_expression) {
-            next_expression_itr = tokens_itr + 2;
-        }
+    std::shared_ptr<igeometry_filter> make_filter_expression(std::shared_ptr<igeometry_filter> previous_filter,
+                                                             std::vector<std::string>::iterator tokens_itr,
+                                                             std::vector<std::string>::iterator end_itr) {
+        auto has_another_expression = tokens_itr + 2 < end_itr;
+        std::shared_ptr<igeometry_filter> this_filter;
 
         if(*tokens_itr == "AND") {
-            return std::make_shared<and_geometry_filter>(
-                    make_filter_expression(tokens_itr--, stopping_point),
-                    make_filter_expression(next_expression_itr, stopping_point));
+            this_filter = std::make_shared<and_geometry_filter>(previous_filter,
+                                                                    make_filter_from_token(*(tokens_itr + 1)));
 
         } else if(*tokens_itr == "OR") {
-            return std::make_shared<or_geometry_filter>(
-                    make_filter_expression(tokens_itr--, stopping_point),
-                    make_filter_expression(next_expression_itr, stopping_point));
+            this_filter = std::make_shared<or_geometry_filter>(previous_filter,
+                                                                   make_filter_from_token(*(tokens_itr + 1)));
 
         } else {
             // Regular filter
             return make_filter_from_token(*tokens_itr);
+        }
+
+        if(has_another_expression) {
+            return make_filter_expression(this_filter, tokens_itr + 2, end_itr);
+
+        } else {
+            return this_filter;
         }
     }
 
