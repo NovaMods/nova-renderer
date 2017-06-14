@@ -8,6 +8,7 @@
 #include "chunk_builder.h"
 #include "../../utils/utils.h"
 
+#include <iostream>
 #include <easylogging++.h>
 
 namespace nova {
@@ -102,23 +103,32 @@ namespace nova {
     }
 
 	std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk) {
+        LOG(INFO) << "Checking opaqueness around position " << block_pos << std::boolalpha ;
 		auto faces_to_make = std::vector<face_id>{};
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk)) {
+        bool top_is_opaque = block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk);
+        LOG(INFO) << "Is the top block opaque? " << top_is_opaque;
+		if(!top_is_opaque) {
+            LOG(INFO) << "Top block is not opaque";
             faces_to_make.push_back(face_id::TOP);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk)) {
+            LOG(INFO) << "Bottom block is not opaque";
             faces_to_make.push_back(face_id::BOTTOM);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk)) {
+            LOG(INFO) << "Right block is not opaque";
             faces_to_make.push_back(face_id::RIGHT);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk)) {
+            LOG(INFO) << "Left block is not opaque";
             faces_to_make.push_back(face_id::LEFT);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk)) {
+            LOG(INFO) << "Front block is not opaque";
             faces_to_make.push_back(face_id::FRONT);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk)) {
+            LOG(INFO) << "Back block is not opaque";
             faces_to_make.push_back(face_id::BACK);
         }
 
@@ -128,28 +138,36 @@ namespace nova {
 			quads.push_back(make_quad(face, 1));
 		}
 
+        LOG(INFO) << "Generated " << quads.size() << " faces";
 		return quads;
 	}
 
     bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk) {
         // A separate check for each direction to increase code readability and debuggability
         if(block_pos.x < 0 || block_pos.x >= CHUNK_WIDTH) {
+            LOG(INFO) << "block_pos.x (" << block_pos.x << ") is greater then " << CHUNK_WIDTH << " or less than 0";
             return false;
         }
 
         if(block_pos.y < 0 || block_pos.y >= CHUNK_HEIGHT) {
+            LOG(INFO) << "block_pos.y (" << block_pos.y << ") is greater then " << CHUNK_HEIGHT << " or less than 0";
             return false;
         }
 
         if(block_pos.z < 0 || block_pos.z >= CHUNK_DEPTH) {
+            LOG(INFO) << "block_pos.z (" << block_pos.z << ") is greater then " << CHUNK_DEPTH << " or less than 0";
             return false;
         }
 
         auto block_idx = pos_to_idx(block_pos);
         auto block = chunk.blocks[block_idx];
 
-        return block.is_opaque;
-
+        LOG(INFO) << "The block to check is " << (block.is_opaque ? "" : "not ") << "opaque";
+        // This code looks silly. is_opaque is already a boolean, why so this terniary malarkey? I'll tell you why.
+        // If is_opaque is true, then !is_opaque is also true
+        // If is_opaque is false, then !is_opaque is true
+        // Why is this? I have no idea. I'm just getting kinda really tired of it
+        return block.is_opaque ? true : false;
     }
 
     int pos_to_idx(const glm::ivec3& pos) {
