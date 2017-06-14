@@ -284,8 +284,8 @@ namespace nova {
         LOG(TRACE) << "Rendering everything for shader " << shader.get_name();
         shader.bind();
 
-        auto& terrain_geometry = meshes->get_meshes_for_shader(shader.get_name());
-        for(auto& geom : terrain_geometry) {
+        auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
+        for(auto& geom : geometry) {
             if(geom.color_texture != "") {
                 auto color_texture = textures->get_texture(geom.color_texture);
                 color_texture.bind(0);

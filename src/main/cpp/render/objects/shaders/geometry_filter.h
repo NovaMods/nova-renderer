@@ -19,6 +19,8 @@ namespace nova {
         virtual bool matches(const mc_block& block) const = 0;
 
         virtual bool matches(const render_object& obj) const = 0;
+
+        virtual std::string to_string() const = 0;
     };
 
     class and_geometry_filter : public igeometry_filter {
@@ -33,6 +35,8 @@ namespace nova {
         bool matches(const mc_block& block) const;
 
         bool matches(const render_object& obj) const;
+
+        std::string to_string() const;
 
     private:
         std::shared_ptr<igeometry_filter> filter1;
@@ -52,6 +56,8 @@ namespace nova {
 
         bool matches(const render_object& obj) const;
 
+        std::string to_string() const;
+
     private:
         std::shared_ptr<igeometry_filter> filter1;
         std::shared_ptr<igeometry_filter> filter2;
@@ -64,6 +70,8 @@ namespace nova {
         bool matches(const mc_block& block) const;
 
         bool matches(const render_object& obj) const;
+
+        std::string to_string() const;
     private:
         std::string name;
     };
@@ -75,6 +83,8 @@ namespace nova {
         bool matches(const mc_block& block) const;
 
         bool matches(const render_object& obj) const;
+
+        std::string to_string() const;
     private:
         std::string name_part;
     };
@@ -86,17 +96,22 @@ namespace nova {
         bool matches(const mc_block& block) const;
 
         bool matches(const render_object& obj) const;
+
+        std::string to_string() const;
     private:
         geometry_type type;
     };
 
     class transparent_geometry_filter : public igeometry_filter {
     public:
-        transparent_geometry_filter(bool should_be_transparent = true);
+        transparent_geometry_filter();
+        transparent_geometry_filter(bool should_be_transparent);
 
         bool matches(const mc_block& block) const;
 
         bool matches(const render_object& obj) const;
+
+        std::string to_string() const;
     private:
         bool should_be_transparent;
     };
@@ -108,6 +123,8 @@ namespace nova {
         bool matches(const mc_block& block) const;
 
         bool matches(const render_object& obj) const;
+
+        std::string to_string() const;
     private:
         bool should_be_emissive;
     };

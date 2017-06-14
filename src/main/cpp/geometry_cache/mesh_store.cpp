@@ -157,6 +157,8 @@ namespace nova {
         for(auto& item : render_objects_from_chunk) {
             if(item.second) {
                 renderables_grouped_by_shader[item.first].push_back(std::move(*item.second));
+            } else {
+                LOG(INFO) << "No renderables generates for shader " << item.first;
             }
         }
     }

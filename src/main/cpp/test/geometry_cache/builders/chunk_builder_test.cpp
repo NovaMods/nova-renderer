@@ -174,7 +174,7 @@ namespace nova {
                                                                 std::make_shared<geometry_type_geometry_filter>(geometry_type::block));
 
             auto blocks_for_filter = get_blocks_that_match_filter(*chunk, filter);
-            ASSERT_EQ(blocks_for_filter.size(), 14642);
+            ASSERT_EQ(blocks_for_filter.size(), 16389);
         }
     }
 }

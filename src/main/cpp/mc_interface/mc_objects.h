@@ -49,15 +49,6 @@ struct mc_block {
     bool is_opaque;
     bool blocks_light;
 
-    /*!
-     * \brief Checks if the block is solid or not
-     *
-     * This method (and the other methods on mc_block) are not resourcepack-aware. If you make a resourcepack where
-     * water is solid, good for you, but this method won't care
-     *
-     * \return True if the block is solid, false otherwise
-     */
-    bool is_transparent() const;
     bool is_emissive() const;
 };
 
