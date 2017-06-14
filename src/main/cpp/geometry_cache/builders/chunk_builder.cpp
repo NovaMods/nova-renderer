@@ -103,7 +103,7 @@ namespace nova {
     }
 
 	std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk) {
-        LOG(INFO) << "Checking opaqueness around position " << block_pos << std::boolalpha ;
+        LOG(INFO) << "Checking opaqueness around position " << block_pos << std::boolalpha;
 		auto faces_to_make = std::vector<face_id>{};
         bool top_is_opaque = block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk);
         LOG(INFO) << "Is the top block opaque? " << top_is_opaque;
@@ -162,12 +162,8 @@ namespace nova {
         auto block_idx = pos_to_idx(block_pos);
         auto block = chunk.blocks[block_idx];
 
-        LOG(INFO) << "The block to check is " << (block.is_opaque ? "" : "not ") << "opaque";
-        // This code looks silly. is_opaque is already a boolean, why so this terniary malarkey? I'll tell you why.
-        // If is_opaque is true, then !is_opaque is also true
-        // If is_opaque is false, then !is_opaque is true
-        // Why is this? I have no idea. I'm just getting kinda really tired of it
-        return block.is_opaque ? true : false;
+        LOG(INFO) << "The block to check is " << (block.is_transparent() ? "not " : "") << "opaque";
+        return !block.is_transparent();
     }
 
     int pos_to_idx(const glm::ivec3& pos) {

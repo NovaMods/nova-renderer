@@ -82,7 +82,7 @@ namespace nova {
 
     bool transparent_geometry_filter::matches(const mc_block &block) const {
         //LOG(INFO) << "Is the block transparent? " << (block.is_opaque ? "false" : "true") << ". Do we accept transparency? " << (should_be_transparent ? "true" : "false");
-        return block.is_opaque != should_be_transparent;
+        return block.is_transparent() == should_be_transparent;
     }
 
     bool transparent_geometry_filter::matches(const render_object &obj) const {

@@ -46,10 +46,11 @@ struct mc_block {
 	int light_value;
 	int light_opacity;
 	float ao;
-    bool is_opaque;
-    bool blocks_light;
+    int is_opaque;
+    int blocks_light;
 
     bool is_emissive() const;
+	bool is_transparent() const;
 };
 
 /*!
