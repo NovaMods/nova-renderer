@@ -99,6 +99,16 @@ namespace nova {
 
         std::string& get_name() noexcept;
 
+        /*!
+         * \brief Finds the uniform location of the given uniform variable
+         *
+         * The first time this method is called for a given string, it calls glGetUniformLocation to get the uniform
+         * location. The result of that function is then cached so that glGetUniformLocation only needs to be called
+         * once for every uniform variable, no matter how many times you upload data to that variable
+         *
+         * \param uniform_name The name of the uniform variable to get the location of
+         * \return The location of the desired uniform variable
+         */
         GLint get_uniform_location(const std::string uniform_name);
 
     private:

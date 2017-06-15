@@ -86,7 +86,7 @@ public interface NovaNative extends Library {
     }
 
     class mc_chunk extends Structure {
-        public long chunk_id;
+        public int chunk_id;
 
         public float x;
         public float z;

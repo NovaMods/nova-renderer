@@ -56,7 +56,11 @@ namespace nova {
         // Clear to the clear color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // upload shadow UBO things
+
         render_shadow_pass();
+
+        update_gbuffer_ubos();
 
         render_gbuffers();
 
@@ -302,14 +306,18 @@ namespace nova {
                 textures->get_texture(*geom.data_texture).bind(2);
             }
 
-            glm::mat4 model_matrix;
-            model_matrix[3].x = geom.position.x;
-            model_matrix[3].y = geom.position.y;
-            model_matrix[3].z = geom.position.z;
+            upload_model_matrix(geom, shader);
 
             geom.geometry->set_active();
             geom.geometry->draw();
         }
+    }
+
+    void nova_renderer::upload_model_matrix(render_object &geom, gl_shader_program &program) const {
+        glm::mat4 model_matrix = glm::translate(glm::mat4(1), geom.position);
+
+        auto model_matrix_location = program.get_uniform_location("gbufferModel");
+        glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &model_matrix[0][0]);
     }
 
     void nova_renderer::upload_gui_model_matrix(gl_shader_program &program) {
@@ -327,6 +335,11 @@ namespace nova {
         auto model_matrix_location = program.get_uniform_location("gbufferModel");
 
         glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &gui_model[0][0]);
+    }
+
+    void nova_renderer::update_gbuffer_ubos() {
+        // Big thing here is to update the camera's matrices
+
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {

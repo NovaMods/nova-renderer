@@ -33,6 +33,8 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     private NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
 
+    private boolean hasNonAirChunk = false;
+
     public void setWorld(World world) {
         this.world = world;
     }
@@ -49,12 +51,14 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
+        if(hasNonAirChunk) {
+            return;
+        }
         long startTime = System.currentTimeMillis();
         int xDist = x2 - x1 + 1;
         int yDist = y2 - y1 + 1;
         int zDist = z2 - z1 + 1;
         LOG.info("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
-        LOG.info("Size of chunk: ({}, {}, {})", xDist, yDist, zDist);
 
         Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(x1, y1, z1));
 
@@ -74,7 +78,7 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
         updateChunk.x = x1;
         updateChunk.z = z1;
-        LOG.info("Chunk is at ({}, {})", updateChunk.x, updateChunk.z);
+        LOG.info("Setting chunk position to {}, {} in Java", x1, z1);
         updateChunk.chunk_id = new Point(mcChunk.xPosition, mcChunk.zPosition).hashCode();
 
         // Fire off the chunk building task
@@ -82,7 +86,6 @@ public class ChunkUpdateListener implements IWorldEventListener {
         NovaNative.INSTANCE.add_chunk(updateChunk);
 
         long deltaTime = System.currentTimeMillis() - startTime;
-        LOG.trace("It took {}ms to update a {}x{}x{} block of blocks", deltaTime, xDist, yDist, zDist);
         timeSpentInBlockRenderUpdate += deltaTime;
         numChunksUpdated++;
 
@@ -104,6 +107,10 @@ public class ChunkUpdateListener implements IWorldEventListener {
         curBlock.ao = blockState.getAmbientOcclusionLightValue();
         curBlock.is_opaque = material.isOpaque();
         curBlock.blocks_light = material.blocksLight();
+
+        if(!block.getUnlocalizedName().equals("tile.air")) {
+            hasNonAirChunk = true;
+        }
     }
 
     @Override
