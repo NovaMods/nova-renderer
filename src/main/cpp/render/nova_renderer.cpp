@@ -7,6 +7,7 @@
 #include "../data_loading/loaders/loaders.h"
 
 #include <easylogging++.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -98,6 +99,8 @@ namespace nova {
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
         gui_shader.bind();
+
+        upload_gui_model_matrix(gui_shader);
 
         // Render GUI objects
         std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
@@ -299,9 +302,31 @@ namespace nova {
                 textures->get_texture(*geom.data_texture).bind(2);
             }
 
+            glm::mat4 model_matrix;
+            model_matrix[3].x = geom.position.x;
+            model_matrix[3].y = geom.position.y;
+            model_matrix[3].z = geom.position.z;
+
             geom.geometry->set_active();
             geom.geometry->draw();
         }
+    }
+
+    void nova_renderer::upload_gui_model_matrix(gl_shader_program &program) {
+        auto config = render_settings->get_options()["settings"];
+        float view_width = config["viewWidth"];
+        float view_height = config["viewHeight"];
+        float scalefactor = config["scalefactor"];
+        // The GUI matrix is super simple, just a viewport transformation
+        glm::mat4 gui_model(1.0f);
+        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
+        gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
+        gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
+        gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
+
+        auto model_matrix_location = program.get_uniform_location("gbufferModel");
+
+        glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &gui_model[0][0]);
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {

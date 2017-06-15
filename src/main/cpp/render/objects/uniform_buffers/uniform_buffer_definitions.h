@@ -26,30 +26,6 @@ namespace nova {
      * The data in the structure should only be uploaded once per frame
      */
     struct per_frame_uniforms {
-        GLint heldItemId;
-        GLint heldBlockLightValue;
-        GLint heldItemId2;
-        GLint heldBlockLightValue2;
-        GLint fogMode;
-        glm::vec3 fogColor;
-        glm::vec3 skyColor;
-        GLint worldTime;
-        GLint moonPhase;
-        GLfloat frameTimeCounter;
-        GLfloat sunAngle;
-        GLfloat shadowAngle;
-        GLfloat rainStrength;
-        GLfloat aspectRatio;
-        GLfloat viewWidth;
-        GLfloat viewHeight;
-        GLfloat nearPlane;  // near in the shaders. Re-named because GCC was yelling about "This line does not declare anything", like it's some great authority on declaring things
-        GLfloat farPlane;   // far in the shaders
-        glm::vec3 sunPosition;
-        glm::vec3 moonPosition;
-        glm::vec3 shadowLightPosition;
-        glm::vec3 upPosition;
-        glm::vec3 cameraPosition;
-        glm::vec3 previousCameraPosition;
         glm::mat4 gbufferModelView;
         glm::mat4 gbufferModelViewInverse;
         glm::mat4 gbufferPreviousModelView;
@@ -60,32 +36,51 @@ namespace nova {
         glm::mat4 shadowProjectionInverse;
         glm::mat4 shadowModelView;
         glm::mat4 shadowModelViewInverse;
-        GLfloat wetness;
-        GLfloat eyeAltitude;
+        glm::vec4 entityColor;
+        glm::vec3 fogColor;
+        float padding1; // needed to fit the GLSL std140 alignment rules. A future version will pack the data here more efficiently
+        glm::vec3 skyColor;
+        float padding2;
+        glm::vec3 sunPosition;
+        float padding3;
+        glm::vec3 moonPosition;
+        float padding4;
+        glm::vec3 shadowLightPosition;
+        float padding5;
+        glm::vec3 upPosition;
+        float padding6;
+        glm::vec3 cameraPosition;
+        float padding7;
+        glm::vec3 previousCameraPosition;
+        float padding8;
         glm::ivec2 eyeBrightness;
         glm::ivec2 eyeBrightnessSmooth;
         glm::ivec2 terrainTextureSize;
+        glm::ivec2 atlasSize;
+        GLint heldItemId;
+        GLint heldBlockLightValue;
+        GLint heldItemId2;
+        GLint heldBlockLightValue2;
+        GLint fogMode;
+        GLint worldTime;
+        GLint moonPhase;
         GLint terrainIconSize;
         GLint isEyeInWater;
         GLint hideGUI;
-        GLfloat centerDepthSmooth;
-        glm::ivec2 atlasSize;
-        glm::vec4 entityColor;
         GLint entityId;
         GLint blockEntityId;
-    };
-
-    /*!
-     * \brief Holds all the uniform variables needed by the GUI
-     */
-    struct gui_uniforms {
-        glm::mat4 gbufferModelView;
-        glm::mat4 gbufferProjection;
+        GLfloat frameTimeCounter;
+        GLfloat sunAngle;
+        GLfloat shadowAngle;
+        GLfloat rainStrength;
+        GLfloat aspectRatio;
         GLfloat viewWidth;
         GLfloat viewHeight;
-        GLfloat aspectRatio;
-        GLfloat frameTimeCounter;
-        GLint hideGUI;
+        GLfloat nearPlane;  // near in the shaders. Re-named because GCC was yelling about "This line does not declare anything", like it's some great authority on declaring things
+        GLfloat farPlane;   // far in the shaders
+        GLfloat wetness;
+        GLfloat eyeAltitude;
+        GLfloat centerDepthSmooth;
     };
 
     /*!
@@ -162,8 +157,6 @@ namespace nova {
     };
 
     el::base::Writer& operator<<(el::base::Writer& out, const glm::mat4& mat);
-
-    el::base::Writer& operator<<(el::base::Writer& out, gui_uniforms uniforms);
 }
 
 #endif //RENDERER_UNIFORM_BUFFERS_H

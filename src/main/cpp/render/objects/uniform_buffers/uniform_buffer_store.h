@@ -9,10 +9,10 @@
 #include <string>
 #include <unordered_map>
 #include <json.hpp>
-#include "../data_loading/settings.h"
-#include "objects/shaders/gl_shader_program.h"
-#include "objects/shaders/uniform_buffer_definitions.h"
-#include "objects/gl_uniform_buffer.h"
+#include "../../../data_loading/settings.h"
+#include "../shaders/gl_shader_program.h"
+#include "uniform_buffer_definitions.h"
+#include "gl_uniform_buffer.h"
 
 namespace nova {
 
@@ -44,20 +44,14 @@ namespace nova {
 
         virtual void on_config_loaded(nlohmann::json &config);
 
-        gl_uniform_buffer <gui_uniforms>& get_gui_buffer();
+        gl_uniform_buffer<per_frame_uniforms>& get_per_frame_uniforms();
 
     private:
-
-        gui_uniforms gui_uniform_variables;
         per_frame_uniforms per_frame_uniform_variables;
 
-        gl_uniform_buffer<gui_uniforms> gui_uniform_buffer;
+        gl_uniform_buffer<per_frame_uniforms> per_frame_uniforms_buffer;
 
-        //gl_uniform_buffer<per_frame_uniforms> per_frame_uniforms_buffer;
-
-        void update_gui_uniforms(nlohmann::json &config);
-
-        void update_per_frame_uniforms();
+        void update_per_frame_uniforms(nlohmann::json &config);
     };
 }
 

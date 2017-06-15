@@ -141,6 +141,15 @@ namespace nova {
         return name;
     }
 
+    GLint gl_shader_program::get_uniform_location(const std::string uniform_name) {
+        auto location_in_uniform_locations = uniform_locations.find(uniform_name);
+        if(location_in_uniform_locations == uniform_locations.end()) {
+            uniform_locations[uniform_name] = glGetUniformLocation(gl_name, uniform_name.c_str());
+        }
+
+        return uniform_locations[uniform_name];
+    }
+
     wrong_shader_version::wrong_shader_version(const std::string &version_line) :
             std::runtime_error(
                     "Invalid version line: " + version_line +

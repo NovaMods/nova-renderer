@@ -143,6 +143,17 @@ NOVA_API void set_string_setting(const char * setting_name, const char * setting
 */
 NOVA_API void set_float_setting(const char * setting_name, float setting_value);
 
+/*!
+ * \brief Sets the player camera's location and rotation to the given values
+ *
+ * \param x The X-coordinate of the camera's position
+ * \param y The y-coordinate of the camera's position
+ * \param z The X-coordinate of the camera's position
+ * \param yaw The camera's yaw
+ * \param pitch The camera's pitch
+ */
+//NOVA_API void set_player_camera_transform(float x, float y, float z, float yaw, float pitch);
+
 
 /**
  * Pass mouse and key events to Minecraft

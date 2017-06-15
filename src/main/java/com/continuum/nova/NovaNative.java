@@ -88,7 +88,11 @@ public interface NovaNative extends Library {
     class mc_chunk extends Structure {
         public long chunk_id;
 
+        public float x;
+        public float z;
+
         public mc_block[] blocks = new mc_block[CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH];
+
 
         public mc_chunk() {
             super();
@@ -100,7 +104,7 @@ public interface NovaNative extends Library {
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("chunk_id", "blocks");
+            return Arrays.asList("chunk_id", "x", "z", "blocks");
         }
     }
 
@@ -357,4 +361,6 @@ public interface NovaNative extends Library {
     void register_simple_model(String model_name, mc_simple_model model);
 
     void deregister_model(String model_name);
+
+    //void set_player_camera_transform(float x, float y, float z, float yaw, float pitch);
 }

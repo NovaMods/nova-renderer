@@ -15,8 +15,8 @@ import net.minecraft.world.chunk.Chunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.*;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -29,11 +29,9 @@ public class ChunkUpdateListener implements IWorldEventListener {
     private Executor executor = Executors.newFixedThreadPool(10);
 
     private long timeSpentInBlockRenderUpdate = 0;
-    private int numRenderUpdateThings = 0;
+    private int numChunksUpdated = 0;
 
     private NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
-
-    private boolean has_chunk = false;
 
     public void setWorld(World world) {
         this.world = world;
@@ -51,9 +49,6 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
-        if(has_chunk) {
-            return;
-        }
         long startTime = System.currentTimeMillis();
         int xDist = x2 - x1 + 1;
         int yDist = y2 - y1 + 1;
@@ -72,25 +67,15 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     int idx = chunkX + chunkY * NovaNative.CHUNK_WIDTH + chunkZ * NovaNative.CHUNK_WIDTH * NovaNative.CHUNK_HEIGHT;
 
                     NovaNative.mc_block curBlock = updateChunk.blocks[idx];
-
-                    IBlockState blockState = mcChunk.getBlockState(x, y, z);
-                    Block block = blockState.getBlock();
-                    Material material = blockState.getMaterial();
-
-                    curBlock.name = block.getUnlocalizedName();
-                    curBlock.is_on_fire = false;
-                    curBlock.light_value = blockState.getLightValue();
-                    curBlock.light_opacity = blockState.getLightOpacity();
-                    curBlock.ao = blockState.getAmbientOcclusionLightValue();
-                    curBlock.is_opaque = material.isOpaque();
-                    curBlock.blocks_light = material.blocksLight();
-
-                    if(!block.getUnlocalizedName().equals("tiles.air")) {
-                        has_chunk = true;
-                    }
+                    copyBlockStateIntoMcBlock(mcChunk.getBlockState(x, y, z), curBlock);
                 }
             }
         }
+
+        updateChunk.x = x1;
+        updateChunk.z = z1;
+        LOG.info("Chunk is at ({}, {})", updateChunk.x, updateChunk.z);
+        updateChunk.chunk_id = new Point(mcChunk.xPosition, mcChunk.zPosition).hashCode();
 
         // Fire off the chunk building task
         // executor.execute(() -> NovaNative.INSTANCE.add_chunk(updateChunk));
@@ -99,13 +84,26 @@ public class ChunkUpdateListener implements IWorldEventListener {
         long deltaTime = System.currentTimeMillis() - startTime;
         LOG.trace("It took {}ms to update a {}x{}x{} block of blocks", deltaTime, xDist, yDist, zDist);
         timeSpentInBlockRenderUpdate += deltaTime;
-        numRenderUpdateThings++;
+        numChunksUpdated++;
 
-        if(numRenderUpdateThings % 10 == 0) {
+        if(numChunksUpdated % 10 == 0) {
             LOG.info("It's taken an average of {}ms to update {} chunks",
-                    (float)timeSpentInBlockRenderUpdate / numRenderUpdateThings, numRenderUpdateThings);
+                    (float)timeSpentInBlockRenderUpdate / numChunksUpdated, numChunksUpdated);
             LOG.info("Updating chunk in thread {}", Thread.currentThread().getId());
         }
+    }
+
+    private void copyBlockStateIntoMcBlock(IBlockState blockState, NovaNative.mc_block curBlock) {
+        Block block = blockState.getBlock();
+        Material material = blockState.getMaterial();
+
+        curBlock.name = block.getUnlocalizedName();
+        curBlock.is_on_fire = false;
+        curBlock.light_value = blockState.getLightValue();
+        curBlock.light_opacity = blockState.getLightOpacity();
+        curBlock.ao = blockState.getAmbientOcclusionLightValue();
+        curBlock.is_opaque = material.isOpaque();
+        curBlock.blocks_light = material.blocksLight();
     }
 
     @Override

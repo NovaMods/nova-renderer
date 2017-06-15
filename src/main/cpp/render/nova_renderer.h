@@ -8,7 +8,7 @@
 #include <memory>
 #include <thread>
 #include "objects/shaders/gl_shader_program.h"
-#include "uniform_buffer_store.h"
+#include "objects/uniform_buffers/uniform_buffer_store.h"
 #include "windowing/glfw_gl_window.h"
 #include "../geometry_cache/mesh_store.h"
 #include "objects/textures/texture_manager.h"
@@ -142,6 +142,8 @@ namespace nova {
          * \param shader The shader to render things with
          */
         void render_shader(gl_shader_program& shader);
+
+        void upload_gui_model_matrix(gl_shader_program &program);
     };
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos);

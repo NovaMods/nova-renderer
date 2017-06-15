@@ -99,10 +99,14 @@ namespace nova {
 
         std::string& get_name() noexcept;
 
+        GLint get_uniform_location(const std::string uniform_name);
+
     private:
         std::string name;
 
-        std::vector<GLuint> added_shaders;
+        std::vector<GLint> added_shaders;
+
+        std::unordered_map<std::string, GLuint> uniform_locations;
 
         /*!
          * \brief The filter that the renderer should use to get the geometry for this shader

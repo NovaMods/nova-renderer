@@ -58,6 +58,8 @@ struct mc_block {
  */
 struct mc_chunk {
     long chunk_id;  //!< Unique identifier for the chunk
+    float x;
+    float z;
     mc_block blocks[CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH];  //!< All the blocks in the chunk
 };
 

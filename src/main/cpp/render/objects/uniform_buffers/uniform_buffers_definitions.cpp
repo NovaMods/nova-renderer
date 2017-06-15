@@ -9,18 +9,6 @@
 #include "uniform_buffer_definitions.h"
 
 namespace nova {
-    el::base::Writer &operator<<(el::base::Writer &out, gui_uniforms uniforms) {
-        out << "gbufferModelView: \n" << uniforms.gbufferModelView
-            << " gbufferProjection: \n" << uniforms.gbufferProjection
-            << " aspectRatio: " << uniforms.aspectRatio
-            << " viewWidth: " << uniforms.viewWidth
-            << " viewHeight: " << uniforms.viewHeight
-            << " frameTimeCounter: " << uniforms.frameTimeCounter
-            << " hideGUI: " << uniforms.hideGUI;
-
-        return out; 
-    }
-
     el::base::Writer &operator<<(el::base::Writer &out, const glm::mat4 &mat) {
         out << "{ " << mat[0].x << " " << mat[0].y << " " << mat[0].z << " " << mat[0].z << "\n"
             << " " << mat[1].x << " " << mat[1].y << " " << mat[1].z << " " << mat[1].z << "\n"

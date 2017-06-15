@@ -8,7 +8,7 @@
 
 #include <string>
 #include <glad/glad.h>
-#include "shaders/gl_shader_program.h"
+#include "../shaders/gl_shader_program.h"
 #include <GLFW/glfw3.h>
 
 namespace nova {
@@ -33,8 +33,7 @@ namespace nova {
         }
 
         void link_to_shader(const gl_shader_program &shader) {
-            auto shader_gl_name = shader.gl_name;
-            auto ubo_index = glGetUniformBlockIndex(shader_gl_name, name.c_str());
+            auto ubo_index = glGetUniformBlockIndex(shader.gl_name, name.c_str());
             glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
             glBindBufferBase(GL_UNIFORM_BUFFER, ubo_index, gl_name);
         }

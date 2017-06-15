@@ -80,6 +80,8 @@ namespace nova {
         std::string color_texture;
         std::experimental::optional<std::string> normalmap;
         std::experimental::optional<std::string> data_texture;
+
+        glm::vec3 position;
     };
 }
 

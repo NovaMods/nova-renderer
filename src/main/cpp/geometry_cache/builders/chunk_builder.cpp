@@ -27,7 +27,6 @@ namespace nova {
         auto blocks_that_match_filter = get_blocks_that_match_filter(chunk, filter);
 
         if(blocks_that_match_filter.size() == 0) {
-            LOG(INFO) << "No blocks match our filter";
             return optional<render_object>();
         }
 
@@ -35,6 +34,7 @@ namespace nova {
 
         auto block_render_object = render_object{};
         block_render_object.geometry = std::make_unique<gl_mesh>(block_mesh_definition);
+        block_render_object.position = {chunk.x, 0, chunk.z};
 
         return make_optional(std::move(block_render_object));
     }
@@ -47,11 +47,8 @@ namespace nova {
                     int i = x + y * CHUNK_WIDTH + z * CHUNK_WIDTH * CHUNK_HEIGHT;
                     auto cur_block = chunk.blocks[i];
                     if(filter->matches(cur_block)) {
-                        LOG(INFO) << "Adding block " << cur_block.name;
                         auto pos = glm::ivec3(x, y, z);
                         blocks_that_match_filter.push_back(pos);
-                    } else {
-                        LOG(INFO) << "Block " << cur_block.name << " does not match filter " << filter->to_string();
                     }
                 }
             }
@@ -103,32 +100,23 @@ namespace nova {
     }
 
 	std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk) {
-        LOG(INFO) << "Checking opaqueness around position " << block_pos << std::boolalpha;
 		auto faces_to_make = std::vector<face_id>{};
-        bool top_is_opaque = block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk);
-        LOG(INFO) << "Is the top block opaque? " << top_is_opaque;
-		if(!top_is_opaque) {
-            LOG(INFO) << "Top block is not opaque";
+		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk)) {
             faces_to_make.push_back(face_id::TOP);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk)) {
-            LOG(INFO) << "Bottom block is not opaque";
             faces_to_make.push_back(face_id::BOTTOM);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk)) {
-            LOG(INFO) << "Right block is not opaque";
             faces_to_make.push_back(face_id::RIGHT);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk)) {
-            LOG(INFO) << "Left block is not opaque";
             faces_to_make.push_back(face_id::LEFT);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk)) {
-            LOG(INFO) << "Front block is not opaque";
             faces_to_make.push_back(face_id::FRONT);
         }
 		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk)) {
-            LOG(INFO) << "Back block is not opaque";
             faces_to_make.push_back(face_id::BACK);
         }
 
@@ -138,31 +126,26 @@ namespace nova {
 			quads.push_back(make_quad(face, 1));
 		}
 
-        LOG(INFO) << "Generated " << quads.size() << " faces";
 		return quads;
 	}
 
     bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk) {
         // A separate check for each direction to increase code readability and debuggability
         if(block_pos.x < 0 || block_pos.x >= CHUNK_WIDTH) {
-            LOG(INFO) << "block_pos.x (" << block_pos.x << ") is greater then " << CHUNK_WIDTH << " or less than 0";
             return false;
         }
 
         if(block_pos.y < 0 || block_pos.y >= CHUNK_HEIGHT) {
-            LOG(INFO) << "block_pos.y (" << block_pos.y << ") is greater then " << CHUNK_HEIGHT << " or less than 0";
             return false;
         }
 
         if(block_pos.z < 0 || block_pos.z >= CHUNK_DEPTH) {
-            LOG(INFO) << "block_pos.z (" << block_pos.z << ") is greater then " << CHUNK_DEPTH << " or less than 0";
             return false;
         }
 
         auto block_idx = pos_to_idx(block_pos);
         auto block = chunk.blocks[block_idx];
 
-        LOG(INFO) << "The block to check is " << (block.is_transparent() ? "not " : "") << "opaque";
         return !block.is_transparent();
     }
 
