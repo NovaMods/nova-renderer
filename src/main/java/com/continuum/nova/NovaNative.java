@@ -362,5 +362,5 @@ public interface NovaNative extends Library {
 
     void deregister_model(String model_name);
 
-    //void set_player_camera_transform(float x, float y, float z, float yaw, float pitch);
+    void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
 }

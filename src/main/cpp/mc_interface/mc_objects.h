@@ -61,6 +61,7 @@ struct mc_chunk {
     float x;
     float z;
     mc_block blocks[CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH];  //!< All the blocks in the chunk
+    bool needs_update = false;
 };
 
 /*!

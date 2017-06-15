@@ -117,12 +117,11 @@ namespace nova {
     }
 
     void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
-        std::stringstream sstr;
-        sstr << chunk.chunk_id << ".chnk";
-        std::string chunk_id_str = sstr.str();
-        //LOG(INFO) << "Saving chunk" << chunk_id_str;
-        save_chunk(chunk, chunk_id_str);
-        //LOG(INFO) << "Saved chunk " << chunk.chunk_id;
+        chunk_adding_lock.lock();
+        chunk.needs_update = true;
+        all_chunks.push_back(chunk);
+        chunk_adding_lock.unlock();
+
         auto start_time = std::clock();
 
         remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});

@@ -15,13 +15,12 @@ namespace nova {
      * There's one camera for the shadow map and one camera for the player. Other cameras are possible but i don't wanna
      */
     struct camera {
-    public:
-    private:
-        float fov;
-        float aspect_ratio;
-        float near_plane;
-        float far_plane;
+        float fov = 75;
+        float aspect_ratio = 16.f / 9.f;
+        float near_plane = 0.01f;
+        float far_plane = 1000.f;
         glm::vec2 rotation;
+        glm::vec3 position;
 
         glm::mat4 get_projection_matrix();
         glm::mat4 get_view_matrix();

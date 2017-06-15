@@ -152,7 +152,7 @@ NOVA_API void set_float_setting(const char * setting_name, float setting_value);
  * \param yaw The camera's yaw
  * \param pitch The camera's pitch
  */
-//NOVA_API void set_player_camera_transform(float x, float y, float z, float yaw, float pitch);
+NOVA_API void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
 
 
 /**

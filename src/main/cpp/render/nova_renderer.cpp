@@ -340,6 +340,17 @@ namespace nova {
     void nova_renderer::update_gbuffer_ubos() {
         // Big thing here is to update the camera's matrices
 
+        auto& per_frame_ubo = ubo_manager->get_per_frame_uniforms();
+
+        auto per_frame_uniform_data = per_frame_uniforms{};
+        per_frame_uniform_data.gbufferProjection = player_camera.get_projection_matrix();
+        per_frame_uniform_data.gbufferModelView = player_camera.get_view_matrix();
+
+        per_frame_ubo.send_data(per_frame_uniform_data);
+    }
+
+    camera &nova_renderer::get_player_camera() {
+        return player_camera;
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {

@@ -82,8 +82,8 @@ public class ChunkUpdateListener implements IWorldEventListener {
         updateChunk.chunk_id = new Point(mcChunk.xPosition, mcChunk.zPosition).hashCode();
 
         // Fire off the chunk building task
-        // executor.execute(() -> NovaNative.INSTANCE.add_chunk(updateChunk));
-        NovaNative.INSTANCE.add_chunk(updateChunk);
+        executor.execute(() -> NovaNative.INSTANCE.add_chunk(updateChunk));
+        // NovaNative.INSTANCE.add_chunk(updateChunk);
 
         long deltaTime = System.currentTimeMillis() - startTime;
         timeSpentInBlockRenderUpdate += deltaTime;

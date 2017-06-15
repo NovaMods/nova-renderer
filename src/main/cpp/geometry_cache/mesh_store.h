@@ -28,6 +28,8 @@ namespace nova {
     public:
         void add_gui_buffers(mc_gui_send_buffer_command* command);
 
+        void generate_needed_chunk_geometry();
+
         /*!
          * \brief Adds a chunk to the mesh store if the chunk doesn't exist, or replaces the chunks if it does exist
          *
@@ -79,6 +81,8 @@ namespace nova {
         std::vector<mc_chunk> all_chunks;
 
         std::shared_ptr<shaderpack> shaders;
+
+        std::mutex chunk_adding_lock;
 
         float seconds_spent_updating_chunks = 0;
         long total_chunks_updated = 0;

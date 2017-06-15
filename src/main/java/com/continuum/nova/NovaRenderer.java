@@ -307,18 +307,28 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
         if (NovaNative.INSTANCE.should_close()) {
-            Minecraft.getMinecraft().shutdown();
+            mc.shutdown();
         }
 
-        if (Minecraft.getMinecraft().currentScreen != null) {
+        if (mc.currentScreen != null) {
 
-            NovaDraw.novaDrawScreen(Minecraft.getMinecraft().currentScreen, renderPartialTicks);
+            NovaDraw.novaDrawScreen(mc.currentScreen, renderPartialTicks);
 
+        }
+
+        if(mc.thePlayer != null) {
+            float pitch = mc.thePlayer.cameraPitch;
+            float yaw = mc.thePlayer.cameraYaw;
+            double x = mc.thePlayer.posX;
+            double y = mc.thePlayer.posY;
+            double z = mc.thePlayer.posZ;
+            LOG.info("Setting player position to ({}, {}, {}), yaw to {}, and pitch to {}", x, y, z, yaw, pitch);
+            NovaNative.INSTANCE.set_player_camera_transform(x, y, z, yaw, pitch);
         }
 
         NovaNative.INSTANCE.execute_frame();
         updateWindowSize();
-        int scalefactor = new ScaledResolution(Minecraft.getMinecraft()).getScaleFactor() * 2;
+        int scalefactor = new ScaledResolution(mc).getScaleFactor() * 2;
         if (scalefactor != this.scalefactor) {
             NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
             this.scalefactor = scalefactor;

@@ -107,6 +107,13 @@ NOVA_API void set_float_setting(const char * setting_name, float setting_value) 
     settings.update_config_changed();
 }
 
+NOVA_API void set_player_camera_transform(double x, double y, double z, float yaw, float pitch) {
+    auto& player_camera = NOVA_RENDERER->get_player_camera();
+
+    player_camera.position = {x, y, z};
+    player_camera.rotation = {yaw, pitch};
+}
+
 NOVA_API struct mouse_button_event  get_next_mouse_button_event() {
 	return INPUT_HANDLER.dequeue_mouse_button_event();
 }

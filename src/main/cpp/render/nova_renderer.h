@@ -14,6 +14,7 @@
 #include "objects/textures/texture_manager.h"
 #include "../input/InputHandler.h"
 #include "objects/framebuffer.h"
+#include "objects/camera.h"
 
 namespace nova {
     /*!
@@ -84,6 +85,8 @@ namespace nova {
 
         mesh_store& get_mesh_store();
 
+        camera& get_player_camera();
+
         // Overrides from iconfig_listener
 
         void on_config_change(nlohmann::json& new_config);
@@ -107,13 +110,14 @@ namespace nova {
         std::unique_ptr<uniform_buffer_store> ubo_manager;
 
         std::vector<GLuint> shadow_depth_textures;
-        std::vector<GLuint> gbuffer_depth_textures;
-
         std::unique_ptr<framebuffer> shadow_framebuffer;
-        std::unique_ptr<framebuffer> main_framebuffer;
-
         framebuffer_builder shadow_framebuffer_builder;
+
+        std::unique_ptr<framebuffer> main_framebuffer;
+        std::vector<GLuint> gbuffer_depth_textures;
         framebuffer_builder main_framebuffer_builder;
+
+        camera player_camera;
 
         /*!
          * \brief Renders the GUI of Minecraft
