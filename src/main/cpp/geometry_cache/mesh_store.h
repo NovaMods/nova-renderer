@@ -28,6 +28,9 @@ namespace nova {
     public:
         void add_gui_buffers(mc_gui_send_buffer_command* command);
 
+        /*!
+         * \brief Looks at all the
+         */
         void generate_needed_chunk_geometry();
 
         /*!
@@ -110,9 +113,11 @@ namespace nova {
          * \brief Creates geometry for the given chunk and adds it to the list of geometry to render
          * \param chunk The chunk to generate geometry for
          */
-        void generate_chunk_geometry(mc_chunk &chunk);
+        void generate_chunk_geometry(const mc_chunk &chunk);
 
         mesh_definition make_mesh_from_mc_model(mc_simple_model &model);
+
+        void make_geometry_for_chunk(const mc_chunk &chunk);
     };
 
 };

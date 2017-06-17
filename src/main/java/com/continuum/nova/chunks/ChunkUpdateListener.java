@@ -78,7 +78,6 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
         updateChunk.x = x1;
         updateChunk.z = z1;
-        LOG.info("Setting chunk position to {}, {} in Java", x1, z1);
         updateChunk.chunk_id = new Point(mcChunk.xPosition, mcChunk.zPosition).hashCode();
 
         // Fire off the chunk building task

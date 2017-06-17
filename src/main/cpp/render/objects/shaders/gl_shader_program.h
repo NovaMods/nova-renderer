@@ -64,7 +64,7 @@ namespace nova {
      * hold the map from line in the shader sent to the compiler and the line number and shader file that the line came from
      * on disk
      */
-    class NOVA_API gl_shader_program {
+    class gl_shader_program {
     public:
         GLuint gl_name;
 

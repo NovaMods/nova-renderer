@@ -121,37 +121,9 @@ namespace nova {
         chunk.needs_update = true;
         all_chunks.push_back(chunk);
         chunk_adding_lock.unlock();
-
-        auto start_time = std::clock();
-
-        remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});
-
-        auto time_after_removing_objects = std::clock();
-
-        generate_chunk_geometry(chunk);
-
-        auto time_after_generating_chunk_geometry = std::clock();
-
-        // Save the chunk so that we can re-parse it when we get a new shaderpack
-        std::remove_if(all_chunks.begin(), all_chunks.end(), [&](mc_chunk& chunk1) {return chunk.chunk_id == chunk1.chunk_id;});
-        auto time_after_removing_chunks = std::clock();
-        all_chunks.push_back(chunk);
-        auto time_after_adding_chunk = std::clock();
-
-        auto total_time = float(std::clock() - start_time) * 1000 / CLOCKS_PER_SEC;
-        total_chunks_updated += 1;
-
-        if(total_chunks_updated % 10 == 0) {
-            LOG(INFO) << "We have spent:\n\t"
-                      << float(time_after_removing_objects - start_time) * 1000 / CLOCKS_PER_SEC << "ms removing old render objects\n\t"
-                      << float(time_after_generating_chunk_geometry - time_after_removing_objects) * 1000 / CLOCKS_PER_SEC << "ms generating chunk geometry\n\t"
-                      << float(time_after_removing_chunks - time_after_generating_chunk_geometry) * 1000 / CLOCKS_PER_SEC << "ms removing chunks\n\t"
-                      << float(time_after_adding_chunk - time_after_removing_chunks) * 1000 / CLOCKS_PER_SEC << "ms adding the new chunk\n\t"
-                      << total_time << "ms in total";
-        }
     }
 
-    void mesh_store::generate_chunk_geometry(mc_chunk &chunk) {
+    void mesh_store::generate_chunk_geometry(const mc_chunk &chunk) {
         auto render_objects_from_chunk = get_renderables_from_chunk(chunk, *shaders);
         for(auto& item : render_objects_from_chunk) {
             if(item.second) {
@@ -174,5 +146,38 @@ namespace nova {
 
     void mesh_store::deregister_model(std::string model_name) {
         simple_models.erase(model_name);
+    }
+
+    void mesh_store::generate_needed_chunk_geometry() {
+        for(const auto& chunk : all_chunks) {
+            if(chunk.needs_update) {
+                make_geometry_for_chunk(chunk);
+            }
+        }
+    }
+
+    void mesh_store::make_geometry_for_chunk(const mc_chunk &chunk) {
+        LOG(TRACE) << "Generating geometry for a chunk";
+        auto start_time = std::clock();
+
+        remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});
+        LOG(TRACE) << "Removed render objects from our chunk";
+
+        auto time_after_removing_objects = std::clock();
+
+        generate_chunk_geometry(chunk);
+        LOG(TRACE) << "Generated chunk geometry";
+
+        auto time_after_generating_chunk_geometry = std::clock();
+
+        auto total_time = float(std::clock() - start_time) * 1000 / CLOCKS_PER_SEC;
+        total_chunks_updated += 1;
+
+        if(total_chunks_updated % 10 == 0) {
+            LOG(INFO) << "We have spent:\n\t"
+                      << float(time_after_removing_objects - start_time) * 1000 / CLOCKS_PER_SEC << "ms removing old render objects\n\t"
+                      << float(time_after_generating_chunk_geometry - time_after_removing_objects) * 1000 / CLOCKS_PER_SEC << "ms generating chunk geometry\n\t"
+                      << total_time << "ms in total";
+        }
     }
 }

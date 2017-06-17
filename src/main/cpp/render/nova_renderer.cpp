@@ -53,6 +53,9 @@ namespace nova {
     }
 
     void nova_renderer::render_frame() {
+        // Make geometry for any new chunks
+        meshes->generate_needed_chunk_geometry();
+
         // Clear to the clear color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

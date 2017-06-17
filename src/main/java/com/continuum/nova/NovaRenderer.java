@@ -7,6 +7,7 @@ import com.continuum.nova.utils.AtlasGenerator;
 import com.continuum.nova.utils.Utils;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -16,6 +17,7 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -316,12 +318,13 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         }
 
-        if(mc.thePlayer != null) {
-            float pitch = mc.thePlayer.cameraPitch;
-            float yaw = mc.thePlayer.cameraYaw;
-            double x = mc.thePlayer.posX;
-            double y = mc.thePlayer.posY;
-            double z = mc.thePlayer.posZ;
+        EntityPlayerSP viewEntity = mc.thePlayer;
+        if(viewEntity != null) {
+            float pitch = viewEntity.rotationPitch;
+            float yaw = viewEntity.rotationYaw;
+            double x = viewEntity.posX;
+            double y = viewEntity.posY + viewEntity.getEyeHeight();
+            double z = viewEntity.posZ;
             LOG.info("Setting player position to ({}, {}, {}), yaw to {}, and pitch to {}", x, y, z, yaw, pitch);
             NovaNative.INSTANCE.set_player_camera_transform(x, y, z, yaw, pitch);
         }

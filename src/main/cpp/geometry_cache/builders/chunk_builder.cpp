@@ -34,7 +34,6 @@ namespace nova {
 
         auto block_render_object = render_object{};
         block_render_object.geometry = std::make_unique<gl_mesh>(block_mesh_definition);
-        LOG(INFO) << "Setting the chunk position to " << chunk.x << ", " << chunk.z;
         block_render_object.position = {chunk.x, 0, chunk.z};
 
         return make_optional(std::move(block_render_object));
