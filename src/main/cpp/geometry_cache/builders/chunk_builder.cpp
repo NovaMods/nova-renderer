@@ -7,6 +7,8 @@
 
 #include "chunk_builder.h"
 #include "../../utils/utils.h"
+#include "../../utils/io.h"
+#include "../../render/nova_renderer.h"
 
 #include <iostream>
 #include <easylogging++.h>
@@ -17,14 +19,18 @@ namespace nova {
         auto final_geometry = std::unordered_map<std::string, optional<render_object>>{};
 
         for(auto& shader_entry : all_shaders) {
+            LOG(INFO) << "Beginning to make render object for shader " << shader_entry.first;
             final_geometry[shader_entry.first] = build_render_object_for_shader(chunk, shader_entry.second.get_filter());
+            LOG(INFO) << "Build render object for shader " << shader_entry.first;
         }
 
         return final_geometry;
     }
 
     optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, const std::shared_ptr<igeometry_filter> filter) {
+        LOG(INFO) << "Building a render object from chunk " << chunk.chunk_id << " for filter " << filter->to_string();
         auto blocks_that_match_filter = get_blocks_that_match_filter(chunk, filter);
+        LOG(INFO) << blocks_that_match_filter.size() << " blocks match the filter";
 
         if(blocks_that_match_filter.size() == 0) {
             return optional<render_object>();
@@ -35,6 +41,7 @@ namespace nova {
         auto block_render_object = render_object{};
         block_render_object.geometry = std::make_unique<gl_mesh>(block_mesh_definition);
         block_render_object.position = {chunk.x, 0, chunk.z};
+        // block_render_object.color_texture = "blocks";
 
         return make_optional(std::move(block_render_object));
     }
@@ -120,10 +127,14 @@ namespace nova {
             faces_to_make.push_back(face_id::BACK);
         }
 
+        auto block_idx = pos_to_idx(block_pos);
+        const auto& block = chunk.blocks[block_idx];
+        const auto& tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(std::string(block.texture_name));
+
 		auto quads = std::vector<block_face>{};
 		for(auto& face : faces_to_make) {
 			auto ao = get_ao_in_direction(block_pos, face, chunk);
-			quads.push_back(make_quad(face, 1));
+			quads.push_back(make_quad(face, 1, tex_location));
 		}
 
 		return quads;
@@ -153,66 +164,92 @@ namespace nova {
         return pos.x + pos.y * CHUNK_WIDTH + pos.z * CHUNK_WIDTH * CHUNK_HEIGHT;
     }
 
-    block_face make_quad(const face_id which_face, const float size) {
+    block_face make_quad(const face_id which_face, const float size, const texture_manager::texture_location& tex_location) {
+        const auto tex_extents = tex_location.max - tex_location.min;
         glm::vec3 positions[4];
+        glm::vec2 uvs[4];
         glm::vec3 normal;
         glm::vec3 tangent;
         if(which_face == face_id::LEFT) {
             // x = 0
-            positions[0] = glm::vec3{0, 0, 0};
-            positions[1] = glm::vec3{0, 0, size};
-            positions[2] = glm::vec3{0, size, 0};
-            positions[3] = glm::vec3{0, size, size};
+            positions[0]    = {0, 0, 0};
+            uvs[0]          = tex_location.min;
+            positions[1]    = {0, 0, size};
+            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
+            positions[2]    = {0, size, 0};
+            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
+            positions[3]    = {0, size, size};
+            uvs[3]          = tex_location.max;
 
             normal = glm::vec3{-1, 0, 0};
             tangent = glm::vec3{0, 0, 1};
 
         } else if(which_face == face_id::RIGHT) {
             // x = 0
-            positions[0] = glm::vec3{size, 0, 0};
-            positions[1] = glm::vec3{size, 0, size};
-            positions[2] = glm::vec3{size, size, 0};
-            positions[3] = glm::vec3{size, size, size};
+            positions[0]    = {size, 0, 0};
+            uvs[0]          = tex_location.min;
+            positions[1]    = {size, 0, size};
+            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
+            positions[2]    = {size, size, 0};
+            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
+            positions[3]    = {size, size, size};
+            uvs[3]          = tex_location.max;
 
             normal = glm::vec3{1, 0, 0};
             tangent = glm::vec3{0, 0, -1};
 
         } else if(which_face == face_id::BOTTOM) {
             // y = 0
-            positions[0] = glm::vec3{0, 0, 0};
-            positions[1] = glm::vec3{0, 0, size};
-            positions[2] = glm::vec3{size, 0, 0};
-            positions[3] = glm::vec3{size, 0, size};
+            positions[0]    = {0, 0, 0};
+            uvs[0]          = tex_location.min;
+            positions[1]    = {0, 0, size};
+            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
+            positions[2]    = {size, 0, 0};
+            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
+            positions[3]    = {size, 0, size};
+            uvs[3]          = tex_location.max;
 
             normal = glm::vec3{0, -1, 0};
             tangent = glm::vec3{-1, 0, 0};
 
         } else if(which_face == face_id::TOP) {
             // y = 0
-            positions[0] = glm::vec3{0, size, 0};
-            positions[1] = glm::vec3{0, size, size};
-            positions[2] = glm::vec3{size, size, 0};
-            positions[3] = glm::vec3{size, size, size};
+            positions[0]    = {0, size, 0};
+            uvs[0]          = tex_location.min;
+            positions[1]    = {0, size, size};
+            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
+            positions[2]    = {size, size, 0};
+            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
+            positions[3]    = {size, size, size};
+            uvs[3]          = tex_location.max;
 
             normal = glm::vec3{0, 1, 0};
             tangent = glm::vec3{1, 0, 0};
 
         } else if(which_face == face_id::BACK) {
             // z = 0
-            positions[0] = glm::vec3{0, 0, 0};
-            positions[1] = glm::vec3{0, size, 0};
-            positions[2] = glm::vec3{size, 0, 0};
-            positions[3] = glm::vec3{size, size, 0};
+            positions[0]    = {0, 0, 0};
+            uvs[0]          = tex_location.min;
+            positions[1]    = {0, size, 0};
+            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
+            positions[2]    = {size, 0, 0};
+            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
+            positions[3]    = {size, size, 0};
+            uvs[3]          = tex_location.max;
 
             normal = glm::vec3{0, 0, -1};
             tangent = glm::vec3{-1, 0, 0};
 
         } else if(which_face == face_id::FRONT) {
             // z = 0
-            positions[0] = glm::vec3{0, 0, size};
-            positions[1] = glm::vec3{0, size, size};
-            positions[2] = glm::vec3{size, 0, size};
-            positions[3] = glm::vec3{size, size, size};
+            positions[0]    = {0, 0, size};
+            uvs[0]          = tex_location.min;
+            positions[1]    = {0, size, size};
+            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
+            positions[2]    = {size, 0, size};
+            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
+            positions[3]    = {size, size, size};
+            uvs[3]          = tex_location.max;
 
             normal = glm::vec3{0, 0, 1};
             tangent = glm::vec3{1, 0, 0};
@@ -220,9 +257,10 @@ namespace nova {
 
         auto face = block_face{};
         for(int i = 0; i < 4; i++) {
-            face.vertices[i].position = positions[i];
-            face.vertices[i].normal = normal;
-            face.vertices[i].tangent = tangent;
+            face.vertices[i].position   = positions[i];
+            face.vertices[i].uv         = uvs[i];
+            face.vertices[i].normal     = normal;
+            face.vertices[i].tangent    = tangent;
         }
 
         return face;

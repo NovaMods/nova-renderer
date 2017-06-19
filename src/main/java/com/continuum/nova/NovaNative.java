@@ -78,10 +78,26 @@ public interface NovaNative extends Library {
         public float ao;
         public boolean is_opaque;
         public boolean blocks_light;
+        public String texture_name;
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("name", "is_on_fire", "light_value", "light_opacity", "ao", "is_opaque", "blocks_light");
+            return Arrays.asList("name", "is_on_fire", "light_value", "light_opacity", "ao", "is_opaque",
+                    "blocks_light", "texture_name");
+        }
+
+        @Override
+        public String toString() {
+            return "mc_block{" +
+                    "name='" + name + '\'' +
+                    ", is_on_fire=" + is_on_fire +
+                    ", light_value=" + light_value +
+                    ", light_opacity=" + light_opacity +
+                    ", ao=" + ao +
+                    ", is_opaque=" + is_opaque +
+                    ", blocks_light=" + blocks_light +
+                    ", texture_name=" + texture_name +
+                    '}';
         }
     }
 

@@ -31,9 +31,7 @@ public class ChunkUpdateListener implements IWorldEventListener {
     private long timeSpentInBlockRenderUpdate = 0;
     private int numChunksUpdated = 0;
 
-    private NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
-
-    private boolean hasNonAirChunk = false;
+    // private NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
 
     public void setWorld(World world) {
         this.world = world;
@@ -51,9 +49,10 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
-        if(hasNonAirChunk) {
+        if(numChunksUpdated > 2) {
             return;
         }
+        NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
         long startTime = System.currentTimeMillis();
         int xDist = x2 - x1 + 1;
         int yDist = y2 - y1 + 1;
@@ -76,9 +75,13 @@ public class ChunkUpdateListener implements IWorldEventListener {
             }
         }
 
+        int chunkHashCode = x1;
+        chunkHashCode = 31 * chunkHashCode + z1;
+
         updateChunk.x = x1;
         updateChunk.z = z1;
-        updateChunk.chunk_id = new Point(mcChunk.xPosition, mcChunk.zPosition).hashCode();
+        updateChunk.chunk_id = chunkHashCode;
+        LOG.info("Adding a chunk with id {}", updateChunk.chunk_id);
 
         // Fire off the chunk building task
         executor.execute(() -> NovaNative.INSTANCE.add_chunk(updateChunk));
@@ -107,9 +110,7 @@ public class ChunkUpdateListener implements IWorldEventListener {
         curBlock.is_opaque = material.isOpaque();
         curBlock.blocks_light = material.blocksLight();
 
-        if(!block.getUnlocalizedName().equals("tile.air")) {
-            hasNonAirChunk = true;
-        }
+        curBlock.texture_name = Block.REGISTRY.getNameForObject(block).toString();
     }
 
     @Override

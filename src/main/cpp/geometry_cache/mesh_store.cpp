@@ -119,12 +119,14 @@ namespace nova {
     void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
         chunk_adding_lock.lock();
         chunk.needs_update = true;
+        LOG(INFO) << "Received a chunk with id " << chunk.chunk_id;
         all_chunks.push_back(chunk);
         chunk_adding_lock.unlock();
     }
 
     void mesh_store::generate_chunk_geometry(const mc_chunk &chunk) {
         auto render_objects_from_chunk = get_renderables_from_chunk(chunk, *shaders);
+        LOG(INFO) << "Generated " << render_objects_from_chunk.size() << " objects from chunk " << chunk.chunk_id;
         for(auto& item : render_objects_from_chunk) {
             if(item.second) {
                 renderables_grouped_by_shader[item.first].push_back(std::move(*item.second));
@@ -149,24 +151,26 @@ namespace nova {
     }
 
     void mesh_store::generate_needed_chunk_geometry() {
-        for(const auto& chunk : all_chunks) {
+        for(auto& chunk : all_chunks) {
             if(chunk.needs_update) {
+                LOG(INFO) << "Generating a geometry for chunk id " << chunk.chunk_id;
                 make_geometry_for_chunk(chunk);
+                chunk.needs_update = false;
             }
         }
     }
 
     void mesh_store::make_geometry_for_chunk(const mc_chunk &chunk) {
-        LOG(TRACE) << "Generating geometry for a chunk";
+        LOG(INFO) << "Generating geometry for a chunk";
         auto start_time = std::clock();
 
         remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});
-        LOG(TRACE) << "Removed render objects from our chunk";
+        LOG(INFO) << "Removed render objects from our chunk";
 
         auto time_after_removing_objects = std::clock();
 
         generate_chunk_geometry(chunk);
-        LOG(TRACE) << "Generated chunk geometry";
+        LOG(INFO) << "Generated chunk geometry";
 
         auto time_after_generating_chunk_geometry = std::clock();
 

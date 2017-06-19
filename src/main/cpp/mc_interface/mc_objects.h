@@ -48,6 +48,7 @@ struct mc_block {
 	float ao;
     int is_opaque;
     int blocks_light;
+    const char * texture_name;
 
     bool is_emissive() const;
 	bool is_transparent() const;

@@ -130,7 +130,7 @@ namespace nova {
      * \param offset The offset from the origin of the new quad
      * \param size The size of the quad
      */
-    block_face make_quad(const face_id which_face, const float size);
+    block_face make_quad(const face_id which_face, const float size, const texture_manager::texture_location& tex_location);
 
     /*!
      * \brief Gets the AO in the provided direction

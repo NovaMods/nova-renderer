@@ -214,7 +214,7 @@ public class Mouse {
     }
 
     public static void updateCursor() {
-
+        next();
     }
 
     public static boolean isInsideWindow() {
