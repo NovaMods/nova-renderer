@@ -136,3 +136,6 @@ NOVA_API struct key_char_event get_next_key_char_event()
 	return  INPUT_HANDLER.dequeue_key_char_event();
 }
 
+NOVA_API void set_mouse_grabbed(int grabbed) {
+    NOVA_RENDERER->get_game_window().set_mouse_grabbed(!!grabbed);
+}

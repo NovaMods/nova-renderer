@@ -210,7 +210,7 @@ public class Mouse {
     }
 
     public static void setGrabbed(boolean grab) {
-
+        NovaNative.INSTANCE.set_mouse_grabbed(grab);
     }
 
     public static void updateCursor() {

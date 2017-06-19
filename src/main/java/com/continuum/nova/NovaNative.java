@@ -338,6 +338,8 @@ public interface NovaNative extends Library {
 
     void clear_gui_buffers();
 
+    void set_mouse_grabbed(boolean grabbed);
+
     mouse_button_event get_next_mouse_button_event();
 
     mouse_position_event get_next_mouse_position_event();

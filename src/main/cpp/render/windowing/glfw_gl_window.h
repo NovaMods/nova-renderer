@@ -55,6 +55,8 @@ namespace nova {
 
         bool is_active();
 
+        void set_mouse_grabbed(bool grabbed);
+
         /**
          * iconfig_change_listener methods
          */

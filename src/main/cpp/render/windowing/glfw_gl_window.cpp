@@ -17,7 +17,7 @@ namespace nova {
         glfw_gl_window::setActive((bool) focused);
     }
 
-    bool glfw_gl_window::active;
+    bool glfw_gl_window::active = true;
 
     glfw_gl_window::glfw_gl_window() {
         initialize_logging();
@@ -87,8 +87,6 @@ namespace nova {
     }
 
     void glfw_gl_window::set_fullscreen(bool fullscreen) {
-        // TODO: RAVEN WRIT THIS
-        
         GLFWmonitor* monitor = NULL;
         int xPos = 0;
         int yPos = 0;
@@ -165,5 +163,9 @@ namespace nova {
 
     void glfw_gl_window::setActive(bool active) {
         glfw_gl_window::active = active;
+    }
+
+    void glfw_gl_window::set_mouse_grabbed(bool grabbed) {
+        glfwSetInputMode(window, GLFW_CURSOR, grabbed ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     }
 }

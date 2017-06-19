@@ -154,6 +154,7 @@ NOVA_API void set_float_setting(const char * setting_name, float setting_value);
  */
 NOVA_API void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
 
+NOVA_API void set_mouse_grabbed(int grabbed);
 
 /**
  * Pass mouse and key events to Minecraft
