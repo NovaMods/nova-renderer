@@ -18,6 +18,8 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author ddubois
@@ -28,8 +30,8 @@ public class ChunkUpdateListener implements IWorldEventListener {
     private World world;
     private Executor executor = Executors.newFixedThreadPool(10);
 
-    private long timeSpentInBlockRenderUpdate = 0;
-    private int numChunksUpdated = 0;
+    private AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
+    private AtomicInteger numChunksUpdated = new AtomicInteger(0);
 
     // private NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
 
@@ -49,53 +51,55 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
-        if(numChunksUpdated > 2) {
-            return;
-        }
-        NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
-        long startTime = System.currentTimeMillis();
-        int xDist = x2 - x1 + 1;
-        int yDist = y2 - y1 + 1;
-        int zDist = z2 - z1 + 1;
-        LOG.info("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
+        // Fire off the chunk building task
+        executor.execute(() -> {
+            if(numChunksUpdated.get() > 12) {
+                return;
+            }
+            NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
+            long startTime = System.currentTimeMillis();
+            int xDist = x2 - x1 + 1;
+            int yDist = y2 - y1 + 1;
+            int zDist = z2 - z1 + 1;
+            LOG.info("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
 
-        Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(x1, y1, z1));
+            Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(x1, y1, z1));
 
-        for(int x = x1; x <= x2; x++) {
-            for(int y = y1; y < y2; y++) {
-                for(int z = z1; z <= z2; z++) {
-                    int chunkX = x - x1;
-                    int chunkY = y - y1;
-                    int chunkZ = z - z1;
-                    int idx = chunkX + chunkY * NovaNative.CHUNK_WIDTH + chunkZ * NovaNative.CHUNK_WIDTH * NovaNative.CHUNK_HEIGHT;
+            for(int x = x1; x <= x2; x++) {
+                for(int y = y1; y < y2; y++) {
+                    for(int z = z1; z <= z2; z++) {
+                        int chunkX = x - x1;
+                        int chunkY = y - y1;
+                        int chunkZ = z - z1;
+                        int idx = chunkX + chunkY * NovaNative.CHUNK_WIDTH + chunkZ * NovaNative.CHUNK_WIDTH * NovaNative.CHUNK_HEIGHT;
 
-                    NovaNative.mc_block curBlock = updateChunk.blocks[idx];
-                    copyBlockStateIntoMcBlock(mcChunk.getBlockState(x, y, z), curBlock);
+                        NovaNative.mc_block curBlock = updateChunk.blocks[idx];
+                        copyBlockStateIntoMcBlock(mcChunk.getBlockState(x, y, z), curBlock);
+                    }
                 }
             }
-        }
 
-        int chunkHashCode = x1;
-        chunkHashCode = 31 * chunkHashCode + z1;
+            int chunkHashCode = x1;
+            chunkHashCode = 31 * chunkHashCode + z1;
 
-        updateChunk.x = x1;
-        updateChunk.z = z1;
-        updateChunk.chunk_id = chunkHashCode;
-        LOG.info("Adding a chunk with id {}", updateChunk.chunk_id);
+            updateChunk.x = x1;
+            updateChunk.z = z1;
+            updateChunk.chunk_id = chunkHashCode;
+            LOG.info("Adding a chunk with id {}", updateChunk.chunk_id);
 
-        // Fire off the chunk building task
-        executor.execute(() -> NovaNative.INSTANCE.add_chunk(updateChunk));
-        // NovaNative.INSTANCE.add_chunk(updateChunk);
+            NovaNative.INSTANCE.add_chunk(updateChunk);
 
-        long deltaTime = System.currentTimeMillis() - startTime;
-        timeSpentInBlockRenderUpdate += deltaTime;
-        numChunksUpdated++;
+            long deltaTime = System.currentTimeMillis() - startTime;
+            timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
+            numChunksUpdated.incrementAndGet();
+            LOG.info("Updated {} chunks", numChunksUpdated);
 
-        if(numChunksUpdated % 10 == 0) {
-            LOG.info("It's taken an average of {}ms to update {} chunks",
-                    (float)timeSpentInBlockRenderUpdate / numChunksUpdated, numChunksUpdated);
-            LOG.info("Updating chunk in thread {}", Thread.currentThread().getId());
-        }
+            if(numChunksUpdated.get() % 10 == 0) {
+                LOG.info("It's taken an average of {}ms to update {} chunks",
+                        (float)timeSpentInBlockRenderUpdate.get() / numChunksUpdated.get(), numChunksUpdated);
+                LOG.info("Updating chunk in thread {}", Thread.currentThread().getId());
+            }
+        });
     }
 
     private void copyBlockStateIntoMcBlock(IBlockState blockState, NovaNative.mc_block curBlock) {

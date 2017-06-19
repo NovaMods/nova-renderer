@@ -126,7 +126,6 @@ namespace nova {
 
     void mesh_store::generate_chunk_geometry(const mc_chunk &chunk) {
         auto render_objects_from_chunk = get_renderables_from_chunk(chunk, *shaders);
-        LOG(INFO) << "Generated " << render_objects_from_chunk.size() << " objects from chunk " << chunk.chunk_id;
         for(auto& item : render_objects_from_chunk) {
             if(item.second) {
                 renderables_grouped_by_shader[item.first].push_back(std::move(*item.second));

@@ -19,18 +19,15 @@ namespace nova {
         auto final_geometry = std::unordered_map<std::string, optional<render_object>>{};
 
         for(auto& shader_entry : all_shaders) {
-            LOG(INFO) << "Beginning to make render object for shader " << shader_entry.first;
             final_geometry[shader_entry.first] = build_render_object_for_shader(chunk, shader_entry.second.get_filter());
-            LOG(INFO) << "Build render object for shader " << shader_entry.first;
         }
 
         return final_geometry;
     }
 
     optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, const std::shared_ptr<igeometry_filter> filter) {
-        LOG(INFO) << "Building a render object from chunk " << chunk.chunk_id << " for filter " << filter->to_string();
         auto blocks_that_match_filter = get_blocks_that_match_filter(chunk, filter);
-        LOG(INFO) << blocks_that_match_filter.size() << " blocks match the filter";
+        LOG(INFO) << blocks_that_match_filter.size() << " blocks match filter " << filter->to_string();
 
         if(blocks_that_match_filter.size() == 0) {
             return optional<render_object>();

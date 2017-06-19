@@ -83,7 +83,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         addGuiAtlas(resourceManager);
         addFontAtlas(resourceManager);
         addFreeTextures(resourceManager);
-        // addTerrainAtlas(resourceManager); // Causes crashes
+        // addTerrainAtlas();
     }
 
     /**
@@ -119,9 +119,28 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.debug("Created font atlas");
     }
 
-    private void addTerrainAtlas(@Nonnull IResourceManager resourceManager) {
-        addAtlas(resourceManager, blockAtlas, BLOCK_COLOR_TEXTURES_LOCATIONS, blockSpriteLocations, NovaNative.BLOCK_COLOR_ATLAS_NAME);
-        LOG.info("Created terrain atlas");
+    private void addTerrainAtlas() {
+        TextureMap blockColorMap = Minecraft.getMinecraft().getTextureMapBlocks();
+
+        // Copy over the atlas
+        NovaNative.mc_atlas_texture blockColorTexture = getFullImage(blockColorMap.getWidth(), blockColorMap.getHeight(), blockColorMap.getMapRegisteredSprites().values());
+        NovaNative.INSTANCE.add_texture(blockColorTexture);
+
+        // Copy over all the icon locations
+        for(String spriteName : blockColorMap.getMapRegisteredSprites().keySet()) {
+            TextureAtlasSprite sprite = blockColorMap.getAtlasSprite(spriteName);
+            NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
+                    sprite.getIconName(),
+                    sprite.getMinU(),
+                    sprite.getMinV(),
+                    sprite.getMaxU(),
+                    sprite.getMaxV()
+            );
+
+            LOG.info("Adding a sprite with name {}", sprite.getIconName());
+
+            NovaNative.INSTANCE.add_texture_location(location);
+        }
     }
 
     private void addAtlas(@Nonnull IResourceManager resourceManager, TextureMap atlas, List<ResourceLocation> resources,
@@ -300,6 +319,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         if(world != null) {
             chunkUpdateListener.setWorld(world);
             world.addEventListener(chunkUpdateListener);
+            //addTerrainAtlas();
         }
     }
 
