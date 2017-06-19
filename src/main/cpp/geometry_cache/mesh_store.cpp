@@ -150,6 +150,7 @@ namespace nova {
     }
 
     void mesh_store::generate_needed_chunk_geometry() {
+        chunk_adding_lock.lock();
         for(auto& chunk : all_chunks) {
             if(chunk.needs_update) {
                 LOG(INFO) << "Generating a geometry for chunk id " << chunk.chunk_id;
@@ -157,6 +158,7 @@ namespace nova {
                 chunk.needs_update = false;
             }
         }
+        chunk_adding_lock.unlock();
     }
 
     void mesh_store::make_geometry_for_chunk(const mc_chunk &chunk) {
