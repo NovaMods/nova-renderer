@@ -270,7 +270,11 @@ function Invoke-Nova {
 
 function New-Patches {
     Set-Location src\main\java\net
-    git diff origin/minecraft-1.10-mcp > ..\..\..\..\patches\nova.patch 
+    $p = "..\..\..\..\patches\nova.patch"
+    git diff origin/minecraft-1.10-mcp > $p
+    $content = Get-Content $p
+    $encodingUtf8WithoutByteOrderMark = New-Object System.Text.UTF8Encoding($False)
+    [System.IO.File]::WriteAllLines($p, $content, $encodingUtf8WithoutByteOrderMark)
 }
 
 ################################################################################
