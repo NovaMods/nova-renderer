@@ -68,6 +68,17 @@ public interface NovaNative extends Library {
         public List<String> getFieldOrder() {
             return Arrays.asList("name", "min_u", "max_u", "min_v", "max_v");
         }
+
+        @Override
+        public String toString() {
+            return "mc_texture_atlas_location{" +
+                    "name='" + name + '\'' +
+                    ", min_u=" + min_u +
+                    ", max_u=" + max_u +
+                    ", min_v=" + min_v +
+                    ", max_v=" + max_v +
+                    '}';
+        }
     }
 
     class mc_block extends Structure {

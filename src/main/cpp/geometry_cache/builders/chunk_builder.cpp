@@ -126,7 +126,6 @@ namespace nova {
         auto block_idx = pos_to_idx(block_pos);
         const auto& block = chunk.blocks[block_idx];
         const auto& tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(std::string(block.texture_name));
-        LOG(INFO) << "Adding things for block " << block.name << " which uses texture " << block.texture_name;
 
 		auto quads = std::vector<block_face>{};
 		for(auto& face : faces_to_make) {

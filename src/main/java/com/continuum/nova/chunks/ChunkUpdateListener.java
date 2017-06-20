@@ -4,8 +4,14 @@ import com.continuum.nova.NovaNative;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ModelBakery;
+import net.minecraft.client.renderer.block.model.ModelManager;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
@@ -55,9 +61,6 @@ public class ChunkUpdateListener implements IWorldEventListener {
         executor.execute(() -> {
             NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
             long startTime = System.currentTimeMillis();
-            int xDist = x2 - x1 + 1;
-            int yDist = y2 - y1 + 1;
-            int zDist = z2 - z1 + 1;
             LOG.debug("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
 
             Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(x1, y1, z1));
@@ -109,7 +112,9 @@ public class ChunkUpdateListener implements IWorldEventListener {
         curBlock.is_opaque = material.isOpaque();
         curBlock.blocks_light = material.blocksLight();
 
-        curBlock.texture_name = Block.REGISTRY.getNameForObject(block).toString();
+        TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(blockState).getQuads(blockState, EnumFacing.UP, 0).get(0).getSprite();
+
+        curBlock.texture_name = sprite.getIconName();
     }
 
     @Override
