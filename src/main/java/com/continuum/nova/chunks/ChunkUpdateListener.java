@@ -53,15 +53,12 @@ public class ChunkUpdateListener implements IWorldEventListener {
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
         // Fire off the chunk building task
         executor.execute(() -> {
-            if(numChunksUpdated.get() > 12) {
-                return;
-            }
             NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
             long startTime = System.currentTimeMillis();
             int xDist = x2 - x1 + 1;
             int yDist = y2 - y1 + 1;
             int zDist = z2 - z1 + 1;
-            LOG.info("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
+            LOG.debug("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
 
             Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(x1, y1, z1));
 
@@ -85,14 +82,12 @@ public class ChunkUpdateListener implements IWorldEventListener {
             updateChunk.x = x1;
             updateChunk.z = z1;
             updateChunk.chunk_id = chunkHashCode;
-            LOG.info("Adding a chunk with id {}", updateChunk.chunk_id);
 
             NovaNative.INSTANCE.add_chunk(updateChunk);
 
             long deltaTime = System.currentTimeMillis() - startTime;
             timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
             numChunksUpdated.incrementAndGet();
-            LOG.info("Updated {} chunks", numChunksUpdated);
 
             if(numChunksUpdated.get() % 10 == 0) {
                 LOG.info("It's taken an average of {}ms to update {} chunks",

@@ -156,6 +156,7 @@ namespace nova {
                 LOG(INFO) << "Generating a geometry for chunk id " << chunk.chunk_id;
                 make_geometry_for_chunk(chunk);
                 chunk.needs_update = false;
+                break;  // One chunk per frame to avoid stuttering
             }
         }
         chunk_adding_lock.unlock();
