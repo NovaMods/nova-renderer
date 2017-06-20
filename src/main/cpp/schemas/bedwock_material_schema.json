@@ -1,0 +1,152 @@
+{
+    "definitions": {
+        "state": {
+            "type": "object",
+            "properties": {
+                "defines" : {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Any symbols put here will be defined in the shader used for this state"
+                },
+                "samplerStates": {
+                    "type": "array",
+                    "items":{
+                        "type": "samplerState"
+                    },
+                    "description": "This array defines all the sampler states to be used for this state. The available data only defines texture filtering, but there may be more that's possible and just isn't available"
+                },
+                "states" : {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": ["Blending", "InvertCulling", "DisableCulling", "DisableDepthWrite", "EnableStencilTest", "StencilWrite", "DisableColorWrite"]
+                    }
+                },
+                "depthBias": {
+                    "type": "number",
+                    "description": "Offset the value written to the depth buffer"
+                }, 
+                "slopeScaledDepthBias": {
+                    "type": "number"
+                },
+                "depthBiasOGL": {
+                    "type": "number",
+                    "description": "Offset the value written to the depth buffer"
+                }, 
+                "slopeScaledDepthBiasOGL": {
+                    "type": "number",
+                    "description": "Offset the value written to the depth buffer"
+                }, 
+                "vertexShader" : {
+                    "type": "string",
+                    "description": "Provides the filepath for the vertex shader to use for this state"
+                },
+                "vrGeometryShader": {
+                    "type": "string",
+                    "description": "Provides the filepath for the VR geometry shader to use for this state"
+                },
+                "fragmentShader": {
+                    "type": "string",
+                    "description": "Provides the filepath for the fragment shader to use for this pass"
+                },
+                "vertexFields": {
+                    "type": "array",
+                    "items":{
+                        "type": "vertexField"
+                    },
+                    "description": "Declares what vertex data this state's shaders use, and what order the vertex attributes should be passed in"
+                },
+                "frontFace": {
+                    "type": "object",
+                    "description": "Defines the stencil buffer attributes to use when rendering front faces",
+                    "properties": {
+                        "stencilFunc": {
+                            "type": "string",
+                            "enum": ["Always", "Never", "Less", "LessOrEqual", "GreaterOrEqual", "Equal"],
+                            "description": "What stencil function to use for the front faces in this state"
+                        },
+                        "stencilFailOp": {
+                            "type": "string",
+                            "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
+                            "description": "What to do when the stencil test fails"
+                        },
+                        "stencilDepthFailOp": {
+                            "type": "string",
+                            "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
+                            "description": "What to do when the stencil and depth tests fail (I think)"
+                        },
+                        "StencilPassOp": {
+                            "type": "string",
+                            "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
+                            "description": "What to do when the stencil test passes"
+                        }
+                    }
+                },
+                "backFace": {
+                    "type": "object",
+                    "description": "Defines the stencil buffer attributes to use when rendering back faces",
+                    "properties": {
+                        "stencilFunc": {
+                            "type": "string",
+                            "enum": ["Always", "Never", "Less", "LessOrEqual", "GreaterOrEqual", "Equal"],
+                            "description": "What stencil function to use for the back faces in this state"
+                        },
+                        "stencilFailOp": {
+                            "type": "string",
+                            "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
+                            "description": "What to do when the stencil test fails"
+                        },
+                        "stencilDepthFailOp": {
+                            "type": "string",
+                            "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
+                            "description": "What to do when the stencil and depth tests fail (I think)"
+                        },
+                        "StencilPassOp": {
+                            "type": "string",
+                            "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
+                            "description": "What to do when the stencil test passes"
+                        }
+                    }
+                },
+                "stencilRef": {
+                    "type": "number",
+                    "description": "Which stencil buffer to use (I think)"
+                },
+                "stencilReadMask": {
+                    "type": "number",
+                    "description": "The mask to use when reading values from the stencil buffer"
+                },
+                "stencilMaskWrite": {
+                    "type": "number",
+                    "description": "The mask to use when writing values to the stencil buffer"
+                }
+            }
+        },
+        "samplerState": {
+            "type": "object",
+            "properties":{
+                "samplerIndex": {
+                    "type": "number",
+                    "description": "The index of the sampler you want to set the state for"
+                },
+                "textureFilter": {
+                    "type": "string",
+                    "enum": ["TexelAA", "Bilinear", "Point" ],
+                    "description": "The type of texture filter to use for this sampler"
+                }
+            }
+        },
+        "vertexField": {
+            "type": "object",
+            "properties":{
+                "field": {
+                    "type": "string",
+                    "enum": ["Position", "UV0", "UV1", "Color", "Normal"],
+                    "description": "Declares which vertex field this object refers to"
+                }
+            }
+        }
+    }
+}
