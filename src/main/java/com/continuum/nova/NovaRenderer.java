@@ -83,7 +83,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         addGuiAtlas(resourceManager);
         addFontAtlas(resourceManager);
         addFreeTextures(resourceManager);
-        // addTerrainAtlas();
     }
 
     /**
@@ -119,15 +118,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.debug("Created font atlas");
     }
 
-    private void addTerrainAtlas() {
-        TextureMap blockColorMap = Minecraft.getMinecraft().getTextureMapBlocks();
-
+    public void addTerrainAtlas(TextureMap blockColorMap) {
         // Copy over the atlas
-        NovaNative.mc_atlas_texture blockColorTexture = getFullImage(blockColorMap.getWidth(), blockColorMap.getHeight(), blockColorMap.getMapRegisteredSprites().values());
+        NovaNative.mc_atlas_texture blockColorTexture = getFullImage(blockColorMap.getWidth(), blockColorMap.getHeight(), blockColorMap.getMapUploadedSprites().values());
+        blockColorTexture.name = NovaNative.BLOCK_COLOR_ATLAS_NAME;
         NovaNative.INSTANCE.add_texture(blockColorTexture);
 
         // Copy over all the icon locations
-        for(String spriteName : blockColorMap.getMapRegisteredSprites().keySet()) {
+        for(String spriteName : blockColorMap.getMapUploadedSprites().keySet()) {
             TextureAtlasSprite sprite = blockColorMap.getAtlasSprite(spriteName);
             NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
                     sprite.getIconName(),
@@ -136,8 +134,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     sprite.getMaxU(),
                     sprite.getMaxV()
             );
-
-            LOG.info("Adding a sprite with name {}", sprite.getIconName());
 
             NovaNative.INSTANCE.add_texture_location(location);
         }
@@ -167,8 +163,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     sprite.getMaxV()
             );
 
-            LOG.info("Adding a sprite with name " + sprite.getIconName());
-
             NovaNative.INSTANCE.add_texture_location(location);
         }
     }
@@ -177,26 +171,27 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         byte[] imageData = new byte[atlasWidth * atlasHeight * 4];
 
         for (TextureAtlasSprite sprite : sprites) {
-            LOG.debug("Looking at sprite " + sprite.getIconName());
             int startY = sprite.getOriginY() * atlasWidth * 4;
             int startPos = sprite.getOriginX() * 4 + startY;
 
-            int[] data = sprite.getFrameTextureData(0)[0];
-            for (int y = 0; y < sprite.getIconHeight(); y++) {
-                for (int x = 0; x < sprite.getIconWidth(); x++) {
-                    // Reverse the order of the color channels
-                    int pixel = data[y * sprite.getIconWidth() + x];
+            if(sprite.getFrameCount() > 0) {
+                int[] data = sprite.getFrameTextureData(0)[0];
+                for(int y = 0; y < sprite.getIconHeight(); y++) {
+                    for(int x = 0; x < sprite.getIconWidth(); x++) {
+                        // Reverse the order of the color channels
+                        int pixel = data[y * sprite.getIconWidth() + x];
 
-                    byte red = (byte) (pixel & 0xFF);
-                    byte green = (byte) ((pixel >> 8) & 0xFF);
-                    byte blue = (byte) ((pixel >> 16) & 0xFF);
-                    byte alpha = (byte) ((pixel >> 24) & 0xFF);
+                        byte red = (byte) (pixel & 0xFF);
+                        byte green = (byte) ((pixel >> 8) & 0xFF);
+                        byte blue = (byte) ((pixel >> 16) & 0xFF);
+                        byte alpha = (byte) ((pixel >> 24) & 0xFF);
 
-                    int imageDataBasePos = startPos + x * 4 + y * atlasWidth * 4;
-                    imageData[imageDataBasePos] = blue;
-                    imageData[imageDataBasePos + 1] = green;
-                    imageData[imageDataBasePos + 2] = red;
-                    imageData[imageDataBasePos + 3] = alpha;
+                        int imageDataBasePos = startPos + x * 4 + y * atlasWidth * 4;
+                        imageData[imageDataBasePos] = blue;
+                        imageData[imageDataBasePos + 1] = green;
+                        imageData[imageDataBasePos + 2] = red;
+                        imageData[imageDataBasePos + 3] = alpha;
+                    }
                 }
             }
         }
@@ -319,7 +314,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         if(world != null) {
             chunkUpdateListener.setWorld(world);
             world.addEventListener(chunkUpdateListener);
-            //addTerrainAtlas();
         }
     }
 
