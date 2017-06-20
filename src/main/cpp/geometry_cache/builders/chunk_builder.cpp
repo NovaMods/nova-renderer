@@ -27,7 +27,6 @@ namespace nova {
 
     optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, const std::shared_ptr<igeometry_filter> filter) {
         auto blocks_that_match_filter = get_blocks_that_match_filter(chunk, filter);
-        LOG(INFO) << blocks_that_match_filter.size() << " blocks match filter " << filter->to_string();
 
         if(blocks_that_match_filter.size() == 0) {
             return optional<render_object>();
@@ -127,6 +126,7 @@ namespace nova {
         auto block_idx = pos_to_idx(block_pos);
         const auto& block = chunk.blocks[block_idx];
         const auto& tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(std::string(block.texture_name));
+        LOG(INFO) << "Adding things for block " << block.name << " which uses texture " << block.texture_name;
 
 		auto quads = std::vector<block_face>{};
 		for(auto& face : faces_to_make) {

@@ -119,7 +119,6 @@ namespace nova {
     void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
         chunk_adding_lock.lock();
         chunk.needs_update = true;
-        LOG(INFO) << "Received a chunk with id " << chunk.chunk_id;
         all_chunks.push_back(chunk);
         chunk_adding_lock.unlock();
     }
@@ -153,7 +152,6 @@ namespace nova {
         chunk_adding_lock.lock();
         for(auto& chunk : all_chunks) {
             if(chunk.needs_update) {
-                LOG(INFO) << "Generating a geometry for chunk id " << chunk.chunk_id;
                 make_geometry_for_chunk(chunk);
                 chunk.needs_update = false;
                 break;  // One chunk per frame to avoid stuttering
