@@ -117,7 +117,8 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
             curBlock.texture_name = sprite.getIconName();
         } catch(IndexOutOfBoundsException e) {
-            LOG.error("Apparently there's no up face for block {}", block.getUnlocalizedName());
+            LOG.error("Could not determine texture for block {}, setting texture to dirt", block.getUnlocalizedName());
+            curBlock.texture_name = "minecraft:textures/block/dirt";
         }
     }
 
