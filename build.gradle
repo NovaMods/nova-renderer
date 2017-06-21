@@ -22,23 +22,6 @@ jar {
 	
 }
 
-task createJars(type: Jar) {
-	
-	archiveName = "nova-renderer-"+ version +"-natives-windows.jar"
-	from 'jars/versions/1.10/1.10-natives/libnova-renderer.dll'
-}
-
-task fatjar(type: Jar) {
-    manifest {
-        attributes 'Implementation-Title': 'Nova Renderer',
-                   'Implementation-Version': version,
-                   'Main-Class': 'Start'
-    }
-    archiveName = "1.10-Nova.jar"
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
-
 task buildDll(type: Exec) {
     commandLine 'powershell', '-file', 'nova.ps1', '-build', '-nativeOnly'
 }

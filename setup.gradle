@@ -1,0 +1,67 @@
+/**
+ * Defines a number of tasks used in setting up Nova
+ *
+ * This file will handle downloading MCP, patching the MCP code, generating the
+ * patch file, and ensuring that the user has all the dependencies that they need.
+ */
+
+task help {
+    doLast {
+    logger.info('''\
+Allows you to set up Nova on a new machine. This script also checks that you have all the things that Nova needs, that they're on your PATH, and all the other fun stuff.
+
+Available tasks:
+
+ * setup                - Downloads MCP, unzips it, moves it to the right place, and applies the source code transformations to Minecraft so that Nova will be run properly. Before any of that, though, this tasks checks that you have all the right programs installed to your PATH
+
+ * makePatch            - makes the source code patch that Nova uses to distribute its changes to the MC source code
+
+ * verifyEnvironment    - Checks that you have all the right tools on your PATH
+''')
+    }
+}
+
+task setup(dependsOn: verifyEnvironment) {
+    doLast {
+        logger.info('Beginning setup of Nova...')
+    }
+}
+
+task verifyEnvironment {
+    doLast {
+        if(!hasCMake()) {
+            throw GradleScriptException()
+        }
+
+        def gccAvailable = hasGCC()
+        def msvcAvailable = hasMSVC()
+
+        if(!msvcAvailable) {
+            logger.warn("Could not find MCVS. If you want to use MSVC to compile Nova, please use the Visual Studio Developer Command Prompt (just Google it)")
+        }
+
+        if(!gccAvailable && !msvcAvailable) {
+            logger.fatal('Neither MSVC not GCC are available. Please install one of these and add its location to your PATH')
+        }
+    }
+} 
+
+boolean hasCMake() {
+    def cmakeTest = "cmake --version".execute()
+    if(!cmakeTest.exitValue()) {
+        logger.error('CMake not found. Please install CMake and add its location to your PATH')
+        return false
+    }
+    return true
+}
+
+boolean hasGCC() {
+    def gccTest = "gcc --version".execute()
+    return gccTest.exitValue()
+}
+
+boolean hasMSVC() {
+    def msvcTest = "msbuild.exe --version".execute()
+    return msvc.exitValue()
+}
+
