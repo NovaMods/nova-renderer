@@ -112,9 +112,13 @@ public class ChunkUpdateListener implements IWorldEventListener {
         curBlock.is_opaque = material.isOpaque();
         curBlock.blocks_light = material.blocksLight();
 
-        TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(blockState).getQuads(blockState, EnumFacing.UP, 0).get(0).getSprite();
+        try {
+            TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(blockState).getQuads(blockState, EnumFacing.UP, 0).get(0).getSprite();
 
-        curBlock.texture_name = sprite.getIconName();
+            curBlock.texture_name = sprite.getIconName();
+        } catch(IndexOutOfBoundsException e) {
+            LOG.error("Apparently there's no up face for block {}", block.getUnlocalizedName());
+        }
     }
 
     @Override

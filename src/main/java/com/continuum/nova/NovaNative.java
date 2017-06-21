@@ -47,6 +47,16 @@ public interface NovaNative extends Library {
         public List<String> getFieldOrder() {
             return Arrays.asList("width", "height", "num_components", "texture_data");
         }
+
+        @Override
+        public String toString() {
+            return "mc_atlas_texture{" +
+                    "width=" + width +
+                    ", height=" + height +
+                    ", num_components=" + num_components +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
     }
 
     class mc_texture_atlas_location extends Structure {

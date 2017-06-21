@@ -37,7 +37,7 @@ namespace nova {
         auto block_render_object = render_object{};
         block_render_object.geometry = std::make_unique<gl_mesh>(block_mesh_definition);
         block_render_object.position = {chunk.x, 0, chunk.z};
-        // block_render_object.color_texture = "blocks";
+        block_render_object.color_texture = "block_color";
 
         return make_optional(std::move(block_render_object));
     }
