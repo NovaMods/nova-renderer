@@ -10,13 +10,15 @@
 #include <regex>
 #include "mesh_store.h"
 #include "../../../render/nova_renderer.h"
+#include "builders/chunk_builder.h"
+#include "../utils/io.h"
 
 namespace nova {
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
         return renderables_grouped_by_shader[shader_name];
     }
 
-    void print_buffers(std::string texture_name, std::vector<float>& vertex_buffer, std::vector<unsigned short>& index_buffer) {
+    void print_buffers(std::string texture_name, std::vector<float>& vertex_buffer, std::vector<unsigned int>& index_buffer) {
         // debug
         LOG(DEBUG) << "texture name: " << texture_name << std::endl;
         LOG(DEBUG) << "new buffers:" << std::endl;
@@ -43,7 +45,6 @@ namespace nova {
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
         texture_name = "minecraft:" + texture_name;
-        LOG(DEBUG) << "Recieved GUI buffer with texture " << texture_name;
         const texture_manager::texture_location tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(texture_name);
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
@@ -59,9 +60,9 @@ namespace nova {
             vertex_buffer[i+7] = command->vertex_buffer[i+7];
             vertex_buffer[i+8] = command->vertex_buffer[i+8];
         }
-        std::vector<unsigned short> index_buffer(command->index_buffer_size);
+        std::vector<unsigned int> index_buffer(command->index_buffer_size);
         for(int i = 0; i < command->index_buffer_size; i++) {
-            index_buffer[i] = (unsigned short)command->index_buffer[i];
+            index_buffer[i] = (unsigned int)command->index_buffer[i];
         }
 
         // debug
@@ -84,7 +85,8 @@ namespace nova {
 
     void mesh_store::remove_gui_render_objects() {
         for(auto& group : renderables_grouped_by_shader) {
-            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), [](auto& render_obj) {return render_obj.type == geometry_type::gui;});
+            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(),
+                                                   [](auto& render_obj) {return render_obj.type == geometry_type::gui;});
             group.second.erase(removed_elements, group.second.end());
         }
     }
@@ -92,8 +94,8 @@ namespace nova {
     void mesh_store::sort_render_object(render_object& object) {
         auto& all_shaders = shaders->get_loaded_shaders();
         for(auto& entry : all_shaders) {
-            auto& filter = entry.second.get_filter();
-            if(matches_filter(object, filter)) {
+            auto filter = entry.second.get_filter();
+            if(filter->matches(object)) {
                 renderables_grouped_by_shader[entry.first].push_back(std::move(object));
             }
         }
@@ -105,53 +107,72 @@ namespace nova {
         }
     }
 
-    bool mesh_store::matches_filter(render_object& object, geometry_filter &filter) {
-        for(auto& name : filter.names) {
-            if(object.name == name) {
-                return true;
-            }
-        }
+    void mesh_store::set_shaderpack(std::shared_ptr<shaderpack> new_shaderpack) {
+        shaders = new_shaderpack;
 
-        for(auto& name_part : filter.name_parts) {
-            if(object.name.find(name_part) != std::string::npos) {
-                return true;
-            }
+        renderables_grouped_by_shader.clear();
+        LOG(INFO) << "Rebuilding chunk geometry to fit new shaderpack";
+        for(auto& chunk : all_chunks) {
+            add_or_update_chunk(chunk);
         }
-
-        bool matches = false;
-        bool matches_geometry_type = false;
-        for(auto& geom_type : filter.geometry_types) {
-            if(object.type == geom_type) {
-                matches_geometry_type = true;
-            }
-        }
-
-        matches |= matches_geometry_type;
-        if(filter.geometry_types.size() == 0) {
-            matches = true;
-        }
-
-        if(filter.should_be_solid) {
-            matches |= *filter.should_be_solid && object.is_solid;
-        }
-        if(filter.should_be_transparent) {
-            matches |= *filter.should_be_transparent && object.is_transparent;
-        }
-        if(filter.should_be_cutout) {
-            matches |= *filter.should_be_cutout && object.is_cutout;
-        }
-        if(filter.should_be_emissive) {
-            matches |= *filter.should_be_emissive&& object.is_emissive;
-        }
-        if(filter.should_be_damaged) {
-            matches |= *filter.should_be_damaged ? object.damage_level > 0 : object.damage_level == 0;
-        }
-
-        return matches;
+        LOG(INFO) << "Rebuild complete";
     }
 
-    void mesh_store::set_shaderpack(shaderpack &new_shaderpack) {
-        shaders = &new_shaderpack;
+    void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
+        all_chunks_lock.lock();
+        chunk.needs_update = true;
+        all_chunks.push_back(chunk);
+        int chunk_id = chunk.chunk_id;
+        remove_render_objects([chunk_id](render_object& obj) {return obj.parent_id == chunk_id;});
+        all_chunks_lock.unlock();
+
+        for(const auto& shader_entry : shaders->get_loaded_shaders()) {
+            auto blocks_for_shader = get_blocks_that_match_filter(chunk, shader_entry.second.get_filter());
+            if(blocks_for_shader.size() == 0) {
+                continue;
+            }
+
+            auto block_mesh_definition = make_mesh_for_blocks(blocks_for_shader, chunk);
+            chunk_parts_to_upload_lock.lock();
+            chunk_parts_to_upload.emplace(shader_entry.first, block_mesh_definition);
+            chunk_parts_to_upload_lock.unlock();
+        }
     }
 
+    void mesh_store::register_model(std::string model_name, mc_simple_model &mc_model) {
+        mesh_definition model = make_mesh_from_mc_model(mc_model);
+
+		simple_models[model_name] = model;
+    }
+
+    mesh_definition mesh_store::make_mesh_from_mc_model(mc_simple_model &model) {
+        mesh_definition mesh;
+        // TODO: This method needs to happen
+        return mesh;
+    }
+
+    void mesh_store::deregister_model(std::string model_name) {
+        simple_models.erase(model_name);
+    }
+
+    void mesh_store::generate_needed_chunk_geometry() {
+        bool has_thing_to_upload = false;
+        std::tuple<std::string, mesh_definition> definition_to_upload;
+        chunk_parts_to_upload_lock.lock();
+        if(!chunk_parts_to_upload.empty()) {
+            definition_to_upload = std::move(chunk_parts_to_upload.front());
+            chunk_parts_to_upload.pop();
+            has_thing_to_upload = true;
+        }
+        chunk_parts_to_upload_lock.unlock();
+
+        if(has_thing_to_upload) {
+            auto chunk_part_render_object = render_object{};
+            chunk_part_render_object.geometry = std::make_unique<gl_mesh>(std::get<1>(definition_to_upload));
+            chunk_part_render_object.position = std::get<1>(definition_to_upload).position;
+            chunk_part_render_object.color_texture = "block_color";
+
+            renderables_grouped_by_shader[std::get<0>(definition_to_upload)].push_back(std::move(chunk_part_render_object));
+        }
+    }
 }

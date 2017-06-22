@@ -59,7 +59,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
 # Setup the nova-core library.
 set(NOVA_HEADERS
 
-        render/objects/shaders/uniform_buffer_definitions.h
+        render/objects/uniform_buffers/uniform_buffer_definitions.h
 
         mc_interface/nova.h
         render/nova_renderer.h
@@ -67,14 +67,14 @@ set(NOVA_HEADERS
         utils/types.h
 
         render/objects/shaders/gl_shader_program.h
-        render/objects/gl_uniform_buffer.h
+        render/objects/uniform_buffers/gl_uniform_buffer.h
         render/objects/gl_mesh.h
         render/objects/textures/texture2D.h
 
         render/windowing/glfw_gl_window.h
-		
+
 		input/InputHandler.h
-		
+
         interfaces/iwindow.h
 
         mc_interface/mc_gui_objects.h
@@ -86,13 +86,19 @@ set(NOVA_HEADERS
         data_loading/loaders/shader_loading.h
         data_loading/loaders/loader_utils.h
         geometry_cache/mesh_store.h
-        render/render_pass.h
         render/objects/shaders/shader_facade.h
         render/objects/render_object.h
+        render/objects/uniform_buffers/uniform_buffer_store.h
+        render/objects/uniform_buffers/uniform_buffer_definitions.h
+        render/objects/uniform_buffers/gl_uniform_buffer.h
 
         data_loading/physics/AABB.h
         data_loading/loaders/shader_source_structs.h
         geometry_cache/mesh_definition.h
+        render/objects/camera.h
+        render/objects/framebuffer.h
+        utils/io.h
+        data_loading/loaders/geometry_filter_loading.h
         )
 
 set(NOVA_SOURCE
@@ -103,7 +109,7 @@ set(NOVA_SOURCE
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
         render/objects/textures/texture_manager.cpp
-        render/uniform_buffer_store.cpp
+        render/objects/uniform_buffers/uniform_buffer_store.cpp
 
         input/InputHandler.cpp
 
@@ -125,8 +131,15 @@ set(NOVA_SOURCE
         geometry_cache/mesh_definition.cpp
         render/objects/shaders/geometry_filter.cpp
 
-        render/objects/shaders/uniform_buffers_definitions.cpp
-        )
+        render/objects/uniform_buffers/uniform_buffers_definitions.cpp
+        geometry_cache/builders/chunk_builder.cpp
+
+        mc_interface/mc_objects.cpp
+        render/objects/framebuffer.cpp
+        render/objects/camera.cpp
+        utils/io.cpp
+        data_loading/loaders/geometry_filter_loading.cpp
+        data_loading/loaders/shader_source_structs.cpp)
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} 3rdparty/renderdocapi/RenderDocManager.cpp)
@@ -191,13 +204,15 @@ set(TEST_SOURCE_FILES
         test/main.cpp
 
         test/model/loaders/shader_loading_test.cpp
-        test/model/shaders/shader_facade_test.cpp
-        test/model/geometry_cache/builders/gui_geometry_builder_tests.cpp
-        test/model/texture_manager_test.cpp
-        test/model/shaders/gl_shader_program_test.cpp
-        test/model/geometry_cache/mesh_store_test.cpp
+        test/geometry_cache/builders/chunk_builder_test.cpp
+        test/render/objects/textures/texture_manager_test.cpp
+        test/render/objects/shaders/gl_shader_program_test.cpp
+        test/geometry_cache/mesh_store_test.cpp
         test/test_utils.cpp
-        test/test_utils.h)
+        test/test_utils.h
+        test/utils/io_test.cpp
+        test/data_loading/loaders/geometry_filter_loading_test.cpp
+        )
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
 

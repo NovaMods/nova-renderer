@@ -4,16 +4,11 @@
     "\\src",
     "\\src\\main",
     "\\src\\main\\cpp",
-    "\\src\\main\\cpp\\bin_linux\\Debug",
-    "\\src\\main\\cpp\\data_loading",
-    "\\src\\main\\cpp\\data_loading\\geometry_cache",
-    "\\src\\main\\cpp\\data_loading\\geometry_cache\\builders",
-    "\\src\\main\\cpp\\data_loading\\loaders",
-    "\\src\\main\\cpp\\nova-renderer-obj.dir\\Debug",
-    "\\src\\main\\cpp\\nova-renderer.dir\\Debug",
-    "\\src\\main\\cpp\\view",
-    "\\src\\main\\cpp\\view\\objects"
+    "\\src\\main\\cpp\\geometry_cache",
+    "\\src\\main\\cpp\\geometry_cache\\builders",
+    "\\src\\main\\cpp\\render\\objects",
+    "\\src\\main\\cpp\\render\\objects\\shaders"
   ],
-  "SelectedNode": "\\src\\main\\cpp\\view\\objects\\gl_mesh.h",
+  "SelectedNode": "\\src\\main\\cpp\\geometry_cache\\builders\\chunk_builder.h",
   "PreviewInSolutionExplorer": false
 }

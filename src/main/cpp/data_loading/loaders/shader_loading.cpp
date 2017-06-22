@@ -1,5 +1,5 @@
 /*!
- * \brief Impliments the functions in shader_loading.h
+ * \brief Implements the functions in shader_loading.h
  *
  * \author ddubois 
  * \date 03-Sep-16.
@@ -96,8 +96,8 @@ namespace nova {
                 shader.fragment_source = load_shader_file(shader_path, fragment_extensions);
 
                 sources.push_back(shader);
-            } catch(std::exception e) {
-                LOG(ERROR) << e.what();
+            } catch(std::exception& e) {
+                LOG(ERROR) << "Could not load shader " << shader.name << ". Reason: " << e.what();
             }
         }
 
@@ -172,10 +172,11 @@ namespace nova {
     std::vector<shader_line> load_shader_file(const std::string &shader_path, const std::vector<std::string> &extensions) {
         for(auto &extension : extensions) {
             auto full_shader_path = shader_path + extension;
-            LOG(TRACE) << "Loading shader file " << full_shader_path;
+            LOG(TRACE) << "Trying to load shader file " << full_shader_path;
 
             std::ifstream stream(full_shader_path, std::ios::in);
             if(stream.good()) {
+                LOG(INFO) << "Loading shader file " << full_shader_path;
                 return read_shader_stream(stream, full_shader_path);
             } else {
                 LOG(WARNING) << "Could not read file " << full_shader_path;
@@ -214,8 +215,7 @@ namespace nova {
 
     shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, const std::vector<std::string> &shader_names) {
         LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
-        auto fake_vector = std::vector<shader_definition>{};
-        return {"", {}, fake_vector};
+        throw std::runtime_error("Zipped shaderpacks not yet supported");
     }
 
     nlohmann::json& get_default_shaders_json() {

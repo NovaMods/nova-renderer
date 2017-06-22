@@ -177,13 +177,14 @@ updatenames.sh
 ### Minecraft source and libraries ###
 conf/
 jars/
+!jars/config
+!jars/shaderpacks
 docs/
-logs/
 runtime/
 temp/
 eclipse/
 src/main/java/net/
-src/main/java/mcp/
+!src/main/java/com/
 
 ### Gradle ###
 .gradle
@@ -220,7 +221,6 @@ reobf/
 target/
 
 *.png
-/src/main/java/net/
 /.idea/inspectionProfiles
 /.idea/inspectionProfiles/Project_Default.xml
 /.idea/compiler.xml
@@ -234,3 +234,4 @@ target/
 src/main/resources
 !src/main/resources/log4j2.xml
 /.idea
+logs/

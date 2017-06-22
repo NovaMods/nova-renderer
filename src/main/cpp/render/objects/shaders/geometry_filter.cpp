@@ -1,88 +1,115 @@
+#include <easylogging++.h>
 #include "geometry_filter.h"
 
 namespace nova {
-    // CLion says these lines are an error. CLion is stupid
-    std::unordered_map<std::string, std::function<void(geometry_filter&)>> geometry_filter::modifying_functions {
-            { "solid", accept_solid },
-            { "not_solid", reject_solid },
-            { "transparent", accept_transparent },
-            { "not_transparent", reject_transparent },
-            { "cutout", accept_cutout },
-            { "not_cutout", reject_cutout },
-            { "emissive", accept_emissive },
-            { "not_emissive", reject_emissive },
-            { "damaged", accept_damaged },
-            { "not_damaged", reject_damaged },
-            { "everything_else", accept_everything_else },
-            { "nothing_else", reject_everything_else }
-    };
+    and_geometry_filter::and_geometry_filter(std::shared_ptr<igeometry_filter> filter1, std::shared_ptr<igeometry_filter> filter2) : filter1(filter1), filter2(filter2) {}
 
-    void accept_geometry_type(geometry_filter &filter, geometry_type type) {
-        filter.geometry_types.push_back(type);
+    bool and_geometry_filter::matches(const mc_block &block) const {
+        return filter1->matches(block) && filter2->matches(block);
     }
 
-    void accept_name(geometry_filter &filter, std::string &name) {
-        filter.names.push_back(name);
+    bool and_geometry_filter::matches(const render_object &obj) const {
+        return filter1->matches(obj) && filter2->matches(obj);
     }
 
-    void accept_name_part(geometry_filter &filter, std::string &name_part) {
-        filter.name_parts.push_back(name_part);
+    std::string and_geometry_filter::to_string() const {
+        return filter1->to_string() + " AND " + filter2->to_string();
     }
 
-    void accept_solid(geometry_filter &filter) {
-        filter.should_be_solid = true;
+    or_geometry_filter::or_geometry_filter(std::shared_ptr<igeometry_filter> filter1, std::shared_ptr<igeometry_filter> filter2) : filter1(filter1), filter2(filter2) {}
+
+    bool or_geometry_filter::matches(const mc_block &block) const {
+        return filter1->matches(block) || filter2->matches(block);
     }
 
-    void reject_solid(geometry_filter &filter) {
-        filter.should_be_solid = false;
+    bool or_geometry_filter::matches(const render_object &obj) const {
+        return filter1->matches(obj) || filter2->matches(obj);
     }
 
-    void accept_transparent(geometry_filter &filter) {
-        filter.should_be_transparent = true;
+    std::string or_geometry_filter::to_string() const {
+        return filter1->to_string() + " OR " + filter2->to_string();
     }
 
-    void reject_transparent(geometry_filter &filter) {
-        filter.should_be_transparent = false;
+    name_geometry_filter::name_geometry_filter(std::string name) : name(name) {}
+
+    bool name_geometry_filter::matches(const mc_block &block) const {
+        return std::string(block.name) == name;
     }
 
-    void accept_cutout(geometry_filter &filter) {
-        filter.should_be_cutout = true;
+    bool name_geometry_filter::matches(const render_object &obj) const {
+        return obj.name == name;
     }
 
-    void reject_cutout(geometry_filter &filter) {
-        filter.should_be_cutout = false;
+    std::string name_geometry_filter::to_string() const {
+        return "name::" + name;
     }
 
-    void accept_emissive(geometry_filter &filter) {
-        filter.should_be_emissive = true;
+    name_part_geometry_filter::name_part_geometry_filter(std::string name_part) : name_part(name_part) {}
+
+    bool name_part_geometry_filter::matches(const mc_block &block) const {
+        return std::string(block.name).find(name_part) != std::string::npos;
     }
 
-    void reject_emissive(geometry_filter &filter) {
-        filter.should_be_emissive = false;
+    bool name_part_geometry_filter::matches(const render_object &obj) const {
+        return obj.name.find(name_part) != std::string::npos;
     }
 
-    void accept_damaged(geometry_filter &filter) {
-        filter.should_be_damaged = true;
+    std::string name_part_geometry_filter::to_string() const {
+        return "name_part::" + name_part;
     }
 
-    void reject_damaged(geometry_filter &filter) {
-        filter.should_be_damaged = false;
+    geometry_type_geometry_filter::geometry_type_geometry_filter(geometry_type type) : type(type) {}
+
+    bool geometry_type_geometry_filter::matches(const mc_block &block) const {
+        //LOG(INFO) << "Checking if block is of type " << type.to_string();
+        return type == geometry_type::block;
     }
 
-    void accept_everything_else(geometry_filter &filter) {
-        if(!filter.should_be_solid) filter.should_be_solid = false;
-        if(!filter.should_be_transparent) filter.should_be_transparent = false;
-        if(!filter.should_be_cutout) filter.should_be_cutout = false;
-        if(!filter.should_be_emissive) filter.should_be_emissive = false;
-        if(!filter.should_be_damaged) filter.should_be_damaged = false;
+    bool geometry_type_geometry_filter::matches(const render_object &obj) const {
+        // We can't make this comparison so let's just ignore it
+        return true;
     }
 
-    void reject_everything_else(geometry_filter &filter) {
-        if(!filter.should_be_solid) filter.should_be_solid = true;
-        if(!filter.should_be_transparent) filter.should_be_transparent = true;
-        if(!filter.should_be_cutout) filter.should_be_cutout = true;
-        if(!filter.should_be_emissive) filter.should_be_emissive = true;
-        if(!filter.should_be_damaged) filter.should_be_damaged = true;
+    std::string geometry_type_geometry_filter::to_string() const {
+        return "geometry_type::" + type.to_string();
+    }
+
+    transparent_geometry_filter::transparent_geometry_filter() : transparent_geometry_filter(true) {}
+
+    transparent_geometry_filter::transparent_geometry_filter(bool should_be_transparent) : should_be_transparent(should_be_transparent) {}
+
+    bool transparent_geometry_filter::matches(const mc_block &block) const {
+        return block.is_transparent() == should_be_transparent;
+    }
+
+    bool transparent_geometry_filter::matches(const render_object &obj) const {
+        return obj.is_transparent;
+    }
+
+    std::string transparent_geometry_filter::to_string() const {
+        if(should_be_transparent) {
+            return "transparent";
+        } else {
+            return "not_transparent";
+        }
+    }
+
+    emissive_geometry_filter::emissive_geometry_filter(bool should_be_emissive) : should_be_emissive(should_be_emissive) {}
+
+    bool emissive_geometry_filter::matches(const mc_block &block) const {
+        return block.is_emissive() == should_be_emissive;
+    }
+
+    bool emissive_geometry_filter::matches(const render_object &obj) const {
+        return obj.is_emissive;
+    }
+
+    std::string emissive_geometry_filter::to_string() const {
+        if(should_be_emissive) {
+            return "emissive";
+        } else {
+            return "not_emissive";
+        }
     }
 }
 

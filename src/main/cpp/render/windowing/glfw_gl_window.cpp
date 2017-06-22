@@ -13,7 +13,12 @@ namespace nova {
         LOG(ERROR) << "Error " << error << ": " << description;
     }
 
-    
+    void window_focus_callback(GLFWwindow *window, int focused) {
+        glfw_gl_window::setActive((bool) focused);
+    }
+
+    bool glfw_gl_window::active = true;
+
     glfw_gl_window::glfw_gl_window() {
         initialize_logging();
 
@@ -43,7 +48,7 @@ namespace nova {
         LOG(INFO) << "GLFW window created";
 
         //renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
-        LOG(INFO) << "Hooked into RenderDoc";
+        //LOG(INFO) << "Hooked into RenderDoc";
 
         glfwMakeContextCurrent(window);
         gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
@@ -64,6 +69,7 @@ namespace nova {
 		glfwSetMouseButtonCallback(window, mouse_button_callback);
 		glfwSetCursorPosCallback(window, mouse_position_callback);
         glfwSetScrollCallback(window, mouse_scroll_callback);
+        glfwSetWindowFocusCallback(window, window_focus_callback);
 		glfwSwapInterval(0);
 		
 		return 0;
@@ -81,8 +87,6 @@ namespace nova {
     }
 
     void glfw_gl_window::set_fullscreen(bool fullscreen) {
-        // TODO: RAVEN WRIT THIS
-        
         GLFWmonitor* monitor = NULL;
         int xPos = 0;
         int yPos = 0;
@@ -137,8 +141,6 @@ namespace nova {
         }
     }
 
-    
-
     void glfw_gl_window::set_framebuffer_size(glm::ivec2 new_framebuffer_size) {
         nlohmann::json &settings = nova_renderer::instance->get_render_settings().get_options();
         settings["settings"]["viewWidth"] = new_framebuffer_size.x;
@@ -150,10 +152,20 @@ namespace nova {
 
     void glfw_gl_window::on_config_change(nlohmann::json &new_config) {
         LOG(INFO) << "gl_glfw_window received the updated config";
-        //glfwSetWindowSize(window, new_config["viewWidth"], new_config["viewHeight"]);
     }
 
     void glfw_gl_window::on_config_loaded(nlohmann::json &config) {
-		//glfwSetWindowSize(window, config["viewWidth"], config["viewHeight"]);
+    }
+
+    bool glfw_gl_window::is_active() {
+        return active;
+    }
+
+    void glfw_gl_window::setActive(bool active) {
+        glfw_gl_window::active = active;
+    }
+
+    void glfw_gl_window::set_mouse_grabbed(bool grabbed) {
+        glfwSetInputMode(window, GLFW_CURSOR, grabbed ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     }
 }

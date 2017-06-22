@@ -7,6 +7,7 @@
 #include "../data_loading/loaders/loaders.h"
 
 #include <easylogging++.h>
+#include <glm/gtc/matrix_transform.hpp>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -52,10 +53,16 @@ namespace nova {
     }
 
     void nova_renderer::render_frame() {
-        // Clear to the clear color
+        // Make geometry for any new chunks
+        meshes->generate_needed_chunk_geometry();
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // upload shadow UBO things
+
         render_shadow_pass();
+
+        update_gbuffer_ubos();
 
         render_gbuffers();
 
@@ -73,25 +80,35 @@ namespace nova {
     }
 
     void nova_renderer::render_shadow_pass() {
-
+        LOG(TRACE) << "Rendering shadow pass";
     }
 
     void nova_renderer::render_gbuffers() {
+        LOG(TRACE) << "Rendering gbuffer pass";
+        //main_framebuffer->bind();
 
+        // TODO: Get shaders with gbuffers prefix, draw transparents last, etc
+        auto& terrain_shader = loaded_shaderpack->get_shader("gbuffers_terrain");
+        render_shader(terrain_shader);
     }
 
     void nova_renderer::render_composite_passes() {
-
+        LOG(TRACE) << "Rendering composite passes";
     }
 
     void nova_renderer::render_final_pass() {
-
+        LOG(TRACE) << "Rendering final pass";
     }
 
     void nova_renderer::render_gui() {
+        LOG(TRACE) << "Rendering GUI";
+        glClear(GL_DEPTH_BUFFER_BIT);
+
         // Bind all the GUI data
-        gl_shader_program &gui_shader = (*loaded_shaderpack)["gui"];
+        auto &gui_shader = loaded_shaderpack->get_shader("gui");
         gui_shader.bind();
+
+        upload_gui_model_matrix(gui_shader);
 
         // Render GUI objects
         std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
@@ -199,11 +216,9 @@ namespace nova {
     }
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
-		
 		auto& shaderpack_name = new_config["loadedShaderpack"];
-        if(!loaded_shaderpack.has_value() || (loaded_shaderpack.has_value() && shaderpack_name != loaded_shaderpack.value().get_name())) {
+        if(!loaded_shaderpack || (loaded_shaderpack && shaderpack_name != loaded_shaderpack->get_name())) {
             load_new_shaderpack(shaderpack_name);
-            
         }
     }
 
@@ -234,16 +249,112 @@ namespace nova {
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
 		
         LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
-        loaded_shaderpack = std::experimental::make_optional<shaderpack>(load_shaderpack(new_shaderpack_name));
-        meshes->set_shaderpack(*loaded_shaderpack);
+        loaded_shaderpack = std::make_shared<shaderpack>(load_shaderpack(new_shaderpack_name));
+        meshes->set_shaderpack(loaded_shaderpack);
         LOG(INFO) << "Loading complete";
 		
         link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), *ubo_manager);
         LOG(DEBUG) << "Linked up UBOs";
+
+        create_framebuffers_from_shaderpack();
+    }
+
+    void nova_renderer::create_framebuffers_from_shaderpack() {
+        // TODO: Examine the shaderpack and determine what's needed
+        // For now, just create framebuffers with all possible attachments
+
+        auto settings = render_settings->get_options()["settings"];
+
+        main_framebuffer_builder.set_framebuffer_size(settings["viewWidth"], settings["viewHeight"])
+                                .enable_color_attachment(0)
+                                .enable_color_attachment(1)
+                                .enable_color_attachment(2)
+                                .enable_color_attachment(3)
+                                .enable_color_attachment(4)
+                                .enable_color_attachment(5)
+                                .enable_color_attachment(6)
+                                .enable_color_attachment(7);
+
+        main_framebuffer = std::make_unique<framebuffer>(main_framebuffer_builder.build());
+
+        shadow_framebuffer_builder.set_framebuffer_size(settings["shadowMapResolution"], settings["shadowMapResolution"])
+                                  .enable_color_attachment(0)
+                                  .enable_color_attachment(1)
+                                  .enable_color_attachment(2)
+                                  .enable_color_attachment(3);
+
+        shadow_framebuffer = std::make_unique<framebuffer>(shadow_framebuffer_builder.build());
+
     }
 
     void nova_renderer::deinit() {
         instance.release();
+    }
+
+    void nova_renderer::render_shader(gl_shader_program &shader) {
+        LOG(TRACE) << "Rendering everything for shader " << shader.get_name();
+        shader.bind();
+
+        auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
+        for(auto& geom : geometry) {
+            if(geom.color_texture != "") {
+                auto color_texture = textures->get_texture(geom.color_texture);
+                color_texture.bind(0);
+            }
+
+            if(geom.normalmap) {
+                textures->get_texture(*geom.normalmap).bind(1);
+            }
+
+            if(geom.data_texture) {
+                textures->get_texture(*geom.data_texture).bind(2);
+            }
+
+            upload_model_matrix(geom, shader);
+
+            geom.geometry->set_active();
+            geom.geometry->draw();
+        }
+    }
+
+    void nova_renderer::upload_model_matrix(render_object &geom, gl_shader_program &program) const {
+        glm::mat4 model_matrix = glm::translate(glm::mat4(1), geom.position);
+
+        auto model_matrix_location = program.get_uniform_location("gbufferModel");
+        glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &model_matrix[0][0]);
+    }
+
+    void nova_renderer::upload_gui_model_matrix(gl_shader_program &program) {
+        auto config = render_settings->get_options()["settings"];
+        float view_width = config["viewWidth"];
+        float view_height = config["viewHeight"];
+        float scalefactor = config["scalefactor"];
+        // The GUI matrix is super simple, just a viewport transformation
+        glm::mat4 gui_model(1.0f);
+        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
+        gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
+        gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
+        gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
+
+        auto model_matrix_location = program.get_uniform_location("gbufferModel");
+
+        glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &gui_model[0][0]);
+    }
+
+    void nova_renderer::update_gbuffer_ubos() {
+        // Big thing here is to update the camera's matrices
+
+        auto& per_frame_ubo = ubo_manager->get_per_frame_uniforms();
+
+        auto per_frame_uniform_data = per_frame_uniforms{};
+        per_frame_uniform_data.gbufferProjection = player_camera.get_projection_matrix();
+        per_frame_uniform_data.gbufferModelView = player_camera.get_view_matrix();
+
+        per_frame_ubo.send_data(per_frame_uniform_data);
+    }
+
+    camera &nova_renderer::get_player_camera() {
+        return player_camera;
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {

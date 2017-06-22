@@ -36,7 +36,7 @@ namespace nova {
      */
     struct shader_definition {
         std::string name;
-        std::vector<std::string> filters;
+        std::string filter_expression;
         optional<std::string> fallback_name;
 
         optional<std::shared_ptr<shader_definition>> fallback_def;
@@ -45,18 +45,12 @@ namespace nova {
         std::vector<shader_line> fragment_source;
         // TODO: Figure out how to handle geometry and tessellation shaders
 
-        shader_definition(nlohmann::json &json) {
-            name = json["name"];
+        /*!
+         * \brief The framebuffer attachments that this shader writes to
+         */
+        std::vector<unsigned int> drawbuffers;
 
-            for(auto filter : json["filters"]) {
-                filters.push_back(filter);
-            }
-
-            if(json.find("fallback") != json.end()) {
-                std::string fallback_name_str = json["fallback"];
-                fallback_name = optional<std::string>(fallback_name_str);
-            }
-        }
+        shader_definition(nlohmann::json &json);
     };
 }
 

@@ -40,6 +40,7 @@ namespace nova {
      * This provides a number of values that you can filter things by.
      */
     struct render_object {
+        int parent_id;  //!< The ID of the thing that owns us. Could be the ID of a chunk, entity, whatever
         bool is_solid;
         bool is_transparent;
         bool is_cutout;
@@ -79,6 +80,8 @@ namespace nova {
         std::string color_texture;
         std::experimental::optional<std::string> normalmap;
         std::experimental::optional<std::string> data_texture;
+
+        glm::vec3 position;
     };
 }
 

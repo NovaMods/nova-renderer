@@ -142,3 +142,4 @@ ENV/
 
 # Rope project settings
 .ropeproject
+bin_linux/

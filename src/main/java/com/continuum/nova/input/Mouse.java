@@ -12,7 +12,11 @@ import org.apache.logging.log4j.Logger;
 
 
 public class Mouse {
+    private static final Logger LOG = LogManager.getLogger(Mouse.class);
+
     private static boolean created;
+    private static int lastX;
+    private static int lastY;
     private static int x;
     private static int y;
     private static int absolute_x;
@@ -23,16 +27,12 @@ public class Mouse {
     private static int buttonCount = -1;
     private static boolean hasWheel;
     private static String[] buttonName;
-    private static final Map<String, Integer> buttonMap = new HashMap(16);
+    private static final Map<String, Integer> buttonMap = new HashMap<>(16);
     private static final HashSet<Integer> buttonDownBuffer = new HashSet<>();
     private static boolean initialized;
     private static int eventButton;
     private static boolean eventState;
-    private static int event_dx;
-    private static int event_dy;
     private static int event_dwheel;
-    private static int event_x;
-    private static int event_y;
     private static long event_nanos;
     private static int grab_x;
     private static int grab_y;
@@ -104,6 +104,8 @@ public class Mouse {
     }
 
     public static boolean next() {
+        lastX = x;
+        lastY = y;
         mouse_button_event e = NovaNative.INSTANCE.get_next_mouse_button_event();
         mouse_position_event p = NovaNative.INSTANCE.get_next_mouse_position_event();
         NovaNative.mouse_scroll_event s = NovaNative.INSTANCE.get_next_mouse_scroll_event();
@@ -119,24 +121,26 @@ public class Mouse {
             }
             eventButton = e.button;
             eventState = e.action == 1;
-            LogManager.getRootLogger().info("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
+            LOG.trace("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
 
         }else{
             eventButton = -1;
             eventState = false;
         }
         if(p.filled == 1 ){
-            dx += p.xpos - event_x;
-            dy += p.ypos -event_y;
-            event_x = p.xpos;
-            event_y = p.ypos;
+            dx += p.xpos - x;
+            dy += p.ypos - y;
+            x = p.xpos;
+            y = p.ypos;
+            LOG.trace("dx: {} dy: {}", dx, dy);
         }
         if(s.filled == 1){
             event_dwheel = (int )s.yoffset;
-            LogManager.getRootLogger().info("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
+            LOG.trace("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
         }else{
             event_dwheel = 0;
         }
+
         return true;
     }
 
@@ -150,11 +154,11 @@ public class Mouse {
 
 
     public static int getEventX() {
-        return event_x;
+        return x;
     }
 
     public static int getEventY() {
-        return event_y;
+        return y;
     }
 
     public static int getEventDWheel() {
@@ -167,12 +171,12 @@ public class Mouse {
 
     public static int getX() {
         next();
-        return event_x;
+        return x;
     }
 
     public static int getY() {
         next();
-        return event_y;
+        return y;
     }
 
     public static int getDX() {
@@ -206,11 +210,12 @@ public class Mouse {
     }
 
     public static void setGrabbed(boolean grab) {
-
+        NovaNative.INSTANCE.set_mouse_grabbed(grab);
+        isGrabbed = grab;
     }
 
     public static void updateCursor() {
-
+        next();
     }
 
     public static boolean isInsideWindow() {

@@ -18,6 +18,10 @@ extern "C" {
  */
 NOVA_API void initialize();
 
+/**
+ * Textures
+ */
+
 /*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture
  *
@@ -52,6 +56,31 @@ NOVA_API int get_max_texture_size();
 NOVA_API void reset_texture_manager();
 
 /*!
+ * \brief Adds a chunk to Minecraft, or updates an existing chunk
+ *
+ * Chunks are identified by their chunk ID. Nova maintains a mapping from chunk ID to render_objects for that chunk.
+ * This lets Nova clean out the geometry for an old chunk to make room for a new chunk
+ *
+ * \param chunk The chunk to add to Nova
+ */
+NOVA_API void add_chunk(mc_chunk & chunk);
+
+/*!
+ * \brief Registers a simple model with Nova
+ *
+ * \param model_name The string name of the model
+ * \param model The geometry for the model
+ */
+NOVA_API void register_simple_model(const char * model_name, mc_simple_model * model);
+
+/*!
+ * \brief Removes a model from Nova
+ *
+ * \param model_name The name of the model to remove
+ */
+NOVA_API void deregister_model(const char * model_name);
+
+/*!
  * \brief Updates the Nova Renderer and renders the current frame
  */
 NOVA_API void execute_frame();
@@ -63,9 +92,16 @@ NOVA_API void execute_frame();
  * needs to be made aware of any window events. This function, and a couple others, poll the native code for any new
  * window events. This one triggers if the user decides to close Nova's renderer
  *
- * \return Trus if the window should close, false otherwise
+ * \return True if the window should close, false otherwise
  */
 NOVA_API bool should_close();
+
+/*!
+ * \brief Checks if the window has focus
+ *
+ * \return True if the GLFW window is active, false otherwise
+ */
+NOVA_API bool display_is_active();
 
 NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command);
 
@@ -106,6 +142,23 @@ NOVA_API void set_string_setting(const char * setting_name, const char * setting
 * \param setting_value The desired value of the setting
 */
 NOVA_API void set_float_setting(const char * setting_name, float setting_value);
+
+/*!
+ * \brief Sets the player camera's location and rotation to the given values
+ *
+ * \param x The X-coordinate of the camera's position
+ * \param y The y-coordinate of the camera's position
+ * \param z The X-coordinate of the camera's position
+ * \param yaw The camera's yaw
+ * \param pitch The camera's pitch
+ */
+NOVA_API void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
+
+NOVA_API void set_mouse_grabbed(int grabbed);
+
+/**
+ * Pass mouse and key events to Minecraft
+ */
 
 NOVA_API struct mouse_button_event  get_next_mouse_button_event();
 

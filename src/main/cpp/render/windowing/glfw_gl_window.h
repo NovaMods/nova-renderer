@@ -53,6 +53,10 @@ namespace nova {
 
         virtual bool should_close();
 
+        bool is_active();
+
+        void set_mouse_grabbed(bool grabbed);
+
         /**
          * iconfig_change_listener methods
          */
@@ -61,7 +65,10 @@ namespace nova {
 
         void on_config_loaded(nlohmann::json &config);
 
+        static void setActive(bool active);
+
     private:
+        static bool active;
         GLFWwindow *window;
         glm::ivec2 window_dimensions;
         std::unique_ptr<RenderDocManager> renderdoc_manager;

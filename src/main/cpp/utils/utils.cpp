@@ -24,7 +24,7 @@ void initialize_logging() {
 
 namespace nova {
     resource_not_found::resource_not_found(const std::string &msg) {
-        message = "Could not fine resource " + msg;
+        message = "Could not find resource " + msg;
     }
 
     const char * resource_not_found::what() const noexcept {
@@ -40,6 +40,27 @@ namespace nova {
         }
 
         return nlohmann::json::parse(accum.c_str());
+    }
+
+    std::vector<std::string> split(const std::string &s, char delim) {
+        std::vector<std::string> elems;
+        split(s, delim, std::back_inserter(elems));
+        return elems;
+    }
+
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::ivec3 &vec) {
+        out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+        return out;
+    }
+
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec2 &vec) {
+        out << "(" << vec.x << ", " << vec.y << ")";
+        return out;
+    }
+
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec3 &vec) {
+        out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
+        return out;
     }
 }
 

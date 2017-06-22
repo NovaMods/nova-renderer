@@ -64,7 +64,7 @@ namespace nova {
      * hold the map from line in the shader sent to the compiler and the line number and shader file that the line came from
      * on disk
      */
-    class NOVA_API gl_shader_program {
+    class gl_shader_program {
     public:
         GLuint gl_name;
 
@@ -73,9 +73,12 @@ namespace nova {
          */
         gl_shader_program(const shader_definition &source);
 
-        gl_shader_program(gl_shader_program &other);
-
-        gl_shader_program(const gl_shader_program &other);
+        /*!
+         * \brief Default copy constructor
+         *
+         * \param other The thing to copygit add -A :/
+         */
+		gl_shader_program(const gl_shader_program &other) = default;
 
         /**
          * \brief Move constructor
@@ -97,14 +100,28 @@ namespace nova {
          */
         void bind() noexcept;
 
-        geometry_filter& get_filter() noexcept;
+        std::shared_ptr<igeometry_filter> get_filter() const noexcept;
 
         std::string& get_name() noexcept;
+
+        /*!
+         * \brief Finds the uniform location of the given uniform variable
+         *
+         * The first time this method is called for a given string, it calls glGetUniformLocation to get the uniform
+         * location. The result of that function is then cached so that glGetUniformLocation only needs to be called
+         * once for every uniform variable, no matter how many times you upload data to that variable
+         *
+         * \param uniform_name The name of the uniform variable to get the location of
+         * \return The location of the desired uniform variable
+         */
+        GLint get_uniform_location(const std::string uniform_name);
 
     private:
         std::string name;
 
-        std::vector<GLuint> added_shaders;
+        std::vector<GLint> added_shaders;
+
+        std::unordered_map<std::string, GLuint> uniform_locations;
 
         /*!
          * \brief The filter that the renderer should use to get the geometry for this shader
@@ -112,7 +129,7 @@ namespace nova {
          * Since there's a one-to-one correlation between shaders and filters, I thought it'd be best to put the
          * filter with the shader
          */
-        geometry_filter filter;
+        std::shared_ptr<igeometry_filter> filter;
 
         void create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type);
 
@@ -122,8 +139,6 @@ namespace nova {
 
         void check_for_linking_errors();
     };
-
-    geometry_filter figure_out_filters(std::vector<std::string> filter_names);
 }
 
 #endif //RENDERER_GL_SHADER_H

@@ -9,6 +9,7 @@
 #include <glad/glad.h>
 #include <exception>
 #include <vector>
+#include <string>
 
 namespace nova {
 /*!
@@ -105,12 +106,16 @@ namespace nova {
          */
         const unsigned int &get_gl_name();
 
+        void set_name(const std::string name);
+        const std::string& get_name() const;
+
     private:
         int width;
         int height;
         GLint format;
         GLuint gl_name;
         GLint current_location = -1;
+        std::string name;
     };
 }
 

@@ -10,6 +10,11 @@
 
 #include "mc_gui_objects.h"
 #include <cstdint>
+
+const int CHUNK_WIDTH = 16;
+const int CHUNK_HEIGHT = 256;
+const int CHUNK_DEPTH = 16;
+
 /*!
  * \brief Holds the information that comes from MC textures
  */
@@ -36,18 +41,49 @@ struct mc_texture_atlas_location {
  * \brief Represents a block in Minecraft, along with any attributes it might have
  */
 struct mc_block {
+	const char * name;
     bool is_on_fire;
-    int block_id;
+	int light_value;
+	int light_opacity;
+	float ao;
+    int is_opaque;
+    int blocks_light;
+    const char * texture_name;
+
+    bool is_emissive() const;
+	bool is_transparent() const;
 };
 
 /*!
- * \brief Represents a chunk in Minecraft. It's really just a large array of blocks and an ID so I don't have to rebuild
- * the geometry every frame
+ * \brief Represents a chunk in Minecraft. It's really just a large array of blocks and an ID
  */
 struct mc_chunk {
     long chunk_id;  //!< Unique identifier for the chunk
-    bool is_dirty;  //!< Has the chunk changed since it was last sent to Nova?
-    mc_block blocks[16 * 16 * 16];  //!< All the blocks in the chunk
+    float x;
+    float z;
+    mc_block blocks[CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH];  //!< All the blocks in the chunk
+    bool needs_update = false;
+};
+
+/*!
+ * \brief Represents a single quad in Minecraft
+ */
+struct mc_quad {
+	int *vertex_data;
+	int num_vertex_data;
+	int tint_index;
+	const char * facing_direction;
+	const char * icon_name;
+};
+
+/*!
+ * \brief Represents a simple model (i.e. a model with only one variant (I think))
+ */
+struct mc_simple_model {
+	mc_quad * quads;
+	int num_quads;
+	bool ambient_occlusion;
+	const char * particle_texture;
 };
 
 /*!
@@ -79,7 +115,7 @@ struct mc_gui_send_buffer_command {
 	int vertex_buffer_size;
 	int* index_buffer;
     float* vertex_buffer;
-	const char* atlas_name;
+	const char * atlas_name;
 };
 
 /*!
