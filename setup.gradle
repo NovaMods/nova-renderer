@@ -21,17 +21,16 @@ Available tasks:
     }
 }
 
-task setup(dependsOn: verifyEnvironment) {
+task setup(dependsOn: verifyEnvironment, initSubmodules) {
     doLast {
-        logger.info('Beginning setup of Nova...')
+        logger.info('Nova setup succesfully')
     }
 }
 
 task verifyEnvironment {
     doLast {
-        if(!hasCMake()) {
-            throw GradleScriptException()
-        }
+        checkCMake()
+        checkJava()
 
         def gccAvailable = hasGCC()
         def msvcAvailable = hasMSVC()
@@ -41,27 +40,108 @@ task verifyEnvironment {
         }
 
         if(!gccAvailable && !msvcAvailable) {
-            logger.fatal('Neither MSVC not GCC are available. Please install one of these and add its location to your PATH')
+            logger.fatal('Neither Visual Stusio not GCC are available. Please install one of these and add its location to your PATH')
+            throw new GradleScriptException()
         }
-    }
-} 
 
-boolean hasCMake() {
+        logger.info('All build tools detected')
+    }
+}
+task makeMcpDir {
+    def mcpDir = new File(project.buildDir, "mcp")
+    if(!mcpDir.exists()) {
+        mcpDir.mkdirs()
+    }
+}
+
+task unzipMcp(type: Copy, dependsOn: makeMcpDir) {
+
+    def zipPath = project.configurations.compile.find {it.name.startsWith("mcp") }
+    println zipPath
+    def zipFile = file(zipPath)
+    def outputDir = file("${buildDir}/mcp")
+
+    from zipTree(zipFile)
+    into outputDir
+}
+
+task decompileMcp(dependsOn: unzipMcp) {
+    def decompileResult = "mcp/decompile.bat".execute()
+    if(decompileResult.exitValue() > 0) {
+        logger.error('Could not decompile MCP. Check the output log, fix those problems, and try again')
+        throw new GradleScriptException()
+    }
+}
+
+task copyMcCode(type: Copy, dependsOn: decompileMcp) {
+    from 'mcp/src/minecraft'
+    into 'src/main/java'
+}
+
+task copyMcAssets(type: Copy, dependsOn: copyMcCode) {
+    from 'mcp/temp/src/minecraft/assets'
+    into 'src/main/resources/assets'
+}
+
+task copyMcPack(type: Copy, dependsOn: copyMcAssets) {
+    from 'mcp/temp/src/minecraft/pack.png'
+    into 'src/main/resources/pack.png'
+}
+
+task copyJars(type: Copy, dependsOn: copyMcPack) {
+    from 'mcp/jars'
+    into 'jars'
+}
+
+task applyPatch(type: Exec, dependsOn: copyJars) {
+    commandLine '../../../../mcp/runtime/bin/applydiff.exe' '-p1' '-i' '../../../../patches/nova.patch'
+    workingDir 'src/main/java/net'
+}
+
+task cleanupMcp(dependsOn: applyPatch) {
+    def mcpDir = file('mcp')
+    mcpDir.delete()
+}
+
+task initSubmodules(type: Exec, dependsOn: cleanupMcp) {
+    commandLine 'git' 'submodule' 'update' '--init' '--recursive'
+}
+
+static void checkCMake() {
     def cmakeTest = "cmake --version".execute()
     if(!cmakeTest.exitValue()) {
         logger.error('CMake not found. Please install CMake and add its location to your PATH')
-        return false
+        throw new GradleScriptException()
     }
-    return true
 }
 
-boolean hasGCC() {
+static boolean hasGCC() {
     def gccTest = "gcc --version".execute()
-    return gccTest.exitValue()
+    return gccTest.exitValue() == 0
 }
 
-boolean hasMSVC() {
+static boolean hasMSVC() {
     def msvcTest = "msbuild.exe --version".execute()
-    return msvc.exitValue()
+    return msvcTest.exitValue() == 0
 }
 
+static void checkJava() {
+    def javaTest = "javac -version".execute()
+    if(!javaTest.exitValue()) {
+        println 'JDK not found. Please install the Java 8 JDK and add its location to your PATH'
+        throw new GradleScriptException()
+    }
+}
+
+repositories {
+    ivy {
+        url 'http://www.modcoderpack.com/website/sites/default/files/'
+        layout 'pattern', {
+            artifact '[classifier]/[module][revision].[ext]'
+        }
+    }
+}
+
+dependencies {
+    compile 'mcp:mcp:931:release@zip'
+}
