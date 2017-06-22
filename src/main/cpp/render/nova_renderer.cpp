@@ -66,6 +66,8 @@ namespace nova {
 
         render_gbuffers();
 
+        //render_gbuffers();
+
         render_composite_passes();
 
         render_final_pass();
@@ -90,6 +92,8 @@ namespace nova {
         // TODO: Get shaders with gbuffers prefix, draw transparents last, etc
         auto& terrain_shader = loaded_shaderpack->get_shader("gbuffers_terrain");
         render_shader(terrain_shader);
+        auto& water_shader = loaded_shaderpack->get_shader("gbuffers_water");
+        render_shader(water_shader);
     }
 
     void nova_renderer::render_composite_passes() {
