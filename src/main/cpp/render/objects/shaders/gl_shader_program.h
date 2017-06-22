@@ -73,6 +73,11 @@ namespace nova {
          */
         gl_shader_program(const shader_definition &source);
 
+        /*!
+         * \brief Default copy constructor
+         *
+         * \param other The thing to copygit add -A :/
+         */
 		gl_shader_program(const gl_shader_program &other) = default;
 
         /**
