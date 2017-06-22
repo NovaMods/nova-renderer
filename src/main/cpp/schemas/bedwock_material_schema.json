@@ -121,6 +121,11 @@
                 "stencilMaskWrite": {
                     "type": "number",
                     "description": "The mask to use when writing values to the stencil buffer"
+                },
+
+                "msaaSupport": {
+                    "type": "string",
+                    "enum": ["MSAA", "Both"]
                 }
             }
         },

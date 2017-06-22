@@ -56,7 +56,6 @@ namespace nova {
         // Make geometry for any new chunks
         meshes->generate_needed_chunk_geometry();
 
-        // Clear to the clear color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // upload shadow UBO things
@@ -103,6 +102,8 @@ namespace nova {
 
     void nova_renderer::render_gui() {
         LOG(TRACE) << "Rendering GUI";
+        glClear(GL_DEPTH_BUFFER_BIT);
+
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
         gui_shader.bind();
