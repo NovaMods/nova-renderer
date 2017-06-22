@@ -44,6 +44,7 @@ namespace nova {
         std::vector<float> vertex_data;
         std::vector<unsigned int> indices;
         format vertex_format;
+        glm::vec3 position;
     };
 }
 

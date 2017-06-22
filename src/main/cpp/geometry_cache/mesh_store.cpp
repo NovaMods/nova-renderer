@@ -111,24 +111,31 @@ namespace nova {
         shaders = new_shaderpack;
 
         renderables_grouped_by_shader.clear();
+        LOG(INFO) << "Rebuilding chunk geometry to fit new shaderpack";
         for(auto& chunk : all_chunks) {
-            generate_chunk_geometry(chunk);
+            add_or_update_chunk(chunk);
         }
+        LOG(INFO) << "Rebuild complete";
     }
 
     void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
-        chunk_adding_lock.lock();
+        all_chunks_lock.lock();
         chunk.needs_update = true;
         all_chunks.push_back(chunk);
-        chunk_adding_lock.unlock();
-    }
+        int chunk_id = chunk.chunk_id;
+        remove_render_objects([chunk_id](render_object& obj) {return obj.parent_id == chunk_id;});
+        all_chunks_lock.unlock();
 
-    void mesh_store::generate_chunk_geometry(const mc_chunk &chunk) {
-        auto render_objects_from_chunk = get_renderables_from_chunk(chunk, *shaders);
-        for(auto& item : render_objects_from_chunk) {
-            if(item.second) {
-                renderables_grouped_by_shader[item.first].push_back(std::move(*item.second));
+        for(const auto& shader_entry : shaders->get_loaded_shaders()) {
+            auto blocks_for_shader = get_blocks_that_match_filter(chunk, shader_entry.second.get_filter());
+            if(blocks_for_shader.size() == 0) {
+                continue;
             }
+
+            auto block_mesh_definition = make_mesh_for_blocks(blocks_for_shader, chunk);
+            chunk_parts_to_upload_lock.lock();
+            chunk_parts_to_upload.emplace(shader_entry.first, block_mesh_definition);
+            chunk_parts_to_upload_lock.unlock();
         }
     }
 
@@ -149,37 +156,23 @@ namespace nova {
     }
 
     void mesh_store::generate_needed_chunk_geometry() {
-        chunk_adding_lock.lock();
-        for(auto& chunk : all_chunks) {
-            if(chunk.needs_update) {
-                LOG(DEBUG) << "Generating geometry for chunk " << chunk.chunk_id;
-                make_geometry_for_chunk(chunk);
-                chunk.needs_update = false;
-                break;  // One chunk per frame to avoid stuttering
-            }
+        bool has_thing_to_upload = false;
+        std::tuple<std::string, mesh_definition> definition_to_upload;
+        chunk_parts_to_upload_lock.lock();
+        if(!chunk_parts_to_upload.empty()) {
+            definition_to_upload = std::move(chunk_parts_to_upload.front());
+            chunk_parts_to_upload.pop();
+            has_thing_to_upload = true;
         }
-        chunk_adding_lock.unlock();
-    }
+        chunk_parts_to_upload_lock.unlock();
 
-    void mesh_store::make_geometry_for_chunk(const mc_chunk &chunk) {
-        auto start_time = std::clock();
+        if(has_thing_to_upload) {
+            auto chunk_part_render_object = render_object{};
+            chunk_part_render_object.geometry = std::make_unique<gl_mesh>(std::get<1>(definition_to_upload));
+            chunk_part_render_object.position = std::get<1>(definition_to_upload).position;
+            chunk_part_render_object.color_texture = "block_color";
 
-        remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});
-
-        auto time_after_removing_objects = std::clock();
-
-        generate_chunk_geometry(chunk);
-
-        auto time_after_generating_chunk_geometry = std::clock();
-
-        auto total_time = float(std::clock() - start_time) * 1000 / CLOCKS_PER_SEC;
-        total_chunks_updated += 1;
-
-        if(total_chunks_updated % 10 == 0) {
-            LOG(INFO) << "We have spent:\n\t"
-                      << float(time_after_removing_objects - start_time) * 1000 / CLOCKS_PER_SEC << "ms removing old render objects\n\t"
-                      << float(time_after_generating_chunk_geometry - time_after_removing_objects) * 1000 / CLOCKS_PER_SEC << "ms generating chunk geometry\n\t"
-                      << total_time << "ms in total";
+            renderables_grouped_by_shader[std::get<0>(definition_to_upload)].push_back(std::move(chunk_part_render_object));
         }
     }
 }
