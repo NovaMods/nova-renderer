@@ -148,7 +148,9 @@ namespace nova {
      */
     auto get_shaderpack_name(const std::string &file_path) {
         auto slash_pos = file_path.find('/');
-        return file_path.substr(0, slash_pos);
+        auto afterShaderpacks=file_path.substr(slash_pos+1,file_path.size());
+        auto new_slash_pos = afterShaderpacks.find('/');
+        return afterShaderpacks.substr(0,new_slash_pos);
     }
 
     std::string get_filename_from_include(const std::string include_line) {
@@ -158,13 +160,18 @@ namespace nova {
 
     auto get_included_file_path(const std::string &shader_path, const std::string &included_file_name) {
         if(included_file_name[0] == '/') {
+            
             // This is an absolute include and it should be relative to the root directory
+            //LOG(INFO) << "Loading include file path " << shader_path;
             auto shaderpack_name = get_shaderpack_name(shader_path);
-            return shaderpack_name + "/shaders" + included_file_name;
+            //LOG(INFO) << "Loading include file 1 name" << shaderpack_name;
+            //LOG(INFO) << "Loading include file 1" << (shaderpack_name + "/shaders" + included_file_name);
+            return "shaderpacks/"+shaderpack_name + "/shaders" + included_file_name;
 
         } else {
             // The include file is a relative include, this one's actually simpler
             auto folder_name = get_file_path(shader_path);
+            //LOG(INFO) << "Loading include file 2" << (folder_name + included_file_name);
             return folder_name + included_file_name;
         }
     }
@@ -191,7 +198,7 @@ namespace nova {
         std::string line;
         auto line_counter = 1;
         while(std::getline(stream, line, '\n')) {
-            if(line.find("#include") == 0) {
+            if(line.find("#include") == 0) { 
                 auto included_file = load_included_file(shader_path, line);
                 file_source.insert(file_source.end(), std::begin(included_file), std::end(included_file));
 

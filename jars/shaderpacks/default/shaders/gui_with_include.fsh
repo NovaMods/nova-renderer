@@ -1,6 +1,6 @@
 #version 450
 
-#include "gui.frag"
+#include "/gui.fsh"
 
 layout(binding = 0) uniform sampler2D colortex;
 
