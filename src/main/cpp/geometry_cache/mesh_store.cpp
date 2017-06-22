@@ -152,6 +152,7 @@ namespace nova {
         chunk_adding_lock.lock();
         for(auto& chunk : all_chunks) {
             if(chunk.needs_update) {
+                LOG(DEBUG) << "Generating geometry for chunk " << chunk.chunk_id;
                 make_geometry_for_chunk(chunk);
                 chunk.needs_update = false;
                 break;  // One chunk per frame to avoid stuttering
@@ -161,16 +162,13 @@ namespace nova {
     }
 
     void mesh_store::make_geometry_for_chunk(const mc_chunk &chunk) {
-        LOG(INFO) << "Generating geometry for a chunk";
         auto start_time = std::clock();
 
         remove_render_objects([&](render_object& obj) {return obj.parent_id == chunk.chunk_id;});
-        LOG(INFO) << "Removed render objects from our chunk";
 
         auto time_after_removing_objects = std::clock();
 
         generate_chunk_geometry(chunk);
-        LOG(INFO) << "Generated chunk geometry";
 
         auto time_after_generating_chunk_geometry = std::clock();
 

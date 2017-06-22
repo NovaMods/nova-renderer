@@ -194,10 +194,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                         imageData[imageDataBasePos + 3] = alpha;
                     }
                 }
-
-                LOG.info("Sent texture data for texture {} into position {}", sprite.getIconName(), startPos);
-            } else {
-                LOG.error("Could not sent texture data for texture {}", sprite.getIconName());
             }
         }
 
