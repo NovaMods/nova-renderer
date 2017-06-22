@@ -4,6 +4,13 @@ import com.continuum.nova.NovaNative.window_size;
 import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.gui.NovaDraw;
 import com.continuum.nova.utils.Utils;
+import glm.Glm;
+import glm.vec._2.Vec2;
+import glm.vec._3.Vec3;
+import glm.vec._3.i.Vec3i;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
@@ -14,8 +21,12 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,6 +39,10 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
     public static final String MODID = "Nova Renderer";
@@ -61,6 +76,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private IResourceManager resourceManager;
 
     private ChunkUpdateListener chunkUpdateListener;
+
+    private PriorityQueue<ChunkUpdateListener.BlockUpdateRange> chunksToUpdate;
+    private World world;
+
+    private AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
+    private AtomicInteger numChunksUpdated = new AtomicInteger(0);
+    private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(10);
+
 
     public NovaRenderer() {
         // I put these in Utils to make this class smaller
@@ -237,7 +260,27 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         updateWindowSize();
 
         // Moved here so that it's initialized after the native code is loaded
-        chunkUpdateListener  = new ChunkUpdateListener();
+        chunksToUpdate = new PriorityQueue<>((range1, range2) -> {
+            Vec3i range1Center = new Vec3i();
+            Vec3i range2Center = new Vec3i();
+
+            Glm.add(range1Center, range1.min, new Vec3i(8, 128, 8));
+            Glm.add(range2Center, range2.min, new Vec3i(8, 128, 8));
+
+            Entity player = Minecraft.getMinecraft().thePlayer;
+            Vec2 playerPos = new Vec2(player.posX, player.posZ);
+            float range1DistToPlayer = new Vec2().distance(new Vec2(range1Center.x, range1Center.z), playerPos);
+            float range2DistToPlayer = new Vec2().distance(new Vec2(range2Center.x, range2Center.z), playerPos);
+
+            if(range1DistToPlayer < range2DistToPlayer) {
+                return -1;
+            } else if(range1DistToPlayer > range2DistToPlayer) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+        chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
     }
 
     private void updateWindowSize() {
@@ -277,6 +320,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         }
 
+        if(!chunksToUpdate.isEmpty()) {
+            ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
+            chunkUpdateThreadPool.execute(() -> sendChunkToNative(range));
+        }
+
         EntityPlayerSP viewEntity = mc.thePlayer;
         if(viewEntity != null) {
             float pitch = viewEntity.rotationPitch;
@@ -313,8 +361,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void setWorld(World world) {
         if(world != null) {
-            chunkUpdateListener.setWorld(world);
             world.addEventListener(chunkUpdateListener);
+            this.world = world;
+            chunksToUpdate.clear();
         }
     }
 
@@ -352,4 +401,68 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             NovaNative.INSTANCE.register_simple_model(key.toString(), mc_model);
         }
     }
+
+    private void sendChunkToNative(ChunkUpdateListener.BlockUpdateRange updateRange) {
+        NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
+        long startTime = System.currentTimeMillis();
+
+        Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(updateRange.min.x, updateRange.min.y, updateRange.min.z));
+
+        for(int x = updateRange.min.x; x <= updateRange.max.x; x++) {
+            for(int y = updateRange.min.y; y < updateRange.max.y; y++) {
+                for(int z = updateRange.min.z; z <= updateRange.max.z; z++) {
+                    int chunkX = x - updateRange.min.x;
+                    int chunkY = y - updateRange.min.y;
+                    int chunkZ = z - updateRange.min.z;
+                    int idx = chunkX + chunkY * NovaNative.CHUNK_WIDTH + chunkZ * NovaNative.CHUNK_WIDTH * NovaNative.CHUNK_HEIGHT;
+
+                    NovaNative.mc_block curBlock = updateChunk.blocks[idx];
+                    copyBlockStateIntoMcBlock(mcChunk.getBlockState(x, y, z), curBlock);
+                }
+            }
+        }
+
+        updateChunk.x = updateRange.min.x;
+        updateChunk.z = updateRange.min.z;
+
+        int chunkHashCode = (int) updateChunk.x;
+        chunkHashCode = (int) (31 * chunkHashCode + updateChunk.z);
+
+        updateChunk.chunk_id = chunkHashCode;
+
+        NovaNative.INSTANCE.add_chunk(updateChunk);
+
+        long deltaTime = System.currentTimeMillis() - startTime;
+        timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
+        numChunksUpdated.incrementAndGet();
+
+        if(numChunksUpdated.get() % 10 == 0) {
+            LOG.info("It's taken an average of {}ms to update {} chunks",
+                    (float) timeSpentInBlockRenderUpdate.get() / numChunksUpdated.get(), numChunksUpdated);
+            LOG.info("Updating chunk in thread {}", Thread.currentThread().getId());
+        }
+    }
+
+    private void copyBlockStateIntoMcBlock(IBlockState blockState, NovaNative.mc_block curBlock) {
+        Block block = blockState.getBlock();
+        Material material = blockState.getMaterial();
+
+        curBlock.name = block.getUnlocalizedName();
+        curBlock.is_on_fire = false;
+        curBlock.light_value = blockState.getLightValue();
+        curBlock.light_opacity = blockState.getLightOpacity();
+        curBlock.ao = blockState.getAmbientOcclusionLightValue();
+        curBlock.is_opaque = material.isOpaque();
+        curBlock.blocks_light = material.blocksLight();
+
+        try {
+            TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(blockState).getQuads(blockState, EnumFacing.UP, 0).get(0).getSprite();
+
+            curBlock.texture_name = sprite.getIconName();
+        } catch(IndexOutOfBoundsException e) {
+            LOG.error("Could not determine texture for block {}, setting texture to dirt", block.getUnlocalizedName());
+            curBlock.texture_name = "minecraft:textures/block/dirt";
+        }
+    }
+
 }

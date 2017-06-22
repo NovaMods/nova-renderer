@@ -12,6 +12,7 @@
 #include <mutex>
 #include <functional>
 #include <unordered_map>
+#include <queue>
 #include "../render/objects/render_object.h"
 #include "../render/objects/shaders/geometry_filter.h"
 #include "../render/objects/shaders/shaderpack.h"
@@ -81,11 +82,17 @@ namespace nova {
     private:
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
         std::unordered_map<std::string, mesh_definition> simple_models;
+
+        std::mutex all_chunks_lock;
         std::vector<mc_chunk> all_chunks;
 
         std::shared_ptr<shaderpack> shaders;
 
-        std::mutex chunk_adding_lock;
+        std::mutex chunk_parts_to_upload_lock;
+        /*!
+         * \brief A list of chunk renderable things that are ready to upload to the GPU
+         */
+        std::queue<std::tuple<std::string, mesh_definition>> chunk_parts_to_upload;
 
         float seconds_spent_updating_chunks = 0;
         long total_chunks_updated = 0;
@@ -98,7 +105,6 @@ namespace nova {
          */
         void sort_render_object(render_object& object);
 
-
         /*!
          * \brief Removes all the render_objects from the lists of render_objects that match the given fitler funciton
          *
@@ -109,15 +115,7 @@ namespace nova {
          */
         void remove_render_objects(std::function<bool(render_object&)> fitler);
 
-        /*!
-         * \brief Creates geometry for the given chunk and adds it to the list of geometry to render
-         * \param chunk The chunk to generate geometry for
-         */
-        void generate_chunk_geometry(const mc_chunk &chunk);
-
         mesh_definition make_mesh_from_mc_model(mc_simple_model &model);
-
-        void make_geometry_for_chunk(const mc_chunk &chunk);
     };
 
 };

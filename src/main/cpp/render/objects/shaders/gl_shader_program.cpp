@@ -133,7 +133,7 @@ namespace nova {
         added_shaders.push_back(shader_name);
     }
 
-    std::shared_ptr<igeometry_filter> gl_shader_program::get_filter() noexcept {
+    std::shared_ptr<igeometry_filter> gl_shader_program::get_filter() const noexcept {
         return filter;
     }
 

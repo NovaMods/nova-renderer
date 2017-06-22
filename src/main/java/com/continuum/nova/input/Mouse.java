@@ -27,7 +27,7 @@ public class Mouse {
     private static int buttonCount = -1;
     private static boolean hasWheel;
     private static String[] buttonName;
-    private static final Map<String, Integer> buttonMap = new HashMap(16);
+    private static final Map<String, Integer> buttonMap = new HashMap<>(16);
     private static final HashSet<Integer> buttonDownBuffer = new HashSet<>();
     private static boolean initialized;
     private static int eventButton;
@@ -211,6 +211,7 @@ public class Mouse {
 
     public static void setGrabbed(boolean grab) {
         NovaNative.INSTANCE.set_mouse_grabbed(grab);
+        isGrabbed = grab;
     }
 
     public static void updateCursor() {

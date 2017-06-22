@@ -95,7 +95,7 @@ namespace nova {
          */
         void bind() noexcept;
 
-        std::shared_ptr<igeometry_filter> get_filter() noexcept;
+        std::shared_ptr<igeometry_filter> get_filter() const noexcept;
 
         std::string& get_name() noexcept;
 

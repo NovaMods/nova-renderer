@@ -14,34 +14,6 @@
 #include <easylogging++.h>
 
 namespace nova {
-    std::unordered_map<std::string, optional<render_object>> get_renderables_from_chunk(const mc_chunk& chunk, shaderpack& shaders) {
-        auto& all_shaders = shaders.get_loaded_shaders();
-        auto final_geometry = std::unordered_map<std::string, optional<render_object>>{};
-
-        for(auto& shader_entry : all_shaders) {
-            final_geometry[shader_entry.first] = build_render_object_for_shader(chunk, shader_entry.second.get_filter());
-        }
-
-        return final_geometry;
-    }
-
-    optional<render_object> build_render_object_for_shader(const mc_chunk& chunk, const std::shared_ptr<igeometry_filter> filter) {
-        auto blocks_that_match_filter = get_blocks_that_match_filter(chunk, filter);
-
-        if(blocks_that_match_filter.size() == 0) {
-            return optional<render_object>();
-        }
-
-        auto block_mesh_definition = make_mesh_for_blocks(blocks_that_match_filter, chunk);
-
-        auto block_render_object = render_object{};
-        block_render_object.geometry = std::make_unique<gl_mesh>(block_mesh_definition);
-        block_render_object.position = {chunk.x, 0, chunk.z};
-        block_render_object.color_texture = "block_color";
-
-        return make_optional(std::move(block_render_object));
-    }
-
     std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_chunk &chunk, const std::shared_ptr<igeometry_filter> filter) {
         auto blocks_that_match_filter = std::vector<glm::ivec3>{};
         for(int z = 0; z < CHUNK_WIDTH; z++) {
@@ -98,6 +70,7 @@ namespace nova {
 
 		mesh.vertex_data = vertices;
 		mesh.indices = indices;
+        mesh.position = {chunk.x, 0, chunk.z};
 
 		return mesh;
     }
