@@ -152,6 +152,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.mc_atlas_texture atlasTexture = getFullImage(atlas.getWidth(), atlas.getHeight(), spriteLocations.values());
         atlasTexture.setName(textureName);
 
+        LOG.info("Adding atlas texture {}", atlasTexture);
         NovaNative.INSTANCE.add_texture(atlasTexture);
 
         for (TextureAtlasSprite sprite : spriteLocations.values()) {

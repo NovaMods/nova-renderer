@@ -38,18 +38,16 @@ namespace nova {
     }
 
     void texture_manager::add_texture(mc_atlas_texture &new_texture) {
+        LOG(INFO) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
         std::string texture_name = new_texture.name;
-        LOG(DEBUG) << "Creating a Texture2D for the " << texture_name << " atlas";
         texture2D texture;
+        texture.set_name(texture_name);
 
-        LOG(DEBUG) << "Converting the pixel data to a float";
         std::vector<float> pixel_data(
                 (size_t) (new_texture.width * new_texture.height * new_texture.num_components));
         for(int i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
             pixel_data[i] = float(new_texture.texture_data[i]) / 255.0f;
         }
-
-        LOG(DEBUG) << "Added all pixel data";
 
         std::vector<int> dimensions = {new_texture.width, new_texture.height};
 
@@ -74,10 +72,8 @@ namespace nova {
         }
 
         texture.set_data(pixel_data, dimensions, format);
-        LOG(DEBUG) << "Texture data sent to GPU";
 
         atlases[texture_name] = texture;
-        LOG(DEBUG) << "Texture added to atlas";
         LOG(DEBUG) << "Texture atlas " << texture_name << " is OpenGL texture " << texture.get_gl_name();
     }
 

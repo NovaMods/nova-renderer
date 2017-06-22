@@ -58,4 +58,12 @@ namespace nova {
     const unsigned int &texture2D::get_gl_name() {
         return gl_name;
     }
+
+    void texture2D::set_name(const std::string name) {
+        this->name = name;
+    }
+
+    const std::string &texture2D::get_name() const {
+        return name;
+    }
 }

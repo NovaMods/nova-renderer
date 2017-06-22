@@ -112,9 +112,14 @@ public class ChunkUpdateListener implements IWorldEventListener {
         curBlock.is_opaque = material.isOpaque();
         curBlock.blocks_light = material.blocksLight();
 
-        TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(blockState).getQuads(blockState, EnumFacing.UP, 0).get(0).getSprite();
+        try {
+            TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(blockState).getQuads(blockState, EnumFacing.UP, 0).get(0).getSprite();
 
-        curBlock.texture_name = sprite.getIconName();
+            curBlock.texture_name = sprite.getIconName();
+        } catch(IndexOutOfBoundsException e) {
+            LOG.error("Could not determine texture for block {}, setting texture to dirt", block.getUnlocalizedName());
+            curBlock.texture_name = "minecraft:textures/block/dirt";
+        }
     }
 
     @Override
