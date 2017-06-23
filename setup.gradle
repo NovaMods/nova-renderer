@@ -112,7 +112,7 @@ task applyPatch(dependsOn: copyMcPack) << {
     new ByteArrayOutputStream().withStream { os ->
         try {
             def result = exec {
-                commandLine "${project.projectDir}/runtime/bin/applydiff.exe", '-p1', '-i', "${project.projectDir}/patches/nova.patch'
+                commandLine "${project.projectDir}/runtime/bin/applydiff.exe", '-p1', '-i', "${project.projectDir}/patches/nova.patch"
                 workingDir 'src/main/java/net'
 
                 standardOutput = os
