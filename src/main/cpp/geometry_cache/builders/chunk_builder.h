@@ -94,6 +94,8 @@ namespace nova {
      */
     bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk);
 
+    bool block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_chunk& chunk);
+
 	/*!
 	 * \brief Makes the geometry for the provided block in the given chunk
 	 */
