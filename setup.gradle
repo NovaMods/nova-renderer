@@ -140,6 +140,49 @@ task setup(dependsOn: initSubmodules) << {
     logger.info('Nova setup succesfully')
 }
 
+clean.doFirst {
+    delete "src/minecraft/"
+    delete "bin"
+    delete "conf"
+    delete "eclipse"
+    delete "libs"
+    delete "logs"
+    delete "mappingviewer"
+    delete "mcp"
+    delete "reobf"
+    delete "runtime"
+    delete "temp"
+    delete "cleanup.sh"
+    delete "cleanup.bat"
+    delete "decompile.sh"
+    delete "decompile.bat"
+    delete "getchangedsrc.sh"
+    delete "getchangedsrc.bat"
+    delete "mcp931.zip"
+    delete "recompile.bat"
+    delete "recompile.sh"
+    delete "reformat.sh"
+    delete "reformat.bat"
+    delete "reobfuscate.sh"
+    delete "reobfuscate.bat"
+    delete "reobfuscate_srg.sh"
+    delete "reobfuscate_srg.bat"
+    delete "startclient.sh"
+    delete "startclient.bat"
+    delete "startserver.sh"
+    delete "startserver.bat"
+    delete "updateids.sh"
+    delete "updateids.bat"
+    delete "updatemcp.sh"
+    delete "updatemcp.bat"
+    delete "updatemd5.sh"
+    delete "updatemd5.bat"
+    delete "updatenames.sh"
+    delete "updatenames.bat"
+
+    println "Removed MCP files"
+}
+
 static void checkCMake() {
     try {
         def cmakeTest = "cmake --version".execute()

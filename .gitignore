@@ -241,7 +241,6 @@ logs/
 src/minecraft/
 bin/
 conf/
-docs/
 eclipse/
 lib/
 logs/
