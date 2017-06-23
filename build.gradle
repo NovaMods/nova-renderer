@@ -28,11 +28,11 @@ jar {
     }	
 }
 
-task buildDll(type: Exec) {
+task buildDll(type: Exec) << {
     commandLine 'powershell', '-file', 'nova.ps1', '-build', '-nativeOnly'
 }
 
-task runNova(type: JavaExec) {
+task runNova(type: JavaExec) << {
     dependsOn buildDll
     classpath = sourceSets.main.runtimeClasspath
     main = "Start"

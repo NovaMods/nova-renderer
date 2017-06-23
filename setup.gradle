@@ -5,6 +5,20 @@
  * patch file, and ensuring that the user has all the dependencies that they need.
  */
 
+import com.bloidonia.groovy.extensions.FileExtensionMethods
+import org.gradle.internal.os.OperatingSystem
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'com.bloidonia', name: 'groovy-common-extensions', version: '0.7.0'
+    }
+}
+
+//apply plugin: 'groovy-common-extensions'
+
 task help {
     doLast {
     logger.info('''\
@@ -48,59 +62,51 @@ task verifyEnvironment << {
     logger.info('All build tools detected')
 }
 
-task makeMcpDir(dependsOn: verifyEnvironment) << {
-    def mcpDir = new File(project.buildDir, '../mcp')
-    if(!mcpDir.exists()) {
-        mcpDir.mkdirs()
+task downloadMcp(dependsOn: verifyEnvironment) << {
+    download {
+        src 'http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip'
+        dest 'mcp931.zip'
     }
-}
 
-task downloadMcp(type: Download, dependsOn: makeMcpDir) << {
-    src 'http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip'
-    dest 'mcp.zip'
-}
-
-task unzipMcp(type: Copy, dependsOn: downloadMcp) << {
     logger.info('Unzipping MCP...')
-    def zipFile = file('dump_not_exist_mcp931.zip')
-    def outputDir = file("mcp/")
-
-    logger.info('zipFile: ' + zipFile + ' outputDir: ' + outputDir)
- 
-    from zipTree(zipFile)
-    into outputDir
+    Collection<File> extractedFiles = FileExtensionMethods.unzip(new File('./mcp931.zip'))
+    logger.info('Unzipping complete')
 }
 
-task decompileMcp(dependsOn: unzipMcp) << {
-    def decompileResult = (project.buildDir + '../mcp/decompile.bat').execute()
-    if(decompileResult.exitValue() > 0) {
-        logger.error('Could not decompile MCP. Check the output log, fix those problems, and try again')
-        throw new GradleScriptException()
+task decompileMcp(dependsOn: downloadMcp) << {
+    new ByteArrayOutputStream().withStream { os ->
+        def result = exec {
+            if(OperatingSystem.current().isWindows()) {
+                commandLine './runtime/bin/python/python_mcp', 'runtime/decompile.py'
+            } else {
+                commandLine 'python2', 'runtime/decompile.py'
+            }
+
+            standardOutput = os
+        }
+        def outputAsString = os.toString()
+        println "${outputAsString}"
+        println "${result}"
     }
 }
 
 task copyMcCode(type: Copy, dependsOn: decompileMcp) << {
-    from 'mcp/src/minecraft'
+    from 'src/minecraft'
     into 'src/main/java'
 }
 
 task copyMcAssets(type: Copy, dependsOn: copyMcCode) << {
-    from 'mcp/temp/src/minecraft/assets'
+    from 'temp/src/minecraft/assets'
     into 'src/main/resources/assets'
 }
 
 task copyMcPack(type: Copy, dependsOn: copyMcAssets) << {
-    from 'mcp/temp/src/minecraft/pack.png'
+    from 'temp/src/minecraft/pack.png'
     into 'src/main/resources/pack.png'
 }
 
-task copyJars(type: Copy, dependsOn: copyMcPack) << {
-    from 'mcp/jars'
-    into 'jars'
-}
-
-task applyPatch(type: Exec, dependsOn: copyJars) << {
-    commandLine '../../../../mcp/runtime/bin/applydiff.exe' '-p1' '-i' '../../../../patches/nova.patch'
+task applyPatch(type: Exec, dependsOn: copyMcPack) << {
+    commandLine '../../../../runtime/bin/applydiff.exe' '-p1' '-i' '../../../../patches/nova.patch'
     workingDir 'src/main/java/net'
 }
 
