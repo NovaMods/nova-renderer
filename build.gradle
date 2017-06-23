@@ -7,21 +7,25 @@
  * build the installer
  */
 
-apply from: 'setup.gradle'
+plugins {
+    id "de.undercouch.download" version "3.2.0"
+    id 'java'
+}
 
-apply plugin: 'java'
+ext {
+    Download = de.undercouch.gradle.tasks.download.Download
+    download = download
+}
 
 // Set Nova's settings
 sourceCompatibility = 1.8
-version = '0.3'
+version = '0.4'
 jar {
     manifest {
         attributes 'Implementation-Title': 'Nova Renderer',
                    'Implementation-Version': version,
                    'Main-Class': 'Start'
-    }
-    //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-	
+    }	
 }
 
 task buildDll(type: Exec) {
@@ -121,3 +125,5 @@ dependencies {
     // 'test.useTestNG()' to your build script.
     testCompile 'junit:junit:4.12'
 }
+
+apply from: 'setup.gradle'
