@@ -90,24 +90,41 @@ task decompileMcp(dependsOn: downloadMcp) << {
     }
 }
 
-task copyMcCode(type: Copy, dependsOn: decompileMcp) << {
+task copyMcCode(type: Copy, dependsOn: decompileMcp) {
+    outputs.upToDateWhen { false }
     from 'src/minecraft'
     into 'src/main/java'
 }
 
-task copyMcAssets(type: Copy, dependsOn: copyMcCode) << {
+task copyMcAssets(type: Copy, dependsOn: copyMcCode) {
+    outputs.upToDateWhen { false }
     from 'temp/src/minecraft/assets'
     into 'src/main/resources/assets'
 }
 
-task copyMcPack(type: Copy, dependsOn: copyMcAssets) << {
+task copyMcPack(type: Copy, dependsOn: copyMcAssets) {
+    outputs.upToDateWhen { false }
     from 'temp/src/minecraft/pack.png'
     into 'src/main/resources/pack.png'
 }
 
-task applyPatch(type: Exec, dependsOn: copyMcPack) << {
-    commandLine '../../../../runtime/bin/applydiff.exe' '-p1' '-i' '../../../../patches/nova.patch'
-    workingDir 'src/main/java/net'
+task applyPatch(dependsOn: copyMcPack) << {
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                commandLine "${project.projectDir}/runtime/bin/applydiff.exe", '-p1', '-i', "${project.projectDir}/patches/nova.patch'
+                workingDir 'src/main/java/net'
+
+                standardOutput = os
+                errorOutput = os
+            }
+            println "${result}"
+        } catch(Exception e) {
+            e.printStackTrace()
+        }
+        def outputAsString = os.toString()
+        println "${outputAsString}"
+    }
 }
 
 task cleanupMcp(dependsOn: applyPatch) << {
@@ -115,8 +132,8 @@ task cleanupMcp(dependsOn: applyPatch) << {
     mcpDir.delete()
 }
 
-task initSubmodules(type: Exec, dependsOn: cleanupMcp) << {
-    commandLine 'git' 'submodule' 'update' '--init' '--recursive'
+task initSubmodules(type: Exec, dependsOn: cleanupMcp) {
+    commandLine 'git', 'submodule', 'update', '--init', '--recursive'
 }
 
 task setup(dependsOn: initSubmodules) << {
