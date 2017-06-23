@@ -110,7 +110,7 @@ task initSubmodules(type: Exec, dependsOn: cleanupMcp) {
 static void checkCMake() {
     def cmakeTest = "cmake --version".execute()
     if(!cmakeTest.exitValue()) {
-        logger.error('CMake not found. Please install CMake and add its location to your PATH')
+        println 'CMake not found. Please install CMake and add its location to your PATH'
         throw new GradleScriptException()
     }
 }
