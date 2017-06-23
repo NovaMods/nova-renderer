@@ -86,7 +86,6 @@ task decompileMcp(dependsOn: downloadMcp) << {
         }
         def outputAsString = os.toString()
         println "${outputAsString}"
-        println "${result}"
     }
 }
 
@@ -132,12 +131,53 @@ task cleanupMcp(dependsOn: applyPatch) << {
     mcpDir.delete()
 }
 
-task initSubmodules(type: Exec, dependsOn: cleanupMcp) {
-    commandLine 'git', 'submodule', 'update', '--init', '--recursive'
+task initSubmodules(dependsOn: cleanupMcp) << {
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                commandLine 'git', 'submodule', 'update', '--init', '--recursive'
+
+                standardOutput = os
+                errorOutput = os
+            }
+            println "${result}"
+        } catch(Exception e) {
+            e.printStackTrace()
+        }
+        def outputAsString = os.toString()
+        println "${outputAsString}"
+    }
 }
 
 task setup(dependsOn: initSubmodules) << {
     logger.info('Nova setup succesfully')
+}
+
+task makePatch() << {
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                commandLine 'git', 'diff', 'origin/minecrafts-1.10-mcp'
+                workingDir 'src/main/java/net'
+
+                standardOutput = os
+                errorOutput = os
+            }
+            println "${result}"
+        } catch(Exception e) {
+            e.printStackTrace()
+            def outputAsString = os.toString()
+            println "${outputAsString}"
+        }
+        def outputAsString = os.toString()
+        println "${outputAsString}"
+
+        new File("patches/nova.patch").withWriter { out ->
+            outputAsString.each {
+                out.println it
+            }
+        }
+    }
 }
 
 clean.doFirst {
