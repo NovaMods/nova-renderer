@@ -94,8 +94,6 @@ namespace nova {
         render_shader(terrain_shader);
         auto& water_shader = loaded_shaderpack->get_shader("gbuffers_water");
         render_shader(water_shader);
-        auto& lava_shader = loaded_shaderpack->get_shader("gbuffers_lava");
-        render_shader(lava_shader);
     }
 
     void nova_renderer::render_composite_passes() {
