@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <easylogging++.h>
+#include <string.h>
 
 namespace nova {
     std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_chunk &chunk, const std::shared_ptr<igeometry_filter> filter) {
@@ -77,22 +78,22 @@ namespace nova {
 
 	std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk) {
 		auto faces_to_make = std::vector<face_id>{};
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk)) {
+		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk) && !block_at_offset_is_same(block_pos ,glm::ivec3(0, 1, 0), chunk)) {
             faces_to_make.push_back(face_id::TOP);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk)) {
+		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(0, -1, 0), chunk)) {
             faces_to_make.push_back(face_id::BOTTOM);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk)) {
+		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(1,0, 0), chunk)) {
             faces_to_make.push_back(face_id::RIGHT);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk)) {
+		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(-1,0, 0), chunk)) {
             faces_to_make.push_back(face_id::LEFT);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk)) {
+		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(0,0,1), chunk)) {
             faces_to_make.push_back(face_id::FRONT);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk)) {
+		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(0,0,-1), chunk)) {
             faces_to_make.push_back(face_id::BACK);
         }
 
@@ -127,6 +128,27 @@ namespace nova {
         auto block = chunk.blocks[block_idx];
 
         return !block.is_transparent();
+    }
+    bool block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_chunk& chunk) {
+        // A separate check for each direction to increase code readability and debuggability
+        if(block_pos.x+offset.x < 0 || block_pos.x+offset.x >= CHUNK_WIDTH) {
+            return false;
+        }
+
+        if(block_pos.y+offset.y < 0 || block_pos.y+offset.y >= CHUNK_HEIGHT) {
+            return false;
+        }
+
+        if(block_pos.z+offset.z < 0 || block_pos.z+offset.z >= CHUNK_DEPTH) {
+            return false;
+        }
+
+        auto block_idx = pos_to_idx(block_pos);
+        auto block = chunk.blocks[block_idx];
+        auto block_idx2 = pos_to_idx(block_pos+offset);
+        auto block2 = chunk.blocks[block_idx2];
+
+        return strcmp(block.name,block2.name)==0;
     }
 
     int pos_to_idx(const glm::ivec3& pos) {
