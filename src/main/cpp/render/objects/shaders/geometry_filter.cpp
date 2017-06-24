@@ -4,7 +4,7 @@
 namespace nova {
     and_geometry_filter::and_geometry_filter(std::shared_ptr<igeometry_filter> filter1, std::shared_ptr<igeometry_filter> filter2) : filter1(filter1), filter2(filter2) {}
 
-    bool and_geometry_filter::matches(const mc_block &block) const {
+    bool and_geometry_filter::matches(const mc_block_definition &block) const {
         return filter1->matches(block) && filter2->matches(block);
     }
 
@@ -18,7 +18,7 @@ namespace nova {
 
     or_geometry_filter::or_geometry_filter(std::shared_ptr<igeometry_filter> filter1, std::shared_ptr<igeometry_filter> filter2) : filter1(filter1), filter2(filter2) {}
 
-    bool or_geometry_filter::matches(const mc_block &block) const {
+    bool or_geometry_filter::matches(const mc_block_definition &block) const {
         return filter1->matches(block) || filter2->matches(block);
     }
 
@@ -32,7 +32,7 @@ namespace nova {
 
     name_geometry_filter::name_geometry_filter(std::string name) : name(name) {}
 
-    bool name_geometry_filter::matches(const mc_block &block) const {
+    bool name_geometry_filter::matches(const mc_block_definition &block) const {
         return std::string(block.name) == name;
     }
 
@@ -46,7 +46,7 @@ namespace nova {
 
     name_part_geometry_filter::name_part_geometry_filter(std::string name_part) : name_part(name_part) {}
 
-    bool name_part_geometry_filter::matches(const mc_block &block) const {
+    bool name_part_geometry_filter::matches(const mc_block_definition &block) const {
         return std::string(block.name).find(name_part) != std::string::npos;
     }
 
@@ -60,7 +60,7 @@ namespace nova {
 
     geometry_type_geometry_filter::geometry_type_geometry_filter(geometry_type type) : type(type) {}
 
-    bool geometry_type_geometry_filter::matches(const mc_block &block) const {
+    bool geometry_type_geometry_filter::matches(const mc_block_definition &block) const {
         //LOG(INFO) << "Checking if block is of type " << type.to_string();
         return type == geometry_type::block;
     }
@@ -78,7 +78,7 @@ namespace nova {
 
     transparent_geometry_filter::transparent_geometry_filter(bool should_be_transparent) : should_be_transparent(should_be_transparent) {}
 
-    bool transparent_geometry_filter::matches(const mc_block &block) const {
+    bool transparent_geometry_filter::matches(const mc_block_definition &block) const {
         return block.is_transparent() == should_be_transparent;
     }
 
@@ -96,7 +96,7 @@ namespace nova {
 
     emissive_geometry_filter::emissive_geometry_filter(bool should_be_emissive) : should_be_emissive(should_be_emissive) {}
 
-    bool emissive_geometry_filter::matches(const mc_block &block) const {
+    bool emissive_geometry_filter::matches(const mc_block_definition &block) const {
         return block.is_emissive() == should_be_emissive;
     }
 

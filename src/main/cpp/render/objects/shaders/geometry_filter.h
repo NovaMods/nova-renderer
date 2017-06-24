@@ -16,7 +16,7 @@ namespace nova {
          * \param block The block to check for matching
          * \return True if the block matches, false if it does not
          */
-        virtual bool matches(const mc_block& block) const = 0;
+        virtual bool matches(const mc_block_definition& block) const = 0;
 
         virtual bool matches(const render_object& obj) const = 0;
 
@@ -32,7 +32,7 @@ namespace nova {
          * \param block The block to check for matching
          * \return True if the block matches both filters, false otherwise
          */
-        bool matches(const mc_block& block) const;
+        bool matches(const mc_block_definition& block) const;
 
         bool matches(const render_object& obj) const;
 
@@ -52,7 +52,7 @@ namespace nova {
          * \param block The block to check for matching
          * \return True if the block matches either filters, false otherwise
          */
-        bool matches(const mc_block& block) const;
+        bool matches(const mc_block_definition& block) const;
 
         bool matches(const render_object& obj) const;
 
@@ -67,7 +67,7 @@ namespace nova {
     public:
         name_geometry_filter(std::string name);
 
-        bool matches(const mc_block& block) const;
+        bool matches(const mc_block_definition& block) const;
 
         bool matches(const render_object& obj) const;
 
@@ -80,7 +80,7 @@ namespace nova {
     public:
         name_part_geometry_filter(std::string name_part);
 
-        bool matches(const mc_block& block) const;
+        bool matches(const mc_block_definition& block) const;
 
         bool matches(const render_object& obj) const;
 
@@ -93,7 +93,7 @@ namespace nova {
     public:
         geometry_type_geometry_filter(geometry_type type);
 
-        bool matches(const mc_block& block) const;
+        bool matches(const mc_block_definition& block) const;
 
         bool matches(const render_object& obj) const;
 
@@ -107,7 +107,7 @@ namespace nova {
         transparent_geometry_filter();
         transparent_geometry_filter(bool should_be_transparent);
 
-        bool matches(const mc_block& block) const;
+        bool matches(const mc_block_definition& block) const;
 
         bool matches(const render_object& obj) const;
 
@@ -120,7 +120,7 @@ namespace nova {
     public:
         emissive_geometry_filter(bool should_be_emissive = true);
 
-        bool matches(const mc_block& block) const;
+        bool matches(const mc_block_definition& block) const;
 
         bool matches(const render_object& obj) const;
 

@@ -127,12 +127,12 @@ namespace nova {
         all_chunks_lock.unlock();
 
         for(const auto& shader_entry : shaders->get_loaded_shaders()) {
-            auto blocks_for_shader = get_blocks_that_match_filter(chunk, shader_entry.second.get_filter());
+            auto blocks_for_shader = m_chunk_builder.get_blocks_that_match_filter(chunk, shader_entry.second.get_filter());
             if(blocks_for_shader.size() == 0) {
                 continue;
             }
 
-            auto block_mesh_definition = make_mesh_for_blocks(blocks_for_shader, chunk);
+            auto block_mesh_definition = m_chunk_builder.make_mesh_for_blocks(blocks_for_shader, chunk);
             chunk_parts_to_upload_lock.lock();
             chunk_parts_to_upload.emplace(shader_entry.first, block_mesh_definition);
             chunk_parts_to_upload_lock.unlock();
@@ -174,5 +174,9 @@ namespace nova {
 
             renderables_grouped_by_shader[std::get<0>(definition_to_upload)].push_back(std::move(chunk_part_render_object));
         }
+    }
+
+    chunk_builder& mesh_store::get_chunk_builder() {
+        return m_chunk_builder;
     }
 }

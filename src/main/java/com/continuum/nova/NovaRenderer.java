@@ -6,7 +6,6 @@ import com.continuum.nova.gui.NovaDraw;
 import com.continuum.nova.utils.Utils;
 import glm.Glm;
 import glm.vec._2.Vec2;
-import glm.vec._3.Vec3;
 import glm.vec._3.i.Vec3i;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -445,24 +444,39 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void copyBlockStateIntoMcBlock(IBlockState blockState, NovaNative.mc_block curBlock) {
         Block block = blockState.getBlock();
-        Material material = blockState.getMaterial();
 
-        curBlock.name = block.getUnlocalizedName();
+        curBlock.id = Block.getIdFromBlock(block);
         curBlock.is_on_fire = false;
-        curBlock.light_value = blockState.getLightValue();
-        curBlock.light_opacity = blockState.getLightOpacity();
         curBlock.ao = blockState.getAmbientOcclusionLightValue();
-        curBlock.is_opaque = material.isOpaque();
-        curBlock.blocks_light = material.blocksLight();
-
-        try {
-            TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(blockState).getQuads(blockState, EnumFacing.UP, 0).get(0).getSprite();
-
-            curBlock.texture_name = sprite.getIconName();
-        } catch(IndexOutOfBoundsException e) {
-            LOG.error("Could not determine texture for block {}, setting texture to dirt", block.getUnlocalizedName());
-            curBlock.texture_name = "minecraft:textures/block/dirt";
-        }
     }
 
+    /**
+     * Registers a block with Nova, creating a block definition object that can be used by the chunk builder or whatever
+     *
+     * @param id The interger id of the bloc, used to identify it in a chunk
+     * @param block The block itself
+     */
+    public void registerBlock(int id, Block block) {
+        IBlockState baseState = block.getBlockState().getBaseState();
+        Material material = baseState.getMaterial();
+
+        NovaNative.mc_block_definition blockDefinition = new NovaNative.mc_block_definition();
+        blockDefinition.name = block.getUnlocalizedName();
+        blockDefinition.blocks_light = material.blocksLight();
+        blockDefinition.is_opaque = material.isOpaque();
+        blockDefinition.is_cube = baseState.isFullBlock();
+        blockDefinition.light_opacity = baseState.getLightOpacity();
+        blockDefinition.light_value = baseState.getLightValue();
+
+        try {
+            TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(baseState).getQuads(baseState, EnumFacing.UP, 0).get(0).getSprite();
+
+            blockDefinition.texture_name = sprite.getIconName();
+        } catch(IndexOutOfBoundsException e) {
+            LOG.error("Could not determine texture for block {}, setting texture to dirt", block.getUnlocalizedName());
+            blockDefinition.texture_name = "minecraft:textures/block/dirt";
+        }
+
+        NovaNative.INSTANCE.register_block_definition(id, blockDefinition);
+    }
 }

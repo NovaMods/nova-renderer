@@ -66,6 +66,14 @@ NOVA_API void reset_texture_manager();
 NOVA_API void add_chunk(mc_chunk & chunk);
 
 /*!
+ * \brief Registers a block definition with Nova so that chunks need only send block IDs and per-block information
+ *
+ * \param id The ID of the block to register
+ * \param blockDefinition The data for the block to register
+ */
+NOVA_API void register_block_definition(int id, mc_block_definition blockDefinition);
+
+/*!
  * \brief Registers a simple model with Nova
  *
  * \param model_name The string name of the model

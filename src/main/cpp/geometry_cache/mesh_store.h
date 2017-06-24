@@ -18,6 +18,7 @@
 #include "../render/objects/shaders/shaderpack.h"
 #include "../mc_interface/mc_gui_objects.h"
 #include "../mc_interface/mc_objects.h"
+#include "builders/chunk_builder.h"
 
 namespace nova {
     /*!
@@ -79,6 +80,8 @@ namespace nova {
          */
         void deregister_model(std::string model_name);
 
+        chunk_builder& get_chunk_builder();
+
     private:
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
         std::unordered_map<std::string, mesh_definition> simple_models;
@@ -93,6 +96,8 @@ namespace nova {
          * \brief A list of chunk renderable things that are ready to upload to the GPU
          */
         std::queue<std::tuple<std::string, mesh_definition>> chunk_parts_to_upload;
+
+        chunk_builder m_chunk_builder;
 
         float seconds_spent_updating_chunks = 0;
         long total_chunks_updated = 0;

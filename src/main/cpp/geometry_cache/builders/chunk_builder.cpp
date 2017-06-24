@@ -15,14 +15,15 @@
 #include <string.h>
 
 namespace nova {
-    std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_chunk &chunk, const std::shared_ptr<igeometry_filter> filter) {
+    std::vector<glm::ivec3> chunk_builder::get_blocks_that_match_filter(const mc_chunk &chunk, const std::shared_ptr<igeometry_filter> filter) {
         auto blocks_that_match_filter = std::vector<glm::ivec3>{};
         for(int z = 0; z < CHUNK_WIDTH; z++) {
             for(int y = 0; y < CHUNK_HEIGHT; y++) {
                 for(int x = 0; x < CHUNK_DEPTH; x++) {
                     int i = x + y * CHUNK_WIDTH + z * CHUNK_WIDTH * CHUNK_HEIGHT;
                     auto cur_block = chunk.blocks[i];
-                    if(filter->matches(cur_block)) {
+                    auto cur_block_definition = block_definitions[cur_block.id];
+                    if(filter->matches(cur_block_definition)) {
                         auto pos = glm::ivec3(x, y, z);
                         blocks_that_match_filter.push_back(pos);
                     }
@@ -32,7 +33,7 @@ namespace nova {
         return blocks_that_match_filter;
     }
 
-    mesh_definition make_mesh_for_blocks(const std::vector<glm::ivec3>& blocks, const mc_chunk& chunk) {
+    mesh_definition chunk_builder::make_mesh_for_blocks(const std::vector<glm::ivec3>& blocks, const mc_chunk& chunk) {
         auto mesh = mesh_definition{};
         mesh.vertex_format = format::POS_UV_LIGHTMAPUV_NORMAL_TANGENT;
 
@@ -42,11 +43,13 @@ namespace nova {
 
         for(const auto& block_pos : blocks) {
             auto block_offset = glm::vec3{block_pos};
+            auto block_idx = pos_to_idx(block_pos);
+            auto block = block_definitions[chunk.blocks[block_idx].id];
 
 			// Get the geometry for the block
 			std::vector<block_face> faces_for_block;
-			if(is_cube(block_pos, chunk)) {
-				faces_for_block = make_geometry_for_block(block_pos, chunk);
+			if(!!block.is_cube) {
+				faces_for_block = make_geometry_for_block(block_pos, chunk, block.texture_name);
 			} else {
 				// Use the block model registry
 				LOG(WARNING) << "Block models not implemented. Fix it.";
@@ -76,41 +79,45 @@ namespace nova {
 		return mesh;
     }
 
-	std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk) {
-		auto faces_to_make = std::vector<face_id>{};
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk) && !block_at_offset_is_same(block_pos ,glm::ivec3(0, 1, 0), chunk)) {
+	std::vector<block_face> chunk_builder::make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, const char * texture_name) {
+        auto faces_to_make = std::vector<face_id>{};
+        if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk) &&
+           !block_at_offset_is_same(block_pos, glm::ivec3(0, 1, 0), chunk)) {
             faces_to_make.push_back(face_id::TOP);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(0, -1, 0), chunk)) {
+        if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk) &&
+           !block_at_offset_is_same(block_pos, glm::ivec3(0, -1, 0), chunk)) {
             faces_to_make.push_back(face_id::BOTTOM);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(1,0, 0), chunk)) {
+        if(!block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk) &&
+           !block_at_offset_is_same(block_pos, glm::ivec3(1, 0, 0), chunk)) {
             faces_to_make.push_back(face_id::RIGHT);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(-1,0, 0), chunk)) {
+        if(!block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk) &&
+           !block_at_offset_is_same(block_pos, glm::ivec3(-1, 0, 0), chunk)) {
             faces_to_make.push_back(face_id::LEFT);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(0,0,1), chunk)) {
+        if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk) &&
+           !block_at_offset_is_same(block_pos, glm::ivec3(0, 0, 1), chunk)) {
             faces_to_make.push_back(face_id::FRONT);
         }
-		if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk)&& !block_at_offset_is_same(block_pos ,glm::ivec3(0,0,-1), chunk)) {
+        if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk) &&
+           !block_at_offset_is_same(block_pos, glm::ivec3(0, 0, -1), chunk)) {
             faces_to_make.push_back(face_id::BACK);
         }
 
-        auto block_idx = pos_to_idx(block_pos);
-        const auto& block = chunk.blocks[block_idx];
-        const auto& tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(std::string(block.texture_name));
+        const auto &tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(std::string(texture_name));
 
-		auto quads = std::vector<block_face>{};
-		for(auto& face : faces_to_make) {
-			auto ao = get_ao_in_direction(block_pos, face, chunk);
-			quads.push_back(make_quad(face, 1, tex_location));
-		}
+        auto quads = std::vector<block_face>{};
+        for(auto &face : faces_to_make) {
+            auto ao = get_ao_in_direction(block_pos, face, chunk);
+            quads.push_back(make_quad(face, 1, tex_location));
+        }
 
-		return quads;
-	}
+        return quads;
+    }
 
-    bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk) {
+    bool chunk_builder::block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk) {
         // A separate check for each direction to increase code readability and debuggability
         if(block_pos.x < 0 || block_pos.x >= CHUNK_WIDTH) {
             return false;
@@ -127,9 +134,10 @@ namespace nova {
         auto block_idx = pos_to_idx(block_pos);
         auto block = chunk.blocks[block_idx];
 
-        return !block.is_transparent();
+        return !block_definitions[block.id].is_transparent();
     }
-    bool block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_chunk& chunk) {
+
+    bool chunk_builder::block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_chunk& chunk) {
         // A separate check for each direction to increase code readability and debuggability
         if(block_pos.x+offset.x < 0 || block_pos.x+offset.x >= CHUNK_WIDTH) {
             return false;
@@ -144,18 +152,18 @@ namespace nova {
         }
 
         auto block_idx = pos_to_idx(block_pos);
-        auto block = chunk.blocks[block_idx];
+        auto block = block_definitions[chunk.blocks[block_idx].id];
         auto block_idx2 = pos_to_idx(block_pos+offset);
-        auto block2 = chunk.blocks[block_idx2];
+        auto block2 = block_definitions[chunk.blocks[block_idx2].id];
 
-        return strcmp(block.name,block2.name)==0;
+        return strcmp(block.name, block2.name) == 0;
     }
 
-    int pos_to_idx(const glm::ivec3& pos) {
+    int chunk_builder::pos_to_idx(const glm::ivec3& pos) {
         return pos.x + pos.y * CHUNK_WIDTH + pos.z * CHUNK_WIDTH * CHUNK_HEIGHT;
     }
 
-    block_face make_quad(const face_id which_face, const float size, const texture_manager::texture_location& tex_location) {
+    block_face chunk_builder::make_quad(const face_id which_face, const float size, const texture_manager::texture_location& tex_location) {
         const auto tex_extents = tex_location.max - tex_location.min;
         glm::vec3 positions[4];
         glm::vec2 uvs[4];
@@ -257,13 +265,17 @@ namespace nova {
         return face;
     }
 
-	bool is_cube(const glm::ivec3 pos, const mc_chunk& chunk) {
+	bool chunk_builder::is_cube(const glm::ivec3 pos, const mc_chunk& chunk) {
 		return true;
 	}
 
-	float get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk) {
+	float chunk_builder::get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk) {
 		return 0;
 	}
+
+    std::unordered_map<int, mc_block_definition>& chunk_builder::get_block_definitions() {
+        return block_definitions;
+    };
 
     el::base::Writer &operator<<(el::base::Writer &out, const block_vertex& vert) {
         out << "block_vertex { position=" << vert.position << ", uv=" << vert.uv << ", lightmap_uv="

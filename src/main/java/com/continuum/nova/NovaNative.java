@@ -91,33 +91,37 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_block extends Structure {
+    class mc_block_definition extends Structure {
         public String name;
-        public boolean is_on_fire;
-        public int light_value;
         public int light_opacity;
-        public float ao;
+        public int light_value;
         public boolean is_opaque;
         public boolean blocks_light;
+        public boolean is_cube;
         public String texture_name;
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("name", "is_on_fire", "light_value", "light_opacity", "ao", "is_opaque",
-                    "blocks_light", "texture_name");
+            return Arrays.asList("name", "light_opacity", "iight_value", "is_opaque", "blocks_light", "is_cube", "texture_name");
+        }
+    }
+
+    class mc_block extends Structure {
+        public int id;
+        public boolean is_on_fire;
+        public float ao;
+
+        @Override
+        public List<String> getFieldOrder() {
+            return Arrays.asList("id", "is_on_fire", "light_value", "ao");
         }
 
         @Override
         public String toString() {
             return "mc_block{" +
-                    "name='" + name + '\'' +
-                    ", is_on_fire=" + is_on_fire +
-                    ", light_value=" + light_value +
-                    ", light_opacity=" + light_opacity +
+                      "is_on_fire=" + is_on_fire +
+                    ", id=" + id +
                     ", ao=" + ao +
-                    ", is_opaque=" + is_opaque +
-                    ", blocks_light=" + blocks_light +
-                    ", texture_name=" + texture_name +
                     '}';
         }
     }
@@ -366,6 +370,8 @@ public interface NovaNative extends Library {
     int get_max_texture_size();
 
     void reset_texture_manager();
+
+    void register_block_definition(int id, mc_block_definition blockDefinition);
 
     void add_chunk(mc_chunk chunk);
 

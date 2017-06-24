@@ -9,31 +9,17 @@
 
 namespace nova {
     nlohmann::json to_json(const mc_block& block) {
-        auto name_location = (long long)block.name;
-        auto name = block.name;
-        if(name_location == 0) {
-            name = "";
-        }
         return nlohmann::json{
-                {"name", name},
+                {"id", block.id},
                 {"is_on_fire", block.is_on_fire},
-                {"light_value", block.light_value},
-                {"light_opacity", block.light_opacity},
                 {"ao", block.ao},
-                {"is_opaque", block.is_opaque},
-                {"blocks_light", block.blocks_light}
         };
     }
 
     void from_json(nlohmann::json& j, mc_block& block) {
-        std::string *name = new std::string{j["name"].get<std::string>()};
-        block.name = name->data();
         block.is_on_fire = j["is_on_fire"].get<bool>();
-        block.light_value = j["light_value"].get<int>();
-        block.light_opacity = j["light_opacity"].get<int>();
         block.ao = j["ao"].get<float>();
-        block.is_opaque = j["is_opaque"].get<bool>();
-        block.blocks_light = j["blocks_light"].get<bool>();
+        block.id = j["id"].get<int>();
     }
 
     nlohmann::json to_json(const mc_chunk& chunk) {

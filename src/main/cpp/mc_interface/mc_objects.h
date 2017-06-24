@@ -37,21 +37,26 @@ struct mc_texture_atlas_location {
     float max_v;
 };
 
+struct mc_block_definition {
+	const char * name;
+	int light_opacity;
+    int light_value;
+	int is_opaque;
+	int block_light;
+	int is_cube;
+	const char * texture_name;
+
+	bool is_emissive() const;
+	bool is_transparent() const;
+};
+
 /*!
  * \brief Represents a block in Minecraft, along with any attributes it might have
  */
 struct mc_block {
-	const char * name;
+	int id;
     bool is_on_fire;
-	int light_value;
-	int light_opacity;
 	float ao;
-    int is_opaque;
-    int blocks_light;
-    const char * texture_name;
-
-    bool is_emissive() const;
-	bool is_transparent() const;
 };
 
 /*!

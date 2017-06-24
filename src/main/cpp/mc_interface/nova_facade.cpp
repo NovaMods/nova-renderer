@@ -53,6 +53,10 @@ NOVA_API void add_chunk(mc_chunk & chunk) {
     MESH_STORE.add_or_update_chunk(chunk);
 }
 
+NOVA_API void register_block_definition(int id, mc_block_definition blockDefinition) {
+    MESH_STORE.get_chunk_builder().get_block_definitions()[id] = blockDefinition;
+}
+
 NOVA_API void register_simple_model(const char * model_name, mc_simple_model * model) {
     MESH_STORE.register_model(std::string(model_name), *model);
 }
