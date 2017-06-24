@@ -28,7 +28,7 @@ jar {
     }	
 }
 
-task buildDll(type: Exec) << {
+task buildDll(type: Exec) {
     commandLine 'powershell', '-file', 'nova.ps1', '-build', '-nativeOnly'
 }
 

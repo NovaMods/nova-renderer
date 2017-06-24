@@ -117,9 +117,8 @@ task applyPatch(dependsOn: copyMcPack) << {
                 standardOutput = os
                 errorOutput = os
             }
-            println "${result}"
         } catch(Exception e) {
-            e.printStackTrace()
+            throw new GradleScriptException(os.toString(), e)
         }
         def outputAsString = os.toString()
         println "${outputAsString}"
@@ -140,9 +139,8 @@ task initSubmodules(dependsOn: cleanupMcp) << {
                 standardOutput = os
                 errorOutput = os
             }
-            println "${result}"
         } catch(Exception e) {
-            e.printStackTrace()
+            throw new GradleScriptException(os.toString(), e)
         }
         def outputAsString = os.toString()
         println "${outputAsString}"
@@ -157,26 +155,19 @@ task makePatch() << {
     new ByteArrayOutputStream().withStream { os ->
         try {
             def result = exec {
-                commandLine 'git', 'diff', 'origin/minecrafts-1.10-mcp'
+                commandLine 'git', 'diff', 'origin/minecraft-1.10-mcp'
                 workingDir 'src/main/java/net'
 
                 standardOutput = os
                 errorOutput = os
             }
-            println "${result}"
         } catch(Exception e) {
-            e.printStackTrace()
-            def outputAsString = os.toString()
-            println "${outputAsString}"
+            throw new GradleScriptException(os.toString(), e)
         }
         def outputAsString = os.toString()
         println "${outputAsString}"
 
-        new File("patches/nova.patch").withWriter { out ->
-            outputAsString.each {
-                out.println it
-            }
-        }
+        new File("patches/nova.patch").withWriter { out -> out.println outputAsString }
     }
 }
 
