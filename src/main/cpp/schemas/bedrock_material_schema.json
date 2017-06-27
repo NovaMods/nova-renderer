@@ -12,8 +12,8 @@
                 },
                 "samplerStates": {
                     "type": "array",
-                    "items":{
-                        "type": "samplerState"
+                    "items":{ 
+                        "ref": "#/definitions/samplerState"
                     },
                     "description": "This array defines all the sampler states to be used for this state. The available data only defines texture filtering, but there may be more that's possible and just isn't available"
                 },
@@ -55,7 +55,7 @@
                 "vertexFields": {
                     "type": "array",
                     "items":{
-                        "type": "vertexField"
+                        "ref": "#/definitions/vertexField"
                     },
                     "description": "Declares what vertex data this state's shaders use, and what order the vertex attributes should be passed in"
                 },
@@ -144,7 +144,10 @@
                     "description": "How to interpret the destination data when blending"
                 },
                 "textures": {
-                    "type": "texture",
+                    "type": "array",
+                    "items": {
+                        "ref": "#/definitions/texture"
+                    },
                     "description": "What textures this state needs enabled"
                 },
                 "alphaSrc": {
@@ -198,7 +201,7 @@
             "properties": {
                 "textureIndex": {
                     "type": "number",
-                    "description": "The index of this texture"
+                    "description": "The index of this texture. Textures in shaders have a name in the format of `TEXTURE_#`, where # is the index of the texture. Thus, the texture with an index of 0 would be calles `TEXTURE_0` in a shader, a texture with an index of 5 would be called `TEXTURE_5` in a shader, etc."
                 },
                 "textureLocation": {
                     "type": "string",

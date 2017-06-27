@@ -44,16 +44,12 @@ namespace nova {
         for(const auto& block_pos : blocks) {
             auto block_offset = glm::vec3{block_pos};
             auto block_idx = pos_to_idx(block_pos);
-            auto block = block_definitions[chunk.blocks[block_idx].id];
+            auto& block = block_definitions[chunk.blocks[block_idx].id];
 
 			// Get the geometry for the block
 			std::vector<block_face> faces_for_block;
-			if(!!block.is_cube) {
-				faces_for_block = make_geometry_for_block(block_pos, chunk, block.texture_name);
-			} else {
-				// Use the block model registry
-				LOG(WARNING) << "Block models not implemented. Fix it.";
-			}
+            auto& block_faces = block_models[std::string(block.state)];
+            faces_for_block = make_geometry_for_block(block_pos, chunk, block_faces);
 
 			// Put the geometry into our buffer
 			for(auto& face : faces_for_block) {
@@ -84,28 +80,37 @@ namespace nova {
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 1, 0), chunk)) {
             faces_to_make.push_back(face_id::TOP);
+            LOG(INFO) << "Making top face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, -1, 0), chunk)) {
             faces_to_make.push_back(face_id::BOTTOM);
+            LOG(INFO) << "Making bottom face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(1, 0, 0), chunk)) {
             faces_to_make.push_back(face_id::RIGHT);
+            LOG(INFO) << "Making right face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(-1, 0, 0), chunk)) {
             faces_to_make.push_back(face_id::LEFT);
+            LOG(INFO) << "Making left face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 0, 1), chunk)) {
             faces_to_make.push_back(face_id::FRONT);
+            LOG(INFO) << "Making front face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 0, -1), chunk)) {
             faces_to_make.push_back(face_id::BACK);
+            LOG(INFO) << "Making back face";
         }
 
+        if(texture_name == nullptr) {
+            LOG(FATAL) << "The texture name is null!";
+        }
         const auto &tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(std::string(texture_name));
 
         auto quads = std::vector<block_face>{};
@@ -138,6 +143,7 @@ namespace nova {
     }
 
     bool chunk_builder::block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_chunk& chunk) {
+        LOG(TRACE) << "Checking if block at offset " << offset << " is the same";
         // A separate check for each direction to increase code readability and debuggability
         if(block_pos.x+offset.x < 0 || block_pos.x+offset.x >= CHUNK_WIDTH) {
             return false;
@@ -150,6 +156,8 @@ namespace nova {
         if(block_pos.z+offset.z < 0 || block_pos.z+offset.z >= CHUNK_DEPTH) {
             return false;
         }
+
+        LOG(TRACE) << "Block at pos " << block_pos + offset << " is in the chunk";
 
         auto block_idx = pos_to_idx(block_pos);
         auto block = block_definitions[chunk.blocks[block_idx].id];
@@ -276,6 +284,16 @@ namespace nova {
     std::unordered_map<int, mc_block_definition>& chunk_builder::get_block_definitions() {
         return block_definitions;
     };
+
+    void chunk_builder::register_block_model(mc_baked_model &mc_model) {
+        auto string_state = mc_model.block_state;
+        auto faces = std::vector<mc_baked_quad>{};
+        for(int i = 0; i < mc_model.num_quads; i++) {
+            faces.push_back(mc_model.quads[i]);
+        }
+
+        block_models[string_state] = faces;
+    }
 
     el::base::Writer &operator<<(el::base::Writer &out, const block_vertex& vert) {
         out << "block_vertex { position=" << vert.position << ", uv=" << vert.uv << ", lightmap_uv="

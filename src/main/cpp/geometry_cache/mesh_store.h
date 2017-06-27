@@ -65,26 +65,10 @@ namespace nova {
         */
         void remove_gui_render_objects();
 
-        /*!
-         * \brief Registers a simple model for later use
-         *
-         * \param model_name The name of the model
-         * \param mc_model The model
-         */
-        void register_model(std::string model_name, mc_simple_model &mc_model);
-
-        /*!
-         * \brief Deregisters a model from Nova
-         *
-         * \param model_name The name of the model to remove
-         */
-        void deregister_model(std::string model_name);
-
         chunk_builder& get_chunk_builder();
 
     private:
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
-        std::unordered_map<std::string, mesh_definition> simple_models;
 
         std::mutex all_chunks_lock;
         std::vector<mc_chunk> all_chunks;
@@ -119,8 +103,6 @@ namespace nova {
          * \param filter The function to use to decide which (if any) objects to remove
          */
         void remove_render_objects(std::function<bool(render_object&)> fitler);
-
-        mesh_definition make_mesh_from_mc_model(mc_simple_model &model);
     };
 
 };

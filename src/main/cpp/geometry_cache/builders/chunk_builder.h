@@ -103,7 +103,7 @@ namespace nova {
         /*!
          * \brief Makes the geometry for the provided block in the given chunk
          */
-        std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, const char * texture_name);
+        std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, std::vector<block_face>& faces);
 
         /*!
          * \brief Adds a quad to this mesh definition
@@ -130,8 +130,16 @@ namespace nova {
 
         std::unordered_map<int, mc_block_definition>& get_block_definitions();
 
+        /*!
+         * \brief Registers a block model for later use
+         *
+         * \param mc_model The model
+         */
+        void register_block_model(mc_baked_model &mc_model);
+
     private:
         std::unordered_map<int, mc_block_definition> block_definitions;
+        std::unordered_map<std::string, std::vector<mc_baked_quad>> block_models;
     };
 
     /*!

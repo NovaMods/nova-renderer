@@ -44,7 +44,6 @@ struct mc_block_definition {
 	int is_opaque;
 	int block_light;
 	int is_cube;
-	const char * texture_name;
 
 	bool is_emissive() const;
 	bool is_transparent() const;
@@ -57,6 +56,7 @@ struct mc_block {
 	int id;
     bool is_on_fire;
 	float ao;
+    const char * state;
 };
 
 /*!
@@ -73,22 +73,20 @@ struct mc_chunk {
 /*!
  * \brief Represents a single quad in Minecraft
  */
-struct mc_quad {
+struct mc_baked_quad {
 	int *vertex_data;
-	int num_vertex_data;
+	int num_vertices;
 	int tint_index;
-	const char * facing_direction;
 	const char * icon_name;
 };
 
 /*!
  * \brief Represents a simple model (i.e. a model with only one variant (I think))
  */
-struct mc_simple_model {
-	mc_quad * quads;
+struct mc_baked_model {
+    const char * block_state;
+	mc_baked_quad * quads;
 	int num_quads;
-	bool ambient_occlusion;
-	const char * particle_texture;
 };
 
 /*!
@@ -163,8 +161,6 @@ struct mc_add_chunk_command {
 struct mc_set_gui_screen_command {
     mc_gui_screen screen;
 };
-
-
 
 struct mouse_button_event {
 	int button;

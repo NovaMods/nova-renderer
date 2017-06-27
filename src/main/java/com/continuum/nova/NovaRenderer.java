@@ -13,7 +13,9 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ModelManager;
 import net.minecraft.client.renderer.block.model.SimpleBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -42,6 +44,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
     public static final String MODID = "Nova Renderer";
@@ -81,8 +84,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
     private AtomicInteger numChunksUpdated = new AtomicInteger(0);
-    private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(10);
+    private Executor chunkUpdateThreadPool = Executors.newSingleThreadExecutor(); //Executors.newFixedThreadPool(10);
 
+    private ModelManager modelManager;
 
     public NovaRenderer() {
         // I put these in Utils to make this class smaller
@@ -249,7 +253,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     }
 
-    public void preInit() {
+    public void preInit(ModelManager modelManager) {
         System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
@@ -280,6 +284,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
         });
         chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
+
+        this.modelManager = modelManager;
     }
 
     private void updateWindowSize() {
@@ -388,20 +394,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.add_texture_location(loc);
     }
 
-    /**
-     * Registers a static model with Nova, so that Nova can use it for drawing
-     *
-     * @param key The ResourceLocation which identifies this model
-     * @param model The model to register
-     */
-    public void registerStaticModel(ResourceLocation key, IBakedModel model) {
-        if(model instanceof SimpleBakedModel) {
-            NovaNative.mc_simple_model mc_model = new NovaNative.mc_simple_model((SimpleBakedModel) model);
-            NovaNative.INSTANCE.register_simple_model(key.toString(), mc_model);
-        }
-    }
-
     private void sendChunkToNative(ChunkUpdateListener.BlockUpdateRange updateRange) {
+        LOG.info("Updating chunk {}", updateRange);
         NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
         long startTime = System.currentTimeMillis();
 
@@ -429,7 +423,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         updateChunk.chunk_id = chunkHashCode;
 
+        LOG.info("Sending chunk {} to native code", updateRange);
         NovaNative.INSTANCE.add_chunk(updateChunk);
+        LOG.info("Chunk {} updated", updateRange);
 
         long deltaTime = System.currentTimeMillis() - startTime;
         timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
@@ -453,30 +449,25 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     /**
      * Registers a block with Nova, creating a block definition object that can be used by the chunk builder or whatever
      *
-     * @param id The interger id of the bloc, used to identify it in a chunk
+     * @param id The integer id of the block, used to identify it in a chunk
      * @param block The block itself
      */
     public void registerBlock(int id, Block block) {
-        IBlockState baseState = block.getBlockState().getBaseState();
-        Material material = baseState.getMaterial();
-
-        NovaNative.mc_block_definition blockDefinition = new NovaNative.mc_block_definition();
-        blockDefinition.name = block.getUnlocalizedName();
-        blockDefinition.blocks_light = material.blocksLight();
-        blockDefinition.is_opaque = material.isOpaque();
-        blockDefinition.is_cube = baseState.isFullBlock();
-        blockDefinition.light_opacity = baseState.getLightOpacity();
-        blockDefinition.light_value = baseState.getLightValue();
-
-        try {
-            TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(baseState).getQuads(baseState, EnumFacing.UP, 0).get(0).getSprite();
-
-            blockDefinition.texture_name = sprite.getIconName();
-        } catch(IndexOutOfBoundsException e) {
-            LOG.error("Could not determine texture for block {}, setting texture to dirt", block.getUnlocalizedName());
-            blockDefinition.texture_name = "minecraft:textures/block/dirt";
-        }
+        NovaNative.mc_block_definition blockDefinition = new NovaNative.mc_block_definition(block);
 
         NovaNative.INSTANCE.register_block_definition(id, blockDefinition);
+    }
+
+    public void registerBlockStateModel(IBlockState state, IBakedModel model) {
+        List<NovaNative.mc_baked_quad> native_quads = new ArrayList<>();
+        for(EnumFacing face : EnumFacing.values()) {
+            List<BakedQuad> quads = model.getQuads(state, face, 0);
+            quads.stream().map(NovaNative.mc_baked_quad::new).forEach(native_quads::add);
+        }
+
+        NovaNative.mc_baked_model native_model = new NovaNative.mc_baked_model(state.toString(), native_quads);
+
+
+        NovaNative.INSTANCE.register_baked_model(native_model);
     }
 }

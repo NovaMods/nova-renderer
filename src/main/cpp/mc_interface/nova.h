@@ -74,19 +74,11 @@ NOVA_API void add_chunk(mc_chunk & chunk);
 NOVA_API void register_block_definition(int id, mc_block_definition blockDefinition);
 
 /*!
- * \brief Registers a simple model with Nova
+ * \brief Registers a baked model with Nova
  *
- * \param model_name The string name of the model
  * \param model The geometry for the model
  */
-NOVA_API void register_simple_model(const char * model_name, mc_simple_model * model);
-
-/*!
- * \brief Removes a model from Nova
- *
- * \param model_name The name of the model to remove
- */
-NOVA_API void deregister_model(const char * model_name);
+NOVA_API void register_baked_model(mc_baked_model* model);
 
 /*!
  * \brief Updates the Nova Renderer and renders the current frame

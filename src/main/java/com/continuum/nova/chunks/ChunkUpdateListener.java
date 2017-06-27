@@ -26,6 +26,14 @@ public class ChunkUpdateListener implements IWorldEventListener {
             this.min = min;
             this.max = max;
         }
+
+        @Override
+        public String toString() {
+            return "BlockUpdateRange{" +
+                    "min=(" + min.x + ", " + min.y + ", " + min.z +
+                    "), max=(" + max.x + ", " + max.y + ", " + max.z +
+                    ")}";
+        }
     }
 
     private static final Logger LOG = LogManager.getLogger(ChunkUpdateListener.class);

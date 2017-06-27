@@ -133,26 +133,11 @@ namespace nova {
             }
 
             auto block_mesh_definition = m_chunk_builder.make_mesh_for_blocks(blocks_for_shader, chunk);
+            LOG(INFO) << "Made mesh for chunk at position " << chunk.x << ", " << chunk.z << " and shader " << shader_entry.first;
             chunk_parts_to_upload_lock.lock();
             chunk_parts_to_upload.emplace(shader_entry.first, block_mesh_definition);
             chunk_parts_to_upload_lock.unlock();
         }
-    }
-
-    void mesh_store::register_model(std::string model_name, mc_simple_model &mc_model) {
-        mesh_definition model = make_mesh_from_mc_model(mc_model);
-
-		simple_models[model_name] = model;
-    }
-
-    mesh_definition mesh_store::make_mesh_from_mc_model(mc_simple_model &model) {
-        mesh_definition mesh;
-        // TODO: This method needs to happen
-        return mesh;
-    }
-
-    void mesh_store::deregister_model(std::string model_name) {
-        simple_models.erase(model_name);
     }
 
     void mesh_store::generate_needed_chunk_geometry() {
