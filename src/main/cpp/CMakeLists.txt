@@ -99,6 +99,7 @@ set(NOVA_HEADERS
         render/objects/framebuffer.h
         utils/io.h
         data_loading/loaders/geometry_filter_loading.h
+        geometry_cache/builders/vertex_format_decoder.h
         )
 
 set(NOVA_SOURCE
@@ -139,7 +140,8 @@ set(NOVA_SOURCE
         render/objects/camera.cpp
         utils/io.cpp
         data_loading/loaders/geometry_filter_loading.cpp
-        data_loading/loaders/shader_source_structs.cpp)
+        data_loading/loaders/shader_source_structs.cpp
+        geometry_cache/builders/vertex_format_decoder.cpp)
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} 3rdparty/renderdocapi/RenderDocManager.cpp)
@@ -212,7 +214,7 @@ set(TEST_SOURCE_FILES
         test/test_utils.h
         test/utils/io_test.cpp
         test/data_loading/loaders/geometry_filter_loading_test.cpp
-        )
+        test/geometry_cache/builders/vertex_format_decoder_test.cpp)
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
 

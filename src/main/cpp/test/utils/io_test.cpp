@@ -16,7 +16,7 @@ namespace nova {
             auto* chunk = new mc_chunk{};
             chunk->chunk_id = 42;
             for(int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH; i++) {
-                chunk->blocks[i] = mc_block{"tile.air", false, 3, 0, 0, false, false};
+                chunk->blocks[i] = mc_block{0, 0, false, "tile:air"};
             }
             auto filename = std::string{"save_chunk_one_block_test.json"};
             save_chunk(*chunk, filename);

@@ -48,7 +48,7 @@ namespace nova {
 
 			// Get the geometry for the block
 			std::vector<block_face> faces_for_block;
-            auto& block_faces = block_models[std::string(block.state)];
+            auto& block_faces = block_models[std::string(chunk.blocks[block_idx].state)];
             faces_for_block = make_geometry_for_block(block_pos, chunk, block_faces);
 
 			// Put the geometry into our buffer
@@ -75,7 +75,7 @@ namespace nova {
 		return mesh;
     }
 
-	std::vector<block_face> chunk_builder::make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, const char * texture_name) {
+	std::vector<block_face> chunk_builder::make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, baked_model& model) {
         auto faces_to_make = std::vector<face_id>{};
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 1, 0), chunk)) {
@@ -108,15 +108,15 @@ namespace nova {
             LOG(INFO) << "Making back face";
         }
 
-        if(texture_name == nullptr) {
-            LOG(FATAL) << "The texture name is null!";
-        }
-        const auto &tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(std::string(texture_name));
+        //if(texture_name == nullptr) {
+        //    LOG(FATAL) << "The texture name is null!";
+        //}
+        //const auto &tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(std::string(texture_name));
 
         auto quads = std::vector<block_face>{};
         for(auto &face : faces_to_make) {
             auto ao = get_ao_in_direction(block_pos, face, chunk);
-            quads.push_back(make_quad(face, 1, tex_location));
+            //quads.push_back(make_quad(face, 1, tex_location));
         }
 
         return quads;
@@ -289,10 +289,49 @@ namespace nova {
         auto string_state = mc_model.block_state;
         auto faces = std::vector<mc_baked_quad>{};
         for(int i = 0; i < mc_model.num_quads; i++) {
+            auto& quad = mc_model.quads[i];
+
+            auto quad_vertices = decode_block_vertices(quad.vertex_data, quad.num_vertices);
+            if(is_in_xy_plane(quad_vertices)) {
+                // Check if z == 0 or z == 1 to determine if this face is at the edge, and what edge it is
+                if(is_at_max_z(quad_vertices)) {
+
+                }
+            }
             faces.push_back(mc_model.quads[i]);
         }
+    }
 
-        block_models[string_state] = faces;
+
+    bool is_in_plane(const std::vector<block_vertex>& vertices, int plane) {
+        auto compare_val = vertices[0].position[plane];
+
+        for(const auto& vertex : vertices) {
+            if(vertex.position[plane] != compare_val) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool is_in_xy_plane(const std::vector<block_vertex>& vertices) {
+        return is_in_plane(vertices, 2);
+    }
+
+    bool index_is_at_value(const std::vector<block_vertex> &vector, int index, float val);
+
+    bool is_at_max_z(const std::vector<block_vertex>& vertices) {
+        return index_is_at_value(vertices, 2, 1);
+    }
+
+    bool index_is_at_value(const std::vector<block_vertex> &vector, int index, float val) {
+        std::for_each(vector.begin(), vector.end(), [index, val](const auto& vertex) {
+            if(vertex.position[index] != val) {
+                return false;
+            }
+        });
+        return true;
     }
 
     el::base::Writer &operator<<(el::base::Writer &out, const block_vertex& vert) {

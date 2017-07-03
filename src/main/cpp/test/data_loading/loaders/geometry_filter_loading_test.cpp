@@ -15,7 +15,7 @@ namespace nova {
         TEST(geometry_loading_test, make_filter_from_token_geometry_type) {
             auto token = "geometry_type::block";
             auto filter = make_filter_from_token(token);
-            auto block = mc_block();
+            auto block = mc_block_definition();
 
             ASSERT_TRUE(filter->matches(block));
         }
@@ -28,7 +28,7 @@ namespace nova {
         TEST(geometry_filter_loading, make_filter_from_token_name) {
             auto token = "name::john";
             auto filter = make_filter_from_token(token);
-            auto block = mc_block();
+            auto block = mc_block_definition();
 
             block.name = "john";
             ASSERT_TRUE(filter->matches(block));
@@ -45,7 +45,7 @@ namespace nova {
 
             auto filter = make_filter_from_token(token);
 
-            auto block = mc_block();
+            auto block = mc_block_definition();
 
             block.name = "fred_flintstone";
             ASSERT_TRUE(filter->matches(block));
@@ -66,7 +66,7 @@ namespace nova {
         TEST(geometry_filter_loading, make_filter_from_token_transparent) {
             auto token = "transparent";
             auto filter = make_filter_from_token(token);
-            auto block = mc_block();
+            auto block = mc_block_definition();
 
             block.is_opaque = false;
             ASSERT_TRUE(filter->matches(block));
@@ -78,7 +78,7 @@ namespace nova {
         TEST(geometry_filter_loading, make_filter_from_token_not_transparent) {
             auto token = "not_transparent";
             auto filter = make_filter_from_token(token);
-            auto block = mc_block();
+            auto block = mc_block_definition();
 
             block.is_opaque = true;
             ASSERT_TRUE(filter->matches(block));
@@ -90,7 +90,7 @@ namespace nova {
         TEST(geometry_filter_loading, make_filter_from_token_emissive) {
             auto token = "emissive";
             auto filter = make_filter_from_token(token);
-            auto block = mc_block();
+            auto block = mc_block_definition();
 
             block.light_value = 16;
             ASSERT_TRUE(filter->matches(block));
@@ -102,7 +102,7 @@ namespace nova {
         TEST(geometry_filter_loading, make_filter_from_token_not_emissive) {
             auto token = "not_emissive";
             auto filter = make_filter_from_token(token);
-            auto block = mc_block();
+            auto block = mc_block_definition();
 
             block.light_value = 0;
             ASSERT_TRUE(filter->matches(block));
@@ -123,7 +123,7 @@ namespace nova {
 
             auto filter = make_filter_expression(previous_filter, tokens_itr, tokens.end());
 
-            auto block = mc_block();
+            auto block = mc_block_definition();
             block.is_opaque = false;
             block.light_value = 0;
 
@@ -147,7 +147,7 @@ namespace nova {
 
             auto filter = make_filter_expression(previous_filter, tokens_itr, tokens.end());
 
-            auto block = mc_block();
+            auto block = mc_block_definition();
             block.is_opaque = false;
             block.light_value = 0;
 

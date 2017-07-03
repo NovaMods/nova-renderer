@@ -15,34 +15,12 @@
 #include <optional.hpp>
 #include "../../mc_interface/mc_objects.h"
 #include "../../render/objects/shaders/shaderpack.h"
+#include "vertex_format_decoder.h"
 #include <easylogging++.h>
 
 using namespace std::experimental;
 
 namespace nova {
-    /*!
-     * \brief Contains all the data needed for a single vertex in a block
-     */
-    struct block_vertex {
-        glm::vec3 position;
-        glm::vec2 uv;
-        glm::vec2 lightmap_uv;
-        glm::vec3 normal;
-        glm::vec3 tangent;
-    };
-
-    struct block_face {
-        block_vertex vertices[4];
-    };
-
-    enum class face_id {
-        LEFT,
-        RIGHT,
-        BOTTOM,
-        TOP,
-        BACK,
-        FRONT,
-    };
 
     class chunk_builder {
     public:
@@ -103,7 +81,7 @@ namespace nova {
         /*!
          * \brief Makes the geometry for the provided block in the given chunk
          */
-        std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, std::vector<block_face>& faces);
+        std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, baked_model& model);
 
         /*!
          * \brief Adds a quad to this mesh definition
@@ -139,8 +117,14 @@ namespace nova {
 
     private:
         std::unordered_map<int, mc_block_definition> block_definitions;
-        std::unordered_map<std::string, std::vector<mc_baked_quad>> block_models;
+        std::unordered_map<std::string, baked_model> block_models;
     };
+
+    bool is_in_plane(const std::vector<block_vertex>& vertices, int plane);
+
+    bool is_in_xy_plane(const std::vector<block_vertex>& vertices);
+
+    bool is_at_max_z(const std::vector<block_vertex>& vertices);
 
     /*!
      * \brief Prints a block_vertex object into the easylogging++ output stream

@@ -13,6 +13,7 @@
 
 namespace nova {
     namespace test {
+        /*
         TEST(chunk_builder_test, x_small_test) {
             glm::ivec3 small_x = glm::ivec3(-1, 8, 8);
 
@@ -176,5 +177,6 @@ namespace nova {
             auto blocks_for_filter = get_blocks_that_match_filter(*chunk, filter);
             ASSERT_EQ(blocks_for_filter.size(), 16389);
         }
+         */
     }
 }
