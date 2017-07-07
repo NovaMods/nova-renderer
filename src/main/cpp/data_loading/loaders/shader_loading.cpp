@@ -217,7 +217,11 @@ namespace nova {
         auto file_to_include = get_included_file_path(shader_path, included_file_name);
         LOG(TRACE) << "Dealing with included file " << file_to_include;
 
-        return load_shader_file(file_to_include, {""});
+        try {
+            return load_shader_file(file_to_include, {""});
+        } catch(resource_not_found& e) {
+            throw std::runtime_error("Could not load included file " + file_to_include);
+        }
     }
 
     shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, const std::vector<std::string> &shader_names) {

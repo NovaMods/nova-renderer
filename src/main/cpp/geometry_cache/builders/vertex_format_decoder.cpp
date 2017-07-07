@@ -4,6 +4,7 @@
  */
 
 #include "vertex_format_decoder.h"
+#include "chunk_builder.h"
 #include <easylogging++.h>
 
 #include <stdexcept>
@@ -12,6 +13,7 @@ namespace nova {
 
     std::vector<block_vertex> decode_block_vertices(int * data, int num_elements) {
         if(num_elements % 7 != 0) {
+            LOG(ERROR) << "Received " << num_elements << " elements, which is not divisible by 7. Please help";
             throw new std::runtime_error("The number of elements is not divisible by seven, I don't know what's up");
         }
 
@@ -25,6 +27,7 @@ namespace nova {
             vertex.uv = mc_vertex->uv;
             vertex.lightmap_uv.s = mc_vertex->lightmap_s;
             vertex.lightmap_uv.t = mc_vertex->lightmap_t;
+            LOG(TRACE) << "Made vertex " << vertex;
             vertices.push_back(vertex);
         }
 

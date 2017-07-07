@@ -85,8 +85,8 @@ struct mc_baked_quad {
  */
 struct mc_baked_model {
     const char * block_state;
-	mc_baked_quad * quads;
 	int num_quads;
+    mc_baked_quad * quads;
 };
 
 /*!

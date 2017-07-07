@@ -459,10 +459,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void registerBlockStateModel(IBlockState state, IBakedModel model) {
+        LOG.info("Registering a model for block state {}", state);
         List<NovaNative.mc_baked_quad> native_quads = new ArrayList<>();
         for(EnumFacing face : EnumFacing.values()) {
             List<BakedQuad> quads = model.getQuads(state, face, 0);
             quads.stream().map(NovaNative.mc_baked_quad::new).forEach(native_quads::add);
+            LOG.info("Just added {} quads for face {}", quads.size(), face);
         }
 
         NovaNative.mc_baked_model native_model = new NovaNative.mc_baked_model(state.toString(), native_quads);

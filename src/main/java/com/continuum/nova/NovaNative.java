@@ -124,7 +124,7 @@ public interface NovaNative extends Library {
     }
 
     class mc_baked_quad extends Structure {
-        public int[] vertex_data = new int[1];
+        public Pointer vertex_data; // int[];
         public int num_vertices;
         public int tint_index;
         public String texture_name;
@@ -132,24 +132,28 @@ public interface NovaNative extends Library {
         public mc_baked_quad() {}
 
         public mc_baked_quad(BakedQuad quad) {
-            vertex_data = quad.getVertexData();
+            vertex_data = new Memory(quad.getVertexData().length * Native.getNativeSize(Integer.TYPE));
+            for(int i = 0; i < quad.getVertexData().length; i++) {
+                vertex_data.setInt(i, quad.getVertexData()[i]);
+            }
+
             tint_index = quad.getTintIndex();
             texture_name = quad.getSprite().getIconName();
-            num_vertices = vertex_data.length;
+            num_vertices = quad.getVertexData().length;
 
             allocateMemory();
         }
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("vertex_data", "tint_index", "texture_name");
+            return Arrays.asList("vertex_data", "num_vertices", "tint_index", "texture_name");
         }
     }
 
     class mc_baked_model extends Structure {
         public String block_state;
-        public mc_baked_quad[] quads = new mc_baked_quad[1];
         public int num_quads;
+        public mc_baked_quad[] quads = new mc_baked_quad[1];
 
         public mc_baked_model() {}
 
@@ -168,7 +172,7 @@ public interface NovaNative extends Library {
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("block_state", "quads", "num_quads");
+            return Arrays.asList("block_state", "num_quads", "quads");
         }
     }
 
