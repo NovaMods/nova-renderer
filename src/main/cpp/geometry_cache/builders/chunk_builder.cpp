@@ -285,15 +285,15 @@ namespace nova {
         return block_definitions;
     };
 
-    void chunk_builder::register_block_model(mc_baked_model &mc_model) {
-        LOG(DEBUG) << "Registering block model for " << mc_model.block_state << " with " << mc_model.num_quads << " quads";
+    void chunk_builder::register_block_model(std::string state, int num_quads, mc_baked_quad quads[]) {
+        LOG(DEBUG) << "Registering block model for " << state << " with " << num_quads << " quads";
         auto faces = std::vector<mc_baked_quad>{};
-        for(int i = 0; i < mc_model.num_quads; i++) {
+        for(int i = 0; i < num_quads; i++) {
             LOG(TRACE) << "Checking quad at " << i;
-            auto& quad = mc_model.quads[i];
+            auto& quad = quads[i];
 
             LOG(TRACE) << "About to decode block vertices";
-            auto quad_vertices = decode_block_vertices(quad.vertex_data, quad.num_vertices);
+            auto quad_vertices = decode_block_vertices((int*)quad.vertex_data, quad.num_vertices);
             LOG(TRACE) << "Checking if the face is in the xy plane";
             if(is_in_xy_plane(quad_vertices)) {
                 LOG(TRACE) << "Checking if face is at mat Z";
@@ -302,7 +302,7 @@ namespace nova {
                     LOG(TRACE) << "Face is at max Z";
                 }
             }
-            faces.push_back(mc_model.quads[i]);
+            faces.push_back(quads[i]);
         }
     }
 

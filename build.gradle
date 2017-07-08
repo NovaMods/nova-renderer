@@ -79,7 +79,7 @@ dependencies {
     compile group: 'org.ow2.asm', name: 'asm', version: '5.1'
 
     // JNA, for calling the C++ code
-    compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
+    // compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
     
     compile group: 'io.github.java-graphics', name: 'glm', version: '1.0.1'
 

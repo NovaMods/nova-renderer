@@ -7,6 +7,8 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.SimpleBakedModel;
 import net.minecraft.util.EnumFacing;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ public interface NovaNative extends Library {
     int CHUNK_DEPTH     = 16;
 
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
+
+    Logger LOG = LogManager.getLogger(NovaNative.class);
 
     String GUI_ATLAS_NAME = "gui";
     String BLOCK_COLOR_ATLAS_NAME = "block_color";
@@ -124,55 +128,30 @@ public interface NovaNative extends Library {
     }
 
     class mc_baked_quad extends Structure {
-        public Pointer vertex_data; // int[];
+        public static class ByReference extends mc_baked_quad implements Structure.ByReference {}
+
         public int num_vertices;
         public int tint_index;
         public String texture_name;
+        public int[] vertex_data = new int[1];
 
         public mc_baked_quad() {}
 
         public mc_baked_quad(BakedQuad quad) {
-            vertex_data = new Memory(quad.getVertexData().length * Native.getNativeSize(Integer.TYPE));
-            for(int i = 0; i < quad.getVertexData().length; i++) {
-                vertex_data.setInt(i, quad.getVertexData()[i]);
-            }
+            vertex_data = quad.getVertexData();
 
             tint_index = quad.getTintIndex();
             texture_name = quad.getSprite().getIconName();
             num_vertices = quad.getVertexData().length;
 
-            allocateMemory();
-        }
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("vertex_data", "num_vertices", "tint_index", "texture_name");
-        }
-    }
-
-    class mc_baked_model extends Structure {
-        public String block_state;
-        public int num_quads;
-        public mc_baked_quad[] quads = new mc_baked_quad[1];
-
-        public mc_baked_model() {}
-
-        public mc_baked_model(String block_state, List<mc_baked_quad> quads) {
-            this.block_state = block_state;
-            this.num_quads = quads.size();
-            this.quads = quads.toArray(new NovaNative.mc_baked_quad[]{});
-
-            if(num_quads == 0) {
-                this.quads = new mc_baked_quad[]{new mc_baked_quad()};
-                num_quads = 1;
-            }
+            LOG.info("Allocated {} vertices", num_vertices);
 
             allocateMemory();
         }
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("block_state", "num_quads", "quads");
+            return Arrays.asList("num_vertices", "tint_index", "texture_name", "vertex_data");
         }
     }
 
@@ -417,7 +396,7 @@ public interface NovaNative extends Library {
 
     void set_float_setting(String setting_name, float setting_value);
 
-    void register_baked_model(mc_baked_model model);
+    void register_baked_model(String state_name, int num_quads, mc_baked_quad[] quads);
 
     void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
 }

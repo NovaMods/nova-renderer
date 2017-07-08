@@ -57,8 +57,8 @@ NOVA_API void register_block_definition(int id, mc_block_definition blockDefinit
     MESH_STORE.get_chunk_builder().get_block_definitions()[id] = blockDefinition;
 }
 
-NOVA_API void register_baked_model(mc_baked_model * model) {
-    MESH_STORE.get_chunk_builder().register_block_model(*model);
+NOVA_API void register_baked_model(const char * state, int num_quads, mc_baked_quad quads[]) {
+    MESH_STORE.get_chunk_builder().register_block_model(std::string(state), num_quads, quads);
 }
 
 NOVA_API void execute_frame() {

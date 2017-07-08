@@ -76,9 +76,11 @@ NOVA_API void register_block_definition(int id, mc_block_definition blockDefinit
 /*!
  * \brief Registers a baked model with Nova
  *
- * \param model The geometry for the model
+ * \param state The block state that this model corresponds to
+ * \param num_quads The number of quads in the state
+ * \param quads The quads in the state
  */
-NOVA_API void register_baked_model(mc_baked_model* model);
+NOVA_API void register_baked_model(const char * state, int num_quads, mc_baked_quad quads[]);
 
 /*!
  * \brief Updates the Nova Renderer and renders the current frame

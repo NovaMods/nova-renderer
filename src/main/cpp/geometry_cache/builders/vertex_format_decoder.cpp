@@ -4,10 +4,12 @@
  */
 
 #include "vertex_format_decoder.h"
+#include "../../utils/utils.h"
 #include "chunk_builder.h"
 #include <easylogging++.h>
 
 #include <stdexcept>
+
 
 namespace nova {
 
@@ -20,13 +22,20 @@ namespace nova {
         auto vertices = std::vector<block_vertex>{};
 
         for(int i = 0; i < num_elements; i += 7) {
-            mc_block_vertex* mc_vertex = (mc_block_vertex *) &data[i];
+            LOG(TRACE) << "Decoding vertex " << i / 7;
+            mc_block_vertex* mc_vertex = (mc_block_vertex *) &(data[i]);
+            LOG(TRACE) << "Got vertex at location " << (long long)(mc_vertex) << ". Is that a nullptr? " << (mc_vertex == nullptr);
             block_vertex vertex;
             vertex.position = mc_vertex->position;
+            LOG(TRACE) << "Decoded position " << vertex.position;
             vertex.color = mc_vertex->color;
+            LOG(TRACE) << "Decoded color " << print_color(vertex.color);
             vertex.uv = mc_vertex->uv;
+            LOG(TRACE) << "Decoded uv " << vertex.uv;
             vertex.lightmap_uv.s = mc_vertex->lightmap_s;
+            LOG(TRACE) << "Decoded lightmap s " << vertex.lightmap_uv.s;
             vertex.lightmap_uv.t = mc_vertex->lightmap_t;
+            LOG(TRACE) << "Decoded lightmap t " << vertex.lightmap_uv.t;
             LOG(TRACE) << "Made vertex " << vertex;
             vertices.push_back(vertex);
         }

@@ -74,10 +74,10 @@ struct mc_chunk {
  * \brief Represents a single quad in Minecraft
  */
 struct mc_baked_quad {
-	int *vertex_data;
 	int num_vertices;
 	int tint_index;
-	const char * icon_name;
+	const char * texture_name;
+    void *vertex_data;
 };
 
 /*!

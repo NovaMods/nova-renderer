@@ -20,7 +20,11 @@ namespace nova {
 
             auto vertices = decode_block_vertices(data, 28);
 
-            EXPECT_EQ(vertices.size(), 4);
+            ASSERT_EQ(vertices.size(), 4);
+
+            EXPECT_EQ(vertices[0].position, glm::vec3(0, 0, 1));
+            EXPECT_EQ(vertices[0].lightmap_uv, glm::vec2(0, 0));
+            EXPECT_EQ(vertices[0].tangent, glm::vec3(-1, 0, 0));
         }
     }
 }

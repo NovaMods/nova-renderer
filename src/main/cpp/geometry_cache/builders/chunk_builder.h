@@ -111,9 +111,11 @@ namespace nova {
         /*!
          * \brief Registers a block model for later use
          *
-         * \param mc_model The model
+         * \param state The block state that this model corresponds to
+         * \param num_quads The number of quads in the state
+         * \param quads The quads in the state
          */
-        void register_block_model(mc_baked_model &mc_model);
+        void register_block_model(std::string state, int num_quads, mc_baked_quad quads[]);
 
     private:
         std::unordered_map<int, mc_block_definition> block_definitions;

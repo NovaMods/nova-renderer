@@ -18,7 +18,7 @@ namespace nova {
      */
     struct mc_block_vertex {
         glm::vec3 position;
-        glm::bvec4 color;
+        unsigned int color;
         glm::vec2 uv;
         short lightmap_s;
         short lightmap_t;
@@ -39,7 +39,7 @@ namespace nova {
      */
     struct block_vertex {
         glm::vec3 position;
-        glm::bvec4 color;
+        unsigned int color;
         glm::vec2 uv;
         glm::vec2 lightmap_uv;
         glm::vec3 normal;
@@ -85,6 +85,5 @@ namespace nova {
      */
     void calculate_normals_for_vertices(std::vector<block_vertex> &vertices);
 }
-
 
 #endif //RENDERER_VERTEX_FORMAT_DECODER_H

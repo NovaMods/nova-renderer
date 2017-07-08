@@ -62,5 +62,22 @@ namespace nova {
         out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
         return out;
     }
+
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec4 &vec) {
+        out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ")";
+        return out;
+    }
+
+    std::string print_color(unsigned int color) {
+        auto red = color >> 24;
+        auto green = (color >> 16) & 0xFF;
+        auto blue = (color >> 8) & 0xFF;
+        auto alpha = color & 0xFF;
+
+        std::stringstream str;
+        str << "(" << red << ", " << green << ", " << blue << ", " << alpha << ")";
+
+        return str.str();
+    }
 }
 

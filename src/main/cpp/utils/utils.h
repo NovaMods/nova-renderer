@@ -99,6 +99,17 @@ namespace nova {
      * \return The written to stream
      */
     el::base::Writer &operator<<(el::base::Writer &out, const glm::vec3 &vec);
+
+    /*!
+     * \brief Stream insertion for glm::vec4
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec4 &vec);
+
+    std::string print_color(unsigned int color);
 }
 
 #endif //RENDERER_UTILS_H
