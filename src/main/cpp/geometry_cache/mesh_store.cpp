@@ -119,24 +119,29 @@ namespace nova {
     }
 
     void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
-        all_chunks_lock.lock();
-        chunk.needs_update = true;
-        all_chunks.push_back(chunk);
-        int chunk_id = chunk.chunk_id;
-        remove_render_objects([chunk_id](render_object& obj) {return obj.parent_id == chunk_id;});
-        all_chunks_lock.unlock();
+        try {
+            all_chunks_lock.lock();
+            chunk.needs_update = true;
+            all_chunks.push_back(chunk);
+            int chunk_id = chunk.chunk_id;
+            remove_render_objects([chunk_id](render_object &obj) { return obj.parent_id == chunk_id; });
+            all_chunks_lock.unlock();
 
-        for(const auto& shader_entry : shaders->get_loaded_shaders()) {
-            auto blocks_for_shader = m_chunk_builder.get_blocks_that_match_filter(chunk, shader_entry.second.get_filter());
-            if(blocks_for_shader.size() == 0) {
-                continue;
+            for(const auto &shader_entry : shaders->get_loaded_shaders()) {
+                auto blocks_for_shader = m_chunk_builder.get_blocks_that_match_filter(chunk, shader_entry.second.get_filter());
+                if(blocks_for_shader.size() == 0) {
+                    continue;
+                }
+
+                auto block_mesh_definition = m_chunk_builder.make_mesh_for_blocks(blocks_for_shader, chunk);
+                LOG(DEBUG) << "Made mesh for chunk at position " << chunk.x << ", " << chunk.z << " and shader "
+                          << shader_entry.first;
+                chunk_parts_to_upload_lock.lock();
+                chunk_parts_to_upload.emplace(shader_entry.first, block_mesh_definition);
+                chunk_parts_to_upload_lock.unlock();
             }
-
-            auto block_mesh_definition = m_chunk_builder.make_mesh_for_blocks(blocks_for_shader, chunk);
-            LOG(INFO) << "Made mesh for chunk at position " << chunk.x << ", " << chunk.z << " and shader " << shader_entry.first;
-            chunk_parts_to_upload_lock.lock();
-            chunk_parts_to_upload.emplace(shader_entry.first, block_mesh_definition);
-            chunk_parts_to_upload_lock.unlock();
+        } catch(std::exception& e) {
+            LOG(ERROR) << "Could not build chunk at position " << chunk.x << ", " << chunk.z << " because '" << e.what() << "'";
         }
     }
 

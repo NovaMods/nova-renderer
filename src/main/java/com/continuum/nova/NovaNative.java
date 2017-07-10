@@ -149,10 +149,6 @@ public interface NovaNative extends Library {
             tint_index = quad.getTintIndex();
             texture_name = quad.getSprite().getIconName();
             num_vertices = quad.getVertexData().length;
-
-            LOG.info("Allocated {} vertices", num_vertices);
-
-            //allocateMemory();
         }
 
         @Override

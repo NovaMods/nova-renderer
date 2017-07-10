@@ -301,23 +301,25 @@ namespace nova {
 
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
         for(auto& geom : geometry) {
-            if(geom.color_texture != "") {
-                auto color_texture = textures->get_texture(geom.color_texture);
-                color_texture.bind(0);
+            if(geom.has_data()) {
+                if(geom.color_texture != "") {
+                    auto color_texture = textures->get_texture(geom.color_texture);
+                    color_texture.bind(0);
+                }
+
+                if(geom.normalmap) {
+                    textures->get_texture(*geom.normalmap).bind(1);
+                }
+
+                if(geom.data_texture) {
+                    textures->get_texture(*geom.data_texture).bind(2);
+                }
+
+                upload_model_matrix(geom, shader);
+
+                geom.geometry->set_active();
+                geom.geometry->draw();
             }
-
-            if(geom.normalmap) {
-                textures->get_texture(*geom.normalmap).bind(1);
-            }
-
-            if(geom.data_texture) {
-                textures->get_texture(*geom.data_texture).bind(2);
-            }
-
-            upload_model_matrix(geom, shader);
-
-            geom.geometry->set_active();
-            geom.geometry->draw();
         }
     }
 

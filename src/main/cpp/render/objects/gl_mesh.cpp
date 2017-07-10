@@ -87,9 +87,7 @@ namespace nova {
     }
 
     void gl_mesh::draw() const {
-        if(num_indices > 0) {
-            glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
-        }
+        glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
     }
 
     void gl_mesh::enable_vertex_attributes(format data_format) {
@@ -147,5 +145,9 @@ namespace nova {
 
     format gl_mesh::get_format() {
         return data_format;
+    }
+
+    bool gl_mesh::has_data() const {
+        return num_indices > 0;
     }
 }

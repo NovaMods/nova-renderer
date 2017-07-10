@@ -38,6 +38,8 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -286,6 +288,15 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
 
         this.modelManager = modelManager;
+
+        ClassLoader cl = ClassLoader.getSystemClassLoader();
+
+        URL[] urls = ((URLClassLoader)cl).getURLs();
+
+        for(URL url : urls) {
+            LOG.info(url.getFile());
+        }
+
     }
 
     private void updateWindowSize() {
@@ -394,7 +405,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     private void sendChunkToNative(ChunkUpdateListener.BlockUpdateRange updateRange) {
-        LOG.info("Updating chunk {}", updateRange);
+        LOG.debug("Updating chunk {}", updateRange);
         NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
         long startTime = System.currentTimeMillis();
 
@@ -422,18 +433,18 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         updateChunk.chunk_id = chunkHashCode;
 
-        LOG.info("Sending chunk {} to native code", updateRange);
+        LOG.trace("Sending chunk {} to native code", updateRange);
         NovaNative.INSTANCE.add_chunk(updateChunk);
-        LOG.info("Chunk {} updated", updateRange);
+        LOG.debug("Chunk {} updated", updateRange);
 
         long deltaTime = System.currentTimeMillis() - startTime;
         timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
         numChunksUpdated.incrementAndGet();
 
         if(numChunksUpdated.get() % 10 == 0) {
-            LOG.info("It's taken an average of {}ms to update {} chunks",
+            LOG.debug("It's taken an average of {}ms to update {} chunks",
                     (float) timeSpentInBlockRenderUpdate.get() / numChunksUpdated.get(), numChunksUpdated);
-            LOG.info("Updating chunk in thread {}", Thread.currentThread().getId());
+            LOG.debug("Updating chunk in thread {}", Thread.currentThread().getId());
         }
     }
 
@@ -443,6 +454,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         curBlock.id = Block.getIdFromBlock(block);
         curBlock.is_on_fire = false;
         curBlock.ao = blockState.getAmbientOcclusionLightValue();
+        curBlock.state = blockState.toString();
     }
 
     /**
@@ -458,13 +470,13 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void registerBlockStateModel(IBlockState state, IBakedModel model) {
-        LOG.info("Registering a model for block state {}", state);
+        LOG.debug("Registering a model for block state {}", state);
 
         List<BakedQuad> allQuads = new ArrayList<>();
         for(EnumFacing face : EnumFacing.values()) {
             List<BakedQuad> quads = model.getQuads(state, face, 0);
             allQuads.addAll(quads);
-            LOG.info("Just added {} quads for face {}", quads.size(), face);
+            LOG.trace("Just added {} quads for face {}", quads.size(), face);
         }
 
         if(allQuads.size() > 0) {

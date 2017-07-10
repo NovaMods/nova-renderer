@@ -66,6 +66,8 @@ namespace nova {
          */
         format get_format();
 
+        bool has_data() const;
+
     private:
         format data_format;
 

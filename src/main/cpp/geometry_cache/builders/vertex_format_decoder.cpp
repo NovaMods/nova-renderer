@@ -14,15 +14,15 @@
 namespace nova {
 
     std::vector<block_vertex> decode_block_vertices(int data[], int num_elements) {
-        if(num_elements % 7 != 0) {
-            LOG(ERROR) << "Received " << num_elements << " elements, which is not divisible by 7. Please help";
-            throw new std::runtime_error("The number of elements is not divisible by seven, I don't know what's up");
+        if(num_elements != 28) {
+            LOG(ERROR) << "Received " << num_elements << " elements, which is not 28. Please help";
+            throw new std::runtime_error("Did not receive 28 elements");
         }
 
         auto vertices = std::vector<block_vertex>{};
 
         LOG(TRACE) << "Raw data: " << print_array(data, num_elements);
-        
+
         for(int i = 0; i < num_elements; i += 7) {
             LOG(TRACE) << "Decoding vertex " << i / 7;
             mc_block_vertex* mc_vertex = (mc_block_vertex *) &(data[i]);
@@ -42,7 +42,7 @@ namespace nova {
             vertices.push_back(vertex);
         }
 
-        LOG(DEBUG) << "Created " << vertices.size() << " vertices";
+        LOG(TRACE) << "Created " << vertices.size() << " vertices";
 
         calculate_normals_for_vertices(vertices);
 

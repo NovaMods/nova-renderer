@@ -12,6 +12,8 @@
 #include <glm/glm.hpp>
 #include <unordered_map>
 
+#include "../../utils/smart_enum.h"
+
 namespace nova {
     /*!
      * \brief A single vertex, in the format used by Minecraft
@@ -24,15 +26,7 @@ namespace nova {
         short lightmap_t;
     };
 
-    enum class face_id {
-        LEFT,
-        RIGHT,
-        BOTTOM,
-        TOP,
-        BACK,
-        FRONT,
-        INSIDE_BLOCK,
-    };
+    SMART_ENUM(face_id, LEFT, RIGHT, BOTTOM, TOP, BACK, FRONT, INSIDE_BLOCK);
 
     /*!
      * \brief Contains all the data needed for a single vertex in a block
@@ -51,7 +45,7 @@ namespace nova {
     };
 
     struct baked_model {
-        std::unordered_map<face_id, block_face> faces;
+        std::unordered_map<face_id, std::vector<block_face>> faces;
     };
 
     /*!

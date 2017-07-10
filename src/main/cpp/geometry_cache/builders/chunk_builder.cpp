@@ -48,7 +48,10 @@ namespace nova {
 
 			// Get the geometry for the block
 			std::vector<block_face> faces_for_block;
-            auto& block_faces = block_models[std::string(chunk.blocks[block_idx].state)];
+            auto block_state = chunk.blocks[block_idx].state;
+            LOG(TRACE) << "Building block with state " << (block_state == nullptr ? "<null state>" : block_state);
+            auto state = std::string(block_state);
+            auto& block_faces = block_models[state];
             faces_for_block = make_geometry_for_block(block_pos, chunk, block_faces);
 
 			// Put the geometry into our buffer
@@ -80,42 +83,39 @@ namespace nova {
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 1, 0), chunk)) {
             faces_to_make.push_back(face_id::TOP);
-            LOG(INFO) << "Making top face";
+            LOG(TRACE) << "Making top face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, -1, 0), chunk)) {
             faces_to_make.push_back(face_id::BOTTOM);
-            LOG(INFO) << "Making bottom face";
+            LOG(TRACE) << "Making bottom face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(1, 0, 0), chunk)) {
             faces_to_make.push_back(face_id::RIGHT);
-            LOG(INFO) << "Making right face";
+            LOG(TRACE) << "Making right face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(-1, 0, 0), chunk)) {
             faces_to_make.push_back(face_id::LEFT);
-            LOG(INFO) << "Making left face";
+            LOG(TRACE) << "Making left face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 0, 1), chunk)) {
             faces_to_make.push_back(face_id::FRONT);
-            LOG(INFO) << "Making front face";
+            LOG(TRACE) << "Making front face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 0, -1), chunk)) {
             faces_to_make.push_back(face_id::BACK);
-            LOG(INFO) << "Making back face";
+            LOG(TRACE) << "Making back face";
         }
-
-        //if(texture_name == nullptr) {
-        //    LOG(FATAL) << "The texture name is null!";
-        //}
-        //const auto &tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(std::string(texture_name));
 
         auto quads = std::vector<block_face>{};
         for(auto &face : faces_to_make) {
             auto ao = get_ao_in_direction(block_pos, face, chunk);
+            quads.push_back(model.faces[face]);
+
             //quads.push_back(make_quad(face, 1, tex_location));
         }
 
@@ -171,108 +171,6 @@ namespace nova {
         return pos.x + pos.y * CHUNK_WIDTH + pos.z * CHUNK_WIDTH * CHUNK_HEIGHT;
     }
 
-    block_face chunk_builder::make_quad(const face_id which_face, const float size, const texture_manager::texture_location& tex_location) {
-        const auto tex_extents = tex_location.max - tex_location.min;
-        glm::vec3 positions[4];
-        glm::vec2 uvs[4];
-        glm::vec3 normal;
-        glm::vec3 tangent;
-        if(which_face == face_id::LEFT) {
-            // x = 0
-            positions[0]    = {0, 0, 0};
-            uvs[0]          = tex_location.min;
-            positions[1]    = {0, 0, size};
-            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
-            positions[2]    = {0, size, 0};
-            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
-            positions[3]    = {0, size, size};
-            uvs[3]          = tex_location.max;
-
-            normal = glm::vec3{-1, 0, 0};
-            tangent = glm::vec3{0, 0, 1};
-
-        } else if(which_face == face_id::RIGHT) {
-            // x = 0
-            positions[0]    = {size, 0, 0};
-            uvs[0]          = tex_location.min;
-            positions[1]    = {size, 0, size};
-            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
-            positions[2]    = {size, size, 0};
-            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
-            positions[3]    = {size, size, size};
-            uvs[3]          = tex_location.max;
-
-            normal = glm::vec3{1, 0, 0};
-            tangent = glm::vec3{0, 0, -1};
-
-        } else if(which_face == face_id::BOTTOM) {
-            // y = 0
-            positions[0]    = {0, 0, 0};
-            uvs[0]          = tex_location.min;
-            positions[1]    = {0, 0, size};
-            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
-            positions[2]    = {size, 0, 0};
-            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
-            positions[3]    = {size, 0, size};
-            uvs[3]          = tex_location.max;
-
-            normal = glm::vec3{0, -1, 0};
-            tangent = glm::vec3{-1, 0, 0};
-
-        } else if(which_face == face_id::TOP) {
-            // y = 0
-            positions[0]    = {0, size, 0};
-            uvs[0]          = tex_location.min;
-            positions[1]    = {0, size, size};
-            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
-            positions[2]    = {size, size, 0};
-            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
-            positions[3]    = {size, size, size};
-            uvs[3]          = tex_location.max;
-
-            normal = glm::vec3{0, 1, 0};
-            tangent = glm::vec3{1, 0, 0};
-
-        } else if(which_face == face_id::BACK) {
-            // z = 0
-            positions[0]    = {0, 0, 0};
-            uvs[0]          = tex_location.min;
-            positions[1]    = {0, size, 0};
-            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
-            positions[2]    = {size, 0, 0};
-            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
-            positions[3]    = {size, size, 0};
-            uvs[3]          = tex_location.max;
-
-            normal = glm::vec3{0, 0, -1};
-            tangent = glm::vec3{-1, 0, 0};
-
-        } else if(which_face == face_id::FRONT) {
-            // z = 0
-            positions[0]    = {0, 0, size};
-            uvs[0]          = tex_location.min;
-            positions[1]    = {0, size, size};
-            uvs[1]          = tex_location.min + glm::vec2{0, tex_extents.y};
-            positions[2]    = {size, 0, size};
-            uvs[2]          = tex_location.min + glm::vec2{tex_extents.x, 0};
-            positions[3]    = {size, size, size};
-            uvs[3]          = tex_location.max;
-
-            normal = glm::vec3{0, 0, 1};
-            tangent = glm::vec3{1, 0, 0};
-        }
-
-        auto face = block_face{};
-        for(int i = 0; i < 4; i++) {
-            face.vertices[i].position   = positions[i];
-            face.vertices[i].uv         = uvs[i];
-            face.vertices[i].normal     = normal;
-            face.vertices[i].tangent    = tangent;
-        }
-
-        return face;
-    }
-
 	bool chunk_builder::is_cube(const glm::ivec3 pos, const mc_chunk& chunk) {
 		return true;
 	}
@@ -287,23 +185,60 @@ namespace nova {
 
     void chunk_builder::register_block_model(std::string state, int num_quads, mc_baked_quad quads[]) {
         LOG(DEBUG) << "Registering block model for " << state << " with " << num_quads << " quads";
-        auto faces = std::vector<mc_baked_quad>{};
+        baked_model model;
         for(int i = 0; i < num_quads; i++) {
             LOG(TRACE) << "Checking quad at " << i;
             auto& quad = quads[i];
 
             LOG(TRACE) << "About to decode block vertices";
             auto quad_vertices = decode_block_vertices((int*)quad.vertex_data, quad.num_vertices);
-            LOG(TRACE) << "Checking if the face is in the xy plane";
+
+            auto face = block_face{};
+            for(int i = 0; i < 4; i++) {
+                face.vertices[i] = quad_vertices[i];
+            }
+
             if(is_in_xy_plane(quad_vertices)) {
-                LOG(TRACE) << "Checking if face is at mat Z";
                 // Check if z == 0 or z == 1 to determine if this face is at the edge, and what edge it is
                 if(is_at_max_z(quad_vertices)) {
-                    LOG(TRACE) << "Face is at max Z";
+                    model.faces[face_id::FRONT].push_back(face);
+
+                } else if(is_at_min_z(quad_vertices)) {
+                    model.faces[face_id::BACK].push_back(face);
+
+                } else {
+                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
                 }
+
+            } else if(is_in_xz_plane(quad_vertices)) {
+                // Check if y == 0 or y == 1 to determine if this face is at the edge, and what edge it is
+                if(is_at_max_y(quad_vertices)) {
+                    model.faces[face_id::TOP].push_back(face);
+
+                } else if(is_at_min_y(quad_vertices)) {
+                    model.faces[face_id::BOTTOM].push_back(face);
+
+                } else {
+                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
+                }
+
+            } else if(is_in_yz_plane(quad_vertices)) {
+                if(is_at_max_x(quad_vertices)) {
+                    model.faces[face_id::RIGHT].push_back(face);
+
+                } else if(is_at_min_x(quad_vertices)) {
+                    model.faces[face_id::LEFT].push_back(face);
+
+                } else {
+                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
+                }
+
+            } else {
+                model.faces[face_id::INSIDE_BLOCK].push_back(face);
             }
-            faces.push_back(quads[i]);
         }
+
+        return model;
     }
 
 

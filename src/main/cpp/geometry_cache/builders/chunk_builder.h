@@ -84,16 +84,6 @@ namespace nova {
         std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, baked_model& model);
 
         /*!
-         * \brief Adds a quad to this mesh definition
-         *
-         * The quad's normal is the offset, normalized. This method is useful mostly for adding faces for cubes
-         *
-         * \param offset The offset from the origin of the new quad
-         * \param size The size of the quad
-         */
-        block_face make_quad(const face_id which_face, const float size, const texture_manager::texture_location& tex_location);
-
-        /*!
          * \brief Gets the AO in the provided direction
          *
          * AO is computed from the blocks around the current block. AO will not compute correctly in the current version
