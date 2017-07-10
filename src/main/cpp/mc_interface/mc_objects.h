@@ -77,7 +77,7 @@ struct mc_baked_quad {
 	int num_vertices;
 	int tint_index;
 	const char * texture_name;
-    void *vertex_data;
+    int vertex_data[28];
 };
 
 /*!
@@ -86,7 +86,7 @@ struct mc_baked_quad {
 struct mc_baked_model {
     const char * block_state;
 	int num_quads;
-    mc_baked_quad * quads;
+    mc_baked_quad* quads;
 };
 
 /*!

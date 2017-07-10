@@ -133,12 +133,18 @@ public interface NovaNative extends Library {
         public int num_vertices;
         public int tint_index;
         public String texture_name;
-        public int[] vertex_data = new int[1];
+        public int[] vertex_data = new int[28];
 
         public mc_baked_quad() {}
 
-        public mc_baked_quad(BakedQuad quad) {
-            vertex_data = quad.getVertexData();
+        public void buidFromBakedQuad(BakedQuad quad) {
+            int[] quad_vertex_data = quad.getVertexData();
+            if(quad_vertex_data.length != 28) {
+                throw new IllegalArgumentException("Didn't receive 27 pieces of data from a block face");
+            }
+
+            LOG.trace("Received vertex data {}", Arrays.toString(quad_vertex_data));
+            System.arraycopy(quad_vertex_data, 0, vertex_data, 0, quad_vertex_data.length);
 
             tint_index = quad.getTintIndex();
             texture_name = quad.getSprite().getIconName();
@@ -146,7 +152,7 @@ public interface NovaNative extends Library {
 
             LOG.info("Allocated {} vertices", num_vertices);
 
-            allocateMemory();
+            //allocateMemory();
         }
 
         @Override

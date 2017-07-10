@@ -235,3 +235,5 @@ src/main/resources
 !src/main/resources/log4j2.xml
 /.idea
 logs/
+
+!jars/config

@@ -75,7 +75,7 @@ namespace nova {
      * \param num_elements
      * \return
      */
-    std::vector<block_vertex> decode_block_vertices(int* data, int num_elements);
+    std::vector<block_vertex> decode_block_vertices(int data[], int num_elements);
 
     /*!
      * \brief Calculates the normals for the block vertices given in the input vector. The normals and tangents are

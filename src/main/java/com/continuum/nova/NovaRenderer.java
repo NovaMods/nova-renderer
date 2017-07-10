@@ -337,7 +337,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             double x = viewEntity.posX;
             double y = viewEntity.posY + viewEntity.getEyeHeight();
             double z = viewEntity.posZ;
-            // LOG.trace("Setting player position to ({}, {}, {}), yaw to {}, and pitch to {}", x, y, z, yaw, pitch);
             NovaNative.INSTANCE.set_player_camera_transform(x, y, z, yaw, pitch);
         }
 
@@ -460,21 +459,21 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void registerBlockStateModel(IBlockState state, IBakedModel model) {
         LOG.info("Registering a model for block state {}", state);
-        List<NovaNative.mc_baked_quad> native_quads = new ArrayList<>();
+
+        List<BakedQuad> allQuads = new ArrayList<>();
         for(EnumFacing face : EnumFacing.values()) {
             List<BakedQuad> quads = model.getQuads(state, face, 0);
-            quads.stream().map(NovaNative.mc_baked_quad::new).forEach(native_quads::add);
+            allQuads.addAll(quads);
             LOG.info("Just added {} quads for face {}", quads.size(), face);
         }
 
-        NovaNative.mc_baked_quad[] quads_array = (NovaNative.mc_baked_quad[]) new NovaNative.mc_baked_quad().toArray(native_quads.size());
-        for(int i = 0; i < native_quads.size(); i++) {
-            quads_array[i].num_vertices = native_quads.get(i).num_vertices;
-            quads_array[i].tint_index = native_quads.get(i).tint_index;
-            quads_array[i].texture_name = native_quads.get(i).texture_name;
-            quads_array[i].vertex_data = native_quads.get(i).vertex_data;
-        }
+        if(allQuads.size() > 0) {
+            NovaNative.mc_baked_quad[] quads_array = (NovaNative.mc_baked_quad[]) new NovaNative.mc_baked_quad().toArray(allQuads.size());
+            for(int i = 0; i < allQuads.size(); i++) {
+                quads_array[i].buidFromBakedQuad(allQuads.get(i));
+            }
 
-        NovaNative.INSTANCE.register_baked_model(state.toString(), native_quads.size(), quads_array);
+            NovaNative.INSTANCE.register_baked_model(state.toString(), quads_array.length, quads_array);
+        }
     }
 }

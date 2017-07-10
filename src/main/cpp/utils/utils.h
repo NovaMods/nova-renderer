@@ -110,6 +110,8 @@ namespace nova {
     el::base::Writer &operator<<(el::base::Writer &out, const glm::vec4 &vec);
 
     std::string print_color(unsigned int color);
+
+    std::string print_array(int data[], int num_elements);
 }
 
 #endif //RENDERER_UTILS_H
