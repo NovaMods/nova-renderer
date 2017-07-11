@@ -240,7 +240,7 @@ static boolean hasGCC() {
 
 static boolean hasMSVC() {
     try {
-        def msvcTest = "msbuild.exe --version".execute()
+        def msvcTest = "msbuild.exe /help".execute()
         return msvcTest.waitFor() == 0
     } catch(Exception e) {
         return false
