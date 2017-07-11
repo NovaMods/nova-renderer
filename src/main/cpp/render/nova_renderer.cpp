@@ -320,7 +320,7 @@ namespace nova {
                 geom.geometry->set_active();
                 geom.geometry->draw();
             } else {
-                LG(DEBUG) << "Skipping some geometry since it has no data";
+                LOG(TRACE) << "Skipping some geometry since it has no data";
             }
         }
     }

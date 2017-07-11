@@ -51,8 +51,8 @@ namespace nova {
             auto block_state = chunk.blocks[block_idx].state;
             LOG(TRACE) << "Building block with state " << (block_state == nullptr ? "<null state>" : block_state);
             auto state = std::string(block_state);
-            auto& block_faces = block_models[state];
-            faces_for_block = make_geometry_for_block(block_pos, chunk, block_faces);
+            auto& model = block_models[state];
+            faces_for_block = make_geometry_for_block(block_pos, chunk, model);
 
 			// Put the geometry into our buffer
 			for(auto& face : faces_for_block) {
@@ -115,8 +115,6 @@ namespace nova {
         for(auto &face : faces_to_make) {
             auto ao = get_ao_in_direction(block_pos, face, chunk);
             quads.insert(quads.end(), model.faces[face].begin(), model.faces[face].end());
-
-            //quads.push_back(make_quad(face, 1, tex_location));
         }
 
         return quads;
@@ -186,6 +184,8 @@ namespace nova {
                 model.faces[face_id::INSIDE_BLOCK].push_back(face);
             }
         }
+
+        block_models[state] = model;
     }
 
     bool chunk_builder::block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk) {
