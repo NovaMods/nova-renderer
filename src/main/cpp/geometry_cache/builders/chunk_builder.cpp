@@ -114,12 +114,78 @@ namespace nova {
         auto quads = std::vector<block_face>{};
         for(auto &face : faces_to_make) {
             auto ao = get_ao_in_direction(block_pos, face, chunk);
-            quads.push_back(model.faces[face]);
+            quads.insert(quads.end(), model.faces[face].begin(), model.faces[face].end());
 
             //quads.push_back(make_quad(face, 1, tex_location));
         }
 
         return quads;
+    }
+
+	bool chunk_builder::is_cube(const glm::ivec3 pos, const mc_chunk& chunk) {
+		return true;
+	}
+
+	float chunk_builder::get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk) {
+		return 0;
+	}
+
+    std::unordered_map<int, mc_block_definition>& chunk_builder::get_block_definitions() {
+        return block_definitions;
+    };
+
+    void chunk_builder::register_block_model(std::string state, int num_quads, mc_baked_quad quads[]) {
+        LOG(DEBUG) << "Registering block model for " << state << " with " << num_quads << " quads";
+        baked_model model;
+        for(int i = 0; i < num_quads; i++) {
+            LOG(TRACE) << "Checking quad at " << i;
+            auto& quad = quads[i];
+
+            LOG(TRACE) << "About to decode block vertices";
+            std::vector<block_vertex> quad_vertices = decode_block_vertices((int*)quad.vertex_data, quad.num_vertices);
+
+            auto face = block_face{};
+            std::memcpy(face.vertices, quad_vertices.data(), 28);
+
+            if(is_in_xy_plane(quad_vertices)) {
+                // Check if z == 0 or z == 1 to determine if this face is at the edge, and what edge it is
+                if(is_at_max_z(quad_vertices)) {
+                    model.faces[face_id::FRONT].push_back(face);
+
+                } else if(is_at_min_z(quad_vertices)) {
+                    model.faces[face_id::BACK].push_back(face);
+
+                } else {
+                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
+                }
+
+            } else if(is_in_xz_plane(quad_vertices)) {
+                // Check if y == 0 or y == 1 to determine if this face is at the edge, and what edge it is
+                if(is_at_max_y(quad_vertices)) {
+                    model.faces[face_id::TOP].push_back(face);
+
+                } else if(is_at_min_y(quad_vertices)) {
+                    model.faces[face_id::BOTTOM].push_back(face);
+
+                } else {
+                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
+                }
+
+            } else if(is_in_yz_plane(quad_vertices)) {
+                if(is_at_max_x(quad_vertices)) {
+                    model.faces[face_id::RIGHT].push_back(face);
+
+                } else if(is_at_min_x(quad_vertices)) {
+                    model.faces[face_id::LEFT].push_back(face);
+
+                } else {
+                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
+                }
+
+            } else {
+                model.faces[face_id::INSIDE_BLOCK].push_back(face);
+            }
+        }
     }
 
     bool chunk_builder::block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk) {
@@ -167,78 +233,9 @@ namespace nova {
         return strcmp(block.name, block2.name) == 0;
     }
 
-    int chunk_builder::pos_to_idx(const glm::ivec3& pos) {
+
+    int pos_to_idx(const glm::ivec3& pos) {
         return pos.x + pos.y * CHUNK_WIDTH + pos.z * CHUNK_WIDTH * CHUNK_HEIGHT;
-    }
-
-	bool chunk_builder::is_cube(const glm::ivec3 pos, const mc_chunk& chunk) {
-		return true;
-	}
-
-	float chunk_builder::get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk) {
-		return 0;
-	}
-
-    std::unordered_map<int, mc_block_definition>& chunk_builder::get_block_definitions() {
-        return block_definitions;
-    };
-
-    void chunk_builder::register_block_model(std::string state, int num_quads, mc_baked_quad quads[]) {
-        LOG(DEBUG) << "Registering block model for " << state << " with " << num_quads << " quads";
-        baked_model model;
-        for(int i = 0; i < num_quads; i++) {
-            LOG(TRACE) << "Checking quad at " << i;
-            auto& quad = quads[i];
-
-            LOG(TRACE) << "About to decode block vertices";
-            auto quad_vertices = decode_block_vertices((int*)quad.vertex_data, quad.num_vertices);
-
-            auto face = block_face{};
-            for(int i = 0; i < 4; i++) {
-                face.vertices[i] = quad_vertices[i];
-            }
-
-            if(is_in_xy_plane(quad_vertices)) {
-                // Check if z == 0 or z == 1 to determine if this face is at the edge, and what edge it is
-                if(is_at_max_z(quad_vertices)) {
-                    model.faces[face_id::FRONT].push_back(face);
-
-                } else if(is_at_min_z(quad_vertices)) {
-                    model.faces[face_id::BACK].push_back(face);
-
-                } else {
-                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
-                }
-
-            } else if(is_in_xz_plane(quad_vertices)) {
-                // Check if y == 0 or y == 1 to determine if this face is at the edge, and what edge it is
-                if(is_at_max_y(quad_vertices)) {
-                    model.faces[face_id::TOP].push_back(face);
-
-                } else if(is_at_min_y(quad_vertices)) {
-                    model.faces[face_id::BOTTOM].push_back(face);
-
-                } else {
-                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
-                }
-
-            } else if(is_in_yz_plane(quad_vertices)) {
-                if(is_at_max_x(quad_vertices)) {
-                    model.faces[face_id::RIGHT].push_back(face);
-
-                } else if(is_at_min_x(quad_vertices)) {
-                    model.faces[face_id::LEFT].push_back(face);
-
-                } else {
-                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
-                }
-
-            } else {
-                model.faces[face_id::INSIDE_BLOCK].push_back(face);
-            }
-        }
-
-        return model;
     }
 
 
@@ -258,18 +255,48 @@ namespace nova {
         return is_in_plane(vertices, 2);
     }
 
-    bool index_is_at_value(const std::vector<block_vertex> &vector, int index, float val);
+    bool is_in_xz_plane(const std::vector<block_vertex>& vertices) {
+        return is_in_plane(vertices, 1);
+    }
+
+    bool is_in_yz_plane(const std::vector<block_vertex>& vertices) {
+        return is_in_plane(vertices, 0);
+    }
+
+
+    bool index_is_at_value(const std::vector<block_vertex> &vertices, int index, float val);
+
+    bool is_at_max_x(const std::vector<block_vertex>& vertices) {
+        return index_is_at_value(vertices, 0, 1);
+    }
+
+    bool is_at_min_x(const std::vector<block_vertex>& vertices) {
+        return index_is_at_value(vertices, 0, 0);
+    }
+
+    bool is_at_max_y(const std::vector<block_vertex>& vertices) {
+        return index_is_at_value(vertices, 1, 1);
+    }
+
+    bool is_at_min_y(const std::vector<block_vertex>& vertices) {
+        return index_is_at_value(vertices, 1, 0);
+    }
 
     bool is_at_max_z(const std::vector<block_vertex>& vertices) {
         return index_is_at_value(vertices, 2, 1);
     }
 
-    bool index_is_at_value(const std::vector<block_vertex> &vector, int index, float val) {
-        std::for_each(vector.begin(), vector.end(), [index, val](const auto& vertex) {
+    bool is_at_min_z(const std::vector<block_vertex>& vertices) {
+        return index_is_at_value(vertices, 2, 0);
+    }
+
+    bool index_is_at_value(const std::vector<block_vertex> &vertices, int index, float val) {
+        for(const auto& vertex : vertices) {
             if(vertex.position[index] != val) {
                 return false;
             }
-        });
+        }
+
         return true;
     }
 

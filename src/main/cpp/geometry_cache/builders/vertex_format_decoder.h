@@ -45,7 +45,7 @@ namespace nova {
     };
 
     struct baked_model {
-        std::unordered_map<face_id, std::vector<block_face>> faces;
+        std::unordered_map<face_id, std::vector<block_face>, face_id::Hasher> faces;
     };
 
     /*!

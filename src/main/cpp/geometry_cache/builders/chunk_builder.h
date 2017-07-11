@@ -57,14 +57,6 @@ namespace nova {
         bool is_cube(const glm::ivec3 pos, const mc_chunk& chunk);
 
         /*!
-         * \brief Helper function to convert from nice easy vec3 to position in the blocks array
-         *
-         * \param pos The position to convert
-         * \return The index in the block array that corresponds to the pos
-         */
-        int pos_to_idx(const glm::ivec3& pos);
-
-        /*!
          * \brief Checks if the block at the given position in the provided chunk is a block you can see through, and thus
          * if a face is needed for the interface between the current block and the block we're checking
          *
@@ -74,7 +66,6 @@ namespace nova {
          * otherwise
          */
         bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk);
-
 
         bool block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_chunk& chunk);
 
@@ -112,11 +103,34 @@ namespace nova {
         std::unordered_map<std::string, baked_model> block_models;
     };
 
-    bool is_in_plane(const std::vector<block_vertex>& vertices, int plane);
+    /*!
+     * \brief Helper function to convert from nice easy vec3 to position in the blocks array
+     *
+     * \param pos The position to convert
+     * \return The index in the block array that corresponds to the pos
+     */
+    int pos_to_idx(const glm::ivec3& pos);
+
 
     bool is_in_xy_plane(const std::vector<block_vertex>& vertices);
 
+    bool is_in_xz_plane(const std::vector<block_vertex>& vertices);
+
+    bool is_in_yz_plane(const std::vector<block_vertex>& vertices);
+
+
+    bool is_at_max_x(const std::vector<block_vertex>& vertices);
+
+    bool is_at_min_x(const std::vector<block_vertex>& vertices);
+
+    bool is_at_max_y(const std::vector<block_vertex>& vertices);
+
+    bool is_at_min_y(const std::vector<block_vertex>& vertices);
+
     bool is_at_max_z(const std::vector<block_vertex>& vertices);
+
+    bool is_at_min_z(const std::vector<block_vertex>& vertices);
+
 
     /*!
      * \brief Prints a block_vertex object into the easylogging++ output stream

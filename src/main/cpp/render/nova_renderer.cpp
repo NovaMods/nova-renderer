@@ -301,7 +301,7 @@ namespace nova {
 
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
         for(auto& geom : geometry) {
-            if(geom.has_data()) {
+            if(geom.geometry->has_data()) {
                 if(geom.color_texture != "") {
                     auto color_texture = textures->get_texture(geom.color_texture);
                     color_texture.bind(0);
@@ -319,6 +319,8 @@ namespace nova {
 
                 geom.geometry->set_active();
                 geom.geometry->draw();
+            } else {
+                LG(DEBUG) << "Skipping some geometry since it has no data";
             }
         }
     }
