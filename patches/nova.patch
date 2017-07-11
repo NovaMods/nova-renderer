@@ -9,56 +9,48 @@ index 0000000..56911f2
 +################################################################################
 +
 +/minecraft/.vs
-diff --git a/minecraft/block/Block.java b/minecraft/block/Block.java
-index 25c6330..f8ba686 100644
---- a/minecraft/block/Block.java
-+++ b/minecraft/block/Block.java
-@@ -44,0 +45 @@ import net.minecraft.world.World;
-+@SuppressWarnings("ALL")
-diff --git a/minecraft/block/material/Material.java b/minecraft/block/material/Material.java
-index 5fd24e7..a918135 100644
---- a/minecraft/block/material/Material.java
-+++ b/minecraft/block/material/Material.java
-@@ -2,0 +3 @@ package net.minecraft.block.material;
-+@SuppressWarnings("ALL")
 diff --git a/minecraft/client/Minecraft.java b/minecraft/client/Minecraft.java
-index ad84c84..eacd655 100644
+index ad84c84..62fb3c0 100644
 --- a/minecraft/client/Minecraft.java
 +++ b/minecraft/client/Minecraft.java
-@@ -2,0 +3,2 @@ package net.minecraft.client;
+@@ -2,0 +3,3 @@ package net.minecraft.client;
++import com.continuum.nova.gui.NovaDraw;
 +import com.continuum.nova.NovaNative;
 +import com.continuum.nova.NovaRenderer;
-@@ -24 +25,0 @@ import java.nio.ByteOrder;
+@@ -24 +26,0 @@ import java.nio.ByteOrder;
 -import java.nio.IntBuffer;
-@@ -39,0 +41 @@ import javax.imageio.ImageIO;
+@@ -39,0 +42,2 @@ import javax.imageio.ImageIO;
++import javax.security.auth.login.Configuration;
 +
-@@ -150 +151,0 @@ import net.minecraft.stats.AchievementList;
+@@ -150 +153,0 @@ import net.minecraft.stats.AchievementList;
 -import net.minecraft.stats.IStatStringFormat;
-@@ -192,3 +193,2 @@ import org.lwjgl.Sys;
+@@ -187,0 +191 @@ import org.apache.commons.lang3.Validate;
++import org.apache.logging.log4j.Level;
+@@ -189,0 +194,2 @@ import org.apache.logging.log4j.Logger;
++import org.apache.logging.log4j.Logger;
++import org.apache.logging.log4j.core.LoggerContext;
+@@ -192,3 +198,2 @@ import org.lwjgl.Sys;
 -import org.lwjgl.input.Keyboard;
 -import org.lwjgl.input.Mouse;
 -import org.lwjgl.opengl.ContextCapabilities;
 +import com.continuum.nova.input.Keyboard;
 +import com.continuum.nova.input.Mouse;
-@@ -197 +196,0 @@ import org.lwjgl.opengl.DisplayMode;
+@@ -197 +201,0 @@ import org.lwjgl.opengl.DisplayMode;
 -import org.lwjgl.opengl.GLContext;
-@@ -201,0 +201 @@ import org.lwjgl.util.glu.GLU;
-+@SuppressWarnings("ALL")
-@@ -219 +219 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -219 +223 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    private TextureManager renderEngine;
 +    private TextureManager textureManager;
-@@ -385,0 +386,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -385,0 +390,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +    private NovaRenderer nova = new NovaRenderer();
 +
-@@ -387,0 +390 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -387,0 +394 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
-@@ -410,0 +414,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -410,0 +418,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        nova.preInit();
-+        inGameHasFocus = NovaNative.INSTANCE.display_is_active();
 +        Mouse.create();
 +        Keyboard.create();
 +
-@@ -510,4 +518,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -510,4 +521,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.createDisplay();
 -        OpenGlHelper.initializeTextures();
 -        this.framebufferMc = new Framebuffer(this.displayWidth, this.displayHeight, true);
@@ -67,7 +59,7 @@ index ad84c84..eacd655 100644
 +        //OpenGlHelper.initializeTextures();
 +        //this.framebufferMc = new Framebuffer(this.displayWidth, this.displayHeight, true);
 +        //this.framebufferMc.setFramebufferColor(0.0F, 0.0F, 0.0F, 0.0F);
-@@ -520,4 +528,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -520,4 +531,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.renderEngine = new TextureManager(this.mcResourceManager);
 -        this.mcResourceManager.registerReloadListener(this.renderEngine);
 -        this.drawSplashScreen(this.renderEngine);
@@ -76,13 +68,13 @@ index ad84c84..eacd655 100644
 +        this.mcResourceManager.registerReloadListener(this.textureManager);
 +        this.drawSplashScreen(this.textureManager);
 +        this.skinManager = new SkinManager(this.textureManager, new File(this.fileAssets, "skins"), this.sessionService);
-@@ -528 +536 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -528 +539 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii.png"), this.renderEngine, false);
 +        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii"), this.textureManager, false);
-@@ -536 +544 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -536 +547 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii_sga.png"), this.renderEngine, false);
 +        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii_sga"), this.textureManager, false);
-@@ -541,14 +549,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -541,14 +552,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        AchievementList.OPEN_INVENTORY.setStatStringFormatter(new IStatStringFormat()
 -        {
 -            public String formatString(String str)
@@ -99,16 +91,16 @@ index ad84c84..eacd655 100644
 -        });
 +        mcResourceManager.registerReloadListener(nova);
 +        AchievementList.OPEN_INVENTORY.setStatStringFormatter(str -> String.format(str, GameSettings.getKeyDisplayString(Minecraft.this.gameSettings.keyBindInventory.getKeyCode())));
-@@ -556 +552 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -556 +555 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.checkGLError("Pre startup");
 +        /*this.checkGLError("Pre startup");
-@@ -568 +564,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -568 +567,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.checkGLError("Startup");
 +        this.checkGLError("Startup");*/
 +
 +
 +
-@@ -571,2 +570,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -571,2 +573,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.renderEngine.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
 -        this.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 +
@@ -116,68 +108,64 @@ index ad84c84..eacd655 100644
 +
 +        this.textureManager.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
 +        this.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-@@ -578,2 +580,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -578,2 +583,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.renderItem = new RenderItem(this.renderEngine, this.modelManager, this.itemColors);
 -        this.renderManager = new RenderManager(this.renderEngine, this.renderItem);
 +        this.renderItem = new RenderItem(this.textureManager, this.modelManager, this.itemColors);
-+        this.renderManager = new RenderManager(this.textureManager, this.renderItem);
-@@ -590 +592 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        //this.renderManager = new RenderManager(this.textureManager, this.renderItem);
+@@ -590 +595 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.effectRenderer = new ParticleManager(this.theWorld, this.renderEngine);
 +        this.effectRenderer = new ParticleManager(this.theWorld, this.textureManager);
-@@ -603 +605 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -603 +608 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.renderEngine.deleteTexture(this.mojangLogo);
 +        this.textureManager.deleteTexture(this.mojangLogo);
-@@ -776,2 +778 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -776,2 +781 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public void displayCrashReport(CrashReport crashReportIn)
 -    {
 +    public void displayCrashReport(CrashReport crashReportIn) {
-@@ -782,2 +783 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -782,2 +786 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (crashReportIn.getFile() != null)
 -        {
 +        if(crashReportIn.getFile() != null) {
-@@ -786,3 +786 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -786,3 +789 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else if (crashReportIn.saveToFile(file2))
 -        {
 +        } else if(crashReportIn.saveToFile(file2)) {
-@@ -791,3 +789 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -791,3 +792 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else
 -        {
 +        } else {
-@@ -799,2 +795 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -799,2 +798 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public boolean isUnicode()
 -    {
 +    public boolean isUnicode() {
-@@ -998,2 +993,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -998,2 +996 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (this.currentScreen != null)
 -        {
-+        if(guiScreenIn == null) {
-+            NovaNative.INSTANCE.clear_gui_buffers();
-+        }
-+
 +        if (this.currentScreen != null) {
-@@ -1003,2 +1001 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1003,2 +1000 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn == null && this.theWorld == null)
 -        {
 +        if (guiScreenIn == null && this.theWorld == null) {
-@@ -1006,3 +1003 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1006,3 +1002 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else if (guiScreenIn == null && this.thePlayer.getHealth() <= 0.0F)
 -        {
 +        } else if (guiScreenIn == null && this.thePlayer.getHealth() <= 0.0F) {
-@@ -1012,2 +1007 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1012,2 +1006 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer)
 -        {
 +        if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer) {
-@@ -1018 +1012 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1018 +1011 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.currentScreen = (GuiScreen)guiScreenIn;
 +        this.currentScreen = guiScreenIn;
-@@ -1020,2 +1014 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1020,2 +1013 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn != null)
 -        {
 +        if (guiScreenIn != null) {
-@@ -1025,10 +1017,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1025,10 +1016,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            while (Mouse.next())
 -            {
 -                ;
@@ -188,40 +176,39 @@ index ad84c84..eacd655 100644
 -                ;
 -            }
 -
-@@ -1038 +1021 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1038 +1020 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            ((GuiScreen)guiScreenIn).setWorldAndResolution(this, i, j);
 +            guiScreenIn.setWorldAndResolution(this, i, j);
-@@ -1040,3 +1023 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1040,3 +1022 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else
 -        {
 +        } else {
-@@ -1150 +1130,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1150 +1129,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.bindFramebuffer(true);
-@@ -1158 +1138,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1158 +1137 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
-+            entityRenderer.updateCamera(timer.renderPartialTicks, i);
 +            nova.updateCameraAndRender(timer.renderPartialTicks, i, this);
-@@ -1181 +1161,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1181 +1159,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.unbindFramebuffer();
-@@ -1184 +1163,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1184 +1161,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.framebufferRender(this.displayWidth, this.displayHeight);
-@@ -1187 +1165,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1187 +1163,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.entityRenderer.renderStreamIndicator(this.timer.renderPartialTicks);
-@@ -1227 +1205 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1227 +1203 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        Display.update();
 +        //Display.update();
-@@ -1234 +1212 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1234 +1210 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (!this.fullscreen && Display.wasResized())
 +        if (nova.wasResized())
-@@ -1236,4 +1214,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1236,4 +1212,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            int i = this.displayWidth;
 -            int j = this.displayHeight;
 -            this.displayWidth = Display.getWidth();
 -            this.displayHeight = Display.getHeight();
 +            this.displayWidth = nova.getWidth();
 +            this.displayHeight = nova.getHeight();
-@@ -1241,11 +1216,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1241,11 +1214,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            if (this.displayWidth != i || this.displayHeight != j)
 -            {
 -                if (this.displayWidth <= 0)
@@ -233,57 +220,50 @@ index ad84c84..eacd655 100644
 -                {
 -                    this.displayHeight = 1;
 -                }
-@@ -1252,0 +1218 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1252,0 +1216 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +           LOGGER.info("Window was resized to: " + displayWidth +"x" +displayHeight);
-@@ -1255 +1221 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1255 +1219 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 +
-@@ -1260 +1226 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1260 +1224 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        return this.theWorld == null && this.currentScreen != null ? 30 : this.gameSettings.limitFramerate;
 +        return this.gameSettings.limitFramerate;
-@@ -1463 +1429,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        if (Display.isActive())
-+        boolean windowActive = NovaNative.INSTANCE.display_is_active();
-+        if (windowActive)
-@@ -1670 +1637,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1670 +1634,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                this.updateDisplayMode();
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
 +               /* this.updateDisplayMode();
-@@ -1682 +1650 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1682 +1647 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                }
 +                }*/
-@@ -1686 +1654,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1686 +1651,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
 +
 +              /*  Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
-@@ -1698 +1668 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1698 +1665 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                }
 +                }*/
-@@ -1701 +1671 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1701 +1668 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            if (this.currentScreen != null)
 +          /*  if (this.currentScreen != null)
-@@ -1711 +1681 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1711 +1678 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            Display.setVSyncEnabled(this.gameSettings.enableVsync);
 +            Display.setVSyncEnabled(this.gameSettings.enableVsync);*/
-@@ -1734,2 +1704,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1734,2 +1701,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.loadingScreen = new LoadingScreenRenderer(this);
 -        this.updateFramebufferSize();
 +       // this.loadingScreen = new LoadingScreenRenderer(this);
 +       // this.updateFramebufferSize();
-@@ -1786 +1756 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1786 +1753 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            this.renderEngine.tick();
 +            this.textureManager.tick();
-@@ -2508,0 +2479,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
-+        nova.setWorld(worldClientIn);
-+
-@@ -2983 +2955 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2983 +2950 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        ContextCapabilities contextcapabilities = GLContext.getCapabilities();
 +        /*ContextCapabilities contextcapabilities = GLContext.getCapabilities();
-@@ -3087 +3059 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3087 +3054 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));
 +        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));*/
-@@ -3099,14 +3071,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3099,14 +3066,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public static int getGLMaximumTextureSize()
 -    {
 -        for (int i = 16384; i > 0; i >>= 1)
@@ -300,10 +280,10 @@ index ad84c84..eacd655 100644
 -        return -1;
 +    public static int getGLMaximumTextureSize() {
 +        return NovaNative.INSTANCE.get_max_texture_size();
-@@ -3223 +3183 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3223 +3178 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        return this.renderEngine;
 +        return this.textureManager;
-@@ -3416,0 +3377,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3416,0 +3372,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
 +    public NovaRenderer getNovaRenderer() {
 +        return nova;
@@ -968,20 +948,6 @@ index 88f2002..1bc7694 100644
 +        this.randomize = this.addToButtonList(new GuiButton(301, this.width / 2 - 92, this.height - 27, 90, 20, I18n.format("createWorld.customize.custom.randomize", new Object[0])));
 +        this.presets = this.addToButtonList(new GuiButton(305, this.width / 2 + 3, this.height - 27, 90, 20, I18n.format("createWorld.customize.custom.presets", new Object[0])));
 +        this.done = this.addToButtonList(new GuiButton(300, this.width / 2 + 98, this.height - 27, 90, 20, I18n.format("gui.done", new Object[0])));
-diff --git a/minecraft/client/gui/GuiDownloadTerrain.java b/minecraft/client/gui/GuiDownloadTerrain.java
-index f468550..09fba11 100644
---- a/minecraft/client/gui/GuiDownloadTerrain.java
-+++ b/minecraft/client/gui/GuiDownloadTerrain.java
-@@ -21,0 +22 @@ public class GuiDownloadTerrain extends GuiScreen
-+    @Override
-@@ -29,0 +31 @@ public class GuiDownloadTerrain extends GuiScreen
-+    @Override
-@@ -37,0 +40 @@ public class GuiDownloadTerrain extends GuiScreen
-+    @Override
-@@ -50,0 +54 @@ public class GuiDownloadTerrain extends GuiScreen
-+    @Override
-@@ -60,0 +65 @@ public class GuiDownloadTerrain extends GuiScreen
-+    @Override
 diff --git a/minecraft/client/gui/GuiFlatPresets.java b/minecraft/client/gui/GuiFlatPresets.java
 index 5aaeab1..40272fb 100644
 --- a/minecraft/client/gui/GuiFlatPresets.java
@@ -1135,49 +1101,51 @@ index d9c0252..6d403b1 100644
 -    {
 +    public GuiWorldSelection getGuiWorldSelection() {
 diff --git a/minecraft/client/gui/GuiListWorldSelectionEntry.java b/minecraft/client/gui/GuiListWorldSelectionEntry.java
-index ff4ba69..4eb7518 100644
+index ff4ba69..8fecdde 100644
 --- a/minecraft/client/gui/GuiListWorldSelectionEntry.java
 +++ b/minecraft/client/gui/GuiListWorldSelectionEntry.java
-@@ -2,0 +3 @@ package net.minecraft.client.gui;
+@@ -2,0 +3,2 @@ package net.minecraft.client.gui;
++import java.awt.*;
 +import java.awt.geom.Rectangle2D;
-@@ -4,0 +6 @@ import java.io.File;
+@@ -4,0 +7 @@ import java.io.File;
 +import java.io.IOException;
-@@ -8,0 +11,3 @@ import javax.imageio.ImageIO;
+@@ -8,0 +12,3 @@ import javax.imageio.ImageIO;
 +
 +import com.continuum.nova.NovaNative;
 +import com.continuum.nova.gui.NovaDraw;
-@@ -27,2 +32 @@ import org.apache.logging.log4j.Logger;
+@@ -27,2 +33 @@ import org.apache.logging.log4j.Logger;
 -public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -{
 +public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry {
-@@ -42,2 +46 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -42,2 +47 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -    public GuiListWorldSelectionEntry(GuiListWorldSelection listWorldSelIn, WorldSummary p_i46591_2_, ISaveFormat p_i46591_3_)
 -    {
 +    public GuiListWorldSelectionEntry(GuiListWorldSelection listWorldSelIn, WorldSummary worldSummary, ISaveFormat saveFormat) {
-@@ -46 +49 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -46 +50 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        this.worldSummary = p_i46591_2_;
 +        this.worldSummary = worldSummary;
-@@ -48,2 +51,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -48,2 +52,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        this.iconLocation = new ResourceLocation("worlds/" + p_i46591_2_.getFileName() + "/icon");
 -        this.iconFile = p_i46591_3_.getFile(p_i46591_2_.getFileName(), "icon.png");
 +        this.iconLocation = new ResourceLocation("worlds/" + worldSummary.getFileName() + "/icon");
 +        this.iconFile = saveFormat.getFile(worldSummary.getFileName(), "icon.png");
-@@ -51,2 +54 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -51,2 +55 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        if (!this.iconFile.isFile())
 -        {
 +        if (!this.iconFile.isFile()) {
-@@ -59,2 +61,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -59,2 +62,3 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -    public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected)
 -    {
 +    @Override
 +    public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
-@@ -65,3 +67,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
++        LOGGER.info("Drawing Gui List World Selection Entity");
+@@ -65,3 +69,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        if (StringUtils.isEmpty(s))
 -        {
 -            s = I18n.format("selectWorld.world", new Object[0]) + " " + (slotIndex + 1);
 +        if (StringUtils.isEmpty(s)) {
 +            s = I18n.format("selectWorld.world") + " " + (slotIndex + 1);
-@@ -70,7 +71,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -70,7 +73,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        if (this.worldSummary.requiresConversion())
 -        {
 -            s2 = I18n.format("selectWorld.conversion", new Object[0]) + " " + s2;
@@ -1189,19 +1157,19 @@ index ff4ba69..4eb7518 100644
 +            s2 = I18n.format("selectWorld.conversion") + " " + s2;
 +        } else {
 +            s2 = I18n.format("gameMode." + this.worldSummary.getEnumGameType().getName());
-@@ -78,3 +76,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -78,3 +78,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            if (this.worldSummary.isHardcoreModeEnabled())
 -            {
 -                s2 = TextFormatting.DARK_RED + I18n.format("gameMode.hardcore", new Object[0]) + TextFormatting.RESET;
 +            if (this.worldSummary.isHardcoreModeEnabled()) {
 +                s2 = TextFormatting.DARK_RED + I18n.format("gameMode.hardcore") + TextFormatting.RESET;
-@@ -83,3 +80,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -83,3 +82,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            if (this.worldSummary.getCheatsEnabled())
 -            {
 -                s2 = s2 + ", " + I18n.format("selectWorld.cheats", new Object[0]);
 +            if (this.worldSummary.getCheatsEnabled()) {
 +                s2 = s2 + ", " + I18n.format("selectWorld.cheats");
-@@ -90,9 +86,5 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -90,9 +88,5 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            if (this.worldSummary.markVersionInList())
 -            {
 -                if (this.worldSummary.askToOpenWorld())
@@ -1216,73 +1184,73 @@ index ff4ba69..4eb7518 100644
 +                    s2 = s2 + ", " + I18n.format("selectWorld.version") + " " + TextFormatting.RED + s3 + TextFormatting.RESET;
 +                } else {
 +                    s2 = s2 + ", " + I18n.format("selectWorld.version") + " " + TextFormatting.ITALIC + s3 + TextFormatting.RESET;
-@@ -101,3 +93,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -101,3 +95,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            else
 -            {
 -                s2 = s2 + ", " + I18n.format("selectWorld.version", new Object[0]) + " " + s3;
 +            else {
 +                s2 = s2 + ", " + I18n.format("selectWorld.version") + " " + s3;
-@@ -112,3 +102,0 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -112,3 +104,0 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        GlStateManager.enableBlend();
 -        Gui.drawModalRectWithCustomSizedTexture(x, y, 0.0F, 0.0F, 32, 32, 32.0F, 32.0F);
 -        GlStateManager.disableBlend();
-@@ -116,2 +104,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -116,2 +106,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        if (this.client.gameSettings.touchscreen || isSelected)
 -        {
 +        ResourceLocation rectIcon = this.icon != null ? iconLocation : ICON_MISSING;
 +        NovaDraw.drawRectangle(rectIcon, new Rectangle2D.Float(x, y, 32, 32), new Rectangle2D.Float(0, 0, 1, 1));
 +
 +        if(this.client.gameSettings.touchscreen || isSelected) {
-@@ -124,2 +114 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -124,2 +116 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            if (this.worldSummary.markVersionInList())
 -            {
 +            if (this.worldSummary.markVersionInList()) {
-@@ -128,2 +117 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -128,2 +119 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -                if (this.worldSummary.askToOpenWorld())
 -                {
 +                if (this.worldSummary.askToOpenWorld()) {
-@@ -132,3 +120,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -132,3 +122,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -                    if (j < 32)
 -                    {
 -                        this.worldSelScreen.setVersionTooltip(TextFormatting.RED + I18n.format("selectWorld.tooltip.fromNewerVersion1", new Object[0]) + "\n" + TextFormatting.RED + I18n.format("selectWorld.tooltip.fromNewerVersion2", new Object[0]));
 +                    if (j < 32) {
 +                        this.worldSelScreen.setVersionTooltip(TextFormatting.RED + I18n.format("selectWorld.tooltip.fromNewerVersion1") + "\n" + TextFormatting.RED + I18n.format("selectWorld.tooltip.fromNewerVersion2", new Object[0]));
-@@ -136,3 +123 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -136,3 +125 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -                }
 -                else
 -                {
 +                } else {
-@@ -141,3 +126,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -141,3 +128,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -                    if (j < 32)
 -                    {
 -                        this.worldSelScreen.setVersionTooltip(TextFormatting.GOLD + I18n.format("selectWorld.tooltip.snapshot1", new Object[0]) + "\n" + TextFormatting.GOLD + I18n.format("selectWorld.tooltip.snapshot2", new Object[0]));
 +                    if (j < 32) {
 +                        this.worldSelScreen.setVersionTooltip(TextFormatting.GOLD + I18n.format("selectWorld.tooltip.snapshot1") + "\n" + TextFormatting.GOLD + I18n.format("selectWorld.tooltip.snapshot2", new Object[0]));
-@@ -146,3 +130 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -146,3 +132 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            }
 -            else
 -            {
 +            } else {
-@@ -158,2 +140,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -158,2 +142,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -    public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY)
 -    {
 +    @Override
 +    public boolean mousePressed(int slotIndex, int mouseX, int mouseY, int mouseEvent, int relativeX, int relativeY) {
-@@ -162,2 +144 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -162,2 +146 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        if (relativeX <= 32 && relativeX < 32)
 -        {
 +        if (relativeX <= 32 && relativeX < 32) {
-@@ -166,3 +147 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -166,3 +149 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        }
 -        else if (Minecraft.getSystemTime() - this.lastClickTime < 250L)
 -        {
 +        } else if (Minecraft.getSystemTime() - this.lastClickTime < 250L) {
-@@ -171,3 +150 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -171,3 +152 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        }
 -        else
 -        {
 +        } else {
-@@ -179,16 +156,7 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -179,16 +158,7 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -    public void joinWorld()
 -    {
 -        if (this.worldSummary.askToOpenWorld())
@@ -1306,10 +1274,10 @@ index ff4ba69..4eb7518 100644
 +                    GuiListWorldSelectionEntry.this.loadWorld();
 +                } else {
 +                    GuiListWorldSelectionEntry.this.client.displayGuiScreen(GuiListWorldSelectionEntry.this.worldSelScreen);
-@@ -196 +164 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -196 +166 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            }, I18n.format("selectWorld.versionQuestion", new Object[0]), I18n.format("selectWorld.versionWarning", new Object[] {this.worldSummary.getVersionName()}), I18n.format("selectWorld.versionJoinButton", new Object[0]), I18n.format("gui.cancel", new Object[0]), 0));
 +            }, I18n.format("selectWorld.versionQuestion"), I18n.format("selectWorld.versionWarning", new Object[] {this.worldSummary.getVersionName()}), I18n.format("selectWorld.versionJoinButton", new Object[0]), I18n.format("gui.cancel", new Object[0]), 0));
-@@ -204,16 +172,8 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -204,16 +174,8 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -    public void deleteWorld()
 -    {
 -        this.client.displayGuiScreen(new GuiYesNo(new GuiYesNoCallback()
@@ -1334,42 +1302,42 @@ index ff4ba69..4eb7518 100644
 +                isaveformat.flushCache();
 +                isaveformat.deleteWorldDirectory(GuiListWorldSelectionEntry.this.worldSummary.getFileName());
 +                GuiListWorldSelectionEntry.this.containingListSel.refreshList();
-@@ -221 +181,3 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -221 +183,3 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        }, I18n.format("selectWorld.deleteQuestion", new Object[0]), "\'" + this.worldSummary.getDisplayName() + "\' " + I18n.format("selectWorld.deleteWarning", new Object[0]), I18n.format("selectWorld.deleteButton", new Object[0]), I18n.format("gui.cancel", new Object[0]), 0));
 +
 +            GuiListWorldSelectionEntry.this.client.displayGuiScreen(GuiListWorldSelectionEntry.this.worldSelScreen);
 +        }, I18n.format("selectWorld.deleteQuestion"), "\'" + this.worldSummary.getDisplayName() + "\' " + I18n.format("selectWorld.deleteWarning", new Object[0]), I18n.format("selectWorld.deleteButton", new Object[0]), I18n.format("gui.cancel", new Object[0]), 0));
-@@ -224,2 +186 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -224,2 +188 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -    public void editWorld()
 -    {
 +    public void editWorld() {
-@@ -229,2 +190 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -229,2 +192 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -    public void recreateWorld()
 -    {
 +    public void recreateWorld() {
-@@ -240,2 +200 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -240,2 +202 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -    private void loadWorld()
 -    {
 +    private void loadWorld() {
-@@ -244,2 +203 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -244,2 +205 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        if (this.client.getSaveLoader().canLoadWorld(this.worldSummary.getFileName()))
 -        {
 +        if(this.client.getSaveLoader().canLoadWorld(this.worldSummary.getFileName())) {
-@@ -250,3 +208,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -250,3 +210,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -    private void loadServerIcon()
 -    {
 -        boolean flag = this.iconFile != null && this.iconFile.isFile();
 +    private void loadServerIcon() {
 +        boolean imageIsValid = this.iconFile != null && this.iconFile.isFile();
-@@ -254,2 +211 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -254,2 +213 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        if (flag)
 -        {
 +        if(imageIsValid) {
-@@ -258,2 +214 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -258,2 +216 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            try
 -            {
 +            try {
-@@ -261,6 +216,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -261,6 +218,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -                Validate.validState(bufferedimage.getWidth() == 64, "Must be 64 pixels wide", new Object[0]);
 -                Validate.validState(bufferedimage.getHeight() == 64, "Must be 64 pixels high", new Object[0]);
 -            }
@@ -1380,16 +1348,16 @@ index ff4ba69..4eb7518 100644
 +                Validate.validState(bufferedimage.getHeight() == 64, "Must be 64 pixels high");
 +            } catch(IOException e) {
 +                LOGGER.error("Invalid icon for world {}", this.worldSummary.getFileName(), e);
-@@ -271,2 +224 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -271,2 +226 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            if (this.icon == null)
 -            {
 +            if (this.icon == null) {
-@@ -274,0 +227,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -274,0 +229,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 +
 +                client.getNovaRenderer().loadTexture(iconLocation, bufferedimage);
 +                NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(iconLocation.toString(), 0, 0, 1, 1);
 +                NovaNative.INSTANCE.add_texture_location(location);
-@@ -279,3 +235 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -279,3 +237 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        }
 -        else if (!flag)
 -        {
@@ -2734,312 +2702,14 @@ index aa61ec4..e614ba5 100644
 +        this.field_189834_J = this.addToButtonList(new GuiButton(12, this.width / 2 - 1 - 40 - 20, 185, 40, 20, "90"));
 +        this.field_189835_K = this.addToButtonList(new GuiButton(13, this.width / 2 + 1 + 20, 185, 40, 20, "180"));
 +        this.field_189836_L = this.addToButtonList(new GuiButton(14, this.width / 2 + 1 + 40 + 1 + 20, 185, 40, 20, "270"));
-diff --git a/minecraft/client/network/NetHandlerPlayClient.java b/minecraft/client/network/NetHandlerPlayClient.java
-index c484866..4646d90 100644
---- a/minecraft/client/network/NetHandlerPlayClient.java
-+++ b/minecraft/client/network/NetHandlerPlayClient.java
-@@ -301,0 +302 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -321,0 +323 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -488,0 +491 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -505,0 +509 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -531,0 +536 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -542,0 +548 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -557,0 +564 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -571,0 +579 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -600,0 +609 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -634,0 +644 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -649,0 +660 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -677,0 +689 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -694,0 +707 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -704,0 +718 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -770,0 +785 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -783,0 +799 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -814,0 +831 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -823,0 +841 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -832,0 +851 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -840,0 +860 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -866,0 +887 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -896,0 +918 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -914,0 +937 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -955,0 +979 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -965,0 +990 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1004,0 +1030 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1011,0 +1038 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1018,0 +1046 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1053,0 +1082 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1078,0 +1108 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1096,0 +1127 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1104,0 +1136 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1110,0 +1143 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1132,0 +1166 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1146,0 +1181 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1187,0 +1223 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1232,0 +1269 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1256,0 +1294 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1274,0 +1313 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1293,0 +1333 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1318,0 +1359 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1329,0 +1371 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1343,0 +1386 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1354,0 +1398 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1363,0 +1408 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1369,0 +1415 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1452,0 +1499 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1460,0 +1508 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1477,0 +1526 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1520,0 +1570 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1538,0 +1589 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1553,0 +1605 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1560,0 +1613 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1571,0 +1625 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1577,0 +1632 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1605,0 +1661 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1611,0 +1668 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1622,0 +1680 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1668,0 +1727 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1673,0 +1733 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1688,0 +1749 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1699,0 +1761 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1705,0 +1768 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1711,0 +1775 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1751,0 +1816 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+                        @Override
-@@ -1755,0 +1821 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+                                @Override
-@@ -1823,0 +1890 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+            @Override
-@@ -1827,0 +1895 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+            @Override
-@@ -1834,0 +1903 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1840,0 +1910 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1854,0 +1925 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1872,0 +1944 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1935,0 +2008 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1965,0 +2039 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -1993,0 +2068 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -2013,0 +2089 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -2076,0 +2153 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
-@@ -2124,0 +2202 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
-+    @Override
 diff --git a/minecraft/client/renderer/EntityRenderer.java b/minecraft/client/renderer/EntityRenderer.java
-index 25e1fb8..87cc61b 100644
+index 25e1fb8..1ab04c9 100644
 --- a/minecraft/client/renderer/EntityRenderer.java
 +++ b/minecraft/client/renderer/EntityRenderer.java
-@@ -2,0 +3 @@ package net.minecraft.client.renderer;
-+import com.continuum.nova.NovaNative;
-@@ -72 +73 @@ import org.apache.logging.log4j.Logger;
+@@ -72 +72 @@ import org.apache.logging.log4j.Logger;
 -import org.lwjgl.input.Mouse;
 +import com.continuum.nova.input.Mouse;
-@@ -76,0 +78 @@ import org.lwjgl.util.glu.Project;
-+@SuppressWarnings("ALL")
-@@ -154 +156 @@ public class EntityRenderer implements IResourceManagerReloadListener
--     * Is set, updateCameraAndRender() calls updateLightmap(); set by updateTorchFlicker()
-+     * Is set, updateCamera() calls updateLightmap(); set by updateTorchFlicker()
-@@ -1046 +1048,7 @@ public class EntityRenderer implements IResourceManagerReloadListener
--    public void updateCameraAndRender(float partialTicks, long nanoTime)
-+    /**
-+     * DO NOT DELETE! This method updates the player's camera. It should probably be somewhere else but all well
-+     *
-+     * @param partialTicks
-+     * @param nanoTime
-+     */
-+    public void updateCamera(float partialTicks, long nanoTime)
-@@ -1048,14 +1056 @@ public class EntityRenderer implements IResourceManagerReloadListener
--        boolean flag = Display.isActive();
--
--        if (!flag && this.mc.gameSettings.pauseOnLostFocus && (!this.mc.gameSettings.touchscreen || !Mouse.isButtonDown(1)))
--        {
--            if (Minecraft.getSystemTime() - this.prevFrameTime > 500L)
--            {
--                this.mc.displayInGameMenu();
--            }
--        }
--        else
--        {
--            this.prevFrameTime = Minecraft.getSystemTime();
--        }
--
-+        boolean flag = NovaNative.INSTANCE.display_is_active();
-@@ -1104,105 +1098,0 @@ public class EntityRenderer implements IResourceManagerReloadListener
--
--        if (!this.mc.skipRenderWorld)
--        {
--            anaglyphEnable = this.mc.gameSettings.anaglyph;
--            final ScaledResolution scaledresolution = new ScaledResolution(this.mc);
--            int i1 = scaledresolution.getScaledWidth();
--            int j1 = scaledresolution.getScaledHeight();
--            final int k1 = Mouse.getX() * i1 / this.mc.displayWidth;
--            final int l1 = j1 - Mouse.getY() * j1 / this.mc.displayHeight - 1;
--            int i2 = this.mc.gameSettings.limitFramerate;
--
--            if (this.mc.theWorld != null)
--            {
--                this.mc.mcProfiler.startSection("level");
--                int j = Math.min(Minecraft.getDebugFPS(), i2);
--                j = Math.max(j, 60);
--                long k = System.nanoTime() - nanoTime;
--                long l = Math.max((long)(1000000000 / j / 4) - k, 0L);
--                this.renderWorld(partialTicks, System.nanoTime() + l);
--
--                if (this.mc.isSingleplayer() && this.timeWorldIcon < Minecraft.getSystemTime() - 1000L)
--                {
--                    this.timeWorldIcon = Minecraft.getSystemTime();
--
--                    if (!this.mc.getIntegratedServer().isWorldIconSet())
--                    {
--                        this.createWorldIcon();
--                    }
--                }
--
--                if (OpenGlHelper.shadersSupported)
--                {
--                    this.mc.renderGlobal.renderEntityOutlineFramebuffer();
--
--                    if (this.theShaderGroup != null && this.useShader)
--                    {
--                        GlStateManager.matrixMode(5890);
--                        GlStateManager.pushMatrix();
--                        GlStateManager.loadIdentity();
--                        this.theShaderGroup.loadShaderGroup(partialTicks);
--                        GlStateManager.popMatrix();
--                    }
--
--                    this.mc.getFramebuffer().bindFramebuffer(true);
--                }
--
--                this.renderEndNanoTime = System.nanoTime();
--                this.mc.mcProfiler.endStartSection("gui");
--
--                if (!this.mc.gameSettings.hideGUI || this.mc.currentScreen != null)
--                {
--                    GlStateManager.alphaFunc(516, 0.1F);
--                    this.mc.ingameGUI.renderGameOverlay(partialTicks);
--                }
--
--                this.mc.mcProfiler.endSection();
--            }
--            else
--            {
--                GlStateManager.viewport(0, 0, this.mc.displayWidth, this.mc.displayHeight);
--                GlStateManager.matrixMode(5889);
--                GlStateManager.loadIdentity();
--                GlStateManager.matrixMode(5888);
--                GlStateManager.loadIdentity();
--                this.setupOverlayRendering();
--                this.renderEndNanoTime = System.nanoTime();
--            }
--
--            if (this.mc.currentScreen != null)
--            {
--                GlStateManager.clear(256);
--
--                try
--                {
--                    this.mc.currentScreen.drawScreen(k1, l1, partialTicks);
--                }
--                catch (Throwable throwable)
--                {
--                    CrashReport crashreport = CrashReport.makeCrashReport(throwable, "Rendering screen");
--                    CrashReportCategory crashreportcategory = crashreport.makeCategory("Screen render details");
--                    crashreportcategory.func_189529_a("Screen name", new ICrashReportDetail<String>()
--                    {
--                        public String call() throws Exception
--                        {
--                            return EntityRenderer.this.mc.currentScreen.getClass().getCanonicalName();
--                        }
--                    });
--                    crashreportcategory.func_189529_a("Mouse location", new ICrashReportDetail<String>()
--                    {
--                        public String call() throws Exception
--                        {
--                            return String.format("Scaled: (%d, %d). Absolute: (%d, %d)", new Object[] {Integer.valueOf(k1), Integer.valueOf(l1), Integer.valueOf(Mouse.getX()), Integer.valueOf(Mouse.getY())});
--                        }
--                    });
--                    crashreportcategory.func_189529_a("Screen size", new ICrashReportDetail<String>()
--                    {
--                        public String call() throws Exception
--                        {
--                            return String.format("Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %d", new Object[] {Integer.valueOf(scaledresolution.getScaledWidth()), Integer.valueOf(scaledresolution.getScaledHeight()), Integer.valueOf(EntityRenderer.this.mc.displayWidth), Integer.valueOf(EntityRenderer.this.mc.displayHeight), Integer.valueOf(scaledresolution.getScaleFactor())});
--                        }
--                    });
--                    throw new ReportedException(crashreport);
--                }
--            }
--        }
-@@ -2087,0 +1978,12 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -2087,0 +2088,12 @@ public class EntityRenderer implements IResourceManagerReloadListener
 +
 +    public float getFogColorRed() {
 +        return fogColorRed;
@@ -3908,107 +3578,6 @@ index a2f6de3..1c5bc41 100644
 @@ -959 +576 @@ public class OpenGlHelper
 -        GL11.glLineWidth(1.0F);
 +        //GL11.glLineWidth(1.0F);
-diff --git a/minecraft/client/renderer/RenderGlobal.java b/minecraft/client/renderer/RenderGlobal.java
-index 7e4283f..0d29175 100644
---- a/minecraft/client/renderer/RenderGlobal.java
-+++ b/minecraft/client/renderer/RenderGlobal.java
-@@ -91,0 +92 @@ import org.lwjgl.util.vector.Vector4f;
-+@SuppressWarnings("ALL")
-@@ -105 +106 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--    private final TextureManager renderEngine;
-+    private final TextureManager textureManager;
-@@ -180,2 +181,2 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--        this.renderEngine = mcIn.getTextureManager();
--        this.renderEngine.bindTexture(FORCEFIELD_TEXTURES);
-+        this.textureManager = mcIn.getTextureManager();
-+        this.textureManager.bindTexture(FORCEFIELD_TEXTURES);
-@@ -205,0 +207 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -787 +789 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--        for (RenderGlobal.ContainerLocalRenderInformation renderglobal$containerlocalrenderinformation : this.renderInfos)
-+        for (RenderGlobal.ContainerLocalRenderInformation containerInfo : this.renderInfos)
-@@ -789 +791 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--            CompiledChunk compiledchunk = renderglobal$containerlocalrenderinformation.renderChunk.compiledChunk;
-+            CompiledChunk compiledchunk = containerInfo.renderChunk.compiledChunk;
-@@ -869 +871 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--                RenderGlobal.ContainerLocalRenderInformation renderglobal$containerlocalrenderinformation3 = new RenderGlobal.ContainerLocalRenderInformation(renderchunk, (EnumFacing)null, 0);
-+                RenderGlobal.ContainerLocalRenderInformation containerInfo = new RenderGlobal.ContainerLocalRenderInformation(renderchunk, (EnumFacing)null, 0);
-@@ -886 +888 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--                    this.renderInfos.add(renderglobal$containerlocalrenderinformation3);
-+                    this.renderInfos.add(containerInfo);
-@@ -896 +898 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--                    queue.add(renderglobal$containerlocalrenderinformation3);
-+                    queue.add(containerInfo);
-@@ -1071,0 +1074 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+            // Check if the new position is far enough away from the old position that resorting is justified
-@@ -1079 +1082 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--                for (RenderGlobal.ContainerLocalRenderInformation renderglobal$containerlocalrenderinformation : this.renderInfos)
-+                for (RenderGlobal.ContainerLocalRenderInformation info : this.renderInfos)
-@@ -1081 +1084 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--                    if (renderglobal$containerlocalrenderinformation.renderChunk.compiledChunk.isLayerStarted(blockLayerIn) && k++ < 15)
-+                    if (info.renderChunk.compiledChunk.isLayerStarted(blockLayerIn) && k++ < 15)
-@@ -1083 +1086 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--                        this.renderDispatcher.updateTransparencyLater(renderglobal$containerlocalrenderinformation.renderChunk);
-+                        this.renderDispatcher.updateTransparencyLater(info.renderChunk);
-@@ -1100 +1103 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--            RenderChunk renderchunk = ((RenderGlobal.ContainerLocalRenderInformation)this.renderInfos.get(j)).renderChunk;
-+            RenderChunk renderchunk = this.renderInfos.get(j).renderChunk;
-@@ -1135 +1138 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--            for (VertexFormatElement vertexformatelement : DefaultVertexFormats.BLOCK.getElements())
-+            for (VertexFormatElement vertexFormatElement : DefaultVertexFormats.BLOCK.getElements())
-@@ -1137,2 +1140,2 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--                VertexFormatElement.EnumUsage vertexformatelement$enumusage = vertexformatelement.getUsage();
--                int i = vertexformatelement.getIndex();
-+                VertexFormatElement.EnumUsage usage = vertexFormatElement.getUsage();
-+                int i = vertexFormatElement.getIndex();
-@@ -1140 +1143 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--                switch (vertexformatelement$enumusage)
-+                switch (usage)
-@@ -1209 +1212 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--        this.renderEngine.bindTexture(END_SKY_TEXTURES);
-+        this.textureManager.bindTexture(END_SKY_TEXTURES);
-@@ -1355 +1358 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--            this.renderEngine.bindTexture(SUN_TEXTURES);
-+            this.textureManager.bindTexture(SUN_TEXTURES);
-@@ -1363 +1366 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--            this.renderEngine.bindTexture(MOON_PHASES_TEXTURES);
-+            this.textureManager.bindTexture(MOON_PHASES_TEXTURES);
-@@ -1490 +1493 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--                this.renderEngine.bindTexture(CLOUDS_TEXTURES);
-+                this.textureManager.bindTexture(CLOUDS_TEXTURES);
-@@ -1565 +1568 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--        this.renderEngine.bindTexture(CLOUDS_TEXTURES);
-+        this.textureManager.bindTexture(CLOUDS_TEXTURES);
-@@ -1760 +1763 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--            this.renderEngine.bindTexture(FORCEFIELD_TEXTURES);
-+            this.textureManager.bindTexture(FORCEFIELD_TEXTURES);
-@@ -1892 +1895 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
--            this.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-+            this.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-@@ -2052,0 +2056 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2060,0 +2065 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2068,0 +2074 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2073,0 +2080 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2098,0 +2106 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2102,0 +2111 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2121,0 +2131 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+                @Override
-@@ -2164,0 +2175 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2172,0 +2184 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2183,0 +2196 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2222,0 +2236 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
-@@ -2513,0 +2528 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
-+    @Override
 diff --git a/minecraft/client/renderer/Tessellator.java b/minecraft/client/renderer/Tessellator.java
 index fe6b417..d33ff61 100644
 --- a/minecraft/client/renderer/Tessellator.java
@@ -4027,54 +3596,6 @@ index fe6b417..d33ff61 100644
 @@ -32 +32 @@ public class Tessellator
 -        return this.worldRenderer;
 +        return this.worldBuffer;
-diff --git a/minecraft/client/renderer/VboRenderList.java b/minecraft/client/renderer/VboRenderList.java
-index c140fee..e183401 100644
---- a/minecraft/client/renderer/VboRenderList.java
-+++ b/minecraft/client/renderer/VboRenderList.java
-@@ -12 +12 @@ public class VboRenderList extends ChunkRenderContainer
--            for (RenderChunk renderchunk : this.renderChunks)
-+            for (RenderChunk chunk : this.renderChunks)
-@@ -14 +14 @@ public class VboRenderList extends ChunkRenderContainer
--                net.minecraft.client.renderer.vertex.VertexBuffer vertexbuffer = renderchunk.getVertexBufferByLayer(layer.ordinal());
-+                net.minecraft.client.renderer.vertex.VertexBuffer buffer = chunk.getVertexBufferByLayer(layer.ordinal());
-@@ -16,3 +16,3 @@ public class VboRenderList extends ChunkRenderContainer
--                this.preRenderChunk(renderchunk);
--                renderchunk.multModelviewMatrix();
--                vertexbuffer.bindBuffer();
-+                this.preRenderChunk(chunk);
-+                chunk.multModelviewMatrix();
-+                buffer.bindBuffer();
-@@ -20 +20 @@ public class VboRenderList extends ChunkRenderContainer
--                vertexbuffer.drawArrays(7);
-+                buffer.drawArrays(7);
-diff --git a/minecraft/client/renderer/ViewFrustum.java b/minecraft/client/renderer/ViewFrustum.java
-index 5437581..cac4763 100644
---- a/minecraft/client/renderer/ViewFrustum.java
-+++ b/minecraft/client/renderer/ViewFrustum.java
-@@ -41 +41 @@ public class ViewFrustum
--                    this.renderChunks[j1].func_189562_a(k * 16, l * 16, i1 * 16);
-+                    this.renderChunks[j1].setPosition(k * 16, l * 16, i1 * 16);
-@@ -81 +81 @@ public class ViewFrustum
--                    renderchunk.func_189562_a(i1, i2, k1);
-+                    renderchunk.setPosition(i1, i2, k1);
-diff --git a/minecraft/client/renderer/block/model/ModelBakery.java b/minecraft/client/renderer/block/model/ModelBakery.java
-index ce26fa3..0e63e68 100644
---- a/minecraft/client/renderer/block/model/ModelBakery.java
-+++ b/minecraft/client/renderer/block/model/ModelBakery.java
-@@ -866 +866 @@ public class ModelBakery
--                textureatlassprite.clearFramesTextureData();
-+                // textureatlassprite.clearFramesTextureData();
-diff --git a/minecraft/client/renderer/block/model/ModelManager.java b/minecraft/client/renderer/block/model/ModelManager.java
-index ac21ed8..6ffada5 100644
---- a/minecraft/client/renderer/block/model/ModelManager.java
-+++ b/minecraft/client/renderer/block/model/ModelManager.java
-@@ -2,0 +3,2 @@ package net.minecraft.client.renderer.block.model;
-+import com.continuum.nova.NovaRenderer;
-+import net.minecraft.client.Minecraft;
-@@ -8,0 +11 @@ import net.minecraft.util.registry.IRegistry;
-+@SuppressWarnings("ALL")
-@@ -27,0 +31 @@ public class ModelManager implements IResourceManagerReloadListener
-+        Minecraft.getMinecraft().getNovaRenderer().addTerrainAtlas(texMap);
 diff --git a/minecraft/client/renderer/block/model/ModelResourceLocation.java b/minecraft/client/renderer/block/model/ModelResourceLocation.java
 index 13f21f3..34444f3 100644
 --- a/minecraft/client/renderer/block/model/ModelResourceLocation.java
@@ -4091,112 +3612,6 @@ index 13f21f3..34444f3 100644
 @@ -64 +64 @@ public class ModelResourceLocation extends ResourceLocation
 -            ModelResourceLocation modelresourcelocation = (ModelResourceLocation)p_equals_1_;
 +            ModelResourceLocation modelresourcelocation = (ModelResourceLocation) other;
-diff --git a/minecraft/client/renderer/chunk/RenderChunk.java b/minecraft/client/renderer/chunk/RenderChunk.java
-index ddb2ec5..860a856 100644
---- a/minecraft/client/renderer/chunk/RenderChunk.java
-+++ b/minecraft/client/renderer/chunk/RenderChunk.java
-@@ -51 +51 @@ public class RenderChunk
--    private IBlockAccess field_189564_r;
-+    private IBlockAccess blockAccess;
-@@ -53 +53 @@ public class RenderChunk
--    public RenderChunk(World p_i47120_1_, RenderGlobal p_i47120_2_, int p_i47120_3_)
-+    public RenderChunk(World world, RenderGlobal renderGlobal, int p_i47120_3_)
-@@ -60,2 +60,2 @@ public class RenderChunk
--        this.world = p_i47120_1_;
--        this.renderGlobal = p_i47120_2_;
-+        this.world = world;
-+        this.renderGlobal = renderGlobal;
-@@ -91 +91 @@ public class RenderChunk
--    public void func_189562_a(int p_189562_1_, int p_189562_2_, int p_189562_3_)
-+    public void setPosition(int x, int y, int z)
-@@ -93 +93 @@ public class RenderChunk
--        if (p_189562_1_ != this.position.getX() || p_189562_2_ != this.position.getY() || p_189562_3_ != this.position.getZ())
-+        if (x != this.position.getX() || y != this.position.getY() || z != this.position.getZ())
-@@ -96,2 +96,2 @@ public class RenderChunk
--            this.position.set(p_189562_1_, p_189562_2_, p_189562_3_);
--            this.boundingBox = new AxisAlignedBB((double)p_189562_1_, (double)p_189562_2_, (double)p_189562_3_, (double)(p_189562_1_ + 16), (double)(p_189562_2_ + 16), (double)(p_189562_3_ + 16));
-+            this.position.set(x, y, z);
-+            this.boundingBox = new AxisAlignedBB((double)x, (double)y, (double)z, (double)(x + 16), (double)(y + 16), (double)(z + 16));
-@@ -124,2 +124,2 @@ public class RenderChunk
--        BlockPos blockpos = this.position;
--        BlockPos blockpos1 = blockpos.add(15, 15, 15);
-+        BlockPos minPos = this.position;
-+        BlockPos maxPos = minPos.add(15, 15, 15);
-@@ -142,2 +142,2 @@ public class RenderChunk
--        VisGraph lvt_9_1_ = new VisGraph();
--        HashSet lvt_10_1_ = Sets.newHashSet();
-+        VisGraph visGraph = new VisGraph();
-+        HashSet hashSet = Sets.newHashSet();
-@@ -145 +145 @@ public class RenderChunk
--        if (!this.field_189564_r.extendedLevelsInChunkCache())
-+        if (!this.blockAccess.extendedLevelsInChunkCache())
-@@ -151 +151 @@ public class RenderChunk
--            for (BlockPos.MutableBlockPos blockpos$mutableblockpos : BlockPos.getAllInBoxMutable(blockpos, blockpos1))
-+            for (BlockPos.MutableBlockPos mutablePos : BlockPos.getAllInBoxMutable(minPos, maxPos))
-@@ -153 +153 @@ public class RenderChunk
--                IBlockState iblockstate = this.field_189564_r.getBlockState(blockpos$mutableblockpos);
-+                IBlockState iblockstate = this.blockAccess.getBlockState(mutablePos);
-@@ -158 +158 @@ public class RenderChunk
--                    lvt_9_1_.setOpaqueCube(blockpos$mutableblockpos);
-+                    visGraph.setOpaqueCube(mutablePos);
-@@ -163 +163 @@ public class RenderChunk
--                    TileEntity tileentity = this.field_189564_r.getTileEntity(new BlockPos(blockpos$mutableblockpos));
-+                    TileEntity tileEntity = this.blockAccess.getTileEntity(new BlockPos(mutablePos));
-@@ -165 +165 @@ public class RenderChunk
--                    if (tileentity != null)
-+                    if (tileEntity != null)
-@@ -167 +167 @@ public class RenderChunk
--                        TileEntitySpecialRenderer<TileEntity> tileentityspecialrenderer = TileEntityRendererDispatcher.instance.<TileEntity>getSpecialRenderer(tileentity);
-+                        TileEntitySpecialRenderer<TileEntity> tileEntityRenderer = TileEntityRendererDispatcher.instance.<TileEntity>getSpecialRenderer(tileEntity);
-@@ -169 +169 @@ public class RenderChunk
--                        if (tileentityspecialrenderer != null)
-+                        if (tileEntityRenderer != null)
-@@ -171 +171 @@ public class RenderChunk
--                            compiledchunk.addTileEntity(tileentity);
-+                            compiledchunk.addTileEntity(tileEntity);
-@@ -173 +173 @@ public class RenderChunk
--                            if (tileentityspecialrenderer.isGlobalRenderer(tileentity))
-+                            if (tileEntityRenderer.isGlobalRenderer(tileEntity))
-@@ -175 +175 @@ public class RenderChunk
--                                lvt_10_1_.add(tileentity);
-+                                hashSet.add(tileEntity);
-@@ -191 +191 @@ public class RenderChunk
--                        this.preRenderBlocks(vertexbuffer, blockpos);
-+                        this.preRenderBlocks(vertexbuffer, minPos);
-@@ -194 +194 @@ public class RenderChunk
--                    aboolean[j] |= blockrendererdispatcher.renderBlock(iblockstate, blockpos$mutableblockpos, this.field_189564_r, vertexbuffer);
-+                    aboolean[j] |= blockrendererdispatcher.renderBlock(iblockstate, mutablePos, this.blockAccess, vertexbuffer);
-@@ -212 +212 @@ public class RenderChunk
--        compiledchunk.setVisibility(lvt_9_1_.computeVisibility());
-+        compiledchunk.setVisibility(visGraph.computeVisibility());
-@@ -217 +217 @@ public class RenderChunk
--            Set<TileEntity> set = Sets.newHashSet(lvt_10_1_);
-+            Set<TileEntity> set = Sets.newHashSet(hashSet);
-@@ -220 +220 @@ public class RenderChunk
--            set1.removeAll(lvt_10_1_);
-+            set1.removeAll(hashSet);
-@@ -222 +222 @@ public class RenderChunk
--            this.setTileEntities.addAll(lvt_10_1_);
-+            this.setTileEntities.addAll(hashSet);
-@@ -263 +263 @@ public class RenderChunk
--            this.func_189563_q();
-+            this.initBlockAccess();
-@@ -274 +274 @@ public class RenderChunk
--    private void func_189563_q()
-+    private void initBlockAccess()
-@@ -277 +277 @@ public class RenderChunk
--        this.field_189564_r = new ChunkCache(this.world, this.position.add(-1, -1, -1), this.position.add(16, 16, 16), 1);
-+        this.blockAccess = new ChunkCache(this.world, this.position.add(-1, -1, -1), this.position.add(16, 16, 16), 1);
-diff --git a/minecraft/client/renderer/chunk/VboChunkFactory.java b/minecraft/client/renderer/chunk/VboChunkFactory.java
-index c2be3f9..a9705d9 100644
---- a/minecraft/client/renderer/chunk/VboChunkFactory.java
-+++ b/minecraft/client/renderer/chunk/VboChunkFactory.java
-@@ -8 +8 @@ public class VboChunkFactory implements IRenderChunkFactory
--    public RenderChunk func_189565_a(World p_189565_1_, RenderGlobal p_189565_2_, int p_189565_3_)
-+    public RenderChunk func_189565_a(World world, RenderGlobal renderGlobal, int p_189565_3_)
-@@ -10 +10 @@ public class VboChunkFactory implements IRenderChunkFactory
--        return new RenderChunk(p_189565_1_, p_189565_2_, p_189565_3_);
-+        return new RenderChunk(world, renderGlobal, p_189565_3_);
 diff --git a/minecraft/client/renderer/texture/AbstractTexture.java b/minecraft/client/renderer/texture/AbstractTexture.java
 index 1b72624..94e5a37 100644
 --- a/minecraft/client/renderer/texture/AbstractTexture.java
@@ -4435,22 +3850,17 @@ index d2a4361..d4179cb 100644
 -                {
 +                } else {
 diff --git a/minecraft/client/renderer/texture/TextureAtlasSprite.java b/minecraft/client/renderer/texture/TextureAtlasSprite.java
-index 4b545cb..dcd99f0 100644
+index 4b545cb..b6a875b 100644
 --- a/minecraft/client/renderer/texture/TextureAtlasSprite.java
 +++ b/minecraft/client/renderer/texture/TextureAtlasSprite.java
-@@ -15,0 +16,2 @@ import net.minecraft.util.ResourceLocation;
-+import org.apache.logging.log4j.LogManager;
-+import org.apache.logging.log4j.Logger;
-@@ -17,2 +19 @@ import net.minecraft.util.ResourceLocation;
+@@ -17,2 +17 @@ import net.minecraft.util.ResourceLocation;
 -public class TextureAtlasSprite
 -{
 +public class TextureAtlasSprite {
-@@ -20 +21 @@ public class TextureAtlasSprite
+@@ -20 +19 @@ public class TextureAtlasSprite
 -    protected List<int[][]> framesTextureData = Lists.<int[][]>newArrayList();
 +    protected List<int[][]> framesTextureData = Lists.newArrayList();
-@@ -34,0 +36,12 @@ public class TextureAtlasSprite
-+    private static final Logger LOGGER = LogManager.getLogger(TextureAtlasSprite.class);
-+
+@@ -34,0 +34,10 @@ public class TextureAtlasSprite
 +    public ResourceLocation getLocation() {
 +        return location;
 +    }
@@ -4461,87 +3871,87 @@ index 4b545cb..dcd99f0 100644
 +
 +    private ResourceLocation location;
 +
-@@ -40,2 +53 @@ public class TextureAtlasSprite
+@@ -40,2 +49 @@ public class TextureAtlasSprite
 -    protected static TextureAtlasSprite makeAtlasSprite(ResourceLocation spriteResourceLocation)
 -    {
 +    protected static TextureAtlasSprite makeAtlasSprite(ResourceLocation spriteResourceLocation) {
-@@ -45,2 +57 @@ public class TextureAtlasSprite
+@@ -45,2 +53 @@ public class TextureAtlasSprite
 -    public void initSprite(int inX, int inY, int originInX, int originInY, boolean rotatedIn)
 -    {
 +    public void initSprite(int inX, int inY, int originInX, int originInY, boolean rotatedIn) {
-@@ -58,2 +69 @@ public class TextureAtlasSprite
+@@ -58,2 +65 @@ public class TextureAtlasSprite
 -    public void copyFrom(TextureAtlasSprite atlasSpirit)
 -    {
 +    public void copyFrom(TextureAtlasSprite atlasSpirit) {
-@@ -122,2 +132 @@ public class TextureAtlasSprite
+@@ -122,2 +128 @@ public class TextureAtlasSprite
 -    public float getInterpolatedU(double u)
 -    {
 +    public float getInterpolatedU(double u) {
-@@ -128,2 +137 @@ public class TextureAtlasSprite
+@@ -128,2 +133 @@ public class TextureAtlasSprite
 -    public float getUnInterpolatedU(float p_188537_1_)
 -    {
 +    public float getUnInterpolatedU(float p_188537_1_) {
-@@ -153,2 +161 @@ public class TextureAtlasSprite
+@@ -153,2 +157 @@ public class TextureAtlasSprite
 -    public float getInterpolatedV(double v)
 -    {
 +    public float getInterpolatedV(double v) {
-@@ -159,2 +166 @@ public class TextureAtlasSprite
+@@ -159,2 +162 @@ public class TextureAtlasSprite
 -    public float getUnInterpolatedV(float p_188536_1_)
 -    {
 +    public float getUnInterpolatedV(float p_188536_1_) {
-@@ -170,2 +176 @@ public class TextureAtlasSprite
+@@ -170,2 +172 @@ public class TextureAtlasSprite
 -    public void updateAnimation()
 -    {
 +    public void updateAnimation() {
-@@ -174,2 +179 @@ public class TextureAtlasSprite
+@@ -174,2 +175 @@ public class TextureAtlasSprite
 -        if (this.tickCounter >= this.animationMetadata.getFrameTimeSingle(this.frameCounter))
 -        {
 +        if (this.tickCounter >= this.animationMetadata.getFrameTimeSingle(this.frameCounter)) {
-@@ -182,2 +186 @@ public class TextureAtlasSprite
+@@ -182,2 +182 @@ public class TextureAtlasSprite
 -            if (i != k && k >= 0 && k < this.framesTextureData.size())
 -            {
 +            if (i != k && k >= 0 && k < this.framesTextureData.size()) {
-@@ -186,3 +189 @@ public class TextureAtlasSprite
+@@ -186,3 +185 @@ public class TextureAtlasSprite
 -        }
 -        else if (this.animationMetadata.isInterpolate())
 -        {
 +        } else if (this.animationMetadata.isInterpolate()) {
-@@ -193,2 +194 @@ public class TextureAtlasSprite
+@@ -193,2 +190 @@ public class TextureAtlasSprite
 -    private void updateAnimationInterpolated()
 -    {
 +    private void updateAnimationInterpolated() {
-@@ -235,3 +235,2 @@ public class TextureAtlasSprite
+@@ -235,3 +231,2 @@ public class TextureAtlasSprite
 -    private int interpolateColor(double p_188535_1_, int p_188535_3_, int p_188535_4_)
 -    {
 -        return (int)(p_188535_1_ * (double)p_188535_3_ + (1.0D - p_188535_1_) * (double)p_188535_4_);
 +    private int interpolateColor(double factor, int color1, int color2) {
 +        return (int)(factor * (double)color1 + (1.0D - factor) * (double)color2);
-@@ -242 +241 @@ public class TextureAtlasSprite
+@@ -242 +237 @@ public class TextureAtlasSprite
 -        return (int[][])this.framesTextureData.get(index);
 +        return this.framesTextureData.get(index);
-@@ -255,2 +254 @@ public class TextureAtlasSprite
+@@ -255,2 +250 @@ public class TextureAtlasSprite
 -    public void setIconHeight(int newHeight)
 -    {
 +    public void setIconHeight(int newHeight) {
-@@ -260,2 +258 @@ public class TextureAtlasSprite
+@@ -260,2 +254 @@ public class TextureAtlasSprite
 -    public void loadSprite(PngSizeInfo sizeInfo, boolean p_188538_2_) throws IOException
 -    {
 +    public void setAndValidateSize(PngSizeInfo sizeInfo, boolean isAnimated) throws IOException {
-@@ -266,2 +263 @@ public class TextureAtlasSprite
+@@ -266,2 +259 @@ public class TextureAtlasSprite
 -        if (p_188538_2_)
 -        {
 +        if(isAnimated) {
-@@ -269,3 +265,2 @@ public class TextureAtlasSprite
+@@ -269,3 +261,2 @@ public class TextureAtlasSprite
 -        }
 -        else if (sizeInfo.pngHeight != sizeInfo.pngWidth)
 -        {
 +
 +        } else if(sizeInfo.pngHeight != sizeInfo.pngWidth) {
-@@ -276,2 +271 @@ public class TextureAtlasSprite
+@@ -276,2 +267 @@ public class TextureAtlasSprite
 -    public void loadSpriteFrames(IResource resource, int mipmaplevels) throws IOException
 -    {
 +    public void loadSpriteFrames(IResource resource, int mipmaplevels) throws IOException {
-@@ -279,4 +273,4 @@ public class TextureAtlasSprite
+@@ -279,4 +269,4 @@ public class TextureAtlasSprite
 -        AnimationMetadataSection animationmetadatasection = (AnimationMetadataSection)resource.getMetadata("animation");
 -        int[][] aint = new int[mipmaplevels][];
 -        aint[0] = new int[bufferedimage.getWidth() * bufferedimage.getHeight()];
@@ -4550,7 +3960,7 @@ index 4b545cb..dcd99f0 100644
 +        int[][] textureData = new int[mipmaplevels][];
 +        textureData[0] = new int[bufferedimage.getWidth() * bufferedimage.getHeight()];
 +        bufferedimage.getRGB(0, 0, bufferedimage.getWidth(), bufferedimage.getHeight(), textureData[0], 0, bufferedimage.getWidth());
-@@ -284,7 +278,2 @@ public class TextureAtlasSprite
+@@ -284,7 +274,2 @@ public class TextureAtlasSprite
 -        if (animationmetadatasection == null)
 -        {
 -            this.framesTextureData.add(aint);
@@ -4560,7 +3970,7 @@ index 4b545cb..dcd99f0 100644
 -            int i = bufferedimage.getHeight() / this.width;
 +        if (animationData == null) {
 +            this.framesTextureData.add(textureData);
-@@ -292,3 +281,4 @@ public class TextureAtlasSprite
+@@ -292,3 +277,4 @@ public class TextureAtlasSprite
 -            if (animationmetadatasection.getFrameCount() > 0)
 -            {
 -                Iterator iterator = animationmetadatasection.getFrameIndexSet().iterator();
@@ -4568,13 +3978,13 @@ index 4b545cb..dcd99f0 100644
 +            // All the frames are in a line in the y-direction. Because each frame is square, the height divided by the
 +            // width is the total number of frames
 +            int numFrames = bufferedimage.getHeight() / this.width;
-@@ -296,3 +286,2 @@ public class TextureAtlasSprite
+@@ -296,3 +282,2 @@ public class TextureAtlasSprite
 -                while (iterator.hasNext())
 -                {
 -                    int j = ((Integer)iterator.next()).intValue();
 +            if (animationData.getFrameCount() > 0) {
 +                Iterator iterator = animationData.getFrameIndexSet().iterator();
-@@ -300,3 +289,5 @@ public class TextureAtlasSprite
+@@ -300,3 +285,5 @@ public class TextureAtlasSprite
 -                    if (j >= i)
 -                    {
 -                        throw new RuntimeException("invalid frameindex " + j);
@@ -4583,48 +3993,48 @@ index 4b545cb..dcd99f0 100644
 +
 +                    if(frameIndex >= numFrames) {
 +                        throw new RuntimeException("invalid frameindex " + frameIndex);
-@@ -305,2 +296,2 @@ public class TextureAtlasSprite
+@@ -305,2 +292,2 @@ public class TextureAtlasSprite
 -                    this.allocateFrameTextureData(j);
 -                    this.framesTextureData.set(j, getFrameTextureData(aint, this.width, this.width, j));
 +                    this.allocateFrameTextureData(frameIndex);
 +                    this.framesTextureData.set(frameIndex, getFrameTextureData(textureData, this.width, this.width, frameIndex));
-@@ -309,4 +300,2 @@ public class TextureAtlasSprite
+@@ -309,4 +296,2 @@ public class TextureAtlasSprite
 -                this.animationMetadata = animationmetadatasection;
 -            }
 -            else
 -            {
 +                this.animationMetadata = animationData;
 +            } else {
-@@ -315,3 +304,2 @@ public class TextureAtlasSprite
+@@ -315,3 +300,2 @@ public class TextureAtlasSprite
 -                for (int k = 0; k < i; ++k)
 -                {
 -                    this.framesTextureData.add(getFrameTextureData(aint, this.width, this.width, k));
 +                for (int k = 0; k < numFrames; ++k) {
 +                    this.framesTextureData.add(getFrameTextureData(textureData, this.width, this.width, k));
-@@ -321 +309 @@ public class TextureAtlasSprite
+@@ -321 +305 @@ public class TextureAtlasSprite
 -                this.animationMetadata = new AnimationMetadataSection(list, this.width, this.height, animationmetadatasection.getFrameTime(), animationmetadatasection.isInterpolate());
 +                this.animationMetadata = new AnimationMetadataSection(list, this.width, this.height, animationData.getFrameTime(), animationData.isInterpolate());
-@@ -326,2 +314 @@ public class TextureAtlasSprite
+@@ -326,2 +310 @@ public class TextureAtlasSprite
 -    public void generateMipmaps(int level)
 -    {
 +    public void generateMipmaps(int level) {
-@@ -330,2 +317 @@ public class TextureAtlasSprite
+@@ -330,2 +313 @@ public class TextureAtlasSprite
 -        for (int i = 0; i < this.framesTextureData.size(); ++i)
 -        {
 +        for (int i = 0; i < this.framesTextureData.size(); ++i) {
-@@ -334,4 +320,2 @@ public class TextureAtlasSprite
+@@ -334,4 +316,2 @@ public class TextureAtlasSprite
 -            if (aint != null)
 -            {
 -                try
 -                {
 +            if (aint != null) {
 +                try {
-@@ -339,3 +323 @@ public class TextureAtlasSprite
+@@ -339,3 +319 @@ public class TextureAtlasSprite
 -                }
 -                catch (Throwable throwable)
 -                {
 +                } catch (Throwable throwable) {
-@@ -344,15 +326,7 @@ public class TextureAtlasSprite
+@@ -344,15 +322,7 @@ public class TextureAtlasSprite
 -                    crashreportcategory.addCrashSection("Frame index", Integer.valueOf(i));
 -                    crashreportcategory.func_189529_a("Frame sizes", new ICrashReportDetail<String>()
 -                    {
@@ -4647,13 +4057,13 @@ index 4b545cb..dcd99f0 100644
 +                        for (int[] aint1 : aint) {
 +                            if(stringbuilder.length() > 0) {
 +                                stringbuilder.append(", ");
-@@ -361 +335 @@ public class TextureAtlasSprite
+@@ -361 +331 @@ public class TextureAtlasSprite
 -                            return stringbuilder.toString();
 +                            stringbuilder.append(aint1 == null ? "null" : Integer.valueOf(aint1.length));
-@@ -362,0 +337,2 @@ public class TextureAtlasSprite
+@@ -362,0 +333,2 @@ public class TextureAtlasSprite
 +
 +                        return stringbuilder.toString();
-@@ -372,6 +348,3 @@ public class TextureAtlasSprite
+@@ -372,6 +344,3 @@ public class TextureAtlasSprite
 -    private void allocateFrameTextureData(int index)
 -    {
 -        if (this.framesTextureData.size() <= index)
@@ -4663,27 +4073,27 @@ index 4b545cb..dcd99f0 100644
 +    private void allocateFrameTextureData(int index) {
 +        if (this.framesTextureData.size() <= index) {
 +            for (int i = this.framesTextureData.size(); i <= index; ++i) {
-@@ -383,2 +356 @@ public class TextureAtlasSprite
+@@ -383,2 +352 @@ public class TextureAtlasSprite
 -    private static int[][] getFrameTextureData(int[][] data, int rows, int columns, int p_147962_3_)
 -    {
 +    private static int[][] getFrameTextureData(int[][] data, int rows, int columns, int p_147962_3_) {
-@@ -387,2 +359 @@ public class TextureAtlasSprite
+@@ -387,2 +355 @@ public class TextureAtlasSprite
 -        for (int i = 0; i < data.length; ++i)
 -        {
 +        for (int i = 0; i < data.length; ++i) {
-@@ -391,2 +362 @@ public class TextureAtlasSprite
+@@ -391,2 +358 @@ public class TextureAtlasSprite
 -            if (aint1 != null)
 -            {
 +            if (aint1 != null) {
-@@ -411,2 +381 @@ public class TextureAtlasSprite
+@@ -411,2 +377 @@ public class TextureAtlasSprite
 -    public void setFramesTextureData(List<int[][]> newFramesTextureData)
 -    {
 +    public void setFramesTextureData(List<int[][]> newFramesTextureData) {
-@@ -416,2 +385 @@ public class TextureAtlasSprite
+@@ -416,2 +381 @@ public class TextureAtlasSprite
 -    private void resetSprite()
 -    {
 +    private void resetSprite() {
-@@ -424,2 +392 @@ public class TextureAtlasSprite
+@@ -424,2 +388 @@ public class TextureAtlasSprite
 -    public String toString()
 -    {
 +    public String toString() {
@@ -4730,7 +4140,7 @@ index e05a522..26ad475 100644
 -            integer = Integer.valueOf(integer.intValue() + 1);
 +            integer = integer + 1;
 diff --git a/minecraft/client/renderer/texture/TextureMap.java b/minecraft/client/renderer/texture/TextureMap.java
-index 9d91fa2..aaa4b06 100644
+index 9d91fa2..ed86aac 100644
 --- a/minecraft/client/renderer/texture/TextureMap.java
 +++ b/minecraft/client/renderer/texture/TextureMap.java
 @@ -2,0 +3 @@ package net.minecraft.client.renderer.texture;
@@ -4878,7 +4288,7 @@ index 9d91fa2..aaa4b06 100644
 -            LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[] {this.basePath, Integer.valueOf(this.mipmapLevels), Integer.valueOf(i1), Integer.valueOf(l)});
 +        if (i1 < this.mipmapLevels) {
 +            LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", this.basePath, this.mipmapLevels, i1, l);
-@@ -141,8 +134 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+@@ -141,8 +134,3 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
 -        try
 -        {
 -            stitcher.doStitch();
@@ -4888,10 +4298,10 @@ index 9d91fa2..aaa4b06 100644
 -            throw stitcherexception;
 -        }
 +        whiteImage.ifPresent(stitcher::addSprite);
-@@ -150 +136,6 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
--        LOGGER.info("Created: {}x{} {}-atlas", new Object[] {Integer.valueOf(stitcher.getCurrentWidth()), Integer.valueOf(stitcher.getCurrentHeight()), this.basePath});
-+        stitcher.doStitch();
 +
++        stitcher.doStitch();
+@@ -150 +138,4 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+-        LOGGER.info("Created: {}x{} {}-atlas", new Object[] {Integer.valueOf(stitcher.getCurrentWidth()), Integer.valueOf(stitcher.getCurrentHeight()), this.basePath});
 +        width = stitcher.getCurrentWidth();
 +        height = stitcher.getCurrentHeight();
 +
@@ -5040,7 +4450,7 @@ index 9d91fa2..aaa4b06 100644
 -    {
 +    @Override
 +    public void tick() {
-@@ -317,0 +250,34 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
+@@ -317,0 +250,31 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
 +
 +    public int getWidth() {
 +        return width;
@@ -5072,9 +4482,6 @@ index 9d91fa2..aaa4b06 100644
 +        return whiteImage;
 +    }
 +
-+    public Map<String,TextureAtlasSprite> getMapUploadedSprites() {
-+        return mapUploadedSprites;
-+    }
 diff --git a/minecraft/client/renderer/texture/TextureUtil.java b/minecraft/client/renderer/texture/TextureUtil.java
 index b0a0490..d121ce3 100644
 --- a/minecraft/client/renderer/texture/TextureUtil.java
@@ -5341,12 +4748,6 @@ index 85ca400..e905295 100644
 @@ -80 +87 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
 -            throw new FileNotFoundException(location.toString());
 +            return Collections.singletonList(new FileResource(location));
-diff --git a/minecraft/client/resources/SimpleResource.java b/minecraft/client/resources/SimpleResource.java
-index 5db0ced..36b19f2 100644
---- a/minecraft/client/resources/SimpleResource.java
-+++ b/minecraft/client/resources/SimpleResource.java
-@@ -18,0 +19 @@ import org.apache.commons.io.IOUtils;
-+@SuppressWarnings("ALL")
 diff --git a/minecraft/client/settings/GameSettings.java b/minecraft/client/settings/GameSettings.java
 index 206bf51..2aff8d0 100644
 --- a/minecraft/client/settings/GameSettings.java
@@ -5363,138 +4764,6 @@ index b4047b4..6178d2f 100644
 @@ -9 +9 @@ import net.minecraft.util.IntHashMap;
 -import org.lwjgl.input.Keyboard;
 +import com.continuum.nova.input.Keyboard;
-diff --git a/minecraft/entity/Entity.java b/minecraft/entity/Entity.java
-index 40eb661..66260a0 100644
---- a/minecraft/entity/Entity.java
-+++ b/minecraft/entity/Entity.java
-@@ -78,0 +79 @@ import org.apache.logging.log4j.Logger;
-+@SuppressWarnings("ALL")
-diff --git a/minecraft/server/MinecraftServer.java b/minecraft/server/MinecraftServer.java
-index e93d28d..b0206c7 100644
---- a/minecraft/server/MinecraftServer.java
-+++ b/minecraft/server/MinecraftServer.java
-@@ -216,0 +217 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+                @Override
-@@ -219,0 +221 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+                @Override
-@@ -222,0 +225 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+                @Override
-@@ -230,0 +234 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+                @Override
-@@ -233,0 +238 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+                @Override
-@@ -510,0 +516 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -900,0 +907 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+            @Override
-@@ -910,0 +918 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+                @Override
-@@ -977,0 +986 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -985,0 +995 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -993,0 +1004 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1129,0 +1141 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1170,0 +1183 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1181,0 +1195 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1334,0 +1349 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1343,0 +1359 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1352,0 +1369 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1360,0 +1378 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1398,0 +1417 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1455,0 +1475 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1460,0 +1481 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1467,0 +1489 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1504,0 +1527 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-@@ -1510,0 +1534 @@ public abstract class MinecraftServer implements Runnable, ICommandSender, IThre
-+    @Override
-diff --git a/minecraft/server/integrated/IntegratedServer.java b/minecraft/server/integrated/IntegratedServer.java
-index b4d740e..c2383f1 100644
---- a/minecraft/server/integrated/IntegratedServer.java
-+++ b/minecraft/server/integrated/IntegratedServer.java
-@@ -62,0 +63 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -67,0 +69 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -133,0 +136 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -151,0 +155 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -209,0 +214 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -214,0 +220 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -222,0 +229 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -230,0 +238 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -238,0 +247 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -246,0 +256 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -254,0 +265 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -259,0 +271 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -264,0 +277 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -273,0 +287 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -281,0 +296 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -289,0 +305 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -294,0 +311 @@ public class IntegratedServer extends MinecraftServer
-+            @Override
-@@ -301,0 +319 @@ public class IntegratedServer extends MinecraftServer
-+            @Override
-@@ -319,0 +338 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -329,0 +349 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -338,0 +359 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -346,0 +368 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -385,0 +408 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -399,0 +423 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -403,0 +428 @@ public class IntegratedServer extends MinecraftServer
-+            @Override
-@@ -431,0 +457 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -440,0 +467 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -445,0 +473 @@ public class IntegratedServer extends MinecraftServer
-+    @Override
-@@ -460,0 +489 @@ public class IntegratedServer extends MinecraftServer
-+                @Override
-diff --git a/minecraft/util/MouseHelper.java b/minecraft/util/MouseHelper.java
-index b1f84cc..b59f0e2 100644
---- a/minecraft/util/MouseHelper.java
-+++ b/minecraft/util/MouseHelper.java
-@@ -3 +3,4 @@ package net.minecraft.util;
--import org.lwjgl.input.Mouse;
-+import com.continuum.nova.NovaNative;
-+import com.continuum.nova.input.Mouse;
-+import org.apache.logging.log4j.LogManager;
-+import org.apache.logging.log4j.Logger;
-@@ -7,0 +11 @@ public class MouseHelper
-+    private static final Logger LOG = LogManager.getLogger(MouseHelper.class);
 diff --git a/minecraft/util/ResourceLocation.java b/minecraft/util/ResourceLocation.java
 index 0bdece0..74bea80 100644
 --- a/minecraft/util/ResourceLocation.java
@@ -5553,26 +4822,6 @@ index 0bdece0..74bea80 100644
 +            ResourceLocation resourcelocation = (ResourceLocation)other;
 @@ -80,0 +70 @@ public class ResourceLocation
 +    @Override
-diff --git a/minecraft/util/registry/RegistryNamespacedDefaultedByKey.java b/minecraft/util/registry/RegistryNamespacedDefaultedByKey.java
-index f07e16d..3d9d403 100644
---- a/minecraft/util/registry/RegistryNamespacedDefaultedByKey.java
-+++ b/minecraft/util/registry/RegistryNamespacedDefaultedByKey.java
-@@ -7,0 +8 @@ import org.apache.commons.lang3.Validate;
-+@SuppressWarnings("ALL")
-diff --git a/minecraft/util/registry/RegistrySimple.java b/minecraft/util/registry/RegistrySimple.java
-index 2444c5f..a895e3f 100644
---- a/minecraft/util/registry/RegistrySimple.java
-+++ b/minecraft/util/registry/RegistrySimple.java
-@@ -10,0 +11,4 @@ import javax.annotation.Nullable;
-+
-+import net.minecraft.client.Minecraft;
-+import net.minecraft.client.renderer.block.model.IBakedModel;
-+import net.minecraft.util.ResourceLocation;
-@@ -36,0 +41,4 @@ public class RegistrySimple<K, V> implements IRegistry<K, V>
-+        if(key instanceof ResourceLocation && value instanceof IBakedModel) {
-+            Minecraft.getMinecraft().getNovaRenderer().registerStaticModel((ResourceLocation) key, (IBakedModel) value);
-+        }
-+
 diff --git a/minecraft/util/text/translation/LanguageMap.java b/minecraft/util/text/translation/LanguageMap.java
 index 04931bb..68c4fcf 100644
 --- a/minecraft/util/text/translation/LanguageMap.java
