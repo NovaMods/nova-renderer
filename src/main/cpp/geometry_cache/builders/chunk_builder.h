@@ -90,18 +90,18 @@ namespace nova {
         std::unordered_map<int, mc_block_definition>& get_block_definitions();
 
         /*!
-         * \brief Registers a block model for later use
+         * \brief Loads all the block state models from the provided file
          *
-         * \param state The block state that this model corresponds to
-         * \param num_quads The number of quads in the state
-         * \param quads The quads in the state
+         * \param file_name The name of the file to load all models from
          */
-        void register_block_model(std::string state, int num_quads, mc_baked_quad quads[]);
+        void load_models_from_file(std::string file_name);
 
     private:
         std::unordered_map<int, mc_block_definition> block_definitions;
         std::unordered_map<std::string, baked_model> block_models;
     };
+
+    baked_model deserialize_model(const nlohmann::json& model_json);
 
     /*!
      * \brief Helper function to convert from nice easy vec3 to position in the blocks array

@@ -12,9 +12,13 @@
 
 namespace nova {
     gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {
+        LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
         filter = parse_filter_expression(source.filter_expression);
+        LOG(TRACE) << "Created filter expression " << filter->to_string();
         create_shader(source.vertex_source, GL_VERTEX_SHADER);
+        LOG(TRACE) << "Creatd vertex shader";
         create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
+        LOG(TRACE) << "Created fragment shader";
 
         link();
     }
@@ -48,6 +52,8 @@ namespace nova {
             glDetachShader(gl_name, shader);
             glDeleteShader(shader);
         }
+
+        LOG(DEBUG) << "Cleaned up resources";
     }
 
     void gl_shader_program::check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line> line_map) {
@@ -104,10 +110,11 @@ namespace nova {
     }
 
     void gl_shader_program::create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type) {
-        // Check what kind of shader we're dealing with
+        LOG(TRACE) << "Creating a shader from source\n" << shader_source;
 
         std::string full_shader_source;
-        auto version_line = shader_source[0].line;
+        auto& version_line = shader_source[0].line;
+        LOG(TRACE) << "Version line: '" << version_line << "'";
 
         if(version_line == "#version 450") {
             // GLSL 450 code! This is the simplest: just concatenate all the lines in the shader file
@@ -152,8 +159,7 @@ namespace nova {
 
     wrong_shader_version::wrong_shader_version(const std::string &version_line) :
             std::runtime_error(
-                    "Invalid version line: " + version_line +
-                    ". Please only use GLSL version 450 (NOT compatibility profile)"
+                    "Invalid version line: '" + version_line + "'. Please only use GLSL version 450 (NOT compatibility profile)"
             ) {}
 
     compilation_error::compilation_error(const std::string &error_message,

@@ -74,13 +74,11 @@ NOVA_API void add_chunk(mc_chunk & chunk);
 NOVA_API void register_block_definition(int id, mc_block_definition blockDefinition);
 
 /*!
- * \brief Registers a baked model with Nova
+ * \brief Tells Nova to load all the block models from the given file
  *
- * \param state The block state that this model corresponds to
- * \param num_quads The number of quads in the state
- * \param quads The quads in the state
+ * \param filename The name of the file to load all the block models from
  */
-NOVA_API void register_baked_model(const char * state, int num_quads, mc_baked_quad quads[]);
+NOVA_API void load_block_state_models(const char * filename);
 
 /*!
  * \brief Updates the Nova Renderer and renders the current frame

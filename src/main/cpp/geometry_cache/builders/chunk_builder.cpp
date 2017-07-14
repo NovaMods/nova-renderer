@@ -82,32 +82,32 @@ namespace nova {
         auto faces_to_make = std::vector<face_id>{};
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 1, 0), chunk)) {
-            faces_to_make.push_back(face_id::TOP);
+            faces_to_make.push_back(face_id::up);
             LOG(TRACE) << "Making top face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, -1, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, -1, 0), chunk)) {
-            faces_to_make.push_back(face_id::BOTTOM);
+            faces_to_make.push_back(face_id::down);
             LOG(TRACE) << "Making bottom face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(1, 0, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(1, 0, 0), chunk)) {
-            faces_to_make.push_back(face_id::RIGHT);
+            faces_to_make.push_back(face_id::east);
             LOG(TRACE) << "Making right face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(-1, 0, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(-1, 0, 0), chunk)) {
-            faces_to_make.push_back(face_id::LEFT);
+            faces_to_make.push_back(face_id::west);
             LOG(TRACE) << "Making left face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, 1), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 0, 1), chunk)) {
-            faces_to_make.push_back(face_id::FRONT);
+            faces_to_make.push_back(face_id::south);
             LOG(TRACE) << "Making front face";
         }
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 0, -1), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 0, -1), chunk)) {
-            faces_to_make.push_back(face_id::BACK);
+            faces_to_make.push_back(face_id::north);
             LOG(TRACE) << "Making back face";
         }
 
@@ -131,62 +131,6 @@ namespace nova {
     std::unordered_map<int, mc_block_definition>& chunk_builder::get_block_definitions() {
         return block_definitions;
     };
-
-    void chunk_builder::register_block_model(std::string state, int num_quads, mc_baked_quad quads[]) {
-        LOG(DEBUG) << "Registering block model for " << state << " with " << num_quads << " quads";
-        baked_model model;
-        for(int i = 0; i < num_quads; i++) {
-            LOG(TRACE) << "Checking quad at " << i;
-            auto& quad = quads[i];
-
-            LOG(TRACE) << "About to decode block vertices";
-            std::vector<block_vertex> quad_vertices = decode_block_vertices((int*)quad.vertex_data, quad.num_vertices);
-
-            auto face = block_face{};
-            std::memcpy(face.vertices, quad_vertices.data(), 28);
-
-            if(is_in_xy_plane(quad_vertices)) {
-                // Check if z == 0 or z == 1 to determine if this face is at the edge, and what edge it is
-                if(is_at_max_z(quad_vertices)) {
-                    model.faces[face_id::FRONT].push_back(face);
-
-                } else if(is_at_min_z(quad_vertices)) {
-                    model.faces[face_id::BACK].push_back(face);
-
-                } else {
-                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
-                }
-
-            } else if(is_in_xz_plane(quad_vertices)) {
-                // Check if y == 0 or y == 1 to determine if this face is at the edge, and what edge it is
-                if(is_at_max_y(quad_vertices)) {
-                    model.faces[face_id::TOP].push_back(face);
-
-                } else if(is_at_min_y(quad_vertices)) {
-                    model.faces[face_id::BOTTOM].push_back(face);
-
-                } else {
-                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
-                }
-
-            } else if(is_in_yz_plane(quad_vertices)) {
-                if(is_at_max_x(quad_vertices)) {
-                    model.faces[face_id::RIGHT].push_back(face);
-
-                } else if(is_at_min_x(quad_vertices)) {
-                    model.faces[face_id::LEFT].push_back(face);
-
-                } else {
-                    model.faces[face_id::INSIDE_BLOCK].push_back(face);
-                }
-
-            } else {
-                model.faces[face_id::INSIDE_BLOCK].push_back(face);
-            }
-        }
-
-        block_models[state] = model;
-    }
 
     bool chunk_builder::block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk) {
         // A separate check for each direction to increase code readability and debuggability
@@ -231,6 +175,63 @@ namespace nova {
         auto block2 = block_definitions[chunk.blocks[block_idx2].id];
 
         return strcmp(block.name, block2.name) == 0;
+    }
+
+
+    void chunk_builder::load_models_from_file(std::string file_name) {
+        LOG(DEBUG) << "Reading block state models from " << file_name;
+
+        std::ifstream models_file(file_name);
+        if(!models_file.is_open()) {
+            LOG(FATAL) << "Cannot read models from file " << file_name;
+        }
+
+        nlohmann::json models_json;
+        bool has_models = false;
+        auto json_file = load_json_from_stream(models_file);
+        for(auto it = json_file.begin(); it != json_file.end(); ++it) {
+            if(it.key() == "allModels") {
+                models_json = it.value();
+                has_models = true;
+            }
+        }
+
+        if(!has_models) {
+            LOG(FATAL) << "We do not have models";
+        }
+
+        for(auto it = models_json.begin(); it != models_json.end(); ++it) {
+            const auto& model = it.value();
+            block_models[it.key()] = deserialize_model(model);
+        }
+    }
+
+    baked_model deserialize_model(const nlohmann::json& model_json) {
+        baked_model model;
+
+        for(auto it = model_json.begin(); it != model_json.end(); ++it) {
+            auto enum_facing = face_id::from_string(it.key());
+            auto& baked_quads_json = it.value();
+            for(auto baked_quad : baked_quads_json) {
+                block_face face;
+                face.sprite = baked_quad["sprite"];
+                face.tint_index = baked_quad["tintIndex"];
+                std::vector<int> vertex_data;
+                for(int element : baked_quad["vertexData"]) {
+                    vertex_data.push_back(element);
+                }
+
+                block_vertex* block_vertices = (block_vertex*)vertex_data.data();
+                face.vertices[0] = block_vertices[0];
+                face.vertices[1] = block_vertices[1];
+                face.vertices[2] = block_vertices[2];
+                face.vertices[3] = block_vertices[3];
+
+                model.faces[enum_facing].push_back(face);
+            }
+        }
+
+        return model;
     }
 
 

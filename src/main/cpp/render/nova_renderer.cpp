@@ -43,13 +43,11 @@ namespace nova {
     }
 
     nova_renderer::~nova_renderer() {
-
         inputs.reset();
         meshes.reset();
         textures.reset();
         ubo_manager.reset();
         game_window.reset();
-
     }
 
     void nova_renderer::render_frame() {
@@ -254,6 +252,7 @@ namespace nova {
 		
         LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
         loaded_shaderpack = std::make_shared<shaderpack>(load_shaderpack(new_shaderpack_name));
+        LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
         meshes->set_shaderpack(loaded_shaderpack);
         LOG(INFO) << "Loading complete";
 		

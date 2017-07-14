@@ -26,7 +26,7 @@ namespace nova {
         short lightmap_t;
     };
 
-    SMART_ENUM(face_id, LEFT, RIGHT, BOTTOM, TOP, BACK, FRONT, INSIDE_BLOCK);
+    SMART_ENUM(face_id, west, east, down, up, south, north, INSIDE_BLOCK);
 
     /*!
      * \brief Contains all the data needed for a single vertex in a block
@@ -42,6 +42,8 @@ namespace nova {
 
     struct block_face {
         block_vertex vertices[4];
+        int tint_index;
+        std::string sprite;
     };
 
     struct baked_model {

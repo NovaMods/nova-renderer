@@ -16,18 +16,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public interface NovaNative extends Library {
-    int CHUNK_WIDTH     = 16;
-    int CHUNK_HEIGHT    = 256;
-    int CHUNK_DEPTH     = 16;
+import static com.continuum.nova.NovaConstants.CHUNK_DEPTH;
+import static com.continuum.nova.NovaConstants.CHUNK_HEIGHT;
+import static com.continuum.nova.NovaConstants.CHUNK_WIDTH;
 
+public interface NovaNative extends Library {
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
 
     Logger LOG = LogManager.getLogger(NovaNative.class);
-
-    String GUI_ATLAS_NAME = "gui";
-    String BLOCK_COLOR_ATLAS_NAME = "block_color";
-    String FONT_ATLAS_NAME = "font";
 
     class mc_atlas_texture extends Structure {
         public int width;
@@ -127,36 +123,6 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_baked_quad extends Structure {
-        public static class ByReference extends mc_baked_quad implements Structure.ByReference {}
-
-        public int num_vertices;
-        public int tint_index;
-        public String texture_name;
-        public int[] vertex_data = new int[28];
-
-        public mc_baked_quad() {}
-
-        public void buidFromBakedQuad(BakedQuad quad) {
-            int[] quad_vertex_data = quad.getVertexData();
-            if(quad_vertex_data.length != 28) {
-                throw new IllegalArgumentException("Didn't receive 27 pieces of data from a block face");
-            }
-
-            LOG.trace("Received vertex data {}", Arrays.toString(quad_vertex_data));
-            System.arraycopy(quad_vertex_data, 0, vertex_data, 0, quad_vertex_data.length);
-
-            tint_index = quad.getTintIndex();
-            texture_name = quad.getSprite().getIconName();
-            num_vertices = quad.getVertexData().length;
-        }
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("num_vertices", "tint_index", "texture_name", "vertex_data");
-        }
-    }
-
     class mc_block extends Structure {
         public int id;
         public boolean is_on_fire;
@@ -201,19 +167,6 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_render_world_params extends Structure {
-        public double camera_x;
-        public double camera_y;
-        public double camera_z;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList(
-                    "camera_x", "camera_y", "camera_z"
-            );
-        }
-    }
-
     class mc_settings extends Structure {
         public boolean render_menu;
 
@@ -240,19 +193,6 @@ public interface NovaNative extends Library {
                     "display_height", "view_bobbing", "should_render_clouds", "render_distance",
                     "has_blindness"
             );
-        }
-    }
-
-    class mc_add_chunk_command extends Structure {
-        public mc_chunk new_chunk;
-
-        public float chunk_x;
-        public float chunk_y;
-        public float chunk_z;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("new_chunk", "chunk_x", "chunk_y", "chunk_z");
         }
     }
 
@@ -398,7 +338,7 @@ public interface NovaNative extends Library {
 
     void set_float_setting(String setting_name, float setting_value);
 
-    void register_baked_model(String state_name, int num_quads, mc_baked_quad[] quads);
-
     void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
+
+    void load_block_state_models(String filename);
 }

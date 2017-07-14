@@ -15,7 +15,11 @@ namespace nova {
         this->name = name;
         for(auto& shader : shaders) {
             LOG(TRACE) << "Adding shader " << shader.name;
-            loaded_shaders.emplace(shader.name, gl_shader_program(shader));
+            try {
+                loaded_shaders.emplace(shader.name, gl_shader_program(shader));
+            } catch(std::exception& e) {
+                LOG(ERROR) << "Could not load shader " << shader.name << " because " << e.what();
+            }
         }
 
         LOG(TRACE) << "Shaderpack created";

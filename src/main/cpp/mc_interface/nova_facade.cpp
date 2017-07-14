@@ -57,8 +57,12 @@ NOVA_API void register_block_definition(int id, mc_block_definition blockDefinit
     MESH_STORE.get_chunk_builder().get_block_definitions()[id] = blockDefinition;
 }
 
-NOVA_API void register_baked_model(const char * state, int num_quads, mc_baked_quad quads[]) {
-    MESH_STORE.get_chunk_builder().register_block_model(std::string(state), num_quads, quads);
+NOVA_API void load_block_state_models(const char * filename) {
+    try {
+        MESH_STORE.get_chunk_builder().load_models_from_file(std::string(filename));
+    } catch(std::exception& e) {
+        LOG(ERROR) << "Error when loading block models from " << filename << ": " << e.what();
+    }
 }
 
 NOVA_API void execute_frame() {
@@ -137,5 +141,5 @@ NOVA_API struct key_char_event get_next_key_char_event()
 }
 
 NOVA_API void set_mouse_grabbed(int grabbed) {
-    NOVA_RENDERER->get_game_window().set_mouse_grabbed(!!grabbed);
+    NOVA_RENDERER->get_game_window().set_mouse_grabbed(grabbed != 0);
 }

@@ -60,7 +60,7 @@ namespace nova {
         }
 
         std::vector<shader_definition> definitions;
-        for(auto definition : definitions_array) {
+        for(auto& definition : definitions_array) {
             definitions.push_back(shader_definition(definition));
         }
 

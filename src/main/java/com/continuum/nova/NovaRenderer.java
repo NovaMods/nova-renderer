@@ -1,6 +1,7 @@
 package com.continuum.nova;
 
 import com.continuum.nova.NovaNative.window_size;
+import com.continuum.nova.chunks.BlockModelSerializer;
 import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.gui.NovaDraw;
 import com.continuum.nova.utils.Utils;
@@ -8,22 +9,18 @@ import glm.Glm;
 import glm.vec._2.Vec2;
 import glm.vec._3.i.Vec3i;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelManager;
-import net.minecraft.client.renderer.block.model.SimpleBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -46,14 +43,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+
+import static com.continuum.nova.NovaConstants.*;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
-    public static final String MODID = "Nova Renderer";
-    public static final String VERSION = "0.0.3";
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
-    public static final ResourceLocation WHITE_TEXTURE_GUI_LOCATION = new ResourceLocation("white_gui");
 
     private boolean firstLoad = true;
 
@@ -89,6 +84,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private Executor chunkUpdateThreadPool = Executors.newSingleThreadExecutor(); //Executors.newFixedThreadPool(10);
 
     private ModelManager modelManager;
+    private BlockModelSerializer modelSerializer = new BlockModelSerializer();
 
     public NovaRenderer() {
         // I put these in Utils to make this class smaller
@@ -137,19 +133,19 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
         guiAtlas.createWhiteTexture(WHITE_TEXTURE_GUI_LOCATION);
-        addAtlas(resourceManager, guiAtlas, GUI_COLOR_TEXTURES_LOCATIONS, guiSpriteLocations, NovaNative.GUI_ATLAS_NAME);
+        addAtlas(resourceManager, guiAtlas, GUI_COLOR_TEXTURES_LOCATIONS, guiSpriteLocations, GUI_ATLAS_NAME);
         LOG.debug("Created GUI atlas");
     }
 
     private void addFontAtlas(@Nonnull IResourceManager resourceManager) {
-        addAtlas(resourceManager, fontAtlas, FONT_COLOR_TEXTURES_LOCATIONS, fontSpriteLocations, NovaNative.FONT_ATLAS_NAME);
+        addAtlas(resourceManager, fontAtlas, FONT_COLOR_TEXTURES_LOCATIONS, fontSpriteLocations, FONT_ATLAS_NAME);
         LOG.debug("Created font atlas");
     }
 
-    public void addTerrainAtlas(TextureMap blockColorMap) {
+    public void addTerrainAtlas(@Nonnull TextureMap blockColorMap) {
         // Copy over the atlas
         NovaNative.mc_atlas_texture blockColorTexture = getFullImage(blockColorMap.getWidth(), blockColorMap.getHeight(), blockColorMap.getMapUploadedSprites().values());
-        blockColorTexture.name = NovaNative.BLOCK_COLOR_ATLAS_NAME;
+        blockColorTexture.name = BLOCK_COLOR_ATLAS_NAME;
         NovaNative.INSTANCE.add_texture(blockColorTexture);
 
         // Copy over all the icon locations
@@ -294,7 +290,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         URL[] urls = ((URLClassLoader)cl).getURLs();
 
         for(URL url : urls) {
-            LOG.info(url.getFile());
+            LOG.trace(url.getFile());
         }
 
     }
@@ -364,11 +360,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
 
         if (BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
-            return NovaNative.BLOCK_COLOR_ATLAS_NAME;
+            return BLOCK_COLOR_ATLAS_NAME;
         } else if (GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
-            return NovaNative.GUI_ATLAS_NAME;
+            return GUI_ATLAS_NAME;
         } else if (FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
-            return NovaNative.FONT_ATLAS_NAME;
+            return FONT_ATLAS_NAME;
         }
 
         return texture.toString();
@@ -417,7 +413,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     int chunkX = x - updateRange.min.x;
                     int chunkY = y - updateRange.min.y;
                     int chunkZ = z - updateRange.min.z;
-                    int idx = chunkX + chunkY * NovaNative.CHUNK_WIDTH + chunkZ * NovaNative.CHUNK_WIDTH * NovaNative.CHUNK_HEIGHT;
+                    int idx = chunkX + chunkY * CHUNK_WIDTH + chunkZ * CHUNK_WIDTH * CHUNK_HEIGHT;
 
                     NovaNative.mc_block curBlock = updateChunk.blocks[idx];
                     copyBlockStateIntoMcBlock(mcChunk.getBlockState(x, y, z), curBlock);
@@ -469,23 +465,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.register_block_definition(id, blockDefinition);
     }
 
-    public void registerBlockStateModel(IBlockState state, IBakedModel model) {
-        LOG.debug("Registering a model for block state {}", state);
-
-        List<BakedQuad> allQuads = new ArrayList<>();
-        for(EnumFacing face : EnumFacing.values()) {
-            List<BakedQuad> quads = model.getQuads(state, face, 0);
-            allQuads.addAll(quads);
-            LOG.trace("Just added {} quads for face {}", quads.size(), face);
-        }
-
-        if(allQuads.size() > 0) {
-            NovaNative.mc_baked_quad[] quads_array = (NovaNative.mc_baked_quad[]) new NovaNative.mc_baked_quad().toArray(allQuads.size());
-            for(int i = 0; i < allQuads.size(); i++) {
-                quads_array[i].buidFromBakedQuad(allQuads.get(i));
-            }
-
-            NovaNative.INSTANCE.register_baked_model(state.toString(), quads_array.length, quads_array);
-        }
+    public BlockModelSerializer getModelSerializer() {
+        return modelSerializer;
     }
 }
