@@ -10,11 +10,15 @@ index 0000000..56911f2
 +
 +/minecraft/.vs
 diff --git a/minecraft/block/Block.java b/minecraft/block/Block.java
-index 25c6330..f8ba686 100644
+index 25c6330..da115a5 100644
 --- a/minecraft/block/Block.java
 +++ b/minecraft/block/Block.java
-@@ -44,0 +45 @@ import net.minecraft.world.World;
+@@ -13,0 +14 @@ import net.minecraft.block.state.IBlockState;
++import net.minecraft.client.Minecraft;
+@@ -44,0 +46 @@ import net.minecraft.world.World;
 +@SuppressWarnings("ALL")
+@@ -1397,0 +1400 @@ public class Block
++        Minecraft.getMinecraft().getNovaRenderer().registerBlock(id, block_);
 diff --git a/minecraft/block/material/Material.java b/minecraft/block/material/Material.java
 index 5fd24e7..a918135 100644
 --- a/minecraft/block/material/Material.java
@@ -22,7 +26,7 @@ index 5fd24e7..a918135 100644
 @@ -2,0 +3 @@ package net.minecraft.block.material;
 +@SuppressWarnings("ALL")
 diff --git a/minecraft/client/Minecraft.java b/minecraft/client/Minecraft.java
-index ad84c84..eacd655 100644
+index ad84c84..cafa21c 100644
 --- a/minecraft/client/Minecraft.java
 +++ b/minecraft/client/Minecraft.java
 @@ -2,0 +3,2 @@ package net.minecraft.client;
@@ -53,7 +57,7 @@ index ad84c84..eacd655 100644
 @@ -387,0 +390 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
 @@ -410,0 +414,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
-+        nova.preInit();
++        nova.preInit(modelManager);
 +        inGameHasFocus = NovaNative.INSTANCE.display_is_active();
 +        Mouse.create();
 +        Keyboard.create();
@@ -99,16 +103,14 @@ index ad84c84..eacd655 100644
 -        });
 +        mcResourceManager.registerReloadListener(nova);
 +        AchievementList.OPEN_INVENTORY.setStatStringFormatter(str -> String.format(str, GameSettings.getKeyDisplayString(Minecraft.this.gameSettings.keyBindInventory.getKeyCode())));
-@@ -556 +552 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.checkGLError("Pre startup");
-+        /*this.checkGLError("Pre startup");
-@@ -568 +564,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.checkGLError("Startup");
-+        this.checkGLError("Startup");*/
+@@ -555,0 +552 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        /*
+@@ -568,0 +566,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        */
 +
 +
 +
-@@ -571,2 +570,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -571,2 +572,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.renderEngine.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
 -        this.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 +
@@ -116,40 +118,43 @@ index ad84c84..eacd655 100644
 +
 +        this.textureManager.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
 +        this.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-@@ -578,2 +580,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -574 +578 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+-        this.modelManager = new ModelManager(this.textureMapBlocks);
++        this.modelManager = new ModelManager(this.textureMapBlocks, nova);
+@@ -578,2 +582,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.renderItem = new RenderItem(this.renderEngine, this.modelManager, this.itemColors);
 -        this.renderManager = new RenderManager(this.renderEngine, this.renderItem);
 +        this.renderItem = new RenderItem(this.textureManager, this.modelManager, this.itemColors);
 +        this.renderManager = new RenderManager(this.textureManager, this.renderItem);
-@@ -590 +592 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -590 +594 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.effectRenderer = new ParticleManager(this.theWorld, this.renderEngine);
 +        this.effectRenderer = new ParticleManager(this.theWorld, this.textureManager);
-@@ -603 +605 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -603 +607 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.renderEngine.deleteTexture(this.mojangLogo);
 +        this.textureManager.deleteTexture(this.mojangLogo);
-@@ -776,2 +778 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -776,2 +780 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public void displayCrashReport(CrashReport crashReportIn)
 -    {
 +    public void displayCrashReport(CrashReport crashReportIn) {
-@@ -782,2 +783 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -782,2 +785 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (crashReportIn.getFile() != null)
 -        {
 +        if(crashReportIn.getFile() != null) {
-@@ -786,3 +786 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -786,3 +788 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else if (crashReportIn.saveToFile(file2))
 -        {
 +        } else if(crashReportIn.saveToFile(file2)) {
-@@ -791,3 +789 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -791,3 +791 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else
 -        {
 +        } else {
-@@ -799,2 +795 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -799,2 +797 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public boolean isUnicode()
 -    {
 +    public boolean isUnicode() {
-@@ -998,2 +993,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -998,2 +995,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (this.currentScreen != null)
 -        {
 +        if(guiScreenIn == null) {
@@ -157,27 +162,27 @@ index ad84c84..eacd655 100644
 +        }
 +
 +        if (this.currentScreen != null) {
-@@ -1003,2 +1001 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1003,2 +1003 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn == null && this.theWorld == null)
 -        {
 +        if (guiScreenIn == null && this.theWorld == null) {
-@@ -1006,3 +1003 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1006,3 +1005 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else if (guiScreenIn == null && this.thePlayer.getHealth() <= 0.0F)
 -        {
 +        } else if (guiScreenIn == null && this.thePlayer.getHealth() <= 0.0F) {
-@@ -1012,2 +1007 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1012,2 +1009 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer)
 -        {
 +        if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer) {
-@@ -1018 +1012 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1018 +1014 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.currentScreen = (GuiScreen)guiScreenIn;
 +        this.currentScreen = guiScreenIn;
-@@ -1020,2 +1014 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1020,2 +1016 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn != null)
 -        {
 +        if (guiScreenIn != null) {
-@@ -1025,10 +1017,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1025,10 +1019,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            while (Mouse.next())
 -            {
 -                ;
@@ -188,40 +193,40 @@ index ad84c84..eacd655 100644
 -                ;
 -            }
 -
-@@ -1038 +1021 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1038 +1023 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            ((GuiScreen)guiScreenIn).setWorldAndResolution(this, i, j);
 +            guiScreenIn.setWorldAndResolution(this, i, j);
-@@ -1040,3 +1023 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1040,3 +1025 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else
 -        {
 +        } else {
-@@ -1150 +1130,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1150 +1132,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.bindFramebuffer(true);
-@@ -1158 +1138,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1158 +1140,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
 +            entityRenderer.updateCamera(timer.renderPartialTicks, i);
 +            nova.updateCameraAndRender(timer.renderPartialTicks, i, this);
-@@ -1181 +1161,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1181 +1163,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.unbindFramebuffer();
-@@ -1184 +1163,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1184 +1165,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.framebufferRender(this.displayWidth, this.displayHeight);
-@@ -1187 +1165,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1187 +1167,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.entityRenderer.renderStreamIndicator(this.timer.renderPartialTicks);
-@@ -1227 +1205 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1227 +1207 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        Display.update();
 +        //Display.update();
-@@ -1234 +1212 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1234 +1214 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (!this.fullscreen && Display.wasResized())
 +        if (nova.wasResized())
-@@ -1236,4 +1214,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1236,4 +1216,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            int i = this.displayWidth;
 -            int j = this.displayHeight;
 -            this.displayWidth = Display.getWidth();
 -            this.displayHeight = Display.getHeight();
 +            this.displayWidth = nova.getWidth();
 +            this.displayHeight = nova.getHeight();
-@@ -1241,11 +1216,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1241,11 +1218,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            if (this.displayWidth != i || this.displayHeight != j)
 -            {
 -                if (this.displayWidth <= 0)
@@ -233,57 +238,57 @@ index ad84c84..eacd655 100644
 -                {
 -                    this.displayHeight = 1;
 -                }
-@@ -1252,0 +1218 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1252,0 +1220 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +           LOGGER.info("Window was resized to: " + displayWidth +"x" +displayHeight);
-@@ -1255 +1221 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1255 +1223 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 +
-@@ -1260 +1226 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1260 +1228 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        return this.theWorld == null && this.currentScreen != null ? 30 : this.gameSettings.limitFramerate;
 +        return this.gameSettings.limitFramerate;
-@@ -1463 +1429,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1463 +1431,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (Display.isActive())
 +        boolean windowActive = NovaNative.INSTANCE.display_is_active();
 +        if (windowActive)
-@@ -1670 +1637,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1670 +1639,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                this.updateDisplayMode();
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
 +               /* this.updateDisplayMode();
-@@ -1682 +1650 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1682 +1652 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                }
 +                }*/
-@@ -1686 +1654,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1686 +1656,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
 +
 +              /*  Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
-@@ -1698 +1668 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1698 +1670 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                }
 +                }*/
-@@ -1701 +1671 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1701 +1673 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            if (this.currentScreen != null)
 +          /*  if (this.currentScreen != null)
-@@ -1711 +1681 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1711 +1683 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            Display.setVSyncEnabled(this.gameSettings.enableVsync);
 +            Display.setVSyncEnabled(this.gameSettings.enableVsync);*/
-@@ -1734,2 +1704,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1734,2 +1706,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.loadingScreen = new LoadingScreenRenderer(this);
 -        this.updateFramebufferSize();
 +       // this.loadingScreen = new LoadingScreenRenderer(this);
 +       // this.updateFramebufferSize();
-@@ -1786 +1756 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1786 +1758 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            this.renderEngine.tick();
 +            this.textureManager.tick();
-@@ -2508,0 +2479,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2508,0 +2481,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        nova.setWorld(worldClientIn);
 +
-@@ -2983 +2955 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2983 +2957 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        ContextCapabilities contextcapabilities = GLContext.getCapabilities();
 +        /*ContextCapabilities contextcapabilities = GLContext.getCapabilities();
-@@ -3087 +3059 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3087 +3061 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));
 +        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));*/
-@@ -3099,14 +3071,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3099,14 +3073,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public static int getGLMaximumTextureSize()
 -    {
 -        for (int i = 16384; i > 0; i >>= 1)
@@ -300,16 +305,16 @@ index ad84c84..eacd655 100644
 -        return -1;
 +    public static int getGLMaximumTextureSize() {
 +        return NovaNative.INSTANCE.get_max_texture_size();
-@@ -3223 +3183 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3223 +3185 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        return this.renderEngine;
 +        return this.textureManager;
-@@ -3416,0 +3377,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3416,0 +3379,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
 +    public NovaRenderer getNovaRenderer() {
 +        return nova;
 +    }
 diff --git a/minecraft/client/gui/FontRenderer.java b/minecraft/client/gui/FontRenderer.java
-index 6439aa9..1a786d0 100644
+index 6439aa9..c7bfcbb 100644
 --- a/minecraft/client/gui/FontRenderer.java
 +++ b/minecraft/client/gui/FontRenderer.java
 @@ -2,0 +3 @@ package net.minecraft.client.gui;
@@ -566,7 +571,7 @@ index 6439aa9..1a786d0 100644
 -                    if (shadow)
 -                    {
 +                    if(shadow) {
-@@ -428,6 +401,4 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -428,6 +401,8 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                    int j1 = this.colorCode[i1];
 -                    this.textColor = j1;
 -                    GlStateManager.color((float)(j1 >> 16) / 255.0F, (float)(j1 >> 8 & 255) / 255.0F, (float)(j1 & 255) / 255.0F, this.alpha);
@@ -575,50 +580,54 @@ index 6439aa9..1a786d0 100644
 -                {
 +                    int colorCode = this.colorCodes[i1];
 +                    this.textColor = colorCode;
-+                    color = new Color(colorCode >> 16, colorCode >> 8 & 255, colorCode & 255, this.alpha * 255);
++                    try {
++                        color = new Color(colorCode >> 16, colorCode >> 8 & 255, colorCode & 255, this.alpha * 255);
++                    } catch(IllegalArgumentException e) {
++                        boolean break_here = true;
++                    }
 +                } else if(i1 == 16) {
-@@ -435,3 +406 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -435,3 +410 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                }
 -                else if (i1 == 17)
 -                {
 +                } else if(i1 == 17) {
-@@ -439,3 +408 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -439,3 +412 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                }
 -                else if (i1 == 18)
 -                {
 +                } else if(i1 == 18) {
-@@ -443,3 +410 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -443,3 +414 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                }
 -                else if (i1 == 19)
 -                {
 +                } else if(i1 == 19) {
-@@ -447,3 +412 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -447,3 +416 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                }
 -                else if (i1 == 20)
 -                {
 +                } else if(i1 == 20) {
-@@ -451,3 +414 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -451,3 +418 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                }
 -                else if (i1 == 21)
 -                {
 +                } else if(i1 == 21) {
-@@ -459 +420 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -459 +424 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                    GlStateManager.color(this.red, this.blue, this.green, this.alpha);
 +                    color = new Color(red, green, blue, alpha);
-@@ -463,4 +424,2 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -463,4 +428,2 @@ public class FontRenderer implements IResourceManagerReloadListener
 -            }
 -            else
 -            {
 -                int j = "\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".indexOf(c0);
 +            } else {
 +                int characterIndex = "\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".indexOf(currentChar);
-@@ -468,3 +427,2 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -468,3 +431,2 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                if (this.randomStyle && j != -1)
 -                {
 -                    int k = this.getCharWidth(c0);
 +                if(this.randomStyle && characterIndex != -1) {
 +                    int currentCharWidth = this.getCharWidth(currentChar);
-@@ -473,4 +431,3 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -473,4 +435,3 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                    while (true)
 -                    {
 -                        j = this.fontRandom.nextInt("\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".length());
@@ -626,47 +635,47 @@ index 6439aa9..1a786d0 100644
 +                    while(true) {
 +                        characterIndex = this.fontRandom.nextInt("\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".length());
 +                        c1 = "\u00c0\u00c1\u00c2\u00c8\u00ca\u00cb\u00cd\u00d3\u00d4\u00d5\u00da\u00df\u00e3\u00f5\u011f\u0130\u0131\u0152\u0153\u015e\u015f\u0174\u0175\u017e\u0207\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u2561\u2562\u2556\u2555\u2563\u2551\u2557\u255d\u255c\u255b\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u255e\u255f\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u2567\u2568\u2564\u2565\u2559\u2558\u2552\u2553\u256b\u256a\u2518\u250c\u2588\u2584\u258c\u2590\u2580\u03b1\u03b2\u0393\u03c0\u03a3\u03c3\u03bc\u03c4\u03a6\u0398\u03a9\u03b4\u221e\u2205\u2208\u2229\u2261\u00b1\u2265\u2264\u2320\u2321\u00f7\u2248\u00b0\u2219\u00b7\u221a\u207f\u00b2\u25a0\u0000".charAt(characterIndex);
-@@ -478,2 +435 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -478,2 +439 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                        if (k == this.getCharWidth(c1))
 -                        {
 +                        if(currentCharWidth == this.getCharWidth(c1)) {
-@@ -484 +440 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -484 +444 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                    c0 = c1;
 +                    currentChar = c1;
-@@ -488 +444 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -488 +448 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                boolean flag = (c0 == 0 || j == -1 || this.unicodeFlag) && shadow;
 +                boolean shiftForShadow = (currentChar == 0 || characterIndex == -1 || this.unicodeFlag) && shadow;
-@@ -490,2 +446 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -490,2 +450 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                if (flag)
 -                {
 +                if (shiftForShadow) {
-@@ -496 +451 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -496 +455 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                float f = this.renderChar(c0, this.italicStyle);
 +                float f = this.renderChar(currentChar, this.italicStyle);
-@@ -498,2 +453 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -498,2 +457 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                if (flag)
 -                {
 +                if (shiftForShadow) {
-@@ -504,2 +458 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -504,2 +462 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                if (this.boldStyle)
 -                {
 +                if (this.boldStyle) {
-@@ -508,2 +461 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -508,2 +465 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                    if (flag)
 -                    {
 +                    if(shiftForShadow) {
-@@ -514 +466 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -514 +470 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                    this.renderChar(c0, this.italicStyle);
 +                    this.renderChar(currentChar, this.italicStyle);
-@@ -517,2 +469 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -517,2 +473 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                    if (flag)
 -                    {
 +                    if(shiftForShadow) {
-@@ -526,2 +477 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -526,2 +481 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                if (this.strikethroughStyle)
 -                {
 +                if (this.strikethroughStyle) {
-@@ -532,4 +482,4 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -532,4 +486,4 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                    vertexbuffer.pos((double)this.posX, (double)(this.posY + (float)(this.FONT_HEIGHT / 2)), 0.0D).endVertex();
 -                    vertexbuffer.pos((double)(this.posX + f), (double)(this.posY + (float)(this.FONT_HEIGHT / 2)), 0.0D).endVertex();
 -                    vertexbuffer.pos((double)(this.posX + f), (double)(this.posY + (float)(this.FONT_HEIGHT / 2) - 1.0F), 0.0D).endVertex();
@@ -675,11 +684,11 @@ index 6439aa9..1a786d0 100644
 +                    vertexbuffer.pos((double)(this.posX + f),   (double)(this.posY + (float)(this.FONT_HEIGHT / 2)),        0.0D).endVertex();
 +                    vertexbuffer.pos((double)(this.posX + f),   (double)(this.posY + (float)(this.FONT_HEIGHT / 2) - 1.0F), 0.0D).endVertex();
 +                    vertexbuffer.pos((double)this.posX,         (double)(this.posY + (float)(this.FONT_HEIGHT / 2) - 1.0F), 0.0D).endVertex();
-@@ -540,2 +490 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -540,2 +494 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                if (this.underlineStyle)
 -                {
 +                if (this.underlineStyle) {
-@@ -547,4 +496,4 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -547,4 +500,4 @@ public class FontRenderer implements IResourceManagerReloadListener
 -                    vertexbuffer1.pos((double)(this.posX + (float)l), (double)(this.posY + (float)this.FONT_HEIGHT), 0.0D).endVertex();
 -                    vertexbuffer1.pos((double)(this.posX + f), (double)(this.posY + (float)this.FONT_HEIGHT), 0.0D).endVertex();
 -                    vertexbuffer1.pos((double)(this.posX + f), (double)(this.posY + (float)this.FONT_HEIGHT - 1.0F), 0.0D).endVertex();
@@ -688,14 +697,14 @@ index 6439aa9..1a786d0 100644
 +                    vertexbuffer1.pos((double)(this.posX + f),          (double)(this.posY + (float)this.FONT_HEIGHT),          0.0D).endVertex();
 +                    vertexbuffer1.pos((double)(this.posX + f),          (double)(this.posY + (float)this.FONT_HEIGHT - 1.0F),   0.0D).endVertex();
 +                    vertexbuffer1.pos((double)(this.posX + (float)l),   (double)(this.posY + (float)this.FONT_HEIGHT - 1.0F),   0.0D).endVertex();
-@@ -577,4 +526,2 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -577,4 +530,2 @@ public class FontRenderer implements IResourceManagerReloadListener
 -    private int renderString(String text, float x, float y, int color, boolean dropShadow)
 -    {
 -        if (text == null)
 -        {
 +    private int renderString(String text, float x, float y, int color, boolean dropShadow) {
 +        if(text == null) {
-@@ -582,5 +529,2 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -582,5 +533,2 @@ public class FontRenderer implements IResourceManagerReloadListener
 -        }
 -        else
 -        {
@@ -703,25 +712,25 @@ index 6439aa9..1a786d0 100644
 -            {
 +        } else {
 +            if(this.bidiFlag) {
-@@ -590,2 +534 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -590,2 +538 @@ public class FontRenderer implements IResourceManagerReloadListener
 -            if ((color & -67108864) == 0)
 -            {
 +            if((color & -67108864) == 0) {
-@@ -595,3 +538,2 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -595,3 +542,2 @@ public class FontRenderer implements IResourceManagerReloadListener
 -            if (dropShadow)
 -            {
 -                color = (color & 16579836) >> 2 | color & -16777216;
 +            if(dropShadow) {
 +                color = (color & 0x00FCFCFC) >> 2 | color & -16777216;
-@@ -601,2 +543,2 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -601,2 +547,2 @@ public class FontRenderer implements IResourceManagerReloadListener
 -            this.blue = (float)(color >> 8 & 255) / 255.0F;
 -            this.green = (float)(color & 255) / 255.0F;
 +            this.green = (float)(color >> 8 & 255) / 255.0F;
 +            this.blue = (float)(color & 255) / 255.0F;
-@@ -604 +546 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -604 +550 @@ public class FontRenderer implements IResourceManagerReloadListener
 -            GlStateManager.color(this.red, this.blue, this.green, this.alpha);
 +            this.color = new Color(red, green, blue, alpha);
-@@ -994 +936 @@ public class FontRenderer implements IResourceManagerReloadListener
+@@ -994 +940 @@ public class FontRenderer implements IResourceManagerReloadListener
 -        return i >= 0 && i < this.colorCode.length ? this.colorCode[i] : -1;
 +        return i >= 0 && i < this.colorCodes.length ? this.colorCodes[i] : -1;
 diff --git a/minecraft/client/gui/Gui.java b/minecraft/client/gui/Gui.java
@@ -2029,7 +2038,7 @@ index 8787a83..a54640d 100644
 -                this.drawListHeader(k, l, tessellator);
 +                this.drawListHeader(k, l);
 diff --git a/minecraft/client/gui/GuiSlot.java b/minecraft/client/gui/GuiSlot.java
-index a776ae3..b101b50 100644
+index a776ae3..50818d4 100644
 --- a/minecraft/client/gui/GuiSlot.java
 +++ b/minecraft/client/gui/GuiSlot.java
 @@ -2,0 +3,2 @@ package net.minecraft.client.gui;
@@ -2040,50 +2049,52 @@ index a776ae3..b101b50 100644
 @@ -9 +12 @@ import net.minecraft.util.math.MathHelper;
 -import org.lwjgl.input.Mouse;
 +import com.continuum.nova.input.Mouse;
-@@ -11,2 +14,3 @@ import org.lwjgl.input.Mouse;
+@@ -11,2 +14,5 @@ import org.lwjgl.input.Mouse;
 -public abstract class GuiSlot
 -{
 +import java.awt.*;
 +
++import static com.continuum.nova.NovaConstants.WHITE_TEXTURE_GUI_LOCATION;
++
 +public abstract class GuiSlot {
-@@ -62,0 +67 @@ public abstract class GuiSlot
+@@ -62,0 +69 @@ public abstract class GuiSlot
 +    protected boolean stateChanged;
-@@ -126,5 +131 @@ public abstract class GuiSlot
+@@ -126,5 +133 @@ public abstract class GuiSlot
 -    protected abstract void drawBackground();
 -
 -    protected void updateItemPos(int entryID, int insideLeft, int yPos)
 -    {
 -    }
 +    protected void updateItemPos(int entryID, int insideLeft, int yPos) {}
-@@ -137,3 +138 @@ public abstract class GuiSlot
+@@ -137,3 +140 @@ public abstract class GuiSlot
 -    protected void drawListHeader(int insideLeft, int insideTop, Tessellator tessellatorIn)
 -    {
 -    }
 +    protected void drawListHeader(int insideLeft, int insideTop) {}
-@@ -141,3 +140 @@ public abstract class GuiSlot
+@@ -141,3 +142 @@ public abstract class GuiSlot
 -    protected void clickedHeader(int p_148132_1_, int p_148132_2_)
 -    {
 -    }
 +    protected void clickedHeader(int p_148132_1_, int p_148132_2_) {}
-@@ -145,3 +142 @@ public abstract class GuiSlot
+@@ -145,3 +144 @@ public abstract class GuiSlot
 -    protected void renderDecorations(int mouseXIn, int mouseYIn)
 -    {
 -    }
 +    protected void renderDecorations(int mouseXIn, int mouseYIn) {}
-@@ -149 +144 @@ public abstract class GuiSlot
+@@ -149 +146 @@ public abstract class GuiSlot
 -    public int getSlotIndexFromScreenCoords(int posX, int posY)
 +    protected int getSlotIndexFromScreenCoords(int posX, int posY)
-@@ -170,2 +165 @@ public abstract class GuiSlot
+@@ -170,2 +167 @@ public abstract class GuiSlot
 -    protected void bindAmountScrolled()
 -    {
 +    protected void bindAmountScrolled() {
-@@ -188,3 +182,2 @@ public abstract class GuiSlot
+@@ -188,3 +184,2 @@ public abstract class GuiSlot
 -    public boolean isMouseYWithinSlotBounds(int p_148141_1_)
 -    {
 -        return p_148141_1_ >= this.top && p_148141_1_ <= this.bottom && this.mouseX >= this.left && this.mouseX <= this.right;
 +    public boolean isMouseYWithinSlotBounds(int mouseYIn) {
 +        return mouseYIn >= this.top && mouseYIn <= this.bottom && this.mouseX >= this.left && this.mouseX <= this.right;
-@@ -203,6 +196,3 @@ public abstract class GuiSlot
+@@ -203,6 +198,3 @@ public abstract class GuiSlot
 -    public void actionPerformed(GuiButton button)
 -    {
 -        if (button.enabled)
@@ -2093,24 +2104,24 @@ index a776ae3..b101b50 100644
 +    public void actionPerformed(GuiButton button) {
 +        if (button.enabled) {
 +            if (button.id == this.scrollUpButtonID) {
-@@ -212,3 +202 @@ public abstract class GuiSlot
+@@ -212,3 +204 @@ public abstract class GuiSlot
 -            }
 -            else if (button.id == this.scrollDownButtonID)
 -            {
 +            } else if (button.id == this.scrollDownButtonID) {
-@@ -222,4 +210,2 @@ public abstract class GuiSlot
+@@ -222,4 +212,2 @@ public abstract class GuiSlot
 -    public void drawScreen(int mouseXIn, int mouseYIn, float partialTicks)
 -    {
 -        if (this.visible)
 -        {
 +    public void drawScreen(int mouseXIn, int mouseYIn, float partialTicks) {
 +        if (this.visible) {
-@@ -228 +214,3 @@ public abstract class GuiSlot
+@@ -228 +216,3 @@ public abstract class GuiSlot
 -            this.drawBackground();
 +
 +            NovaDraw.incrementZ();
 +            drawBackground();
-@@ -231,20 +219,21 @@ public abstract class GuiSlot
+@@ -231,20 +221,21 @@ public abstract class GuiSlot
 -            this.bindAmountScrolled();
 -            GlStateManager.disableLighting();
 -            GlStateManager.disableFog();
@@ -2152,16 +2163,16 @@ index a776ae3..b101b50 100644
 +            NovaDraw.incrementZ();
 +            if (this.hasListHeader) {
 +                drawListHeader(k, l);
-@@ -251,0 +241,3 @@ public abstract class GuiSlot
+@@ -251,0 +243,3 @@ public abstract class GuiSlot
 +            NovaDraw.incrementZ();
 +
 +            drawSelectionBox(k, l, mouseXIn, mouseYIn);
-@@ -253 +244,0 @@ public abstract class GuiSlot
+@@ -253 +246,0 @@ public abstract class GuiSlot
 -            this.drawSelectionBox(k, l, mouseXIn, mouseYIn);
-@@ -254,0 +246,2 @@ public abstract class GuiSlot
+@@ -254,0 +248,2 @@ public abstract class GuiSlot
 +            NovaDraw.incrementZ();
 +
-@@ -262,13 +255,29 @@ public abstract class GuiSlot
+@@ -262,13 +257,29 @@ public abstract class GuiSlot
 -            int i1 = 4;
 -            vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
 -            vertexbuffer.pos((double)this.left, (double)(this.top + 4), 0.0D).tex(0.0D, 1.0D).color(0, 0, 0, 0).endVertex();
@@ -2188,7 +2199,7 @@ index a776ae3..b101b50 100644
 +                    0, 1, 2, 2, 3, 0
 +            };
 +
-+            NovaDraw.draw(NovaRenderer.WHITE_TEXTURE_GUI_LOCATION, indices, shade);
++            NovaDraw.draw(WHITE_TEXTURE_GUI_LOCATION, indices, shade);
 +
 +
 +            shade = new NovaDraw.Vertex[] {
@@ -2202,20 +2213,20 @@ index a776ae3..b101b50 100644
 +                    0, 1, 2, 2, 3, 0
 +            };
 +
-+            NovaDraw.draw(NovaRenderer.WHITE_TEXTURE_GUI_LOCATION, indices, shade);
++            NovaDraw.draw(WHITE_TEXTURE_GUI_LOCATION, indices, shade);
 +
-@@ -277,2 +286 @@ public abstract class GuiSlot
+@@ -277,2 +288 @@ public abstract class GuiSlot
 -            if (j1 > 0)
 -            {
 +            if (j1 > 0) {
-@@ -281 +289 @@ public abstract class GuiSlot
+@@ -281 +291 @@ public abstract class GuiSlot
 -                int l1 = (int)this.amountScrolled * (this.bottom - this.top - k1) / j1 + this.top;
 +                int l1 = (int) this.amountScrolled * (this.bottom - this.top - k1) / j1 + this.top;
-@@ -283,2 +291 @@ public abstract class GuiSlot
+@@ -283,2 +293 @@ public abstract class GuiSlot
 -                if (l1 < this.top)
 -                {
 +                if (l1 < this.top) {
-@@ -288,18 +295,45 @@ public abstract class GuiSlot
+@@ -288,18 +297,45 @@ public abstract class GuiSlot
 -                vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
 -                vertexbuffer.pos((double)i, (double)this.bottom, 0.0D).tex(0.0D, 1.0D).color(0, 0, 0, 255).endVertex();
 -                vertexbuffer.pos((double)j, (double)this.bottom, 0.0D).tex(1.0D, 1.0D).color(0, 0, 0, 255).endVertex();
@@ -2247,7 +2258,7 @@ index a776ae3..b101b50 100644
 +                        0, 1, 2, 2, 3, 0
 +                };
 +
-+                NovaDraw.draw(NovaRenderer.WHITE_TEXTURE_GUI_LOCATION, indices, scrollbarBackground);
++                NovaDraw.draw(WHITE_TEXTURE_GUI_LOCATION, indices, scrollbarBackground);
 +                NovaDraw.incrementZ();
 +
 +                NovaDraw.Vertex[] scrollbarShade = new NovaDraw.Vertex[]{
@@ -2261,7 +2272,7 @@ index a776ae3..b101b50 100644
 +                        0, 1, 2, 2, 3, 0
 +                };
 +
-+                NovaDraw.draw(NovaRenderer.WHITE_TEXTURE_GUI_LOCATION, indices, scrollbarShade);
++                NovaDraw.draw(WHITE_TEXTURE_GUI_LOCATION, indices, scrollbarShade);
 +
 +                NovaDraw.incrementZ();
 +
@@ -2277,14 +2288,14 @@ index a776ae3..b101b50 100644
 +                        0, 1, 2, 2, 3, 0
 +                };
 +
-+                NovaDraw.draw(NovaRenderer.WHITE_TEXTURE_GUI_LOCATION, indices, scrollbar);
++                NovaDraw.draw(WHITE_TEXTURE_GUI_LOCATION, indices, scrollbar);
 +
-@@ -309,4 +342,0 @@ public abstract class GuiSlot
+@@ -309,4 +344,0 @@ public abstract class GuiSlot
 -            GlStateManager.enableTexture2D();
 -            GlStateManager.shadeModel(7424);
 -            GlStateManager.enableAlpha();
 -            GlStateManager.disableBlend();
-@@ -316,6 +346,7 @@ public abstract class GuiSlot
+@@ -316,6 +348,7 @@ public abstract class GuiSlot
 -    public void handleMouseInput()
 -    {
 -        if (this.isMouseYWithinSlotBounds(this.mouseY))
@@ -2298,106 +2309,106 @@ index a776ae3..b101b50 100644
 +        if (this.isMouseYWithinSlotBounds(this.mouseY)) {
 +            stateChanged = true;
 +            if (Mouse.getEventButton() == 0 && Mouse.getEventButtonState() && this.mouseY >= this.top && this.mouseY <= this.bottom) {
-@@ -327,2 +358 @@ public abstract class GuiSlot
+@@ -327,2 +360 @@ public abstract class GuiSlot
 -                if (l < this.getSize() && this.mouseX >= i && this.mouseX <= j && l >= 0 && k >= 0)
 -                {
 +                if (l < this.getSize() && this.mouseX >= i && this.mouseX <= j && l >= 0 && k >= 0) {
-@@ -331,3 +361 @@ public abstract class GuiSlot
+@@ -331,3 +363 @@ public abstract class GuiSlot
 -                }
 -                else if (this.mouseX >= i && this.mouseX <= j && k < 0)
 -                {
 +                } else if (this.mouseX >= i && this.mouseX <= j && k < 0) {
-@@ -338,4 +366,2 @@ public abstract class GuiSlot
+@@ -338,4 +368,2 @@ public abstract class GuiSlot
 -            if (Mouse.isButtonDown(0) && this.getEnabled())
 -            {
 -                if (this.initialClickY == -1)
 -                {
 +            if (Mouse.isButtonDown(0) && this.getEnabled()) {
 +                if (this.initialClickY == -1) {
-@@ -344,2 +370 @@ public abstract class GuiSlot
+@@ -344,2 +372 @@ public abstract class GuiSlot
 -                    if (this.mouseY >= this.top && this.mouseY <= this.bottom)
 -                    {
 +                    if (this.mouseY >= this.top && this.mouseY <= this.bottom) {
-@@ -351,2 +376 @@ public abstract class GuiSlot
+@@ -351,2 +378 @@ public abstract class GuiSlot
 -                        if (i1 < this.getSize() && this.mouseX >= j2 && this.mouseX <= k2 && i1 >= 0 && l2 >= 0)
 -                        {
 +                        if (i1 < this.getSize() && this.mouseX >= j2 && this.mouseX <= k2 && i1 >= 0 && l2 >= 0) {
-@@ -357,3 +381 @@ public abstract class GuiSlot
+@@ -357,3 +383 @@ public abstract class GuiSlot
 -                        }
 -                        else if (this.mouseX >= j2 && this.mouseX <= k2 && l2 < 0)
 -                        {
 +                        } else if (this.mouseX >= j2 && this.mouseX <= k2 && l2 < 0) {
-@@ -367,2 +389 @@ public abstract class GuiSlot
+@@ -367,2 +391 @@ public abstract class GuiSlot
 -                        if (this.mouseX >= i3 && this.mouseX <= j1)
 -                        {
 +                        if (this.mouseX >= i3 && this.mouseX <= j1) {
-@@ -372,2 +393 @@ public abstract class GuiSlot
+@@ -372,2 +395 @@ public abstract class GuiSlot
 -                            if (k1 < 1)
 -                            {
 +                            if (k1 < 1) {
-@@ -380,3 +400 @@ public abstract class GuiSlot
+@@ -380,3 +402 @@ public abstract class GuiSlot
 -                        }
 -                        else
 -                        {
 +                        } else {
-@@ -386,2 +404 @@ public abstract class GuiSlot
+@@ -386,2 +406 @@ public abstract class GuiSlot
 -                        if (flag1)
 -                        {
 +                        if (flag1) {
-@@ -389,3 +406 @@ public abstract class GuiSlot
+@@ -389,3 +408 @@ public abstract class GuiSlot
 -                        }
 -                        else
 -                        {
 +                        } else {
-@@ -394,3 +409 @@ public abstract class GuiSlot
+@@ -394,3 +411 @@ public abstract class GuiSlot
 -                    }
 -                    else
 -                    {
 +                    } else {
-@@ -399,3 +412 @@ public abstract class GuiSlot
+@@ -399,3 +414 @@ public abstract class GuiSlot
 -                }
 -                else if (this.initialClickY >= 0)
 -                {
 +                } else if (this.initialClickY >= 0) {
-@@ -405,3 +416 @@ public abstract class GuiSlot
+@@ -405,3 +418 @@ public abstract class GuiSlot
 -            }
 -            else
 -            {
 +            } else {
-@@ -413,4 +422,2 @@ public abstract class GuiSlot
+@@ -413,4 +424,2 @@ public abstract class GuiSlot
 -            if (i2 != 0)
 -            {
 -                if (i2 > 0)
 -                {
 +            if (i2 != 0) {
 +                if (i2 > 0) {
-@@ -418,3 +425 @@ public abstract class GuiSlot
+@@ -418,3 +427 @@ public abstract class GuiSlot
 -                }
 -                else if (i2 < 0)
 -                {
 +                } else if (i2 < 0) {
-@@ -450,2 +455 @@ public abstract class GuiSlot
+@@ -450,2 +457 @@ public abstract class GuiSlot
 -    protected void drawSelectionBox(int insideLeft, int insideTop, int mouseXIn, int mouseYIn)
 -    {
 +    protected void drawSelectionBox(int insideLeft, int insideTop, int mouseXIn, int mouseYIn) {
-@@ -453,2 +456,0 @@ public abstract class GuiSlot
+@@ -453,2 +458,0 @@ public abstract class GuiSlot
 -        Tessellator tessellator = Tessellator.getInstance();
 -        VertexBuffer vertexbuffer = tessellator.getBuffer();
-@@ -456,2 +458,3 @@ public abstract class GuiSlot
+@@ -456,2 +460,3 @@ public abstract class GuiSlot
 -        for (int j = 0; j < i; ++j)
 -        {
-+        ResourceLocation whiteTextureLocation = NovaRenderer.WHITE_TEXTURE_GUI_LOCATION;
++        ResourceLocation whiteTextureLocation = WHITE_TEXTURE_GUI_LOCATION;
 +
 +        for (int j = 0; j < i; ++j) {
-@@ -461,2 +464 @@ public abstract class GuiSlot
+@@ -461,2 +466 @@ public abstract class GuiSlot
 -            if (k > this.bottom || k + l < this.top)
 -            {
 +            if (k > this.bottom || k + l < this.top) {
-@@ -466,2 +468 @@ public abstract class GuiSlot
+@@ -466,2 +470 @@ public abstract class GuiSlot
 -            if (this.showSelectionBox && this.isSelected(j))
 -            {
 +            if (this.showSelectionBox && this.isSelected(j)) {
-@@ -470,13 +471,32 @@ public abstract class GuiSlot
+@@ -470,13 +473,32 @@ public abstract class GuiSlot
 -                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 -                GlStateManager.disableTexture2D();
 -                vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
@@ -2443,9 +2454,9 @@ index a776ae3..b101b50 100644
 +                NovaDraw.draw(whiteTextureLocation, indices, vertices);
 +
 +
-@@ -483,0 +504 @@ public abstract class GuiSlot
+@@ -483,0 +506 @@ public abstract class GuiSlot
 +            NovaDraw.incrementZ();
-@@ -499,11 +520,13 @@ public abstract class GuiSlot
+@@ -499,11 +522,13 @@ public abstract class GuiSlot
 -        Tessellator tessellator = Tessellator.getInstance();
 -        VertexBuffer vertexbuffer = tessellator.getBuffer();
 -        this.mc.getTextureManager().bindTexture(Gui.OPTIONS_BACKGROUND);
@@ -2470,11 +2481,11 @@ index a776ae3..b101b50 100644
 +
 +        NovaDraw.draw(Gui.OPTIONS_BACKGROUND, indices, backgroundVertices);
 +
-@@ -515,2 +538 @@ public abstract class GuiSlot
+@@ -515,2 +540 @@ public abstract class GuiSlot
 -    public void setSlotXBoundsFromLeft(int leftIn)
 -    {
 +    public void setSlotXBoundsFromLeft(int leftIn) {
-@@ -524,0 +547 @@ public abstract class GuiSlot
+@@ -524,0 +549 @@ public abstract class GuiSlot
 +
 diff --git a/minecraft/client/gui/GuiSnooper.java b/minecraft/client/gui/GuiSnooper.java
 index 45cc6a5..dbf83fa 100644
@@ -2894,6 +2905,95 @@ index c484866..4646d90 100644
 +    @Override
 @@ -2124,0 +2202 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
 +    @Override
+diff --git a/minecraft/client/renderer/BlockModelShapes.java b/minecraft/client/renderer/BlockModelShapes.java
+index f5d5c85..537e9e7 100644
+--- a/minecraft/client/renderer/BlockModelShapes.java
++++ b/minecraft/client/renderer/BlockModelShapes.java
+@@ -2,0 +3,4 @@ package net.minecraft.client.renderer;
++import com.continuum.nova.NovaConstants;
++import com.continuum.nova.NovaNative;
++import com.continuum.nova.NovaRenderer;
++import com.continuum.nova.chunks.BlockModelSerializer;
+@@ -4,40 +8 @@ import com.google.common.collect.Maps;
+-import java.util.Map;
+-import java.util.Map.Entry;
+-import net.minecraft.block.Block;
+-import net.minecraft.block.BlockBed;
+-import net.minecraft.block.BlockCactus;
+-import net.minecraft.block.BlockColored;
+-import net.minecraft.block.BlockDirt;
+-import net.minecraft.block.BlockDispenser;
+-import net.minecraft.block.BlockDoor;
+-import net.minecraft.block.BlockDoublePlant;
+-import net.minecraft.block.BlockDropper;
+-import net.minecraft.block.BlockFenceGate;
+-import net.minecraft.block.BlockFire;
+-import net.minecraft.block.BlockFlowerPot;
+-import net.minecraft.block.BlockHopper;
+-import net.minecraft.block.BlockJukebox;
+-import net.minecraft.block.BlockLeaves;
+-import net.minecraft.block.BlockNewLeaf;
+-import net.minecraft.block.BlockNewLog;
+-import net.minecraft.block.BlockOldLeaf;
+-import net.minecraft.block.BlockOldLog;
+-import net.minecraft.block.BlockPlanks;
+-import net.minecraft.block.BlockPrismarine;
+-import net.minecraft.block.BlockQuartz;
+-import net.minecraft.block.BlockRedSandstone;
+-import net.minecraft.block.BlockRedstoneWire;
+-import net.minecraft.block.BlockReed;
+-import net.minecraft.block.BlockSand;
+-import net.minecraft.block.BlockSandStone;
+-import net.minecraft.block.BlockSapling;
+-import net.minecraft.block.BlockSilverfish;
+-import net.minecraft.block.BlockStem;
+-import net.minecraft.block.BlockStone;
+-import net.minecraft.block.BlockStoneBrick;
+-import net.minecraft.block.BlockStoneSlab;
+-import net.minecraft.block.BlockStoneSlabNew;
+-import net.minecraft.block.BlockTNT;
+-import net.minecraft.block.BlockTallGrass;
+-import net.minecraft.block.BlockTripWire;
+-import net.minecraft.block.BlockWall;
++import net.minecraft.block.*;
+@@ -56,0 +22,6 @@ import net.minecraft.util.ResourceLocation;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++
++import java.io.IOException;
++import java.util.Map;
++import java.util.Map.Entry;
+@@ -59,0 +31,2 @@ public class BlockModelShapes
++    private static final Logger LOG = LogManager.getLogger(BlockModelShapes.class);
++
+@@ -62,0 +36 @@ public class BlockModelShapes
++    private final NovaRenderer nova;
+@@ -64 +38 @@ public class BlockModelShapes
+-    public BlockModelShapes(ModelManager manager)
++    public BlockModelShapes(ModelManager manager, NovaRenderer nova)
+@@ -67,0 +42 @@ public class BlockModelShapes
++        this.nova = nova;
+@@ -139,0 +115,2 @@ public class BlockModelShapes
++        LOG.debug("Loading models");
++        double startTime = System.nanoTime();
+@@ -140,0 +118 @@ public class BlockModelShapes
++        BlockModelSerializer serializer = nova.getModelSerializer();
+@@ -144 +122,10 @@ public class BlockModelShapes
+-            this.bakedModelStore.put(entry.getKey(), this.modelManager.getModel((ModelResourceLocation)entry.getValue()));
++            IBakedModel model = this.modelManager.getModel((ModelResourceLocation)entry.getValue());
++            this.bakedModelStore.put(entry.getKey(), model);
++            serializer.addModel(entry.getKey(), model);
++        }
++
++        try {
++            serializer.serialize(NovaConstants.MODEL_FILE_NAME);
++            NovaNative.INSTANCE.load_block_state_models(NovaConstants.MODEL_FILE_NAME);
++        } catch(IOException e) {
++            LOG.error("Could not save block models", e);
+@@ -145,0 +133,3 @@ public class BlockModelShapes
++        double endTime = System.nanoTime();
++
++        LOG.debug("Loaded models in {} ms", (endTime - startTime) / 1000.0);
 diff --git a/minecraft/client/renderer/EntityRenderer.java b/minecraft/client/renderer/EntityRenderer.java
 index 25e1fb8..87cc61b 100644
 --- a/minecraft/client/renderer/EntityRenderer.java
@@ -4065,7 +4165,7 @@ index ce26fa3..0e63e68 100644
 -                textureatlassprite.clearFramesTextureData();
 +                // textureatlassprite.clearFramesTextureData();
 diff --git a/minecraft/client/renderer/block/model/ModelManager.java b/minecraft/client/renderer/block/model/ModelManager.java
-index ac21ed8..6ffada5 100644
+index ac21ed8..1bf5ead 100644
 --- a/minecraft/client/renderer/block/model/ModelManager.java
 +++ b/minecraft/client/renderer/block/model/ModelManager.java
 @@ -2,0 +3,2 @@ package net.minecraft.client.renderer.block.model;
@@ -4073,6 +4173,12 @@ index ac21ed8..6ffada5 100644
 +import net.minecraft.client.Minecraft;
 @@ -8,0 +11 @@ import net.minecraft.util.registry.IRegistry;
 +@SuppressWarnings("ALL")
+@@ -16 +19 @@ public class ModelManager implements IResourceManagerReloadListener
+-    public ModelManager(TextureMap textures)
++    public ModelManager(TextureMap textures, NovaRenderer nova)
+@@ -19 +22 @@ public class ModelManager implements IResourceManagerReloadListener
+-        this.modelProvider = new BlockModelShapes(this);
++        this.modelProvider = new BlockModelShapes(this, nova);
 @@ -27,0 +31 @@ public class ModelManager implements IResourceManagerReloadListener
 +        Minecraft.getMinecraft().getNovaRenderer().addTerrainAtlas(texMap);
 diff --git a/minecraft/client/renderer/block/model/ModelResourceLocation.java b/minecraft/client/renderer/block/model/ModelResourceLocation.java
@@ -5560,7 +5666,7 @@ index f07e16d..3d9d403 100644
 @@ -7,0 +8 @@ import org.apache.commons.lang3.Validate;
 +@SuppressWarnings("ALL")
 diff --git a/minecraft/util/registry/RegistrySimple.java b/minecraft/util/registry/RegistrySimple.java
-index 2444c5f..a895e3f 100644
+index 2444c5f..a68557f 100644
 --- a/minecraft/util/registry/RegistrySimple.java
 +++ b/minecraft/util/registry/RegistrySimple.java
 @@ -10,0 +11,4 @@ import javax.annotation.Nullable;
@@ -5568,11 +5674,6 @@ index 2444c5f..a895e3f 100644
 +import net.minecraft.client.Minecraft;
 +import net.minecraft.client.renderer.block.model.IBakedModel;
 +import net.minecraft.util.ResourceLocation;
-@@ -36,0 +41,4 @@ public class RegistrySimple<K, V> implements IRegistry<K, V>
-+        if(key instanceof ResourceLocation && value instanceof IBakedModel) {
-+            Minecraft.getMinecraft().getNovaRenderer().registerStaticModel((ResourceLocation) key, (IBakedModel) value);
-+        }
-+
 diff --git a/minecraft/util/text/translation/LanguageMap.java b/minecraft/util/text/translation/LanguageMap.java
 index 04931bb..68c4fcf 100644
 --- a/minecraft/util/text/translation/LanguageMap.java
