@@ -63,7 +63,7 @@ namespace nova {
 				indices.push_back(0 + cur_index);
 				indices.push_back(1 + cur_index);
 				indices.push_back(2 + cur_index);
-				indices.push_back(1 + cur_index);
+				indices.push_back(0 + cur_index);
 				indices.push_back(2 + cur_index);
 				indices.push_back(3 + cur_index);
 
@@ -221,7 +221,7 @@ namespace nova {
                     vertex_data.push_back(element);
                 }
 
-                block_vertex* block_vertices = (block_vertex*)vertex_data.data();
+                mc_block_vertex* block_vertices = (mc_block_vertex*)vertex_data.data();
                 face.vertices[0] = block_vertices[0];
                 face.vertices[1] = block_vertices[1];
                 face.vertices[2] = block_vertices[2];

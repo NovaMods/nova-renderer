@@ -38,6 +38,8 @@ namespace nova {
         glm::vec2 lightmap_uv;
         glm::vec3 normal;
         glm::vec3 tangent;
+
+        block_vertex& operator=(const mc_block_vertex& other);
     };
 
     struct block_face {

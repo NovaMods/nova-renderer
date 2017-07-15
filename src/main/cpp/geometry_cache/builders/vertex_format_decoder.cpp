@@ -12,6 +12,14 @@
 
 
 namespace nova {
+    block_vertex& block_vertex::operator=(const mc_block_vertex& other) {
+        this->position = other.position;
+        this->color = other.color;
+        this->uv = other.uv;
+        this->lightmap_uv = glm::vec2(other.lightmap_s, other.lightmap_t);
+
+        return *this;
+    }
 
     std::vector<block_vertex> decode_block_vertices(int data[], int num_elements) {
         if(num_elements != 28) {
