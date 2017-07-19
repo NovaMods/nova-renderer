@@ -33,6 +33,8 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
+find_package(JNI)
+
 # need to compile GLFW and JSON
 add_subdirectory("${3RD_PARTY_DIR}/glfw")
 add_subdirectory("${3RD_PARTY_DIR}/json")
@@ -43,6 +45,7 @@ add_subdirectory("${3RD_PARTY_DIR}/googletest")
 add_subdirectory("${3RD_PARTY_DIR}/optional")
 
 include_directories(SYSTEM
+        ${JNI_INCLUDE_DIRS}
         "${3RD_PARTY_DIR}/glfw/include"
         "${3RD_PARTY_DIR}/easyloggingpp/src"
         "${3RD_PARTY_DIR}/glad/include"
@@ -54,7 +57,7 @@ include_directories(SYSTEM
         "${3RD_PARTY_DIR}/renderdocapi"
         )
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES})
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES} ${JNI_LIBRARIES})
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
@@ -86,7 +89,6 @@ set(NOVA_HEADERS
         data_loading/loaders/shader_loading.h
         data_loading/loaders/loader_utils.h
         geometry_cache/mesh_store.h
-        render/objects/shaders/shader_facade.h
         render/objects/render_object.h
         render/objects/uniform_buffers/uniform_buffer_store.h
         render/objects/uniform_buffers/uniform_buffer_definitions.h
@@ -100,6 +102,8 @@ set(NOVA_HEADERS
         utils/io.h
         data_loading/loaders/geometry_filter_loading.h
         geometry_cache/builders/vertex_format_decoder.h
+        data_loading/direct_buffers.h
+        mc_interface/nova_jni.h
         )
 
 set(NOVA_SOURCE
@@ -141,10 +145,11 @@ set(NOVA_SOURCE
         utils/io.cpp
         data_loading/loaders/geometry_filter_loading.cpp
         data_loading/loaders/shader_source_structs.cpp
-        geometry_cache/builders/vertex_format_decoder.cpp)
+        geometry_cache/builders/vertex_format_decoder.cpp
+        data_loading/direct_buffers.cpp)
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} 3rdparty/renderdocapi/RenderDocManager.cpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
 endif (WIN32)
 
 if (UNIX)

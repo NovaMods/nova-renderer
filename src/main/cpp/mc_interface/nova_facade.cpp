@@ -20,6 +20,7 @@
 #include "../data_loading/settings.h"
 #include "../input/InputHandler.h"
 #include "../render/windowing/glfw_gl_window.h"
+#include "../utils/utils.h"
 
 using namespace nova;
 

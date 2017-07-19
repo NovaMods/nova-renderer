@@ -46,7 +46,7 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void notifyBlockUpdate(World worldIn, BlockPos pos, IBlockState oldState, IBlockState newState, int flags) {
-        LOG.debug("Update block at " + pos);
+        LOG.trace("Update block at " + pos);
     }
 
     @Override

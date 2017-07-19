@@ -120,6 +120,7 @@ namespace nova {
 
     void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
         try {
+            std::time_t time_before_adding_or_updating = std::clock();
             all_chunks_lock.lock();
             chunk.needs_update = true;
             all_chunks.push_back(chunk);
@@ -128,18 +129,26 @@ namespace nova {
             all_chunks_lock.unlock();
 
             for(const auto &shader_entry : shaders->get_loaded_shaders()) {
+                std::time_t time_before_processing_shader = std::clock();
                 auto blocks_for_shader = m_chunk_builder.get_blocks_that_match_filter(chunk, shader_entry.second.get_filter());
                 if(blocks_for_shader.size() == 0) {
                     continue;
                 }
 
                 auto block_mesh_definition = m_chunk_builder.make_mesh_for_blocks(blocks_for_shader, chunk);
+                std::time_t time_after_processing_shader = std::clock();
                 LOG(DEBUG) << "Made mesh for chunk at position " << chunk.x << ", " << chunk.z << " and shader "
                           << shader_entry.first;
+                LOG_EVERY_N(10, DEBUG) << "It took " << double(time_after_processing_shader - time_before_processing_shader) / CLOCKS_PER_SEC
+                           << " seconds to build geometry for shader " << shader_entry.first;
                 chunk_parts_to_upload_lock.lock();
                 chunk_parts_to_upload.emplace(shader_entry.first, block_mesh_definition);
                 chunk_parts_to_upload_lock.unlock();
             }
+
+            std::time_t time_after_adding_geometry = std::clock();
+            LOG_EVERY_N(10, DEBUG) << "It took " << double(time_after_adding_geometry - time_before_adding_or_updating) / CLOCKS_PER_SEC
+                       << "seconds to process a chunk";
         } catch(std::exception& e) {
             LOG(ERROR) << "Could not build chunk at position " << chunk.x << ", " << chunk.z << " because '" << e.what() << "'";
         }

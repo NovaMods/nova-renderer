@@ -56,7 +56,7 @@ struct mc_block {
 	int id;
     bool is_on_fire;
 	float ao;
-    const char * state;
+    char * state;
 };
 
 /*!

@@ -5,6 +5,8 @@ import com.continuum.nova.chunks.BlockModelSerializer;
 import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.gui.NovaDraw;
 import com.continuum.nova.utils.Utils;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import glm.Glm;
 import glm.vec._2.Vec2;
 import glm.vec._3.i.Vec3i;
@@ -27,12 +29,15 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.Sys;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
@@ -429,9 +434,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         updateChunk.chunk_id = chunkHashCode;
 
-        LOG.trace("Sending chunk {} to native code", updateRange);
+        long timeAfterBuildingStruct = System.currentTimeMillis();
+        // Using JNA: 550 ms / chunk
         NovaNative.INSTANCE.add_chunk(updateChunk);
-        LOG.debug("Chunk {} updated", updateRange);
+        long timeAfterSendingToNative = System.currentTimeMillis();
 
         long deltaTime = System.currentTimeMillis() - startTime;
         timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
@@ -440,7 +446,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         if(numChunksUpdated.get() % 10 == 0) {
             LOG.debug("It's taken an average of {}ms to update {} chunks",
                     (float) timeSpentInBlockRenderUpdate.get() / numChunksUpdated.get(), numChunksUpdated);
-            LOG.debug("Updating chunk in thread {}", Thread.currentThread().getId());
+            LOG.debug("Detailed stats:\nTime to build chunk: {}ms\nTime to process chunk in native code: {}ms",
+                    timeAfterBuildingStruct - startTime, timeAfterSendingToNative - timeAfterBuildingStruct);
         }
     }
 

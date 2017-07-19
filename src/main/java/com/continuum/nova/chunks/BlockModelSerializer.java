@@ -4,6 +4,7 @@ import com.google.gson.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.MultipartBakedModel;
 import net.minecraft.util.EnumFacing;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,12 +46,18 @@ public class BlockModelSerializer {
     public void addModel(IBlockState state, IBakedModel model) {
         Map<String, List<BakedQuad>> modelData = new HashMap<>();
 
-        for(EnumFacing face : EnumFacing.values()) {
-            List<BakedQuad> quads = model.getQuads(state, face, 0);
-            modelData.put(face.getName(), quads);
-        }
+        // if(!(model instanceof MultipartBakedModel)) {
+            for(EnumFacing face : EnumFacing.values()) {
+                List<BakedQuad> quads = model.getQuads(state, face, 0);
+                modelData.put(face.getName(), quads);
+            }
 
-        allModels.put(state.toString(), modelData);
+            allModels.put(state.toString(), modelData);
+
+        // } else {
+            // For multipart models, get all of their parts
+        // }
+
         LOG.trace("Added a model for state {}", state);
     }
 

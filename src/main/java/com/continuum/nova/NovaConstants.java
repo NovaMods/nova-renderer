@@ -18,6 +18,7 @@ public class NovaConstants {
     public static final String FONT_ATLAS_NAME          = "font";
 
     public static final String MODEL_FILENAME           = "all_models.json";
+    public static final String CHUNK_FILENAME           = "chunk.json";
 
     public static final String MODID                    = "Nova Renderer";
     public static final String VERSION                  = "0.0.4";

@@ -1,5 +1,6 @@
 package com.continuum.nova;
 
+import com.google.gson.annotations.Expose;
 import com.sun.jna.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -124,9 +125,16 @@ public interface NovaNative extends Library {
     }
 
     class mc_block extends Structure {
+        @Expose
         public int id;
+
+        @Expose
         public boolean is_on_fire;
+
+        @Expose
         public float ao;
+
+        @Expose
         public String state;
 
         @Override
@@ -145,13 +153,17 @@ public interface NovaNative extends Library {
     }
 
     class mc_chunk extends Structure {
+        @Expose
         public int chunk_id;
 
+        @Expose
         public float x;
+
+        @Expose
         public float z;
 
+        @Expose
         public mc_block[] blocks = new mc_block[CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH];
-
 
         public mc_chunk() {
             super();
