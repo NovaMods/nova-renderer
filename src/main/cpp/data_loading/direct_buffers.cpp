@@ -7,7 +7,9 @@
 
 namespace nova {
     void direct_buffers::create_buffer(std::string name, unsigned long num_bytes) {
-        buffers.emplace(name, {num_bytes});
+        auto vec = std::vector<unsigned char>();
+        vec.reserve(num_bytes);
+        buffers[name] = vec;
     }
 
     std::vector<unsigned char> &direct_buffers::operator[](std::string buffer_name) {
