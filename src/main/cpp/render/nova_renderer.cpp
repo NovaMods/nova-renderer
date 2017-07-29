@@ -364,6 +364,10 @@ namespace nova {
         return player_camera;
     }
 
+    std::shared_ptr<shaderpack> nova_renderer::get_shaders() {
+        return loaded_shaderpack;
+    }
+
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {
         nova::foreach(shaders, [&](auto shader) { ubos.register_all_buffers_with_shader(shader.second); });
     }

@@ -13,8 +13,8 @@
 namespace nova {
     gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {
         LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
-        filter = parse_filter_expression(source.filter_expression);
-        LOG(TRACE) << "Created filter expression " << filter->to_string();
+        filter = source.filter_expression;
+        LOG(TRACE) << "Created filter expression " << filter;
         create_shader(source.vertex_source, GL_VERTEX_SHADER);
         LOG(TRACE) << "Creatd vertex shader";
         create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
@@ -23,7 +23,7 @@ namespace nova {
         link();
     }
 
-    gl_shader_program::gl_shader_program(gl_shader_program &&other) :
+    gl_shader_program::gl_shader_program(gl_shader_program &&other) noexcept :
             name(std::move(other.name)), filter(std::move(other.filter)) {
 
         this->gl_name = other.gl_name;
@@ -56,7 +56,7 @@ namespace nova {
         LOG(DEBUG) << "Cleaned up resources";
     }
 
-    void gl_shader_program::check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line> line_map) {
+    void gl_shader_program::check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line>& line_map) {
         GLint success = 0;
 
         glGetShaderiv(shader_to_check, GL_COMPILE_STATUS, &success);
@@ -109,7 +109,7 @@ namespace nova {
         //glDeleteProgram(gl_name);
     }
 
-    void gl_shader_program::create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type) {
+    void gl_shader_program::create_shader(const std::vector<shader_line>& shader_source, const GLenum shader_type) {
         LOG(TRACE) << "Creating a shader from source\n" << shader_source;
 
         std::string full_shader_source;
@@ -131,7 +131,7 @@ namespace nova {
 
         const char *shader_source_char = full_shader_source.c_str();
 
-        glShaderSource(shader_name, 1, &shader_source_char, NULL);
+        glShaderSource(shader_name, 1, &shader_source_char, nullptr);
 
         glCompileShader(shader_name);
 
@@ -140,7 +140,7 @@ namespace nova {
         added_shaders.push_back(shader_name);
     }
 
-    std::shared_ptr<igeometry_filter> gl_shader_program::get_filter() const noexcept {
+    std::string & gl_shader_program::get_filter() const noexcept {
         return filter;
     }
 

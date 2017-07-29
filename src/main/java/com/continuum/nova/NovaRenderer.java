@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.continuum.nova.NovaConstants.*;
+import static com.continuum.nova.utils.Utils.getImageData;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
 
@@ -88,7 +89,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private AtomicInteger numChunksUpdated = new AtomicInteger(0);
     private Executor chunkUpdateThreadPool = Executors.newSingleThreadExecutor(); //Executors.newFixedThreadPool(10);
 
-    private ModelManager modelManager;
     private BlockModelSerializer modelSerializer = new BlockModelSerializer();
 
     public NovaRenderer() {
@@ -234,29 +234,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         );
     }
 
-    private byte[] getImageData(BufferedImage image) {
-
-        byte[] convertedImageData = new byte[image.getWidth()*image.getHeight()*4];
-            int counter = 0;
-            for (int y = 0; y < image.getHeight(); y ++) {
-                    for (int x = 0;x<image.getWidth();x++) {
-
-                        Color c = new Color(image.getRGB(x,y),image.getColorModel().hasAlpha());
-
-                        convertedImageData[counter] =(byte) (c.getRed());
-                        convertedImageData[counter + 1] = (byte)(c.getGreen());
-                        convertedImageData[counter + 2] = (byte)(c.getBlue());
-                        convertedImageData[counter + 3] = (byte) (image.getColorModel().getNumComponents() == 3 ? 255 : c.getAlpha());
-                        counter+=4;
-                    }
-            }
-            return convertedImageData;
-
-
-
-    }
-
-    public void preInit(ModelManager modelManager) {
+    public void preInit() {
         System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
@@ -287,8 +265,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
         });
         chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
-
-        this.modelManager = modelManager;
 
         ClassLoader cl = ClassLoader.getSystemClassLoader();
 
@@ -359,20 +335,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
             this.scalefactor = scalefactor;
         }
-    }
-
-    public static String atlasTextureOfSprite(ResourceLocation texture) {
-        ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
-
-        if (BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
-            return BLOCK_COLOR_ATLAS_NAME;
-        } else if (GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
-            return GUI_ATLAS_NAME;
-        } else if (FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
-            return FONT_ATLAS_NAME;
-        }
-
-        return texture.toString();
     }
 
     public void setWorld(World world) {
@@ -475,4 +437,24 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public BlockModelSerializer getModelSerializer() {
         return modelSerializer;
     }
+
+    public static String atlasTextureOfSprite(ResourceLocation texture) {
+        ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
+
+        if (BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+            return BLOCK_COLOR_ATLAS_NAME;
+        } else if (GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
+            return GUI_ATLAS_NAME;
+        } else if (FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+            return FONT_ATLAS_NAME;
+        }
+
+        return texture.toString();
+    }
+
+    public void loadShaderpack(String shaderpackName) {
+        NovaNative.INSTANCE.set_string_setting("loadedShaderpack", shaderpackName);
+    }
 }
+
+

@@ -144,3 +144,21 @@ NOVA_API struct key_char_event get_next_key_char_event()
 NOVA_API void set_mouse_grabbed(int grabbed) {
     NOVA_RENDERER->get_game_window().set_mouse_grabbed(grabbed != 0);
 }
+
+NOVA_API int get_num_loaded_shaders() {
+    return static_cast<int>(NOVA_RENDERER->get_shaders()->get_loaded_shaders().size());
+}
+
+NOVA_API const char** get_shaders_and_filters() {
+    auto& shaders = NOVA_RENDERER->get_shaders()->get_loaded_shaders();
+
+    const char** filters = new const char*[shaders.size() * 2];
+    int cur_filter = 0;
+    for(auto& entry : shaders) {
+        filters[cur_filter] = entry.first.data();
+        filters[cur_filter + 1] = entry.second.get_filter().data();
+        cur_filter += 2;
+    }
+
+    return filters;
+}

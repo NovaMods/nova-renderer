@@ -15,7 +15,7 @@ namespace nova {
         auto tokens = split(expression, ' ');
 
         if(tokens.size() % 2 == 0) {
-            throw new std::runtime_error("Cannot have an even number of tokens. Check yourself and try again");
+            throw std::runtime_error("Cannot have an even number of tokens. Check yourself and try again");
         }
 
         auto tokens_itr = tokens.begin();

@@ -232,7 +232,7 @@ namespace nova {
     nlohmann::json& get_default_shaders_json() {
         static nlohmann::json default_shaders_json;
 
-        if(default_shaders_json.size() == 0) {
+        if(default_shaders_json.empty()) {
             std::ifstream default_json_file("config/shaders.json");
             if(default_json_file.is_open()) {
                 //default_json_file >> default_shaders_json;
