@@ -246,6 +246,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
         updateWindowSize();
+        loadShaderpack("default");
 
         // Moved here so that it's initialized after the native code is loaded
         chunksToUpdate = new PriorityQueue<>((range1, range2) -> {
@@ -271,11 +272,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
 
         ClassLoader cl = ClassLoader.getSystemClassLoader();
-
-        URL[] urls = ((URLClassLoader)cl).getURLs();
-
-        for(URL url : urls) {
-            LOG.trace(url.getFile());
+        URL[] classpathPaths = ((URLClassLoader)cl).getURLs();
+        for(URL path : classpathPaths) {
+            LOG.trace(path.getFile());
         }
 
     }
@@ -319,7 +318,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         if(!chunksToUpdate.isEmpty()) {
             ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
-            chunkUpdateThreadPool.execute(() -> sendChunkToNative(range));
+            chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
             updatedChunks.add(range);
         }
 
@@ -347,6 +346,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             world.addEventListener(chunkUpdateListener);
             this.world = world;
             chunksToUpdate.clear();
+
+            if(chunkBuilder != null) {
+                chunkBuilder.setWorld(world);
+            }
         }
     }
 
@@ -370,61 +373,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         NovaNative.mc_texture_atlas_location loc = new NovaNative.mc_texture_atlas_location(location.toString(), 0, 0, 1, 1);
         NovaNative.INSTANCE.add_texture_location(loc);
-    }
-
-    private void sendChunkToNative(ChunkUpdateListener.BlockUpdateRange updateRange) {
-        LOG.debug("Updating chunk {}", updateRange);
-        NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
-        long startTime = System.currentTimeMillis();
-
-        Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(updateRange.min.x, updateRange.min.y, updateRange.min.z));
-
-        for(int x = updateRange.min.x; x <= updateRange.max.x; x++) {
-            for(int y = updateRange.min.y; y < updateRange.max.y; y++) {
-                for(int z = updateRange.min.z; z <= updateRange.max.z; z++) {
-                    int chunkX = x - updateRange.min.x;
-                    int chunkY = y - updateRange.min.y;
-                    int chunkZ = z - updateRange.min.z;
-                    int idx = chunkX + chunkY * CHUNK_WIDTH + chunkZ * CHUNK_WIDTH * CHUNK_HEIGHT;
-
-                    NovaNative.mc_block curBlock = updateChunk.blocks[idx];
-                    copyBlockStateIntoMcBlock(mcChunk.getBlockState(x, y, z), curBlock);
-                }
-            }
-        }
-
-        updateChunk.x = updateRange.min.x;
-        updateChunk.z = updateRange.min.z;
-
-        int chunkHashCode = (int) updateChunk.x;
-        chunkHashCode = (int) (31 * chunkHashCode + updateChunk.z);
-
-        updateChunk.chunk_id = chunkHashCode;
-
-        long timeAfterBuildingStruct = System.currentTimeMillis();
-        // Using JNA: 550 ms / chunk
-        NovaNative.INSTANCE.add_chunk(updateChunk);
-        long timeAfterSendingToNative = System.currentTimeMillis();
-
-        long deltaTime = System.currentTimeMillis() - startTime;
-        timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
-        numChunksUpdated.incrementAndGet();
-
-        if(numChunksUpdated.get() % 10 == 0) {
-            LOG.debug("It's taken an average of {}ms to update {} chunks",
-                    (float) timeSpentInBlockRenderUpdate.get() / numChunksUpdated.get(), numChunksUpdated);
-            LOG.debug("Detailed stats:\nTime to build chunk: {}ms\nTime to process chunk in native code: {}ms",
-                    timeAfterBuildingStruct - startTime, timeAfterSendingToNative - timeAfterBuildingStruct);
-        }
-    }
-
-    private void copyBlockStateIntoMcBlock(IBlockState blockState, NovaNative.mc_block curBlock) {
-        Block block = blockState.getBlock();
-
-        curBlock.id = Block.getIdFromBlock(block);
-        curBlock.is_on_fire = false;
-        curBlock.ao = blockState.getAmbientOcclusionLightValue();
-        curBlock.state = blockState.toString();
     }
 
     /**
@@ -469,7 +417,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             filterMap.put(filterName, filter);
         }
 
-        chunkBuilder = new ChunkBuilder(filterMap);
+        chunkBuilder = new ChunkBuilder(filterMap, world);
 
         chunksToUpdate.addAll(updatedChunks);
         updatedChunks.clear();
