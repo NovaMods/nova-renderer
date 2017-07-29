@@ -346,7 +346,7 @@ public interface NovaNative extends Library {
 
     boolean display_is_active();
 
-    void set_string_setting(String setting,String value);
+    void set_string_setting(String setting, String value);
 
     void set_float_setting(String setting_name, float setting_value);
 

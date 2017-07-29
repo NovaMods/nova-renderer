@@ -2,7 +2,9 @@ package com.continuum.nova;
 
 import com.continuum.nova.NovaNative.window_size;
 import com.continuum.nova.chunks.BlockModelSerializer;
+import com.continuum.nova.chunks.ChunkBuilder;
 import com.continuum.nova.chunks.ChunkUpdateListener;
+import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.gui.NovaDraw;
 import com.continuum.nova.utils.Utils;
 import com.google.gson.Gson;
@@ -83,6 +85,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private ChunkUpdateListener chunkUpdateListener;
 
     private PriorityQueue<ChunkUpdateListener.BlockUpdateRange> chunksToUpdate;
+    private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
     private World world;
 
     private AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
@@ -90,6 +93,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private Executor chunkUpdateThreadPool = Executors.newSingleThreadExecutor(); //Executors.newFixedThreadPool(10);
 
     private BlockModelSerializer modelSerializer = new BlockModelSerializer();
+    private ChunkBuilder chunkBuilder;
 
     public NovaRenderer() {
         // I put these in Utils to make this class smaller
@@ -316,6 +320,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         if(!chunksToUpdate.isEmpty()) {
             ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
             chunkUpdateThreadPool.execute(() -> sendChunkToNative(range));
+            updatedChunks.add(range);
         }
 
         EntityPlayerSP viewEntity = mc.thePlayer;
@@ -454,6 +459,20 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void loadShaderpack(String shaderpackName) {
         NovaNative.INSTANCE.set_string_setting("loadedShaderpack", shaderpackName);
+
+        String[] filters = NovaNative.INSTANCE.get_shaders_and_filters();
+
+        Map<String, IGeometryFilter> filterMap = new HashMap<>();
+        for(int i = 0; i < filters.length; i += 2) {
+            String filterName = filters[i];
+            IGeometryFilter filter = IGeometryFilter.parseFilterString(filters[i + 1]);
+            filterMap.put(filterName, filter);
+        }
+
+        chunkBuilder = new ChunkBuilder(filterMap);
+
+        chunksToUpdate.addAll(updatedChunks);
+        updatedChunks.clear();
     }
 }
 
