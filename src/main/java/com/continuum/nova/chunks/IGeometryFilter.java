@@ -1,13 +1,13 @@
 package com.continuum.nova.chunks;
 
-import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 
 /**
  * @author ddubois
  * @since 27-Jul-17
  */
 public interface IGeometryFilter {
-    boolean matches(Block block);
+    boolean matches(IBlockState blockState);
 
     enum GeometryType {
         BLOCK,
@@ -36,8 +36,8 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(Block block) {
-            return left.matches(block) && right.matches(block);
+        public boolean matches(IBlockState blockState) {
+            return left.matches(blockState) && right.matches(blockState);
         }
 
         @Override
@@ -56,8 +56,8 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(Block block) {
-            return left.matches(block) || right.matches(block);
+        public boolean matches(IBlockState blockState) {
+            return left.matches(blockState) || right.matches(blockState);
         }
 
         @Override
@@ -74,8 +74,8 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(Block block) {
-            return block.getUnlocalizedName().equals(name);
+        public boolean matches(IBlockState blockState) {
+            return blockState.getBlock().getUnlocalizedName().equals(name);
         }
 
         @Override
@@ -92,8 +92,8 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(Block block) {
-            return block.getUnlocalizedName().contains(namePart);
+        public boolean matches(IBlockState blockState) {
+            return blockState.getBlock().getUnlocalizedName().contains(namePart);
         }
 
         @Override
@@ -110,7 +110,7 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(Block block) {
+        public boolean matches(IBlockState blockState) {
             return type == GeometryType.BLOCK;
         }
 
@@ -128,8 +128,8 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(Block block) {
-            return !block.isVisuallyOpaque() == shouldBeTransparent;
+        public boolean matches(IBlockState blockState) {
+            return !blockState.isTranslucent() == shouldBeTransparent;
         }
 
         @Override
@@ -150,8 +150,8 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(Block block) {
-            return block.getBlockState().getBaseState().getLightValue() > 0 == shouldBeEmissive;
+        public boolean matches(IBlockState blockState) {
+            return blockState.getLightValue() > 0 == shouldBeEmissive;
         }
 
         @Override

@@ -140,7 +140,7 @@ namespace nova {
         added_shaders.push_back(shader_name);
     }
 
-    std::string & gl_shader_program::get_filter() const noexcept {
+    std::string & gl_shader_program::get_filter() noexcept {
         return filter;
     }
 

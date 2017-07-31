@@ -100,7 +100,7 @@ namespace nova {
          */
         void bind() noexcept;
 
-        std::string& get_filter() const noexcept;
+        std::string& get_filter() noexcept;
 
         std::string& get_name() noexcept;
 

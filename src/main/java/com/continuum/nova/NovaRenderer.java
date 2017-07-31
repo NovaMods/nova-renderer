@@ -88,8 +88,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
     private World world;
 
-    private AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
-    private AtomicInteger numChunksUpdated = new AtomicInteger(0);
     private Executor chunkUpdateThreadPool = Executors.newSingleThreadExecutor(); //Executors.newFixedThreadPool(10);
 
     private BlockModelSerializer modelSerializer = new BlockModelSerializer();
@@ -318,7 +316,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         if(!chunksToUpdate.isEmpty()) {
             ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
-            chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
+            chunkBuilder.createMeshesForChunk(range);
+            // chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
             updatedChunks.add(range);
         }
 
