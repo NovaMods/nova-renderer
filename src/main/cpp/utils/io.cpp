@@ -22,7 +22,7 @@ namespace nova {
         block.id = j["id"].get<int>();
     }
 
-    nlohmann::json to_json(const mc_chunk& chunk) {
+    nlohmann::json to_json(const mc_basic_render_object& chunk) {
         auto j = nlohmann::json{
                 {"chunk_id", chunk.chunk_id}
         };
@@ -40,7 +40,7 @@ namespace nova {
         return j;
     }
 
-    void from_json(nlohmann::json& j, mc_chunk& chunk) {
+    void from_json(nlohmann::json& j, mc_basic_render_object& chunk) {
         chunk.chunk_id = j["chunk_id"];
 
         for(int i = 0; i < j["blocks"].size(); i++) {
@@ -50,19 +50,19 @@ namespace nova {
         }
     }
 
-    void save_chunk(const mc_chunk& chunk, const std::string filename) {
+    void save_chunk(const mc_basic_render_object& chunk, const std::string filename) {
         std::ofstream out(filename);
         nlohmann::json j = to_json(chunk);
         out << j.dump();
     }
 
-    std::shared_ptr<mc_chunk> load_chunk(const std::string filename) {
+    std::shared_ptr<mc_basic_render_object> load_chunk(const std::string filename) {
         std::ifstream file(filename);
         nlohmann::json j;
         file >> j;
 
-        mc_chunk* chunk = new mc_chunk();
+        mc_basic_render_object* chunk = new mc_basic_render_object();
         from_json(j, *chunk);
-        return std::make_shared<mc_chunk>(*chunk);
+        return std::make_shared<mc_basic_render_object>(*chunk);
     }
 }

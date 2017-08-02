@@ -63,7 +63,7 @@ NOVA_API void reset_texture_manager();
  *
  * \param chunk The chunk to add to Nova
  */
-NOVA_API void add_chunk(mc_chunk & chunk);
+NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_basic_render_object* chunk);
 
 /*!
  * \brief Registers a block definition with Nova so that chunks need only send block IDs and per-block information

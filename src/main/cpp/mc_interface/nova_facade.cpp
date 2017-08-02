@@ -50,8 +50,8 @@ NOVA_API int get_max_texture_size() {
     return TEXTURE_MANAGER.get_max_texture_size();
 }
 
-NOVA_API void add_chunk(mc_chunk & chunk) {
-    MESH_STORE.add_or_update_chunk(chunk);
+NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_basic_render_object * chunk) {
+    MESH_STORE.add_geometry_for_filter(std::string(filter_name), *chunk);
 }
 
 NOVA_API void register_block_definition(int id, mc_block_definition blockDefinition) {

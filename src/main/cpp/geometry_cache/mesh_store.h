@@ -40,7 +40,7 @@ namespace nova {
          *
          * \param chunk The chunk to add or update
          */
-        void add_or_update_chunk(mc_chunk& chunk);
+        void add_or_update_chunk(mc_basic_render_object& chunk);
 
         /*!
          * \brief Sets the shaderpack reference to the given shaderpack
@@ -71,7 +71,7 @@ namespace nova {
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
 
         std::mutex all_chunks_lock;
-        std::vector<mc_chunk> all_chunks;
+        std::vector<mc_basic_render_object> all_chunks;
 
         std::shared_ptr<shaderpack> shaders;
 

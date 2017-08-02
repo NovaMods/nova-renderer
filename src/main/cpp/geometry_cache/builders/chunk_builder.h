@@ -32,7 +32,7 @@ namespace nova {
          * \param filter The filter to match blocks against
          * \return A list of all the positions of blocks that match the filter
          */
-        std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_chunk &chunk, const std::shared_ptr<igeometry_filter> filter);
+        std::vector<glm::ivec3> get_blocks_that_match_filter(const mc_basic_render_object &chunk, const std::shared_ptr<igeometry_filter> filter);
 
         /*!
          * \brief Makes a mesh_definition for all the provided blocks
@@ -44,7 +44,7 @@ namespace nova {
          * \param blocks The blocks to create a mesh from
          * \return The mesh that was created from the blocks
          */
-        mesh_definition make_mesh_for_blocks(const std::vector<glm::ivec3>& blocks, const mc_chunk& chunk);
+        mesh_definition make_mesh_for_blocks(const std::vector<glm::ivec3>& blocks, const mc_basic_render_object& chunk);
 
         /*!
          * \brief Determines if the block in the provided chunk at the given position should be rendered with a simple cube
@@ -54,7 +54,7 @@ namespace nova {
          * \param chunk The chunk that has the block in question in it
          * \return True if the block at the provided position is a simple cube, false if it should use a more complex model
          */
-        bool is_cube(const glm::ivec3 pos, const mc_chunk& chunk);
+        bool is_cube(const glm::ivec3 pos, const mc_basic_render_object& chunk);
 
         /*!
          * \brief Checks if the block at the given position in the provided chunk is a block you can see through, and thus
@@ -65,14 +65,14 @@ namespace nova {
          * \return True if the block at the provided position is not fully opaque or is not within the given chunk, false
          * otherwise
          */
-        bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk);
+        bool block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_basic_render_object& chunk);
 
-        bool block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_chunk& chunk);
+        bool block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_basic_render_object& chunk);
 
         /*!
          * \brief Makes the geometry for the provided block in the given chunk
          */
-        std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, baked_model& model);
+        std::vector<block_face> make_geometry_for_block(const glm::ivec3& block_pos, const mc_basic_render_object& chunk, baked_model& model);
 
         /*!
          * \brief Gets the AO in the provided direction
@@ -85,7 +85,7 @@ namespace nova {
          * \param chunk The chunk that the block lives in
          * \return A float from 0 to 1. 0 means no AO, 1 means all the AO
          */
-        float get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk);
+        float get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_basic_render_object& chunk);
 
         std::unordered_map<int, mc_block_definition>& get_block_definitions();
 

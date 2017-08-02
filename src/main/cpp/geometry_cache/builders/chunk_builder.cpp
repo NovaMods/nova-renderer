@@ -15,7 +15,7 @@
 #include <string.h>
 
 namespace nova {
-    std::vector<glm::ivec3> chunk_builder::get_blocks_that_match_filter(const mc_chunk &chunk, const std::shared_ptr<igeometry_filter> filter) {
+    std::vector<glm::ivec3> chunk_builder::get_blocks_that_match_filter(const mc_basic_render_object &chunk, const std::shared_ptr<igeometry_filter> filter) {
         auto blocks_that_match_filter = std::vector<glm::ivec3>{};
         for(int z = 0; z < CHUNK_WIDTH; z++) {
             for(int y = 0; y < CHUNK_HEIGHT; y++) {
@@ -33,7 +33,7 @@ namespace nova {
         return blocks_that_match_filter;
     }
 
-    mesh_definition chunk_builder::make_mesh_for_blocks(const std::vector<glm::ivec3>& blocks, const mc_chunk& chunk) {
+    mesh_definition chunk_builder::make_mesh_for_blocks(const std::vector<glm::ivec3>& blocks, const mc_basic_render_object& chunk) {
         auto mesh = mesh_definition{};
         mesh.vertex_format = format::POS_UV_LIGHTMAPUV_NORMAL_TANGENT;
 
@@ -78,7 +78,7 @@ namespace nova {
 		return mesh;
     }
 
-	std::vector<block_face> chunk_builder::make_geometry_for_block(const glm::ivec3& block_pos, const mc_chunk& chunk, baked_model& model) {
+	std::vector<block_face> chunk_builder::make_geometry_for_block(const glm::ivec3& block_pos, const mc_basic_render_object& chunk, baked_model& model) {
         auto faces_to_make = std::vector<face_id>{};
         if(!block_at_pos_is_opaque(block_pos + glm::ivec3(0, 1, 0), chunk) &&
            !block_at_offset_is_same(block_pos, glm::ivec3(0, 1, 0), chunk)) {
@@ -120,11 +120,11 @@ namespace nova {
         return quads;
     }
 
-	bool chunk_builder::is_cube(const glm::ivec3 pos, const mc_chunk& chunk) {
+	bool chunk_builder::is_cube(const glm::ivec3 pos, const mc_basic_render_object& chunk) {
 		return true;
 	}
 
-	float chunk_builder::get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_chunk& chunk) {
+	float chunk_builder::get_ao_in_direction(const glm::vec3 position, const face_id face_to_check, const mc_basic_render_object& chunk) {
 		return 0;
 	}
 
@@ -132,7 +132,7 @@ namespace nova {
         return block_definitions;
     };
 
-    bool chunk_builder::block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_chunk& chunk) {
+    bool chunk_builder::block_at_pos_is_opaque(glm::ivec3 block_pos, const mc_basic_render_object& chunk) {
         // A separate check for each direction to increase code readability and debuggability
         if(block_pos.x < 0 || block_pos.x >= CHUNK_WIDTH) {
             return false;
@@ -152,7 +152,7 @@ namespace nova {
         return !block_definitions[block.id].is_transparent();
     }
 
-    bool chunk_builder::block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_chunk& chunk) {
+    bool chunk_builder::block_at_offset_is_same(glm::ivec3 block_pos, glm::ivec3 offset, const mc_basic_render_object& chunk) {
         LOG(TRACE) << "Checking if block at offset " << offset << " is the same";
         // A separate check for each direction to increase code readability and debuggability
         if(block_pos.x+offset.x < 0 || block_pos.x+offset.x >= CHUNK_WIDTH) {

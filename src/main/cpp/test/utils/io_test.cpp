@@ -13,7 +13,7 @@
 namespace nova {
     namespace test {
         TEST(io_test, save_chunk_all_air) {
-            auto* chunk = new mc_chunk{};
+            auto* chunk = new mc_basic_render_object{};
             chunk->chunk_id = 42;
             for(int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH; i++) {
                 chunk->blocks[i] = mc_block{0, 0, false, "tile:air"};

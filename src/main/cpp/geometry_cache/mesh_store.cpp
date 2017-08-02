@@ -118,7 +118,7 @@ namespace nova {
         LOG(INFO) << "Rebuild complete";
     }
 
-    void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
+    void mesh_store::add_or_update_chunk(mc_basic_render_object &chunk) {
         try {
             std::time_t time_before_adding_or_updating = std::clock();
             all_chunks_lock.lock();

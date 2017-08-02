@@ -28,7 +28,7 @@ namespace nova {
             return screen;
         }
 
-        std::shared_ptr<mc_chunk> load_test_chunk(std::string chunk_file) {
+        std::shared_ptr<mc_basic_render_object> load_test_chunk(std::string chunk_file) {
             auto chunk_filename_full = TEST_RESOURCES_LOCATION + chunk_file;
             return load_chunk(chunk_filename_full);
         }
