@@ -686,7 +686,6 @@ public class Utils {
     }
 
     public static byte[] getImageData(BufferedImage image) {
-
         byte[] convertedImageData = new byte[image.getWidth()*image.getHeight()*4];
         int counter = 0;
         for (int y = 0; y < image.getHeight(); y ++) {

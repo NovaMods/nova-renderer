@@ -1,30 +1,26 @@
 package com.continuum.nova;
 
-import com.google.gson.annotations.Expose;
 import com.sun.jna.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.SimpleBakedModel;
-import net.minecraft.util.EnumFacing;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.continuum.nova.NovaConstants.CHUNK_DEPTH;
-import static com.continuum.nova.NovaConstants.CHUNK_HEIGHT;
-import static com.continuum.nova.NovaConstants.CHUNK_WIDTH;
 
 public interface NovaNative extends Library {
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
 
     Logger LOG = LogManager.getLogger(NovaNative.class);
+
+    enum NovaVertexFormat {
+        POS,
+        POS_UV,
+        POS_UV_LIGHTMAPUV_NORMAL_TANGENT,
+        POS_UV_COLOR
+    }
 
     class mc_atlas_texture extends Structure {
         public int width;
@@ -124,58 +120,40 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_block extends Structure {
-        @Expose
-        public int id;
-
-        @Expose
-        public boolean is_on_fire;
-
-        @Expose
-        public float ao;
-
-        @Expose
-        public String state;
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("id", "is_on_fire", "ao", "state");
-        }
-
-        @Override
-        public String toString() {
-            return "mc_block{" +
-                      "is_on_fire=" + is_on_fire +
-                    ", id=" + id +
-                    ", ao=" + ao +
-                    '}';
-        }
-    }
-
-    class mc_chunk extends Structure {
-        @Expose
-        public int chunk_id;
-
-        @Expose
+    class mc_basic_render_object extends Structure {
+        public int format;
         public float x;
-
-        @Expose
+        public float y;
         public float z;
+        public int id;
+        public Pointer vertex_data; // int[]
+        public Pointer indices;     // int[]
+        public int vertex_buffer_size;
+        public int index_buffer_size;
 
-        @Expose
-        public mc_block[] blocks = new mc_block[CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH];
-
-        public mc_chunk() {
-            super();
-
-            for(int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH; i++) {
-                blocks[i] = new NovaNative.mc_block();
+        public void setVertex_data(List<Integer> vertexData) {
+            vertex_data = new Memory(vertexData.size() * Native.getNativeSize(Integer.class));
+            for(int i = 0; i < vertexData.size(); i++) {
+                Integer data = vertexData.get(i);
+                vertex_data.setInt(i * Native.getNativeSize(Integer.TYPE), data);
             }
+
+            vertex_buffer_size = vertexData.size();
+        }
+
+        public void setIndices(List<Integer> indices) {
+            this.indices = new Memory(indices.size() * Native.getNativeSize(Integer.class));
+            for(int i = 0; i < indices.size(); i++) {
+                Integer data = indices.get(i);
+                this.indices.setInt(i * Native.getNativeSize(Integer.TYPE), data);
+            }
+
+            index_buffer_size = indices.size();
         }
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("chunk_id", "x", "z", "blocks");
+            return Arrays.asList("format", "x", "y", "z", "id", "vertex_data", "indices", "vertex_buffer_size", "index_buffer_size");
         }
     }
 
@@ -320,7 +298,7 @@ public interface NovaNative extends Library {
 
     void register_block_definition(int id, mc_block_definition blockDefinition);
 
-    void add_chunk(mc_chunk chunk);
+    void add_chunk_geometry_for_filter(String filter_name, mc_basic_render_object render_object);
 
     boolean should_close();
 
