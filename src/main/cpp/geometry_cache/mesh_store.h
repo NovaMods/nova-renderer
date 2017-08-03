@@ -31,26 +31,11 @@ namespace nova {
         void add_gui_buffers(mc_gui_send_buffer_command* command);
 
         /*!
-         * \brief Looks at all the
-         */
-        void generate_needed_chunk_geometry();
-
-        /*!
          * \brief Adds a chunk to the mesh store if the chunk doesn't exist, or replaces the chunks if it does exist
          *
          * \param chunk The chunk to add or update
          */
-        void add_or_update_chunk(mc_basic_render_object& chunk);
-
-        /*!
-         * \brief Sets the shaderpack reference to the given shaderpack
-         *
-         * This object needs to keep a reference to the current shaderpack so that it can apply all the right filters
-         * when a new piece of geometry is loaded, determining which shader should render the bit of geometry
-         *
-         * \param new_shaderpack The new shaderpack to use for retrieving filters from
-         */
-        void set_shaderpack(std::shared_ptr<shaderpack> new_shaderpack);
+        void add_geometry_for_filter(std::string filter_name, mc_basic_render_object& chunk);
 
         /*!
          * \brief Retrieves the list of meshes that the shader with the provided name should render
@@ -65,15 +50,11 @@ namespace nova {
         */
         void remove_gui_render_objects();
 
-        chunk_builder& get_chunk_builder();
-
     private:
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
 
         std::mutex all_chunks_lock;
         std::vector<mc_basic_render_object> all_chunks;
-
-        std::shared_ptr<shaderpack> shaders;
 
         std::mutex chunk_parts_to_upload_lock;
         /*!
@@ -81,18 +62,8 @@ namespace nova {
          */
         std::queue<std::tuple<std::string, mesh_definition>> chunk_parts_to_upload;
 
-        chunk_builder m_chunk_builder;
-
         float seconds_spent_updating_chunks = 0;
         long total_chunks_updated = 0;
-
-        /*!
-         * \brief Puts the provided render object into all the proper lists, so that it can be rendered by the right
-         * shader
-         *
-         * \param object The render_object to sort
-         */
-        void sort_render_object(render_object& object);
 
         /*!
          * \brief Removes all the render_objects from the lists of render_objects that match the given fitler funciton

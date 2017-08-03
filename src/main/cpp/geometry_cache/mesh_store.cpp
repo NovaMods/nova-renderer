@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <easylogging++.h>
 #include <regex>
+#include <iomanip>
 #include "mesh_store.h"
 #include "../../../render/nova_renderer.h"
 #include "builders/chunk_builder.h"
@@ -91,91 +92,10 @@ namespace nova {
         }
     }
 
-    void mesh_store::sort_render_object(render_object& object) {
-        auto& all_shaders = shaders->get_loaded_shaders();
-        for(auto& entry : all_shaders) {
-            auto filter = entry.second.get_filter();
-            if(filter->matches(object)) {
-                renderables_grouped_by_shader[entry.first].push_back(std::move(object));
-            }
-        }
-    }
-
     void mesh_store::remove_render_objects(std::function<bool(render_object&)> filter) {
         for(auto& group : renderables_grouped_by_shader) {
             std::remove_if(group.second.begin(), group.second.end(), filter);
         }
     }
 
-    void mesh_store::set_shaderpack(std::shared_ptr<shaderpack> new_shaderpack) {
-        shaders = new_shaderpack;
-
-        renderables_grouped_by_shader.clear();
-        LOG(INFO) << "Rebuilding chunk geometry to fit new shaderpack";
-        for(auto& chunk : all_chunks) {
-            add_or_update_chunk(chunk);
-        }
-        LOG(INFO) << "Rebuild complete";
-    }
-
-    void mesh_store::add_or_update_chunk(mc_basic_render_object &chunk) {
-        try {
-            std::time_t time_before_adding_or_updating = std::clock();
-            all_chunks_lock.lock();
-            chunk.needs_update = true;
-            all_chunks.push_back(chunk);
-            int chunk_id = chunk.chunk_id;
-            remove_render_objects([chunk_id](render_object &obj) { return obj.parent_id == chunk_id; });
-            all_chunks_lock.unlock();
-
-            for(const auto &shader_entry : shaders->get_loaded_shaders()) {
-                std::time_t time_before_processing_shader = std::clock();
-                auto blocks_for_shader = m_chunk_builder.get_blocks_that_match_filter(chunk, shader_entry.second.get_filter());
-                if(blocks_for_shader.size() == 0) {
-                    continue;
-                }
-
-                auto block_mesh_definition = m_chunk_builder.make_mesh_for_blocks(blocks_for_shader, chunk);
-                std::time_t time_after_processing_shader = std::clock();
-                LOG(DEBUG) << "Made mesh for chunk at position " << chunk.x << ", " << chunk.z << " and shader "
-                          << shader_entry.first;
-                LOG_EVERY_N(10, DEBUG) << "It took " << double(time_after_processing_shader - time_before_processing_shader) / CLOCKS_PER_SEC
-                           << " seconds to build geometry for shader " << shader_entry.first;
-                chunk_parts_to_upload_lock.lock();
-                chunk_parts_to_upload.emplace(shader_entry.first, block_mesh_definition);
-                chunk_parts_to_upload_lock.unlock();
-            }
-
-            std::time_t time_after_adding_geometry = std::clock();
-            LOG_EVERY_N(10, DEBUG) << "It took " << double(time_after_adding_geometry - time_before_adding_or_updating) / CLOCKS_PER_SEC
-                       << "seconds to process a chunk";
-        } catch(std::exception& e) {
-            LOG(ERROR) << "Could not build chunk at position " << chunk.x << ", " << chunk.z << " because '" << e.what() << "'";
-        }
-    }
-
-    void mesh_store::generate_needed_chunk_geometry() {
-        bool has_thing_to_upload = false;
-        std::tuple<std::string, mesh_definition> definition_to_upload;
-        chunk_parts_to_upload_lock.lock();
-        if(!chunk_parts_to_upload.empty()) {
-            definition_to_upload = std::move(chunk_parts_to_upload.front());
-            chunk_parts_to_upload.pop();
-            has_thing_to_upload = true;
-        }
-        chunk_parts_to_upload_lock.unlock();
-
-        if(has_thing_to_upload) {
-            auto chunk_part_render_object = render_object{};
-            chunk_part_render_object.geometry = std::make_unique<gl_mesh>(std::get<1>(definition_to_upload));
-            chunk_part_render_object.position = std::get<1>(definition_to_upload).position;
-            chunk_part_render_object.color_texture = "block_color";
-
-            renderables_grouped_by_shader[std::get<0>(definition_to_upload)].push_back(std::move(chunk_part_render_object));
-        }
-    }
-
-    chunk_builder& mesh_store::get_chunk_builder() {
-        return m_chunk_builder;
-    }
 }
