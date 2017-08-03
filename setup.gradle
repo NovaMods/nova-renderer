@@ -111,8 +111,13 @@ task applyPatch(dependsOn: copyMcPack) << {
     new ByteArrayOutputStream().withStream { os ->
         try {
             def result = exec {
-                commandLine "${project.projectDir}/runtime/bin/applydiff.exe", '-p1', '-i', "${project.projectDir}/patches/nova.patch"
-                workingDir 'src/main/java/net'
+                if(OperatingSystem.current().isWindows()) {
+                    commandLine "${project.projectDir}/runtime/bin/applydiff.exe", '-p1', '-i', "${project.projectDir}/patches/nova.patch"
+                    workingDir 'src/main/java/net'
+                } else {
+                    commandLine 'bash', '-c', "patch -p1 < ${project.projectDir}/patches/nova.patch"
+                    workingDir 'src/main/java/net'
+                }
 
                 standardOutput = os
                 errorOutput = os
