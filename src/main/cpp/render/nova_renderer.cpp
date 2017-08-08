@@ -253,7 +253,7 @@ namespace nova {
         LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
         loaded_shaderpack = std::make_shared<shaderpack>(load_shaderpack(new_shaderpack_name));
         LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
-        meshes->set_shaderpack(loaded_shaderpack);
+        /// meshes->set_shaderpack(loaded_shaderpack);
         LOG(INFO) << "Loading complete";
 		
         link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), *ubo_manager);

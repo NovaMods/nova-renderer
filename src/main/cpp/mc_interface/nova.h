@@ -63,22 +63,7 @@ NOVA_API void reset_texture_manager();
  *
  * \param chunk The chunk to add to Nova
  */
-NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_basic_render_object* chunk);
-
-/*!
- * \brief Registers a block definition with Nova so that chunks need only send block IDs and per-block information
- *
- * \param id The ID of the block to register
- * \param blockDefinition The data for the block to register
- */
-NOVA_API void register_block_definition(int id, mc_block_definition blockDefinition);
-
-/*!
- * \brief Tells Nova to load all the block models from the given file
- *
- * \param filename The name of the file to load all the block models from
- */
-NOVA_API void load_block_state_models(const char * filename);
+NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object* chunk);
 
 /*!
  * \brief Updates the Nova Renderer and renders the current frame

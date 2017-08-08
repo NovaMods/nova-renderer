@@ -120,7 +120,7 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_basic_render_object extends Structure {
+    class mc_chunk_render_object extends Structure {
         public int format;
         public float x;
         public float y;
@@ -298,7 +298,7 @@ public interface NovaNative extends Library {
 
     void register_block_definition(int id, mc_block_definition blockDefinition);
 
-    void add_chunk_geometry_for_filter(String filter_name, mc_basic_render_object render_object);
+    void add_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
 
     boolean should_close();
 

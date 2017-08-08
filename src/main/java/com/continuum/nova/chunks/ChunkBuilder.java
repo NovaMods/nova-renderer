@@ -59,9 +59,9 @@ public class ChunkBuilder {
         int chunkHashCode = range.min.x;
         chunkHashCode = 31 * chunkHashCode + range.min.z;
 
-        Map<String, List<NovaNative.mc_basic_render_object>> geometriesForFilter = new DefaultHashMap<>(ArrayList::new);
+        Map<String, List<NovaNative.mc_chunk_render_object>> geometriesForFilter = new DefaultHashMap<>(ArrayList::new);
         for(String filterName : blocksForFilter.keySet()) {
-            NovaNative.mc_basic_render_object renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world);
+            NovaNative.mc_chunk_render_object renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world);
             renderObj.id = chunkHashCode;
             renderObj.x = range.min.x;
             renderObj.y = range.min.y;
@@ -75,7 +75,7 @@ public class ChunkBuilder {
 
         for(String filterName : geometriesForFilter.keySet()) {
             if(!geometriesForFilter.get(filterName).isEmpty()) {
-                for(NovaNative.mc_basic_render_object obj : geometriesForFilter.get(filterName)) {
+                for(NovaNative.mc_chunk_render_object obj : geometriesForFilter.get(filterName)) {
                     NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
                 }
             }
@@ -94,10 +94,10 @@ public class ChunkBuilder {
         }
     }
 
-    private NovaNative.mc_basic_render_object makeMeshForBlocks(List<BlockPos> blockStates, World world) {
+    private NovaNative.mc_chunk_render_object makeMeshForBlocks(List<BlockPos> blockStates, World world) {
         List<Integer> vertexData = new ArrayList<>();
         IndexList indices = new IndexList();
-        NovaNative.mc_basic_render_object chunk_render_object = new NovaNative.mc_basic_render_object();
+        NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
 
         int blockIndexCounter = 0;
         for(BlockPos blockPos : blockStates) {

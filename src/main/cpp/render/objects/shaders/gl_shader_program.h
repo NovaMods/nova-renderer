@@ -15,7 +15,6 @@
 #include <glad/glad.h>
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
-#include "geometry_filter.h"
 
 
 namespace nova {

@@ -15,14 +15,14 @@ namespace nova {
     void from_json(nlohmann::json& j, mc_block& block);
 
 
-    nlohmann::json to_json(const mc_basic_render_object& chunk);
+    nlohmann::json to_json(const mc_chunk_render_object& chunk);
 
-    void from_json(nlohmann::json& j, mc_basic_render_object& chunk);
+    void from_json(nlohmann::json& j, mc_chunk_render_object& chunk);
 
 
-    void save_chunk(const mc_basic_render_object& chunk, const std::string filename);
+    void save_chunk(const mc_chunk_render_object& chunk, const std::string filename);
 
-    std::shared_ptr<mc_basic_render_object> load_chunk(const std::string filename);
+    std::shared_ptr<mc_chunk_render_object> load_chunk(const std::string filename);
 }
 
 

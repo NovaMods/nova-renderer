@@ -26,7 +26,7 @@ namespace nova {
          * \param chunk_file The filename of the chunk to load
          * \return The chunk
          */
-        std::shared_ptr<mc_basic_render_object> load_test_chunk(std::string chunk_file);
+        std::shared_ptr<mc_chunk_render_object> load_test_chunk(std::string chunk_file);
 
         /*!
          * \brief A base class for test cases that need to run with Nova running

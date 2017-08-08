@@ -100,10 +100,10 @@ set(NOVA_HEADERS
         render/objects/camera.h
         render/objects/framebuffer.h
         utils/io.h
-        data_loading/loaders/geometry_filter_loading.h
         geometry_cache/builders/vertex_format_decoder.h
         data_loading/direct_buffers.h
         mc_interface/nova_jni.h
+        render/objects/render_object.h
         )
 
 set(NOVA_SOURCE
@@ -134,19 +134,16 @@ set(NOVA_SOURCE
         geometry_cache/mesh_store.cpp
         data_loading/physics/AABB.cpp
         geometry_cache/mesh_definition.cpp
-        render/objects/shaders/geometry_filter.cpp
 
         render/objects/uniform_buffers/uniform_buffers_definitions.cpp
-        geometry_cache/builders/chunk_builder.cpp
 
         mc_interface/mc_objects.cpp
         render/objects/framebuffer.cpp
         render/objects/camera.cpp
         utils/io.cpp
-        data_loading/loaders/geometry_filter_loading.cpp
         data_loading/loaders/shader_source_structs.cpp
-        geometry_cache/builders/vertex_format_decoder.cpp
-        data_loading/direct_buffers.cpp)
+        data_loading/direct_buffers.cpp
+        render/objects/render_object.cpp)
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
@@ -218,7 +215,6 @@ set(TEST_SOURCE_FILES
         test/test_utils.cpp
         test/test_utils.h
         test/utils/io_test.cpp
-        test/data_loading/loaders/geometry_filter_loading_test.cpp
         test/geometry_cache/builders/vertex_format_decoder_test.cpp)
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
