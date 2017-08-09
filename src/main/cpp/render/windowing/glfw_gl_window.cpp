@@ -24,7 +24,7 @@ namespace nova {
 
         glfwSetErrorCallback(error_callback);
 
-        if(!glfwInit()) {
+        if(glfwInit() == 0) {
             LOG(FATAL) << "Could not initialize GLFW";
         }
 		init();
@@ -42,7 +42,7 @@ namespace nova {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         window = glfwCreateWindow((int)view_width, (int)view_height, "Minecraft Nova Renderer", NULL, NULL);
-        if(!window) {
+        if(window == nullptr) {
             LOG(FATAL) << "Could not initialize window :(";
         }
         LOG(INFO) << "GLFW window created";
@@ -53,7 +53,7 @@ namespace nova {
         glfwMakeContextCurrent(window);
         gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 
-        if(!gladLoadGL()) {
+        if(gladLoadGL() == 0) {
             LOG(FATAL) << "Could not load OpenGL";
             return -1;
         }
@@ -83,11 +83,11 @@ namespace nova {
     void glfw_gl_window::destroy() {
         glfwDestroyWindow(window);
         glfwTerminate();
-        window = NULL;
+        window = nullptr;
     }
 
     void glfw_gl_window::set_fullscreen(bool fullscreen) {
-        GLFWmonitor* monitor = NULL;
+        GLFWmonitor* monitor = nullptr;
         int xPos = 0;
         int yPos = 0;
         int width;

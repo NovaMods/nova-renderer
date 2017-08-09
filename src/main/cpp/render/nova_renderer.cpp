@@ -32,6 +32,8 @@ namespace nova {
     }
 
     void nova_renderer::init_opengl_state() const {
+        LOG(DEBUG) << "Initting OpenGL state";
+
         glClearColor(0.0, 0.0, 0.0, 1.0);
 
         glEnable(GL_DEPTH_TEST);
@@ -40,6 +42,8 @@ namespace nova {
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        LOG(DEBUG) << "OpenGL state initialized";
     }
 
     nova_renderer::~nova_renderer() {
@@ -219,7 +223,16 @@ namespace nova {
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
 		auto& shaderpack_name = new_config["loadedShaderpack"];
-        if(!loaded_shaderpack || (loaded_shaderpack && shaderpack_name != loaded_shaderpack->get_name())) {
+        LOG(INFO) << "Shaderpack in settings: " << shaderpack_name;
+
+        if(!loaded_shaderpack) {
+            load_new_shaderpack(shaderpack_name);
+            return;
+        }
+
+        bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
+        LOG(DEBUG) << "Is the shaderpack in the settings new? " << (shaderpack_in_settings_is_new ? "true" : "false");
+        if(shaderpack_in_settings_is_new) {
             load_new_shaderpack(shaderpack_name);
         }
     }
@@ -249,8 +262,8 @@ namespace nova {
     }
 
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
-		
-        LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
+		LOG(INFO) << "Loading a new shaderpack";
+        LOG(INFO) << "Name of shaderpack " << new_shaderpack_name;
         loaded_shaderpack = std::make_shared<shaderpack>(load_shaderpack(new_shaderpack_name));
         LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
         /// meshes->set_shaderpack(loaded_shaderpack);
@@ -301,7 +314,7 @@ namespace nova {
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
         for(auto& geom : geometry) {
             if(geom.geometry->has_data()) {
-                if(geom.color_texture != "") {
+                if(!geom.color_texture.empty()) {
                     auto color_texture = textures->get_texture(geom.color_texture);
                     color_texture.bind(0);
                 }

@@ -17,6 +17,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -57,6 +58,7 @@ import static com.continuum.nova.utils.Utils.getImageData;
 public class NovaRenderer implements IResourceManagerReloadListener {
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
+    private BlockModelShapes shapes;
 
     private boolean firstLoad = true;
 
@@ -90,7 +92,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private Executor chunkUpdateThreadPool = Executors.newSingleThreadExecutor(); //Executors.newFixedThreadPool(10);
 
-    private BlockModelSerializer modelSerializer = new BlockModelSerializer();
     private ChunkBuilder chunkBuilder;
 
     public NovaRenderer() {
@@ -386,10 +387,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.register_block_definition(id, blockDefinition);
     }
 
-    public BlockModelSerializer getModelSerializer() {
-        return modelSerializer;
-    }
-
     public static String atlasTextureOfSprite(ResourceLocation texture) {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
 
@@ -416,7 +413,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             filterMap.put(filterName, filter);
         }
 
-        chunkBuilder = new ChunkBuilder(filterMap, world);
+        chunkBuilder = new ChunkBuilder(filterMap, world, Minecraft.getMinecraft().getModelManager().getBlockModelShapes());
 
         chunksToUpdate.addAll(updatedChunks);
         updatedChunks.clear();
