@@ -36,6 +36,7 @@ namespace nova {
     };
 
     shaderpack load_shaderpack(const std::string &shaderpack_name) {
+        LOG(DEBUG) << "Loading shaderpack " << shaderpack_name;
         auto shader_sources = std::unordered_map<std::string, shader_definition>{};
         if(is_zip_file(shaderpack_name)) {
             LOG(TRACE) << "Loading shaderpack " << shaderpack_name << " from a zip file";

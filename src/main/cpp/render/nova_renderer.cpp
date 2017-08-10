@@ -28,6 +28,8 @@ namespace nova {
         render_settings->update_config_loaded();
 		render_settings->update_config_changed();
 
+        LOG(INFO) << "Finished sending out initial config";
+
         init_opengl_state();
     }
 
@@ -226,15 +228,18 @@ namespace nova {
         LOG(INFO) << "Shaderpack in settings: " << shaderpack_name;
 
         if(!loaded_shaderpack) {
+            LOG(DEBUG) << "There's currenty no shaderpack, so we're loading a new one";
             load_new_shaderpack(shaderpack_name);
             return;
         }
 
         bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
-        LOG(DEBUG) << "Is the shaderpack in the settings new? " << (shaderpack_in_settings_is_new ? "true" : "false");
         if(shaderpack_in_settings_is_new) {
+            LOG(DEBUG) << "Shaderpack " << shaderpack_name << " is about to replace shaderpack " << loaded_shaderpack->get_name();
             load_new_shaderpack(shaderpack_name);
         }
+
+        LOG(DEBUG) << "Finished dealing with possible new shaderpack";
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
