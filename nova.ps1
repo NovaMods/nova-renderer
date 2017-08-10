@@ -82,7 +82,7 @@ function New-NovaEnvironment {
 
     # Download MCP
     $wc = New-Object System.Net.WebClient
-    $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
+    $wc.DownloadFile("http://www.modcoderpack.com/files/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
 
     # Extract MCP
     Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
