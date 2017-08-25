@@ -1,9 +1,6 @@
 package com.continuum.nova;
 
 import com.sun.jna.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -92,34 +89,6 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_block_definition extends Structure {
-        public String name;
-        public int light_opacity;
-        public int light_value;
-        public boolean is_opaque;
-        public boolean blocks_light;
-        public boolean is_cube;
-
-        public mc_block_definition(Block block) {
-            IBlockState baseState = block.getBlockState().getBaseState();
-            Material material = baseState.getMaterial();
-
-            name = block.getUnlocalizedName();
-            blocks_light = material.blocksLight();
-            is_opaque = material.isOpaque();
-            is_cube = baseState.isFullBlock();
-            light_opacity = baseState.getLightOpacity();
-            light_value = baseState.getLightValue();
-
-            // TODO: texture name
-        }
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("name", "light_opacity", "iight_value", "is_opaque", "blocks_light", "is_cube");
-        }
-    }
-
     class mc_basic_render_object extends Structure {
         public int format;
         public float x;
@@ -186,7 +155,7 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_gui_send_buffer_command extends Structure {
+    class mc_gui_buffer extends Structure {
         public String texture_name;
         public int index_buffer_size;
         public int vertex_buffer_size;
@@ -296,13 +265,11 @@ public interface NovaNative extends Library {
 
     void reset_texture_manager();
 
-    void register_block_definition(int id, mc_block_definition blockDefinition);
-
     void add_chunk_geometry_for_filter(String filter_name, mc_basic_render_object render_object);
 
     boolean should_close();
 
-    void send_gui_buffer_command(mc_gui_send_buffer_command command);
+    void add_gui_geometry(mc_gui_buffer buffer);
 
     void clear_gui_buffers();
 

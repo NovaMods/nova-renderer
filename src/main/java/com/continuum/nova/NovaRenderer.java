@@ -7,18 +7,13 @@ import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.gui.NovaDraw;
 import com.continuum.nova.utils.Utils;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import glm.Glm;
 import glm.vec._2.Vec2;
 import glm.vec._3.i.Vec3i;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ModelManager;
+import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
@@ -26,20 +21,14 @@ import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.Sys;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
@@ -48,8 +37,6 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static com.continuum.nova.NovaConstants.*;
 import static com.continuum.nova.utils.Utils.getImageData;
@@ -92,6 +79,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private BlockModelSerializer modelSerializer = new BlockModelSerializer();
     private ChunkBuilder chunkBuilder;
+    private BlockModelShapes blockModelShapes;
+    private HashMap<String, IGeometryFilter> filterMap;
 
     public NovaRenderer() {
         // I put these in Utils to make this class smaller
@@ -374,22 +363,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.add_texture_location(loc);
     }
 
-    /**
-     * Registers a block with Nova, creating a block definition object that can be used by the chunk builder or whatever
-     *
-     * @param id The integer id of the block, used to identify it in a chunk
-     * @param block The block itself
-     */
-    public void registerBlock(int id, Block block) {
-        NovaNative.mc_block_definition blockDefinition = new NovaNative.mc_block_definition(block);
-
-        NovaNative.INSTANCE.register_block_definition(id, blockDefinition);
-    }
-
-    public BlockModelSerializer getModelSerializer() {
-        return modelSerializer;
-    }
-
     public static String atlasTextureOfSprite(ResourceLocation texture) {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
 
@@ -404,19 +377,23 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         return texture.toString();
     }
 
+    public void setBlockModelShapes(BlockModelShapes shapes) {
+        blockModelShapes = shapes;
+    }
+
     public void loadShaderpack(String shaderpackName) {
         NovaNative.INSTANCE.set_string_setting("loadedShaderpack", shaderpackName);
 
         String[] filters = NovaNative.INSTANCE.get_shaders_and_filters();
 
-        Map<String, IGeometryFilter> filterMap = new HashMap<>();
+        filterMap = new HashMap<>();
         for(int i = 0; i < filters.length; i += 2) {
             String filterName = filters[i];
             IGeometryFilter filter = IGeometryFilter.parseFilterString(filters[i + 1]);
             filterMap.put(filterName, filter);
         }
 
-        chunkBuilder = new ChunkBuilder(filterMap, world);
+        chunkBuilder = new ChunkBuilder(filterMap, world, blockModelShapes);
 
         chunksToUpdate.addAll(updatedChunks);
         updatedChunks.clear();

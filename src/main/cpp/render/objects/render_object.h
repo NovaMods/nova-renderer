@@ -75,7 +75,7 @@ namespace nova {
          */
         std::string name;
 
-        std::unique_ptr<gl_mesh> geometry;
+        std::shared_ptr<gl_mesh> geometry;
 
         std::string color_texture;
         std::experimental::optional<std::string> normalmap;

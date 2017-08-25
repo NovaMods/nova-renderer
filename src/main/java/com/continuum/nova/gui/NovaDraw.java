@@ -195,11 +195,11 @@ public class NovaDraw {
             Buffers b = entry.getValue();
             ResourceLocation texture = entry.getKey();
             long timeWithAlloc = System.nanoTime();
-            NovaNative.mc_gui_send_buffer_command command = b.toNativeCommand(texture);
+            NovaNative.mc_gui_buffer guiGeometry = b.toNativeCommand(texture);
             long timePrev = System.nanoTime();
-            NovaNative.INSTANCE.send_gui_buffer_command(command);
+            NovaNative.INSTANCE.add_gui_geometry(guiGeometry);
             long end = System.nanoTime();
-            //LOG.trace("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
+            LOG.trace("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
             Memory.purge();
         }
 
@@ -269,9 +269,9 @@ public class NovaDraw {
          * @param texture the texture
          * @return the native struct
          */
-        public NovaNative.mc_gui_send_buffer_command toNativeCommand(ResourceLocation texture) {
+        public NovaNative.mc_gui_buffer toNativeCommand(ResourceLocation texture) {
             // create a new struct
-            NovaNative.mc_gui_send_buffer_command command = new NovaNative.mc_gui_send_buffer_command();
+            NovaNative.mc_gui_buffer command = new NovaNative.mc_gui_buffer();
             command.texture_name = texture.getResourcePath();
 
             // assign the index buffer

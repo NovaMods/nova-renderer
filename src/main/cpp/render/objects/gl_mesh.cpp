@@ -13,7 +13,7 @@ namespace nova {
         create();
     }
 
-    gl_mesh::gl_mesh(mesh_definition &definition) {
+    gl_mesh::gl_mesh(const mesh_definition &definition) {
         create();
         set_data(definition.vertex_data, definition.vertex_format, usage::static_draw);
         set_index_array(definition.indices, usage::static_draw);

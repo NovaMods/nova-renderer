@@ -18,7 +18,6 @@
 #include "../render/objects/shaders/shaderpack.h"
 #include "../mc_interface/mc_gui_objects.h"
 #include "../mc_interface/mc_objects.h"
-#include "builders/chunk_builder.h"
 
 namespace nova {
     /*!
@@ -46,15 +45,17 @@ namespace nova {
         std::vector<render_object>& get_meshes_for_shader(std::string shader_name);
 
         /*!
+         * \brief Takes geometry that's been added in the last frame and sends it to the GPU
+         */
+        void upload_new_geometry();
+
+        /*!
         * \brief Removes all gui render objects and thereby deletes all the buffers
         */
         void remove_gui_render_objects();
 
     private:
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
-
-        std::mutex all_chunks_lock;
-        std::vector<mc_basic_render_object> all_chunks;
 
         std::mutex chunk_parts_to_upload_lock;
         /*!

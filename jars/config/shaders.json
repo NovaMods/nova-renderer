@@ -70,7 +70,7 @@
         },
         {
             "name": "gbuffers_water",
-            "filters": "geometry_type::block AND name_part::water",
+            "filters": "geometry_type::block AND transparent",
             "fallback": "gbuffers_terrain"
         },
         {

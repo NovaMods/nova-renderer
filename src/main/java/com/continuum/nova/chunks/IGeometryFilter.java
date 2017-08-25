@@ -1,5 +1,6 @@
 package com.continuum.nova.chunks;
 
+import com.continuum.nova.NovaNative;
 import net.minecraft.block.state.IBlockState;
 
 /**

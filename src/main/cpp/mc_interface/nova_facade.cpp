@@ -54,18 +54,6 @@ NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_basic_re
     MESH_STORE.add_geometry_for_filter(std::string(filter_name), *chunk);
 }
 
-NOVA_API void register_block_definition(int id, mc_block_definition blockDefinition) {
-    MESH_STORE.get_chunk_builder().get_block_definitions()[id] = blockDefinition;
-}
-
-NOVA_API void load_block_state_models(const char * filename) {
-    try {
-        MESH_STORE.get_chunk_builder().load_models_from_file(std::string(filename));
-    } catch(std::exception& e) {
-        LOG(ERROR) << "Error when loading block models from " << filename << ": " << e.what();
-    }
-}
-
 NOVA_API void execute_frame() {
     NOVA_RENDERER->render_frame();
 }

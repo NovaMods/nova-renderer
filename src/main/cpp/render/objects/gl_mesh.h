@@ -37,7 +37,7 @@ namespace nova {
     public:
         gl_mesh();
 
-        gl_mesh(mesh_definition &definition);
+        gl_mesh(const mesh_definition &definition);
 
         ~gl_mesh();
 

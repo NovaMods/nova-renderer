@@ -101,7 +101,6 @@ set(NOVA_HEADERS
         render/objects/framebuffer.h
         utils/io.h
         data_loading/loaders/geometry_filter_loading.h
-        geometry_cache/builders/vertex_format_decoder.h
         data_loading/direct_buffers.h
         mc_interface/nova_jni.h
         )
@@ -137,7 +136,6 @@ set(NOVA_SOURCE
         render/objects/shaders/geometry_filter.cpp
 
         render/objects/uniform_buffers/uniform_buffers_definitions.cpp
-        geometry_cache/builders/chunk_builder.cpp
 
         mc_interface/mc_objects.cpp
         render/objects/framebuffer.cpp
@@ -145,7 +143,6 @@ set(NOVA_SOURCE
         utils/io.cpp
         data_loading/loaders/geometry_filter_loading.cpp
         data_loading/loaders/shader_source_structs.cpp
-        geometry_cache/builders/vertex_format_decoder.cpp
         data_loading/direct_buffers.cpp)
 
 if (WIN32)

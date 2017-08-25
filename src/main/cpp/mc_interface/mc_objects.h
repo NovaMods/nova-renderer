@@ -68,8 +68,8 @@ struct mc_basic_render_object {
 	float y;
 	float z;
 	int id;
-	int vertex_data[];
-	int indices[];
+	int* vertex_data;
+	int* indices;
 	int vertex_buffer_size;
 	int index_buffer_size;
 };
