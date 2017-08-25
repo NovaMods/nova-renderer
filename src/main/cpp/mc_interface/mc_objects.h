@@ -117,7 +117,7 @@ struct mc_render_gui_params {
     mc_gui_screen cur_screen;
 };
 
-struct mc_gui_send_buffer_command {
+struct mc_gui_geometry {
     const char *texture_name;  //!< The resource name of the texture.
 	int index_buffer_size;
 	int vertex_buffer_size;

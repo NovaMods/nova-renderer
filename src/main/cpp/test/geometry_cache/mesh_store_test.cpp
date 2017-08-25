@@ -20,7 +20,7 @@ namespace nova {
 
             nova::mesh_store meshes;
 
-            mc_gui_send_buffer_command send_gui_buffer_command = {};
+            mc_gui_geometry send_gui_buffer_command = {};
             send_gui_buffer_command.texture_name = "gui/widgets";
             send_gui_buffer_command.vertex_buffer = new float[90]{
                     0, 0, 0, 0, 0, 0, 0, 0, 0,

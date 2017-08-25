@@ -39,7 +39,7 @@ namespace nova {
         }
     }
 
-    void mesh_store::add_gui_buffers(mc_gui_send_buffer_command* command) {
+    void mesh_store::add_gui_buffers(mc_gui_geometry* command) {
         std::string texture_name(command->texture_name);
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");

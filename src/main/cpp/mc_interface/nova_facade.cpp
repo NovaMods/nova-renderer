@@ -74,8 +74,8 @@ NOVA_API bool display_is_active() {
     return NOVA_RENDERER->get_game_window().is_active();
 }
 
-NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command) {
-    NOVA_RENDERER->get_mesh_store().add_gui_buffers(command);
+NOVA_API void add_gui_geometry(mc_gui_geometry * gui_geometry) {
+    NOVA_RENDERER->get_mesh_store().add_gui_buffers(gui_geometry);
 }
 
 NOVA_API struct window_size get_window_size()
@@ -144,7 +144,7 @@ NOVA_API char* get_shaders_and_filters() {
     for(auto& s : shaders) {
         num_chars += s.first.size();
         num_chars += s.second.get_filter().size();
-        num_chars += 1;
+        num_chars += 2;
     }
 
     auto* filters = new char[num_chars];
@@ -158,7 +158,11 @@ NOVA_API char* get_shaders_and_filters() {
 
         std::strcpy(&filters[write_pos], entry.second.get_filter().data());
         write_pos += entry.second.get_filter().size();
+
+        filters[write_pos] = ' ';
+        write_pos++;
     }
 
+    filters[num_chars - 1] = '\0';
     return filters;
 }

@@ -26,7 +26,7 @@ namespace nova {
          */
     class mesh_store {
     public:
-        void add_gui_buffers(mc_gui_send_buffer_command* command);
+        void add_gui_buffers(mc_gui_geometry* command);
 
         /*!
          * \brief Adds a chunk to the mesh store if the chunk doesn't exist, or replaces the chunks if it does exist

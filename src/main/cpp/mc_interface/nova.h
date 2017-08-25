@@ -88,7 +88,7 @@ NOVA_API bool should_close();
  */
 NOVA_API bool display_is_active();
 
-NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command);
+NOVA_API void add_gui_geometry(mc_gui_geometry * gui_geometry);
 
 /*!
 * \brief Gets the current window size

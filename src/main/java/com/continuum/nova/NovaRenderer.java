@@ -235,7 +235,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.initialize();
         LOG.info("Native code initialized");
         updateWindowSize();
-        loadShaderpack("default");
 
         // Moved here so that it's initialized after the native code is loaded
         chunksToUpdate = new PriorityQueue<>((range1, range2) -> {
@@ -259,6 +258,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
         });
         chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
+        loadShaderpack("default");
 
         ClassLoader cl = ClassLoader.getSystemClassLoader();
         URL[] classpathPaths = ((URLClassLoader)cl).getURLs();
