@@ -20,6 +20,7 @@
 #include "../data_loading/settings.h"
 #include "../input/InputHandler.h"
 #include "../render/windowing/glfw_gl_window.h"
+#include "../utils/utils.h"
 
 using namespace nova;
 
@@ -49,16 +50,8 @@ NOVA_API int get_max_texture_size() {
     return TEXTURE_MANAGER.get_max_texture_size();
 }
 
-NOVA_API void add_chunk(mc_chunk & chunk) {
-    MESH_STORE.add_or_update_chunk(chunk);
-}
-
-NOVA_API void register_simple_model(const char * model_name, mc_simple_model * model) {
-    MESH_STORE.register_model(std::string(model_name), *model);
-}
-
-NOVA_API void deregister_model(const char * model_name) {
-    MESH_STORE.deregister_model(std::string(model_name));
+NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk) {
+    MESH_STORE.add_chunk_render_object(std::string(filter_name), *chunk);
 }
 
 NOVA_API void execute_frame() {
@@ -81,8 +74,8 @@ NOVA_API bool display_is_active() {
     return NOVA_RENDERER->get_game_window().is_active();
 }
 
-NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command) {
-    NOVA_RENDERER->get_mesh_store().add_gui_buffers(command);
+NOVA_API void add_gui_geometry(mc_gui_geometry * gui_geometry) {
+    NOVA_RENDERER->get_mesh_store().add_gui_buffers(gui_geometry);
 }
 
 NOVA_API struct window_size get_window_size()
@@ -137,5 +130,39 @@ NOVA_API struct key_char_event get_next_key_char_event()
 }
 
 NOVA_API void set_mouse_grabbed(int grabbed) {
-    NOVA_RENDERER->get_game_window().set_mouse_grabbed(!!grabbed);
+    NOVA_RENDERER->get_game_window().set_mouse_grabbed(grabbed != 0);
+}
+
+NOVA_API int get_num_loaded_shaders() {
+    return static_cast<int>(NOVA_RENDERER->get_shaders()->get_loaded_shaders().size());
+}
+
+NOVA_API char* get_shaders_and_filters() {
+    auto& shaders = NOVA_RENDERER->get_shaders()->get_loaded_shaders();
+
+    int num_chars = 0;
+    for(auto& s : shaders) {
+        num_chars += s.first.size();
+        num_chars += s.second.get_filter().size();
+        num_chars += 2;
+    }
+
+    auto* filters = new char[num_chars];
+    int write_pos = 0;
+    for(auto& entry : shaders) {
+        std::strcpy(&filters[write_pos], entry.first.data());
+        write_pos += entry.first.size();
+
+        filters[write_pos] = ' ';
+        write_pos++;
+
+        std::strcpy(&filters[write_pos], entry.second.get_filter().data());
+        write_pos += entry.second.get_filter().size();
+
+        filters[write_pos] = ' ';
+        write_pos++;
+    }
+
+    filters[num_chars - 1] = '\0';
+    return filters;
 }

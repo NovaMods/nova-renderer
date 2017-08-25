@@ -1,25 +1,23 @@
 package com.continuum.nova;
 
 import com.sun.jna.*;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.SimpleBakedModel;
-import net.minecraft.util.EnumFacing;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public interface NovaNative extends Library {
-    int CHUNK_WIDTH     = 16;
-    int CHUNK_HEIGHT    = 256;
-    int CHUNK_DEPTH     = 16;
-
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
 
-    String GUI_ATLAS_NAME = "gui";
-    String BLOCK_COLOR_ATLAS_NAME = "block_color";
-    String FONT_ATLAS_NAME = "font";
+    Logger LOG = LogManager.getLogger(NovaNative.class);
+
+    enum NovaVertexFormat {
+        POS,
+        POS_UV,
+        POS_UV_LIGHTMAPUV_NORMAL_TANGENT,
+        POS_UV_COLOR
+    }
 
     class mc_atlas_texture extends Structure {
         public int width;
@@ -91,127 +89,40 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_block extends Structure {
-        public String name;
-        public boolean is_on_fire;
-        public int light_value;
-        public int light_opacity;
-        public float ao;
-        public boolean is_opaque;
-        public boolean blocks_light;
-        public String texture_name;
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("name", "is_on_fire", "light_value", "light_opacity", "ao", "is_opaque",
-                    "blocks_light", "texture_name");
-        }
-
-        @Override
-        public String toString() {
-            return "mc_block{" +
-                    "name='" + name + '\'' +
-                    ", is_on_fire=" + is_on_fire +
-                    ", light_value=" + light_value +
-                    ", light_opacity=" + light_opacity +
-                    ", ao=" + ao +
-                    ", is_opaque=" + is_opaque +
-                    ", blocks_light=" + blocks_light +
-                    ", texture_name=" + texture_name +
-                    '}';
-        }
-    }
-
-    class mc_chunk extends Structure {
-        public int chunk_id;
-
+    class mc_chunk_render_object extends Structure {
+        public int format;
         public float x;
+        public float y;
         public float z;
+        public int id;
+        public Pointer vertex_data; // int[]
+        public Pointer indices;     // int[]
+        public int vertex_buffer_size;
+        public int index_buffer_size;
 
-        public mc_block[] blocks = new mc_block[CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH];
-
-
-        public mc_chunk() {
-            super();
-
-            for(int i = 0; i < CHUNK_WIDTH * CHUNK_HEIGHT * CHUNK_DEPTH; i++) {
-                blocks[i] = new NovaNative.mc_block();
+        public void setVertex_data(List<Integer> vertexData) {
+            vertex_data = new Memory(vertexData.size() * Native.getNativeSize(Integer.class));
+            for(int i = 0; i < vertexData.size(); i++) {
+                Integer data = vertexData.get(i);
+                vertex_data.setInt(i * Native.getNativeSize(Integer.TYPE), data);
             }
+
+            vertex_buffer_size = vertexData.size();
+        }
+
+        public void setIndices(List<Integer> indices) {
+            this.indices = new Memory(indices.size() * Native.getNativeSize(Integer.class));
+            for(int i = 0; i < indices.size(); i++) {
+                Integer data = indices.get(i);
+                this.indices.setInt(i * Native.getNativeSize(Integer.TYPE), data);
+            }
+
+            index_buffer_size = indices.size();
         }
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("chunk_id", "x", "z", "blocks");
-        }
-    }
-
-    class mc_quad extends Structure {
-        public int[] vertex_data = new int[1];
-        int num_vertex_data;
-        public int tint_index;
-        public String facing_direction;
-        public String icon_name;
-
-        public mc_quad(BakedQuad quad) {
-            vertex_data = quad.getVertexData();
-            num_vertex_data = vertex_data.length;
-            tint_index = quad.getTintIndex();
-            facing_direction = quad.getFace().getName();
-            icon_name = quad.getSprite().getIconName();
-
-            allocateMemory();
-        }
-
-        // For JNA
-        public mc_quad() {}
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("vertex_data", "num_vertex_data", "tint_index", "facing_direction", "icon_name");
-        }
-    }
-
-    class mc_simple_model extends Structure {
-        public mc_quad[] quads = new mc_quad[1];
-        int num_quads;
-        public boolean ambient_occlusion;
-        public String particle_texture;
-
-        public mc_simple_model(SimpleBakedModel model) {
-            List<BakedQuad> bakedQuads = new ArrayList<>();
-            for(EnumFacing facing : EnumFacing.values()) {
-                bakedQuads.addAll(model.getQuads(null, facing, 0));
-            }
-
-            quads = bakedQuads.stream().map(mc_quad::new).collect(Collectors.toList()).toArray(new mc_quad[]{});
-            num_quads = quads.length;
-
-            ambient_occlusion = model.isAmbientOcclusion();
-            particle_texture = model.getParticleTexture().getIconName();
-
-            if(num_quads == 0) {
-                quads = new mc_quad[]{new mc_quad()};
-                num_quads = 1;
-                allocateMemory();
-            }
-        }
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("quads", "num_quads", "ambient_occlusion", "particle_texture");
-        }
-    }
-
-    class mc_render_world_params extends Structure {
-        public double camera_x;
-        public double camera_y;
-        public double camera_z;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList(
-                    "camera_x", "camera_y", "camera_z"
-            );
+            return Arrays.asList("format", "x", "y", "z", "id", "vertex_data", "indices", "vertex_buffer_size", "index_buffer_size");
         }
     }
 
@@ -244,20 +155,7 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_add_chunk_command extends Structure {
-        public mc_chunk new_chunk;
-
-        public float chunk_x;
-        public float chunk_y;
-        public float chunk_z;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("new_chunk", "chunk_x", "chunk_y", "chunk_z");
-        }
-    }
-
-    class mc_gui_send_buffer_command extends Structure {
+    class mc_gui_buffer extends Structure {
         public String texture_name;
         public int index_buffer_size;
         public int vertex_buffer_size;
@@ -367,11 +265,11 @@ public interface NovaNative extends Library {
 
     void reset_texture_manager();
 
-    void add_chunk(mc_chunk chunk);
+    void add_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
 
     boolean should_close();
 
-    void send_gui_buffer_command(mc_gui_send_buffer_command command);
+    void add_gui_geometry(mc_gui_buffer buffer);
 
     void clear_gui_buffers();
 
@@ -393,13 +291,11 @@ public interface NovaNative extends Library {
 
     boolean display_is_active();
 
-    void set_string_setting(String setting,String value);
+    void set_string_setting(String setting, String value);
 
     void set_float_setting(String setting_name, float setting_value);
 
-    void register_simple_model(String model_name, mc_simple_model model);
-
-    void deregister_model(String model_name);
-
     void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
+
+    String get_shaders_and_filters();
 }

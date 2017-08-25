@@ -28,10 +28,14 @@ namespace nova {
         render_settings->update_config_loaded();
 		render_settings->update_config_changed();
 
+        LOG(INFO) << "Finished sending out initial config";
+
         init_opengl_state();
     }
 
     void nova_renderer::init_opengl_state() const {
+        LOG(DEBUG) << "Initting OpenGL state";
+
         glClearColor(0.0, 0.0, 0.0, 1.0);
 
         glEnable(GL_DEPTH_TEST);
@@ -40,23 +44,22 @@ namespace nova {
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        LOG(DEBUG) << "OpenGL state initialized";
     }
 
     nova_renderer::~nova_renderer() {
-
         inputs.reset();
         meshes.reset();
         textures.reset();
         ubo_manager.reset();
         game_window.reset();
-
     }
 
     void nova_renderer::render_frame() {
         // Make geometry for any new chunks
-        meshes->generate_needed_chunk_geometry();
+        meshes->upload_new_geometry();
 
-        // Clear to the clear color
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // upload shadow UBO things
@@ -66,6 +69,8 @@ namespace nova {
         update_gbuffer_ubos();
 
         render_gbuffers();
+
+        //render_gbuffers();
 
         render_composite_passes();
 
@@ -91,6 +96,8 @@ namespace nova {
         // TODO: Get shaders with gbuffers prefix, draw transparents last, etc
         auto& terrain_shader = loaded_shaderpack->get_shader("gbuffers_terrain");
         render_shader(terrain_shader);
+        auto& water_shader = loaded_shaderpack->get_shader("gbuffers_water");
+        render_shader(water_shader);
     }
 
     void nova_renderer::render_composite_passes() {
@@ -103,6 +110,8 @@ namespace nova {
 
     void nova_renderer::render_gui() {
         LOG(TRACE) << "Rendering GUI";
+        glClear(GL_DEPTH_BUFFER_BIT);
+
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
         gui_shader.bind();
@@ -216,9 +225,21 @@ namespace nova {
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
 		auto& shaderpack_name = new_config["loadedShaderpack"];
-        if(!loaded_shaderpack || (loaded_shaderpack && shaderpack_name != loaded_shaderpack->get_name())) {
+        LOG(INFO) << "Shaderpack in settings: " << shaderpack_name;
+
+        if(!loaded_shaderpack) {
+            LOG(DEBUG) << "There's currenty no shaderpack, so we're loading a new one";
+            load_new_shaderpack(shaderpack_name);
+            return;
+        }
+
+        bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
+        if(shaderpack_in_settings_is_new) {
+            LOG(DEBUG) << "Shaderpack " << shaderpack_name << " is about to replace shaderpack " << loaded_shaderpack->get_name();
             load_new_shaderpack(shaderpack_name);
         }
+
+        LOG(DEBUG) << "Finished dealing with possible new shaderpack";
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
@@ -246,10 +267,10 @@ namespace nova {
     }
 
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
-		
-        LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
+		LOG(INFO) << "Loading a new shaderpack";
+        LOG(INFO) << "Name of shaderpack " << new_shaderpack_name;
         loaded_shaderpack = std::make_shared<shaderpack>(load_shaderpack(new_shaderpack_name));
-        meshes->set_shaderpack(loaded_shaderpack);
+        LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
         LOG(INFO) << "Loading complete";
 		
         link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), *ubo_manager);
@@ -296,23 +317,27 @@ namespace nova {
 
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
         for(auto& geom : geometry) {
-            if(geom.color_texture != "") {
-                auto color_texture = textures->get_texture(geom.color_texture);
-                color_texture.bind(0);
+            if(geom.geometry->has_data()) {
+                if(!geom.color_texture.empty()) {
+                    auto color_texture = textures->get_texture(geom.color_texture);
+                    color_texture.bind(0);
+                }
+
+                if(geom.normalmap) {
+                    textures->get_texture(*geom.normalmap).bind(1);
+                }
+
+                if(geom.data_texture) {
+                    textures->get_texture(*geom.data_texture).bind(2);
+                }
+
+                upload_model_matrix(geom, shader);
+
+                geom.geometry->set_active();
+                geom.geometry->draw();
+            } else {
+                LOG(TRACE) << "Skipping some geometry since it has no data";
             }
-
-            if(geom.normalmap) {
-                textures->get_texture(*geom.normalmap).bind(1);
-            }
-
-            if(geom.data_texture) {
-                textures->get_texture(*geom.data_texture).bind(2);
-            }
-
-            upload_model_matrix(geom, shader);
-
-            geom.geometry->set_active();
-            geom.geometry->draw();
         }
     }
 
@@ -354,6 +379,10 @@ namespace nova {
 
     camera &nova_renderer::get_player_camera() {
         return player_camera;
+    }
+
+    std::shared_ptr<shaderpack> nova_renderer::get_shaders() {
+        return loaded_shaderpack;
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {

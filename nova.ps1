@@ -82,7 +82,7 @@ function New-NovaEnvironment {
 
     # Download MCP
     $wc = New-Object System.Net.WebClient
-    $wc.DownloadFile("http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
+    $wc.DownloadFile("http://www.modcoderpack.com/files/mcp931.zip", "$PSScriptRoot/mcp/mcp.zip")
 
     # Extract MCP
     Unzip -zipfile "$PSScriptRoot/mcp/mcp.zip" -outpath "$PSScriptRoot/mcp/"
@@ -271,7 +271,7 @@ function Invoke-Nova {
 function New-Patches {
     Set-Location src\main\java\net
     $p = "..\..\..\..\patches\nova.patch"
-    git diff origin/minecraft-1.10-mcp > $p
+    git diff -U0 origin/minecraft-1.10-mcp > $p
     $content = Get-Content $p
     $encodingUtf8WithoutByteOrderMark = New-Object System.Text.UTF8Encoding($False)
     [System.IO.File]::WriteAllLines($p, $content, $encodingUtf8WithoutByteOrderMark)

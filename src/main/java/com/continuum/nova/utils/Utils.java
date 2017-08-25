@@ -2,6 +2,8 @@ package com.continuum.nova.utils;
 
 import net.minecraft.util.ResourceLocation;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class Utils {
@@ -681,5 +683,23 @@ public class Utils {
     public static void initFreeTextures(List<ResourceLocation> locations) {
         locations.add(new ResourceLocation("textures/misc/unknown_server.png"));
         locations.add(new ResourceLocation("textures/gui/options_background.png"));
+    }
+
+    public static byte[] getImageData(BufferedImage image) {
+        byte[] convertedImageData = new byte[image.getWidth()*image.getHeight()*4];
+        int counter = 0;
+        for (int y = 0; y < image.getHeight(); y ++) {
+            for (int x = 0;x<image.getWidth();x++) {
+
+                Color c = new Color(image.getRGB(x,y),image.getColorModel().hasAlpha());
+
+                convertedImageData[counter] =(byte) (c.getRed());
+                convertedImageData[counter + 1] = (byte)(c.getGreen());
+                convertedImageData[counter + 2] = (byte)(c.getBlue());
+                convertedImageData[counter + 3] = (byte) (image.getColorModel().getNumComponents() == 3 ? 255 : c.getAlpha());
+                counter+=4;
+            }
+        }
+        return convertedImageData;
     }
 }

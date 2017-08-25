@@ -6,23 +6,28 @@
  */
 
 #include <algorithm>
+#include <utility>
 #include "shaderpack.h"
 
 #include <easylogging++.h>
 
 namespace nova {
     shaderpack::shaderpack(std::string name, nlohmann::json shaders_json, std::vector<shader_definition> &shaders) {
-        this->name = name;
+        this->name = std::move(name);
         for(auto& shader : shaders) {
             LOG(TRACE) << "Adding shader " << shader.name;
-            loaded_shaders.emplace(shader.name, gl_shader_program(shader));
+            try {
+                loaded_shaders.emplace(shader.name, gl_shader_program(shader));
+            } catch(std::exception& e) {
+                LOG(ERROR) << "Could not load shader " << shader.name << " because " << e.what();
+            }
         }
 
         LOG(TRACE) << "Shaderpack created";
     }
 
     gl_shader_program &shaderpack::operator[](std::string key) {
-        return get_shader(key);
+        return get_shader(std::move(key));
     }
 
     std::unordered_map<std::string, gl_shader_program> &shaderpack::get_loaded_shaders() {

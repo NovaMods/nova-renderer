@@ -41,11 +41,6 @@ namespace nova {
      */
     struct render_object {
         int parent_id;  //!< The ID of the thing that owns us. Could be the ID of a chunk, entity, whatever
-        bool is_solid;
-        bool is_transparent;
-        bool is_cutout;
-        bool is_emissive;
-        unsigned char damage_level;
 
         geometry_type type;
 
@@ -75,13 +70,19 @@ namespace nova {
          */
         std::string name;
 
-        std::unique_ptr<gl_mesh> geometry;
+        std::shared_ptr<gl_mesh> geometry;
 
         std::string color_texture;
         std::experimental::optional<std::string> normalmap;
         std::experimental::optional<std::string> data_texture;
 
         glm::vec3 position;
+
+        render_object() = default;
+        render_object(render_object&& other) noexcept;
+        render_object(const render_object&) = default;
+
+        render_object& operator=(render_object&& other) noexcept;
     };
 }
 

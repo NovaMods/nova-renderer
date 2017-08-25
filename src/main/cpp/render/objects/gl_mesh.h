@@ -37,7 +37,7 @@ namespace nova {
     public:
         gl_mesh();
 
-        gl_mesh(mesh_definition &definition);
+        explicit gl_mesh(const mesh_definition &definition);
 
         ~gl_mesh();
 
@@ -51,9 +51,9 @@ namespace nova {
          * \param data The interleaved vertex data
          * \param data_format The format of the data (\see format)
          */
-        void set_data(std::vector<float> data, format data_format, usage data_usage);
+        void set_data(std::vector<int> data, format data_format, usage data_usage);
 
-        void set_index_array(std::vector<unsigned int> data, usage data_usage);
+        void set_index_array(std::vector<int> data, usage data_usage);
 
         void set_active() const;
 
@@ -65,6 +65,8 @@ namespace nova {
          * \return The format of this vertex buffer
          */
         format get_format();
+
+        bool has_data() const;
 
     private:
         format data_format;
@@ -92,7 +94,7 @@ namespace nova {
          * \param vertices The vertices the get the bounds of
          * \param data_format The format of the vertices. Necessary for knowing the desired stride
          */
-        void compute_aabb(std::vector<float> &vertices, format data_format);
+        void compute_aabb(std::vector<int> &vertices, format data_format);
     };
 }
 

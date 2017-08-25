@@ -13,7 +13,7 @@ namespace nova {
         create();
     }
 
-    gl_mesh::gl_mesh(mesh_definition &definition) {
+    gl_mesh::gl_mesh(const mesh_definition &definition) {
         create();
         set_data(definition.vertex_data, definition.vertex_format, usage::static_draw);
         set_index_array(definition.indices, usage::static_draw);
@@ -46,7 +46,7 @@ namespace nova {
         }
     }
 
-    void gl_mesh::set_data(std::vector<float> data, format data_format, usage data_usage) {
+    void gl_mesh::set_data(std::vector<int> data, format data_format, usage data_usage) {
         this->data_format = data_format;
 
         glBindVertexArray(vertex_array);
@@ -77,7 +77,7 @@ namespace nova {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
     }
 
-    void gl_mesh::set_index_array(std::vector<unsigned int> data, usage data_usage) {
+    void gl_mesh::set_index_array(std::vector<int> data, usage data_usage) {
         glBindVertexArray(vertex_array);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
         GLenum buffer_usage = translate_usage(data_usage);
@@ -87,9 +87,7 @@ namespace nova {
     }
 
     void gl_mesh::draw() const {
-        if(num_indices > 0) {
-            glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
-        }
+        glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
     }
 
     void gl_mesh::enable_vertex_attributes(format data_format) {
@@ -130,22 +128,26 @@ namespace nova {
                 glEnableVertexAttribArray(3);   // Normal
                 glEnableVertexAttribArray(4);   // Tangent
 
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) 0);
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
-                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (5 * sizeof(GLfloat)));
-                glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (7 * sizeof(GLfloat)));
-                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (9 * sizeof(GLfloat)));
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (void *)  0);
+                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (void *) (4 * sizeof(GLfloat)));
+                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (void *) (6 * sizeof(GLfloat)));
+                glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (void *) (8 * sizeof(GLfloat)));
+                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (void *) (11 * sizeof(GLfloat)));
 
                 break;
         }
     }
 
-    void gl_mesh::compute_aabb(std::vector<float> &vertices, format data_format) {
+    void gl_mesh::compute_aabb(std::vector<int> &vertices, format data_format) {
         // TODO: Translate data_format into a stride
         // TODO: All of this. The AABB stuff is going to come later
     }
 
     format gl_mesh::get_format() {
         return data_format;
+    }
+
+    bool gl_mesh::has_data() const {
+        return num_indices > 0;
     }
 }

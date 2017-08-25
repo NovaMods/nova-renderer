@@ -87,6 +87,8 @@ namespace nova {
 
         camera& get_player_camera();
 
+        std::shared_ptr<shaderpack> get_shaders();
+
         // Overrides from iconfig_listener
 
         void on_config_change(nlohmann::json& new_config);
