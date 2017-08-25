@@ -21,7 +21,7 @@ public interface IGeometryFilter {
         GLINT,
         WEATHER,
         HAND,
-        FULSCREEN_QUAD,
+        FULLSCREEN_QUAD,
         PARTICLE,
         LIT_PARTICLE,
         EYES

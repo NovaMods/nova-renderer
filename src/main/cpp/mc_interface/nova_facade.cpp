@@ -50,8 +50,8 @@ NOVA_API int get_max_texture_size() {
     return TEXTURE_MANAGER.get_max_texture_size();
 }
 
-NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_basic_render_object * chunk) {
-    MESH_STORE.add_geometry_for_filter(std::string(filter_name), *chunk);
+NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk) {
+    MESH_STORE.add_chunk_render_object(std::string(filter_name), *chunk);
 }
 
 NOVA_API void execute_frame() {
@@ -137,15 +137,27 @@ NOVA_API int get_num_loaded_shaders() {
     return static_cast<int>(NOVA_RENDERER->get_shaders()->get_loaded_shaders().size());
 }
 
-NOVA_API const char** get_shaders_and_filters() {
+NOVA_API char* get_shaders_and_filters() {
     auto& shaders = NOVA_RENDERER->get_shaders()->get_loaded_shaders();
 
-    const char** filters = new const char*[shaders.size() * 2];
-    int cur_filter = 0;
+    int num_chars = 0;
+    for(auto& s : shaders) {
+        num_chars += s.first.size();
+        num_chars += s.second.get_filter().size();
+        num_chars += 1;
+    }
+
+    auto* filters = new char[num_chars];
+    int write_pos = 0;
     for(auto& entry : shaders) {
-        filters[cur_filter] = entry.first.data();
-        filters[cur_filter + 1] = entry.second.get_filter().data();
-        cur_filter += 2;
+        std::strcpy(&filters[write_pos], entry.first.data());
+        write_pos += entry.first.size();
+
+        filters[write_pos] = ' ';
+        write_pos++;
+
+        std::strcpy(&filters[write_pos], entry.second.get_filter().data());
+        write_pos += entry.second.get_filter().size();
     }
 
     return filters;

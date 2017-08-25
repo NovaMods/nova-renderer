@@ -14,7 +14,6 @@
 #include <unordered_map>
 #include <queue>
 #include "../render/objects/render_object.h"
-#include "../render/objects/shaders/geometry_filter.h"
 #include "../render/objects/shaders/shaderpack.h"
 #include "../mc_interface/mc_gui_objects.h"
 #include "../mc_interface/mc_objects.h"
@@ -34,7 +33,7 @@ namespace nova {
          *
          * \param chunk The chunk to add or update
          */
-        void add_geometry_for_filter(std::string filter_name, mc_basic_render_object& chunk);
+        void add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk);
 
         /*!
          * \brief Retrieves the list of meshes that the shader with the provided name should render
@@ -54,6 +53,20 @@ namespace nova {
         */
         void remove_gui_render_objects();
 
+        /*!
+         * \brief Uploads the available chunk geometry parts to the GPU
+         */
+        void generate_needed_chunk_geometry();
+
+        /*!
+         * \brief Removes all known render objects that come from the given ID
+         *
+         * This method shoudl be called when updating a chunk, or when unloading a chunk
+         *
+         * \param parent_id The id of the objects to remove
+         */
+        void remove_render_objects_with_parent(long parent_id);
+
     private:
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
 
@@ -67,7 +80,7 @@ namespace nova {
         long total_chunks_updated = 0;
 
         /*!
-         * \brief Removes all the render_objects from the lists of render_objects that match the given fitler funciton
+         * \brief Removes all the render_objects from the lists of render_objects that match the given filter function
          *
          * The idea here is that when things like the GUI screen change, or when a chunk changes, old geometry will need
          * to be removed. This should accomplish that.

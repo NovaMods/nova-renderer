@@ -8,7 +8,6 @@
 
 #include <easylogging++.h>
 #include "gl_shader_program.h"
-#include "../../../data_loading/loaders/geometry_filter_loading.h"
 
 namespace nova {
     gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {

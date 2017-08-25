@@ -28,10 +28,14 @@ namespace nova {
         render_settings->update_config_loaded();
 		render_settings->update_config_changed();
 
+        LOG(INFO) << "Finished sending out initial config";
+
         init_opengl_state();
     }
 
     void nova_renderer::init_opengl_state() const {
+        LOG(DEBUG) << "Initting OpenGL state";
+
         glClearColor(0.0, 0.0, 0.0, 1.0);
 
         glEnable(GL_DEPTH_TEST);
@@ -40,6 +44,8 @@ namespace nova {
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        LOG(DEBUG) << "OpenGL state initialized";
     }
 
     nova_renderer::~nova_renderer() {
@@ -219,9 +225,21 @@ namespace nova {
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
 		auto& shaderpack_name = new_config["loadedShaderpack"];
-        if(!loaded_shaderpack || (loaded_shaderpack && shaderpack_name != loaded_shaderpack->get_name())) {
+        LOG(INFO) << "Shaderpack in settings: " << shaderpack_name;
+
+        if(!loaded_shaderpack) {
+            LOG(DEBUG) << "There's currenty no shaderpack, so we're loading a new one";
+            load_new_shaderpack(shaderpack_name);
+            return;
+        }
+
+        bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
+        if(shaderpack_in_settings_is_new) {
+            LOG(DEBUG) << "Shaderpack " << shaderpack_name << " is about to replace shaderpack " << loaded_shaderpack->get_name();
             load_new_shaderpack(shaderpack_name);
         }
+
+        LOG(DEBUG) << "Finished dealing with possible new shaderpack";
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
@@ -249,9 +267,10 @@ namespace nova {
     }
 
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
-		
-        LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
+		LOG(INFO) << "Loading a new shaderpack";
+        LOG(INFO) << "Name of shaderpack " << new_shaderpack_name;
         loaded_shaderpack = std::make_shared<shaderpack>(load_shaderpack(new_shaderpack_name));
+        LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
         LOG(INFO) << "Loading complete";
 		
         link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), *ubo_manager);
@@ -299,7 +318,7 @@ namespace nova {
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
         for(auto& geom : geometry) {
             if(geom.geometry->has_data()) {
-                if(geom.color_texture != "") {
+                if(!geom.color_texture.empty()) {
                     auto color_texture = textures->get_texture(geom.color_texture);
                     color_texture.bind(0);
                 }

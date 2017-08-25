@@ -46,7 +46,7 @@ namespace nova {
         }
     }
 
-    void gl_mesh::set_data(std::vector<float> data, format data_format, usage data_usage) {
+    void gl_mesh::set_data(std::vector<int> data, format data_format, usage data_usage) {
         this->data_format = data_format;
 
         glBindVertexArray(vertex_array);
@@ -77,7 +77,7 @@ namespace nova {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
     }
 
-    void gl_mesh::set_index_array(std::vector<unsigned int> data, usage data_usage) {
+    void gl_mesh::set_index_array(std::vector<int> data, usage data_usage) {
         glBindVertexArray(vertex_array);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
         GLenum buffer_usage = translate_usage(data_usage);
@@ -138,7 +138,7 @@ namespace nova {
         }
     }
 
-    void gl_mesh::compute_aabb(std::vector<float> &vertices, format data_format) {
+    void gl_mesh::compute_aabb(std::vector<int> &vertices, format data_format) {
         // TODO: Translate data_format into a stride
         // TODO: All of this. The AABB stuff is going to come later
     }

@@ -27,7 +27,7 @@ setup_nova() {
 
     echo "Downloading MCP"
     rm -rf mcp && mkdir mcp && (cd mcp
-        wget http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip && unzip mcp931.zip
+        wget http://www.modcoderpack.com/files/mcp931.zip && unzip mcp931.zip
         rm -f mcp*.zip
 
         echo "Decompile MCP"

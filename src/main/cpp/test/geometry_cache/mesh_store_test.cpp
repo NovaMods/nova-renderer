@@ -19,7 +19,6 @@ namespace nova {
             auto loaded_shaderpack = std::make_shared<shaderpack>(nova::load_shaderpack(shaderpack_name));
 
             nova::mesh_store meshes;
-            meshes.set_shaderpack(loaded_shaderpack);
 
             mc_gui_send_buffer_command send_gui_buffer_command = {};
             send_gui_buffer_command.texture_name = "gui/widgets";
@@ -51,11 +50,6 @@ namespace nova {
             auto& gui_mesh = gui_meshes[0];
 
             ASSERT_EQ(0, gui_mesh.parent_id);
-            ASSERT_EQ(true, gui_mesh.is_solid);
-            ASSERT_EQ(false, gui_mesh.is_transparent);
-            ASSERT_EQ(false, gui_mesh.is_cutout);
-            ASSERT_EQ(false, gui_mesh.is_emissive);
-            ASSERT_EQ(0, gui_mesh.damage_level);
             ASSERT_EQ(nova::geometry_type::gui, gui_mesh.type);
             ASSERT_EQ("gui", gui_mesh.name);
             ASSERT_EQ("gui", gui_mesh.color_texture);

@@ -14,6 +14,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BlockModelShapes;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ModelManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
@@ -44,6 +46,7 @@ import static com.continuum.nova.utils.Utils.getImageData;
 public class NovaRenderer implements IResourceManagerReloadListener {
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
+    private BlockModelShapes shapes;
 
     private boolean firstLoad = true;
 
@@ -77,7 +80,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private Executor chunkUpdateThreadPool = Executors.newSingleThreadExecutor(); //Executors.newFixedThreadPool(10);
 
-    private BlockModelSerializer modelSerializer = new BlockModelSerializer();
     private ChunkBuilder chunkBuilder;
     private BlockModelShapes blockModelShapes;
     private HashMap<String, IGeometryFilter> filterMap;
@@ -384,12 +386,13 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public void loadShaderpack(String shaderpackName) {
         NovaNative.INSTANCE.set_string_setting("loadedShaderpack", shaderpackName);
 
-        String[] filters = NovaNative.INSTANCE.get_shaders_and_filters();
+        String filters = NovaNative.INSTANCE.get_shaders_and_filters();
+        String[] filtersSplit = filters.split(" ");
 
         filterMap = new HashMap<>();
-        for(int i = 0; i < filters.length; i += 2) {
-            String filterName = filters[i];
-            IGeometryFilter filter = IGeometryFilter.parseFilterString(filters[i + 1]);
+        for(int i = 0; i < filtersSplit.length; i += 2) {
+            String filterName = filtersSplit[i];
+            IGeometryFilter filter = IGeometryFilter.parseFilterString(filtersSplit[i + 1]);
             filterMap.put(filterName, filter);
         }
 

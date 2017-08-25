@@ -62,7 +62,7 @@ struct mc_block {
 /*!
  * \brief Represents a chunk in Minecraft. It's really just a large array of blocks and an ID
  */
-struct mc_basic_render_object {
+struct mc_chunk_render_object {
 	int format;
 	float x;
 	float y;
@@ -72,6 +72,7 @@ struct mc_basic_render_object {
 	int* indices;
 	int vertex_buffer_size;
 	int index_buffer_size;
+
 };
 
 /*!
@@ -152,7 +153,7 @@ struct mc_settings {
  * \brief Tells Nova to add this chunk to its list of potential chunks to render
  */
 struct mc_add_chunk_command {
-    mc_basic_render_object new_chunk;
+    mc_chunk_render_object new_chunk;
 
     float chunk_x;
     float chunk_y;

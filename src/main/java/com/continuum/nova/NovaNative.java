@@ -89,7 +89,7 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_basic_render_object extends Structure {
+    class mc_chunk_render_object extends Structure {
         public int format;
         public float x;
         public float y;
@@ -265,7 +265,7 @@ public interface NovaNative extends Library {
 
     void reset_texture_manager();
 
-    void add_chunk_geometry_for_filter(String filter_name, mc_basic_render_object render_object);
+    void add_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
 
     boolean should_close();
 
@@ -297,5 +297,5 @@ public interface NovaNative extends Library {
 
     void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
 
-    String[] get_shaders_and_filters();
+    String get_shaders_and_filters();
 }
