@@ -1,7 +1,0 @@
-C:\Users\ddubois\AppData\Local\Temp\nova-test_2016.08.29_22.50.49_frame71.rdc - Frame #71
-
- EID  | Event                                                       | Draw #
-------------------------------------------------------------------------------
-1     | - glClear(Color = <0.000000, 0.000000, 0.000000, 1.000000>) | 1    
-6     | - glDrawElements(1567384832)                                | 2    
-7     | - SwapBuffers()                                             | 3    

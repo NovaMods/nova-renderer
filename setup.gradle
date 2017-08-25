@@ -1,0 +1,268 @@
+/**
+ * Defines a number of tasks used in setting up Nova
+ *
+ * This file will handle downloading MCP, patching the MCP code, generating the
+ * patch file, and ensuring that the user has all the dependencies that they need.
+ */
+
+import com.bloidonia.groovy.extensions.FileExtensionMethods
+import org.gradle.internal.os.OperatingSystem
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'com.bloidonia', name: 'groovy-common-extensions', version: '0.7.0'
+    }
+}
+
+//apply plugin: 'groovy-common-extensions'
+
+task help {
+    doLast {
+    logger.info('''\
+Allows you to set up Nova on a new machine. This script also checks that you have all the things that Nova needs, that they're on your PATH, and all the other fun stuff.
+
+Available tasks:
+
+ * setup                - Downloads MCP, unzips it, moves it to the right place, and applies the source code transformations to Minecraft so that Nova will be run properly. Before any of that, though, this tasks checks that you have all the right programs installed to your PATH
+
+ * makePatch            - makes the source code patch that Nova uses to distribute its changes to the MC source code
+
+ * verifyEnvironment    - Checks that you have all the right tools on your PATH
+''')
+    }
+}
+
+task verifyEnvironment << {
+    checkCMake()
+    checkJava()
+
+    def gccAvailable = hasGCC()
+    def msvcAvailable = hasMSVC()
+
+    if(!msvcAvailable) {
+        logger.warn("Could not find MSVC. If you want to use MSVC to compile Nova, please use the Visual Studio Developer Command Prompt (just Google it)")
+    } else {
+        logger.info('Visual Studio found!')
+    }
+
+    if(!gccAvailable) {
+        logger.warn('Could not find GCC. If you want to use GCC to compile Nova, please install it to your PATH and try again')
+    } else {
+        logger.info('GCC found!')
+    }
+
+    if(!gccAvailable && !msvcAvailable) {
+        logger.fatal('Neither Visual Stusio not GCC are available. Please install one of these and add its location to your PATH')
+        throw new GradleScriptException()
+    }
+
+    logger.info('All build tools detected')
+}
+
+task downloadMcp(dependsOn: verifyEnvironment) << {
+    download {
+        src 'http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip'
+        dest 'mcp931.zip'
+    }
+
+    logger.info('Unzipping MCP...')
+    Collection<File> extractedFiles = FileExtensionMethods.unzip(new File('./mcp931.zip'))
+    logger.info('Unzipping complete')
+}
+
+task decompileMcp(dependsOn: downloadMcp) << {
+    new ByteArrayOutputStream().withStream { os ->
+        def result = exec {
+            if(OperatingSystem.current().isWindows()) {
+                commandLine './runtime/bin/python/python_mcp', 'runtime/decompile.py'
+            } else {
+                commandLine 'python2', 'runtime/decompile.py'
+            }
+
+            standardOutput = os
+        }
+        def outputAsString = os.toString()
+        println "${outputAsString}"
+    }
+}
+
+task copyMcCode(type: Copy, dependsOn: decompileMcp) {
+    outputs.upToDateWhen { false }
+    from 'src/minecraft'
+    into 'src/main/java'
+}
+
+task copyMcAssets(type: Copy, dependsOn: copyMcCode) {
+    outputs.upToDateWhen { false }
+    from 'temp/src/minecraft/assets'
+    into 'src/main/resources/assets'
+}
+
+task copyMcPack(type: Copy, dependsOn: copyMcAssets) {
+    outputs.upToDateWhen { false }
+    from 'temp/src/minecraft/pack.png'
+    into 'src/main/resources/pack.png'
+}
+
+task applyPatch(dependsOn: copyMcPack) << {
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                if(OperatingSystem.current().isWindows()) {
+                    commandLine "${project.projectDir}/runtime/bin/applydiff.exe", '-p1', '-i', "${project.projectDir}/patches/nova.patch"
+                    workingDir 'src/main/java/net'
+                } else {
+                    commandLine 'bash', '-c', "patch -p1 < ${project.projectDir}/patches/nova.patch"
+                    workingDir 'src/main/java/net'
+                }
+
+                standardOutput = os
+                errorOutput = os
+            }
+        } catch(Exception e) {
+            throw new GradleScriptException(os.toString(), e)
+        }
+        def outputAsString = os.toString()
+        println "${outputAsString}"
+    }
+}
+
+task cleanupMcp(dependsOn: applyPatch) << {
+    def mcpDir = file('mcp')
+    mcpDir.delete()
+}
+
+task initSubmodules(dependsOn: cleanupMcp) << {
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                commandLine 'git', 'submodule', 'update', '--init', '--recursive'
+
+                standardOutput = os
+                errorOutput = os
+            }
+        } catch(Exception e) {
+            throw new GradleScriptException(os.toString(), e)
+        }
+        def outputAsString = os.toString()
+        println "${outputAsString}"
+    }
+}
+
+task setup(dependsOn: initSubmodules) << {
+    logger.info('Nova setup succesfully')
+}
+
+task makePatch() << {
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                commandLine 'git', 'diff', 'origin/minecraft-1.10-mcp'
+                workingDir 'src/main/java/net'
+
+                standardOutput = os
+                errorOutput = os
+            }
+        } catch(Exception e) {
+            throw new GradleScriptException(os.toString(), e)
+        }
+        def outputAsString = os.toString()
+        println "${outputAsString}"
+
+        new File("patches/nova.patch").withWriter { out -> out.println outputAsString }
+    }
+}
+
+clean.doFirst {
+    delete "src/minecraft/"
+    delete "bin"
+    delete "conf"
+    delete "eclipse"
+    delete "libs"
+    delete "logs"
+    delete "mappingviewer"
+    delete "mcp"
+    delete "reobf"
+    delete "runtime"
+    delete "temp"
+    delete "cleanup.sh"
+    delete "cleanup.bat"
+    delete "decompile.sh"
+    delete "decompile.bat"
+    delete "getchangedsrc.sh"
+    delete "getchangedsrc.bat"
+    delete "mcp931.zip"
+    delete "recompile.bat"
+    delete "recompile.sh"
+    delete "reformat.sh"
+    delete "reformat.bat"
+    delete "reobfuscate.sh"
+    delete "reobfuscate.bat"
+    delete "reobfuscate_srg.sh"
+    delete "reobfuscate_srg.bat"
+    delete "startclient.sh"
+    delete "startclient.bat"
+    delete "startserver.sh"
+    delete "startserver.bat"
+    delete "updateids.sh"
+    delete "updateids.bat"
+    delete "updatemcp.sh"
+    delete "updatemcp.bat"
+    delete "updatemd5.sh"
+    delete "updatemd5.bat"
+    delete "updatenames.sh"
+    delete "updatenames.bat"
+
+    println "Removed MCP files"
+}
+
+static void checkCMake() {
+    try {
+        def cmakeTest = "cmake --version".execute()
+        if(cmakeTest.waitFor() != 0) {
+            println 'CMake not found. Please install CMake and add its location to your PATH'
+            throw new GradleScriptException()
+        } else {
+            println 'CMake found!'
+        }
+    } catch(Exception e) {
+        println 'CMake not found. Please install CMake and add its location to your PATH'
+        throw new GradleScriptException(e)
+    }
+}
+
+static boolean hasGCC() {
+    try {
+        def gccTest = "gcc --version".execute()
+        return gccTest.waitFor() == 0
+    } catch(Exception e) {
+        return false
+    }
+}
+
+static boolean hasMSVC() {
+    try {
+        def msvcTest = "msbuild.exe /help".execute()
+        return msvcTest.waitFor() == 0
+    } catch(Exception e) {
+        return false
+    }
+}
+
+static void checkJava() {
+    try {
+        def javaTest = "javac -version".execute()
+        if(javaTest.waitFor() != 0) {
+            println 'JDK not found. Please install the Java 8 JDK and add its location to your PATH'
+            throw new GradleScriptException()
+        } else {
+            println 'JDK found!'
+        }
+    } catch(Exception e) {
+        println 'JDK not found. Please install the Java 8 JDK and add its location to your PATH'
+        throw new GradleScriptException(e)
+    }
+}
