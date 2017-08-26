@@ -13,9 +13,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
+import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static java.util.Optional.of;
 
 /**
  * Splits chunks up into meshes with one mesh for each shader
@@ -52,21 +55,22 @@ public class ChunkBuilder {
             }
         }
 
-        int chunkHashCode = range.min.x;
-        chunkHashCode = 31 * chunkHashCode + range.min.z;
+        final int chunkHashCode = 31 * range.min.x + range.min.z;
 
         Map<String, List<NovaNative.mc_chunk_render_object>> geometriesForFilter = new HashMap<>();
         for(String filterName : blocksForFilter.keySet()) {
-            NovaNative.mc_chunk_render_object renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world);
-            renderObj.id = chunkHashCode;
-            renderObj.x = range.min.x;
-            renderObj.y = range.min.y;
-            renderObj.z = range.min.z;
+            Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world);
+            renderObj.ifPresent(obj -> {
+                obj.id = chunkHashCode;
+                obj.x = range.min.x;
+                obj.y = range.min.y;
+                obj.z = range.min.z;
 
-            if(!geometriesForFilter.containsKey(filterName)) {
-                geometriesForFilter.put(filterName, new ArrayList<>());
-            }
-            geometriesForFilter.get(filterName).add(renderObj);
+                if(!geometriesForFilter.containsKey(filterName)) {
+                    geometriesForFilter.put(filterName, new ArrayList<>());
+                }
+                geometriesForFilter.get(filterName).add(obj);
+            });
         }
 
         long timeAfterBuildingStruct = System.currentTimeMillis();
@@ -111,7 +115,7 @@ public class ChunkBuilder {
         }
     }
 
-    private NovaNative.mc_chunk_render_object makeMeshForBlocks(List<BlockPos> blockStates, World world) {
+    private Optional<NovaNative.mc_chunk_render_object> makeMeshForBlocks(List<BlockPos> blockStates, World world) {
         List<Integer> vertexData = new ArrayList<>();
         IndexList indices = new IndexList();
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
@@ -148,11 +152,15 @@ public class ChunkBuilder {
             blockIndexCounter += faceIndexCounter;
         }
 
+        if(vertexData.isEmpty()) {
+            return Optional.empty();
+        }
+
         chunk_render_object.setVertex_data(vertexData);
         chunk_render_object.setIndices(indices);
         chunk_render_object.format = NovaNative.NovaVertexFormat.POS_UV_LIGHTMAPUV_NORMAL_TANGENT.ordinal();
 
-        return chunk_render_object;
+        return Optional.of(chunk_render_object);
     }
 
     private int[] addPosition(BakedQuad quad, BlockPos blockPos) {
