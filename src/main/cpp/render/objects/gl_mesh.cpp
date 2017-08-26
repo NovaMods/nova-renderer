@@ -65,9 +65,6 @@ namespace nova {
                 return GL_DYNAMIC_DRAW;
             case usage::static_draw:
                 return GL_STATIC_DRAW;
-            default:
-                // In case I add a new value to the enum and forget to update this switch statement
-                throw std::invalid_argument("data_usage value unsupported");
         }
     }
 
@@ -87,7 +84,7 @@ namespace nova {
     }
 
     void gl_mesh::draw() const {
-        glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, nullptr);
     }
 
     void gl_mesh::enable_vertex_attributes(format data_format) {
@@ -97,7 +94,7 @@ namespace nova {
                 // Positions are always at vertex attribute 0
                 glEnableVertexAttribArray(0);   // Position
 
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
                 break;
 
@@ -105,7 +102,7 @@ namespace nova {
                 glEnableVertexAttribArray(0);   // Position
                 glEnableVertexAttribArray(1);   // Texture UV
 
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) 0);
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr);
                 glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
 
                 break;
@@ -115,7 +112,7 @@ namespace nova {
                 glEnableVertexAttribArray(1);   // Texture UV
                 glEnableVertexAttribArray(2);   // Vertex color
 
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *) 0);
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), nullptr);
                 glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
                 glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *) (5 * sizeof(GLfloat)));
 
@@ -128,7 +125,7 @@ namespace nova {
                 glEnableVertexAttribArray(3);   // Normal
                 glEnableVertexAttribArray(4);   // Tangent
 
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (void *)  0);
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), nullptr);
                 glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (void *) (4 * sizeof(GLfloat)));
                 glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (void *) (6 * sizeof(GLfloat)));
                 glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(GLfloat), (void *) (8 * sizeof(GLfloat)));

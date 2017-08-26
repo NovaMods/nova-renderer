@@ -74,7 +74,7 @@ namespace nova {
         GLuint vertex_buffer;
         GLuint indices;
 
-        GLenum translate_usage(const usage data_usage) const;
+        GLenum translate_usage(usage data_usage) const;
 
         /*!
          * \brief Enables all the proper OpenGL vertex attributes for the given format

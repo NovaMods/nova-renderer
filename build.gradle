@@ -35,7 +35,7 @@ task buildDll(type: Exec) {
 task runNova(type: JavaExec, dependsOn: ['buildDll', 'build']) << {
     dependsOn buildDll
     classpath = sourceSets.main.runtimeClasspath
-    main = "Start"
+    main = 'Start'
     jvmArgs = ["-Djava.library.path=versions/1.10/1.10-natives"]
     workingDir = "jars"
 }

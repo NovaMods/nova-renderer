@@ -48,7 +48,7 @@ namespace nova {
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         mesh_definition cur_screen_buffer = {};
-        cur_screen_buffer.vertex_data.reserve(static_cast<unsigned long>(command->vertex_buffer_size));
+        cur_screen_buffer.vertex_data.resize(static_cast<unsigned long>(command->vertex_buffer_size), 0);
         for (int i = 0; i + 8 < command->vertex_buffer_size; i += 9) {
             cur_screen_buffer.vertex_data[i]   = *reinterpret_cast<int*>(&command->vertex_buffer[i]);
             cur_screen_buffer.vertex_data[i+1] = *reinterpret_cast<int*>(&command->vertex_buffer[i+1]);
@@ -62,7 +62,7 @@ namespace nova {
             cur_screen_buffer.vertex_data[i+7] = *reinterpret_cast<int*>(&command->vertex_buffer[i+7]);
             cur_screen_buffer.vertex_data[i+8] = *reinterpret_cast<int*>(&command->vertex_buffer[i+8]);
         }
-        cur_screen_buffer.indices.reserve(static_cast<unsigned long>(command->index_buffer_size));
+        cur_screen_buffer.indices.resize(static_cast<unsigned long>(command->index_buffer_size), 0);
         for(int i = 0; i < command->index_buffer_size; i++) {
             cur_screen_buffer.indices[i] = (unsigned int)command->index_buffer[i];
         }
