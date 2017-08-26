@@ -12,6 +12,7 @@ import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,7 +33,7 @@ public class ChunkBuilder {
     private final AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
     private final AtomicInteger numChunksUpdated = new AtomicInteger(0);
 
-    public ChunkBuilder(Map<String, IGeometryFilter> filters, World world, BlockModelShapes modelManager) {
+    public ChunkBuilder(Map<String, IGeometryFilter> filters, World world, @Nonnull BlockModelShapes modelManager) {
         this.filters = filters;
         this.world = world;
         this.modelManager = modelManager;
@@ -40,18 +41,13 @@ public class ChunkBuilder {
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
         LOG.debug("Updating chunk {}", range);
-        Map<String, List<BlockPos>> blocksForFilter = new DefaultHashMap<>(ArrayList::new);
+        Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
         long startTime = System.currentTimeMillis();
 
         for(int x = range.min.x; x <= range.max.x; x++) {
             for(int y = range.min.y; y < range.max.y; y++) {
                 for(int z = range.min.z; z <= range.max.z; z++) {
-                    IBlockState blockState = world.getBlockState(new BlockPos(x, y, z));
-                    for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
-                        if(entry.getValue().matches(blockState)) {
-                            blocksForFilter.get(entry.getKey()).add(new BlockPos(x, y, z));
-                        }
-                    }
+                    filterBlockAtPos(blocksForFilter, new BlockPos(x, y, z));
                 }
             }
         }
@@ -59,7 +55,7 @@ public class ChunkBuilder {
         int chunkHashCode = range.min.x;
         chunkHashCode = 31 * chunkHashCode + range.min.z;
 
-        Map<String, List<NovaNative.mc_chunk_render_object>> geometriesForFilter = new DefaultHashMap<>(ArrayList::new);
+        Map<String, List<NovaNative.mc_chunk_render_object>> geometriesForFilter = new HashMap<>();
         for(String filterName : blocksForFilter.keySet()) {
             NovaNative.mc_chunk_render_object renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world);
             renderObj.id = chunkHashCode;
@@ -67,6 +63,9 @@ public class ChunkBuilder {
             renderObj.y = range.min.y;
             renderObj.z = range.min.z;
 
+            if(!geometriesForFilter.containsKey(filterName)) {
+                geometriesForFilter.put(filterName, new ArrayList<>());
+            }
             geometriesForFilter.get(filterName).add(renderObj);
         }
 
@@ -91,6 +90,24 @@ public class ChunkBuilder {
                     (float) timeSpentInBlockRenderUpdate.get() / numChunksUpdated.get(), numChunksUpdated);
             LOG.debug("Detailed stats:\nTime to build chunk: {}ms\nTime to process chunk in native code: {}ms",
                     timeAfterBuildingStruct - startTime, timeAfterSendingToNative - timeAfterBuildingStruct);
+        }
+    }
+
+    /**
+     * Adds the block at the given position to the blocksForFilter map under each filter that matches the block
+     *
+     * @param blocksForFilter The map of blocks to potentially add the given block to
+     * @param pos The position of the block to add
+     */
+    private void filterBlockAtPos(Map<String, List<BlockPos>> blocksForFilter, BlockPos pos) {
+        IBlockState blockState = world.getBlockState(pos);
+        for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
+            if(entry.getValue().matches(blockState)) {
+                if(!blocksForFilter.containsKey(entry.getKey())) {
+                    blocksForFilter.put(entry.getKey(), new ArrayList<>());
+                }
+                blocksForFilter.get(entry.getKey()).add(pos);
+            }
         }
     }
 

@@ -258,7 +258,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
         });
         chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
-        loadShaderpack("default");
 
         ClassLoader cl = ClassLoader.getSystemClassLoader();
         URL[] classpathPaths = ((URLClassLoader)cl).getURLs();
