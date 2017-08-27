@@ -9,6 +9,7 @@
 #include <easylogging++.h>
 #include <regex>
 #include <iomanip>
+#include <sstream>
 #include "mesh_store.h"
 #include "../../../render/nova_renderer.h"
 
@@ -80,16 +81,13 @@ namespace nova {
     }
 
     void mesh_store::remove_gui_render_objects() {
-        for(auto& group : renderables_grouped_by_shader) {
-            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(),
-                                                   [](auto& render_obj) {return render_obj.type == geometry_type::gui;});
-            group.second.erase(removed_elements, group.second.end());
-        }
+        remove_render_objects([](auto& render_obj) {return render_obj.type == geometry_type::gui;});
     }
 
     void mesh_store::remove_render_objects(std::function<bool(render_object&)> filter) {
         for(auto& group : renderables_grouped_by_shader) {
-            std::remove_if(group.second.begin(), group.second.end(), filter);
+            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), filter);
+            group.second.erase(removed_elements, group.second.end());
         }
     }
 
@@ -100,13 +98,15 @@ namespace nova {
             const auto& def = std::get<1>(entry);
 
             render_object obj = {};
-            obj.geometry = std::make_shared<gl_mesh>(def);
+            obj.geometry = std::make_unique<gl_mesh>(def);
             obj.type = geometry_type::block;
             obj.name = "chunk";
             obj.parent_id = def.id;
             obj.color_texture = "block_color";
+            obj.position = def.position;
 
-            renderables_grouped_by_shader[std::get<0>(entry)].push_back(obj);
+            const std::string& shader_name = std::get<0>(entry);
+            renderables_grouped_by_shader[shader_name].push_back(std::move(obj));
 
             chunk_parts_to_upload.pop();
         }
@@ -119,6 +119,12 @@ namespace nova {
             def.vertex_data.push_back(chunk.vertex_data[i]);
         }
 
+        std::stringstream ss;
+        for(int i = 0; i < 28; i++) {
+            ss << def.vertex_data[i] << "\n";
+        }
+        LOG(DEBUG) << "First quad: " << ss.str();
+
         for(int i = 0; i < chunk.index_buffer_size; i++) {
             def.indices.push_back(chunk.indices[i]);
         }
@@ -129,27 +135,6 @@ namespace nova {
 
         chunk_parts_to_upload_lock.lock();
         chunk_parts_to_upload.emplace(filter_name, def);
-        chunk_parts_to_upload_lock.unlock();
-    }
-
-    void mesh_store::generate_needed_chunk_geometry() {
-        chunk_parts_to_upload_lock.lock();
-        while(!chunk_parts_to_upload.empty()) {
-            auto& item = chunk_parts_to_upload.front();
-            chunk_parts_to_upload.pop();
-
-            mesh_definition& def = std::get<1>(item);
-            render_object obj;
-            obj.parent_id = def.id;
-            obj.type = geometry_type::block;
-            obj.name = "chunk_part";
-            obj.geometry = std::make_unique<gl_mesh>(def);
-            obj.color_texture = "block_color";
-            obj.position = def.position;
-
-            std::string& shader_name = std::get<0>(item);
-            renderables_grouped_by_shader[shader_name].push_back(std::move(obj));
-        }
         chunk_parts_to_upload_lock.unlock();
     }
 

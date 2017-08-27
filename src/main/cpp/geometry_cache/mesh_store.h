@@ -54,11 +54,6 @@ namespace nova {
         void remove_gui_render_objects();
 
         /*!
-         * \brief Uploads the available chunk geometry parts to the GPU
-         */
-        void generate_needed_chunk_geometry();
-
-        /*!
          * \brief Removes all known render objects that come from the given ID
          *
          * This method shoudl be called when updating a chunk, or when unloading a chunk

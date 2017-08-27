@@ -66,24 +66,12 @@ public class ChunkBuilder {
                 obj.y = range.min.y;
                 obj.z = range.min.z;
 
-                if(!geometriesForFilter.containsKey(filterName)) {
-                    geometriesForFilter.put(filterName, new ArrayList<>());
-                }
-                geometriesForFilter.get(filterName).add(obj);
+                NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
             });
         }
 
         long timeAfterBuildingStruct = System.currentTimeMillis();
         // Using JNA in the old way: 550 ms / chunk
-
-        for(String filterName : geometriesForFilter.keySet()) {
-            if(!geometriesForFilter.get(filterName).isEmpty()) {
-                for(NovaNative.mc_chunk_render_object obj : geometriesForFilter.get(filterName)) {
-                    NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
-                }
-            }
-        }
-        long timeAfterSendingToNative = System.currentTimeMillis();
 
         long deltaTime = System.currentTimeMillis() - startTime;
         timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
@@ -92,8 +80,8 @@ public class ChunkBuilder {
         if(numChunksUpdated.get() % 10 == 0) {
             LOG.debug("It's taken an average of {}ms to update {} chunks",
                     (float) timeSpentInBlockRenderUpdate.get() / numChunksUpdated.get(), numChunksUpdated);
-            LOG.debug("Detailed stats:\nTime to build chunk: {}ms\nTime to process chunk in native code: {}ms",
-                    timeAfterBuildingStruct - startTime, timeAfterSendingToNative - timeAfterBuildingStruct);
+            LOG.debug("Detailed stats:\nTime to build chunk: {}ms",
+                    timeAfterBuildingStruct - startTime);
         }
     }
 
@@ -165,17 +153,20 @@ public class ChunkBuilder {
 
     private int[] addPosition(BakedQuad quad, BlockPos blockPos) {
         int[] data = Arrays.copyOf(quad.getVertexData(), quad.getVertexData().length);
-        float x = Float.intBitsToFloat(data[0]);
-        float y = Float.intBitsToFloat(data[1]);
-        float z = Float.intBitsToFloat(data[2]);
 
-        x += blockPos.getX();
-        y += blockPos.getY();
-        z += blockPos.getZ();
+        for(int vertex = 0; vertex < 28; vertex += 7) {
+            float x = Float.intBitsToFloat(data[vertex + 0]);
+            float y = Float.intBitsToFloat(data[vertex + 1]);
+            float z = Float.intBitsToFloat(data[vertex + 2]);
 
-        data[0] = Float.floatToIntBits(x);
-        data[1] = Float.floatToIntBits(y);
-        data[2] = Float.floatToIntBits(z);
+            x += blockPos.getX();
+            y += blockPos.getY();
+            z += blockPos.getZ();
+
+            data[vertex + 0] = Float.floatToIntBits(x);
+            data[vertex + 1] = Float.floatToIntBits(y);
+            data[vertex + 2] = Float.floatToIntBits(z);
+        }
 
         return data;
     }
@@ -195,20 +186,5 @@ public class ChunkBuilder {
     private static IBlockState blockNextTo(BlockPos pos, World world, EnumFacing direction) {
         BlockPos lookupPos = pos.add(direction.getDirectionVec());
         return world.getBlockState(lookupPos);
-    }
-
-    /**
-     * This class only exists to make the code on line 111 work
-     */
-    private static class IndexCounter {
-        private int index = 0;
-
-        public void nextFace() {
-            index += 4;
-        }
-
-        public int getIndex() {
-            return index;
-        }
     }
 }
