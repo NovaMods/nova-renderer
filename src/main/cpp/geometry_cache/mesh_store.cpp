@@ -103,7 +103,7 @@ namespace nova {
             obj.name = "chunk";
             obj.parent_id = def.id;
             obj.color_texture = "block_color";
-            obj.position = def.position;
+            //obj.position = def.position;
 
             const std::string& shader_name = std::get<0>(entry);
             renderables_grouped_by_shader[shader_name].push_back(std::move(obj));
@@ -115,21 +115,27 @@ namespace nova {
 
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
         mesh_definition def = {};
-        for(int i = 0; i < chunk.vertex_buffer_size; i++) {
-            def.vertex_data.push_back(chunk.vertex_data[i]);
-        }
+        auto& vertex_data = def.vertex_data;
 
-        std::stringstream ss;
-        for(int i = 0; i < 28; i++) {
-            ss << def.vertex_data[i] << "\n";
+        for(int i = 0; i < chunk.vertex_buffer_size; i++) {
+            vertex_data.push_back(chunk.vertex_data[i]);
+
+            if(i % 7 == 6) {
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+            }
         }
-        LOG(DEBUG) << "First quad: " << ss.str();
 
         for(int i = 0; i < chunk.index_buffer_size; i++) {
             def.indices.push_back(chunk.indices[i]);
         }
 
         def.vertex_format = format::all_values()[chunk.format];
+        LOG(DEBUG) << "Received a chunk with format " << def.vertex_format.to_string();
         def.position = {chunk.x, chunk.y, chunk.z};
         def.id = chunk.id;
 

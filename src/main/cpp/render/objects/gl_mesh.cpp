@@ -32,14 +32,14 @@ namespace nova {
 
     void gl_mesh::destroy() {
         if(vertex_buffer != 0) {
-            if(glfwGetCurrentContext() != NULL) {
+            if(glfwGetCurrentContext() != nullptr) {
                 glDeleteBuffers(1, &vertex_buffer);
             }
             vertex_buffer = 0;
         }
 
         if(indices != 0) {
-            if(glfwGetCurrentContext() != NULL) {
+            if(glfwGetCurrentContext() != nullptr) {
                 glDeleteBuffers(1, &indices);
             }
             indices = 0;

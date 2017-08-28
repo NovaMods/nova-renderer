@@ -123,7 +123,7 @@ public class ChunkBuilder {
                 }
             }
 
-            LOG.trace("Retrieved {} faces for BlocKState {}", quads.size(), blockState);
+            LOG.trace("Retrieved {} faces for BlockState {}", quads.size(), blockState);
 
             int faceIndexCounter = 0;
             for(BakedQuad quad : quads) {
