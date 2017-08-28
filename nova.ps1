@@ -154,7 +154,7 @@ function New-NovaCode([string]$buildEnvironment) {
     if($nativeOnly -eq $false) {
         # Compile the Java code
 
-        gradle fatjar createJars
+        ./gradlew build
 
         if($LASTEXITCODE -ne 0) {
             Write-Error "Gradle invocation failed, aborting"
