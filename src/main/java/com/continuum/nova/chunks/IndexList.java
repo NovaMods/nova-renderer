@@ -17,7 +17,7 @@ class IndexList extends ArrayList<Integer> {
         add(0 + faceOffset + blockOffset);
         add(1 + faceOffset + blockOffset);
         add(2 + faceOffset + blockOffset);
-        add(1 + faceOffset + blockOffset);
+        add(0 + faceOffset + blockOffset);
         add(2 + faceOffset + blockOffset);
         add(3 + faceOffset + blockOffset);
     }
