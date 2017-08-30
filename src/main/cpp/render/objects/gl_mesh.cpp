@@ -118,7 +118,7 @@ namespace nova {
 
                 break;
 
-            case format::POS_UV_LIGHTMAPUV_NORMAL_TANGENT:
+            case format::POS_COLOR_UV_LIGHTMAPUV_NORMAL_TANGENT:
                 glEnableVertexAttribArray(0);   // Position
                 glEnableVertexAttribArray(1);   // Texture UV
                 glEnableVertexAttribArray(2);   // Lightmap UV
@@ -126,10 +126,11 @@ namespace nova {
                 glEnableVertexAttribArray(4);   // Tangent
 
                 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), nullptr);
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
-                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (5 * sizeof(GLfloat)));
-                glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (7 * sizeof(GLfloat)));
-                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (10 * sizeof(GLfloat)));
+                glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (1 * sizeof(GLfloat)));
+                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (4 * sizeof(GLfloat)));
+                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (6 * sizeof(GLfloat)));
+                glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (8 * sizeof(GLfloat)));
+                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (11 * sizeof(GLfloat)));
 
                 break;
         }

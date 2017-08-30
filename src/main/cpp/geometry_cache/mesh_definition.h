@@ -19,7 +19,7 @@ namespace nova {
     SMART_ENUM(format, \
         POS, \
         POS_UV, \
-        POS_UV_LIGHTMAPUV_NORMAL_TANGENT, \
+        POS_COLOR_UV_LIGHTMAPUV_NORMAL_TANGENT, \
         POS_UV_COLOR);
 
     /*!

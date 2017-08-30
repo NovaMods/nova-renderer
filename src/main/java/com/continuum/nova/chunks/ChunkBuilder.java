@@ -3,6 +3,7 @@ package com.continuum.nova.chunks;
 import com.continuum.nova.NovaNative;
 import com.continuum.nova.utils.DefaultHashMap;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -57,7 +58,6 @@ public class ChunkBuilder {
 
         final int chunkHashCode = 31 * range.min.x + range.min.z;
 
-        Map<String, List<NovaNative.mc_chunk_render_object>> geometriesForFilter = new HashMap<>();
         for(String filterName : blocksForFilter.keySet()) {
             Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world);
             renderObj.ifPresent(obj -> {
@@ -111,7 +111,7 @@ public class ChunkBuilder {
         int blockIndexCounter = 0;
         for(BlockPos blockPos : blockStates) {
             IBlockState blockState = world.getBlockState(blockPos);
-            IBakedModel blockModel = modelManager.getModelForState(blockState);
+            IBakedModel blockModel = Minecraft.getMinecraft().getBlockRenderDispatcher().getModelForState(blockState);
 
             List<BakedQuad> quads = new ArrayList<>();
             for(EnumFacing facing : EnumFacing.values()) {
