@@ -10,15 +10,13 @@ index 0000000..56911f2
 +
 +/minecraft/.vs
 diff --git a/minecraft/block/Block.java b/minecraft/block/Block.java
-index 25c6330..da115a5 100644
+index 25c6330..cc6c650 100644
 --- a/minecraft/block/Block.java
 +++ b/minecraft/block/Block.java
 @@ -13,0 +14 @@ import net.minecraft.block.state.IBlockState;
 +import net.minecraft.client.Minecraft;
 @@ -44,0 +46 @@ import net.minecraft.world.World;
 +@SuppressWarnings("ALL")
-@@ -1397,0 +1400 @@ public class Block
-+        Minecraft.getMinecraft().getNovaRenderer().registerBlock(id, block_);
 diff --git a/minecraft/block/material/Material.java b/minecraft/block/material/Material.java
 index 5fd24e7..a918135 100644
 --- a/minecraft/block/material/Material.java
@@ -26,7 +24,7 @@ index 5fd24e7..a918135 100644
 @@ -2,0 +3 @@ package net.minecraft.block.material;
 +@SuppressWarnings("ALL")
 diff --git a/minecraft/client/Minecraft.java b/minecraft/client/Minecraft.java
-index ad84c84..cafa21c 100644
+index ad84c84..48d62f8 100644
 --- a/minecraft/client/Minecraft.java
 +++ b/minecraft/client/Minecraft.java
 @@ -2,0 +3,2 @@ package net.minecraft.client;
@@ -57,7 +55,7 @@ index ad84c84..cafa21c 100644
 @@ -387,0 +390 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
 @@ -410,0 +414,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
-+        nova.preInit(modelManager);
++        nova.preInit();
 +        inGameHasFocus = NovaNative.INSTANCE.display_is_active();
 +        Mouse.create();
 +        Keyboard.create();
@@ -118,43 +116,43 @@ index ad84c84..cafa21c 100644
 +
 +        this.textureManager.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
 +        this.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-@@ -574 +578 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.modelManager = new ModelManager(this.textureMapBlocks);
-+        this.modelManager = new ModelManager(this.textureMapBlocks, nova);
-@@ -578,2 +582,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -574,0 +579,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        nova.setBlockModelShapes(modelManager.getBlockModelShapes());
++        nova.loadShaderpack("default");
+@@ -578,2 +584,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.renderItem = new RenderItem(this.renderEngine, this.modelManager, this.itemColors);
 -        this.renderManager = new RenderManager(this.renderEngine, this.renderItem);
 +        this.renderItem = new RenderItem(this.textureManager, this.modelManager, this.itemColors);
 +        this.renderManager = new RenderManager(this.textureManager, this.renderItem);
-@@ -590 +594 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -590 +596 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.effectRenderer = new ParticleManager(this.theWorld, this.renderEngine);
 +        this.effectRenderer = new ParticleManager(this.theWorld, this.textureManager);
-@@ -603 +607 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -603 +609 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.renderEngine.deleteTexture(this.mojangLogo);
 +        this.textureManager.deleteTexture(this.mojangLogo);
-@@ -776,2 +780 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -776,2 +782 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public void displayCrashReport(CrashReport crashReportIn)
 -    {
 +    public void displayCrashReport(CrashReport crashReportIn) {
-@@ -782,2 +785 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -782,2 +787 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (crashReportIn.getFile() != null)
 -        {
 +        if(crashReportIn.getFile() != null) {
-@@ -786,3 +788 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -786,3 +790 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else if (crashReportIn.saveToFile(file2))
 -        {
 +        } else if(crashReportIn.saveToFile(file2)) {
-@@ -791,3 +791 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -791,3 +793 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else
 -        {
 +        } else {
-@@ -799,2 +797 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -799,2 +799 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public boolean isUnicode()
 -    {
 +    public boolean isUnicode() {
-@@ -998,2 +995,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -998,2 +997,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (this.currentScreen != null)
 -        {
 +        if(guiScreenIn == null) {
@@ -162,27 +160,27 @@ index ad84c84..cafa21c 100644
 +        }
 +
 +        if (this.currentScreen != null) {
-@@ -1003,2 +1003 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1003,2 +1005 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn == null && this.theWorld == null)
 -        {
 +        if (guiScreenIn == null && this.theWorld == null) {
-@@ -1006,3 +1005 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1006,3 +1007 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else if (guiScreenIn == null && this.thePlayer.getHealth() <= 0.0F)
 -        {
 +        } else if (guiScreenIn == null && this.thePlayer.getHealth() <= 0.0F) {
-@@ -1012,2 +1009 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1012,2 +1011 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer)
 -        {
 +        if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer) {
-@@ -1018 +1014 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1018 +1016 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.currentScreen = (GuiScreen)guiScreenIn;
 +        this.currentScreen = guiScreenIn;
-@@ -1020,2 +1016 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1020,2 +1018 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn != null)
 -        {
 +        if (guiScreenIn != null) {
-@@ -1025,10 +1019,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1025,10 +1021,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            while (Mouse.next())
 -            {
 -                ;
@@ -193,102 +191,102 @@ index ad84c84..cafa21c 100644
 -                ;
 -            }
 -
-@@ -1038 +1023 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1038 +1025 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            ((GuiScreen)guiScreenIn).setWorldAndResolution(this, i, j);
 +            guiScreenIn.setWorldAndResolution(this, i, j);
-@@ -1040,3 +1025 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1040,3 +1027 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 -        else
 -        {
 +        } else {
-@@ -1150 +1132,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1150 +1134,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.bindFramebuffer(true);
-@@ -1158 +1140,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1158 +1142,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
 +            entityRenderer.updateCamera(timer.renderPartialTicks, i);
 +            nova.updateCameraAndRender(timer.renderPartialTicks, i, this);
-@@ -1181 +1163,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1181 +1165,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.unbindFramebuffer();
-@@ -1184 +1165,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1184 +1167,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.framebufferRender(this.displayWidth, this.displayHeight);
-@@ -1187 +1167,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1187 +1169,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.entityRenderer.renderStreamIndicator(this.timer.renderPartialTicks);
-@@ -1227 +1207 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1227 +1209 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        Display.update();
 +        //Display.update();
-@@ -1234 +1214 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1234 +1216 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (!this.fullscreen && Display.wasResized())
 +        if (nova.wasResized())
-@@ -1236,4 +1216,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1236,11 +1218,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            int i = this.displayWidth;
 -            int j = this.displayHeight;
 -            this.displayWidth = Display.getWidth();
 -            this.displayHeight = Display.getHeight();
-+            this.displayWidth = nova.getWidth();
-+            this.displayHeight = nova.getHeight();
-@@ -1241,11 +1218,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+-
 -            if (this.displayWidth != i || this.displayHeight != j)
 -            {
 -                if (this.displayWidth <= 0)
 -                {
 -                    this.displayWidth = 1;
 -                }
--
++            this.displayWidth = nova.getWidth();
++            this.displayHeight = nova.getHeight();
+@@ -1248,4 +1220,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                if (this.displayHeight <= 0)
 -                {
 -                    this.displayHeight = 1;
 -                }
-@@ -1252,0 +1220 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1252,0 +1222 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +           LOGGER.info("Window was resized to: " + displayWidth +"x" +displayHeight);
-@@ -1255 +1223 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1255 +1225 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 +
-@@ -1260 +1228 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1260 +1230 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        return this.theWorld == null && this.currentScreen != null ? 30 : this.gameSettings.limitFramerate;
 +        return this.gameSettings.limitFramerate;
-@@ -1463 +1431,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1463 +1433,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (Display.isActive())
 +        boolean windowActive = NovaNative.INSTANCE.display_is_active();
 +        if (windowActive)
-@@ -1670 +1639,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1670 +1641,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                this.updateDisplayMode();
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
 +               /* this.updateDisplayMode();
-@@ -1682 +1652 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1682 +1654 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                }
 +                }*/
-@@ -1686 +1656,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1686 +1658,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
 +
 +              /*  Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
-@@ -1698 +1670 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1698 +1672 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                }
 +                }*/
-@@ -1701 +1673 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1701 +1675 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            if (this.currentScreen != null)
 +          /*  if (this.currentScreen != null)
-@@ -1711 +1683 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1711 +1685 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            Display.setVSyncEnabled(this.gameSettings.enableVsync);
 +            Display.setVSyncEnabled(this.gameSettings.enableVsync);*/
-@@ -1734,2 +1706,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1734,2 +1708,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.loadingScreen = new LoadingScreenRenderer(this);
 -        this.updateFramebufferSize();
 +       // this.loadingScreen = new LoadingScreenRenderer(this);
 +       // this.updateFramebufferSize();
-@@ -1786 +1758 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1786 +1760 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            this.renderEngine.tick();
 +            this.textureManager.tick();
-@@ -2508,0 +2481,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2508,0 +2483,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        nova.setWorld(worldClientIn);
 +
-@@ -2983 +2957 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2983 +2959 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        ContextCapabilities contextcapabilities = GLContext.getCapabilities();
 +        /*ContextCapabilities contextcapabilities = GLContext.getCapabilities();
-@@ -3087 +3061 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3087 +3063 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));
 +        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));*/
-@@ -3099,14 +3073,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3099,14 +3075,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public static int getGLMaximumTextureSize()
 -    {
 -        for (int i = 16384; i > 0; i >>= 1)
@@ -305,13 +303,17 @@ index ad84c84..cafa21c 100644
 -        return -1;
 +    public static int getGLMaximumTextureSize() {
 +        return NovaNative.INSTANCE.get_max_texture_size();
-@@ -3223 +3185 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3223 +3187 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        return this.renderEngine;
 +        return this.textureManager;
-@@ -3416,0 +3379,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3416,0 +3381,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
 +    public NovaRenderer getNovaRenderer() {
 +        return nova;
++    }
++
++    public BlockRendererDispatcher getBlockRenderDispatcher() {
++        return blockRenderDispatcher;
 +    }
 diff --git a/minecraft/client/gui/FontRenderer.java b/minecraft/client/gui/FontRenderer.java
 index 6439aa9..c7bfcbb 100644
@@ -2906,7 +2908,7 @@ index c484866..4646d90 100644
 @@ -2124,0 +2202 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
 +    @Override
 diff --git a/minecraft/client/renderer/BlockModelShapes.java b/minecraft/client/renderer/BlockModelShapes.java
-index f5d5c85..537e9e7 100644
+index f5d5c85..7c86bd1 100644
 --- a/minecraft/client/renderer/BlockModelShapes.java
 +++ b/minecraft/client/renderer/BlockModelShapes.java
 @@ -2,0 +3,4 @@ package net.minecraft.client.renderer;
@@ -2966,34 +2968,10 @@ index f5d5c85..537e9e7 100644
 @@ -59,0 +31,2 @@ public class BlockModelShapes
 +    private static final Logger LOG = LogManager.getLogger(BlockModelShapes.class);
 +
-@@ -62,0 +36 @@ public class BlockModelShapes
-+    private final NovaRenderer nova;
-@@ -64 +38 @@ public class BlockModelShapes
--    public BlockModelShapes(ModelManager manager)
-+    public BlockModelShapes(ModelManager manager, NovaRenderer nova)
-@@ -67,0 +42 @@ public class BlockModelShapes
-+        this.nova = nova;
-@@ -139,0 +115,2 @@ public class BlockModelShapes
-+        LOG.debug("Loading models");
-+        double startTime = System.nanoTime();
-@@ -140,0 +118 @@ public class BlockModelShapes
-+        BlockModelSerializer serializer = nova.getModelSerializer();
-@@ -144 +122,10 @@ public class BlockModelShapes
+@@ -144 +117,2 @@ public class BlockModelShapes
 -            this.bakedModelStore.put(entry.getKey(), this.modelManager.getModel((ModelResourceLocation)entry.getValue()));
 +            IBakedModel model = this.modelManager.getModel((ModelResourceLocation)entry.getValue());
 +            this.bakedModelStore.put(entry.getKey(), model);
-+            serializer.addModel(entry.getKey(), model);
-+        }
-+
-+        try {
-+            serializer.serialize(NovaConstants.MODEL_FILE_NAME);
-+            NovaNative.INSTANCE.load_block_state_models(NovaConstants.MODEL_FILE_NAME);
-+        } catch(IOException e) {
-+            LOG.error("Could not save block models", e);
-@@ -145,0 +133,3 @@ public class BlockModelShapes
-+        double endTime = System.nanoTime();
-+
-+        LOG.debug("Loaded models in {} ms", (endTime - startTime) / 1000.0);
 diff --git a/minecraft/client/renderer/EntityRenderer.java b/minecraft/client/renderer/EntityRenderer.java
 index 25e1fb8..87cc61b 100644
 --- a/minecraft/client/renderer/EntityRenderer.java
@@ -4165,7 +4143,7 @@ index ce26fa3..0e63e68 100644
 -                textureatlassprite.clearFramesTextureData();
 +                // textureatlassprite.clearFramesTextureData();
 diff --git a/minecraft/client/renderer/block/model/ModelManager.java b/minecraft/client/renderer/block/model/ModelManager.java
-index ac21ed8..1bf5ead 100644
+index ac21ed8..6ffada5 100644
 --- a/minecraft/client/renderer/block/model/ModelManager.java
 +++ b/minecraft/client/renderer/block/model/ModelManager.java
 @@ -2,0 +3,2 @@ package net.minecraft.client.renderer.block.model;
@@ -4173,12 +4151,6 @@ index ac21ed8..1bf5ead 100644
 +import net.minecraft.client.Minecraft;
 @@ -8,0 +11 @@ import net.minecraft.util.registry.IRegistry;
 +@SuppressWarnings("ALL")
-@@ -16 +19 @@ public class ModelManager implements IResourceManagerReloadListener
--    public ModelManager(TextureMap textures)
-+    public ModelManager(TextureMap textures, NovaRenderer nova)
-@@ -19 +22 @@ public class ModelManager implements IResourceManagerReloadListener
--        this.modelProvider = new BlockModelShapes(this);
-+        this.modelProvider = new BlockModelShapes(this, nova);
 @@ -27,0 +31 @@ public class ModelManager implements IResourceManagerReloadListener
 +        Minecraft.getMinecraft().getNovaRenderer().addTerrainAtlas(texMap);
 diff --git a/minecraft/client/renderer/block/model/ModelResourceLocation.java b/minecraft/client/renderer/block/model/ModelResourceLocation.java
@@ -5680,3 +5652,4 @@ index 04931bb..68c4fcf 100644
 +++ b/minecraft/util/text/translation/LanguageMap.java
 @@ -40,0 +41 @@ public class LanguageMap
 +            if (inputstream == null) return;
+
