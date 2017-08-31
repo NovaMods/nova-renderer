@@ -176,6 +176,61 @@ task makePatch() << {
     }
 }
 
+task addChangesToGit(dependsOn: makePatch) << {
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                commandLine 'git', 'add', '-A', ':/'
+
+                standardOutput = os
+                errorOutput = os
+            }
+        } catch(Exception e) {
+            throw new GradleScriptException(os.toString(), e)
+        }
+        def outputAsString = os.toString()
+        println "$outputAsString"
+    }
+}
+
+task commitChangesToGit(dependsOn: addChangesToGit) << {
+    def console = System.console()
+    console.print('Input a commit message')
+    def commitMessage = console.readLine()
+
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                commandLine 'git', 'commit', '-m', commitMessage
+
+                standardOutput = os
+                errorOutput = os
+            }
+        } catch(Exception e) {
+            throw new GradleScriptException(os.toString(), e)
+        }
+        def outputAsString = os.toString()
+        println "$outputAsString"
+    }
+}
+
+task push(dependsOn: commitChangesToGit) << {
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                commandLine 'git', 'push'
+
+                standardOutput = os
+                errorOutput = os
+            }
+        } catch(Exception e) {
+            throw new GradleScriptException(os.toString(), e)
+        }
+        def outputAsString = os.toString()
+        println "$outputAsString"
+    }
+}
+
 clean.doFirst {
     delete "src/minecraft/"
     delete "bin"
