@@ -64,7 +64,7 @@ task verifyEnvironment << {
 
 task downloadMcp(dependsOn: verifyEnvironment) << {
     download {
-        src 'http://www.modcoderpack.com/website/sites/default/files/releases/mcp931.zip'
+        src 'http://www.modcoderpack.com/files/mcp931.zip'
         dest 'mcp931.zip'
     }
 
