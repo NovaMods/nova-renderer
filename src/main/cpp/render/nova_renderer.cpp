@@ -5,6 +5,7 @@
 #include "nova_renderer.h"
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
+#include "../utils/profiler.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,7 +15,7 @@ INITIALIZE_EASYLOGGINGPP
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer::nova_renderer(){
+    nova_renderer::nova_renderer() {
         game_window = std::make_unique<glfw_gl_window>();
         enable_debug();
         ubo_manager = std::make_unique<uniform_buffer_store>();
@@ -60,6 +61,7 @@ namespace nova {
     }
 
     void nova_renderer::render_frame() {
+        profiler::log_all_profiler_data();
         // Make geometry for any new chunks
         meshes->upload_new_geometry();
 

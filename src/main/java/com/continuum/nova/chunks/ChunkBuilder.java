@@ -123,6 +123,8 @@ public class ChunkBuilder {
                 }
             }
 
+            quads.addAll(blockModel.getQuads(blockState, null, 0));
+
             LOG.trace("Retrieved {} faces for BlockState {}", quads.size(), blockState);
 
             int faceIndexCounter = 0;

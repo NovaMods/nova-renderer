@@ -103,6 +103,7 @@ set(NOVA_HEADERS
         data_loading/direct_buffers.h
         mc_interface/nova_jni.h
         render/objects/render_object.h
+        utils/profiler.h
         )
 
 set(NOVA_SOURCE
@@ -141,7 +142,8 @@ set(NOVA_SOURCE
         render/objects/camera.cpp
         data_loading/loaders/shader_source_structs.cpp
         data_loading/direct_buffers.cpp
-        render/objects/render_object.cpp)
+        render/objects/render_object.cpp
+        utils/profiler.cpp)
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
@@ -212,7 +214,7 @@ set(TEST_SOURCE_FILES
         test/geometry_cache/mesh_store_test.cpp
         test/test_utils.cpp
         test/test_utils.h
-        test/geometry_cache/builders/vertex_format_decoder_test.cpp)
+        test/geometry_cache/builders/vertex_format_decoder_test.cpp utils/profiler.cpp utils/profiler.h)
 
 source_group("test" FILES ${TEST_SOURCE_FILES})
 
