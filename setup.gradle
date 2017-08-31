@@ -195,7 +195,6 @@ task addChangesToGit(dependsOn: makePatch) << {
 
 task commitChangesToGit(dependsOn: addChangesToGit) << {
     def console = System.console()
-    console.print('Input a commit message')
     def commitMessage = console.readLine()
 
     new ByteArrayOutputStream().withStream { os ->
