@@ -8,17 +8,19 @@
 
 #include <unordered_map>
 #include <string>
-#include <ctime>
+#include <chrono>
+#include <easylogging++.h>
 
 namespace nova {
     const int NUM_SAMPLES = 120;
 
     struct profiler_data {
-        std::time_t start_time;
+        std::chrono::high_resolution_clock::time_point start_time;
 
         // Using a ring buffer because it's fast
-        std::time_t last_durations[NUM_SAMPLES];
+        std::chrono::high_resolution_clock::duration last_durations[NUM_SAMPLES];
         int cur_write_pos = 0;
+        bool has_write_pos_reset = false;
     };
 
     /*!

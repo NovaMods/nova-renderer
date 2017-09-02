@@ -181,13 +181,13 @@ NOVA_API char* get_shaders_and_filters() {
         std::strcpy(&filters[write_pos], entry.first.data());
         write_pos += entry.first.size();
 
-        filters[write_pos] = ' ';
+        filters[write_pos] = '\n';
         write_pos++;
 
         std::strcpy(&filters[write_pos], entry.second.get_filter().data());
         write_pos += entry.second.get_filter().size();
 
-        filters[write_pos] = ' ';
+        filters[write_pos] = '\n';
         write_pos++;
     }
 

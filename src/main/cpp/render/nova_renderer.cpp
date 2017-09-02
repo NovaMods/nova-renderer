@@ -48,6 +48,7 @@ namespace nova {
 
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
 
         LOG(DEBUG) << "OpenGL state initialized";
     }
@@ -126,7 +127,7 @@ namespace nova {
         // Render GUI objects
         std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
         for(const auto& geom : gui_geometry) {
-            if (geom.color_texture != "") {
+            if (!geom.color_texture.empty()) {
                 auto color_texture = textures->get_texture(geom.color_texture);
                 color_texture.bind(0);
             }
@@ -225,7 +226,7 @@ namespace nova {
 
     void nova_renderer::enable_debug() {
         glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageCallback(debug_logger, NULL);
+        glDebugMessageCallback(debug_logger, nullptr);
     }
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {

@@ -1,6 +1,5 @@
 package com.continuum.nova.chunks;
 
-import com.continuum.nova.NovaNative;
 import net.minecraft.block.state.IBlockState;
 
 /**
@@ -85,10 +84,10 @@ public interface IGeometryFilter {
         }
     }
 
-    class NamePartGeometryFilte implements IGeometryFilter {
+    class NamePartGeometryFilter implements IGeometryFilter {
         private String namePart;
 
-        public NamePartGeometryFilte(String namePart) {
+        public NamePartGeometryFilter(String namePart) {
             this.namePart = namePart;
         }
 
@@ -130,7 +129,7 @@ public interface IGeometryFilter {
 
         @Override
         public boolean matches(IBlockState blockState) {
-            return !blockState.isTranslucent() == shouldBeTransparent;
+            return blockState.isTranslucent() == shouldBeTransparent;
         }
 
         @Override
@@ -218,7 +217,7 @@ public interface IGeometryFilter {
 
         } else if(token.startsWith("name_part::")) {
             String namePart = token.substring(11);
-            return new NamePartGeometryFilte(namePart);
+            return new NamePartGeometryFilter(namePart);
 
         } else if(token.equals("transparent")) {
             return new TransparentGeometryFilter(true);

@@ -19,7 +19,7 @@ ext {
 
 // Set Nova's settings
 sourceCompatibility = 1.8
-version = '0.4'
+version = '0.4.3'
 jar {
     manifest {
         attributes 'Implementation-Title': 'Nova Renderer',

@@ -127,26 +127,26 @@ public class NovaDraw {
      * @param texture   the texture
      */
     public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords,Color vertexColor) {
-        Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
+        Integer[] indexBuffer = new Integer[]{0, 1, 2, 0, 2, 3};
         Vertex[] vertices = new Vertex[]{
                 new Vertex(
                         rect.x, rect.y,
                         textureCoords.x, textureCoords.y,
-						vertexColor
-                ),
-                new Vertex(
-                        rect.x + rect.width, rect.y,
-                        textureCoords.x + textureCoords.width, textureCoords.y,
-						vertexColor
+                        vertexColor
                 ),
                 new Vertex(
                         rect.x, rect.y + rect.height,
                         textureCoords.x, textureCoords.y + textureCoords.height,
-						vertexColor
+                        vertexColor
                 ),
                 new Vertex(
                         rect.x + rect.width, rect.y + rect.height,
                         textureCoords.x + textureCoords.width, textureCoords.y + textureCoords.height,
+                        vertexColor
+                ),
+                new Vertex(
+                        rect.x + rect.width, rect.y,
+                        textureCoords.x + textureCoords.width, textureCoords.y,
 						vertexColor
                 )
         };

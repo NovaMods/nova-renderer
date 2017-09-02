@@ -9,35 +9,12 @@
 #include <easylogging++.h>
 #include <regex>
 #include <iomanip>
-#include <sstream>
 #include "mesh_store.h"
 #include "../../../render/nova_renderer.h"
 
 namespace nova {
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
         return renderables_grouped_by_shader[shader_name];
-    }
-
-    void print_buffers(const std::string &texture_name, std::vector<float>& vertex_buffer, std::vector<unsigned int>& index_buffer) {
-        // debug
-        LOG(DEBUG) << "texture name: " << texture_name << std::endl;
-        LOG(DEBUG) << "new buffers:" << std::endl;
-        for(int i = 0; i + 7 < vertex_buffer.size(); i += 8) {
-            std::ostringstream ss;
-            ss << "  vertex ";
-            for(int k = 0; k < 8; k++) {
-                ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(12) << std::fixed << std::setprecision(5) << vertex_buffer[i + k] << "  ";
-            }
-            LOG(DEBUG) << ss.str();
-        }
-        for(int i = 0; i + 2 < index_buffer.size(); i += 3) {
-            std::ostringstream ss;
-            ss << "  index ";
-            for(int k = 0; k < 3; k++) {
-                ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(8) << index_buffer[i + k] << "  ";
-            }
-            LOG(DEBUG) << ss.str();
-        }
     }
 
     void mesh_store::add_gui_buffers(mc_gui_geometry* command) {
@@ -103,7 +80,6 @@ namespace nova {
             obj.name = "chunk";
             obj.parent_id = def.id;
             obj.color_texture = "block_color";
-            //obj.position = def.position;
 
             const std::string& shader_name = std::get<0>(entry);
             renderables_grouped_by_shader[shader_name].push_back(std::move(obj));

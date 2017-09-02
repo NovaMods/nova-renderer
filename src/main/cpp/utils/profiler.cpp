@@ -18,13 +18,12 @@ namespace nova {
         }
 
         auto &cur_profiler_data = data[name];
-        cur_profiler_data.start_time = std::time(nullptr);
+        cur_profiler_data.start_time = std::chrono::high_resolution_clock::now();
     }
 
     void profiler::end(std::string name) {
-        std::time_t end_time = std::time(nullptr);
         auto &cur_profiler_data = data[name];
-        auto duration = end_time - cur_profiler_data.start_time;
+        auto duration = std::chrono::high_resolution_clock::now() - cur_profiler_data.start_time;
         cur_profiler_data.last_durations[cur_profiler_data.cur_write_pos] = duration;
         cur_profiler_data.cur_write_pos++;
         if(cur_profiler_data.cur_write_pos >= NUM_SAMPLES) {
@@ -33,21 +32,23 @@ namespace nova {
     }
 
     void profiler::log_all_profiler_data() {
+        std::stringstream ss;
         for(const auto& item : data) {
             const auto& cur_profiler_data = item.second;
 
-            double average_duration = 0;
-            int num_samples = 0;
-            for(int i = 0; i < NUM_SAMPLES; i++) {
-                if(cur_profiler_data.last_durations[i] != 0) {
-                    average_duration += cur_profiler_data.last_durations[i];
-                    num_samples++;
-                }
+            long long int average_duration = 0;
+            int count = cur_profiler_data.has_write_pos_reset ? NUM_SAMPLES : cur_profiler_data.cur_write_pos;
+            for(int i = 0; i < count; i++) {
+                average_duration += std::chrono::duration_cast<std::chrono::nanoseconds>(cur_profiler_data.last_durations[i]).count();
             }
 
-            average_duration /= num_samples;
+            if(count != 0) {
+                average_duration /= count;
+            }
 
-            LOG(DEBUG) << "Profiled section " << item.first << " took an average of " << average_duration << "ms to execute (" << num_samples << " samples)";
+            ss << "Profiled section " << item.first << " took an average of " << float(average_duration) / 1000000.0f << "ms to execute\n";
         }
+
+        LOG_EVERY_N(100, DEBUG) << ss.str();
     }
 }

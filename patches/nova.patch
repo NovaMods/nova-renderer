@@ -10,21 +10,20 @@ index 0000000..56911f2
 +
 +/minecraft/.vs
 diff --git a/minecraft/block/Block.java b/minecraft/block/Block.java
-index 25c6330..cc6c650 100644
+index 25c6330..47fc02b 100644
 --- a/minecraft/block/Block.java
 +++ b/minecraft/block/Block.java
 @@ -13,0 +14 @@ import net.minecraft.block.state.IBlockState;
 +import net.minecraft.client.Minecraft;
-@@ -44,0 +46 @@ import net.minecraft.world.World;
-+@SuppressWarnings("ALL")
-diff --git a/minecraft/block/material/Material.java b/minecraft/block/material/Material.java
-index 5fd24e7..a918135 100644
---- a/minecraft/block/material/Material.java
-+++ b/minecraft/block/material/Material.java
-@@ -2,0 +3 @@ package net.minecraft.block.material;
-+@SuppressWarnings("ALL")
+diff --git a/minecraft/client/LoadingScreenRenderer.java b/minecraft/client/LoadingScreenRenderer.java
+index 82af80c..d6c5a7e 100644
+--- a/minecraft/client/LoadingScreenRenderer.java
++++ b/minecraft/client/LoadingScreenRenderer.java
+@@ -164 +164 @@ public class LoadingScreenRenderer implements IProgressUpdate
+-                this.mc.getTextureManager().bindTexture(Gui.OPTIONS_BACKGROUND);
++                this.mc.getRenderEngine().bindTexture(Gui.OPTIONS_BACKGROUND);
 diff --git a/minecraft/client/Minecraft.java b/minecraft/client/Minecraft.java
-index ad84c84..48d62f8 100644
+index ad84c84..760abdc 100644
 --- a/minecraft/client/Minecraft.java
 +++ b/minecraft/client/Minecraft.java
 @@ -2,0 +3,2 @@ package net.minecraft.client;
@@ -34,21 +33,14 @@ index ad84c84..48d62f8 100644
 -import java.nio.IntBuffer;
 @@ -39,0 +41 @@ import javax.imageio.ImageIO;
 +
-@@ -150 +151,0 @@ import net.minecraft.stats.AchievementList;
--import net.minecraft.stats.IStatStringFormat;
-@@ -192,3 +193,2 @@ import org.lwjgl.Sys;
+@@ -192,3 +194,2 @@ import org.lwjgl.Sys;
 -import org.lwjgl.input.Keyboard;
 -import org.lwjgl.input.Mouse;
 -import org.lwjgl.opengl.ContextCapabilities;
 +import com.continuum.nova.input.Keyboard;
 +import com.continuum.nova.input.Mouse;
-@@ -197 +196,0 @@ import org.lwjgl.opengl.DisplayMode;
+@@ -197 +197,0 @@ import org.lwjgl.opengl.DisplayMode;
 -import org.lwjgl.opengl.GLContext;
-@@ -201,0 +201 @@ import org.lwjgl.util.glu.GLU;
-+@SuppressWarnings("ALL")
-@@ -219 +219 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--    private TextureManager renderEngine;
-+    private TextureManager textureManager;
 @@ -385,0 +386,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +    private NovaRenderer nova = new NovaRenderer();
 +
@@ -60,127 +52,54 @@ index ad84c84..48d62f8 100644
 +        Mouse.create();
 +        Keyboard.create();
 +
-@@ -510,4 +518,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.createDisplay();
--        OpenGlHelper.initializeTextures();
--        this.framebufferMc = new Framebuffer(this.displayWidth, this.displayHeight, true);
--        this.framebufferMc.setFramebufferColor(0.0F, 0.0F, 0.0F, 0.0F);
-+        //this.createDisplay();
-+        //OpenGlHelper.initializeTextures();
-+        //this.framebufferMc = new Framebuffer(this.displayWidth, this.displayHeight, true);
-+        //this.framebufferMc.setFramebufferColor(0.0F, 0.0F, 0.0F, 0.0F);
-@@ -520,4 +528,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.renderEngine = new TextureManager(this.mcResourceManager);
--        this.mcResourceManager.registerReloadListener(this.renderEngine);
--        this.drawSplashScreen(this.renderEngine);
--        this.skinManager = new SkinManager(this.renderEngine, new File(this.fileAssets, "skins"), this.sessionService);
-+        this.textureManager = new TextureManager(this.mcResourceManager);
-+        this.mcResourceManager.registerReloadListener(this.textureManager);
-+        this.drawSplashScreen(this.textureManager);
-+        this.skinManager = new SkinManager(this.textureManager, new File(this.fileAssets, "skins"), this.sessionService);
-@@ -528 +536 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii.png"), this.renderEngine, false);
-+        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii"), this.textureManager, false);
-@@ -536 +544 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii_sga.png"), this.renderEngine, false);
-+        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii_sga"), this.textureManager, false);
-@@ -541,14 +549,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        AchievementList.OPEN_INVENTORY.setStatStringFormatter(new IStatStringFormat()
--        {
--            public String formatString(String str)
--            {
--                try
--                {
--                    return String.format(str, new Object[] {GameSettings.getKeyDisplayString(Minecraft.this.gameSettings.keyBindInventory.getKeyCode())});
--                }
--                catch (Exception exception)
--                {
--                    return "Error: " + exception.getLocalizedMessage();
--                }
--            }
--        });
-+        mcResourceManager.registerReloadListener(nova);
-+        AchievementList.OPEN_INVENTORY.setStatStringFormatter(str -> String.format(str, GameSettings.getKeyDisplayString(Minecraft.this.gameSettings.keyBindInventory.getKeyCode())));
-@@ -555,0 +552 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -509,0 +518 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        /*
-@@ -568,0 +566,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -513,0 +523 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        */
+@@ -528 +538 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+-        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii.png"), this.renderEngine, false);
++        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii"), this.renderEngine, false);
+@@ -536 +546 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+-        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("textures/font/ascii_sga.png"), this.renderEngine, false);
++        this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii_sga"), this.renderEngine, false);
+@@ -540,0 +551 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        mcResourceManager.registerReloadListener(nova);
+@@ -555,0 +567 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        /*
+@@ -568,0 +581,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        */
 +
 +
 +
-@@ -571,2 +572,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.renderEngine.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
--        this.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+@@ -570,0 +587,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
 +
 +
-+        this.textureManager.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
-+        this.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-@@ -574,0 +579,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -574,0 +594,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        nova.setBlockModelShapes(modelManager.getBlockModelShapes());
 +        nova.loadShaderpack("default");
-@@ -578,2 +584,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.renderItem = new RenderItem(this.renderEngine, this.modelManager, this.itemColors);
--        this.renderManager = new RenderManager(this.renderEngine, this.renderItem);
-+        this.renderItem = new RenderItem(this.textureManager, this.modelManager, this.itemColors);
-+        this.renderManager = new RenderManager(this.textureManager, this.renderItem);
-@@ -590 +596 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.effectRenderer = new ParticleManager(this.theWorld, this.renderEngine);
-+        this.effectRenderer = new ParticleManager(this.theWorld, this.textureManager);
-@@ -603 +609 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        this.renderEngine.deleteTexture(this.mojangLogo);
-+        this.textureManager.deleteTexture(this.mojangLogo);
-@@ -776,2 +782 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--    public void displayCrashReport(CrashReport crashReportIn)
--    {
-+    public void displayCrashReport(CrashReport crashReportIn) {
-@@ -782,2 +787 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -782 +803 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (crashReportIn.getFile() != null)
--        {
-+        if(crashReportIn.getFile() != null) {
-@@ -786,3 +790 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        }
++        if(crashReportIn.getFile() != null)
+@@ -787 +808 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        else if (crashReportIn.saveToFile(file2))
++        else if(crashReportIn.saveToFile(file2))
+@@ -793 +814 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        {
-+        } else if(crashReportIn.saveToFile(file2)) {
-@@ -791,3 +793 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        }
--        else
--        {
-+        } else {
-@@ -799,2 +799 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--    public boolean isUnicode()
--    {
-+    public boolean isUnicode() {
-@@ -998,2 +997,5 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        if (this.currentScreen != null)
--        {
++            {
+@@ -997,0 +1019,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        if(guiScreenIn == null) {
 +            NovaNative.INSTANCE.clear_gui_buffers();
 +        }
 +
-+        if (this.currentScreen != null) {
-@@ -1003,2 +1005 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1003,2 +1028 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (guiScreenIn == null && this.theWorld == null)
 -        {
 +        if (guiScreenIn == null && this.theWorld == null) {
-@@ -1006,3 +1007 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        }
--        else if (guiScreenIn == null && this.thePlayer.getHealth() <= 0.0F)
--        {
-+        } else if (guiScreenIn == null && this.thePlayer.getHealth() <= 0.0F) {
-@@ -1012,2 +1011 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer)
--        {
-+        if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer) {
-@@ -1018 +1016 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1018 +1042 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.currentScreen = (GuiScreen)guiScreenIn;
 +        this.currentScreen = guiScreenIn;
-@@ -1020,2 +1018 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        if (guiScreenIn != null)
--        {
-+        if (guiScreenIn != null) {
-@@ -1025,10 +1021,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1025,10 +1048,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            while (Mouse.next())
 -            {
 -                ;
@@ -191,33 +110,31 @@ index ad84c84..48d62f8 100644
 -                ;
 -            }
 -
-@@ -1038 +1025 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1038 +1052 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            ((GuiScreen)guiScreenIn).setWorldAndResolution(this, i, j);
 +            guiScreenIn.setWorldAndResolution(this, i, j);
-@@ -1040,3 +1027 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        }
--        else
+@@ -1042 +1056 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        {
-+        } else {
-@@ -1150 +1134,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++            {
+@@ -1150 +1163,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.bindFramebuffer(true);
-@@ -1158 +1142,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1158 +1171,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
-+            entityRenderer.updateCamera(timer.renderPartialTicks, i);
++            this.entityRenderer.updateCamera(timer.renderPartialTicks, i);
 +            nova.updateCameraAndRender(timer.renderPartialTicks, i, this);
-@@ -1181 +1165,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1181 +1194,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.unbindFramebuffer();
-@@ -1184 +1167,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1184 +1196,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.framebufferRender(this.displayWidth, this.displayHeight);
-@@ -1187 +1169,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1187 +1198,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.entityRenderer.renderStreamIndicator(this.timer.renderPartialTicks);
-@@ -1227 +1209 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1227 +1238 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        Display.update();
 +        //Display.update();
-@@ -1234 +1216 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1234 +1245 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (!this.fullscreen && Display.wasResized())
 +        if (nova.wasResized())
-@@ -1236,11 +1218,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1236,11 +1247,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            int i = this.displayWidth;
 -            int j = this.displayHeight;
 -            this.displayWidth = Display.getWidth();
@@ -231,62 +148,59 @@ index ad84c84..48d62f8 100644
 -                }
 +            this.displayWidth = nova.getWidth();
 +            this.displayHeight = nova.getHeight();
-@@ -1248,4 +1220,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1248,4 +1249,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                if (this.displayHeight <= 0)
 -                {
 -                    this.displayHeight = 1;
 -                }
-@@ -1252,0 +1222 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1252,0 +1251 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +           LOGGER.info("Window was resized to: " + displayWidth +"x" +displayHeight);
-@@ -1255 +1225 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1255 +1254 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 +
-@@ -1260 +1230 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1260 +1259 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        return this.theWorld == null && this.currentScreen != null ? 30 : this.gameSettings.limitFramerate;
 +        return this.gameSettings.limitFramerate;
-@@ -1463 +1433,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1463 +1462,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (Display.isActive())
 +        boolean windowActive = NovaNative.INSTANCE.display_is_active();
 +        if (windowActive)
-@@ -1670 +1641,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1670 +1670,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                this.updateDisplayMode();
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
 +               /* this.updateDisplayMode();
-@@ -1682 +1654 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1682 +1683 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                }
 +                }*/
-@@ -1686 +1658,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1686 +1687,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
 +
 +              /*  Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
-@@ -1698 +1672 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1698 +1701 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -                }
 +                }*/
-@@ -1701 +1675 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1701 +1704 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            if (this.currentScreen != null)
 +          /*  if (this.currentScreen != null)
-@@ -1711 +1685 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1711 +1714 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            Display.setVSyncEnabled(this.gameSettings.enableVsync);
 +            Display.setVSyncEnabled(this.gameSettings.enableVsync);*/
-@@ -1734,2 +1708,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1734,2 +1737,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.loadingScreen = new LoadingScreenRenderer(this);
 -        this.updateFramebufferSize();
 +       // this.loadingScreen = new LoadingScreenRenderer(this);
 +       // this.updateFramebufferSize();
-@@ -1786 +1760 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--            this.renderEngine.tick();
-+            this.textureManager.tick();
-@@ -2508,0 +2483,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2508,0 +2512,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        nova.setWorld(worldClientIn);
 +
-@@ -2983 +2959 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2983 +2988 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        ContextCapabilities contextcapabilities = GLContext.getCapabilities();
 +        /*ContextCapabilities contextcapabilities = GLContext.getCapabilities();
-@@ -3087 +3063 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3087 +3092 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));
 +        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));*/
-@@ -3099,14 +3075,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3099,14 +3104,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public static int getGLMaximumTextureSize()
 -    {
 -        for (int i = 16384; i > 0; i >>= 1)
@@ -303,10 +217,10 @@ index ad84c84..48d62f8 100644
 -        return -1;
 +    public static int getGLMaximumTextureSize() {
 +        return NovaNative.INSTANCE.get_max_texture_size();
-@@ -3223 +3187 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        return this.renderEngine;
-+        return this.textureManager;
-@@ -3416,0 +3381,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3221 +3214 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+-    public TextureManager getTextureManager()
++    public TextureManager getRenderEngine()
+@@ -3416,0 +3410,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
 +    public NovaRenderer getNovaRenderer() {
 +        return nova;
@@ -315,6 +229,13 @@ index ad84c84..48d62f8 100644
 +    public BlockRendererDispatcher getBlockRenderDispatcher() {
 +        return blockRenderDispatcher;
 +    }
+diff --git a/minecraft/client/entity/AbstractClientPlayer.java b/minecraft/client/entity/AbstractClientPlayer.java
+index d4fdecc..a95fe6e 100644
+--- a/minecraft/client/entity/AbstractClientPlayer.java
++++ b/minecraft/client/entity/AbstractClientPlayer.java
+@@ -111 +111 @@ public abstract class AbstractClientPlayer extends EntityPlayer
+-        TextureManager texturemanager = Minecraft.getMinecraft().getTextureManager();
++        TextureManager texturemanager = Minecraft.getMinecraft().getRenderEngine();
 diff --git a/minecraft/client/gui/FontRenderer.java b/minecraft/client/gui/FontRenderer.java
 index 6439aa9..c7bfcbb 100644
 --- a/minecraft/client/gui/FontRenderer.java
@@ -758,6 +679,13 @@ index 58e6a77..0fcfa0b 100644
 +        vertexbuffer.pos((double)(x + 0),       (double)(y + 0),        (double)this.zLevel).tex((double)((float)(textureX + 0) * 0.00390625F),     (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
 @@ -216,0 +215 @@ public class Gui
 +
+diff --git a/minecraft/client/gui/GuiBossOverlay.java b/minecraft/client/gui/GuiBossOverlay.java
+index 3a22338..db25fb1 100644
+--- a/minecraft/client/gui/GuiBossOverlay.java
++++ b/minecraft/client/gui/GuiBossOverlay.java
+@@ -36 +36 @@ public class GuiBossOverlay extends Gui
+-                this.client.getTextureManager().bindTexture(GUI_BARS_TEXTURES);
++                this.client.getRenderEngine().bindTexture(GUI_BARS_TEXTURES);
 diff --git a/minecraft/client/gui/GuiButton.java b/minecraft/client/gui/GuiButton.java
 index 93eccc5..41a0273 100644
 --- a/minecraft/client/gui/GuiButton.java
@@ -926,7 +854,7 @@ index 5feec7d..5d3f5b5 100644
 -        this.buttonReset = this.func_189646_b(new GuiButton(201, this.width / 2 - 155 + 160, this.height - 29, 150, 20, I18n.format("controls.resetAll", new Object[0])));
 +        this.buttonReset = this.addToButtonList(new GuiButton(201, this.width / 2 - 155 + 160, this.height - 29, 150, 20, I18n.format("controls.resetAll", new Object[0])));
 diff --git a/minecraft/client/gui/GuiCreateFlatWorld.java b/minecraft/client/gui/GuiCreateFlatWorld.java
-index 54f0ab2..773192e 100644
+index 54f0ab2..9797d98 100644
 --- a/minecraft/client/gui/GuiCreateFlatWorld.java
 +++ b/minecraft/client/gui/GuiCreateFlatWorld.java
 @@ -76,3 +76,3 @@ public class GuiCreateFlatWorld extends GuiScreen
@@ -936,6 +864,9 @@ index 54f0ab2..773192e 100644
 +        this.addLayerButton = this.addToButtonList(new GuiButton(2, this.width / 2 - 154, this.height - 52, 100, 20, I18n.format("createWorld.customize.flat.addLayer", new Object[0]) + " (NYI)"));
 +        this.editLayerButton = this.addToButtonList(new GuiButton(3, this.width / 2 - 50, this.height - 52, 100, 20, I18n.format("createWorld.customize.flat.editLayer", new Object[0]) + " (NYI)"));
 +        this.removeLayerButton = this.addToButtonList(new GuiButton(4, this.width / 2 - 155, this.height - 52, 150, 20, I18n.format("createWorld.customize.flat.removeLayer", new Object[0])));
+@@ -194 +194 @@ public class GuiCreateFlatWorld extends GuiScreen
+-            this.mc.getTextureManager().bindTexture(Gui.STAT_ICONS);
++            this.mc.getRenderEngine().bindTexture(Gui.STAT_ICONS);
 diff --git a/minecraft/client/gui/GuiCreateWorld.java b/minecraft/client/gui/GuiCreateWorld.java
 index e4b46a9..f022d12 100644
 --- a/minecraft/client/gui/GuiCreateWorld.java
@@ -963,7 +894,7 @@ index e4b46a9..f022d12 100644
 -        this.btnCustomizeType = this.func_189646_b(new GuiButton(8, this.width / 2 + 5, 120, 150, 20, I18n.format("selectWorld.customizeType", new Object[0])));
 +        this.btnCustomizeType = this.addToButtonList(new GuiButton(8, this.width / 2 + 5, 120, 150, 20, I18n.format("selectWorld.customizeType", new Object[0])));
 diff --git a/minecraft/client/gui/GuiCustomizeWorldScreen.java b/minecraft/client/gui/GuiCustomizeWorldScreen.java
-index 88f2002..1bc7694 100644
+index 88f2002..5b19599 100644
 --- a/minecraft/client/gui/GuiCustomizeWorldScreen.java
 +++ b/minecraft/client/gui/GuiCustomizeWorldScreen.java
 @@ -74,6 +74,6 @@ public class GuiCustomizeWorldScreen extends GuiScreen implements GuiSlider.Form
@@ -979,6 +910,9 @@ index 88f2002..1bc7694 100644
 +        this.randomize = this.addToButtonList(new GuiButton(301, this.width / 2 - 92, this.height - 27, 90, 20, I18n.format("createWorld.customize.custom.randomize", new Object[0])));
 +        this.presets = this.addToButtonList(new GuiButton(305, this.width / 2 + 3, this.height - 27, 90, 20, I18n.format("createWorld.customize.custom.presets", new Object[0])));
 +        this.done = this.addToButtonList(new GuiButton(300, this.width / 2 + 98, this.height - 27, 90, 20, I18n.format("gui.done", new Object[0])));
+@@ -1007 +1007 @@ public class GuiCustomizeWorldScreen extends GuiScreen implements GuiSlider.Form
+-            this.mc.getTextureManager().bindTexture(OPTIONS_BACKGROUND);
++            this.mc.getRenderEngine().bindTexture(OPTIONS_BACKGROUND);
 diff --git a/minecraft/client/gui/GuiDownloadTerrain.java b/minecraft/client/gui/GuiDownloadTerrain.java
 index f468550..09fba11 100644
 --- a/minecraft/client/gui/GuiDownloadTerrain.java
@@ -993,8 +927,21 @@ index f468550..09fba11 100644
 +    @Override
 @@ -60,0 +65 @@ public class GuiDownloadTerrain extends GuiScreen
 +    @Override
+diff --git a/minecraft/client/gui/GuiEnchantment.java b/minecraft/client/gui/GuiEnchantment.java
+index 5fd0e25..b07c082 100644
+--- a/minecraft/client/gui/GuiEnchantment.java
++++ b/minecraft/client/gui/GuiEnchantment.java
+@@ -109 +109 @@ public class GuiEnchantment extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(ENCHANTMENT_TABLE_GUI_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(ENCHANTMENT_TABLE_GUI_TEXTURE);
+@@ -130 +130 @@ public class GuiEnchantment extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(ENCHANTMENT_TABLE_BOOK_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(ENCHANTMENT_TABLE_BOOK_TEXTURE);
+@@ -180 +180 @@ public class GuiEnchantment extends GuiContainer
+-            this.mc.getTextureManager().bindTexture(ENCHANTMENT_TABLE_GUI_TEXTURE);
++            this.mc.getRenderEngine().bindTexture(ENCHANTMENT_TABLE_GUI_TEXTURE);
 diff --git a/minecraft/client/gui/GuiFlatPresets.java b/minecraft/client/gui/GuiFlatPresets.java
-index 5aaeab1..40272fb 100644
+index 5aaeab1..8df673f 100644
 --- a/minecraft/client/gui/GuiFlatPresets.java
 +++ b/minecraft/client/gui/GuiFlatPresets.java
 @@ -24 +24 @@ import net.minecraft.world.gen.FlatLayerInfo;
@@ -1003,6 +950,50 @@ index 5aaeab1..40272fb 100644
 @@ -59 +59 @@ public class GuiFlatPresets extends GuiScreen
 -        this.btnSelect = this.func_189646_b(new GuiButton(0, this.width / 2 - 155, this.height - 28, 150, 20, I18n.format("createWorld.customize.presets.select", new Object[0])));
 +        this.btnSelect = this.addToButtonList(new GuiButton(0, this.width / 2 - 155, this.height - 28, 150, 20, I18n.format("createWorld.customize.presets.select", new Object[0])));
+@@ -240 +240 @@ public class GuiFlatPresets extends GuiScreen
+-            this.mc.getTextureManager().bindTexture(Gui.STAT_ICONS);
++            this.mc.getRenderEngine().bindTexture(Gui.STAT_ICONS);
+diff --git a/minecraft/client/gui/GuiHopper.java b/minecraft/client/gui/GuiHopper.java
+index 86eeb22..b967bb5 100644
+--- a/minecraft/client/gui/GuiHopper.java
++++ b/minecraft/client/gui/GuiHopper.java
+@@ -46 +46 @@ public class GuiHopper extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(HOPPER_GUI_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(HOPPER_GUI_TEXTURE);
+diff --git a/minecraft/client/gui/GuiIngame.java b/minecraft/client/gui/GuiIngame.java
+index a623c57..7997b66 100644
+--- a/minecraft/client/gui/GuiIngame.java
++++ b/minecraft/client/gui/GuiIngame.java
+@@ -183 +183 @@ public class GuiIngame extends Gui
+-        this.mc.getTextureManager().bindTexture(ICONS);
++        this.mc.getRenderEngine().bindTexture(ICONS);
+@@ -191 +191 @@ public class GuiIngame extends Gui
+-        this.mc.getTextureManager().bindTexture(ICONS);
++        this.mc.getRenderEngine().bindTexture(ICONS);
+@@ -442 +442 @@ public class GuiIngame extends Gui
+-            this.mc.getTextureManager().bindTexture(GuiContainer.INVENTORY_BACKGROUND);
++            this.mc.getRenderEngine().bindTexture(GuiContainer.INVENTORY_BACKGROUND);
+@@ -499 +499 @@ public class GuiIngame extends Gui
+-            this.mc.getTextureManager().bindTexture(WIDGETS_TEX_PATH);
++            this.mc.getRenderEngine().bindTexture(WIDGETS_TEX_PATH);
+@@ -564 +564 @@ public class GuiIngame extends Gui
+-                    this.mc.getTextureManager().bindTexture(Gui.ICONS);
++                    this.mc.getRenderEngine().bindTexture(Gui.ICONS);
+@@ -581 +581 @@ public class GuiIngame extends Gui
+-        this.mc.getTextureManager().bindTexture(Gui.ICONS);
++        this.mc.getRenderEngine().bindTexture(Gui.ICONS);
+@@ -599 +599 @@ public class GuiIngame extends Gui
+-        this.mc.getTextureManager().bindTexture(Gui.ICONS);
++        this.mc.getRenderEngine().bindTexture(Gui.ICONS);
+@@ -1035 +1035 @@ public class GuiIngame extends Gui
+-        this.mc.getTextureManager().bindTexture(PUMPKIN_BLUR_TEX_PATH);
++        this.mc.getRenderEngine().bindTexture(PUMPKIN_BLUR_TEX_PATH);
+@@ -1085 +1085 @@ public class GuiIngame extends Gui
+-        this.mc.getTextureManager().bindTexture(VIGNETTE_TEX_PATH);
++        this.mc.getRenderEngine().bindTexture(VIGNETTE_TEX_PATH);
+@@ -1114 +1114 @@ public class GuiIngame extends Gui
+-        this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 diff --git a/minecraft/client/gui/GuiIngameMenu.java b/minecraft/client/gui/GuiIngameMenu.java
 index 7dec74c..abdaed0 100644
 --- a/minecraft/client/gui/GuiIngameMenu.java
@@ -1146,7 +1137,7 @@ index d9c0252..6d403b1 100644
 -    {
 +    public GuiWorldSelection getGuiWorldSelection() {
 diff --git a/minecraft/client/gui/GuiListWorldSelectionEntry.java b/minecraft/client/gui/GuiListWorldSelectionEntry.java
-index ff4ba69..4eb7518 100644
+index ff4ba69..6942cca 100644
 --- a/minecraft/client/gui/GuiListWorldSelectionEntry.java
 +++ b/minecraft/client/gui/GuiListWorldSelectionEntry.java
 @@ -2,0 +3 @@ package net.minecraft.client.gui;
@@ -1233,17 +1224,21 @@ index ff4ba69..4eb7518 100644
 -                s2 = s2 + ", " + I18n.format("selectWorld.version", new Object[0]) + " " + s3;
 +            else {
 +                s2 = s2 + ", " + I18n.format("selectWorld.version") + " " + s3;
-@@ -112,3 +102,0 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -111,4 +102 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+-        this.client.getTextureManager().bindTexture(this.icon != null ? this.iconLocation : ICON_MISSING);
 -        GlStateManager.enableBlend();
 -        Gui.drawModalRectWithCustomSizedTexture(x, y, 0.0F, 0.0F, 32, 32, 32.0F, 32.0F);
 -        GlStateManager.disableBlend();
-@@ -116,2 +104,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
++        this.client.getRenderEngine().bindTexture(this.icon != null ? this.iconLocation : ICON_MISSING);
+@@ -116,3 +104,5 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        if (this.client.gameSettings.touchscreen || isSelected)
 -        {
+-            this.client.getTextureManager().bindTexture(ICON_OVERLAY_LOCATION);
 +        ResourceLocation rectIcon = this.icon != null ? iconLocation : ICON_MISSING;
 +        NovaDraw.drawRectangle(rectIcon, new Rectangle2D.Float(x, y, 32, 32), new Rectangle2D.Float(0, 0, 1, 1));
 +
 +        if(this.client.gameSettings.touchscreen || isSelected) {
++            this.client.getRenderEngine().bindTexture(ICON_OVERLAY_LOCATION);
 @@ -124,2 +114 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -            if (this.worldSummary.markVersionInList())
 -            {
@@ -1395,18 +1390,29 @@ index ff4ba69..4eb7518 100644
 -            if (this.icon == null)
 -            {
 +            if (this.icon == null) {
-@@ -274,0 +227,4 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -274 +226,5 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+-                this.client.getTextureManager().loadTexture(this.iconLocation, this.icon);
++                this.client.getRenderEngine().loadTexture(this.iconLocation, this.icon);
 +
 +                client.getNovaRenderer().loadTexture(iconLocation, bufferedimage);
 +                NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(iconLocation.toString(), 0, 0, 1, 1);
 +                NovaNative.INSTANCE.add_texture_location(location);
-@@ -279,3 +235 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
+@@ -279,4 +235,2 @@ public class GuiListWorldSelectionEntry implements GuiListExtended.IGuiListEntry
 -        }
 -        else if (!flag)
 -        {
+-            this.client.getTextureManager().deleteTexture(this.iconLocation);
 +        } else {
++            this.client.getRenderEngine().deleteTexture(this.iconLocation);
+diff --git a/minecraft/client/gui/GuiLockIconButton.java b/minecraft/client/gui/GuiLockIconButton.java
+index c5e2f9d..0c3622e 100644
+--- a/minecraft/client/gui/GuiLockIconButton.java
++++ b/minecraft/client/gui/GuiLockIconButton.java
+@@ -32 +32 @@ public class GuiLockIconButton extends GuiButton
+-            mc.getTextureManager().bindTexture(GuiButton.BUTTON_TEXTURES);
++            mc.getRenderEngine().bindTexture(GuiButton.BUTTON_TEXTURES);
 diff --git a/minecraft/client/gui/GuiMainMenu.java b/minecraft/client/gui/GuiMainMenu.java
-index 2249b2b..ed56502 100644
+index 2249b2b..37d1862 100644
 --- a/minecraft/client/gui/GuiMainMenu.java
 +++ b/minecraft/client/gui/GuiMainMenu.java
 @@ -2,0 +3 @@ package net.minecraft.client.gui;
@@ -1428,24 +1434,27 @@ index 2249b2b..ed56502 100644
 +import glm.vec._4.Vec4;
 @@ -16 +21,0 @@ import net.minecraft.client.renderer.GlStateManager;
 -import net.minecraft.client.renderer.OpenGlHelper;
-@@ -35 +39,0 @@ import org.apache.logging.log4j.Logger;
+@@ -35,2 +40 @@ import org.apache.logging.log4j.Logger;
 -import org.lwjgl.opengl.GLContext;
-@@ -36,0 +41 @@ import org.lwjgl.util.glu.Project;
+-import org.lwjgl.util.glu.Project;
 +import glm.mat._4.Mat4;
-@@ -159,2 +164 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -159,2 +163 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        if (!GLContext.getCapabilities().OpenGL20 && !OpenGlHelper.areShadersSupported())
 -        {
 +        /*if(!GLContext.getCapabilities().OpenGL20 && !OpenGlHelper.areShadersSupported()) {
-@@ -164 +168 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -164 +167 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        }
 +        }*/
-@@ -278 +282 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -211 +214 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+-        this.backgroundTexture = this.mc.getTextureManager().getDynamicTextureLocation("background", this.viewportTexture);
++        this.backgroundTexture = this.mc.getRenderEngine().getDynamicTextureLocation("background", this.viewportTexture);
+@@ -278 +281 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        this.realmsButton = this.func_189646_b(new GuiButton(14, this.width / 2 - 100, p_73969_1_ + p_73969_2_ * 2, I18n.format("menu.online", new Object[0])));
 +        this.realmsButton = this.addToButtonList(new GuiButton(14, this.width / 2 - 100, p_73969_1_ + p_73969_2_ * 2, I18n.format("menu.online", new Object[0])));
-@@ -287 +291 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -287 +290 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        this.buttonResetDemo = this.func_189646_b(new GuiButton(12, this.width / 2 - 100, p_73972_1_ + p_73972_2_ * 1, I18n.format("menu.resetdemo", new Object[0])));
 +        this.buttonResetDemo = this.addToButtonList(new GuiButton(12, this.width / 2 - 100, p_73972_1_ + p_73972_2_ * 1, I18n.format("menu.resetdemo", new Object[0])));
-@@ -389,18 +393,9 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -389,18 +392,9 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        Tessellator tessellator = Tessellator.getInstance();
 -        VertexBuffer vertexbuffer = tessellator.getBuffer();
 -        GlStateManager.matrixMode(5889);
@@ -1473,45 +1482,45 @@ index 2249b2b..ed56502 100644
 +        matrixStack.peek().rotate(180.0F, 1.0F, 0.0F, 0.0F);
 +        matrixStack.peek().rotate(90.0F, 0.0F, 0.0F, 1.0F);
 +
-@@ -410 +405,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -410 +404,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -            GlStateManager.pushMatrix();
 +            matrixStack.push(matrixStack.peek());
 +
-@@ -414,3 +410,3 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -414,3 +409,3 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -            GlStateManager.translate(f, f1, 0.0F);
 -            GlStateManager.rotate(MathHelper.sin(((float)this.panoramaTimer + partialTicks) / 400.0F) * 25.0F + 20.0F, 1.0F, 0.0F, 0.0F);
 -            GlStateManager.rotate(-((float)this.panoramaTimer + partialTicks) * 0.1F, 0.0F, 1.0F, 0.0F);
 +            matrixStack.peek().translate(f, f1, 0.0F);
 +            matrixStack.peek().rotate(MathHelper.sin(((float)this.panoramaTimer + partialTicks) / 400.0F) * 25.0F + 20.0F, 1.0F, 0.0F, 0.0F);
 +            matrixStack.peek().rotate(-((float)this.panoramaTimer + partialTicks) * 0.1F, 0.0F, 1.0F, 0.0F);
-@@ -420 +416,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -420 +415,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -                GlStateManager.pushMatrix();
 +                matrixStack.push(matrixStack.peek());
 +
-@@ -424 +421,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -424 +420,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -                    GlStateManager.rotate(90.0F, 0.0F, 1.0F, 0.0F);
 +                    matrixStack.peek().rotate(90.0F, 0.0F, 1.0F, 0.0F);
 +
-@@ -429 +427,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -429 +426,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -                    GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
 +                    matrixStack.peek().rotate(180.0F, 0.0F, 1.0F, 0.0F);
 +
-@@ -434 +433,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -434 +432,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -                    GlStateManager.rotate(-90.0F, 0.0F, 1.0F, 0.0F);
 +                    matrixStack.peek().rotate(-90.0F, 0.0F, 1.0F, 0.0F);
 +
-@@ -439 +439,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -439 +438,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -                    GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);
 +                    matrixStack.peek().rotate(90.0F, 1.0F, 0.0F, 0.0F);
 +
-@@ -444 +445,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -444 +444,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -                    GlStateManager.rotate(-90.0F, 1.0F, 0.0F, 0.0F);
 +                    matrixStack.peek().rotate(-90.0F, 1.0F, 0.0F, 0.0F);
 +
-@@ -447,2 +448,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -447,2 +447,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -                this.mc.getTextureManager().bindTexture(TITLE_PANORAMA_PATHS[k]);
 -                vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-@@ -450,7 +450,37 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -450,7 +449,37 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -                float f3 = 0.0F;
 -                vertexbuffer.pos(-1.0D, -1.0D, 1.0D).tex(0.0D, 0.0D).color(255, 255, 255, l).endVertex();
 -                vertexbuffer.pos(1.0D, -1.0D, 1.0D).tex(1.0D, 0.0D).color(255, 255, 255, l).endVertex();
@@ -1556,11 +1565,11 @@ index 2249b2b..ed56502 100644
 +                NovaDraw.draw(TITLE_PANORAMA_PATHS[k],indexBuffer,vertices);
 +                matrixStack.pop();
 +
-@@ -459 +489,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -459 +488,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -            GlStateManager.popMatrix();
 +            matrixStack.pop();
 +
-@@ -463,9 +493,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -463,9 +492,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        vertexbuffer.setTranslation(0.0D, 0.0D, 0.0D);
 -        GlStateManager.colorMask(true, true, true, true);
 -        GlStateManager.matrixMode(5889);
@@ -1570,7 +1579,10 @@ index 2249b2b..ed56502 100644
 -        GlStateManager.depthMask(true);
 -        GlStateManager.enableCull();
 -        GlStateManager.enableDepth();
-@@ -546,24 +567,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -479 +500 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+-        this.mc.getTextureManager().bindTexture(this.backgroundTexture);
++        this.mc.getRenderEngine().bindTexture(this.backgroundTexture);
+@@ -546,24 +566,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        GlStateManager.disableAlpha();
 -        this.renderSkybox(mouseX, mouseY, partialTicks);
 -        GlStateManager.enableAlpha();
@@ -1595,7 +1607,7 @@ index 2249b2b..ed56502 100644
 -            this.drawTexturedModalRect(j + 0, 30, 0, 0, 155, 44);
 -            this.drawTexturedModalRect(j + 155, 30, 0, 45, 155, 44);
 -        }
-@@ -571,3 +569,19 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -571,3 +568,19 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        GlStateManager.pushMatrix();
 -        GlStateManager.translate((float)(this.width / 2 + 90), 70.0F, 0.0F);
 -        GlStateManager.rotate(-20.0F, 0.0F, 0.0F, 1.0F);
@@ -1618,49 +1630,49 @@ index 2249b2b..ed56502 100644
 +
 +        NovaDraw.translate((this.width / 2 + 90),70,0);
 +        NovaDraw.rotate(-20 , false, false, true);
-@@ -576 +590 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -576 +589 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        GlStateManager.scale(f, f, f);
 +        NovaDraw.scale(f, f, 1);
-@@ -578 +592 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -578 +591 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        GlStateManager.popMatrix();
 +        NovaDraw.resetMatrix();
-@@ -592 +606 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -592 +605 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        this.drawString(this.fontRendererObj, "Copyright Mojang AB. Do not distribute!", this.width - this.fontRendererObj.getStringWidth("Copyright Mojang AB. Do not distribute!") - 2, this.height - 10, -1);
 +        this.drawString(this.fontRendererObj, s1, this.width - this.fontRendererObj.getStringWidth(s1) - 2, this.height - 10, -1);
-@@ -594,6 +607,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -594,6 +606,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        if (this.openGLWarning1 != null && !this.openGLWarning1.isEmpty())
 -        {
 -            drawRect(this.openGLWarningX1 - 2, this.openGLWarningY1 - 2, this.openGLWarningX2 + 2, this.openGLWarningY2 - 1, 1428160512);
 -            this.drawString(this.fontRendererObj, this.openGLWarning1, this.openGLWarningX1, this.openGLWarningY1, -1);
 -            this.drawString(this.fontRendererObj, this.openGLWarning2, (this.width - this.openGLWarning2Width) / 2, ((GuiButton)this.buttonList.get(0)).yPosition - 12, -1);
 -        }
-@@ -601 +609 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -601 +608 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        super.drawScreen(mouseX, mouseY, partialTicks);
 +        super.drawScreen(mouseX,mouseY,partialTicks);
-@@ -603,4 +610,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -603,4 +609,0 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        if (this.areRealmsNotificationsEnabled())
 -        {
 -            this.realmsNotification.drawScreen(mouseX, mouseY, partialTicks);
 -        }
-@@ -612,2 +616,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -612,2 +615,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
 -    {
 +    @Override
 +    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-@@ -616,4 +620,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -616,4 +619,2 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        synchronized (this.threadLock)
 -        {
 -            if (!this.openGLWarning1.isEmpty() && mouseX >= this.openGLWarningX1 && mouseX <= this.openGLWarningX2 && mouseY >= this.openGLWarningY1 && mouseY <= this.openGLWarningY2)
 -            {
 +        synchronized (this.threadLock) {
 +            if (!this.openGLWarning1.isEmpty() && mouseX >= this.openGLWarningX1 && mouseX <= this.openGLWarningX2 && mouseY >= this.openGLWarningY1 && mouseY <= this.openGLWarningY2) {
-@@ -626,2 +628 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -626,2 +627 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -        if (this.areRealmsNotificationsEnabled())
 -        {
 +        if (this.areRealmsNotificationsEnabled()) {
-@@ -631,0 +633 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -631,0 +632 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 +
-@@ -635,4 +637,3 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -635,4 +636,3 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 -    public void onGuiClosed()
 -    {
 -        if (this.realmsNotification != null)
@@ -1668,10 +1680,10 @@ index 2249b2b..ed56502 100644
 +    @Override
 +    public void onGuiClosed() {
 +        if (this.realmsNotification != null) {
-@@ -641,0 +643 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
+@@ -641,0 +642 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback
 +
 diff --git a/minecraft/client/gui/GuiMerchant.java b/minecraft/client/gui/GuiMerchant.java
-index 85dc8a0..1d3f8f5 100644
+index 85dc8a0..69645ef 100644
 --- a/minecraft/client/gui/GuiMerchant.java
 +++ b/minecraft/client/gui/GuiMerchant.java
 @@ -64,2 +64,2 @@ public class GuiMerchant extends GuiContainer
@@ -1679,6 +1691,15 @@ index 85dc8a0..1d3f8f5 100644
 -        this.previousButton = (GuiMerchant.MerchantButton)this.func_189646_b(new GuiMerchant.MerchantButton(2, i + 36 - 19, j + 24 - 1, false));
 +        this.nextButton = (GuiMerchant.MerchantButton)this.addToButtonList(new GuiMerchant.MerchantButton(1, i + 120 + 27, j + 24 - 1, true));
 +        this.previousButton = (GuiMerchant.MerchantButton)this.addToButtonList(new GuiMerchant.MerchantButton(2, i + 36 - 19, j + 24 - 1, false));
+@@ -141 +141 @@ public class GuiMerchant extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(MERCHANT_GUI_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(MERCHANT_GUI_TEXTURE);
+@@ -160 +160 @@ public class GuiMerchant extends GuiContainer
+-                this.mc.getTextureManager().bindTexture(MERCHANT_GUI_TEXTURE);
++                this.mc.getRenderEngine().bindTexture(MERCHANT_GUI_TEXTURE);
+@@ -250 +250 @@ public class GuiMerchant extends GuiContainer
+-                mc.getTextureManager().bindTexture(GuiMerchant.MERCHANT_GUI_TEXTURE);
++                mc.getRenderEngine().bindTexture(GuiMerchant.MERCHANT_GUI_TEXTURE);
 diff --git a/minecraft/client/gui/GuiMultiplayer.java b/minecraft/client/gui/GuiMultiplayer.java
 index 47c0f09..4129a5b 100644
 --- a/minecraft/client/gui/GuiMultiplayer.java
@@ -1694,7 +1715,7 @@ index 47c0f09..4129a5b 100644
 +        this.btnDeleteServer = this.addToButtonList(new GuiButton(2, this.width / 2 - 74, this.height - 28, 70, 20, I18n.format("selectServer.delete", new Object[0])));
 +        this.btnSelectServer = this.addToButtonList(new GuiButton(1, this.width / 2 - 154, this.height - 52, 100, 20, I18n.format("selectServer.select", new Object[0])));
 diff --git a/minecraft/client/gui/GuiOptionSlider.java b/minecraft/client/gui/GuiOptionSlider.java
-index 3a21af1..b3fe1e6 100644
+index 3a21af1..a6a895d 100644
 --- a/minecraft/client/gui/GuiOptionSlider.java
 +++ b/minecraft/client/gui/GuiOptionSlider.java
 @@ -2,0 +3 @@ package net.minecraft.client.gui;
@@ -1723,7 +1744,7 @@ index 3a21af1..b3fe1e6 100644
 +                    Color.white
 +            );
 +
-+           /* mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
++           /* mc.getRenderEngine().bindTexture(BUTTON_TEXTURES);
 @@ -62 +84 @@ public class GuiOptionSlider extends GuiButton
 -            this.drawTexturedModalRect(this.xPosition + (int)(this.sliderValue * (float)(this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);
 +            this.drawTexturedModalRect(this.xPosition + (int)(this.sliderValue * (float)(this.width - 8)) + 4, this.yPosition, 196, 66, 4, 20);*/
@@ -1743,13 +1764,29 @@ index ce66b37..033b6d9 100644
 @@ -199,0 +202,2 @@ public class GuiOptions extends GuiScreen implements GuiYesNoCallback
 +
 +
+diff --git a/minecraft/client/gui/GuiPlayerTabOverlay.java b/minecraft/client/gui/GuiPlayerTabOverlay.java
+index a0e2559..e48b4b2 100644
+--- a/minecraft/client/gui/GuiPlayerTabOverlay.java
++++ b/minecraft/client/gui/GuiPlayerTabOverlay.java
+@@ -184 +184 @@ public class GuiPlayerTabOverlay extends Gui
+-                    this.mc.getTextureManager().bindTexture(networkplayerinfo1.getLocationSkin());
++                    this.mc.getRenderEngine().bindTexture(networkplayerinfo1.getLocationSkin());
+@@ -242 +242 @@ public class GuiPlayerTabOverlay extends Gui
+-        this.mc.getTextureManager().bindTexture(ICONS);
++        this.mc.getRenderEngine().bindTexture(ICONS);
+@@ -282 +282 @@ public class GuiPlayerTabOverlay extends Gui
+-            this.mc.getTextureManager().bindTexture(ICONS);
++            this.mc.getRenderEngine().bindTexture(ICONS);
 diff --git a/minecraft/client/gui/GuiRepair.java b/minecraft/client/gui/GuiRepair.java
-index 3be1834..dda3c4c 100644
+index 3be1834..f60809f 100644
 --- a/minecraft/client/gui/GuiRepair.java
 +++ b/minecraft/client/gui/GuiRepair.java
 @@ -21 +21 @@ import net.minecraft.world.World;
 -import org.lwjgl.input.Keyboard;
 +import com.continuum.nova.input.Keyboard;
+@@ -176 +176 @@ public class GuiRepair extends GuiContainer implements IContainerListener
+-        this.mc.getTextureManager().bindTexture(ANVIL_RESOURCE);
++        this.mc.getRenderEngine().bindTexture(ANVIL_RESOURCE);
 diff --git a/minecraft/client/gui/GuiResourcePackList.java b/minecraft/client/gui/GuiResourcePackList.java
 index 9c77f9b..8824a8f 100644
 --- a/minecraft/client/gui/GuiResourcePackList.java
@@ -1953,7 +1990,7 @@ index 69b5162..f4309bf 100644
 -        this.serverResourcePacks = this.func_189646_b(new GuiButton(2, this.width / 2 - 100, this.height / 4 + 72, I18n.format("addServer.resourcePack", new Object[0]) + ": " + this.serverData.getResourceMode().getMotd().getFormattedText()));
 +        this.serverResourcePacks = this.addToButtonList(new GuiButton(2, this.width / 2 - 100, this.height / 4 + 72, I18n.format("addServer.resourcePack", new Object[0]) + ": " + this.serverData.getResourceMode().getMotd().getFormattedText()));
 diff --git a/minecraft/client/gui/GuiScreenBook.java b/minecraft/client/gui/GuiScreenBook.java
-index 7428bc1..61e890a 100644
+index 7428bc1..3ab01f0 100644
 --- a/minecraft/client/gui/GuiScreenBook.java
 +++ b/minecraft/client/gui/GuiScreenBook.java
 @@ -28 +28 @@ import org.apache.logging.log4j.Logger;
@@ -1976,8 +2013,14 @@ index 7428bc1..61e890a 100644
 -        this.buttonPreviousPage = (GuiScreenBook.NextPageButton)this.func_189646_b(new GuiScreenBook.NextPageButton(2, i + 38, 156, false));
 +        this.buttonNextPage = (GuiScreenBook.NextPageButton)this.addToButtonList(new GuiScreenBook.NextPageButton(1, i + 120, 156, true));
 +        this.buttonPreviousPage = (GuiScreenBook.NextPageButton)this.addToButtonList(new GuiScreenBook.NextPageButton(2, i + 38, 156, false));
+@@ -402 +402 @@ public class GuiScreenBook extends GuiScreen
+-        this.mc.getTextureManager().bindTexture(BOOK_GUI_TEXTURES);
++        this.mc.getRenderEngine().bindTexture(BOOK_GUI_TEXTURES);
+@@ -644 +644 @@ public class GuiScreenBook extends GuiScreen
+-                mc.getTextureManager().bindTexture(GuiScreenBook.BOOK_GUI_TEXTURES);
++                mc.getRenderEngine().bindTexture(GuiScreenBook.BOOK_GUI_TEXTURES);
 diff --git a/minecraft/client/gui/GuiScreenCustomizePresets.java b/minecraft/client/gui/GuiScreenCustomizePresets.java
-index dd9fcdc..f27d487 100644
+index dd9fcdc..6637535 100644
 --- a/minecraft/client/gui/GuiScreenCustomizePresets.java
 +++ b/minecraft/client/gui/GuiScreenCustomizePresets.java
 @@ -13 +13 @@ import net.minecraft.world.gen.ChunkProviderSettings;
@@ -1986,6 +2029,16 @@ index dd9fcdc..f27d487 100644
 @@ -46 +46 @@ public class GuiScreenCustomizePresets extends GuiScreen
 -        this.select = this.func_189646_b(new GuiButton(0, this.width / 2 - 102, this.height - 27, 100, 20, I18n.format("createWorld.customize.presets.select", new Object[0])));
 +        this.select = this.addToButtonList(new GuiButton(0, this.width / 2 - 102, this.height - 27, 100, 20, I18n.format("createWorld.customize.presets.select", new Object[0])));
+@@ -216 +216 @@ public class GuiScreenCustomizePresets extends GuiScreen
+-            this.mc.getTextureManager().bindTexture(p_178051_3_);
++            this.mc.getRenderEngine().bindTexture(p_178051_3_);
+diff --git a/minecraft/client/gui/GuiScreenDemo.java b/minecraft/client/gui/GuiScreenDemo.java
+index ea8d9c3..132963d 100644
+--- a/minecraft/client/gui/GuiScreenDemo.java
++++ b/minecraft/client/gui/GuiScreenDemo.java
+@@ -73 +73 @@ public class GuiScreenDemo extends GuiScreen
+-        this.mc.getTextureManager().bindTexture(DEMO_BACKGROUND_LOCATION);
++        this.mc.getRenderEngine().bindTexture(DEMO_BACKGROUND_LOCATION);
 diff --git a/minecraft/client/gui/GuiScreenOptionsSounds.java b/minecraft/client/gui/GuiScreenOptionsSounds.java
 index ff00da4..9f49d9b 100644
 --- a/minecraft/client/gui/GuiScreenOptionsSounds.java
@@ -2496,6 +2549,29 @@ index 45cc6a5..dbf83fa 100644
 @@ -47 +47 @@ public class GuiSnooper extends GuiScreen
 -        this.toggleButton = this.func_189646_b(new GuiButton(1, this.width / 2 - 152, this.height - 30, 150, 20, this.game_settings_2.getKeyBinding(GameSettings.Options.SNOOPER_ENABLED)));
 +        this.toggleButton = this.addToButtonList(new GuiButton(1, this.width / 2 - 152, this.height - 30, 150, 20, this.game_settings_2.getKeyBinding(GameSettings.Options.SNOOPER_ENABLED)));
+diff --git a/minecraft/client/gui/GuiSpectator.java b/minecraft/client/gui/GuiSpectator.java
+index 1a2eb20..4c47828 100644
+--- a/minecraft/client/gui/GuiSpectator.java
++++ b/minecraft/client/gui/GuiSpectator.java
+@@ -76 +76 @@ public class GuiSpectator extends Gui implements ISpectatorMenuRecipient
+-        this.mc.getTextureManager().bindTexture(WIDGETS);
++        this.mc.getRenderEngine().bindTexture(WIDGETS);
+@@ -98 +98 @@ public class GuiSpectator extends Gui implements ISpectatorMenuRecipient
+-        this.mc.getTextureManager().bindTexture(SPECTATOR_WIDGETS);
++        this.mc.getRenderEngine().bindTexture(SPECTATOR_WIDGETS);
+diff --git a/minecraft/client/gui/GuiWinGame.java b/minecraft/client/gui/GuiWinGame.java
+index b9db28b..90415b8 100644
+--- a/minecraft/client/gui/GuiWinGame.java
++++ b/minecraft/client/gui/GuiWinGame.java
+@@ -160 +160 @@ public class GuiWinGame extends GuiScreen
+-        this.mc.getTextureManager().bindTexture(Gui.OPTIONS_BACKGROUND);
++        this.mc.getRenderEngine().bindTexture(Gui.OPTIONS_BACKGROUND);
+@@ -203 +203 @@ public class GuiWinGame extends GuiScreen
+-        this.mc.getTextureManager().bindTexture(MINECRAFT_LOGO);
++        this.mc.getRenderEngine().bindTexture(MINECRAFT_LOGO);
+@@ -240 +240 @@ public class GuiWinGame extends GuiScreen
+-        this.mc.getTextureManager().bindTexture(VIGNETTE_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(VIGNETTE_TEXTURE);
 diff --git a/minecraft/client/gui/GuiWorldEdit.java b/minecraft/client/gui/GuiWorldEdit.java
 index be8341b..5f71858 100644
 --- a/minecraft/client/gui/GuiWorldEdit.java
@@ -2635,15 +2711,56 @@ index 48c4858..c7e4255 100644
 +    public void selectWorld(@Nullable GuiListWorldSelectionEntry entry) {
 @@ -162,0 +145 @@ public class GuiWorldSelection extends GuiScreen implements GuiYesNoCallback
 +
+diff --git a/minecraft/client/gui/ServerListEntryNormal.java b/minecraft/client/gui/ServerListEntryNormal.java
+index fe040d3..0567e92 100644
+--- a/minecraft/client/gui/ServerListEntryNormal.java
++++ b/minecraft/client/gui/ServerListEntryNormal.java
+@@ -45 +45 @@ public class ServerListEntryNormal implements GuiListExtended.IGuiListEntry
+-        this.icon = (DynamicTexture)this.mc.getTextureManager().getTexture(this.serverIcon);
++        this.icon = (DynamicTexture)this.mc.getRenderEngine().getTexture(this.serverIcon);
+@@ -154 +154 @@ public class ServerListEntryNormal implements GuiListExtended.IGuiListEntry
+-        this.mc.getTextureManager().bindTexture(Gui.ICONS);
++        this.mc.getRenderEngine().bindTexture(Gui.ICONS);
+@@ -187 +187 @@ public class ServerListEntryNormal implements GuiListExtended.IGuiListEntry
+-            this.mc.getTextureManager().bindTexture(SERVER_SELECTION_BUTTONS);
++            this.mc.getRenderEngine().bindTexture(SERVER_SELECTION_BUTTONS);
+@@ -233 +233 @@ public class ServerListEntryNormal implements GuiListExtended.IGuiListEntry
+-        this.mc.getTextureManager().bindTexture(p_178012_3_);
++        this.mc.getRenderEngine().bindTexture(p_178012_3_);
+@@ -248 +248 @@ public class ServerListEntryNormal implements GuiListExtended.IGuiListEntry
+-            this.mc.getTextureManager().deleteTexture(this.serverIcon);
++            this.mc.getRenderEngine().deleteTexture(this.serverIcon);
+@@ -282 +282 @@ public class ServerListEntryNormal implements GuiListExtended.IGuiListEntry
+-                this.mc.getTextureManager().loadTexture(this.serverIcon, this.icon);
++                this.mc.getRenderEngine().loadTexture(this.serverIcon, this.icon);
+diff --git a/minecraft/client/gui/achievement/GuiAchievement.java b/minecraft/client/gui/achievement/GuiAchievement.java
+index 072ea13..6a6311e 100644
+--- a/minecraft/client/gui/achievement/GuiAchievement.java
++++ b/minecraft/client/gui/achievement/GuiAchievement.java
+@@ -114 +114 @@ public class GuiAchievement extends Gui
+-            this.mc.getTextureManager().bindTexture(ACHIEVEMENT_BG);
++            this.mc.getRenderEngine().bindTexture(ACHIEVEMENT_BG);
 diff --git a/minecraft/client/gui/achievement/GuiAchievements.java b/minecraft/client/gui/achievement/GuiAchievements.java
-index d5c281b..e03e425 100644
+index d5c281b..943b8eb 100644
 --- a/minecraft/client/gui/achievement/GuiAchievements.java
 +++ b/minecraft/client/gui/achievement/GuiAchievements.java
 @@ -24 +24 @@ import net.minecraft.util.text.TextComponentTranslation;
 -import org.lwjgl.input.Mouse;
 +import com.continuum.nova.input.Mouse;
+@@ -346 +346 @@ public class GuiAchievements extends GuiScreen implements IProgressMeter
+-                this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
++                this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+@@ -353 +353 @@ public class GuiAchievements extends GuiScreen implements IProgressMeter
+-        this.mc.getTextureManager().bindTexture(ACHIEVEMENT_BACKGROUND);
++        this.mc.getRenderEngine().bindTexture(ACHIEVEMENT_BACKGROUND);
+@@ -454 +454 @@ public class GuiAchievements extends GuiScreen implements IProgressMeter
+-                this.mc.getTextureManager().bindTexture(ACHIEVEMENT_BACKGROUND);
++                this.mc.getRenderEngine().bindTexture(ACHIEVEMENT_BACKGROUND);
+@@ -496 +496 @@ public class GuiAchievements extends GuiScreen implements IProgressMeter
+-        this.mc.getTextureManager().bindTexture(ACHIEVEMENT_BACKGROUND);
++        this.mc.getRenderEngine().bindTexture(ACHIEVEMENT_BACKGROUND);
 diff --git a/minecraft/client/gui/achievement/GuiStats.java b/minecraft/client/gui/achievement/GuiStats.java
-index f27da54..47322a8 100644
+index f27da54..f719c95 100644
 --- a/minecraft/client/gui/achievement/GuiStats.java
 +++ b/minecraft/client/gui/achievement/GuiStats.java
 @@ -30 +30 @@ import net.minecraft.stats.StatisticsManager;
@@ -2656,6 +2773,9 @@ index f27da54..47322a8 100644
 +        GuiButton guibutton = this.addToButtonList(new GuiButton(2, this.width / 2 - 80, this.height - 52, 80, 20, I18n.format("stat.blocksButton", new Object[0])));
 +        GuiButton guibutton1 = this.addToButtonList(new GuiButton(3, this.width / 2, this.height - 52, 80, 20, I18n.format("stat.itemsButton", new Object[0])));
 +        GuiButton guibutton2 = this.addToButtonList(new GuiButton(4, this.width / 2 + 80, this.height - 52, 80, 20, I18n.format("stat.mobsButton", new Object[0])));
+@@ -208 +208 @@ public class GuiStats extends GuiScreen implements IProgressMeter
+-        this.mc.getTextureManager().bindTexture(STAT_ICONS);
++        this.mc.getRenderEngine().bindTexture(STAT_ICONS);
 @@ -262 +262 @@ public class GuiStats extends GuiScreen implements IProgressMeter
 -        protected void drawListHeader(int insideLeft, int insideTop, Tessellator tessellatorIn)
 +        protected void drawListHeader(int insideLeft, int insideTop)
@@ -2671,15 +2791,45 @@ index f27da54..47322a8 100644
 @@ -818 +818 @@ public class GuiStats extends GuiScreen implements IProgressMeter
 -            super.drawListHeader(insideLeft, insideTop, tessellatorIn);
 +            super.drawListHeader(insideLeft, insideTop);
+diff --git a/minecraft/client/gui/inventory/GuiBeacon.java b/minecraft/client/gui/inventory/GuiBeacon.java
+index c55c6f9..6b08b32 100644
+--- a/minecraft/client/gui/inventory/GuiBeacon.java
++++ b/minecraft/client/gui/inventory/GuiBeacon.java
+@@ -205 +205 @@ public class GuiBeacon extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(BEACON_GUI_TEXTURES);
++        this.mc.getRenderEngine().bindTexture(BEACON_GUI_TEXTURES);
+@@ -236 +236 @@ public class GuiBeacon extends GuiContainer
+-                mc.getTextureManager().bindTexture(GuiBeacon.BEACON_GUI_TEXTURES);
++                mc.getRenderEngine().bindTexture(GuiBeacon.BEACON_GUI_TEXTURES);
+@@ -259 +259 @@ public class GuiBeacon extends GuiContainer
+-                    mc.getTextureManager().bindTexture(this.iconTexture);
++                    mc.getRenderEngine().bindTexture(this.iconTexture);
+diff --git a/minecraft/client/gui/inventory/GuiBrewingStand.java b/minecraft/client/gui/inventory/GuiBrewingStand.java
+index 72264b5..5979d3e 100644
+--- a/minecraft/client/gui/inventory/GuiBrewingStand.java
++++ b/minecraft/client/gui/inventory/GuiBrewingStand.java
+@@ -42 +42 @@ public class GuiBrewingStand extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(BREWING_STAND_GUI_TEXTURES);
++        this.mc.getRenderEngine().bindTexture(BREWING_STAND_GUI_TEXTURES);
+diff --git a/minecraft/client/gui/inventory/GuiChest.java b/minecraft/client/gui/inventory/GuiChest.java
+index cc5b679..932fe56 100644
+--- a/minecraft/client/gui/inventory/GuiChest.java
++++ b/minecraft/client/gui/inventory/GuiChest.java
+@@ -48 +48 @@ public class GuiChest extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(CHEST_GUI_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(CHEST_GUI_TEXTURE);
 diff --git a/minecraft/client/gui/inventory/GuiContainer.java b/minecraft/client/gui/inventory/GuiContainer.java
-index 8a7a7a7..a28d438 100644
+index 8a7a7a7..ab1c6b5 100644
 --- a/minecraft/client/gui/inventory/GuiContainer.java
 +++ b/minecraft/client/gui/inventory/GuiContainer.java
 @@ -21 +21 @@ import net.minecraft.util.text.TextFormatting;
 -import org.lwjgl.input.Keyboard;
 +import com.continuum.nova.input.Keyboard;
+@@ -292 +292 @@ public abstract class GuiContainer extends GuiScreen
+-                this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
++                this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 diff --git a/minecraft/client/gui/inventory/GuiContainerCreative.java b/minecraft/client/gui/inventory/GuiContainerCreative.java
-index d5f4733..fe281a9 100644
+index d5f4733..93caf36 100644
 --- a/minecraft/client/gui/inventory/GuiContainerCreative.java
 +++ b/minecraft/client/gui/inventory/GuiContainerCreative.java
 @@ -34,2 +34,2 @@ import net.minecraft.util.text.TextFormatting;
@@ -2687,6 +2837,29 @@ index d5f4733..fe281a9 100644
 -import org.lwjgl.input.Mouse;
 +import com.continuum.nova.input.Keyboard;
 +import com.continuum.nova.input.Mouse;
+@@ -692 +692 @@ public class GuiContainerCreative extends InventoryEffectRenderer
+-            this.mc.getTextureManager().bindTexture(CREATIVE_INVENTORY_TABS);
++            this.mc.getRenderEngine().bindTexture(CREATIVE_INVENTORY_TABS);
+@@ -700 +700 @@ public class GuiContainerCreative extends InventoryEffectRenderer
+-        this.mc.getTextureManager().bindTexture(new ResourceLocation("textures/gui/container/creative_inventory/tab_" + creativetabs.getBackgroundImageName()));
++        this.mc.getRenderEngine().bindTexture(new ResourceLocation("textures/gui/container/creative_inventory/tab_" + creativetabs.getBackgroundImageName()));
+@@ -707 +707 @@ public class GuiContainerCreative extends InventoryEffectRenderer
+-        this.mc.getTextureManager().bindTexture(CREATIVE_INVENTORY_TABS);
++        this.mc.getRenderEngine().bindTexture(CREATIVE_INVENTORY_TABS);
+diff --git a/minecraft/client/gui/inventory/GuiCrafting.java b/minecraft/client/gui/inventory/GuiCrafting.java
+index 1ebad08..a2cb68a 100644
+--- a/minecraft/client/gui/inventory/GuiCrafting.java
++++ b/minecraft/client/gui/inventory/GuiCrafting.java
+@@ -40 +40 @@ public class GuiCrafting extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(CRAFTING_TABLE_GUI_TEXTURES);
++        this.mc.getRenderEngine().bindTexture(CRAFTING_TABLE_GUI_TEXTURES);
+diff --git a/minecraft/client/gui/inventory/GuiDispenser.java b/minecraft/client/gui/inventory/GuiDispenser.java
+index 59736e9..caaed67 100644
+--- a/minecraft/client/gui/inventory/GuiDispenser.java
++++ b/minecraft/client/gui/inventory/GuiDispenser.java
+@@ -42 +42 @@ public class GuiDispenser extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(DISPENSER_GUI_TEXTURES);
++        this.mc.getRenderEngine().bindTexture(DISPENSER_GUI_TEXTURES);
 diff --git a/minecraft/client/gui/inventory/GuiEditCommandBlockMinecart.java b/minecraft/client/gui/inventory/GuiEditCommandBlockMinecart.java
 index 2740773..d61b6ee 100644
 --- a/minecraft/client/gui/inventory/GuiEditCommandBlockMinecart.java
@@ -2747,6 +2920,61 @@ index aa61ec4..e614ba5 100644
 +        this.field_189834_J = this.addToButtonList(new GuiButton(12, this.width / 2 - 1 - 40 - 20, 185, 40, 20, "90"));
 +        this.field_189835_K = this.addToButtonList(new GuiButton(13, this.width / 2 + 1 + 20, 185, 40, 20, "180"));
 +        this.field_189836_L = this.addToButtonList(new GuiButton(14, this.width / 2 + 1 + 40 + 1 + 20, 185, 40, 20, "270"));
+diff --git a/minecraft/client/gui/inventory/GuiFurnace.java b/minecraft/client/gui/inventory/GuiFurnace.java
+index 804574f..8094119 100644
+--- a/minecraft/client/gui/inventory/GuiFurnace.java
++++ b/minecraft/client/gui/inventory/GuiFurnace.java
+@@ -41 +41 @@ public class GuiFurnace extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(FURNACE_GUI_TEXTURES);
++        this.mc.getRenderEngine().bindTexture(FURNACE_GUI_TEXTURES);
+diff --git a/minecraft/client/gui/inventory/GuiInventory.java b/minecraft/client/gui/inventory/GuiInventory.java
+index cd9f9a9..b31d79b 100644
+--- a/minecraft/client/gui/inventory/GuiInventory.java
++++ b/minecraft/client/gui/inventory/GuiInventory.java
+@@ -84 +84 @@ public class GuiInventory extends InventoryEffectRenderer
+-        this.mc.getTextureManager().bindTexture(INVENTORY_BACKGROUND);
++        this.mc.getRenderEngine().bindTexture(INVENTORY_BACKGROUND);
+diff --git a/minecraft/client/gui/inventory/GuiScreenHorseInventory.java b/minecraft/client/gui/inventory/GuiScreenHorseInventory.java
+index 7916898..66ad5b8 100644
+--- a/minecraft/client/gui/inventory/GuiScreenHorseInventory.java
++++ b/minecraft/client/gui/inventory/GuiScreenHorseInventory.java
+@@ -53 +53 @@ public class GuiScreenHorseInventory extends GuiContainer
+-        this.mc.getTextureManager().bindTexture(HORSE_GUI_TEXTURES);
++        this.mc.getRenderEngine().bindTexture(HORSE_GUI_TEXTURES);
+diff --git a/minecraft/client/gui/spectator/PlayerMenuObject.java b/minecraft/client/gui/spectator/PlayerMenuObject.java
+index 12feaab..260139d 100644
+--- a/minecraft/client/gui/spectator/PlayerMenuObject.java
++++ b/minecraft/client/gui/spectator/PlayerMenuObject.java
+@@ -37 +37 @@ public class PlayerMenuObject implements ISpectatorMenuObject
+-        Minecraft.getMinecraft().getTextureManager().bindTexture(this.resourceLocation);
++        Minecraft.getMinecraft().getRenderEngine().bindTexture(this.resourceLocation);
+diff --git a/minecraft/client/gui/spectator/SpectatorMenu.java b/minecraft/client/gui/spectator/SpectatorMenu.java
+index ebe97c5..5c68e62 100644
+--- a/minecraft/client/gui/spectator/SpectatorMenu.java
++++ b/minecraft/client/gui/spectator/SpectatorMenu.java
+@@ -133 +133 @@ public class SpectatorMenu
+-            Minecraft.getMinecraft().getTextureManager().bindTexture(GuiSpectator.SPECTATOR_WIDGETS);
++            Minecraft.getMinecraft().getRenderEngine().bindTexture(GuiSpectator.SPECTATOR_WIDGETS);
+@@ -166 +166 @@ public class SpectatorMenu
+-            Minecraft.getMinecraft().getTextureManager().bindTexture(GuiSpectator.SPECTATOR_WIDGETS);
++            Minecraft.getMinecraft().getRenderEngine().bindTexture(GuiSpectator.SPECTATOR_WIDGETS);
+diff --git a/minecraft/client/gui/spectator/categories/TeleportToPlayer.java b/minecraft/client/gui/spectator/categories/TeleportToPlayer.java
+index 25c59fd..932e210 100644
+--- a/minecraft/client/gui/spectator/categories/TeleportToPlayer.java
++++ b/minecraft/client/gui/spectator/categories/TeleportToPlayer.java
+@@ -72 +72 @@ public class TeleportToPlayer implements ISpectatorMenuView, ISpectatorMenuObjec
+-        Minecraft.getMinecraft().getTextureManager().bindTexture(GuiSpectator.SPECTATOR_WIDGETS);
++        Minecraft.getMinecraft().getRenderEngine().bindTexture(GuiSpectator.SPECTATOR_WIDGETS);
+diff --git a/minecraft/client/gui/spectator/categories/TeleportToTeam.java b/minecraft/client/gui/spectator/categories/TeleportToTeam.java
+index 90b0343..a1d9c33 100644
+--- a/minecraft/client/gui/spectator/categories/TeleportToTeam.java
++++ b/minecraft/client/gui/spectator/categories/TeleportToTeam.java
+@@ -59 +59 @@ public class TeleportToTeam implements ISpectatorMenuView, ISpectatorMenuObject
+-        Minecraft.getMinecraft().getTextureManager().bindTexture(GuiSpectator.SPECTATOR_WIDGETS);
++        Minecraft.getMinecraft().getRenderEngine().bindTexture(GuiSpectator.SPECTATOR_WIDGETS);
+@@ -137 +137 @@ public class TeleportToTeam implements ISpectatorMenuView, ISpectatorMenuObject
+-            Minecraft.getMinecraft().getTextureManager().bindTexture(this.location);
++            Minecraft.getMinecraft().getRenderEngine().bindTexture(this.location);
 diff --git a/minecraft/client/network/NetHandlerPlayClient.java b/minecraft/client/network/NetHandlerPlayClient.java
 index c484866..4646d90 100644
 --- a/minecraft/client/network/NetHandlerPlayClient.java
@@ -2907,6 +3135,37 @@ index c484866..4646d90 100644
 +    @Override
 @@ -2124,0 +2202 @@ public class NetHandlerPlayClient implements INetHandlerPlayClient
 +    @Override
+diff --git a/minecraft/client/particle/ParticleExplosionLarge.java b/minecraft/client/particle/ParticleExplosionLarge.java
+index 49bcaff..e5d3f76 100644
+--- a/minecraft/client/particle/ParticleExplosionLarge.java
++++ b/minecraft/client/particle/ParticleExplosionLarge.java
+@@ -96 +96 @@ public class ParticleExplosionLarge extends Particle
+-            return new ParticleExplosionLarge(Minecraft.getMinecraft().getTextureManager(), worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
++            return new ParticleExplosionLarge(Minecraft.getMinecraft().getRenderEngine(), worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+diff --git a/minecraft/client/particle/ParticleFootStep.java b/minecraft/client/particle/ParticleFootStep.java
+index 399626a..a7d4bfb 100644
+--- a/minecraft/client/particle/ParticleFootStep.java
++++ b/minecraft/client/particle/ParticleFootStep.java
+@@ -84 +84 @@ public class ParticleFootStep extends Particle
+-            return new ParticleFootStep(Minecraft.getMinecraft().getTextureManager(), worldIn, xCoordIn, yCoordIn, zCoordIn);
++            return new ParticleFootStep(Minecraft.getMinecraft().getRenderEngine(), worldIn, xCoordIn, yCoordIn, zCoordIn);
+diff --git a/minecraft/client/particle/ParticleSweepAttack.java b/minecraft/client/particle/ParticleSweepAttack.java
+index 37be382..fe78741 100644
+--- a/minecraft/client/particle/ParticleSweepAttack.java
++++ b/minecraft/client/particle/ParticleSweepAttack.java
+@@ -94 +94 @@ public class ParticleSweepAttack extends Particle
+-            return new ParticleSweepAttack(Minecraft.getMinecraft().getTextureManager(), worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
++            return new ParticleSweepAttack(Minecraft.getMinecraft().getRenderEngine(), worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+diff --git a/minecraft/client/renderer/BannerTextures.java b/minecraft/client/renderer/BannerTextures.java
+index 5872f89..799b3f8 100644
+--- a/minecraft/client/renderer/BannerTextures.java
++++ b/minecraft/client/renderer/BannerTextures.java
+@@ -67 +67 @@ public class BannerTextures
+-                    Minecraft.getMinecraft().getTextureManager().loadTexture(bannertextures$cacheentry.textureLocation, new LayeredColorMaskTexture(this.cacheResourceLocation, list, p_187478_3_));
++                    Minecraft.getMinecraft().getRenderEngine().loadTexture(bannertextures$cacheentry.textureLocation, new LayeredColorMaskTexture(this.cacheResourceLocation, list, p_187478_3_));
+@@ -88 +88 @@ public class BannerTextures
+-                    Minecraft.getMinecraft().getTextureManager().deleteTexture(bannertextures$cacheentry.textureLocation);
++                    Minecraft.getMinecraft().getRenderEngine().deleteTexture(bannertextures$cacheentry.textureLocation);
 diff --git a/minecraft/client/renderer/BlockModelShapes.java b/minecraft/client/renderer/BlockModelShapes.java
 index f5d5c85..7c86bd1 100644
 --- a/minecraft/client/renderer/BlockModelShapes.java
@@ -2973,20 +3232,38 @@ index f5d5c85..7c86bd1 100644
 +            IBakedModel model = this.modelManager.getModel((ModelResourceLocation)entry.getValue());
 +            this.bakedModelStore.put(entry.getKey(), model);
 diff --git a/minecraft/client/renderer/EntityRenderer.java b/minecraft/client/renderer/EntityRenderer.java
-index 25e1fb8..87cc61b 100644
+index 25e1fb8..141f265 100644
 --- a/minecraft/client/renderer/EntityRenderer.java
 +++ b/minecraft/client/renderer/EntityRenderer.java
 @@ -2,0 +3 @@ package net.minecraft.client.renderer;
 +import com.continuum.nova.NovaNative;
-@@ -72 +73 @@ import org.apache.logging.log4j.Logger;
+@@ -36,3 +36,0 @@ import net.minecraft.client.shader.ShaderLinkHelper;
+-import net.minecraft.crash.CrashReport;
+-import net.minecraft.crash.CrashReportCategory;
+-import net.minecraft.crash.ICrashReportDetail;
+@@ -58 +55,0 @@ import net.minecraft.util.MouseFilter;
+-import net.minecraft.util.ReportedException;
+@@ -72 +69 @@ import org.apache.logging.log4j.Logger;
 -import org.lwjgl.input.Mouse;
 +import com.continuum.nova.input.Mouse;
-@@ -76,0 +78 @@ import org.lwjgl.util.glu.Project;
+@@ -76,0 +74 @@ import org.lwjgl.util.glu.Project;
 +@SuppressWarnings("ALL")
-@@ -154 +156 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -154 +152 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -     * Is set, updateCameraAndRender() calls updateLightmap(); set by updateTorchFlicker()
 +     * Is set, updateCamera() calls updateLightmap(); set by updateTorchFlicker()
-@@ -1046 +1048,7 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -196 +194 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-        this.theMapItemRenderer = new MapItemRenderer(mcIn.getTextureManager());
++        this.theMapItemRenderer = new MapItemRenderer(mcIn.getRenderEngine());
+@@ -198 +196 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-        this.locationLightMap = mcIn.getTextureManager().getDynamicTextureLocation("lightMap", this.lightmapTexture);
++        this.locationLightMap = mcIn.getRenderEngine().getDynamicTextureLocation("lightMap", this.lightmapTexture);
+@@ -269 +267 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-            this.theShaderGroup = new ShaderGroup(this.mc.getTextureManager(), this.resourceManager, this.mc.getFramebuffer(), resourceLocationIn);
++            this.theShaderGroup = new ShaderGroup(this.mc.getRenderEngine(), this.resourceManager, this.mc.getFramebuffer(), resourceLocationIn);
+@@ -878 +876 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-        this.mc.getTextureManager().bindTexture(this.locationLightMap);
++        this.mc.getRenderEngine().bindTexture(this.locationLightMap);
+@@ -1046 +1044,7 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -    public void updateCameraAndRender(float partialTicks, long nanoTime)
 +    /**
 +     * DO NOT DELETE! This method updates the player's camera. It should probably be somewhere else but all well
@@ -2995,7 +3272,7 @@ index 25e1fb8..87cc61b 100644
 +     * @param nanoTime
 +     */
 +    public void updateCamera(float partialTicks, long nanoTime)
-@@ -1048,14 +1056 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1048,14 +1052 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        boolean flag = Display.isActive();
 -
 -        if (!flag && this.mc.gameSettings.pauseOnLostFocus && (!this.mc.gameSettings.touchscreen || !Mouse.isButtonDown(1)))
@@ -3011,7 +3288,7 @@ index 25e1fb8..87cc61b 100644
 -        }
 -
 +        boolean flag = NovaNative.INSTANCE.display_is_active();
-@@ -1104,105 +1098,0 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1104,105 +1094,0 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -
 -        if (!this.mc.skipRenderWorld)
 -        {
@@ -3117,7 +3394,31 @@ index 25e1fb8..87cc61b 100644
 -                }
 -            }
 -        }
-@@ -2087,0 +1978,12 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1367 +1253 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-        this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+@@ -1385 +1271 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-        this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
++        this.mc.getRenderEngine().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
+@@ -1387 +1273 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-        this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
++        this.mc.getRenderEngine().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
+@@ -1423 +1309 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-        this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
++        this.mc.getRenderEngine().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
+@@ -1425 +1311 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-        this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
++        this.mc.getRenderEngine().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
+@@ -1453 +1339 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-        this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+@@ -1670 +1556 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-                                    this.mc.getTextureManager().bindTexture(RAIN_TEXTURES);
++                                    this.mc.getRenderEngine().bindTexture(RAIN_TEXTURES);
+@@ -1698 +1584 @@ public class EntityRenderer implements IResourceManagerReloadListener
+-                                    this.mc.getTextureManager().bindTexture(SNOW_TEXTURES);
++                                    this.mc.getRenderEngine().bindTexture(SNOW_TEXTURES);
+@@ -2087,0 +1974,12 @@ public class EntityRenderer implements IResourceManagerReloadListener
 +
 +    public float getFogColorRed() {
 +        return fogColorRed;
@@ -3434,6 +3735,35 @@ index b3d40a0..d0840e2 100644
 +                //GlStateManager.disableBlend();
 +               // GlStateManager.alphaFunc(516, 0.1F);
 +                //GlStateManager.depthMask(true);
+diff --git a/minecraft/client/renderer/InventoryEffectRenderer.java b/minecraft/client/renderer/InventoryEffectRenderer.java
+index 7dec087..1970f13 100644
+--- a/minecraft/client/renderer/InventoryEffectRenderer.java
++++ b/minecraft/client/renderer/InventoryEffectRenderer.java
+@@ -83 +83 @@ public abstract class InventoryEffectRenderer extends GuiContainer
+-                this.mc.getTextureManager().bindTexture(INVENTORY_BACKGROUND);
++                this.mc.getRenderEngine().bindTexture(INVENTORY_BACKGROUND);
+diff --git a/minecraft/client/renderer/ItemRenderer.java b/minecraft/client/renderer/ItemRenderer.java
+index 2619f50..fde53a4 100644
+--- a/minecraft/client/renderer/ItemRenderer.java
++++ b/minecraft/client/renderer/ItemRenderer.java
+@@ -150 +150 @@ public class ItemRenderer
+-        this.mc.getTextureManager().bindTexture(this.mc.thePlayer.getLocationSkin());
++        this.mc.getRenderEngine().bindTexture(this.mc.thePlayer.getLocationSkin());
+@@ -221 +221 @@ public class ItemRenderer
+-        this.mc.getTextureManager().bindTexture(RES_MAP_BACKGROUND);
++        this.mc.getRenderEngine().bindTexture(RES_MAP_BACKGROUND);
+@@ -257 +257 @@ public class ItemRenderer
+-        this.mc.getTextureManager().bindTexture(abstractclientplayer.getLocationSkin());
++        this.mc.getRenderEngine().bindTexture(abstractclientplayer.getLocationSkin());
+@@ -508 +508 @@ public class ItemRenderer
+-        this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
++        this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+@@ -539 +539 @@ public class ItemRenderer
+-        this.mc.getTextureManager().bindTexture(RES_UNDERWATER_OVERLAY);
++        this.mc.getRenderEngine().bindTexture(RES_UNDERWATER_OVERLAY);
+@@ -584 +584 @@ public class ItemRenderer
+-            this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
++            this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 diff --git a/minecraft/client/renderer/OpenGlHelper.java b/minecraft/client/renderer/OpenGlHelper.java
 index a2f6de3..1c5bc41 100644
 --- a/minecraft/client/renderer/OpenGlHelper.java
@@ -3987,7 +4317,7 @@ index a2f6de3..1c5bc41 100644
 -        GL11.glLineWidth(1.0F);
 +        //GL11.glLineWidth(1.0F);
 diff --git a/minecraft/client/renderer/RenderGlobal.java b/minecraft/client/renderer/RenderGlobal.java
-index 7e4283f..0d29175 100644
+index 7e4283f..7505d18 100644
 --- a/minecraft/client/renderer/RenderGlobal.java
 +++ b/minecraft/client/renderer/RenderGlobal.java
 @@ -91,0 +92 @@ import org.lwjgl.util.vector.Vector4f;
@@ -3998,10 +4328,16 @@ index 7e4283f..0d29175 100644
 @@ -180,2 +181,2 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
 -        this.renderEngine = mcIn.getTextureManager();
 -        this.renderEngine.bindTexture(FORCEFIELD_TEXTURES);
-+        this.textureManager = mcIn.getTextureManager();
++        this.textureManager = mcIn.getRenderEngine();
 +        this.textureManager.bindTexture(FORCEFIELD_TEXTURES);
 @@ -205,0 +207 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
 +    @Override
+@@ -237 +239 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
+-                this.entityOutlineShader = new ShaderGroup(this.mc.getTextureManager(), this.mc.getResourceManager(), this.mc.getFramebuffer(), resourcelocation);
++                this.entityOutlineShader = new ShaderGroup(this.mc.getRenderEngine(), this.mc.getResourceManager(), this.mc.getFramebuffer(), resourcelocation);
+@@ -591 +593 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
+-            TileEntityRendererDispatcher.instance.func_190056_a(this.theWorld, this.mc.getTextureManager(), this.mc.fontRendererObj, this.mc.getRenderViewEntity(), this.mc.objectMouseOver, partialTicks);
++            TileEntityRendererDispatcher.instance.func_190056_a(this.theWorld, this.mc.getRenderEngine(), this.mc.fontRendererObj, this.mc.getRenderViewEntity(), this.mc.objectMouseOver, partialTicks);
 @@ -787 +789 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
 -        for (RenderGlobal.ContainerLocalRenderInformation renderglobal$containerlocalrenderinformation : this.renderInfos)
 +        for (RenderGlobal.ContainerLocalRenderInformation containerInfo : this.renderInfos)
@@ -4275,6 +4611,13 @@ index c2be3f9..a9705d9 100644
 @@ -10 +10 @@ public class VboChunkFactory implements IRenderChunkFactory
 -        return new RenderChunk(p_189565_1_, p_189565_2_, p_189565_3_);
 +        return new RenderChunk(world, renderGlobal, p_189565_3_);
+diff --git a/minecraft/client/renderer/entity/RenderHorse.java b/minecraft/client/renderer/entity/RenderHorse.java
+index 0cc5fa2..ed1f2f0 100644
+--- a/minecraft/client/renderer/entity/RenderHorse.java
++++ b/minecraft/client/renderer/entity/RenderHorse.java
+@@ -68 +68 @@ public class RenderHorse extends RenderLiving<EntityHorse>
+-                Minecraft.getMinecraft().getTextureManager().loadTexture(resourcelocation, new LayeredTexture(p_188328_1_.getVariantTexturePaths()));
++                Minecraft.getMinecraft().getRenderEngine().loadTexture(resourcelocation, new LayeredTexture(p_188328_1_.getVariantTexturePaths()));
 diff --git a/minecraft/client/renderer/texture/AbstractTexture.java b/minecraft/client/renderer/texture/AbstractTexture.java
 index 1b72624..94e5a37 100644
 --- a/minecraft/client/renderer/texture/AbstractTexture.java
@@ -5292,6 +5635,16 @@ index b0a0490..d121ce3 100644
 -        for (int j = 0; j < i; ++j)
 -        {
 +        for (int j = 0; j < i; ++j) {
+diff --git a/minecraft/client/renderer/tileentity/TileEntityItemStackRenderer.java b/minecraft/client/renderer/tileentity/TileEntityItemStackRenderer.java
+index 3a8257f..b1e3b5e 100644
+--- a/minecraft/client/renderer/tileentity/TileEntityItemStackRenderer.java
++++ b/minecraft/client/renderer/tileentity/TileEntityItemStackRenderer.java
+@@ -44 +44 @@ public class TileEntityItemStackRenderer
+-                Minecraft.getMinecraft().getTextureManager().bindTexture(BannerTextures.SHIELD_DESIGNS.getResourceLocation(this.banner.getPatternResourceLocation(), this.banner.getPatternList(), this.banner.getColorList()));
++                Minecraft.getMinecraft().getRenderEngine().bindTexture(BannerTextures.SHIELD_DESIGNS.getResourceLocation(this.banner.getPatternResourceLocation(), this.banner.getPatternList(), this.banner.getColorList()));
+@@ -48 +48 @@ public class TileEntityItemStackRenderer
+-                Minecraft.getMinecraft().getTextureManager().bindTexture(BannerTextures.SHIELD_BASE_TEXTURE);
++                Minecraft.getMinecraft().getRenderEngine().bindTexture(BannerTextures.SHIELD_BASE_TEXTURE);
 diff --git a/minecraft/client/resources/DefaultResourcePack.java b/minecraft/client/resources/DefaultResourcePack.java
 index a1adb4b..c4df3ef 100644
 --- a/minecraft/client/resources/DefaultResourcePack.java
@@ -5389,6 +5742,30 @@ index 0000000..984b3e7
 +    public void close() {
 +    }
 +}
+diff --git a/minecraft/client/resources/ResourcePackListEntry.java b/minecraft/client/resources/ResourcePackListEntry.java
+index f55f8fc..f2c0e7c 100644
+--- a/minecraft/client/resources/ResourcePackListEntry.java
++++ b/minecraft/client/resources/ResourcePackListEntry.java
+@@ -48 +48 @@ public abstract class ResourcePackListEntry implements GuiListExtended.IGuiListE
+-            this.mc.getTextureManager().bindTexture(RESOURCE_PACKS_TEXTURE);
++            this.mc.getRenderEngine().bindTexture(RESOURCE_PACKS_TEXTURE);
+diff --git a/minecraft/client/resources/ResourcePackListEntryFound.java b/minecraft/client/resources/ResourcePackListEntryFound.java
+index 02cb62c..b386d0b 100644
+--- a/minecraft/client/resources/ResourcePackListEntryFound.java
++++ b/minecraft/client/resources/ResourcePackListEntryFound.java
+@@ -17 +17 @@ public class ResourcePackListEntryFound extends ResourcePackListEntry
+-        this.resourcePackEntry.bindTexturePackIcon(this.mc.getTextureManager());
++        this.resourcePackEntry.bindTexturePackIcon(this.mc.getRenderEngine());
+diff --git a/minecraft/client/resources/ResourcePackListEntryServer.java b/minecraft/client/resources/ResourcePackListEntryServer.java
+index 3ec5b72..4d40193 100644
+--- a/minecraft/client/resources/ResourcePackListEntryServer.java
++++ b/minecraft/client/resources/ResourcePackListEntryServer.java
+@@ -35 +35 @@ public class ResourcePackListEntryServer extends ResourcePackListEntry
+-        this.resourcePackIcon = this.mc.getTextureManager().getDynamicTextureLocation("texturepackicon", dynamictexture);
++        this.resourcePackIcon = this.mc.getRenderEngine().getDynamicTextureLocation("texturepackicon", dynamictexture);
+@@ -93 +93 @@ public class ResourcePackListEntryServer extends ResourcePackListEntry
+-        this.mc.getTextureManager().bindTexture(this.resourcePackIcon);
++        this.mc.getRenderEngine().bindTexture(this.resourcePackIcon);
 diff --git a/minecraft/client/resources/SimpleReloadableResourceManager.java b/minecraft/client/resources/SimpleReloadableResourceManager.java
 index 85ca400..e905295 100644
 --- a/minecraft/client/resources/SimpleReloadableResourceManager.java
@@ -5426,7 +5803,7 @@ index 5db0ced..36b19f2 100644
 @@ -18,0 +19 @@ import org.apache.commons.io.IOUtils;
 +@SuppressWarnings("ALL")
 diff --git a/minecraft/client/settings/GameSettings.java b/minecraft/client/settings/GameSettings.java
-index 206bf51..2aff8d0 100644
+index 206bf51..ad384fe 100644
 --- a/minecraft/client/settings/GameSettings.java
 +++ b/minecraft/client/settings/GameSettings.java
 @@ -38,2 +38,2 @@ import org.apache.logging.log4j.Logger;
@@ -5434,6 +5811,9 @@ index 206bf51..2aff8d0 100644
 -import org.lwjgl.input.Mouse;
 +import com.continuum.nova.input.Keyboard;
 +import com.continuum.nova.input.Mouse;
+@@ -298 +298 @@ public class GameSettings
+-                this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
++                this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 diff --git a/minecraft/client/settings/KeyBinding.java b/minecraft/client/settings/KeyBinding.java
 index b4047b4..6178d2f 100644
 --- a/minecraft/client/settings/KeyBinding.java
@@ -5447,6 +5827,23 @@ index 40eb661..66260a0 100644
 +++ b/minecraft/entity/Entity.java
 @@ -78,0 +79 @@ import org.apache.logging.log4j.Logger;
 +@SuppressWarnings("ALL")
+diff --git a/minecraft/realms/RealmsScreen.java b/minecraft/realms/RealmsScreen.java
+index eb26abb..70860b2 100644
+--- a/minecraft/realms/RealmsScreen.java
++++ b/minecraft/realms/RealmsScreen.java
+@@ -127 +127 @@ public class RealmsScreen
+-        Minecraft.getMinecraft().getTextureManager().bindTexture(resourcelocation);
++        Minecraft.getMinecraft().getRenderEngine().bindTexture(resourcelocation);
+@@ -133 +133 @@ public class RealmsScreen
+-        Minecraft.getMinecraft().getTextureManager().bindTexture(resourcelocation);
++        Minecraft.getMinecraft().getRenderEngine().bindTexture(resourcelocation);
+diff --git a/minecraft/realms/RealmsSliderButton.java b/minecraft/realms/RealmsSliderButton.java
+index 5689591..259ef8e 100644
+--- a/minecraft/realms/RealmsSliderButton.java
++++ b/minecraft/realms/RealmsSliderButton.java
+@@ -80 +80 @@ public class RealmsSliderButton extends RealmsButton
+-            Minecraft.getMinecraft().getTextureManager().bindTexture(WIDGETS_LOCATION);
++            Minecraft.getMinecraft().getRenderEngine().bindTexture(WIDGETS_LOCATION);
 diff --git a/minecraft/server/MinecraftServer.java b/minecraft/server/MinecraftServer.java
 index e93d28d..b0206c7 100644
 --- a/minecraft/server/MinecraftServer.java

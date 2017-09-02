@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -93,6 +94,10 @@ public class ChunkBuilder {
      */
     private void filterBlockAtPos(Map<String, List<BlockPos>> blocksForFilter, BlockPos pos) {
         IBlockState blockState = world.getBlockState(pos);
+        if(blockState.getRenderType().equals(EnumBlockRenderType.INVISIBLE)) {
+            return;
+        }
+
         for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
             if(entry.getValue().matches(blockState)) {
                 if(!blocksForFilter.containsKey(entry.getKey())) {
@@ -103,22 +108,19 @@ public class ChunkBuilder {
         }
     }
 
-    private Optional<NovaNative.mc_chunk_render_object> makeMeshForBlocks(List<BlockPos> blockStates, World world) {
+    private Optional<NovaNative.mc_chunk_render_object> makeMeshForBlocks(List<BlockPos> positions, World world) {
         List<Integer> vertexData = new ArrayList<>();
         IndexList indices = new IndexList();
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
 
         int blockIndexCounter = 0;
-        for(BlockPos blockPos : blockStates) {
+        for(BlockPos blockPos : positions) {
             IBlockState blockState = world.getBlockState(blockPos);
             IBakedModel blockModel = Minecraft.getMinecraft().getBlockRenderDispatcher().getModelForState(blockState);
 
             List<BakedQuad> quads = new ArrayList<>();
             for(EnumFacing facing : EnumFacing.values()) {
-                IBlockState neighbor = blockNextTo(blockPos, world, facing);
-
-                // Only add faces if the block next to us is transparent and not the same as us
-                if(neighbor.isTranslucent() && !neighbor.getBlock().equals(blockState.getBlock())) {
+                if(blockState.shouldSideBeRendered(world, blockPos, facing)) {
                     quads.addAll(blockModel.getQuads(blockState, facing, 0));
                 }
             }

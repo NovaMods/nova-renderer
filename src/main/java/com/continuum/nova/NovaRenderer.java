@@ -1,11 +1,11 @@
 package com.continuum.nova;
 
 import com.continuum.nova.NovaNative.window_size;
-import com.continuum.nova.chunks.BlockModelSerializer;
 import com.continuum.nova.chunks.ChunkBuilder;
 import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.gui.NovaDraw;
+import com.continuum.nova.utils.Profiler;
 import com.continuum.nova.utils.Utils;
 import glm.Glm;
 import glm.vec._2.Vec2;
@@ -14,8 +14,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BlockModelShapes;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ModelManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
@@ -36,7 +34,6 @@ import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -298,19 +295,24 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             mc.shutdown();
         }
 
+        Profiler.start("render_gui");
         if (mc.currentScreen != null) {
 
             NovaDraw.novaDrawScreen(mc.currentScreen, renderPartialTicks);
 
         }
+        Profiler.end("render_gui");
 
+        Profiler.start("update_chunks");
         if(!chunksToUpdate.isEmpty()) {
             ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
             chunkBuilder.createMeshesForChunk(range);
             // chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
             updatedChunks.add(range);
         }
+        Profiler.end("update_chunks");
 
+        Profiler.start("update_player");
         EntityPlayerSP viewEntity = mc.thePlayer;
         if(viewEntity != null) {
             float pitch = viewEntity.rotationPitch;
@@ -320,14 +322,26 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             double z = viewEntity.posZ;
             NovaNative.INSTANCE.set_player_camera_transform(x, y, z, yaw, pitch);
         }
+        Profiler.end("update_player");
 
+        Profiler.start("execute_frame");
         NovaNative.INSTANCE.execute_frame();
+        Profiler.end("execute_frame");
+
+        Profiler.start("update_window");
         updateWindowSize();
+        Profiler.end("update_window");
         int scalefactor = new ScaledResolution(mc).getScaleFactor() * 2;
         if (scalefactor != this.scalefactor) {
             NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
             this.scalefactor = scalefactor;
         }
+
+        printProfilerData();
+    }
+
+    private void printProfilerData() {
+        Profiler.logData();
     }
 
     public void setWorld(World world) {
@@ -383,10 +397,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void loadShaderpack(String shaderpackName) {
+        Profiler.start("load_shaderpack");
         NovaNative.INSTANCE.set_string_setting("loadedShaderpack", shaderpackName);
 
         String filters = NovaNative.INSTANCE.get_shaders_and_filters();
-        String[] filtersSplit = filters.split(" ");
+        Profiler.end("load_shaderpack");
+
+        Profiler.start("build_filters");
+        String[] filtersSplit = filters.split("\n");
 
         filterMap = new HashMap<>();
         for(int i = 0; i < filtersSplit.length; i += 2) {
@@ -394,11 +412,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             IGeometryFilter filter = IGeometryFilter.parseFilterString(filtersSplit[i + 1]);
             filterMap.put(filterName, filter);
         }
+        Profiler.end("build_filters");
 
+        Profiler.start("new_chunk_builder");
         chunkBuilder = new ChunkBuilder(filterMap, world, blockModelShapes);
 
         chunksToUpdate.addAll(updatedChunks);
         updatedChunks.clear();
+        Profiler.end("new_chunk_builder");
     }
 }
 
