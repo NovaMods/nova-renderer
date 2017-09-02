@@ -23,7 +23,7 @@ index 82af80c..d6c5a7e 100644
 -                this.mc.getTextureManager().bindTexture(Gui.OPTIONS_BACKGROUND);
 +                this.mc.getRenderEngine().bindTexture(Gui.OPTIONS_BACKGROUND);
 diff --git a/minecraft/client/Minecraft.java b/minecraft/client/Minecraft.java
-index ad84c84..760abdc 100644
+index ad84c84..b246265 100644
 --- a/minecraft/client/Minecraft.java
 +++ b/minecraft/client/Minecraft.java
 @@ -2,0 +3,2 @@ package net.minecraft.client;
@@ -134,21 +134,21 @@ index ad84c84..760abdc 100644
 @@ -1234 +1245 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (!this.fullscreen && Display.wasResized())
 +        if (nova.wasResized())
-@@ -1236,11 +1247,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1236,4 +1247,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            int i = this.displayWidth;
 -            int j = this.displayHeight;
 -            this.displayWidth = Display.getWidth();
 -            this.displayHeight = Display.getHeight();
--
++            this.displayWidth = nova.getWidth();
++            this.displayHeight = nova.getHeight();
+@@ -1241,11 +1249,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            if (this.displayWidth != i || this.displayHeight != j)
 -            {
 -                if (this.displayWidth <= 0)
 -                {
 -                    this.displayWidth = 1;
 -                }
-+            this.displayWidth = nova.getWidth();
-+            this.displayHeight = nova.getHeight();
-@@ -1248,4 +1249,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+-
 -                if (this.displayHeight <= 0)
 -                {
 -                    this.displayHeight = 1;
@@ -165,62 +165,44 @@ index ad84c84..760abdc 100644
 -        if (Display.isActive())
 +        boolean windowActive = NovaNative.INSTANCE.display_is_active();
 +        if (windowActive)
-@@ -1670 +1670,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--                this.updateDisplayMode();
+@@ -1669,0 +1670,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
-+               /* this.updateDisplayMode();
-@@ -1682 +1683 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--                }
-+                }*/
-@@ -1686 +1687,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--                Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
++                /*
+@@ -1682,0 +1685 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++                */
+@@ -1685,0 +1689,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
 +
-+              /*  Display.setDisplayMode(new DisplayMode(this.tempDisplayWidth, this.tempDisplayHeight));
-@@ -1698 +1701 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--                }
-+                }*/
-@@ -1701 +1704 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--            if (this.currentScreen != null)
-+          /*  if (this.currentScreen != null)
-@@ -1711 +1714 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--            Display.setVSyncEnabled(this.gameSettings.enableVsync);
-+            Display.setVSyncEnabled(this.gameSettings.enableVsync);*/
-@@ -1734,2 +1737,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++                /*
+@@ -1698,0 +1705 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++                */
+@@ -1700,0 +1708 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++            /*
+@@ -1711,0 +1720 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++            */
+@@ -1734,2 +1743,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.loadingScreen = new LoadingScreenRenderer(this);
 -        this.updateFramebufferSize();
-+       // this.loadingScreen = new LoadingScreenRenderer(this);
-+       // this.updateFramebufferSize();
-@@ -2508,0 +2512,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++       /*
++       this.loadingScreen = new LoadingScreenRenderer(this);
++       this.updateFramebufferSize();
++       */
+@@ -2508,0 +2520,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        nova.setWorld(worldClientIn);
 +
-@@ -2983 +2988 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        ContextCapabilities contextcapabilities = GLContext.getCapabilities();
-+        /*ContextCapabilities contextcapabilities = GLContext.getCapabilities();
-@@ -3087 +3092 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));
-+        playerSnooper.addStatToSnooper("gl_max_texture_size", Integer.valueOf(getGLMaximumTextureSize()));*/
-@@ -3099,14 +3104,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
--    public static int getGLMaximumTextureSize()
--    {
--        for (int i = 16384; i > 0; i >>= 1)
--        {
--            GlStateManager.glTexImage2D(32868, 0, 6408, i, i, 0, 6408, 5121, (IntBuffer)null);
--            int j = GlStateManager.glGetTexLevelParameteri(32868, 0, 4096);
--
--            if (j != 0)
--            {
--                return i;
--            }
--        }
--
--        return -1;
-+    public static int getGLMaximumTextureSize() {
+@@ -2982,0 +2996 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        /*
+@@ -3087,0 +3102 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        */
+@@ -3100,0 +3116 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        /*
+@@ -3112,0 +3129,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++         */
 +        return NovaNative.INSTANCE.get_max_texture_size();
-@@ -3221 +3214 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3221 +3239 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public TextureManager getTextureManager()
 +    public TextureManager getRenderEngine()
-@@ -3416,0 +3410,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3416,0 +3435,8 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
 +    public NovaRenderer getNovaRenderer() {
 +        return nova;
@@ -2093,7 +2075,7 @@ index 8787a83..a54640d 100644
 -                this.drawListHeader(k, l, tessellator);
 +                this.drawListHeader(k, l);
 diff --git a/minecraft/client/gui/GuiSlot.java b/minecraft/client/gui/GuiSlot.java
-index a776ae3..50818d4 100644
+index a776ae3..b80250c 100644
 --- a/minecraft/client/gui/GuiSlot.java
 +++ b/minecraft/client/gui/GuiSlot.java
 @@ -2,0 +3,2 @@ package net.minecraft.client.gui;
@@ -2104,52 +2086,53 @@ index a776ae3..50818d4 100644
 @@ -9 +12 @@ import net.minecraft.util.math.MathHelper;
 -import org.lwjgl.input.Mouse;
 +import com.continuum.nova.input.Mouse;
-@@ -11,2 +14,5 @@ import org.lwjgl.input.Mouse;
+@@ -11,2 +14,6 @@ import org.lwjgl.input.Mouse;
 -public abstract class GuiSlot
 -{
 +import java.awt.*;
++import java.awt.geom.Rectangle2D;
 +
 +import static com.continuum.nova.NovaConstants.WHITE_TEXTURE_GUI_LOCATION;
 +
 +public abstract class GuiSlot {
-@@ -62,0 +69 @@ public abstract class GuiSlot
+@@ -62,0 +70 @@ public abstract class GuiSlot
 +    protected boolean stateChanged;
-@@ -126,5 +133 @@ public abstract class GuiSlot
+@@ -126,5 +134 @@ public abstract class GuiSlot
 -    protected abstract void drawBackground();
 -
 -    protected void updateItemPos(int entryID, int insideLeft, int yPos)
 -    {
 -    }
 +    protected void updateItemPos(int entryID, int insideLeft, int yPos) {}
-@@ -137,3 +140 @@ public abstract class GuiSlot
+@@ -137,3 +141 @@ public abstract class GuiSlot
 -    protected void drawListHeader(int insideLeft, int insideTop, Tessellator tessellatorIn)
 -    {
 -    }
 +    protected void drawListHeader(int insideLeft, int insideTop) {}
-@@ -141,3 +142 @@ public abstract class GuiSlot
+@@ -141,3 +143 @@ public abstract class GuiSlot
 -    protected void clickedHeader(int p_148132_1_, int p_148132_2_)
 -    {
 -    }
 +    protected void clickedHeader(int p_148132_1_, int p_148132_2_) {}
-@@ -145,3 +144 @@ public abstract class GuiSlot
+@@ -145,3 +145 @@ public abstract class GuiSlot
 -    protected void renderDecorations(int mouseXIn, int mouseYIn)
 -    {
 -    }
 +    protected void renderDecorations(int mouseXIn, int mouseYIn) {}
-@@ -149 +146 @@ public abstract class GuiSlot
+@@ -149 +147 @@ public abstract class GuiSlot
 -    public int getSlotIndexFromScreenCoords(int posX, int posY)
 +    protected int getSlotIndexFromScreenCoords(int posX, int posY)
-@@ -170,2 +167 @@ public abstract class GuiSlot
+@@ -170,2 +168 @@ public abstract class GuiSlot
 -    protected void bindAmountScrolled()
 -    {
 +    protected void bindAmountScrolled() {
-@@ -188,3 +184,2 @@ public abstract class GuiSlot
+@@ -188,3 +185,2 @@ public abstract class GuiSlot
 -    public boolean isMouseYWithinSlotBounds(int p_148141_1_)
 -    {
 -        return p_148141_1_ >= this.top && p_148141_1_ <= this.bottom && this.mouseX >= this.left && this.mouseX <= this.right;
 +    public boolean isMouseYWithinSlotBounds(int mouseYIn) {
 +        return mouseYIn >= this.top && mouseYIn <= this.bottom && this.mouseX >= this.left && this.mouseX <= this.right;
-@@ -203,6 +198,3 @@ public abstract class GuiSlot
+@@ -203,6 +199,3 @@ public abstract class GuiSlot
 -    public void actionPerformed(GuiButton button)
 -    {
 -        if (button.enabled)
@@ -2159,24 +2142,22 @@ index a776ae3..50818d4 100644
 +    public void actionPerformed(GuiButton button) {
 +        if (button.enabled) {
 +            if (button.id == this.scrollUpButtonID) {
-@@ -212,3 +204 @@ public abstract class GuiSlot
+@@ -212,3 +205 @@ public abstract class GuiSlot
 -            }
 -            else if (button.id == this.scrollDownButtonID)
 -            {
 +            } else if (button.id == this.scrollDownButtonID) {
-@@ -222,4 +212,2 @@ public abstract class GuiSlot
+@@ -222,4 +213,2 @@ public abstract class GuiSlot
 -    public void drawScreen(int mouseXIn, int mouseYIn, float partialTicks)
 -    {
 -        if (this.visible)
 -        {
 +    public void drawScreen(int mouseXIn, int mouseYIn, float partialTicks) {
 +        if (this.visible) {
-@@ -228 +216,3 @@ public abstract class GuiSlot
+@@ -228,23 +217,26 @@ public abstract class GuiSlot
 -            this.drawBackground();
-+
-+            NovaDraw.incrementZ();
-+            drawBackground();
-@@ -231,20 +221,21 @@ public abstract class GuiSlot
+-            int i = this.getScrollBarX();
+-            int j = i + 6;
 -            this.bindAmountScrolled();
 -            GlStateManager.disableLighting();
 -            GlStateManager.disableFog();
@@ -2197,13 +2178,18 @@ index a776ae3..50818d4 100644
 -            if (this.hasListHeader)
 -            {
 -                this.drawListHeader(k, l, tessellator);
++
++            NovaDraw.incrementZ();
++            drawBackground();
++            int scrollBarX = this.getScrollBarX();
++            int scrollBarOutside = scrollBarX + 6;
 +            bindAmountScrolled();
 +
 +            NovaDraw.incrementZ();
 +
 +            NovaDraw.Vertex[] backgroundVertices = new NovaDraw.Vertex[] {
 +                    new NovaDraw.Vertex(this.left, this.bottom,   this.left / 32.0F, (this.bottom + this.amountScrolled) / 32.0F,     new Color(32, 32, 32)),
-+                    new NovaDraw.Vertex(this.right, this.bottom,   this.right / 32.0F, (this.bottom + this.amountScrolled) / 32.0F,    new Color(32, 32, 32)),
++                    new NovaDraw.Vertex(this.right, this.bottom,  this.right / 32.0F, (this.bottom + this.amountScrolled) / 32.0F,    new Color(32, 32, 32)),
 +                    new NovaDraw.Vertex(this.right, this.top,     this.right / 32.0F, (this.top + this.amountScrolled) / 32.0F,       new Color(32, 32, 32)),
 +                    new NovaDraw.Vertex(this.left, this.top,      this.left / 32.0F, (this.top + this.amountScrolled) / 32.0F,        new Color(32, 32, 32))
 +            };
@@ -2218,16 +2204,16 @@ index a776ae3..50818d4 100644
 +            NovaDraw.incrementZ();
 +            if (this.hasListHeader) {
 +                drawListHeader(k, l);
-@@ -251,0 +243,3 @@ public abstract class GuiSlot
+@@ -251,0 +244,3 @@ public abstract class GuiSlot
 +            NovaDraw.incrementZ();
 +
 +            drawSelectionBox(k, l, mouseXIn, mouseYIn);
-@@ -253 +246,0 @@ public abstract class GuiSlot
+@@ -253 +247,0 @@ public abstract class GuiSlot
 -            this.drawSelectionBox(k, l, mouseXIn, mouseYIn);
-@@ -254,0 +248,2 @@ public abstract class GuiSlot
+@@ -254,0 +249,2 @@ public abstract class GuiSlot
 +            NovaDraw.incrementZ();
 +
-@@ -262,13 +257,29 @@ public abstract class GuiSlot
+@@ -262,13 +258,28 @@ public abstract class GuiSlot
 -            int i1 = 4;
 -            vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
 -            vertexbuffer.pos((double)this.left, (double)(this.top + 4), 0.0D).tex(0.0D, 1.0D).color(0, 0, 0, 0).endVertex();
@@ -2244,28 +2230,27 @@ index a776ae3..50818d4 100644
 +
 +
 +            NovaDraw.Vertex[] shade = new NovaDraw.Vertex[] {
++                    new NovaDraw.Vertex(this.left,  this.top,      0,   0,    new Color(0, 0, 0, 255)),
 +                    new NovaDraw.Vertex(this.left, this.top +4,   0,1,     new Color(0, 0, 0, 0)),
-+                    new NovaDraw.Vertex(this.right, this.top+4,   1,1,    new Color(0, 0, 0, 0)),
-+                    new NovaDraw.Vertex(this.right, this.top,      1,0,       new Color(0, 0, 0, 255)),
-+                    new NovaDraw.Vertex(this.left, this.top,      0,   0,    new Color(0, 0, 0, 255))
++                    new NovaDraw.Vertex(this.right,this.top+4,   1,1,    new Color(0, 0, 0, 0)),
++                    new NovaDraw.Vertex(this.right, this.top,      1,0,       new Color(0, 0, 0, 255))
 +            };
 +
 +            indices = new Integer[] {
-+                    0, 1, 2, 2, 3, 0
++                    0, 1, 2, 0, 3, 2
 +            };
 +
 +            NovaDraw.draw(WHITE_TEXTURE_GUI_LOCATION, indices, shade);
 +
-+
 +            shade = new NovaDraw.Vertex[] {
-+                    new NovaDraw.Vertex(this.left, this.bottom,   0,1,     new Color(0, 0, 0, 255)),
-+                    new NovaDraw.Vertex(this.right, this.bottom,   1,1,    new Color(0, 0, 0, 255)),
-+                    new NovaDraw.Vertex(this.right, this.bottom-4,     1,0,       new Color(0, 0, 0, 0)),
-+                    new NovaDraw.Vertex(this.left, this.bottom-4,      0,0,        new Color(0, 0, 0, 0))
++                    new NovaDraw.Vertex(this.left, this.bottom-4,      0,0,        new Color(0, 0, 0, 0)),
++                    new NovaDraw.Vertex(this.left,  this.bottom,   0,1,     new Color(0, 0, 0, 255)),
++                    new NovaDraw.Vertex(this.right, this.bottom,   1,1,     new Color(0, 0, 0, 255)),
++                    new NovaDraw.Vertex(this.right,this.bottom-4,     1,0,       new Color(0, 0, 0, 0))
 +            };
 +
 +            indices = new Integer[] {
-+                    0, 1, 2, 2, 3, 0
++                    0, 1, 2, 0, 2, 3
 +            };
 +
 +            NovaDraw.draw(WHITE_TEXTURE_GUI_LOCATION, indices, shade);
@@ -2303,10 +2288,10 @@ index a776ae3..50818d4 100644
 +                NovaDraw.incrementZ();
 +
 +                NovaDraw.Vertex[] scrollbarBackground = new NovaDraw.Vertex[]{
-+                        new NovaDraw.Vertex(i, this.bottom,  0, 1, new Color(0, 0, 0, 255)),
-+                        new NovaDraw.Vertex(j, this.bottom,  1, 1, new Color(0, 0, 0, 255)),
-+                        new NovaDraw.Vertex(j, this.top,  1, 0, new Color(0, 0, 0, 255)),
-+                        new NovaDraw.Vertex(i, this.top,  0, 0, new Color(0, 0, 0, 255))
++                        new NovaDraw.Vertex(scrollBarX, this.bottom,  0, 1, new Color(0, 0, 0, 255)),
++                        new NovaDraw.Vertex(scrollBarOutside, this.bottom,  1, 1, new Color(0, 0, 0, 255)),
++                        new NovaDraw.Vertex(scrollBarOutside, this.top,  1, 0, new Color(0, 0, 0, 255)),
++                        new NovaDraw.Vertex(scrollBarX, this.top,  0, 0, new Color(0, 0, 0, 255))
 +                };
 +
 +                indices = new Integer[]{
@@ -2317,10 +2302,10 @@ index a776ae3..50818d4 100644
 +                NovaDraw.incrementZ();
 +
 +                NovaDraw.Vertex[] scrollbarShade = new NovaDraw.Vertex[]{
-+                        new NovaDraw.Vertex(i, (l1 + k1),  0, 1, new Color(128, 128, 128, 255)),
-+                        new NovaDraw.Vertex(j, (l1 + k1),  1, 1, new Color(128, 128, 128, 255)),
-+                        new NovaDraw.Vertex(j, l1,  1, 0, new Color(128, 128, 128, 255)),
-+                        new NovaDraw.Vertex(i, l1, 0, 0, new Color(128, 128, 128, 255))
++                        new NovaDraw.Vertex(scrollBarX, (l1 + k1),  0, 1, new Color(128, 128, 128, 255)),
++                        new NovaDraw.Vertex(scrollBarOutside, (l1 + k1),  1, 1, new Color(128, 128, 128, 255)),
++                        new NovaDraw.Vertex(scrollBarOutside, l1,  1, 0, new Color(128, 128, 128, 255)),
++                        new NovaDraw.Vertex(scrollBarX, l1, 0, 0, new Color(128, 128, 128, 255))
 +                };
 +
 +                indices = new Integer[]{
@@ -2333,10 +2318,10 @@ index a776ae3..50818d4 100644
 +
 +
 +                NovaDraw.Vertex[] scrollbar = new NovaDraw.Vertex[]{
-+                        new NovaDraw.Vertex(i, (l1 + k1) - 1,  0, 1, new Color(192, 192, 192, 255)),
-+                        new NovaDraw.Vertex(j - 1, (l1 + k1) - 1,  1, 1, new Color(192, 192, 192, 255)),
-+                        new NovaDraw.Vertex(j - 1, l1,  1, 0, new Color(192, 192, 192, 255)),
-+                        new NovaDraw.Vertex(i, l1,  0, 0, new Color(192, 192, 192, 255))
++                        new NovaDraw.Vertex(scrollBarX, (l1 + k1) - 1,  0, 1, new Color(192, 192, 192, 255)),
++                        new NovaDraw.Vertex(scrollBarOutside - 1, (l1 + k1) - 1,  1, 1, new Color(192, 192, 192, 255)),
++                        new NovaDraw.Vertex(scrollBarOutside - 1, l1,  1, 0, new Color(192, 192, 192, 255)),
++                        new NovaDraw.Vertex(scrollBarX, l1,  0, 0, new Color(192, 192, 192, 255))
 +                };
 +
 +                indices = new Integer[]{
@@ -2459,11 +2444,11 @@ index a776ae3..50818d4 100644
 -            if (k > this.bottom || k + l < this.top)
 -            {
 +            if (k > this.bottom || k + l < this.top) {
-@@ -466,2 +470 @@ public abstract class GuiSlot
+@@ -466,17 +470,35 @@ public abstract class GuiSlot
 -            if (this.showSelectionBox && this.isSelected(j))
 -            {
-+            if (this.showSelectionBox && this.isSelected(j)) {
-@@ -470,13 +473,32 @@ public abstract class GuiSlot
+-                int i1 = this.left + (this.width / 2 - this.getListWidth() / 2);
+-                int j1 = this.left + this.width / 2 + this.getListWidth() / 2;
 -                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 -                GlStateManager.disableTexture2D();
 -                vertexbuffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
@@ -2477,17 +2462,20 @@ index a776ae3..50818d4 100644
 -                vertexbuffer.pos((double)(i1 + 1), (double)(k - 1), 0.0D).tex(0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
 -                tessellator.draw();
 -                GlStateManager.enableTexture2D();
++            if (this.showSelectionBox && this.isSelected(j)) {
++                int leftX = this.left + (this.width / 2 - this.getListWidth() / 2);
++                int rightX = this.left + this.width / 2 + this.getListWidth() / 2;
 +
 +                NovaDraw.Vertex[] vertices = new NovaDraw.Vertex[]{
-+                        new NovaDraw.Vertex(i1, k + l + 2,  0, 1, new Color(128, 128, 128, 255)),
-+                        new NovaDraw.Vertex(j1, k + l + 2,  1, 1, new Color(128, 128, 128, 255)),
-+                        new NovaDraw.Vertex(j1, k - 2,  1, 0, new Color(128, 128, 128, 255)),
-+                        new NovaDraw.Vertex(i1, k - 2, 0, 0, new Color(128, 128, 128, 255)),
++                        new NovaDraw.Vertex(leftX, k - 2, 0, 0, new Color(128, 128, 128, 255)),
++                        new NovaDraw.Vertex(leftX, k + l + 2,  0, 1, new Color(128, 128, 128, 255)),
++                        new NovaDraw.Vertex(rightX, k + l + 2,  1, 1, new Color(128, 128, 128, 255)),
++                        new NovaDraw.Vertex(rightX, k - 2,  1, 0, new Color(128, 128, 128, 255)),
 +                };
 +
 +                Integer[] indices = new Integer[] {
 +                        0, 1, 2,
-+                        2, 0, 3,
++                        0, 2, 3,
 +                };
 +
 +                NovaDraw.draw(whiteTextureLocation, indices, vertices);
@@ -2495,15 +2483,15 @@ index a776ae3..50818d4 100644
 +                NovaDraw.incrementZ();
 +
 +                vertices = new NovaDraw.Vertex[]{
-+                        new NovaDraw.Vertex(i1 + 1, k + l + 1,  0, 1, new Color(0, 0, 0, 255)),
-+                        new NovaDraw.Vertex(j1 - 1, k + l + 1,  1, 1, new Color(0, 0, 0, 255)),
-+                        new NovaDraw.Vertex(j1 - 1, k - 1,      1, 0, new Color(0, 0, 0, 255)),
-+                        new NovaDraw.Vertex(i1 + 1, k - 1,      0, 0, new Color(0, 0, 0, 255))
++                        new NovaDraw.Vertex(leftX + 1, k - 1,      0, 0, new Color(0, 0, 0, 255)),
++                        new NovaDraw.Vertex(leftX + 1, k + l + 1,  0, 1, new Color(0, 0, 0, 255)),
++                        new NovaDraw.Vertex(rightX - 1, k + l + 1,  1, 1, new Color(0, 0, 0, 255)),
++                        new NovaDraw.Vertex(rightX - 1, k - 1,      1, 0, new Color(0, 0, 0, 255)),
 +                };
 +
 +                indices = new Integer[] {
 +                        0, 1, 2,
-+                        2, 0, 3,
++                        0, 2, 3,
 +                };
 +
 +                NovaDraw.draw(whiteTextureLocation, indices, vertices);
