@@ -189,7 +189,7 @@ task addChangesToGit(dependsOn: makePatch) << {
             throw new GradleScriptException(os.toString(), e)
         }
         def outputAsString = os.toString()
-        println "$outputAsString"
+        println "${outputAsString}"
     }
 }
 
@@ -209,7 +209,7 @@ task commitChangesToGit(dependsOn: addChangesToGit) << {
             throw new GradleScriptException(os.toString(), e)
         }
         def outputAsString = os.toString()
-        println "$outputAsString"
+        println "${outputAsString}"
     }
 }
 
