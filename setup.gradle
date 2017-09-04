@@ -140,7 +140,6 @@ task initSubmodules(dependsOn: cleanupMcp) << {
         try {
             def result = exec {
                 commandLine 'git', 'submodule', 'update', '--init', '--recursive'
-
                 standardOutput = os
                 errorOutput = os
             }

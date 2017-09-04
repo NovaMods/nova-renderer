@@ -4,6 +4,3 @@ env:
   global:
     - CI_HOME=`pwd`
     - GRADLE_USER_HOME=`pwd`/.gradle
-
-before_script:
-  - chmod +x gradlew
