@@ -1,10 +1,9 @@
 package com.continuum.nova.chunks;
 
 import com.continuum.nova.NovaNative;
-import com.continuum.nova.utils.DefaultHashMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockModelShapes;
+import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.util.EnumBlockRenderType;
@@ -14,13 +13,9 @@ import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nonnull;
-import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static java.util.Optional.of;
 
 /**
  * Splits chunks up into meshes with one mesh for each shader
@@ -30,7 +25,6 @@ import static java.util.Optional.of;
  */
 public class ChunkBuilder {
     private static final Logger LOG = LogManager.getLogger(ChunkBuilder.class);
-    private final BlockModelShapes modelManager;
     private World world;
 
     private final Map<String, IGeometryFilter> filters;
@@ -38,13 +32,15 @@ public class ChunkBuilder {
     private final AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
     private final AtomicInteger numChunksUpdated = new AtomicInteger(0);
 
-    public ChunkBuilder(Map<String, IGeometryFilter> filters, World world, @Nonnull BlockModelShapes modelManager) {
+    private BlockRendererDispatcher blockRendererDispatcher;
+
+    public ChunkBuilder(Map<String, IGeometryFilter> filters, World world) {
         this.filters = filters;
         this.world = world;
-        this.modelManager = modelManager;
     }
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
+        blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
         LOG.debug("Updating chunk {}", range);
         Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
         long startTime = System.currentTimeMillis();
@@ -112,37 +108,48 @@ public class ChunkBuilder {
         List<Integer> vertexData = new ArrayList<>();
         IndexList indices = new IndexList();
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
+        FluidVertexBuffer fluidVertexBuffer = new FluidVertexBuffer();
 
         int blockIndexCounter = 0;
         for(BlockPos blockPos : positions) {
             IBlockState blockState = world.getBlockState(blockPos);
-            IBakedModel blockModel = Minecraft.getMinecraft().getBlockRenderDispatcher().getModelForState(blockState);
 
-            List<BakedQuad> quads = new ArrayList<>();
-            for(EnumFacing facing : EnumFacing.values()) {
-                if(blockState.shouldSideBeRendered(world, blockPos, facing)) {
-                    quads.addAll(blockModel.getQuads(blockState, facing, 0));
-                }
-            }
+            if(blockState.getRenderType() == EnumBlockRenderType.MODEL) {
+                IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
 
-            quads.addAll(blockModel.getQuads(blockState, null, 0));
-
-            LOG.trace("Retrieved {} faces for BlockState {}", quads.size(), blockState);
-
-            int faceIndexCounter = 0;
-            for(BakedQuad quad : quads) {
-                int[] quadVertexData = addPosition(quad, blockPos);
-
-                for(int data : quadVertexData) {
-                    vertexData.add(data);
+                List<BakedQuad> quads = new ArrayList<>();
+                for(EnumFacing facing : EnumFacing.values()) {
+                    if(blockState.shouldSideBeRendered(world, blockPos, facing)) {
+                        quads.addAll(blockModel.getQuads(blockState, facing, 0));
+                    }
                 }
 
-                indices.addIndicesForFace(faceIndexCounter, blockIndexCounter);
-                faceIndexCounter += 4;
-            }
+                quads.addAll(blockModel.getQuads(blockState, null, 0));
 
-            blockIndexCounter += faceIndexCounter;
+                LOG.trace("Retrieved {} faces for BlockState {}", quads.size(), blockState);
+
+                int faceIndexCounter = 0;
+                for(BakedQuad quad : quads) {
+                    int[] quadVertexData = addPosition(quad, blockPos);
+
+                    for(int data : quadVertexData) {
+                        vertexData.add(data);
+                    }
+
+                    indices.addIndicesForFace(faceIndexCounter, blockIndexCounter);
+                    faceIndexCounter += 4;
+                }
+
+                blockIndexCounter += faceIndexCounter;
+
+            } else if(blockState.getRenderType() == EnumBlockRenderType.LIQUID) {
+                // get the thing for liquids
+                blockRendererDispatcher.getFluidRenderer().renderFluid(world, blockState, blockPos, fluidVertexBuffer);
+
+            }
         }
+
+        vertexData.addAll(fluidVertexBuffer.getData());
 
         if(vertexData.isEmpty()) {
             return Optional.empty();

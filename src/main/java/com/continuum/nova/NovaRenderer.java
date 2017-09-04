@@ -75,7 +75,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
     private World world;
 
-    final private Executor chunkUpdateThreadPool = Executors.newSingleThreadExecutor(); //Executors.newFixedThreadPool(10);
+    final private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(10);
 
     private ChunkBuilder chunkBuilder;
     private BlockModelShapes blockModelShapes;
@@ -246,13 +246,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             float range1DistToPlayer = new Vec2().distance(new Vec2(range1Center.x, range1Center.z), playerPos);
             float range2DistToPlayer = new Vec2().distance(new Vec2(range2Center.x, range2Center.z), playerPos);
 
-            if(range1DistToPlayer < range2DistToPlayer) {
-                return -1;
-            } else if(range1DistToPlayer > range2DistToPlayer) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return Float.compare(range1DistToPlayer, range2DistToPlayer);
         });
         chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
 
@@ -304,10 +298,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.end("render_gui");
 
         Profiler.start("update_chunks");
-        if(!chunksToUpdate.isEmpty()) {
+        while(!chunksToUpdate.isEmpty()) {
             ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
-            chunkBuilder.createMeshesForChunk(range);
-            // chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
+            // chunkBuilder.createMeshesForChunk(range);
+            chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
             updatedChunks.add(range);
         }
         Profiler.end("update_chunks");
@@ -415,7 +409,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.end("build_filters");
 
         Profiler.start("new_chunk_builder");
-        chunkBuilder = new ChunkBuilder(filterMap, world, blockModelShapes);
+        chunkBuilder = new ChunkBuilder(filterMap, world);
 
         chunksToUpdate.addAll(updatedChunks);
         updatedChunks.clear();
