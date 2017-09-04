@@ -3154,6 +3154,52 @@ index 5872f89..799b3f8 100644
 @@ -88 +88 @@ public class BannerTextures
 -                    Minecraft.getMinecraft().getTextureManager().deleteTexture(bannertextures$cacheentry.textureLocation);
 +                    Minecraft.getMinecraft().getRenderEngine().deleteTexture(bannertextures$cacheentry.textureLocation);
+diff --git a/minecraft/client/renderer/BlockFluidRenderer.java b/minecraft/client/renderer/BlockFluidRenderer.java
+index 896e3d6..e348182 100644
+--- a/minecraft/client/renderer/BlockFluidRenderer.java
++++ b/minecraft/client/renderer/BlockFluidRenderer.java
+@@ -45,9 +45,9 @@ public class BlockFluidRenderer
+-        int i = this.blockColors.colorMultiplier(blockStateIn, blockAccess, blockPosIn, 0);
+-        float f = (float)(i >> 16 & 255) / 255.0F;
+-        float f1 = (float)(i >> 8 & 255) / 255.0F;
+-        float f2 = (float)(i & 255) / 255.0F;
+-        boolean flag1 = blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.UP);
+-        boolean flag2 = blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.DOWN);
+-        boolean[] aboolean = new boolean[] {blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.NORTH), blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.SOUTH), blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.WEST), blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.EAST)};
+-
+-        if (!flag1 && !flag2 && !aboolean[0] && !aboolean[1] && !aboolean[2] && !aboolean[3])
++        int fluidColor = this.blockColors.colorMultiplier(blockStateIn, blockAccess, blockPosIn, 0);
++        float fluidRed = (float)(fluidColor >> 16 & 255) / 255.0F;
++        float fluidGreen = (float)(fluidColor >> 8 & 255) / 255.0F;
++        float fluidBlue = (float)(fluidColor & 255) / 255.0F;
++        boolean shouldUpBeRendered = blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.UP);
++        boolean shouldDownBeRendered = blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.DOWN);
++        boolean[] shouldSidesBeRendered = new boolean[] {blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.NORTH), blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.SOUTH), blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.WEST), blockStateIn.shouldSideBeRendered(blockAccess, blockPosIn, EnumFacing.EAST)};
++
++        if (!shouldUpBeRendered && !shouldDownBeRendered && !shouldSidesBeRendered[0] && !shouldSidesBeRendered[1] && !shouldSidesBeRendered[2] && !shouldSidesBeRendered[3])
+@@ -74 +74 @@ public class BlockFluidRenderer
+-            if (flag1)
++            if (shouldUpBeRendered)
+@@ -121,3 +121,3 @@ public class BlockFluidRenderer
+-                float f24 = 1.0F * f;
+-                float f25 = 1.0F * f1;
+-                float f26 = 1.0F * f2;
++                float f24 = 1.0F * fluidRed;
++                float f25 = 1.0F * fluidGreen;
++                float f26 = 1.0F * fluidBlue;
+@@ -138 +138 @@ public class BlockFluidRenderer
+-            if (flag2)
++            if (shouldDownBeRendered)
+@@ -192 +192 @@ public class BlockFluidRenderer
+-                if (aboolean[i1])
++                if (shouldSidesBeRendered[i1])
+@@ -248,3 +248,3 @@ public class BlockFluidRenderer
+-                    float f32 = 1.0F * f31 * f;
+-                    float f33 = 1.0F * f31 * f1;
+-                    float f34 = 1.0F * f31 * f2;
++                    float f32 = 1.0F * f31 * fluidRed;
++                    float f33 = 1.0F * f31 * fluidGreen;
++                    float f34 = 1.0F * f31 * fluidBlue;
 diff --git a/minecraft/client/renderer/BlockModelShapes.java b/minecraft/client/renderer/BlockModelShapes.java
 index f5d5c85..7c86bd1 100644
 --- a/minecraft/client/renderer/BlockModelShapes.java
@@ -3219,6 +3265,15 @@ index f5d5c85..7c86bd1 100644
 -            this.bakedModelStore.put(entry.getKey(), this.modelManager.getModel((ModelResourceLocation)entry.getValue()));
 +            IBakedModel model = this.modelManager.getModel((ModelResourceLocation)entry.getValue());
 +            this.bakedModelStore.put(entry.getKey(), model);
+diff --git a/minecraft/client/renderer/BlockRendererDispatcher.java b/minecraft/client/renderer/BlockRendererDispatcher.java
+index 8febef5..46ce65a 100644
+--- a/minecraft/client/renderer/BlockRendererDispatcher.java
++++ b/minecraft/client/renderer/BlockRendererDispatcher.java
+@@ -146,0 +147,4 @@ public class BlockRendererDispatcher implements IResourceManagerReloadListener
++
++    public BlockFluidRenderer getFluidRenderer() {
++        return fluidRenderer;
++    }
 diff --git a/minecraft/client/renderer/EntityRenderer.java b/minecraft/client/renderer/EntityRenderer.java
 index 25e1fb8..141f265 100644
 --- a/minecraft/client/renderer/EntityRenderer.java
@@ -4449,6 +4504,13 @@ index c140fee..e183401 100644
 @@ -20 +20 @@ public class VboRenderList extends ChunkRenderContainer
 -                vertexbuffer.drawArrays(7);
 +                buffer.drawArrays(7);
+diff --git a/minecraft/client/renderer/VertexBuffer.java b/minecraft/client/renderer/VertexBuffer.java
+index 2b645c1..6cca300 100644
+--- a/minecraft/client/renderer/VertexBuffer.java
++++ b/minecraft/client/renderer/VertexBuffer.java
+@@ -25 +25 @@ public class VertexBuffer
+-    private int vertexCount;
++    protected int vertexCount;
 diff --git a/minecraft/client/renderer/ViewFrustum.java b/minecraft/client/renderer/ViewFrustum.java
 index 5437581..cac4763 100644
 --- a/minecraft/client/renderer/ViewFrustum.java
