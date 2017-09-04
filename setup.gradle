@@ -37,7 +37,6 @@ Available tasks:
 
 task verifyEnvironment << {
     checkCMake()
-    checkJava()
 
     def gccAvailable = hasGCC()
     def msvcAvailable = hasMSVC()
@@ -302,20 +301,5 @@ static boolean hasMSVC() {
         return msvcTest.waitFor() == 0
     } catch(Exception e) {
         return false
-    }
-}
-
-static void checkJava() {
-    try {
-        def javaTest = "javac -version".execute()
-        if(javaTest.waitFor() != 0) {
-            println 'JDK not found. Please install the Java 8 JDK and add its location to your PATH'
-            throw new GradleScriptException()
-        } else {
-            println 'JDK found!'
-        }
-    } catch(Exception e) {
-        println 'JDK not found. Please install the Java 8 JDK and add its location to your PATH'
-        throw new GradleScriptException(e)
     }
 }
