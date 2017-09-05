@@ -62,6 +62,10 @@ task verifyEnvironment << {
 }
 
 task downloadMcp(dependsOn: verifyEnvironment) << {
+    outputs.upToDateWhen {
+        def file = new File('src/main/java/net/Start.java')
+        return file.exists()
+    }
     download {
         src 'http://www.modcoderpack.com/files/mcp931.zip'
         dest 'mcp931.zip'
@@ -73,6 +77,9 @@ task downloadMcp(dependsOn: verifyEnvironment) << {
 }
 
 task decompileMcp(dependsOn: downloadMcp) << {
+    outputs.upToDateWhen {
+        new File('mc_from_git').exists()
+    }
     new ByteArrayOutputStream().withStream { os ->
         def result = exec {
             if(OperatingSystem.current().isWindows()) {
@@ -89,7 +96,9 @@ task decompileMcp(dependsOn: downloadMcp) << {
 }
 
 task copyMcCode(type: Copy, dependsOn: decompileMcp) {
-    outputs.upToDateWhen { false }
+    outputs.upToDateWhen {
+        new File('mc_from_git').exists()
+    }
     from 'src/minecraft'
     into 'src/main/java'
 }
@@ -107,6 +116,9 @@ task copyMcPack(type: Copy, dependsOn: copyMcAssets) {
 }
 
 task applyPatch(dependsOn: copyMcPack) << {
+    outputs.upToDateWhen {
+        new File('mc_from_git').exists()
+    }
     new ByteArrayOutputStream().withStream { os ->
         try {
             def result = exec {
