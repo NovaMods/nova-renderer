@@ -193,37 +193,35 @@ target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 if (WIN32)
 add_custom_command(TARGET nova-renderer
                    POST_BUILD
-                   COMMAND copy /Y "nova-renderer.dll" "..\\..\\jars\\versions\\1.10\\1.10-natives")
+                   COMMAND copy /Y "nova-renderer.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives")
 endif (WIN32)
 if (UNIX)
 add_custom_command(TARGET nova-renderer
                    POST_BUILD
-                   COMMAND cp -f "libnova-renderer.so" "../../jars/versions/1.10/1.10-natives")
+                   COMMAND cp -f "libnova-renderer.so" "../../../jars/versions/1.10/1.10-natives")
 endif (UNIX)
 
 # Setup the nova-test executable
-set(TEST_SOURCE_FILES
-        3rdparty/glad/src/glad.c
+#set(TEST_SOURCE_FILES
+#        3rdparty/glad/src/glad.c
 
-        test/main.cpp
+#        test/main.cpp
 
-        test/model/loaders/shader_loading_test.cpp
-        test/geometry_cache/builders/chunk_builder_test.cpp
-        test/render/objects/textures/texture_manager_test.cpp
-        test/render/objects/shaders/gl_shader_program_test.cpp
-        test/geometry_cache/mesh_store_test.cpp
-        test/test_utils.cpp
-        test/test_utils.h
-        test/geometry_cache/builders/vertex_format_decoder_test.cpp utils/profiler.cpp utils/profiler.h)
+#        test/model/loaders/shader_loading_test.cpp
+#        test/render/objects/textures/texture_manager_test.cpp
+#        test/render/objects/shaders/gl_shader_program_test.cpp
+#        test/geometry_cache/mesh_store_test.cpp
+#        test/test_utils.cpp
+#        test/test_utils.h)
 
-source_group("test" FILES ${TEST_SOURCE_FILES})
+#source_group("test" FILES ${TEST_SOURCE_FILES})
 
-add_executable(nova-test ${TEST_SOURCE_FILES} ${NOVA_SOURCE})
-target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
-target_link_libraries(nova-test gtest ${COMMON_LINK_LIBS})
-set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+#add_executable(nova-test ${TEST_SOURCE_FILES} ${NOVA_SOURCE})
+#target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
+#target_link_libraries(nova-test gtest ${COMMON_LINK_LIBS})
+#set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # Needed for a similar reason as the libary
-if (MSVC)
-    nova_set_all_target_outputs(nova-test "run")
-endif()
+#if (MSVC)
+#    nova_set_all_target_outputs(nova-test "run")
+#endif()

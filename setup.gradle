@@ -54,7 +54,7 @@ task verifyEnvironment << {
     }
 
     if(!gccAvailable && !msvcAvailable) {
-        logger.fatal('Neither Visual Stusio not GCC are available. Please install one of these and add its location to your PATH')
+        logger.fatal('Neither Visual Studio nor GCC are available. Please install one of these and add its location to your PATH')
         throw new GradleScriptException()
     }
 
@@ -286,18 +286,22 @@ static void checkCMake() {
     }
 }
 
-static boolean hasGCC() {
+ext.hasGCC = {
     try {
+        def sout = new StringBuilder(), serr = new StringBuilder()
         def gccTest = "gcc --version".execute()
+        gccTest.consumeProcessOutput(sout, serr)
         return gccTest.waitFor() == 0
     } catch(Exception e) {
         return false
     }
 }
 
-static boolean hasMSVC() {
+ext.hasMSVC = {
     try {
+        def sout = new StringBuilder(), serr = new StringBuilder()
         def msvcTest = "msbuild.exe /help".execute()
+        msvcTest.consumeProcessOutput(sout, serr)
         return msvcTest.waitFor() == 0
     } catch(Exception e) {
         return false
