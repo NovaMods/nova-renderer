@@ -61,37 +61,41 @@ task verifyEnvironment << {
     logger.info('All build tools detected')
 }
 
-task downloadMcp(dependsOn: verifyEnvironment) << {
+task downloadMcp(dependsOn: verifyEnvironment) {
     outputs.upToDateWhen {
         def file = new File('src/main/java/net/Start.java')
         return file.exists()
     }
-    download {
-        src 'http://www.modcoderpack.com/files/mcp931.zip'
-        dest 'mcp931.zip'
-    }
+    doLast {
+        download {
+            src 'http://www.modcoderpack.com/files/mcp931.zip'
+            dest 'mcp931.zip'
+        }
 
-    logger.info('Unzipping MCP...')
-    Collection<File> extractedFiles = FileExtensionMethods.unzip(new File('./mcp931.zip'))
-    logger.info('Unzipping complete')
+        logger.info('Unzipping MCP...')
+        Collection<File> extractedFiles = FileExtensionMethods.unzip(new File('./mcp931.zip'))
+        logger.info('Unzipping complete')
+    }
 }
 
-task decompileMcp(dependsOn: downloadMcp) << {
+task decompileMcp(dependsOn: downloadMcp) {
     outputs.upToDateWhen {
         new File('mc_from_git').exists()
     }
-    new ByteArrayOutputStream().withStream { os ->
-        def result = exec {
-            if(OperatingSystem.current().isWindows()) {
-                commandLine './runtime/bin/python/python_mcp', 'runtime/decompile.py'
-            } else {
-                commandLine 'python2', 'runtime/decompile.py'
-            }
+    doLast {
+        new ByteArrayOutputStream().withStream { os ->
+            def result = exec {
+                if (OperatingSystem.current().isWindows()) {
+                    commandLine './runtime/bin/python/python_mcp', 'runtime/decompile.py'
+                } else {
+                    commandLine 'python2', 'runtime/decompile.py'
+                }
 
-            standardOutput = os
+                standardOutput = os
+            }
+            def outputAsString = os.toString()
+            println "${outputAsString}"
         }
-        def outputAsString = os.toString()
-        println "${outputAsString}"
     }
 }
 
