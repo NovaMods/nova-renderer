@@ -130,7 +130,7 @@ task applyPatch(dependsOn: copyMcPack) {
             try {
                 def result = exec {
                     if (OperatingSystem.current().isWindows()) {
-                        commandLine "${project.projectDir}/runtime/bin/applydiff.exe", '-p1', "${project.projectDir}/patches/nova.patch"
+                        commandLine "${project.projectDir}/mcp/runtime/bin/applydiff.exe", '-p1', "${project.projectDir}/patches/nova.patch"
                         workingDir 'src/main/java/net'
                     } else {
                         commandLine 'bash', '-c', "patch -p1 < ${project.projectDir}/patches/nova.patch"
