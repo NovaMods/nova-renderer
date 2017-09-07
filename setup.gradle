@@ -80,7 +80,7 @@ task downloadMcp(dependsOn: verifyEnvironment) {
 
 task decompileMcp(dependsOn: downloadMcp) {
     outputs.upToDateWhen {
-        new File('mc_from_git').exists()
+        task -> new File('mc_from_git').exists()
     }
     doLast {
         new ByteArrayOutputStream().withStream { os ->
@@ -103,27 +103,25 @@ task decompileMcp(dependsOn: downloadMcp) {
 
 task copyMcCode(type: Copy, dependsOn: decompileMcp) {
     outputs.upToDateWhen {
-        new File('mc_from_git').exists()
+          task -> new File('mc_from_git').exists()
     }
     from 'src/minecraft'
     into 'src/main/java'
 }
 
 task copyMcAssets(type: Copy, dependsOn: copyMcCode) {
-    outputs.upToDateWhen { false }
     from 'temp/src/minecraft/assets'
     into 'src/main/resources/assets'
 }
 
 task copyMcPack(type: Copy, dependsOn: copyMcAssets) {
-    outputs.upToDateWhen { false }
     from 'temp/src/minecraft/pack.png'
     into 'src/main/resources/pack.png'
 }
 
 task applyPatch(dependsOn: copyMcPack) {
     outputs.upToDateWhen {
-        new File('mc_from_git').exists()
+        task -> new File('mc_from_git').exists()
     }
     doLast {
         new ByteArrayOutputStream().withStream { os ->
