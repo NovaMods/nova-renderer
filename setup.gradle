@@ -79,9 +79,6 @@ task downloadMcp(dependsOn: verifyEnvironment) {
 }
 
 task decompileMcp(dependsOn: downloadMcp) {
-    outputs.upToDateWhen {
-        task -> new File('mc_from_git').exists()
-    }
     doLast {
         new ByteArrayOutputStream().withStream { os ->
             def result = exec {
@@ -102,9 +99,6 @@ task decompileMcp(dependsOn: downloadMcp) {
 }
 
 task copyMcCode(type: Copy, dependsOn: decompileMcp) {
-    outputs.upToDateWhen {
-          task -> new File('mc_from_git').exists()
-    }
     from 'src/minecraft'
     into 'src/main/java'
 }
@@ -120,8 +114,8 @@ task copyMcPack(type: Copy, dependsOn: copyMcAssets) {
 }
 
 task applyPatch(dependsOn: copyMcPack) {
-    outputs.upToDateWhen {
-        task -> new File('mc_from_git').exists()
+    onlyIf {
+        !new File('mc_from_git').exists()
     }
     doLast {
         new ByteArrayOutputStream().withStream { os ->
