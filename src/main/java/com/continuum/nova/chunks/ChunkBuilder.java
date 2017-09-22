@@ -3,6 +3,7 @@ package com.continuum.nova.chunks;
 import com.continuum.nova.NovaNative;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BlockFluidRenderer;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -13,6 +14,7 @@ import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -56,9 +58,9 @@ public class ChunkBuilder {
         final int chunkHashCode = 31 * range.min.x + range.min.z;
 
         for(String filterName : blocksForFilter.keySet()) {
-            Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world);
+            Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world, new BlockPos(range.min.x, range.min.y, range.min.z));
             renderObj.ifPresent(obj -> {
-                obj.id = chunkHashCode;
+                // obj.id = chunkHashCode;
                 obj.x = range.min.x;
                 obj.y = range.min.y;
                 obj.z = range.min.z;
@@ -104,11 +106,12 @@ public class ChunkBuilder {
         }
     }
 
-    private Optional<NovaNative.mc_chunk_render_object> makeMeshForBlocks(List<BlockPos> positions, World world) {
+    private Optional<NovaNative.mc_chunk_render_object> makeMeshForBlocks(List<BlockPos> positions, World world, BlockPos chunkPos) {
         List<Integer> vertexData = new ArrayList<>();
         IndexList indices = new IndexList();
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
-        FluidVertexBuffer fluidVertexBuffer = new FluidVertexBuffer();
+        CapturingVertexBuffer capturingVertexBuffer = new CapturingVertexBuffer(chunkPos);
+        BlockFluidRenderer fluidRenderer = blockRendererDispatcher.getFluidRenderer();
 
         int blockIndexCounter = 0;
         for(BlockPos blockPos : positions) {
@@ -126,11 +129,9 @@ public class ChunkBuilder {
 
                 quads.addAll(blockModel.getQuads(blockState, null, 0));
 
-                LOG.trace("Retrieved {} faces for BlockState {}", quads.size(), blockState);
-
                 int faceIndexCounter = 0;
                 for(BakedQuad quad : quads) {
-                    int[] quadVertexData = addPosition(quad, blockPos);
+                    int[] quadVertexData = addPosition(quad, blockPos.subtract(chunkPos));
 
                     for(int data : quadVertexData) {
                         vertexData.add(data);
@@ -143,13 +144,24 @@ public class ChunkBuilder {
                 blockIndexCounter += faceIndexCounter;
 
             } else if(blockState.getRenderType() == EnumBlockRenderType.LIQUID) {
-                // get the thing for liquids
-                blockRendererDispatcher.getFluidRenderer().renderFluid(world, blockState, blockPos, fluidVertexBuffer);
-
+                // Why do liquids have to be different? :(
+                int numVertsBefore = capturingVertexBuffer.getVertexCount();
+                fluidRenderer.renderFluid(world, blockState, blockPos, capturingVertexBuffer);
+                LOG.info("Processing fluid block {}. Added {} vertices from that block", blockState.getBlock().getUnlocalizedName(), capturingVertexBuffer.getVertexCount() - numVertsBefore);
             }
         }
 
-        vertexData.addAll(fluidVertexBuffer.getData());
+        int offset = indices.size();
+        for(int i = 0; i < capturingVertexBuffer.getVertexCount() / 4; i++) {
+            indices.addIndicesForFace(offset, i);
+            offset += 4;
+        }
+
+        if(capturingVertexBuffer.getVertexCount() == 0) {
+            // No fluids? GTFO!
+            // TODO: Stop this
+            return Optional.empty();
+        }
 
         if(vertexData.isEmpty()) {
             return Optional.empty();
@@ -166,20 +178,24 @@ public class ChunkBuilder {
         int[] data = Arrays.copyOf(quad.getVertexData(), quad.getVertexData().length);
 
         for(int vertex = 0; vertex < 28; vertex += 7) {
-            float x = Float.intBitsToFloat(data[vertex + 0]);
-            float y = Float.intBitsToFloat(data[vertex + 1]);
-            float z = Float.intBitsToFloat(data[vertex + 2]);
-
-            x += blockPos.getX();
-            y += blockPos.getY();
-            z += blockPos.getZ();
-
-            data[vertex + 0] = Float.floatToIntBits(x);
-            data[vertex + 1] = Float.floatToIntBits(y);
-            data[vertex + 2] = Float.floatToIntBits(z);
+            addPosToVertex(blockPos, data, vertex);
         }
 
         return data;
+    }
+
+    private void addPosToVertex(BlockPos blockPos, int[] data, int vertex) {
+        float x = Float.intBitsToFloat(data[vertex + 0]);
+        float y = Float.intBitsToFloat(data[vertex + 1]);
+        float z = Float.intBitsToFloat(data[vertex + 2]);
+
+        x += blockPos.getX();
+        y += blockPos.getY();
+        z += blockPos.getZ();
+
+        data[vertex + 0] = Float.floatToIntBits(x);
+        data[vertex + 1] = Float.floatToIntBits(y);
+        data[vertex + 2] = Float.floatToIntBits(z);
     }
 
     public void setWorld(World world) {

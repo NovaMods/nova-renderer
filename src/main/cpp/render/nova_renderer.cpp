@@ -46,9 +46,9 @@ namespace nova {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        glFrontFace(GL_CCW);
+        //glEnable(GL_CULL_FACE);
+        //glCullFace(GL_BACK);
+        //glFrontFace(GL_CCW);
 
         LOG(DEBUG) << "OpenGL state initialized";
     }
@@ -75,8 +75,6 @@ namespace nova {
         update_gbuffer_ubos();
 
         render_gbuffers();
-
-        //render_gbuffers();
 
         render_composite_passes();
 
@@ -319,10 +317,16 @@ namespace nova {
 
     void nova_renderer::render_shader(gl_shader_program &shader) {
         LOG(TRACE) << "Rendering everything for shader " << shader.get_name();
+        profiler::start(shader.get_name());
         shader.bind();
 
+        profiler::start("get_meshes_for_shader");
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
+        profiler::end("get_meshes_for_shader");
+        profiler::start("process_all");
         for(auto& geom : geometry) {
+            profiler::start("process_renderable");
+
             if(geom.geometry->has_data()) {
                 if(!geom.color_texture.empty()) {
                     auto color_texture = textures->get_texture(geom.color_texture);
@@ -339,15 +343,21 @@ namespace nova {
 
                 upload_model_matrix(geom, shader);
 
+                profiler::start("drawcall");
                 geom.geometry->set_active();
                 geom.geometry->draw();
+                profiler::end("drawcall");
             } else {
                 LOG(TRACE) << "Skipping some geometry since it has no data";
             }
+            profiler::end("process_renderable");
         }
+        profiler::end("process_all");
+
+        profiler::end(shader.get_name());
     }
 
-    void nova_renderer::upload_model_matrix(render_object &geom, gl_shader_program &program) const {
+    inline void nova_renderer::upload_model_matrix(render_object &geom, gl_shader_program &program) const {
         glm::mat4 model_matrix = glm::translate(glm::mat4(1), geom.position);
 
         auto model_matrix_location = program.get_uniform_location("gbufferModel");

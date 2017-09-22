@@ -12,7 +12,7 @@ namespace nova {
     /*!
      * \brief A camera that can render things.
      *
-     * There's one camera for the shadow map and one camera for the player. Other cameras are possible but i don't wanna
+     * There's one camera for the shadow map and one camera for the player. Other cameras are possible but I don't wanna
      */
     struct camera {
         float fov = 75;
@@ -22,8 +22,15 @@ namespace nova {
         glm::vec2 rotation;
         glm::vec3 position;
 
-        glm::mat4 get_projection_matrix();
+        glm::mat4& get_projection_matrix();
         glm::mat4 get_view_matrix();
+
+        glm::vec3 get_view_direction();
+
+    private:
+        bool projection_matrix_is_dirty;
+
+        glm::mat4 projection_matrix;
     };
 }
 

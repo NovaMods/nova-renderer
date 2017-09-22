@@ -64,10 +64,16 @@ public class Profiler {
         profilerDataMap.get(name).stop();
     }
 
+    private static int counter = 0;
+
     public static void logData() {
-        for(Map.Entry<String, ProfilerData> entry : profilerDataMap.entrySet()) {
-            LOG.debug("Section {} has taken an average of {}ms", entry.getKey(), (double) entry.getValue().getAverageDuration() / 1000000.0);
+        if(counter >= 100) {
+            for(Map.Entry<String, ProfilerData> entry : profilerDataMap.entrySet()) {
+                LOG.debug("Section {} has taken an average of {}ms", entry.getKey(), (double) entry.getValue().getAverageDuration() / 1000000.0);
+            }
+            counter = 0;
         }
+        counter++;
     }
 
     private Profiler() {}

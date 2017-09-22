@@ -298,11 +298,16 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.end("render_gui");
 
         Profiler.start("update_chunks");
+        int numChunksUpdated = 0;
         while(!chunksToUpdate.isEmpty()) {
             ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
             // chunkBuilder.createMeshesForChunk(range);
             chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
             updatedChunks.add(range);
+            numChunksUpdated++;
+            if(numChunksUpdated > 10) {
+                break;
+            }
         }
         Profiler.end("update_chunks");
 

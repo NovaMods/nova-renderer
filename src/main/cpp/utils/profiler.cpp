@@ -36,17 +36,17 @@ namespace nova {
         for(const auto& item : data) {
             const auto& cur_profiler_data = item.second;
 
-            long long int average_duration = 0;
+            std::chrono::high_resolution_clock::duration average_duration = std::chrono::high_resolution_clock::duration::zero();
             int count = cur_profiler_data.has_write_pos_reset ? NUM_SAMPLES : cur_profiler_data.cur_write_pos;
             for(int i = 0; i < count; i++) {
-                average_duration += std::chrono::duration_cast<std::chrono::nanoseconds>(cur_profiler_data.last_durations[i]).count();
+                average_duration += cur_profiler_data.last_durations[i];
             }
 
             if(count != 0) {
                 average_duration /= count;
             }
 
-            ss << "Profiled section " << item.first << " took an average of " << float(average_duration) / 1000000.0f << "ms to execute\n";
+            ss << "Profiled section " << item.first << " took an average of " << double(std::chrono::duration_cast<std::chrono::nanoseconds>(average_duration).count()) / 1000000.0f << "ms to execute\n";
         }
 
         LOG_EVERY_N(100, DEBUG) << ss.str();

@@ -80,6 +80,7 @@ namespace nova {
             obj.name = "chunk";
             obj.parent_id = def.id;
             obj.color_texture = "block_color";
+            obj.position = def.position;
 
             const std::string& shader_name = std::get<0>(entry);
             renderables_grouped_by_shader[shader_name].push_back(std::move(obj));
@@ -111,7 +112,6 @@ namespace nova {
         }
 
         def.vertex_format = format::all_values()[chunk.format];
-        LOG(DEBUG) << "Received a chunk with format " << def.vertex_format.to_string();
         def.position = {chunk.x, chunk.y, chunk.z};
         def.id = chunk.id;
 

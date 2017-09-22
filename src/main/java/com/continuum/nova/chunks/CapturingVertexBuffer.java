@@ -1,6 +1,9 @@
 package com.continuum.nova.chunks;
 
 import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.util.math.BlockPos;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,18 +12,20 @@ import java.util.List;
  * @author ddubois
  * @since 01-Sep-17
  */
-public class FluidVertexBuffer extends VertexBuffer {
+public class CapturingVertexBuffer extends VertexBuffer {
     private List<Integer> data = new ArrayList<>();
+    private final BlockPos chunkPosition;
 
-    public FluidVertexBuffer() {
+    public CapturingVertexBuffer(BlockPos chunkPosition) {
         super(0);
+        this.chunkPosition = chunkPosition;
     }
 
     @Override
     public VertexBuffer pos(double x, double y, double z) {
-        float xFloat = (float)x;
-        float yFloat = (float)y;
-        float zFloat = (float)z;
+        float xFloat = (float)x - chunkPosition.getX();
+        float yFloat = (float)y - chunkPosition.getY();
+        float zFloat = (float)z - chunkPosition.getZ();
 
         data.add(Float.floatToIntBits(xFloat));
         data.add(Float.floatToIntBits(yFloat));
@@ -50,10 +55,10 @@ public class FluidVertexBuffer extends VertexBuffer {
     @Override
     public VertexBuffer tex(double u, double v) {
         float uFloat = (float)u;
-        float tFloat = (float)v;
+        float vFloat = (float)v;
 
         data.add(Float.floatToIntBits(uFloat));
-        data.add(Float.floatToIntBits(tFloat));
+        data.add(Float.floatToIntBits(vFloat));
 
         return this;
     }

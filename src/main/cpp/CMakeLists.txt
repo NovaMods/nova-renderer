@@ -198,7 +198,7 @@ endif (WIN32)
 if (UNIX)
 add_custom_command(TARGET nova-renderer
                    POST_BUILD
-                   COMMAND cp -f "libnova-renderer.so" "../../../jars/versions/1.10/1.10-natives")
+                   COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-renderer.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives")
 endif (UNIX)
 
 # Setup the nova-test executable

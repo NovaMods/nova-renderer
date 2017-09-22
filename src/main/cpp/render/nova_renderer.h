@@ -149,7 +149,7 @@ namespace nova {
          */
         void render_shader(gl_shader_program& shader);
 
-        void upload_gui_model_matrix(gl_shader_program &program);
+        inline void upload_gui_model_matrix(gl_shader_program &program);
 
         void upload_model_matrix(render_object &geom, gl_shader_program &program) const;
 
