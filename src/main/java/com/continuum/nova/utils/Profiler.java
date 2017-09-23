@@ -19,9 +19,7 @@ public class Profiler {
 
     public static class ProfilerData {
         long startTime;
-        long[] durations = new long[NUM_SAMPLES];
-        int curDuration = 0;
-        boolean rolledOver = false;
+        long total_duration = 0;
 
         public void start() {
             startTime = System.nanoTime();
@@ -29,24 +27,7 @@ public class Profiler {
 
         public void stop() {
             long endTime = System.nanoTime();
-            durations[curDuration] = endTime - startTime;
-            curDuration++;
-
-            if(curDuration >= NUM_SAMPLES) {
-                rolledOver = true;
-                curDuration = 0;
-            }
-        }
-
-        public long getAverageDuration() {
-            int num = rolledOver ? NUM_SAMPLES : curDuration;
-
-            long accum = 0;
-            for(int i = 0; i < num; i++) {
-                accum += durations[i];
-            }
-
-            return accum / num;
+            total_duration += endTime - startTime;
         }
     }
 
@@ -69,7 +50,7 @@ public class Profiler {
     public static void logData() {
         if(counter >= 100) {
             for(Map.Entry<String, ProfilerData> entry : profilerDataMap.entrySet()) {
-                LOG.debug("Section {} has taken an average of {}ms", entry.getKey(), (double) entry.getValue().getAverageDuration() / 1000000.0);
+                LOG.debug("Section {} has taken an total of {}ms since the game began", entry.getKey(), (double) entry.getValue().total_duration / 1000000.0);
             }
             counter = 0;
         }

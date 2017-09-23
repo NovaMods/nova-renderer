@@ -18,9 +18,7 @@ namespace nova {
         std::chrono::high_resolution_clock::time_point start_time;
 
         // Using a ring buffer because it's fast
-        std::chrono::high_resolution_clock::duration last_durations[NUM_SAMPLES];
-        int cur_write_pos = 0;
-        bool has_write_pos_reset = false;
+        std::chrono::high_resolution_clock::duration total_duration;
     };
 
     /*!

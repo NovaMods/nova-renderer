@@ -6,15 +6,75 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author ddubois
  * @since 01-Sep-17
  */
 public class CapturingVertexBuffer extends VertexBuffer {
-    private List<Integer> data = new ArrayList<>();
+    private static class Vertex {
+        float x;
+        float y;
+        float z;
+        int color;
+        float u;
+        float v;
+        int lmCoord;
+
+        @Override
+        public boolean equals(Object o) {
+            if(this == o) return true;
+            if(!(o instanceof Vertex)) return false;
+
+            Vertex vertex = (Vertex) o;
+
+            if(Float.compare(vertex.x, x) != 0) return false;
+            if(Float.compare(vertex.y, y) != 0) return false;
+            if(Float.compare(vertex.z, z) != 0) return false;
+            if(color != vertex.color) return false;
+            if(Float.compare(vertex.u, u) != 0) return false;
+            if(Float.compare(vertex.v, v) != 0) return false;
+            return lmCoord == vertex.lmCoord;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (x != +0.0f ? Float.floatToIntBits(x) : 0);
+            result = 31 * result + (y != +0.0f ? Float.floatToIntBits(y) : 0);
+            result = 31 * result + (z != +0.0f ? Float.floatToIntBits(z) : 0);
+            result = 31 * result + color;
+            result = 31 * result + (u != +0.0f ? Float.floatToIntBits(u) : 0);
+            result = 31 * result + (v != +0.0f ? Float.floatToIntBits(v) : 0);
+            result = 31 * result + lmCoord;
+            return result;
+        }
+
+        List<Integer> toInts() {
+            List<Integer> ints = new ArrayList<>();
+
+            ints.add(Float.floatToIntBits(x));
+            ints.add(Float.floatToIntBits(y));
+            ints.add(Float.floatToIntBits(z));
+
+            ints.add(color);
+
+            ints.add(Float.floatToIntBits(u));
+            ints.add(Float.floatToIntBits(v));
+
+            ints.add(lmCoord);
+
+            return ints;
+        }
+    }
+
+    private Set<Vertex> data = new HashSet<>();
     private final BlockPos chunkPosition;
+
+    private Vertex curVertex = new Vertex();
 
     public CapturingVertexBuffer(BlockPos chunkPosition) {
         super(0);
@@ -23,13 +83,9 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
     @Override
     public VertexBuffer pos(double x, double y, double z) {
-        float xFloat = (float)x - chunkPosition.getX();
-        float yFloat = (float)y - chunkPosition.getY();
-        float zFloat = (float)z - chunkPosition.getZ();
-
-        data.add(Float.floatToIntBits(xFloat));
-        data.add(Float.floatToIntBits(yFloat));
-        data.add(Float.floatToIntBits(zFloat));
+        curVertex.x = (float)x - chunkPosition.getX();
+        curVertex.y = (float)y - chunkPosition.getY();
+        curVertex.z = (float)z - chunkPosition.getZ();
 
         return this;
     }
@@ -47,25 +103,22 @@ public class CapturingVertexBuffer extends VertexBuffer {
         data |= (blue & 255) << 8;
         data |= alpha & 255;
 
-        this.data.add(data);
+        curVertex.color = data;
 
         return this;
     }
 
     @Override
     public VertexBuffer tex(double u, double v) {
-        float uFloat = (float)u;
-        float vFloat = (float)v;
-
-        data.add(Float.floatToIntBits(uFloat));
-        data.add(Float.floatToIntBits(vFloat));
+        curVertex.u = (float)u;
+        curVertex.v = (float)v;
 
         return this;
     }
 
     @Override
     public VertexBuffer lightmap(int u, int v) {
-        data.add((u << 16) + v);
+        curVertex.lmCoord = (u << 16) + v;
 
         return this;
     }
@@ -73,9 +126,17 @@ public class CapturingVertexBuffer extends VertexBuffer {
     @Override
     public void endVertex() {
         ++this.vertexCount;
+        data.add(curVertex);
+        curVertex = new Vertex();
     }
 
     public List<Integer> getData() {
-        return data;
+        List<Integer> finalData = new ArrayList<>();
+
+        for(Vertex v : data) {
+            finalData.addAll(v.toInts());
+        }
+
+        return finalData;
     }
 }

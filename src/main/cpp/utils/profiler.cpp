@@ -14,7 +14,6 @@ namespace nova {
         auto section_itr = data.find(name);
         if(section_itr == data.end()) {
             data[name] = profiler_data();
-            std::memset(data[name].last_durations, 0, NUM_SAMPLES);
         }
 
         auto &cur_profiler_data = data[name];
@@ -24,11 +23,7 @@ namespace nova {
     void profiler::end(std::string name) {
         auto &cur_profiler_data = data[name];
         auto duration = std::chrono::high_resolution_clock::now() - cur_profiler_data.start_time;
-        cur_profiler_data.last_durations[cur_profiler_data.cur_write_pos] = duration;
-        cur_profiler_data.cur_write_pos++;
-        if(cur_profiler_data.cur_write_pos >= NUM_SAMPLES) {
-            cur_profiler_data.cur_write_pos = 0;
-        }
+        cur_profiler_data.total_duration += duration;
     }
 
     void profiler::log_all_profiler_data() {
@@ -36,17 +31,7 @@ namespace nova {
         for(const auto& item : data) {
             const auto& cur_profiler_data = item.second;
 
-            std::chrono::high_resolution_clock::duration average_duration = std::chrono::high_resolution_clock::duration::zero();
-            int count = cur_profiler_data.has_write_pos_reset ? NUM_SAMPLES : cur_profiler_data.cur_write_pos;
-            for(int i = 0; i < count; i++) {
-                average_duration += cur_profiler_data.last_durations[i];
-            }
-
-            if(count != 0) {
-                average_duration /= count;
-            }
-
-            ss << "Profiled section " << item.first << " took an average of " << double(std::chrono::duration_cast<std::chrono::nanoseconds>(average_duration).count()) / 1000000.0f << "ms to execute\n";
+            ss << "Profiled section " << item.first << " has taken an total of " << double(std::chrono::duration_cast<std::chrono::nanoseconds>(cur_profiler_data.total_duration).count()) / 1000000.0f << "ms to execute since the game began\n";
         }
 
         LOG_EVERY_N(100, DEBUG) << ss.str();

@@ -118,7 +118,7 @@ public class ChunkBuilder {
             IBlockState blockState = world.getBlockState(blockPos);
 
             if(blockState.getRenderType() == EnumBlockRenderType.MODEL) {
-                IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
+                /*IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
 
                 List<BakedQuad> quads = new ArrayList<>();
                 for(EnumFacing facing : EnumFacing.values()) {
@@ -141,26 +141,22 @@ public class ChunkBuilder {
                     faceIndexCounter += 4;
                 }
 
-                blockIndexCounter += faceIndexCounter;
+                blockIndexCounter += faceIndexCounter;*/
 
             } else if(blockState.getRenderType() == EnumBlockRenderType.LIQUID) {
                 // Why do liquids have to be different? :(
                 int numVertsBefore = capturingVertexBuffer.getVertexCount();
                 fluidRenderer.renderFluid(world, blockState, blockPos, capturingVertexBuffer);
-                LOG.info("Processing fluid block {}. Added {} vertices from that block", blockState.getBlock().getUnlocalizedName(), capturingVertexBuffer.getVertexCount() - numVertsBefore);
+                // LOG.info("Processing fluid block {}. Added {} vertices from that block", blockState.getBlock().getUnlocalizedName(), capturingVertexBuffer.getVertexCount() - numVertsBefore);
             }
         }
+
+        vertexData.addAll(capturingVertexBuffer.getData());
 
         int offset = indices.size();
         for(int i = 0; i < capturingVertexBuffer.getVertexCount() / 4; i++) {
             indices.addIndicesForFace(offset, i);
             offset += 4;
-        }
-
-        if(capturingVertexBuffer.getVertexCount() == 0) {
-            // No fluids? GTFO!
-            // TODO: Stop this
-            return Optional.empty();
         }
 
         if(vertexData.isEmpty()) {
