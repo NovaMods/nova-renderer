@@ -155,7 +155,9 @@ public class ChunkBuilder {
 
         int offset = indices.size();
         for(int i = 0; i < capturingVertexBuffer.getVertexCount() / 4; i++) {
-            indices.addIndicesForFace(offset, i);
+            LOG.debug("Adding vertices with offset {}", offset);
+            indices.addIndicesForFace(offset, 0);
+
             offset += 4;
         }
 
