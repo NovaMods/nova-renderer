@@ -1,6 +1,7 @@
 package com.continuum.nova.chunks;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.BlockRenderLayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -122,6 +123,9 @@ public interface IGeometryFilter {
         }
     }
 
+    /**
+     * Matches blocks in the translucent render layer
+     */
     class TransparentGeometryFilter implements IGeometryFilter {
         boolean shouldBeTransparent;
 
@@ -133,12 +137,7 @@ public interface IGeometryFilter {
 
         @Override
         public boolean matches(IBlockState blockState) {
-            if(blockState.getBlock().getUnlocalizedName().contains("tallgrass") || blockState.getBlock().getUnlocalizedName().contains("double_plant")) {
-                // explicitly set tallgrass and doubleplant as not transparent because they're rendered as water otherwise
-                return !shouldBeTransparent;
-            }
-
-            return blockState.isTranslucent() == shouldBeTransparent;
+            return (blockState.getBlock().getBlockLayer() == BlockRenderLayer.TRANSLUCENT) == shouldBeTransparent;
         }
 
         @Override

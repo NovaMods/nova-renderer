@@ -118,7 +118,7 @@ public class ChunkBuilder {
             IBlockState blockState = world.getBlockState(blockPos);
 
             if(blockState.getRenderType() == EnumBlockRenderType.MODEL) {
-                /*IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
+                IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
 
                 List<BakedQuad> quads = new ArrayList<>();
                 for(EnumFacing facing : EnumFacing.values()) {
@@ -141,7 +141,7 @@ public class ChunkBuilder {
                     faceIndexCounter += 4;
                 }
 
-                blockIndexCounter += faceIndexCounter;*/
+                blockIndexCounter += faceIndexCounter;
 
             } else if(blockState.getRenderType() == EnumBlockRenderType.LIQUID) {
                 // Why do liquids have to be different? :(

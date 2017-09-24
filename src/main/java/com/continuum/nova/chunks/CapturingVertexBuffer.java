@@ -68,7 +68,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
         }
     }
 
-    private Set<Vertex> data = new LinkedHashSet<>();
+    private List<Vertex> data = new ArrayList<>();
     private final BlockPos chunkPosition;
 
     private Vertex curVertex = new Vertex();
@@ -123,7 +123,19 @@ public class CapturingVertexBuffer extends VertexBuffer {
     @Override
     public void endVertex() {
         ++this.vertexCount;
-        data.add(curVertex);
+
+        boolean shouldAdd = true;
+        for(Vertex v : data) {
+            if(v.equals(data)) {
+                shouldAdd = false;
+                break;
+            }
+        }
+
+        if(shouldAdd) {
+            data.add(curVertex);
+        }
+
         curVertex = new Vertex();
     }
 
