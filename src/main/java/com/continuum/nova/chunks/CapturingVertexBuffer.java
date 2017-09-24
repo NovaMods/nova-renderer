@@ -5,10 +5,7 @@ import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,10 +32,10 @@ public class CapturingVertexBuffer extends VertexBuffer {
             if(Float.compare(vertex.x, x) != 0) return false;
             if(Float.compare(vertex.y, y) != 0) return false;
             if(Float.compare(vertex.z, z) != 0) return false;
-            if(color != vertex.color) return false;
+            // if(color != vertex.color) return false;
             if(Float.compare(vertex.u, u) != 0) return false;
-            if(Float.compare(vertex.v, v) != 0) return false;
-            return lmCoord == vertex.lmCoord;
+            return Float.compare(vertex.v, v) != 0;
+            // return lmCoord == vertex.lmCoord;
         }
 
         @Override
@@ -71,7 +68,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
         }
     }
 
-    private Set<Vertex> data = new HashSet<>();
+    private Set<Vertex> data = new LinkedHashSet<>();
     private final BlockPos chunkPosition;
 
     private Vertex curVertex = new Vertex();
