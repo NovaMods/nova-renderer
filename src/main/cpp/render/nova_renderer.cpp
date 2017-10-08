@@ -37,7 +37,7 @@ namespace nova {
     void nova_renderer::init_opengl_state() const {
         LOG(DEBUG) << "Initting OpenGL state";
 
-        glClearColor(0.0, 0.0, 0.0, 1.0);
+        glClearColor(135 / 255.0f, 206 / 255.0f, 235 / 255.0f, 1.0);
 
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
@@ -95,7 +95,7 @@ namespace nova {
 
     void nova_renderer::render_gbuffers() {
         LOG(TRACE) << "Rendering gbuffer pass";
-        //main_framebuffer->bind();
+        // main_framebuffer->bind();
 
         // TODO: Get shaders with gbuffers prefix, draw transparents last, etc
         auto& terrain_shader = loaded_shaderpack->get_shader("gbuffers_terrain");
@@ -110,6 +110,10 @@ namespace nova {
 
     void nova_renderer::render_final_pass() {
         LOG(TRACE) << "Rendering final pass";
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //meshes->get_fullscreen_quad->set_active();
+        //meshes->get_fullscreen_quad->draw();
+
     }
 
     void nova_renderer::render_gui() {

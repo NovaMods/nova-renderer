@@ -43,7 +43,6 @@ public class ChunkBuilder {
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
         blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
-        LOG.debug("Updating chunk {}", range);
         Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
         long startTime = System.currentTimeMillis();
 
