@@ -59,7 +59,7 @@ public class ChunkBuilder {
         for(String filterName : blocksForFilter.keySet()) {
             Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world, new BlockPos(range.min.x, range.min.y, range.min.z));
             renderObj.ifPresent(obj -> {
-                // obj.id = chunkHashCode;
+                obj.id = chunkHashCode;
                 obj.x = range.min.x;
                 obj.y = range.min.y;
                 obj.z = range.min.z;
@@ -131,6 +131,7 @@ public class ChunkBuilder {
                 int faceIndexCounter = 0;
                 for(BakedQuad quad : quads) {
                     int[] quadVertexData = addPosition(quad, blockPos.subtract(chunkPos));
+                    setLightValues(quadVertexData, (int) (blockState.getAmbientOcclusionLightValue() * 16), blockState.getLightValue());
 
                     for(int data : quadVertexData) {
                         vertexData.add(data);
@@ -144,7 +145,6 @@ public class ChunkBuilder {
 
             } else if(blockState.getRenderType() == EnumBlockRenderType.LIQUID) {
                 // Why do liquids have to be different? :(
-                int numVertsBefore = capturingVertexBuffer.getVertexCount();
                 fluidRenderer.renderFluid(world, blockState, blockPos, capturingVertexBuffer);
             }
         }
@@ -167,6 +167,13 @@ public class ChunkBuilder {
         chunk_render_object.format = NovaNative.NovaVertexFormat.POS_UV_LIGHTMAPUV_NORMAL_TANGENT.ordinal();
 
         return Optional.of(chunk_render_object);
+    }
+
+    private void setLightValues(int[] vertexData, int ambientOcclusionLightValue, int blockStateLightValue) {
+        for(int i = 0; i < 4; i++) {
+            // index 6 is too shorts
+            vertexData[i * 7 + 6] = (ambientOcclusionLightValue << 16) | (blockStateLightValue & 0xFF);
+        }
     }
 
     private int[] addPosition(BakedQuad quad, BlockPos blockPos) {

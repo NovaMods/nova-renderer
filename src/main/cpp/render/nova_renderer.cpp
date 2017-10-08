@@ -113,7 +113,6 @@ namespace nova {
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         //meshes->get_fullscreen_quad->set_active();
         //meshes->get_fullscreen_quad->draw();
-
     }
 
     void nova_renderer::render_gui() {

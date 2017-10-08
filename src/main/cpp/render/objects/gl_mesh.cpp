@@ -128,7 +128,7 @@ namespace nova {
                 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), nullptr);
                 glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (1 * sizeof(GLfloat)));
                 glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (4 * sizeof(GLfloat)));
-                glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (6 * sizeof(GLfloat)));
+                glVertexAttribPointer(2, 2, GL_SHORT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (6 * sizeof(GLfloat)));
                 glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (8 * sizeof(GLfloat)));
                 glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (11 * sizeof(GLfloat)));
 
