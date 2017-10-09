@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.BlockFluidRenderer;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -14,7 +15,6 @@ import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ChunkBuilder {
     private static final Logger LOG = LogManager.getLogger(ChunkBuilder.class);
+    private static final int VERTEX_COLOR_OFFSET = 3;
+    private static final int LIGHTMAP_COORD_OFFSET = 6;
     private World world;
 
     private final Map<String, IGeometryFilter> filters;
@@ -34,11 +36,14 @@ public class ChunkBuilder {
     private final AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
     private final AtomicInteger numChunksUpdated = new AtomicInteger(0);
 
+    private final BlockColors blockColors;
+
     private BlockRendererDispatcher blockRendererDispatcher;
 
-    public ChunkBuilder(Map<String, IGeometryFilter> filters, World world) {
+    public ChunkBuilder(Map<String, IGeometryFilter> filters, World world, BlockColors blockColors) {
         this.filters = filters;
         this.world = world;
+        this.blockColors = blockColors;
     }
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
@@ -118,28 +123,37 @@ public class ChunkBuilder {
 
             if(blockState.getRenderType() == EnumBlockRenderType.MODEL) {
                 IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
-
-                List<BakedQuad> quads = new ArrayList<>();
-                for(EnumFacing facing : EnumFacing.values()) {
-                    if(blockState.shouldSideBeRendered(world, blockPos, facing)) {
-                        quads.addAll(blockModel.getQuads(blockState, facing, 0));
-                    }
-                }
-
-                quads.addAll(blockModel.getQuads(blockState, null, 0));
+                int colorMultiplier = blockColors.colorMultiplier(blockState, null, null, 0);
 
                 int faceIndexCounter = 0;
-                for(BakedQuad quad : quads) {
-                    int[] quadVertexData = addPosition(quad, blockPos.subtract(chunkPos));
-                    setLightValues(quadVertexData, (int) (blockState.getAmbientOcclusionLightValue() * 16), blockState.getLightValue());
+                for(EnumFacing facing : EnumFacing.values()) {
+                    List<BakedQuad> quads = blockModel.getQuads(blockState, facing, 0);
+                    boolean shouldSideBeRendered = blockState.shouldSideBeRendered(world, blockPos, facing);
+                    boolean hasQuads = !quads.isEmpty();
+                    if(shouldSideBeRendered && hasQuads) {
+                        int lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(facing));
+                        
+                        for(BakedQuad quad : quads) {
+                            int[] quadVertexData = addPosition(quad, blockPos.subtract(chunkPos));
+                            setVertexColor(quadVertexData, colorMultiplier);
+                            setLightmapCoord(quadVertexData, lmCoords);
 
-                    for(int data : quadVertexData) {
-                        vertexData.add(data);
+                            for(int data : quadVertexData) {
+                                vertexData.add(data);
+                            }
+
+                            indices.addIndicesForFace(faceIndexCounter, blockIndexCounter);
+                            faceIndexCounter += 4;
+                        }
                     }
-
-                    indices.addIndicesForFace(faceIndexCounter, blockIndexCounter);
-                    faceIndexCounter += 4;
                 }
+
+                // FUCK YOU NULL
+                //quads.addAll(blockModel.getQuads(blockState, null, 0));
+
+                //for(BakedQuad quad : quads) {
+
+               // }
 
                 blockIndexCounter += faceIndexCounter;
 
@@ -169,10 +183,15 @@ public class ChunkBuilder {
         return Optional.of(chunk_render_object);
     }
 
-    private void setLightValues(int[] vertexData, int ambientOcclusionLightValue, int blockStateLightValue) {
+    private void setLightmapCoord(int[] quadVertexData, int lmCoords) {
         for(int i = 0; i < 4; i++) {
-            // index 6 is too shorts
-            vertexData[i * 7 + 6] = (ambientOcclusionLightValue << 16) | (blockStateLightValue & 0xFF);
+            quadVertexData[i * 7 + LIGHTMAP_COORD_OFFSET] = lmCoords;
+        }
+    }
+
+    private void setVertexColor(int[] vertexData, int vertexColor) {
+        for(int i = 0; i < 4; i++) {
+            vertexData[i * 7 + VERTEX_COLOR_OFFSET] = vertexColor;
         }
     }
 

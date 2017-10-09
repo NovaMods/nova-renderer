@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BlockModelShapes;
+import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
@@ -78,7 +79,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     final private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(10);
 
     private ChunkBuilder chunkBuilder;
-    private BlockModelShapes blockModelShapes;
     private HashMap<String, IGeometryFilter> filterMap;
 
     public NovaRenderer() {
@@ -391,11 +391,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         return texture.toString();
     }
 
-    public void setBlockModelShapes(BlockModelShapes shapes) {
-        blockModelShapes = shapes;
-    }
-
-    public void loadShaderpack(String shaderpackName) {
+    public void loadShaderpack(String shaderpackName, BlockColors blockColors) {
         Profiler.start("load_shaderpack");
         NovaNative.INSTANCE.set_string_setting("loadedShaderpack", shaderpackName);
 
@@ -414,7 +410,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.end("build_filters");
 
         Profiler.start("new_chunk_builder");
-        chunkBuilder = new ChunkBuilder(filterMap, world);
+        chunkBuilder = new ChunkBuilder(filterMap, world, blockColors);
 
         chunksToUpdate.addAll(updatedChunks);
         updatedChunks.clear();
