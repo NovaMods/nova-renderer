@@ -102,6 +102,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         addGuiAtlas(resourceManager);
         addFontAtlas(resourceManager);
         addFreeTextures(resourceManager);
+        addLightmap(resourceManager);
+    }
+
+    private void addLightmap(IResourceManager resourceManager) {
+        // TODO: Send the lightmap to the native code, possibly through a special method that binds it to its location
+        // immediately
     }
 
     /**
@@ -249,13 +255,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             return Float.compare(range1DistToPlayer, range2DistToPlayer);
         });
         chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
-
-        ClassLoader cl = ClassLoader.getSystemClassLoader();
-        URL[] classpathPaths = ((URLClassLoader)cl).getURLs();
-        for(URL path : classpathPaths) {
-            LOG.trace(path.getFile());
-        }
-
     }
 
     private void updateWindowSize() {

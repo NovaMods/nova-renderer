@@ -24,4 +24,5 @@ public class NovaConstants {
     public static final String VERSION                  = "0.0.4";
 
     public static final ResourceLocation WHITE_TEXTURE_GUI_LOCATION = new ResourceLocation("white_gui");
+    public static final ResourceLocation LIGHTMAP_LOCATION = new ResourceLocation("");
 }

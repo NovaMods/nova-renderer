@@ -134,6 +134,9 @@ public class ChunkBuilder {
                         int lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(facing));
                         
                         for(BakedQuad quad : quads) {
+                            if(quad.hasTintIndex()) {
+                                colorMultiplier = blockColors.colorMultiplier(blockState, world, blockPos, quad.getTintIndex());
+                            }
                             int[] quadVertexData = addPosition(quad, blockPos.subtract(chunkPos));
                             setVertexColor(quadVertexData, colorMultiplier);
                             setLightmapCoord(quadVertexData, lmCoords);
@@ -149,6 +152,7 @@ public class ChunkBuilder {
                 }
 
                 // FUCK YOU NULL
+                // Ugh this absurdly ill-informed design "decision" is making this code hell
                 //quads.addAll(blockModel.getQuads(blockState, null, 0));
 
                 //for(BakedQuad quad : quads) {
