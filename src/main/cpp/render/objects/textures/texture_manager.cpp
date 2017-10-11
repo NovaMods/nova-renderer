@@ -35,6 +35,13 @@ namespace nova {
 
         atlases.clear();
         locations.clear();
+
+        atlases["lightmap"] = texture2D{};
+    }
+
+    void texture_manager::update_texture(std::string texture_name, std::vector<float> &data, std::vector<int> &size, GLenum format, GLenum internal_format) {
+        auto &texture = atlases[texture_name];
+        texture.set_data(data, size, format, internal_format);
     }
 
     void texture_manager::add_texture(mc_atlas_texture &new_texture) {

@@ -23,6 +23,22 @@ NOVA_API void initialize();
  */
 
 /*!
+ * \brief Updates the lightmap texture that Nova keeps
+ *
+ * All the code in this code path, and all the code that deals with lightmaps, is Minecraft-specific and will not be
+ * useful when Nova is ported to other games. Thus, and code that touches a lightmap should be kept as decoupled from
+ * the rest of the renderer as possible
+ * 
+ * MC lightmap is BGRA
+ *
+ * \param data The lightmap data
+ * \param count The number of elements in the lightmap data
+ * \param width The width of the lightmap
+ * \param height The height of the lightmap
+ */
+NOVA_API void send_lightmap_texture(int* data, int count, int width, int height);
+
+/*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture
  *
  * Presumably you're reading this because you want to make the code better. Hopefully you know why I'd want to give a

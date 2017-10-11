@@ -5,22 +5,27 @@
 #include "texture2D.h"
 #include <stdexcept>
 #include <easylogging++.h>
+#include "../../../utils/utils.h"
 
 namespace nova {
-    texture2D::texture2D() {
+    texture2D::texture2D() : height(0), width(0) {
         glGenTextures(1, &gl_name);
     }
 
-    void texture2D::set_data(std::vector<float> &pixel_data, std::vector<int> &dimensions, GLenum format) {
+    void texture2D::set_data(std::vector<float> &pixel_data, std::vector<int> &dimensions, GLenum format, GLenum internal_format) {
         if(dimensions.size() != 2) {
             // Someone wants to make a 2D texture without diving us 2 dimensions!
             throw std::invalid_argument("Can't create a texture2D without 2 dimensions!");
         }
 
+        if(pixel_data.size() <= 512) {
+            LOG(DEBUG) << "Pixel data: " << pixel_data;
+        }
+
         GLint previous_texture;
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &previous_texture);
         glBindTexture(GL_TEXTURE_2D, gl_name);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, dimensions[0], dimensions[1], 0, format, GL_FLOAT, pixel_data.data());
+        glTexImage2D(GL_TEXTURE_2D, 0, format, dimensions[0], dimensions[1], 0, format, internal_format, pixel_data.data());
 
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

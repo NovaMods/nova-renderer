@@ -109,6 +109,24 @@ namespace nova {
      */
     el::base::Writer &operator<<(el::base::Writer &out, const glm::vec4 &vec);
 
+    /*!
+     * \brief Stream insertion for glm::vec4
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    template <typename T>
+    el::base::Writer &operator<<(el::base::Writer &out, const std::vector<T> &vec) {
+        out << "(";
+        for(auto& val : vec) {
+            out << val << ", ";
+        }
+        out << ")";
+
+        return out;
+    }
+
     std::string print_color(unsigned int color);
 
     std::string print_array(int data[], int num_elements);

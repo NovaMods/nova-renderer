@@ -51,6 +51,19 @@ NOVA_API void reset_texture_manager() {
     PROFILER::end("reset_texture_mamager");
 }
 
+NOVA_API void send_lightmap_texture(int* data, int count, int width, int height) {
+    LOG(DEBUG) << "First data in the lightmap: " << data[0];
+    std::vector<float> data_float;
+    for(int i = 0; i < count; i++) {
+        data_float.push_back(static_cast<float>(data[i]));
+    }
+    std::vector<int> size = {width, height};
+    LOG(DEBUG) << "First data in the flaot array: " << data_float[0];
+    TEXTURE_MANAGER.update_texture("lightmap", data_float, size, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV);
+    auto& lightmap = TEXTURE_MANAGER.get_texture("lightmap");
+    lightmap.bind(4);
+}
+
 NOVA_API void add_texture_location(mc_texture_atlas_location location) {
     PROFILER::start("add_texture_location");
     TEXTURE_MANAGER.add_texture_location(location);

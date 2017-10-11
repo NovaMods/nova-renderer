@@ -14,7 +14,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BlockModelShapes;
+import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.color.BlockColors;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
@@ -288,6 +290,15 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             mc.shutdown();
         }
 
+        EntityRenderer entityRenderer = Minecraft.getMinecraft().entityRenderer;
+
+        boolean shouldUpdateLightmap = entityRenderer.isLightmapUpdateNeeded();
+        entityRenderer.updateLightmap(renderPartialTicks);
+        if(shouldUpdateLightmap) {
+            sendLightmapTexture(entityRenderer.getLightmapTexture());
+        }
+
+
         Profiler.start("render_gui");
         if (mc.currentScreen != null) {
 
@@ -336,6 +347,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
 
         printProfilerData();
+    }
+
+    private void sendLightmapTexture(DynamicTexture lightmapTexture) {
+        int[] data = lightmapTexture.getTextureData();
+        NovaNative.INSTANCE.send_lightmap_texture(data, data.length, lightmapTexture.getWidth(), lightmapTexture.getHeight());
     }
 
     private void printProfilerData() {

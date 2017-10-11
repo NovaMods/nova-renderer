@@ -257,6 +257,8 @@ public interface NovaNative extends Library {
 
     void execute_frame();
 
+    void send_lightmap_texture(int[] data, int length, int width, int height);
+
     void add_texture(mc_atlas_texture texture);
 
     void add_texture_location(mc_texture_atlas_location location);
