@@ -73,7 +73,6 @@ namespace nova {
         while(!chunk_parts_to_upload.empty()) {
             const auto& entry = chunk_parts_to_upload.front();
             const auto& def = std::get<1>(entry);
-            LOG(DEBUG) << "Uploading new chunk parts with ID " << def.id;
 
             render_object obj = {};
             obj.geometry = std::make_unique<gl_mesh>(def);
@@ -92,7 +91,6 @@ namespace nova {
     }
 
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
-        LOG(DEBUG) << "Received a chunk with ID " << chunk.id << ". It has " << chunk.index_buffer_size << " indices";
         mesh_definition def = {};
         auto& vertex_data = def.vertex_data;
 
@@ -119,7 +117,6 @@ namespace nova {
         def.id = chunk.id;
 
         chunk_parts_to_upload_lock.lock();
-        LOG(DEBUG) << "Adding chunk part with id " << def.id << " to the list of things to upload";
         chunk_parts_to_upload.emplace(filter_name, def);
         chunk_parts_to_upload_lock.unlock();
     }
