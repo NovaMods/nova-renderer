@@ -23,6 +23,9 @@
 #include "../utils/utils.h"
 #include "../utils/profiler.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "../utils/stb_image_write.h"
+
 using namespace nova;
 
 #define NOVA_RENDERER nova_renderer::instance
@@ -52,12 +55,8 @@ NOVA_API void reset_texture_manager() {
 }
 
 NOVA_API void send_lightmap_texture(int* data, int count, int width, int height) {
-    std::vector<float> data_float;
-    for(int i = 0; i < count; i++) {
-        data_float.push_back(static_cast<float>(data[i]));
-    }
     auto size = glm::ivec2{width, height};
-    TEXTURE_MANAGER.update_texture("lightmap", data_float, size, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV);
+    TEXTURE_MANAGER.update_texture("lightmap", data, size, GL_BGRA, GL_UNSIGNED_BYTE);
     auto& lightmap = TEXTURE_MANAGER.get_texture("lightmap");
     lightmap.bind(4);
 }

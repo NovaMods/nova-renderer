@@ -12,11 +12,11 @@ namespace nova {
         glGenTextures(1, &gl_name);
     }
 
-    void texture2D::set_data(std::vector<float> &pixel_data, glm::ivec2 &dimensions, GLenum format, GLenum type, GLenum internal_format) {
+    void texture2D::set_data(void* pixel_data, glm::ivec2 &dimensions, GLenum format, GLenum type, GLenum internal_format) {
         GLint previous_texture;
         glGetIntegerv(GL_TEXTURE_BINDING_2D, &previous_texture);
         glBindTexture(GL_TEXTURE_2D, gl_name);
-        glTexImage2D(GL_TEXTURE_2D, 0, internal_format, dimensions[0], dimensions[1], 0, format, type, pixel_data.data());
+        glTexImage2D(GL_TEXTURE_2D, 0, internal_format, dimensions.x, dimensions.y, 0, format, type, pixel_data);
 
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

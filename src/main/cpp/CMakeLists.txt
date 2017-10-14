@@ -146,7 +146,7 @@ set(NOVA_SOURCE
         utils/profiler.cpp)
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp utils/stb_image_write.h)
 endif (WIN32)
 
 if (UNIX)

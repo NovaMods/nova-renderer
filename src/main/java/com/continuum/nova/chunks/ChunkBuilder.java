@@ -125,8 +125,15 @@ public class ChunkBuilder {
                 IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
                 int colorMultiplier = blockColors.colorMultiplier(blockState, null, null, 0);
 
+                List<EnumFacing> actuallyAllValuesOfEnumFacing = new ArrayList<>();
+                Collections.addAll(actuallyAllValuesOfEnumFacing, EnumFacing.values());
+
+                // FUCK YOU NULL
+                // AND FUCK WHOEVER DECIDED THAT NULL WAS A MEMBER OF ENUMFACING
+                actuallyAllValuesOfEnumFacing.add(null);
+
                 int faceIndexCounter = 0;
-                for(EnumFacing facing : EnumFacing.values()) {
+                for(EnumFacing facing : actuallyAllValuesOfEnumFacing) {
                     List<BakedQuad> quads = blockModel.getQuads(blockState, facing, 0);
                     boolean shouldSideBeRendered = blockState.shouldSideBeRendered(world, blockPos, facing);
                     boolean hasQuads = !quads.isEmpty();
@@ -150,14 +157,6 @@ public class ChunkBuilder {
                         }
                     }
                 }
-
-                // FUCK YOU NULL
-                // Ugh this absurdly ill-informed design "decision" is making this code hell
-                //quads.addAll(blockModel.getQuads(blockState, null, 0));
-
-                //for(BakedQuad quad : quads) {
-
-               // }
 
                 blockIndexCounter += faceIndexCounter;
 

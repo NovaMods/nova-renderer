@@ -86,7 +86,7 @@ namespace nova {
          * \param format The format of the texture data
          * \param internal_format The internal format of the texture data
          */
-        void update_texture(std::string texture_name, std::vector<float> &data, glm::ivec2 &size, GLenum format, GLenum type = GL_FLOAT, GLenum internal_format = GL_RGBA);
+        void update_texture(std::string texture_name, void* data, glm::ivec2 &size, GLenum format, GLenum type = GL_FLOAT, GLenum internal_format = GL_RGBA);
 
         /*!
          * \brief Adds a texture to this resource manager

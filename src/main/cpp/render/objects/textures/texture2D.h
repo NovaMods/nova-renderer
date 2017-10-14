@@ -77,7 +77,7 @@ namespace nova {
          * \param dimensions An array of the dimensions in this texture. For a texture2D that array MUST have two elements
          * \param format The format of the texture data
          */
-        void set_data(std::vector<float> &pixel_data, glm::ivec2 &dimensions, GLenum format, GLenum type = GL_FLOAT, GLenum internal_format = GL_RGBA);
+        void set_data(void* pixel_data, glm::ivec2 &dimensions, GLenum format, GLenum type = GL_FLOAT, GLenum internal_format = GL_RGBA);
 
         void set_filtering_parameters(texture_filtering_params &params);
 

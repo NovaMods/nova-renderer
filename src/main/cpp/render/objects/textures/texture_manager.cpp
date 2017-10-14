@@ -39,7 +39,7 @@ namespace nova {
         atlases["lightmap"] = texture2D{};
     }
 
-    void texture_manager::update_texture(std::string texture_name, std::vector<float> &data, glm::ivec2 &size, GLenum format, GLenum type, GLenum internal_format) {
+    void texture_manager::update_texture(std::string texture_name, void* data, glm::ivec2 &size, GLenum format, GLenum type, GLenum internal_format) {
         auto &texture = atlases[texture_name];
         texture.set_data(data, size, format, type, internal_format);
     }
@@ -78,7 +78,7 @@ namespace nova {
                            << ", but I need a number in [1,4]";
         }
 
-        texture.set_data(pixel_data, dimensions, format);
+        texture.set_data(pixel_data.data(), dimensions, format);
 
         atlases[texture_name] = texture;
         LOG(DEBUG) << "Texture atlas " << texture_name << " is OpenGL texture " << texture.get_gl_name();

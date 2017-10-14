@@ -2207,6 +2207,9 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/profiler.h">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/stb_image_write.h">
+			<Option target="nova-renderer-obj"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/types.h">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
