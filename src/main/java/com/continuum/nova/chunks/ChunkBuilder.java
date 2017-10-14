@@ -135,10 +135,23 @@ public class ChunkBuilder {
                 int faceIndexCounter = 0;
                 for(EnumFacing facing : actuallyAllValuesOfEnumFacing) {
                     List<BakedQuad> quads = blockModel.getQuads(blockState, facing, 0);
-                    boolean shouldSideBeRendered = blockState.shouldSideBeRendered(world, blockPos, facing);
+                    boolean shouldSideBeRendered = true;
+                    if(facing != null) {
+                        // When Nova explodes and I get invited to Sweden to visit Mojang, the absolute first thing I'm
+                        // going to do it find whoever decided to use `null` rather than ADDING ANOTHER FUCKING ENUM
+                        // VALUE and I'm going to make them regret everything they've ever done
+                        shouldSideBeRendered = blockState.shouldSideBeRendered(world, blockPos, facing);
+                    }
                     boolean hasQuads = !quads.isEmpty();
                     if(shouldSideBeRendered && hasQuads) {
-                        int lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(facing));
+                        int lmCoords;
+                        if(facing == null) {
+                            // This logic would be reasonable to write and simple to maintain IF THEY HAD JUST ADDED
+                            // ANOTHER FUCKING VALUE TO THEIR STUPID FUCKING ENUM
+                            lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(EnumFacing.UP));
+                        } else {
+                            lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(facing));
+                        }
                         
                         for(BakedQuad quad : quads) {
                             if(quad.hasTintIndex()) {
