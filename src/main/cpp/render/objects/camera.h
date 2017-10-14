@@ -7,6 +7,7 @@
 #define RENDERER_CAMERA_H
 
 #include <glm/glm.hpp>
+#include "../../data_loading/physics/AABB.h"
 
 namespace nova {
     /*!
@@ -27,10 +28,16 @@ namespace nova {
 
         glm::vec3 get_view_direction();
 
+        void recalculate_frustum();
+
+        bool has_object_in_frustum(AABB& bounding_box);
+
     private:
         bool projection_matrix_is_dirty;
 
         glm::mat4 projection_matrix;
+
+        float frustum[6][4];
     };
 }
 

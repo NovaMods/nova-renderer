@@ -18,16 +18,14 @@ namespace nova {
      */
     class AABB {
     public:
+        glm::vec3 center;   //!< The local space center of this AABB
+        glm::vec3 extents;  //!< How far in each direction this AABB reaches
+
         void set_extents(glm::vec3 &new_extents);
 
         void translate(glm::vec3 &delta);
 
         void set_position(glm::vec3 &position);
-
-        // TODO: More methods
-    private:
-        glm::vec3 center;   //!< The local space center of this AABB
-        glm::vec3 extents;  //!< How far in each direction this AABB reaches
     };
 }
 

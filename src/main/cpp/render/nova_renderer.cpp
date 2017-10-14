@@ -63,6 +63,8 @@ namespace nova {
 
     void nova_renderer::render_frame() {
         profiler::log_all_profiler_data();
+        player_camera.recalculate_frustum();
+
         // Make geometry for any new chunks
         meshes->upload_new_geometry();
 
