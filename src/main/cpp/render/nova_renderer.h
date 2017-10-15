@@ -139,7 +139,7 @@ namespace nova {
 
         void enable_debug();
 
-        void init_vulkan_state() const;
+        void init_vulkan_state();
 
         void load_new_shaderpack(const std::string &new_shaderpack_name);
 

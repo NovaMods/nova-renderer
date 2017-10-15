@@ -6,6 +6,7 @@
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
 #include "../utils/profiler.h"
+#include "vulkan_instance.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -34,30 +35,10 @@ namespace nova {
         init_vulkan_state();
     }
 
-    void nova_renderer::init_vulkan_state() const {
+    void nova_renderer::init_vulkan_state() {
         LOG(DEBUG) << "Initting Vulkan state";
 
-        VkApplicationInfo app_info = {};
-        app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        app_info.pApplicationName = "Minecraft Nova Renderer";
-        app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        app_info.pEngineName = "Nova Renderer";
-        app_info.engineVersion = VK_MAKE_VERSION(0, 5, 0);
-        app_info.apiVersion = VK_API_VERSION_1_0;
-
-        VkInstanceCreateInfo create_info = {};
-        create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        create_info.pApplicationInfo = &app_info;
-
-        uint32_t glfw_extensions_count = 0;
-        create_info.ppEnabledExtensionNames = game_window->get_required_extensions(&glfw_extensions_count);
-        create_info.enabledExtensionCount = glfw_extensions_count;
-        create_info.enabledLayerCount = 0;
-
-        VkResult result = vkCreateInstance(&create_info,, nullptr, &vulkan_instance);
-        if(result != VK_SUCCESS) {
-            LOG(FATAL) << "Could not create Vulkan instance";
-        }
+       vulkan_instance = create_instance(*game_window);
 
         LOG(DEBUG) << "Vulkan state initialized";
     }

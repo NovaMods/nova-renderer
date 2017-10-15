@@ -31,7 +31,7 @@ namespace nova {
             texture_ids.push_back(tex.second.get_gl_name());
         }
 
-        glDeleteTextures((GLsizei) texture_ids.size(), texture_ids.data());
+        // glDeleteTextures((GLsizei) texture_ids.size(), texture_ids.data());
 
         atlases.clear();
         locations.clear();

@@ -160,7 +160,7 @@ namespace nova {
         glfwSetInputMode(window, GLFW_CURSOR, grabbed ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     }
 
-    const char **glfw_vk_window::get_required_extensions(uint32_t* extensions_count) const {
-        return glfwGetRequiredInstanceExtensions(extensions_count);
+    const char** glfw_vk_window::get_required_extensions(uint32_t* count) const {
+        return glfwGetRequiredInstanceExtensions(count);
     }
 }

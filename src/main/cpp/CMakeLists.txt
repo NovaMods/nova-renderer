@@ -145,7 +145,7 @@ set(NOVA_SOURCE
         utils/profiler.cpp)
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp utils/stb_image_write.h)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp utils/stb_image_write.h render/vulkan_instance.cpp render/vulkan_instance.h)
 endif (WIN32)
 
 if (UNIX)
@@ -199,4 +199,6 @@ add_custom_command(TARGET nova-renderer
                    POST_BUILD
                    COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-renderer.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives")
 endif (UNIX)
+
+message(INFO ${Vulkan_LIBRARIES})
 

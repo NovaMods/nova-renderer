@@ -69,7 +69,7 @@ namespace nova {
 
         static void setActive(bool active);
 
-        const char** get_required_extensions(uint32_t* extensions_count) const;
+        const char** get_required_extensions(uint32_t* count) const;
 
     private:
         static bool active;
