@@ -46,9 +46,9 @@ namespace nova {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        //glEnable(GL_CULL_FACE);
-        //glCullFace(GL_BACK);
-        //glFrontFace(GL_CCW);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
 
         LOG(DEBUG) << "OpenGL state initialized";
     }
@@ -68,18 +68,21 @@ namespace nova {
         // Make geometry for any new chunks
         meshes->upload_new_geometry();
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // upload shadow UBO things
 
         render_shadow_pass();
 
+        main_framebuffer->bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_gbuffer_ubos();
 
         render_gbuffers();
 
         render_composite_passes();
 
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         render_final_pass();
 
         // We want to draw the GUI on top of the other things, so we'll render it last
@@ -97,7 +100,6 @@ namespace nova {
 
     void nova_renderer::render_gbuffers() {
         LOG(TRACE) << "Rendering gbuffer pass";
-        // main_framebuffer->bind();
 
         // TODO: Get shaders with gbuffers prefix, draw transparents last, etc
         auto& terrain_shader = loaded_shaderpack->get_shader("gbuffers_terrain");
@@ -112,7 +114,6 @@ namespace nova {
 
     void nova_renderer::render_final_pass() {
         LOG(TRACE) << "Rendering final pass";
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         //meshes->get_fullscreen_quad->set_active();
         //meshes->get_fullscreen_quad->draw();
     }

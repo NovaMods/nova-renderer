@@ -17,7 +17,7 @@ namespace nova {
 
         // TODO: Set texture format
         for(unsigned int i = 0; i < num_color_attachments; i++) {
-            glTextureStorage2D(color_attachments[i], 1, GL_RGBA, width, height);
+            glTextureStorage2D(color_attachments[i], 1, GL_RGBA8, width, height);
             glNamedFramebufferTexture(framebuffer_id, GL_COLOR_ATTACHMENT0 + i, color_attachments[i], 0);
             color_attachments_map[i] = color_attachments[i];
         }
@@ -72,9 +72,7 @@ namespace nova {
         }}
 
     void framebuffer::bind() {
-        auto drawbuffers_array = std::vector<GLenum>(drawbuffers.begin(), drawbuffers.end());
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_id);
-        glDrawBuffers(drawbuffers_array.size(), drawbuffers_array.data());
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
     }
 
     void framebuffer::enable_writing_to_attachment(unsigned int attachment) {
