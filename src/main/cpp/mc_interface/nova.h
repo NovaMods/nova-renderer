@@ -23,6 +23,22 @@ NOVA_API void initialize();
  */
 
 /*!
+ * \brief Updates the lightmap texture that Nova keeps
+ *
+ * All the code in this code path, and all the code that deals with lightmaps, is Minecraft-specific and will not be
+ * useful when Nova is ported to other games. Thus, and code that touches a lightmap should be kept as decoupled from
+ * the rest of the renderer as possible
+ * 
+ * MC lightmap is BGRA
+ *
+ * \param data The lightmap data
+ * \param count The number of elements in the lightmap data
+ * \param width The width of the lightmap
+ * \param height The height of the lightmap
+ */
+NOVA_API void send_lightmap_texture(int* data, int count, int width, int height);
+
+/*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture
  *
  * Presumably you're reading this because you want to make the code better. Hopefully you know why I'd want to give a
@@ -63,22 +79,7 @@ NOVA_API void reset_texture_manager();
  *
  * \param chunk The chunk to add to Nova
  */
-NOVA_API void add_chunk(mc_chunk & chunk);
-
-/*!
- * \brief Registers a simple model with Nova
- *
- * \param model_name The string name of the model
- * \param model The geometry for the model
- */
-NOVA_API void register_simple_model(const char * model_name, mc_simple_model * model);
-
-/*!
- * \brief Removes a model from Nova
- *
- * \param model_name The name of the model to remove
- */
-NOVA_API void deregister_model(const char * model_name);
+NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object* chunk);
 
 /*!
  * \brief Updates the Nova Renderer and renders the current frame
@@ -103,7 +104,7 @@ NOVA_API bool should_close();
  */
 NOVA_API bool display_is_active();
 
-NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command);
+NOVA_API void add_gui_geometry(mc_gui_geometry * gui_geometry);
 
 /*!
 * \brief Gets the current window size
@@ -169,6 +170,10 @@ NOVA_API struct mouse_scroll_event  get_next_mouse_scroll_event();
 NOVA_API struct key_press_event  get_next_key_press_event();
 
 NOVA_API struct key_char_event  get_next_key_char_event();
+
+NOVA_API int get_num_loaded_shaders();
+
+NOVA_API char* get_shaders_and_filters();
 
 };  // End extern C
     // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.

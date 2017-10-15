@@ -26,6 +26,14 @@ public class ChunkUpdateListener implements IWorldEventListener {
             this.min = min;
             this.max = max;
         }
+
+        @Override
+        public String toString() {
+            return "BlockUpdateRange{" +
+                    "min=(" + min.x + ", " + min.y + ", " + min.z +
+                    "), max=(" + max.x + ", " + max.y + ", " + max.z +
+                    ")}";
+        }
     }
 
     private static final Logger LOG = LogManager.getLogger(ChunkUpdateListener.class);
@@ -38,7 +46,7 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void notifyBlockUpdate(World worldIn, BlockPos pos, IBlockState oldState, IBlockState newState, int flags) {
-        LOG.debug("Update block at " + pos);
+        LOG.trace("Update block at " + pos);
     }
 
     @Override
@@ -48,7 +56,7 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
-        LOG.info("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
+        // LOG.trace("Marking blocks in range ({}, {}, {}) to ({}, {}, {}) for render update", x1, y1, z1, x2, y2, z2);
         chunksToUpdate.add(new BlockUpdateRange(new Vec3i(x1, y1, z1), new Vec3i(x2, y2, z2)));
     }
 

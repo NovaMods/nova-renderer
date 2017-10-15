@@ -8,18 +8,21 @@
 
 #include <easylogging++.h>
 #include "gl_shader_program.h"
-#include "../../../data_loading/loaders/geometry_filter_loading.h"
 
 namespace nova {
     gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {
-        filter = parse_filter_expression(source.filter_expression);
+        LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
+        filter = source.filter_expression;
+        LOG(TRACE) << "Created filter expression " << filter;
         create_shader(source.vertex_source, GL_VERTEX_SHADER);
+        LOG(TRACE) << "Creatd vertex shader";
         create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
+        LOG(TRACE) << "Created fragment shader";
 
         link();
     }
 
-    gl_shader_program::gl_shader_program(gl_shader_program &&other) :
+    gl_shader_program::gl_shader_program(gl_shader_program &&other) noexcept :
             name(std::move(other.name)), filter(std::move(other.filter)) {
 
         this->gl_name = other.gl_name;
@@ -48,9 +51,11 @@ namespace nova {
             glDetachShader(gl_name, shader);
             glDeleteShader(shader);
         }
+
+        LOG(DEBUG) << "Cleaned up resources";
     }
 
-    void gl_shader_program::check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line> line_map) {
+    void gl_shader_program::check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line>& line_map) {
         GLint success = 0;
 
         glGetShaderiv(shader_to_check, GL_COMPILE_STATUS, &success);
@@ -103,11 +108,12 @@ namespace nova {
         //glDeleteProgram(gl_name);
     }
 
-    void gl_shader_program::create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type) {
-        // Check what kind of shader we're dealing with
+    void gl_shader_program::create_shader(const std::vector<shader_line>& shader_source, const GLenum shader_type) {
+        LOG(TRACE) << "Creating a shader from source\n" << shader_source;
 
         std::string full_shader_source;
-        auto version_line = shader_source[0].line;
+        auto& version_line = shader_source[0].line;
+        LOG(TRACE) << "Version line: '" << version_line << "'";
 
         if(version_line == "#version 450") {
             // GLSL 450 code! This is the simplest: just concatenate all the lines in the shader file
@@ -124,7 +130,7 @@ namespace nova {
 
         const char *shader_source_char = full_shader_source.c_str();
 
-        glShaderSource(shader_name, 1, &shader_source_char, NULL);
+        glShaderSource(shader_name, 1, &shader_source_char, nullptr);
 
         glCompileShader(shader_name);
 
@@ -133,7 +139,7 @@ namespace nova {
         added_shaders.push_back(shader_name);
     }
 
-    std::shared_ptr<igeometry_filter> gl_shader_program::get_filter() const noexcept {
+    std::string & gl_shader_program::get_filter() noexcept {
         return filter;
     }
 
@@ -152,8 +158,7 @@ namespace nova {
 
     wrong_shader_version::wrong_shader_version(const std::string &version_line) :
             std::runtime_error(
-                    "Invalid version line: " + version_line +
-                    ". Please only use GLSL version 450 (NOT compatibility profile)"
+                    "Invalid version line: '" + version_line + "'. Please only use GLSL version 450 (NOT compatibility profile)"
             ) {}
 
     compilation_error::compilation_error(const std::string &error_message,

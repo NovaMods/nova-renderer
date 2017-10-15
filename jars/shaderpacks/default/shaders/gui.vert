@@ -60,8 +60,8 @@ out vec2 uv;
 out vec4 color;
 
 void main() {
-	gl_Position = gbufferModel * vec4(position_in, 1.0f);
+    gl_Position = gbufferModel * vec4(position_in, 1.0f);
 
-	uv = uv_in;
-	color = color_in;
+    uv = uv_in;
+    color = color_in;
 }

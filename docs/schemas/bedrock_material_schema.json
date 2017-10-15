@@ -12,8 +12,8 @@
                 },
                 "samplerStates": {
                     "type": "array",
-                    "items":{
-                        "type": "samplerState"
+                    "items":{ 
+                        "ref": "#/definitions/samplerState"
                     },
                     "description": "This array defines all the sampler states to be used for this state. The available data only defines texture filtering, but there may be more that's possible and just isn't available"
                 },
@@ -21,8 +21,9 @@
                     "type": "array",
                     "items": {
                         "type": "string",
-                        "enum": ["Blending", "InvertCulling", "DisableCulling", "DisableDepthWrite", "EnableStencilTest", "StencilWrite", "DisableColorWrite"]
-                    }
+                        "enum": ["Blending", "InvertCulling", "DisableCulling", "DisableDepthWrite", "EnableStencilTest", "StencilWrite", "DisableColorWrite", "EnableAlphaToCoverage"]
+                    },
+                    "description": "The renderer states that need to be active when rendring this state"
                 },
                 "depthBias": {
                     "type": "number",
@@ -54,7 +55,7 @@
                 "vertexFields": {
                     "type": "array",
                     "items":{
-                        "type": "vertexField"
+                        "ref": "#/definitions/vertexField"
                     },
                     "description": "Declares what vertex data this state's shaders use, and what order the vertex attributes should be passed in"
                 },
@@ -64,7 +65,7 @@
                     "properties": {
                         "stencilFunc": {
                             "type": "string",
-                            "enum": ["Always", "Never", "Less", "LessOrEqual", "GreaterOrEqual", "Equal"],
+                            "enum": ["Always", "Never", "Less", "LessEqual", "GreaterEqual", "Equal", "Replace", "NotEqual"],
                             "description": "What stencil function to use for the front faces in this state"
                         },
                         "stencilFailOp": {
@@ -90,7 +91,7 @@
                     "properties": {
                         "stencilFunc": {
                             "type": "string",
-                            "enum": ["Always", "Never", "Less", "LessOrEqual", "GreaterOrEqual", "Equal"],
+                            "enum": ["Always", "Never", "Less", "LessEqual", "GreaterEqual", "Equal", "Replace", "NotEqual"],
                             "description": "What stencil function to use for the back faces in this state"
                         },
                         "stencilFailOp": {
@@ -122,10 +123,47 @@
                     "type": "number",
                     "description": "The mask to use when writing values to the stencil buffer"
                 },
-
                 "msaaSupport": {
                     "type": "string",
-                    "enum": ["MSAA", "Both"]
+                    "enum": ["MSAA", "Both"],
+                    "description": "Tells Bedrock how to handle MSAA for this rendering object"
+                },
+                "primitiveMode": {
+                    "type": "string",
+                    "enum": ["Line", "Triangle"],
+                    "description": "Tells Bedrock what type of geometry should be rendered in this state. Triangle is the default value"
+                },
+                "blendSrc": {
+                    "type": "string",
+                    "enum": ["SourceColor", "Zero", "One", "SourceAlpha", "OneMinusSourceAlpha", "DestColor", "OneMinusDstColor"],
+                    "description": "How to interpret the source data when performing blending"
+                },
+                "blendDst": {
+                    "type": "string",
+                    "enum": ["SourceColor", "Zero", "One", "SourceAlpha", "OneMinusSourceAlpha", "DestColor", "OneMinusDestColor"],
+                    "description": "How to interpret the destination data when blending"
+                },
+                "textures": {
+                    "type": "array",
+                    "items": {
+                        "ref": "#/definitions/texture"
+                    },
+                    "description": "What textures this state needs enabled"
+                },
+                "alphaSrc": {
+                    "type": "string",
+                    "enum": ["One", "Zero", "DestColor"],
+                    "description": "How the source alpha should be interpreted"
+                },
+                "alphaDst": {
+                    "type": "string",
+                    "enum": ["Zero", "One", "DestColor"],
+                    "description": "Hoe the destination alpha should be interpreted"
+                },
+                "depthFunc": {
+                    "type": "string",
+                    "enum": ["Equal", "Always", "LessEqual"],
+                    "description": "The depth function to use for this state"
                 }
             }
         },
@@ -140,6 +178,11 @@
                     "type": "string",
                     "enum": ["TexelAA", "Bilinear", "Point" ],
                     "description": "The type of texture filter to use for this sampler"
+                },
+                "textureWrap": {
+                    "type": "string",
+                    "enum": ["Repeat", "Clamp"],
+                    "description": "What to do when the UV coordinates are greater than 1 or less than 0"
                 }
             }
         },
@@ -150,6 +193,24 @@
                     "type": "string",
                     "enum": ["Position", "UV0", "UV1", "Color", "Normal"],
                     "description": "Declares which vertex field this object refers to"
+                }
+            }
+        },
+        "texture": {
+            "type": "object",
+            "properties": {
+                "textureIndex": {
+                    "type": "number",
+                    "description": "The index of this texture. Textures in shaders have a name in the format of `TEXTURE_#`, where # is the index of the texture. Thus, the texture with an index of 0 would be calles `TEXTURE_0` in a shader, a texture with an index of 5 would be called `TEXTURE_5` in a shader, etc."
+                },
+                "textureLocation": {
+                    "type": "string",
+                    "enum": ["InUserPackage", "Dynamic"],
+                    "description": "Where this texture should come from. `InUserPackage` means it comes from a resourcepack, `Dynamic` means it's generated by Minecraft at runtime"
+                },
+                "textureName": {
+                    "type": "string",
+                    "description": "The name of the texture to use. This value can be a specific texture in a resourcepack (something like `textures/misc/enchanted_item_glint`), or it can refer to an atlas (like `atlas.terrain`). A couple atlases:\n\n * `atlas.terrain`: The atlas of all the block textures\n * `atlas.items`: The atlas of all the item textures\n\nSome dynamic textures:\n\n * Brightness\n\n * SeasonFoliage"
                 }
             }
         }

@@ -10,10 +10,10 @@
 #include <sstream>
 #include <json.hpp>
 
-bool mc_block::is_emissive() const {
+bool mc_block_definition::is_emissive() const {
     return light_value > 0;
 }
 
-bool mc_block::is_transparent() const {
+bool mc_block_definition::is_transparent() const {
     return is_opaque == 0;
 }

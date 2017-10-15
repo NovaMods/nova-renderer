@@ -18,7 +18,6 @@
 #include <optional.hpp>
 
 #include "gl_shader_program.h"
-#include "geometry_filter.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
 
 namespace nova {

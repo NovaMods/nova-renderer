@@ -46,6 +46,7 @@ private:                                                            \
     int value;                                                      \
 public:                                                             \
     operator int () const { return value; }                         \
+    int get_value() const { return value; }                         \
     std::string to_string(void) const {                             \
             return to_string(value);                                \
     }                                                               \
@@ -76,6 +77,11 @@ public:                                                             \
         return x;                                                   \
     }                                                               \
     bool operator<(const EnumName a) const { return (int)*this < (int)a; } \
+                                                                    \
+    class Hasher {                                                  \
+    public:                                                         \
+        std::size_t operator()(EnumName t) const { return t.get_value(); }; \
+    };                                                              \
 };
 
 #endif //RENDERER_SMART_ENUM_H

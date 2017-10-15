@@ -7,52 +7,80 @@
  * build the installer
  */
 
-apply plugin: 'java'
+plugins {
+    id "de.undercouch.download" version "3.2.0"
+    id 'java'
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+apply from: 'setup.gradle'
+
+ext {
+    Download = de.undercouch.gradle.tasks.download.Download
+    download = download
+}
 
 // Set Nova's settings
 sourceCompatibility = 1.8
-version = '0.3'
+version = '0.4.3'
 jar {
     manifest {
         attributes 'Implementation-Title': 'Nova Renderer',
                    'Implementation-Version': version,
                    'Main-Class': 'Start'
+    }	
+}
+
+task invokeCMake(type: Exec) {
+    if(hasGCC()) {
+        if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+            println 'Configuring for MinGW'
+            commandLine 'cmake', '-G', 'MinGW Makefiles'
+        } else {
+            println 'Configuring for GCC'
+            commandLine 'cmake', '-G', 'Unix Makefiles'
+        }
+    } else if(hasMSVC()) {
+        if(System.properties['sun.arch.data.model'].toString().contains("64")) {
+            println 'Configuring for MSVC 64-bit'
+            commandLine 'cmake', '-G', 'Visual Studio 15 2017 Win64'
+        } else {
+            println 'Configuring for MSVC 32-bit'
+            commandLine 'cmake', '-G', 'Visual Studio 15'
+        }
+    } else {
+        println 'No suitable compiler found'
     }
-    //from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-	
+    workingDir 'src/main/cpp'
 }
 
-task createJars(type: Jar) {
-	
-	archiveName = "nova-renderer-"+ version +"-natives-windows.jar"
-	from 'jars/versions/1.10/1.10-natives/libnova-renderer.dll'
-}
-
-task fatjar(type: Jar) {
-    manifest {
-        attributes 'Implementation-Title': 'Nova Renderer',
-                   'Implementation-Version': version,
-                   'Main-Class': 'Start'
+task buildDll(type: Exec, dependsOn: invokeCMake) {
+    if(hasGCC()) {
+        if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+            commandLine 'mingw32-make', '-f', 'Makefile', 'nova-renderer'
+        } else {
+            commandLine 'make', '-F', 'Makefile', 'nova-renderer'
+        }
+    } else if(hasMSVC()) {
+        commandLine 'msbuild', '/t:Build', '/m', 'nova-renderer.vcxproj'
+    } else {
+        println 'No suitable compiler found'
     }
-    archiveName = "1.10-Nova.jar"
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+    workingDir 'src/main/cpp'
 }
 
-task buildDll(type: Exec) {
-    commandLine 'powershell', '-file', 'nova.ps1', '-build', '-nativeOnly'
+task printProps << {
+    println System.properties['os.arch']
+    println System.properties['sun.arch.data.model']
+
 }
 
-task runNova(type: JavaExec) {
+task runNova(type: JavaExec, dependsOn: ['buildDll', 'build']) << {
     dependsOn buildDll
     classpath = sourceSets.main.runtimeClasspath
-    main = "Start"
+    main = 'Start'
     jvmArgs = ["-Djava.library.path=versions/1.10/1.10-natives"]
     workingDir = "jars"
-}
-
-task showMeCache << {
-    configurations.compile.each { println it }
 }
 
 // Set the source directory
@@ -79,7 +107,7 @@ dependencies {
     compile group: 'org.ow2.asm', name: 'asm', version: '5.1'
 
     // JNA, for calling the C++ code
-    compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
+    // compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
     
     compile group: 'io.github.java-graphics', name: 'glm', version: '1.0.1'
 

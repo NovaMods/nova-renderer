@@ -8,39 +8,16 @@
 #include <algorithm>
 #include <easylogging++.h>
 #include <regex>
+#include <iomanip>
 #include "mesh_store.h"
 #include "../../../render/nova_renderer.h"
-#include "builders/chunk_builder.h"
-#include "../utils/io.h"
 
 namespace nova {
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
         return renderables_grouped_by_shader[shader_name];
     }
 
-    void print_buffers(std::string texture_name, std::vector<float>& vertex_buffer, std::vector<unsigned int>& index_buffer) {
-        // debug
-        LOG(DEBUG) << "texture name: " << texture_name << std::endl;
-        LOG(DEBUG) << "new buffers:" << std::endl;
-        for(int i = 0; i + 7 < vertex_buffer.size(); i += 8) {
-            std::ostringstream ss;
-            ss << "  vertex ";
-            for(int k = 0; k < 8; k++) {
-                ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(12) << std::fixed << std::setprecision(5) << vertex_buffer[i + k] << "  ";
-            }
-            LOG(DEBUG) << ss.str();
-        }
-        for(int i = 0; i + 2 < index_buffer.size(); i += 3) {
-            std::ostringstream ss;
-            ss << "  index ";
-            for(int k = 0; k < 3; k++) {
-                ss << std::setfill(' ') << std::setw(4) << i + k << " = " << std::setfill(' ') << std::setw(8) << index_buffer[i + k] << "  ";
-            }
-            LOG(DEBUG) << ss.str();
-        }
-    }
-
-    void mesh_store::add_gui_buffers(mc_gui_send_buffer_command* command) {
+    void mesh_store::add_gui_buffers(mc_gui_geometry* command) {
         std::string texture_name(command->texture_name);
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
@@ -48,131 +25,106 @@ namespace nova {
         const texture_manager::texture_location tex_location = nova_renderer::instance->get_texture_manager().get_texture_location(texture_name);
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
-        std::vector<float> vertex_buffer(command->vertex_buffer_size);
+        mesh_definition cur_screen_buffer = {};
+        cur_screen_buffer.vertex_data.resize(static_cast<unsigned long>(command->vertex_buffer_size), 0);
         for (int i = 0; i + 8 < command->vertex_buffer_size; i += 9) {
-            vertex_buffer[i]   = command->vertex_buffer[i];
-            vertex_buffer[i+1] = command->vertex_buffer[i+1];
-            vertex_buffer[i+2] = command->vertex_buffer[i+2];
-            vertex_buffer[i+3] = command->vertex_buffer[i+3] * tex_size.x + tex_location.min.x;
-            vertex_buffer[i+4] = command->vertex_buffer[i+4] * tex_size.y + tex_location.min.y;
-            vertex_buffer[i+5] = command->vertex_buffer[i+5];
-            vertex_buffer[i+6] = command->vertex_buffer[i+6];
-            vertex_buffer[i+7] = command->vertex_buffer[i+7];
-            vertex_buffer[i+8] = command->vertex_buffer[i+8];
+            cur_screen_buffer.vertex_data[i]   = *reinterpret_cast<int*>(&command->vertex_buffer[i]);
+            cur_screen_buffer.vertex_data[i+1] = *reinterpret_cast<int*>(&command->vertex_buffer[i+1]);
+            cur_screen_buffer.vertex_data[i+2] = *reinterpret_cast<int*>(&command->vertex_buffer[i+2]);
+            float u = command->vertex_buffer[i+3] * tex_size.x + tex_location.min.x;
+            cur_screen_buffer.vertex_data[i+3] = *reinterpret_cast<int*>(&u);
+            float v = command->vertex_buffer[i+4] * tex_size.y + tex_location.min.y;
+            cur_screen_buffer.vertex_data[i+4] = *reinterpret_cast<int*>(&v);
+            cur_screen_buffer.vertex_data[i+5] = *reinterpret_cast<int*>(&command->vertex_buffer[i+5]);
+            cur_screen_buffer.vertex_data[i+6] = *reinterpret_cast<int*>(&command->vertex_buffer[i+6]);
+            cur_screen_buffer.vertex_data[i+7] = *reinterpret_cast<int*>(&command->vertex_buffer[i+7]);
+            cur_screen_buffer.vertex_data[i+8] = *reinterpret_cast<int*>(&command->vertex_buffer[i+8]);
         }
-        std::vector<unsigned int> index_buffer(command->index_buffer_size);
+        cur_screen_buffer.indices.resize(static_cast<unsigned long>(command->index_buffer_size), 0);
         for(int i = 0; i < command->index_buffer_size; i++) {
-            index_buffer[i] = (unsigned int)command->index_buffer[i];
+            cur_screen_buffer.indices[i] = (unsigned int)command->index_buffer[i];
         }
 
-        // debug
-        //print_buffers(texture_name, vertex_buffer, index_buffer);
-
-        mesh_definition cur_screen_buffer;
-        cur_screen_buffer.vertex_data = vertex_buffer;
-        cur_screen_buffer.indices = index_buffer;
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
         render_object gui = {};
-        gui.geometry.reset(new gl_mesh(cur_screen_buffer));
+        gui.geometry = std::make_unique<gl_mesh>(cur_screen_buffer);
         gui.type = geometry_type::gui;
         gui.name = "gui";
-        gui.is_solid = true;
         gui.color_texture = command->atlas_name;
 
-        sort_render_object(gui);
+        // TODO: Something more intelligent
+        renderables_grouped_by_shader["gui"].push_back(std::move(gui));
     }
 
     void mesh_store::remove_gui_render_objects() {
-        for(auto& group : renderables_grouped_by_shader) {
-            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(),
-                                                   [](auto& render_obj) {return render_obj.type == geometry_type::gui;});
-            group.second.erase(removed_elements, group.second.end());
-        }
-    }
-
-    void mesh_store::sort_render_object(render_object& object) {
-        auto& all_shaders = shaders->get_loaded_shaders();
-        for(auto& entry : all_shaders) {
-            auto filter = entry.second.get_filter();
-            if(filter->matches(object)) {
-                renderables_grouped_by_shader[entry.first].push_back(std::move(object));
-            }
-        }
+        remove_render_objects([](auto& render_obj) {return render_obj.type == geometry_type::gui;});
     }
 
     void mesh_store::remove_render_objects(std::function<bool(render_object&)> filter) {
         for(auto& group : renderables_grouped_by_shader) {
-            std::remove_if(group.second.begin(), group.second.end(), filter);
+            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), filter);
+            group.second.erase(removed_elements, group.second.end());
         }
     }
 
-    void mesh_store::set_shaderpack(std::shared_ptr<shaderpack> new_shaderpack) {
-        shaders = new_shaderpack;
-
-        renderables_grouped_by_shader.clear();
-        LOG(INFO) << "Rebuilding chunk geometry to fit new shaderpack";
-        for(auto& chunk : all_chunks) {
-            add_or_update_chunk(chunk);
-        }
-        LOG(INFO) << "Rebuild complete";
-    }
-
-    void mesh_store::add_or_update_chunk(mc_chunk &chunk) {
-        all_chunks_lock.lock();
-        chunk.needs_update = true;
-        all_chunks.push_back(chunk);
-        int chunk_id = chunk.chunk_id;
-        remove_render_objects([chunk_id](render_object& obj) {return obj.parent_id == chunk_id;});
-        all_chunks_lock.unlock();
-
-        for(const auto& shader_entry : shaders->get_loaded_shaders()) {
-            auto blocks_for_shader = get_blocks_that_match_filter(chunk, shader_entry.second.get_filter());
-            if(blocks_for_shader.size() == 0) {
-                continue;
-            }
-
-            auto block_mesh_definition = make_mesh_for_blocks(blocks_for_shader, chunk);
-            chunk_parts_to_upload_lock.lock();
-            chunk_parts_to_upload.emplace(shader_entry.first, block_mesh_definition);
-            chunk_parts_to_upload_lock.unlock();
-        }
-    }
-
-    void mesh_store::register_model(std::string model_name, mc_simple_model &mc_model) {
-        mesh_definition model = make_mesh_from_mc_model(mc_model);
-
-		simple_models[model_name] = model;
-    }
-
-    mesh_definition mesh_store::make_mesh_from_mc_model(mc_simple_model &model) {
-        mesh_definition mesh;
-        // TODO: This method needs to happen
-        return mesh;
-    }
-
-    void mesh_store::deregister_model(std::string model_name) {
-        simple_models.erase(model_name);
-    }
-
-    void mesh_store::generate_needed_chunk_geometry() {
-        bool has_thing_to_upload = false;
-        std::tuple<std::string, mesh_definition> definition_to_upload;
+    void mesh_store::upload_new_geometry() {
         chunk_parts_to_upload_lock.lock();
-        if(!chunk_parts_to_upload.empty()) {
-            definition_to_upload = std::move(chunk_parts_to_upload.front());
+        while(!chunk_parts_to_upload.empty()) {
+            const auto& entry = chunk_parts_to_upload.front();
+            const auto& def = std::get<1>(entry);
+
+            render_object obj = {};
+            obj.geometry = std::make_unique<gl_mesh>(def);
+            obj.type = geometry_type::block;
+            obj.name = "chunk";
+            obj.parent_id = def.id;
+            obj.color_texture = "block_color";
+            obj.position = def.position;
+            obj.bounding_box.center = def.position;
+            obj.bounding_box.center.y = 128;
+            obj.bounding_box.extents = {16, 128, 16};   // TODO: Make these values come from Minecraft
+
+            const std::string& shader_name = std::get<0>(entry);
+            renderables_grouped_by_shader[shader_name].push_back(std::move(obj));
+
             chunk_parts_to_upload.pop();
-            has_thing_to_upload = true;
         }
         chunk_parts_to_upload_lock.unlock();
+    }
 
-        if(has_thing_to_upload) {
-            auto chunk_part_render_object = render_object{};
-            chunk_part_render_object.geometry = std::make_unique<gl_mesh>(std::get<1>(definition_to_upload));
-            chunk_part_render_object.position = std::get<1>(definition_to_upload).position;
-            chunk_part_render_object.color_texture = "block_color";
+    void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
+        mesh_definition def = {};
+        auto& vertex_data = def.vertex_data;
 
-            renderables_grouped_by_shader[std::get<0>(definition_to_upload)].push_back(std::move(chunk_part_render_object));
+        for(int i = 0; i < chunk.vertex_buffer_size; i++) {
+            vertex_data.push_back(chunk.vertex_data[i]);
+
+            if(i % 7 == 6) {
+                // Add 0s for the normals and tangets since we don't compute those yet
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+                vertex_data.push_back(0);
+            }
         }
+
+        for(int i = 0; i < chunk.index_buffer_size; i++) {
+            def.indices.push_back(chunk.indices[i]);
+        }
+
+        def.vertex_format = format::all_values()[chunk.format];
+        def.position = {chunk.x, chunk.y, chunk.z};
+        def.id = chunk.id;
+
+        chunk_parts_to_upload_lock.lock();
+        chunk_parts_to_upload.emplace(filter_name, def);
+        chunk_parts_to_upload_lock.unlock();
+    }
+
+    void mesh_store::remove_render_objects_with_parent(long parent_id) {
+        remove_render_objects([&](render_object& obj) { return obj.parent_id == parent_id; });
     }
 }

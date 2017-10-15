@@ -35,6 +35,13 @@ namespace nova {
 
         atlases.clear();
         locations.clear();
+
+        atlases["lightmap"] = texture2D{};
+    }
+
+    void texture_manager::update_texture(std::string texture_name, void* data, glm::ivec2 &size, GLenum format, GLenum type, GLenum internal_format) {
+        auto &texture = atlases[texture_name];
+        texture.set_data(data, size, format, type, internal_format);
     }
 
     void texture_manager::add_texture(mc_atlas_texture &new_texture) {
@@ -49,7 +56,7 @@ namespace nova {
             pixel_data[i] = float(new_texture.texture_data[i]) / 255.0f;
         }
 
-        std::vector<int> dimensions = {new_texture.width, new_texture.height};
+        auto dimensions = glm::ivec2{new_texture.width, new_texture.height};
 
         GLenum format = GL_RGB;
         switch(new_texture.num_components) {
@@ -71,7 +78,7 @@ namespace nova {
                            << ", but I need a number in [1,4]";
         }
 
-        texture.set_data(pixel_data, dimensions, format);
+        texture.set_data(pixel_data.data(), dimensions, format);
 
         atlases[texture_name] = texture;
         LOG(DEBUG) << "Texture atlas " << texture_name << " is OpenGL texture " << texture.get_gl_name();

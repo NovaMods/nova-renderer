@@ -22,39 +22,39 @@ namespace nova {
             auto shader_path = "shaderpacks/default/shaders/gui.frag";
             auto shader_stream = std::ifstream(shader_path);
         
-            ASSERT_EQ(shader_stream.good(), true);
+            ASSERT_TRUE(shader_stream.good());
         
             auto shader_file = nova::read_shader_stream(shader_stream, shader_path);
         
             // Did we read in the right number of lines?
-            EXPECT_EQ(shader_file.size(), 30);
+            EXPECT_EQ(shader_file.size(), 70);
         
             // Do the lines we read in make sense? Let's grab a couple and see what's up
             auto line_5 = shader_file[4];
             EXPECT_EQ(line_5.line_num, 5);
             EXPECT_EQ(line_5.shader_name, shader_path);
-            EXPECT_EQ(line_5.line, "layout(std140) uniform gui_uniforms {");
+            EXPECT_EQ(line_5.line, "layout(std140) uniform per_frame_uniforms {");
         }
         
         TEST(shader_loading, read_shader_stream_includes) {
             auto shader_path = "shaderpacks/default/shaders/gui_with_include.frag";
             auto shader_stream = std::ifstream(shader_path);
         
-            ASSERT_EQ(shader_stream.good(), true);
+            ASSERT_TRUE(shader_stream.good());
         
             auto shader_file = nova::read_shader_stream(shader_stream, shader_path);
         
-            EXPECT_EQ(shader_file.size(), 44);
+            EXPECT_EQ(shader_file.size(), 84);
         
             auto line_5 = shader_file[4];
             EXPECT_EQ(line_5.line_num, 3);
             EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
             EXPECT_EQ(line_5.line, "layout(binding = 0) uniform sampler2D colortex;");
         
-            auto line_33 = shader_file[33];
-            EXPECT_EQ(line_33.line_num, 5);
-            EXPECT_EQ(line_33.shader_name, shader_path);
-            EXPECT_EQ(line_33.line, "layout(binding = 0) uniform sampler2D colortex;");
+            auto line_83 = shader_file[82];
+            EXPECT_EQ(line_83.line_num, 14);
+            EXPECT_EQ(line_83.shader_name, shader_path);
+            EXPECT_EQ(line_83.line, "    color = vec3(1, 0, 1);");
         }
         
         TEST(shader_loading, get_filename_from_include_relative) {
@@ -79,12 +79,12 @@ namespace nova {
         
             auto shader_file = nova::load_included_file(shader_path, include_line);
         
-            EXPECT_EQ(shader_file.size(), 30);
+            EXPECT_EQ(shader_file.size(), 70);
         
             auto line_5 = shader_file[4];
             EXPECT_EQ(line_5.line_num, 5);
             EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
-            EXPECT_EQ(line_5.line, "layout(std140) uniform gui_uniforms {");
+            EXPECT_EQ(line_5.line, "layout(std140) uniform per_frame_uniforms {");
         }
         
         TEST(shader_loading, load_shader_file_no_includes_no_extensions) {
@@ -100,12 +100,12 @@ namespace nova {
         
             auto shader_file = nova::load_shader_file(shader_path, extensions);
         
-            EXPECT_EQ(shader_file.size(), 30);
+            EXPECT_EQ(shader_file.size(), 70);
         
             auto line_5 = shader_file[4];
             EXPECT_EQ(line_5.line_num, 5);
             EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
-            EXPECT_EQ(line_5.line, "layout(std140) uniform gui_uniforms {");
+            EXPECT_EQ(line_5.line, "layout(std140) uniform per_frame_uniforms {");
         }
         
         TEST(shader_loading, load_shader_file_no_includes_two_extensions) {
@@ -114,12 +114,12 @@ namespace nova {
         
             auto shader_file = nova::load_shader_file(shader_path, extensions);
         
-            EXPECT_EQ(shader_file.size(), 30);
+            EXPECT_EQ(shader_file.size(), 70);
         
             auto line_5 = shader_file[4];
             EXPECT_EQ(line_5.line_num, 5);
             EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
-            EXPECT_EQ(line_5.line, "layout(std140) uniform gui_uniforms {");
+            EXPECT_EQ(line_5.line, "layout(std140) uniform per_frame_uniforms {");
         }
         
         TEST(shader_loading, load_shader_file_one_include_one_extension) {
@@ -128,17 +128,17 @@ namespace nova {
         
             auto shader_file = nova::load_shader_file(shader_path, extensions);
         
-            EXPECT_EQ(shader_file.size(), 44);
+            EXPECT_EQ(shader_file.size(), 84);
         
             auto line_5 = shader_file[4];
             EXPECT_EQ(line_5.line_num, 3);
             EXPECT_EQ(line_5.shader_name, "shaderpacks/default/shaders/gui.frag");
             EXPECT_EQ(line_5.line, "layout(binding = 0) uniform sampler2D colortex;");
         
-            auto line_33 = shader_file[33];
-            EXPECT_EQ(line_33.line_num, 5);
+            auto line_33 = shader_file[82];
+            EXPECT_EQ(line_33.line_num, 14);
             EXPECT_EQ(line_33.shader_name, "shaderpacks/default/shaders/gui_with_include.frag");
-            EXPECT_EQ(line_33.line, "layout(binding = 0) uniform sampler2D colortex;");
+            EXPECT_EQ(line_33.line, "    color = vec3(1, 0, 1);");
         }
         
         TEST(shader_loading, load_sources_from_folder) {

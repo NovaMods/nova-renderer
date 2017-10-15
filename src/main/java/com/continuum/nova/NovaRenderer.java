@@ -1,55 +1,52 @@
 package com.continuum.nova;
 
 import com.continuum.nova.NovaNative.window_size;
+import com.continuum.nova.chunks.ChunkBuilder;
 import com.continuum.nova.chunks.ChunkUpdateListener;
+import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.gui.NovaDraw;
+import com.continuum.nova.utils.Profiler;
 import com.continuum.nova.utils.Utils;
 import glm.Glm;
 import glm.vec._2.Vec2;
-import glm.vec._3.Vec3;
 import glm.vec._3.i.Vec3i;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.SimpleBakedModel;
+import net.minecraft.client.renderer.BlockModelShapes;
+import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.renderer.color.BlockColors;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+
+import static com.continuum.nova.NovaConstants.*;
+import static com.continuum.nova.utils.Utils.getImageData;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
-    public static final String MODID = "Nova Renderer";
-    public static final String VERSION = "0.0.3";
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
-    public static final ResourceLocation WHITE_TEXTURE_GUI_LOCATION = new ResourceLocation("white_gui");
+    private BlockModelShapes shapes;
 
     private boolean firstLoad = true;
 
@@ -78,12 +75,13 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private ChunkUpdateListener chunkUpdateListener;
 
     private PriorityQueue<ChunkUpdateListener.BlockUpdateRange> chunksToUpdate;
+    private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
     private World world;
 
-    private AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
-    private AtomicInteger numChunksUpdated = new AtomicInteger(0);
-    private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(10);
+    final private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(10);
 
+    private ChunkBuilder chunkBuilder;
+    private HashMap<String, IGeometryFilter> filterMap;
 
     public NovaRenderer() {
         // I put these in Utils to make this class smaller
@@ -106,6 +104,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         addGuiAtlas(resourceManager);
         addFontAtlas(resourceManager);
         addFreeTextures(resourceManager);
+        addLightmap(resourceManager);
+    }
+
+    private void addLightmap(IResourceManager resourceManager) {
+        // TODO: Send the lightmap to the native code, possibly through a special method that binds it to its location
+        // immediately
     }
 
     /**
@@ -132,19 +136,19 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
         guiAtlas.createWhiteTexture(WHITE_TEXTURE_GUI_LOCATION);
-        addAtlas(resourceManager, guiAtlas, GUI_COLOR_TEXTURES_LOCATIONS, guiSpriteLocations, NovaNative.GUI_ATLAS_NAME);
+        addAtlas(resourceManager, guiAtlas, GUI_COLOR_TEXTURES_LOCATIONS, guiSpriteLocations, GUI_ATLAS_NAME);
         LOG.debug("Created GUI atlas");
     }
 
     private void addFontAtlas(@Nonnull IResourceManager resourceManager) {
-        addAtlas(resourceManager, fontAtlas, FONT_COLOR_TEXTURES_LOCATIONS, fontSpriteLocations, NovaNative.FONT_ATLAS_NAME);
+        addAtlas(resourceManager, fontAtlas, FONT_COLOR_TEXTURES_LOCATIONS, fontSpriteLocations, FONT_ATLAS_NAME);
         LOG.debug("Created font atlas");
     }
 
-    public void addTerrainAtlas(TextureMap blockColorMap) {
+    public void addTerrainAtlas(@Nonnull TextureMap blockColorMap) {
         // Copy over the atlas
         NovaNative.mc_atlas_texture blockColorTexture = getFullImage(blockColorMap.getWidth(), blockColorMap.getHeight(), blockColorMap.getMapUploadedSprites().values());
-        blockColorTexture.name = NovaNative.BLOCK_COLOR_ATLAS_NAME;
+        blockColorTexture.name = BLOCK_COLOR_ATLAS_NAME;
         NovaNative.INSTANCE.add_texture(blockColorTexture);
 
         // Copy over all the icon locations
@@ -228,28 +232,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         );
     }
 
-    private byte[] getImageData(BufferedImage image) {
-
-        byte[] convertedImageData = new byte[image.getWidth()*image.getHeight()*4];
-            int counter = 0;
-            for (int y = 0; y < image.getHeight(); y ++) {
-                    for (int x = 0;x<image.getWidth();x++) {
-
-                        Color c = new Color(image.getRGB(x,y),image.getColorModel().hasAlpha());
-
-                        convertedImageData[counter] =(byte) (c.getRed());
-                        convertedImageData[counter + 1] = (byte)(c.getGreen());
-                        convertedImageData[counter + 2] = (byte)(c.getBlue());
-                        convertedImageData[counter + 3] = (byte) (image.getColorModel().getNumComponents() == 3 ? 255 : c.getAlpha());
-                        counter+=4;
-                    }
-            }
-            return convertedImageData;
-
-
-
-    }
-
     public void preInit() {
         System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
@@ -272,13 +254,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             float range1DistToPlayer = new Vec2().distance(new Vec2(range1Center.x, range1Center.z), playerPos);
             float range2DistToPlayer = new Vec2().distance(new Vec2(range2Center.x, range2Center.z), playerPos);
 
-            if(range1DistToPlayer < range2DistToPlayer) {
-                return -1;
-            } else if(range1DistToPlayer > range2DistToPlayer) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return Float.compare(range1DistToPlayer, range2DistToPlayer);
         });
         chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
     }
@@ -314,17 +290,38 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             mc.shutdown();
         }
 
+        EntityRenderer entityRenderer = Minecraft.getMinecraft().entityRenderer;
+
+        boolean shouldUpdateLightmap = entityRenderer.isLightmapUpdateNeeded();
+        entityRenderer.updateLightmap(renderPartialTicks);
+        if(shouldUpdateLightmap) {
+            sendLightmapTexture(entityRenderer.getLightmapTexture());
+        }
+
+
+        Profiler.start("render_gui");
         if (mc.currentScreen != null) {
 
             NovaDraw.novaDrawScreen(mc.currentScreen, renderPartialTicks);
 
         }
+        Profiler.end("render_gui");
 
-        if(!chunksToUpdate.isEmpty()) {
+        Profiler.start("update_chunks");
+        int numChunksUpdated = 0;
+        while(!chunksToUpdate.isEmpty()) {
             ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
-            chunkUpdateThreadPool.execute(() -> sendChunkToNative(range));
+            // chunkBuilder.createMeshesForChunk(range);
+            chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
+            updatedChunks.add(range);
+            numChunksUpdated++;
+            if(numChunksUpdated > 10) {
+                break;
+            }
         }
+        Profiler.end("update_chunks");
 
+        Profiler.start("update_player");
         EntityPlayerSP viewEntity = mc.thePlayer;
         if(viewEntity != null) {
             float pitch = viewEntity.rotationPitch;
@@ -332,31 +329,33 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             double x = viewEntity.posX;
             double y = viewEntity.posY + viewEntity.getEyeHeight();
             double z = viewEntity.posZ;
-            // LOG.trace("Setting player position to ({}, {}, {}), yaw to {}, and pitch to {}", x, y, z, yaw, pitch);
             NovaNative.INSTANCE.set_player_camera_transform(x, y, z, yaw, pitch);
         }
+        Profiler.end("update_player");
 
+        Profiler.start("execute_frame");
         NovaNative.INSTANCE.execute_frame();
+        Profiler.end("execute_frame");
+
+        Profiler.start("update_window");
         updateWindowSize();
+        Profiler.end("update_window");
         int scalefactor = new ScaledResolution(mc).getScaleFactor() * 2;
         if (scalefactor != this.scalefactor) {
             NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
             this.scalefactor = scalefactor;
         }
+
+        printProfilerData();
     }
 
-    public static String atlasTextureOfSprite(ResourceLocation texture) {
-        ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
+    private void sendLightmapTexture(DynamicTexture lightmapTexture) {
+        int[] data = lightmapTexture.getTextureData();
+        NovaNative.INSTANCE.send_lightmap_texture(data, data.length, lightmapTexture.getWidth(), lightmapTexture.getHeight());
+    }
 
-        if (BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
-            return NovaNative.BLOCK_COLOR_ATLAS_NAME;
-        } else if (GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
-            return NovaNative.GUI_ATLAS_NAME;
-        } else if (FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
-            return NovaNative.FONT_ATLAS_NAME;
-        }
-
-        return texture.toString();
+    private void printProfilerData() {
+        Profiler.logData();
     }
 
     public void setWorld(World world) {
@@ -364,6 +363,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             world.addEventListener(chunkUpdateListener);
             this.world = world;
             chunksToUpdate.clear();
+
+            if(chunkBuilder != null) {
+                chunkBuilder.setWorld(world);
+            }
         }
     }
 
@@ -389,80 +392,45 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.add_texture_location(loc);
     }
 
-    /**
-     * Registers a static model with Nova, so that Nova can use it for drawing
-     *
-     * @param key The ResourceLocation which identifies this model
-     * @param model The model to register
-     */
-    public void registerStaticModel(ResourceLocation key, IBakedModel model) {
-        if(model instanceof SimpleBakedModel) {
-            NovaNative.mc_simple_model mc_model = new NovaNative.mc_simple_model((SimpleBakedModel) model);
-            NovaNative.INSTANCE.register_simple_model(key.toString(), mc_model);
+    public static String atlasTextureOfSprite(ResourceLocation texture) {
+        ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
+
+        if (BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+            return BLOCK_COLOR_ATLAS_NAME;
+        } else if (GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
+            return GUI_ATLAS_NAME;
+        } else if (FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+            return FONT_ATLAS_NAME;
         }
+
+        return texture.toString();
     }
 
-    private void sendChunkToNative(ChunkUpdateListener.BlockUpdateRange updateRange) {
-        NovaNative.mc_chunk updateChunk = new NovaNative.mc_chunk();
-        long startTime = System.currentTimeMillis();
+    public void loadShaderpack(String shaderpackName, BlockColors blockColors) {
+        Profiler.start("load_shaderpack");
+        NovaNative.INSTANCE.set_string_setting("loadedShaderpack", shaderpackName);
 
-        Chunk mcChunk = world.getChunkFromBlockCoords(new BlockPos(updateRange.min.x, updateRange.min.y, updateRange.min.z));
+        String filters = NovaNative.INSTANCE.get_shaders_and_filters();
+        Profiler.end("load_shaderpack");
 
-        for(int x = updateRange.min.x; x <= updateRange.max.x; x++) {
-            for(int y = updateRange.min.y; y < updateRange.max.y; y++) {
-                for(int z = updateRange.min.z; z <= updateRange.max.z; z++) {
-                    int chunkX = x - updateRange.min.x;
-                    int chunkY = y - updateRange.min.y;
-                    int chunkZ = z - updateRange.min.z;
-                    int idx = chunkX + chunkY * NovaNative.CHUNK_WIDTH + chunkZ * NovaNative.CHUNK_WIDTH * NovaNative.CHUNK_HEIGHT;
+        Profiler.start("build_filters");
+        String[] filtersSplit = filters.split("\n");
 
-                    NovaNative.mc_block curBlock = updateChunk.blocks[idx];
-                    copyBlockStateIntoMcBlock(mcChunk.getBlockState(x, y, z), curBlock);
-                }
-            }
+        filterMap = new HashMap<>();
+        for(int i = 0; i < filtersSplit.length; i += 2) {
+            String filterName = filtersSplit[i];
+            IGeometryFilter filter = IGeometryFilter.parseFilterString(filtersSplit[i + 1]);
+            filterMap.put(filterName, filter);
         }
+        Profiler.end("build_filters");
 
-        updateChunk.x = updateRange.min.x;
-        updateChunk.z = updateRange.min.z;
+        Profiler.start("new_chunk_builder");
+        chunkBuilder = new ChunkBuilder(filterMap, world, blockColors);
 
-        int chunkHashCode = (int) updateChunk.x;
-        chunkHashCode = (int) (31 * chunkHashCode + updateChunk.z);
-
-        updateChunk.chunk_id = chunkHashCode;
-
-        NovaNative.INSTANCE.add_chunk(updateChunk);
-
-        long deltaTime = System.currentTimeMillis() - startTime;
-        timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
-        numChunksUpdated.incrementAndGet();
-
-        if(numChunksUpdated.get() % 10 == 0) {
-            LOG.info("It's taken an average of {}ms to update {} chunks",
-                    (float) timeSpentInBlockRenderUpdate.get() / numChunksUpdated.get(), numChunksUpdated);
-            LOG.info("Updating chunk in thread {}", Thread.currentThread().getId());
-        }
+        chunksToUpdate.addAll(updatedChunks);
+        updatedChunks.clear();
+        Profiler.end("new_chunk_builder");
     }
-
-    private void copyBlockStateIntoMcBlock(IBlockState blockState, NovaNative.mc_block curBlock) {
-        Block block = blockState.getBlock();
-        Material material = blockState.getMaterial();
-
-        curBlock.name = block.getUnlocalizedName();
-        curBlock.is_on_fire = false;
-        curBlock.light_value = blockState.getLightValue();
-        curBlock.light_opacity = blockState.getLightOpacity();
-        curBlock.ao = blockState.getAmbientOcclusionLightValue();
-        curBlock.is_opaque = material.isOpaque();
-        curBlock.blocks_light = material.blocksLight();
-
-        try {
-            TextureAtlasSprite sprite = Minecraft.getMinecraft().getBlockRendererDispatcher().getModelForState(blockState).getQuads(blockState, EnumFacing.UP, 0).get(0).getSprite();
-
-            curBlock.texture_name = sprite.getIconName();
-        } catch(IndexOutOfBoundsException e) {
-            LOG.error("Could not determine texture for block {}, setting texture to dirt", block.getUnlocalizedName());
-            curBlock.texture_name = "minecraft:textures/block/dirt";
-        }
-    }
-
 }
+
+

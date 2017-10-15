@@ -7,7 +7,6 @@
 
 #include "test_utils.h"
 #include "../render/nova_renderer.h"
-#include "../utils/io.h"
 
 namespace nova {
     namespace test {
@@ -26,11 +25,6 @@ namespace nova {
             screen.buttons[0] = button;
 
             return screen;
-        }
-
-        std::shared_ptr<mc_chunk> load_test_chunk(std::string chunk_file) {
-            auto chunk_filename_full = TEST_RESOURCES_LOCATION + chunk_file;
-            return load_chunk(chunk_filename_full);
         }
 
         void nova_test::SetUp() {

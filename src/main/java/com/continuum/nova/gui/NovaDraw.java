@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -127,27 +126,27 @@ public class NovaDraw {
      *
      * @param texture   the texture
      */
-    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords,Color vertexColor) {
-        Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
+    public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords, Color vertexColor) {
+        Integer[] indexBuffer = new Integer[]{0, 1, 2, 0, 2, 3};
         Vertex[] vertices = new Vertex[]{
                 new Vertex(
                         rect.x, rect.y,
                         textureCoords.x, textureCoords.y,
-						vertexColor
-                ),
-                new Vertex(
-                        rect.x + rect.width, rect.y,
-                        textureCoords.x + textureCoords.width, textureCoords.y,
-						vertexColor
+                        vertexColor
                 ),
                 new Vertex(
                         rect.x, rect.y + rect.height,
                         textureCoords.x, textureCoords.y + textureCoords.height,
-						vertexColor
+                        vertexColor
                 ),
                 new Vertex(
                         rect.x + rect.width, rect.y + rect.height,
                         textureCoords.x + textureCoords.width, textureCoords.y + textureCoords.height,
+                        vertexColor
+                ),
+                new Vertex(
+                        rect.x + rect.width, rect.y,
+                        textureCoords.x + textureCoords.width, textureCoords.y,
 						vertexColor
                 )
         };
@@ -196,11 +195,11 @@ public class NovaDraw {
             Buffers b = entry.getValue();
             ResourceLocation texture = entry.getKey();
             long timeWithAlloc = System.nanoTime();
-            NovaNative.mc_gui_send_buffer_command command = b.toNativeCommand(texture);
+            NovaNative.mc_gui_buffer guiGeometry = b.toNativeCommand(texture);
             long timePrev = System.nanoTime();
-            NovaNative.INSTANCE.send_gui_buffer_command(command);
+            NovaNative.INSTANCE.add_gui_geometry(guiGeometry);
             long end = System.nanoTime();
-            //LOG.trace("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
+            LOG.trace("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
             Memory.purge();
         }
 
@@ -270,9 +269,9 @@ public class NovaDraw {
          * @param texture the texture
          * @return the native struct
          */
-        public NovaNative.mc_gui_send_buffer_command toNativeCommand(ResourceLocation texture) {
+        public NovaNative.mc_gui_buffer toNativeCommand(ResourceLocation texture) {
             // create a new struct
-            NovaNative.mc_gui_send_buffer_command command = new NovaNative.mc_gui_send_buffer_command();
+            NovaNative.mc_gui_buffer command = new NovaNative.mc_gui_buffer();
             command.texture_name = texture.getResourcePath();
 
             // assign the index buffer

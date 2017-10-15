@@ -76,6 +76,19 @@ namespace nova {
         void reset();
 
         /*!
+         * \brief Updates the texture with the given name with the given data
+         *
+         * This method is essentially a wrapper around glTexImage2D so the docs for that will give you a lot of good info
+         *
+         * \param texture_name The name of the texture to update
+         * \param data The data to set as the texture
+         * \param size The size of the new texture data
+         * \param format The format of the texture data
+         * \param internal_format The internal format of the texture data
+         */
+        void update_texture(std::string texture_name, void* data, glm::ivec2 &size, GLenum format, GLenum type = GL_FLOAT, GLenum internal_format = GL_RGBA);
+
+        /*!
          * \brief Adds a texture to this resource manager
          *
          * The texture is not put into an atlas immediately. Rather, it is held in a staging area until #finalize_textures

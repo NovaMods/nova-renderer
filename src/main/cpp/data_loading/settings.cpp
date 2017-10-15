@@ -30,6 +30,7 @@ namespace nova {
         for(iconfig_listener *l : config_change_listeners) {
             l->on_config_change(options["settings"]);
         }
+        LOG(DEBUG) << "Finished updating listeners";
     }
 
     void settings::update_config_loaded() {
