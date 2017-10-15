@@ -34,6 +34,7 @@
 				<Option type="3"/>
 				<Option compiler="gcc"/>
 				<Compiler>
+					<Add directory="C:/VulkanSDK/1.0.61.1/Include"/>
 					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include"/>
 					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include/win32"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/include"/>
@@ -66,6 +67,7 @@
 				<Option type="3"/>
 				<Option compiler="gcc"/>
 				<Compiler>
+					<Add directory="C:/VulkanSDK/1.0.61.1/Include"/>
 					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include"/>
 					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include/win32"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/include"/>
@@ -100,6 +102,7 @@
 				<Compiler>
 					<Add option="-DDLL_EXPORT"/>
 					<Add option="-DELPP_THREAD_SAFE"/>
+					<Add directory="C:/VulkanSDK/1.0.61.1/Include"/>
 					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include"/>
 					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include/win32"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/include"/>
@@ -134,6 +137,7 @@
 				<Compiler>
 					<Add option="-DDLL_EXPORT"/>
 					<Add option="-DELPP_THREAD_SAFE"/>
+					<Add directory="C:/VulkanSDK/1.0.61.1/Include"/>
 					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include"/>
 					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include/win32"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/include"/>
@@ -2036,7 +2040,7 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/uniform_buffers/uniform_buffers_definitions.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/windowing/glfw_gl_window.cpp.obj">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/windowing/glfw_vk_window.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/utils/profiler.cpp.obj">
@@ -2100,9 +2104,6 @@
 			<Option target="nova-renderer-obj"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/input/InputHandler.h">
-			<Option target="nova-renderer-obj"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/interfaces/iwindow.h">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/mc_interface/mc_gui_objects.h">
@@ -2192,10 +2193,10 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/uniform_buffers/uniform_buffers_definitions.cpp">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/windowing/glfw_gl_window.cpp">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/windowing/glfw_vk_window.cpp">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/windowing/glfw_gl_window.h">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/windowing/glfw_vk_window.h">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/io.h">

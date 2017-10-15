@@ -19,9 +19,9 @@ namespace nova {
     class gl_uniform_buffer {
     public:
         gl_uniform_buffer(std::string name) : name(name) {
-            glCreateBuffers(1, &gl_name);
+            //glCreateBuffers(1, &gl_name);
             LOG(TRACE) << "creating ubo " << name << " with size: " << sizeof(T);
-            glNamedBufferStorage(gl_name, sizeof(T), nullptr, GL_DYNAMIC_STORAGE_BIT);
+            //glNamedBufferStorage(gl_name, sizeof(T), nullptr, GL_DYNAMIC_STORAGE_BIT);
         }
 
         gl_uniform_buffer(gl_uniform_buffer &&old) noexcept {
@@ -33,18 +33,18 @@ namespace nova {
         }
 
         void link_to_shader(const gl_shader_program &shader) {
-            auto ubo_index = glGetUniformBlockIndex(shader.gl_name, name.c_str());
-            glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
-            glBindBufferBase(GL_UNIFORM_BUFFER, ubo_index, gl_name);
+            //auto ubo_index = glGetUniformBlockIndex(shader.gl_name, name.c_str());
+            //glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
+            //glBindBufferBase(GL_UNIFORM_BUFFER, ubo_index, gl_name);
         }
 
         void send_data(T &data) {
             LOG(TRACE) << "sending date with size: " << sizeof(T) << " to ubo " << name;
-            glNamedBufferSubData(gl_name, 0, sizeof(T), &data);
+            //glNamedBufferSubData(gl_name, 0, sizeof(T), &data);
         }
 
         void bind() {
-            glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
+            //glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
         }
 
         /*!
@@ -52,7 +52,7 @@ namespace nova {
          */
         ~gl_uniform_buffer() {
             if(glfwGetCurrentContext() != NULL) {
-                glDeleteBuffers(1, &gl_name);
+                //glDeleteBuffers(1, &gl_name);
             }
         }
 

@@ -16,7 +16,7 @@ namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
     nova_renderer::nova_renderer() {
-        game_window = std::make_unique<glfw_gl_window>();
+        game_window = std::make_unique<glfw_vk_window>();
         enable_debug();
         ubo_manager = std::make_unique<uniform_buffer_store>();
         textures = std::make_unique<texture_manager>();
@@ -31,26 +31,35 @@ namespace nova {
 
         LOG(INFO) << "Finished sending out initial config";
 
-        init_opengl_state();
+        init_vulkan_state();
     }
 
-    void nova_renderer::init_opengl_state() const {
-        LOG(DEBUG) << "Initting OpenGL state";
+    void nova_renderer::init_vulkan_state() const {
+        LOG(DEBUG) << "Initting Vulkan state";
 
-        glClearColor(135 / 255.0f, 206 / 255.0f, 235 / 255.0f, 1.0);
+        VkApplicationInfo app_info = {};
+        app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        app_info.pApplicationName = "Minecraft Nova Renderer";
+        app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        app_info.pEngineName = "Nova Renderer";
+        app_info.engineVersion = VK_MAKE_VERSION(0, 5, 0);
+        app_info.apiVersion = VK_API_VERSION_1_0;
 
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glClearDepth(1.0);
+        VkInstanceCreateInfo create_info = {};
+        create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        create_info.pApplicationInfo = &app_info;
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        uint32_t glfw_extensions_count = 0;
+        create_info.ppEnabledExtensionNames = game_window->get_required_extensions(&glfw_extensions_count);
+        create_info.enabledExtensionCount = glfw_extensions_count;
+        create_info.enabledLayerCount = 0;
 
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        glFrontFace(GL_CCW);
+        VkResult result = vkCreateInstance(&create_info,, nullptr, &vulkan_instance);
+        if(result != VK_SUCCESS) {
+            LOG(FATAL) << "Could not create Vulkan instance";
+        }
 
-        LOG(DEBUG) << "OpenGL state initialized";
+        LOG(DEBUG) << "Vulkan state initialized";
     }
 
     nova_renderer::~nova_renderer() {
@@ -59,6 +68,8 @@ namespace nova {
         textures.reset();
         ubo_manager.reset();
         game_window.reset();
+
+        vkDestroyInstance(vulkan_instance, nullptr);
     }
 
     void nova_renderer::render_frame() {
@@ -74,7 +85,7 @@ namespace nova {
         render_shadow_pass();
 
         // main_framebuffer->bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_gbuffer_ubos();
 
         render_gbuffers();
@@ -120,7 +131,7 @@ namespace nova {
 
     void nova_renderer::render_gui() {
         LOG(TRACE) << "Rendering GUI";
-        glClear(GL_DEPTH_BUFFER_BIT);
+        //glClear(GL_DEPTH_BUFFER_BIT);
 
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
@@ -229,8 +240,8 @@ namespace nova {
     }
 
     void nova_renderer::enable_debug() {
-        glEnable(GL_DEBUG_OUTPUT);
-        glDebugMessageCallback(debug_logger, nullptr);
+        //glEnable(GL_DEBUG_OUTPUT);
+        //glDebugMessageCallback(debug_logger, nullptr);
     }
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
@@ -264,7 +275,7 @@ namespace nova {
         return *textures;
     }
 
-	glfw_gl_window &nova_renderer::get_game_window() {
+	glfw_vk_window &nova_renderer::get_game_window() {
 		return *game_window;
 	}
 
@@ -371,7 +382,7 @@ namespace nova {
         glm::mat4 model_matrix = glm::translate(glm::mat4(1), geom.position);
 
         auto model_matrix_location = program.get_uniform_location("gbufferModel");
-        glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &model_matrix[0][0]);
+        //glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &model_matrix[0][0]);
     }
 
     void nova_renderer::upload_gui_model_matrix(gl_shader_program &program) {
@@ -388,7 +399,7 @@ namespace nova {
 
         auto model_matrix_location = program.get_uniform_location("gbufferModel");
 
-        glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &gui_model[0][0]);
+        //glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &gui_model[0][0]);
     }
 
     void nova_renderer::update_gbuffer_ubos() {

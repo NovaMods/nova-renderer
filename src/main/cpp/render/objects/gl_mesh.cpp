@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <easylogging++.h>
 #include "gl_mesh.h"
-#include "../windowing/glfw_gl_window.h"
+#include "../windowing/glfw_vk_window.h"
 
 namespace nova {
     gl_mesh::gl_mesh() : vertex_array(0), vertex_buffer(0), indices(0), num_indices(0) {
@@ -24,23 +24,23 @@ namespace nova {
     }
 
     void gl_mesh::create() {
-        glGenVertexArrays(1, &vertex_array);
-        glBindVertexArray(vertex_array);
-        glGenBuffers(1, &vertex_buffer);
-        glGenBuffers(1, &indices);
+        //glGenVertexArrays(1, &vertex_array);
+        //glBindVertexArray(vertex_array);
+        //glGenBuffers(1, &vertex_buffer);
+        //glGenBuffers(1, &indices);
     }
 
     void gl_mesh::destroy() {
         if(vertex_buffer != 0) {
             if(glfwGetCurrentContext() != nullptr) {
-                glDeleteBuffers(1, &vertex_buffer);
+                //glDeleteBuffers(1, &vertex_buffer);
             }
             vertex_buffer = 0;
         }
 
         if(indices != 0) {
             if(glfwGetCurrentContext() != nullptr) {
-                glDeleteBuffers(1, &indices);
+                //glDeleteBuffers(1, &indices);
             }
             indices = 0;
         }
@@ -49,10 +49,10 @@ namespace nova {
     void gl_mesh::set_data(std::vector<int> data, format data_format, usage data_usage) {
         this->data_format = data_format;
 
-        glBindVertexArray(vertex_array);
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+        //glBindVertexArray(vertex_array);
+        //glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
         GLenum buffer_usage = translate_usage(data_usage);
-        glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), buffer_usage);
+        //glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), buffer_usage);
 
         enable_vertex_attributes(data_format);
     }
@@ -67,26 +67,26 @@ namespace nova {
     }
 
     void gl_mesh::set_active() const {
-        glBindVertexArray(vertex_array);
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
+        //glBindVertexArray(vertex_array);
+        //glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
     }
 
     void gl_mesh::set_index_array(std::vector<int> data, usage data_usage) {
-        glBindVertexArray(vertex_array);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
+        //glBindVertexArray(vertex_array);
+        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices);
         GLenum buffer_usage = translate_usage(data_usage);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned int), data.data(), buffer_usage);
+        //glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(unsigned int), data.data(), buffer_usage);
 
         num_indices = (unsigned int) data.size();
     }
 
     void gl_mesh::draw() const {
-        glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, nullptr);
+        //glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, nullptr);
     }
 
     void gl_mesh::enable_vertex_attributes(format data_format) {
-        switch(data_format) {
+        /*switch(data_format) {
             case format::POS:
                 // We only need to set up positional data
                 // Positions are always at vertex attribute 0
@@ -143,7 +143,7 @@ namespace nova {
                 glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (44 * sizeof(GLbyte)));
 
                 break;
-        }
+        }*/
     }
 
     format gl_mesh::get_format() {

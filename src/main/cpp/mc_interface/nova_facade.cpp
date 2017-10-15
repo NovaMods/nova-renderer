@@ -19,7 +19,7 @@
 #include "../render/objects/textures/texture_manager.h"
 #include "../data_loading/settings.h"
 #include "../input/InputHandler.h"
-#include "../render/windowing/glfw_gl_window.h"
+#include "../render/windowing/glfw_vk_window.h"
 #include "../utils/utils.h"
 #include "../utils/profiler.h"
 

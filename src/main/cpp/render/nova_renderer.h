@@ -5,11 +5,12 @@
 #ifndef RENDERER_VULKAN_MOD_H
 #define RENDERER_VULKAN_MOD_H
 
+#include <vulkan/vulkan.h>
 #include <memory>
 #include <thread>
 #include "objects/shaders/gl_shader_program.h"
 #include "objects/uniform_buffers/uniform_buffer_store.h"
-#include "windowing/glfw_gl_window.h"
+#include "windowing/glfw_vk_window.h"
 #include "../geometry_cache/mesh_store.h"
 #include "objects/textures/texture_manager.h"
 #include "../input/InputHandler.h"
@@ -81,7 +82,7 @@ namespace nova {
 
         input_handler& get_input_handler();
 
-        glfw_gl_window& get_game_window();
+        glfw_vk_window& get_game_window();
 
         mesh_store& get_mesh_store();
 
@@ -99,7 +100,7 @@ namespace nova {
 
 		static std::unique_ptr<settings> render_settings; 
 
-        std::unique_ptr<glfw_gl_window> game_window;
+        std::unique_ptr<glfw_vk_window> game_window;
 
         std::shared_ptr<shaderpack> loaded_shaderpack;
 
@@ -121,6 +122,8 @@ namespace nova {
 
         camera player_camera;
 
+        VkInstance vulkan_instance;
+
         /*!
          * \brief Renders the GUI of Minecraft
          */
@@ -136,7 +139,7 @@ namespace nova {
 
         void enable_debug();
 
-        void init_opengl_state() const;
+        void init_vulkan_state() const;
 
         void load_new_shaderpack(const std::string &new_shaderpack_name);
 

@@ -9,16 +9,16 @@ namespace nova {
     /* framebuffer */
 
     framebuffer::framebuffer(unsigned int width, unsigned int height, unsigned int num_color_attachments) {
-        glCreateFramebuffers(1, &framebuffer_id);
+        //glCreateFramebuffers(1, &framebuffer_id);
 
         color_attachments = new GLuint[num_color_attachments];
-        glCreateTextures(GL_TEXTURE_2D, num_color_attachments, color_attachments);
+        //glCreateTextures(GL_TEXTURE_2D, num_color_attachments, color_attachments);
 
 
         // TODO: Set texture format
         for(unsigned int i = 0; i < num_color_attachments; i++) {
-            glTextureStorage2D(color_attachments[i], 1, GL_RGBA8, width, height);
-            glNamedFramebufferTexture(framebuffer_id, GL_COLOR_ATTACHMENT0 + i, color_attachments[i], 0);
+            //glTextureStorage2D(color_attachments[i], 1, GL_RGBA8, width, height);
+            //glNamedFramebufferTexture(framebuffer_id, GL_COLOR_ATTACHMENT0 + i, color_attachments[i], 0);
             color_attachments_map[i] = color_attachments[i];
         }
     }
@@ -36,20 +36,20 @@ namespace nova {
 
     framebuffer::~framebuffer() {
         LOG(TRACE) << "Deleting framebuffer " << framebuffer_id;
-        glDeleteTextures(color_attachments_map.size(), color_attachments);
-        glDeleteFramebuffers(1, &framebuffer_id);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glDeleteTextures(color_attachments_map.size(), color_attachments);
+        //glDeleteFramebuffers(1, &framebuffer_id);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void framebuffer::set_depth_buffer(GLuint depth_buffer) {
-        glNamedFramebufferTexture(framebuffer_id, GL_DEPTH_ATTACHMENT, depth_buffer, 0);
+        //glNamedFramebufferTexture(framebuffer_id, GL_DEPTH_ATTACHMENT, depth_buffer, 0);
         has_depth_buffer = true;
 
         check_status();
     }
 
     void framebuffer::check_status() {
-        auto status = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
+        auto status = 0;//glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
         switch(status) {
             case GL_FRAMEBUFFER_COMPLETE:
                 LOG(DEBUG) << "Framebuffer " << framebuffer_id << " is complete";
@@ -72,7 +72,7 @@ namespace nova {
         }}
 
     void framebuffer::bind() {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
+        //glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
     }
 
     void framebuffer::enable_writing_to_attachment(unsigned int attachment) {
@@ -85,7 +85,7 @@ namespace nova {
 
     void framebuffer::generate_mipmaps() {
         for(const auto& item : color_attachments_map) {
-            glGenerateTextureMipmap(item.second);
+            //glGenerateTextureMipmap(item.second);
         }
     }
 

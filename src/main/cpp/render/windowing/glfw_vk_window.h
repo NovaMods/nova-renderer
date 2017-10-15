@@ -5,12 +5,14 @@
 #ifndef RENDERER_GLFW_GL_WINDOW_H
 #define RENDERER_GLFW_GL_WINDOW_H
 
+#define GLFW_VULKAN_SUPPORT
 
 #include <glad/glad.h>
 #include <json.hpp>
 #include "GLFW/glfw3.h"
-#include "../../interfaces/iwindow.h"
+#include "../../data_loading/settings.h"
 #include <RenderDocManager.h>
+#include <glm/glm.hpp>
 
 namespace nova {
     struct window_parameters {
@@ -28,14 +30,14 @@ namespace nova {
      *
      * Point is, this class is pretty important and you shouldn't leave home without it
      */
-    class glfw_gl_window : public iwindow {
+    class glfw_vk_window : public iconfig_listener {
     public:
         /*!
          * \brief Creates a window and a corresponding OpenGL context
          */
-        glfw_gl_window();
+        glfw_vk_window();
 
-        ~glfw_gl_window();
+        ~glfw_vk_window();
 
         /**
          * iwindow methods
@@ -61,11 +63,13 @@ namespace nova {
          * iconfig_change_listener methods
          */
 
-        void on_config_change(nlohmann::json &new_config);
+        void on_config_change(nlohmann::json &new_config) override;
 
-        void on_config_loaded(nlohmann::json &config);
+        void on_config_loaded(nlohmann::json &config) override;
 
         static void setActive(bool active);
+
+        const char** get_required_extensions(uint32_t* extensions_count) const;
 
     private:
         static bool active;
