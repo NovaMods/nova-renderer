@@ -11,20 +11,20 @@
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 all"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="rebuild_cache">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="nova-renderer">
@@ -46,18 +46,18 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-renderer"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-renderer"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="nova-renderer/fast">
@@ -79,18 +79,18 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-renderer/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-renderer/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="nova-renderer-obj">
@@ -114,18 +114,18 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-renderer-obj"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-renderer-obj"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="nova-renderer-obj/fast">
@@ -149,78 +149,78 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-renderer-obj/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-renderer-obj/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="install/local">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 install/local"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 install/local"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="install">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 install"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 install"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="edit_cache">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 edit_cache"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="list_install_components">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 list_install_components"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="install/strip">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 install/strip"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 install/strip"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="uninstall">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/Makefile&quot;  VERBOSE=1 uninstall"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/Makefile&quot;  VERBOSE=1 uninstall"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="glfw">
@@ -235,18 +235,18 @@
 					<Add option="-DWINVER=0x0501"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 glfw"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 glfw"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="glfw/fast">
@@ -261,18 +261,18 @@
 					<Add option="-DWINVER=0x0501"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 glfw/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 glfw/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="json_unit">
@@ -284,18 +284,18 @@
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/src"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 json_unit"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 json_unit"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="json_unit/fast">
@@ -307,18 +307,18 @@
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/src"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 json_unit/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 json_unit/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="glm_dummy">
@@ -332,18 +332,18 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/test/external"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/.."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 glm_dummy"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 glm_dummy"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="glm_dummy/fast">
@@ -357,18 +357,18 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/test/external"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/.."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 glm_dummy/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 glm_dummy/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example1">
@@ -379,18 +379,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example1"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example1"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example1/fast">
@@ -401,18 +401,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example1/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example1/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example2">
@@ -423,18 +423,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example2"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example2"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example2/fast">
@@ -445,18 +445,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example2/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example2/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="miniz_tester">
@@ -467,18 +467,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 miniz_tester"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 miniz_tester"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="miniz_tester/fast">
@@ -489,18 +489,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 miniz_tester/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 miniz_tester/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example3">
@@ -511,18 +511,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example3"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example3"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example3/fast">
@@ -533,18 +533,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example3/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example3/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example4">
@@ -555,18 +555,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example4"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example4"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example4/fast">
@@ -577,18 +577,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example4/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example4/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example5">
@@ -599,18 +599,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example5"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example5"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example5/fast">
@@ -621,18 +621,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example5/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example5/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example6">
@@ -643,18 +643,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example6"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example6"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="example6/fast">
@@ -665,18 +665,18 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example6/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 example6/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="gmock_main">
@@ -690,18 +690,18 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock_main"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock_main"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="gmock_main/fast">
@@ -715,18 +715,18 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock_main/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock_main/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="gmock">
@@ -740,18 +740,18 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="gmock/fast">
@@ -765,18 +765,18 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 gmock/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="gtest">
@@ -788,18 +788,18 @@
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 gtest"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 gtest"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="gtest/fast">
@@ -811,18 +811,18 @@
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 gtest/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 gtest/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="gtest_main">
@@ -834,18 +834,18 @@
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 gtest_main"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 gtest_main"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="gtest_main/fast">
@@ -857,18 +857,18 @@
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 gtest_main/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 gtest_main/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="test_type_traits">
@@ -878,18 +878,18 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 test_type_traits"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 test_type_traits"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="test_type_traits/fast">
@@ -899,18 +899,18 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 test_type_traits/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 test_type_traits/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="test_optional">
@@ -920,18 +920,18 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 test_optional"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 test_optional"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="test_optional/fast">
@@ -941,18 +941,18 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 test_optional/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 test_optional/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 		</Build>

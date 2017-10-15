@@ -21,6 +21,7 @@ namespace nova {
 
         init_vulkan_state();
         debug_callback = setup_debug_callback(vulkan_instance);
+        game_window->create_surface(vulkan_instance);
 
         ubo_manager = std::make_unique<uniform_buffer_store>();
         textures = std::make_unique<texture_manager>();

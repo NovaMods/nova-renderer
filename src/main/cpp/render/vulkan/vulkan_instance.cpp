@@ -33,7 +33,7 @@ namespace nova {
         app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         app_info.pApplicationName = "Minecraft Nova Renderer";
         app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        app_info.pEngineName = "Nova Renderer";
+        app_info.pEngineName = "Nova Renderer 0.5";
         app_info.engineVersion = VK_MAKE_VERSION(0, 5, 0);
         app_info.apiVersion = VK_API_VERSION_1_0;
         LOG(TRACE) << "Created VkApplicationInfo struct";

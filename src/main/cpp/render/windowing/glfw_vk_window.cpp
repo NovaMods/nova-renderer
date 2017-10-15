@@ -163,4 +163,11 @@ namespace nova {
     const char** glfw_vk_window::get_required_extensions(uint32_t* count) const {
         return glfwGetRequiredInstanceExtensions(count);
     }
+
+    void glfw_vk_window::create_surface(VkInstance instance) {
+        auto err = glfwCreateWindowSurface(instance, window nullptr, &surface);
+        if(err != VK_SUCCESS) {
+            LOG(FATAL) << "Could not create surface";
+        }
+    }
 }

@@ -13,7 +13,7 @@
  */
 class render_device {
 public:
-    render_device(VkInstance instance);
+    explicit render_device(VkInstance instance);
 };
 
 

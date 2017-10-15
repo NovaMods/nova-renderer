@@ -43,17 +43,19 @@ namespace nova {
          * iwindow methods
          */
 
-        virtual int init();
+        int init();
 
-        virtual void destroy();
+        void destroy();
 
-        virtual void end_frame();
+        void end_frame();
 
-        virtual void set_fullscreen(bool fullscreen);
+        void set_fullscreen(bool fullscreen);
 
-        virtual glm::vec2 get_size();
+        glm::vec2 get_size();
 
-        virtual bool should_close();
+        bool should_close();
+
+        void create_surface(VkInstance instance);
 
         bool is_active();
 
@@ -74,6 +76,7 @@ namespace nova {
     private:
         static bool active;
         GLFWwindow *window;
+        VkSurfaceKHR surface;
         glm::ivec2 window_dimensions;
         std::unique_ptr<RenderDocManager> renderdoc_manager;
         struct window_parameters windowed_window_parameters;
