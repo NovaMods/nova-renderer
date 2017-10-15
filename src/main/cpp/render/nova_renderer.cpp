@@ -73,7 +73,7 @@ namespace nova {
 
         render_shadow_pass();
 
-        main_framebuffer->bind();
+        // main_framebuffer->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_gbuffer_ubos();
 
@@ -81,8 +81,8 @@ namespace nova {
 
         render_composite_passes();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         render_final_pass();
 
         // We want to draw the GUI on top of the other things, so we'll render it last
