@@ -8,12 +8,22 @@
 
 #include <vulkan/vulkan.h>
 
+struct gpu_info {
+    VkPhysicalDevice device;
+};
+
 /*!
  * \brief An abstraction over Vulkan physical and logical devices
  */
 class render_device {
 public:
-    explicit render_device(VkInstance instance);
+    VkInstance instance;
+    VkSurfaceKHR surface;
+    std::vector<gpu_info> gpus;
+
+    VkDebugReportCallbackEXT debug_callback;
+
+    void find_device_and_queues();
 };
 
 

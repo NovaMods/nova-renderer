@@ -6,7 +6,7 @@
 #include <easylogging++.h>
 #include "render_device.h"
 
-render_device::render_device(VkInstance instance) {
+void render_device::find_device_and_queues() {
     uint32_t num_devices = 0;
     auto err = vkEnumeratePhysicalDevices(instance, &num_devices, nullptr);
     if(err != VK_SUCCESS) {
@@ -18,8 +18,13 @@ render_device::render_device(VkInstance instance) {
     }
 
     std::vector<VkPhysicalDevice> devices(num_devices);
+    err = vkEnumeratePhysicalDevices(instance, &num_devices, devices.data());
+    if(err != VK_SUCCESS) {
+        LOG(FATAL) << "Could not enumerate physical devices";
+    }
+
 
     for(uint32_t i = 0; i < num_devices; i++) {
-
+        gpu_info gpu;
     }
 }

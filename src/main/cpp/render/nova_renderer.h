@@ -16,6 +16,7 @@
 #include "../input/InputHandler.h"
 #include "objects/framebuffer.h"
 #include "objects/camera.h"
+#include "vulkan/render_device.h"
 
 namespace nova {
     /*!
@@ -122,8 +123,7 @@ namespace nova {
 
         camera player_camera;
 
-        VkInstance vulkan_instance;
-        VkDebugReportCallbackEXT debug_callback;
+        render_device context;
 
         /*!
          * \brief Renders the GUI of Minecraft

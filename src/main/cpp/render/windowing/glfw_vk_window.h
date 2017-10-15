@@ -11,6 +11,7 @@
 #include <json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../data_loading/settings.h"
+#include "../vulkan/render_device.h"
 #include <RenderDocManager.h>
 #include <glm/glm.hpp>
 
@@ -55,7 +56,7 @@ namespace nova {
 
         bool should_close();
 
-        void create_surface(VkInstance instance);
+        void create_surface(render_device& context);
 
         bool is_active();
 
@@ -76,7 +77,6 @@ namespace nova {
     private:
         static bool active;
         GLFWwindow *window;
-        VkSurfaceKHR surface;
         glm::ivec2 window_dimensions;
         std::unique_ptr<RenderDocManager> renderdoc_manager;
         struct window_parameters windowed_window_parameters;
