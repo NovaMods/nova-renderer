@@ -41,7 +41,7 @@ namespace nova {
         glm::mat4 modl = get_view_matrix();
         glm::mat4 clip;
 
-        float   t;
+        float t;
 
         clip = proj * modl;
 
@@ -52,7 +52,7 @@ namespace nova {
         frustum[0][3] = clip[3][3] - clip[3][0];
 
         /* Normalize the result */
-        t = std::sqrt( frustum[0][0] * frustum[0][0] + frustum[0][1] * frustum[0][1] + frustum[0][2] * frustum[0][2] );
+        t = std::sqrt(frustum[0][0] * frustum[0][0] + frustum[0][1] * frustum[0][1] + frustum[0][2] * frustum[0][2]);
         frustum[0][0] /= t;
         frustum[0][1] /= t;
         frustum[0][2] /= t;
@@ -65,7 +65,7 @@ namespace nova {
         frustum[1][3] = clip[3][3] + clip[3][0];
 
         /* Normalize the result */
-        t = std::sqrt( frustum[1][0] * frustum[1][0] + frustum[1][1] * frustum[1][1] + frustum[1][2] * frustum[1][2] );
+        t = std::sqrt(frustum[1][0] * frustum[1][0] + frustum[1][1] * frustum[1][1] + frustum[1][2] * frustum[1][2]);
         frustum[1][0] /= t;
         frustum[1][1] /= t;
         frustum[1][2] /= t;
@@ -78,7 +78,7 @@ namespace nova {
         frustum[2][3] = clip[3][3] + clip[3][1];
 
         /* Normalize the result */
-        t = std::sqrt( frustum[2][0] * frustum[2][0] + frustum[2][1] * frustum[2][1] + frustum[2][2] * frustum[2][2] );
+        t = std::sqrt(frustum[2][0] * frustum[2][0] + frustum[2][1] * frustum[2][1] + frustum[2][2] * frustum[2][2]);
         frustum[2][0] /= t;
         frustum[2][1] /= t;
         frustum[2][2] /= t;
@@ -91,7 +91,7 @@ namespace nova {
         frustum[3][3] = clip[3][3] - clip[3][1];
 
         /* Normalize the result */
-        t = std::sqrt( frustum[3][0] * frustum[3][0] + frustum[3][1] * frustum[3][1] + frustum[3][2] * frustum[3][2] );
+        t = std::sqrt(frustum[3][0] * frustum[3][0] + frustum[3][1] * frustum[3][1] + frustum[3][2] * frustum[3][2]);
         frustum[3][0] /= t;
         frustum[3][1] /= t;
         frustum[3][2] /= t;
@@ -104,7 +104,7 @@ namespace nova {
         frustum[4][3] = clip[3][3] - clip[3][2];
 
         /* Normalize the result */
-        t = std::sqrt( frustum[4][0] * frustum[4][0] + frustum[4][1] * frustum[4][1] + frustum[4][2] * frustum[4][2] );
+        t = std::sqrt(frustum[4][0] * frustum[4][0] + frustum[4][1] * frustum[4][1] + frustum[4][2] * frustum[4][2]);
         frustum[4][0] /= t;
         frustum[4][1] /= t;
         frustum[4][2] /= t;
@@ -117,14 +117,14 @@ namespace nova {
         frustum[5][3] = clip[3][3] + clip[3][2];
 
         /* Normalize the result */
-        t = std::sqrt( frustum[5][0] * frustum[5][0] + frustum[5][1] * frustum[5][1] + frustum[5][2] * frustum[5][2] );
+        t = std::sqrt(frustum[5][0] * frustum[5][0] + frustum[5][1] * frustum[5][1] + frustum[5][2] * frustum[5][2]);
         frustum[5][0] /= t;
         frustum[5][1] /= t;
         frustum[5][2] /= t;
         frustum[5][3] /= t;
     }
 
-    bool camera::has_object_in_frustum(AABB &bounding_box) {
+    bool camera::has_object_in_frustum(aabb &bounding_box) {
         float x = bounding_box.center.x;
         float y = bounding_box.center.y;
         float z = bounding_box.center.z;

@@ -33,9 +33,6 @@ public class ChunkBuilder {
 
     private final Map<String, IGeometryFilter> filters;
 
-    private final AtomicLong timeSpentInBlockRenderUpdate = new AtomicLong(0);
-    private final AtomicInteger numChunksUpdated = new AtomicInteger(0);
-
     private final BlockColors blockColors;
 
     private BlockRendererDispatcher blockRendererDispatcher;
@@ -49,7 +46,6 @@ public class ChunkBuilder {
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
         blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
         Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
-        long startTime = System.currentTimeMillis();
 
         for(int x = range.min.x; x <= range.max.x; x++) {
             for(int y = range.min.y; y < range.max.y; y++) {
@@ -71,20 +67,6 @@ public class ChunkBuilder {
 
                 NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
             });
-        }
-
-        long timeAfterBuildingStruct = System.currentTimeMillis();
-        // Using JNA in the old way: 550 ms / chunk
-
-        long deltaTime = System.currentTimeMillis() - startTime;
-        timeSpentInBlockRenderUpdate.addAndGet(deltaTime);
-        numChunksUpdated.incrementAndGet();
-
-        if(numChunksUpdated.get() % 10 == 0) {
-            LOG.debug("It's taken an average of {}ms to update {} chunks",
-                    (float) timeSpentInBlockRenderUpdate.get() / numChunksUpdated.get(), numChunksUpdated);
-            LOG.debug("Detailed stats:\nTime to build chunk: {}ms",
-                    timeAfterBuildingStruct - startTime);
         }
     }
 

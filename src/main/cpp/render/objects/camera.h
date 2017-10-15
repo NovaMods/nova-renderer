@@ -7,7 +7,7 @@
 #define RENDERER_CAMERA_H
 
 #include <glm/glm.hpp>
-#include "../../data_loading/physics/AABB.h"
+#include "../../data_loading/physics/aabb.h"
 
 namespace nova {
     /*!
@@ -30,7 +30,7 @@ namespace nova {
 
         void recalculate_frustum();
 
-        bool has_object_in_frustum(AABB& bounding_box);
+        bool has_object_in_frustum(aabb& bounding_box);
 
     private:
         bool projection_matrix_is_dirty;

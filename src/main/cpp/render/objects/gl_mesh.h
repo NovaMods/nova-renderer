@@ -9,7 +9,7 @@
 #include <glad/glad.h>
 #include <vector>
 #include "../../geometry_cache/mesh_definition.h"
-#include "../../data_loading/physics/AABB.h"
+#include "../../data_loading/physics/aabb.h"
 
 namespace nova {
     /*!
@@ -85,16 +85,6 @@ namespace nova {
 
         unsigned int vertex_array;
         unsigned int num_indices;
-
-        AABB aabb;
-
-        /*!
-         * \brief Examines the vertices in the given vector, finding the minimum and maximum bounds in each axis
-         *
-         * \param vertices The vertices the get the bounds of
-         * \param data_format The format of the vertices. Necessary for knowing the desired stride
-         */
-        void compute_aabb(std::vector<int> &vertices, format data_format);
     };
 }
 

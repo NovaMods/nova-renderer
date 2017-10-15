@@ -55,8 +55,6 @@ namespace nova {
         glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), buffer_usage);
 
         enable_vertex_attributes(data_format);
-
-        compute_aabb(data, data_format);
     }
 
     GLenum gl_mesh::translate_usage(const usage data_usage) const {
@@ -124,21 +122,28 @@ namespace nova {
                 glEnableVertexAttribArray(2);   // Lightmap UV
                 glEnableVertexAttribArray(3);   // Normal
                 glEnableVertexAttribArray(4);   // Tangent
+                glEnableVertexAttribArray(5);   // Color
 
+                // position
                 glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), nullptr);
-                glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (1 * sizeof(GLfloat)));
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (4 * sizeof(GLfloat)));
-                glVertexAttribPointer(2, 2, GL_SHORT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (6 * sizeof(GLfloat)));
-                glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (8 * sizeof(GLfloat)));
-                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (11 * sizeof(GLfloat)));
+
+                // color
+                glVertexAttribPointer(5, 4, GL_UNSIGNED_BYTE, GL_FALSE, 13 * sizeof(GLfloat), (void *) (12 * sizeof(GLbyte)));
+
+                // texture UV
+                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (16 * sizeof(GLbyte)));
+
+                // lightmap UV
+                glVertexAttribPointer(2, 2, GL_SHORT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (24 * sizeof(GLbyte)));
+
+                // normal
+                glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (32 * sizeof(GLbyte)));
+
+                // tangent
+                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (44 * sizeof(GLbyte)));
 
                 break;
         }
-    }
-
-    void gl_mesh::compute_aabb(std::vector<int> &vertices, format data_format) {
-        // TODO: Translate data_format into a stride
-        // TODO: All of this. The AABB stuff is going to come later
     }
 
     format gl_mesh::get_format() {

@@ -1982,7 +1982,7 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/data_loading/loaders/shader_source_structs.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/data_loading/physics/AABB.cpp.obj">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/data_loading/physics/aabb.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/data_loading/settings.cpp.obj">
@@ -2072,10 +2072,10 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/loaders/shader_source_structs.h">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/physics/AABB.cpp">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/physics/aabb.cpp">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/physics/AABB.h">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/physics/aabb.h">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/settings.cpp">

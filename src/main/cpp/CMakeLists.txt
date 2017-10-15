@@ -94,7 +94,7 @@ set(NOVA_HEADERS
         render/objects/uniform_buffers/uniform_buffer_definitions.h
         render/objects/uniform_buffers/gl_uniform_buffer.h
 
-        data_loading/physics/AABB.h
+        data_loading/physics/aabb.h
         data_loading/loaders/shader_source_structs.h
         geometry_cache/mesh_definition.h
         render/objects/camera.h
@@ -132,7 +132,7 @@ set(NOVA_SOURCE
 
         render/objects/shaders/shaderpack.cpp
         geometry_cache/mesh_store.cpp
-        data_loading/physics/AABB.cpp
+        data_loading/physics/aabb.cpp
         geometry_cache/mesh_definition.cpp
 
         render/objects/uniform_buffers/uniform_buffers_definitions.cpp

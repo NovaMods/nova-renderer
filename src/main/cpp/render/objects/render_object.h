@@ -70,13 +70,15 @@ namespace nova {
          */
         std::string name;
 
-        std::shared_ptr<gl_mesh> geometry;
+        std::unique_ptr<gl_mesh> geometry;
 
         std::string color_texture;
         std::experimental::optional<std::string> normalmap;
         std::experimental::optional<std::string> data_texture;
 
         glm::vec3 position;
+
+        aabb bounding_box;
 
         render_object() = default;
         render_object(render_object&& other) noexcept;

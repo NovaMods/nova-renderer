@@ -16,16 +16,11 @@ namespace nova {
      *
      * Contains methods to help it be a productive member of society
      */
-    class AABB {
-    public:
+    struct aabb {
         glm::vec3 center;   //!< The local space center of this AABB
         glm::vec3 extents;  //!< How far in each direction this AABB reaches
 
-        void set_extents(glm::vec3 &new_extents);
-
         void translate(glm::vec3 &delta);
-
-        void set_position(glm::vec3 &position);
     };
 }
 

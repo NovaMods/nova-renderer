@@ -48,7 +48,7 @@ namespace nova {
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
         render_object gui = {};
-        gui.geometry = std::make_shared<gl_mesh>(cur_screen_buffer);
+        gui.geometry = std::make_unique<gl_mesh>(cur_screen_buffer);
         gui.type = geometry_type::gui;
         gui.name = "gui";
         gui.color_texture = command->atlas_name;
@@ -81,6 +81,9 @@ namespace nova {
             obj.parent_id = def.id;
             obj.color_texture = "block_color";
             obj.position = def.position;
+            obj.bounding_box.center = def.position;
+            obj.bounding_box.center.y = 128;
+            obj.bounding_box.extents = {16, 128, 16};   // TODO: Make these values come from Minecraft
 
             const std::string& shader_name = std::get<0>(entry);
             renderables_grouped_by_shader[shader_name].push_back(std::move(obj));

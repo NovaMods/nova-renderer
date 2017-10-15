@@ -332,6 +332,10 @@ namespace nova {
         for(auto& geom : geometry) {
             profiler::start("process_renderable");
 
+            // if(!player_camera.has_object_in_frustum(geom.bounding_box)) {
+            //     continue;
+            // }
+
             if(geom.geometry->has_data()) {
                 if(!geom.color_texture.empty()) {
                     auto color_texture = textures->get_texture(geom.color_texture);
