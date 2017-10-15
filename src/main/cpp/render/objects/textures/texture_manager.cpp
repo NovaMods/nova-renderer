@@ -112,7 +112,7 @@ namespace nova {
 
     int texture_manager::get_max_texture_size() {
         if(max_texture_size < 0) {
-            glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+            // glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 
 			LOG(DEBUG) << "max texturesize reported by gpu: " << max_texture_size;
         }

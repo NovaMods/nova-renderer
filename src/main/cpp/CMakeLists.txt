@@ -145,7 +145,7 @@ set(NOVA_SOURCE
         utils/profiler.cpp)
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp utils/stb_image_write.h render/vulkan_instance.cpp render/vulkan_instance.h)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp utils/stb_image_write.h render/vulkan/vulkan_instance.cpp render/vulkan/vulkan_instance.h render/vulkan/render_device.cpp render/vulkan/render_device.h)
 endif (WIN32)
 
 if (UNIX)

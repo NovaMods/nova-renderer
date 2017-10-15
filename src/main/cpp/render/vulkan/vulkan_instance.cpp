@@ -16,13 +16,23 @@ namespace nova {
 
     std::vector<const char *> get_required_extensions(glfw_vk_window &window);
 
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
+            VkDebugReportFlagsEXT flags,
+            VkDebugReportObjectTypeEXT objType,
+            uint64_t obj,
+            size_t location,
+            int32_t code,
+            const char* layerPrefix,
+            const char* msg,
+            void* userData);
+
     VkInstance create_instance(glfw_vk_window& window) {
         VkInstance instance;
 
         VkApplicationInfo app_info = {};
         app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         app_info.pApplicationName = "Minecraft Nova Renderer";
-        app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 61);
+        app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         app_info.pEngineName = "Nova Renderer";
         app_info.engineVersion = VK_MAKE_VERSION(0, 5, 0);
         app_info.apiVersion = VK_API_VERSION_1_0;
@@ -55,6 +65,40 @@ namespace nova {
         return instance;
     }
 
+    VkDebugReportCallbackEXT setup_debug_callback(VkInstance instance) {
+#ifndef NDEBUG
+        VkDebugReportCallbackCreateInfoEXT create_info = {};
+        create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+        create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+        create_info.pfnCallback = debug_callback;
+
+        VkDebugReportCallbackEXT callback;
+        if(CreateDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) != VK_SUCCESS) {
+            LOG(FATAL) << "Could not set up debug callback";
+        }
+
+        return callback;
+#endif
+
+        return nullptr;
+    }
+
+    VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback) {
+        auto func = (PFN_vkCreateDebugReportCallbackEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
+        if (func != nullptr) {
+            return func(instance, pCreateInfo, pAllocator, pCallback);
+        } else {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        }
+    }
+
+    void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator) {
+        auto func = (PFN_vkDestroyDebugReportCallbackEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+        if (func != nullptr) {
+            func(instance, callback, pAllocator);
+        }
+    }
+
     // This function should really be called outside of this file, but I want to keep vulkan creation things in here
     // to avoid making nova_renderer.cpp any larger than it needs to be
     std::vector<const char *> get_required_extensions(glfw_vk_window &window) {
@@ -69,10 +113,6 @@ namespace nova {
 
 #ifndef NDEBUG
         extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-
-        for(auto extension : extensions) {
-            LOG(TRACE) << "Want to enable extension " << extension;
-        }
 #endif
 
         return extensions;
@@ -105,5 +145,20 @@ namespace nova {
         }
 
         return true;
+    }
+
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
+            VkDebugReportFlagsEXT flags,
+            VkDebugReportObjectTypeEXT objType,
+            uint64_t obj,
+            size_t location,
+            int32_t code,
+            const char* layerPrefix,
+            const char* msg,
+            void* userData) {
+
+        LOG(INFO) << "validation layer: " << msg;
+
+        return VK_FALSE;
     }
 }

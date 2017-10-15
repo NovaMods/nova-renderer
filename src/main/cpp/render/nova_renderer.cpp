@@ -6,7 +6,7 @@
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
 #include "../utils/profiler.h"
-#include "vulkan_instance.h"
+#include "vulkan/vulkan_instance.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,7 +18,10 @@ namespace nova {
 
     nova_renderer::nova_renderer() {
         game_window = std::make_unique<glfw_vk_window>();
-        enable_debug();
+
+        init_vulkan_state();
+        debug_callback = setup_debug_callback(vulkan_instance);
+
         ubo_manager = std::make_unique<uniform_buffer_store>();
         textures = std::make_unique<texture_manager>();
         meshes = std::make_unique<mesh_store>();
@@ -32,7 +35,6 @@ namespace nova {
 
         LOG(INFO) << "Finished sending out initial config";
 
-        init_vulkan_state();
     }
 
     void nova_renderer::init_vulkan_state() {
@@ -48,9 +50,10 @@ namespace nova {
         meshes.reset();
         textures.reset();
         ubo_manager.reset();
-        game_window.reset();
 
+        DestroyDebugReportCallbackEXT(vulkan_instance, debug_callback, nullptr);
         vkDestroyInstance(vulkan_instance, nullptr);
+        game_window.reset();
     }
 
     void nova_renderer::render_frame() {
@@ -143,86 +146,6 @@ namespace nova {
 		render_settings = std::make_unique<settings>("config/config.json");
 	
 		instance = std::make_unique<nova_renderer>();
-    }
-
-    std::string translate_debug_source(GLenum source) {
-        switch(source) {
-            case GL_DEBUG_SOURCE_API:
-                return "API";
-            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-                return "window system";
-            case GL_DEBUG_SOURCE_SHADER_COMPILER:
-                return "shader compiler";
-            case GL_DEBUG_SOURCE_THIRD_PARTY:
-                return "third party";
-            case GL_DEBUG_SOURCE_APPLICATION:
-                return "application";
-            case GL_DEBUG_SOURCE_OTHER:
-                return "other";
-            default:
-                return "something else somehow";
-        }
-    }
-
-    std::string translate_debug_type(GLenum type) {
-        switch(type) {
-            case GL_DEBUG_TYPE_ERROR:
-                return "error";
-            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-                return "some behavior marked deprecated has been used";
-            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-                return "something has invoked undefined behavior";
-            case GL_DEBUG_TYPE_PORTABILITY:
-                return "some functionality the user relies upon is not portable";
-            case GL_DEBUG_TYPE_PERFORMANCE:
-                return "code has triggered possible performance issues";
-            case GL_DEBUG_TYPE_MARKER:
-                return "command stream annotation";
-            case GL_DEBUG_TYPE_PUSH_GROUP:
-                return "group pushing";
-            case GL_DEBUG_TYPE_POP_GROUP:
-                return "group popping";
-            case GL_DEBUG_TYPE_OTHER:
-                return "other";
-            default:
-                return "something else somwhow";
-        }
-    }
-
-    void APIENTRY
-    debug_logger(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message,
-                 const void *user_param) {
-        std::string source_name = translate_debug_source(source);
-        std::string type_name = translate_debug_type(type);
-
-        switch(severity) {
-            case GL_DEBUG_SEVERITY_HIGH:
-                LOG(ERROR) << id << " - Message from " << source_name << " of type " << type_name << ": "
-                           << message;
-                break;
-
-            case GL_DEBUG_SEVERITY_MEDIUM:
-                LOG(INFO) << id << " - Message from " << source_name << " of type " << type_name << ": " << message;
-                break;
-
-            case GL_DEBUG_SEVERITY_LOW:
-                LOG(DEBUG) << id << " - Message from " << source_name << " of type " << type_name << ": "
-                           << message;
-                break;
-
-            case GL_DEBUG_SEVERITY_NOTIFICATION:
-                LOG(TRACE) << id << " - Message from " << source_name << " of type " << type_name << ": "
-                           << message;
-                break;
-
-            default:
-                LOG(INFO) << id << " - Message from " << source_name << " of type " << type_name << ": " << message;
-        }
-    }
-
-    void nova_renderer::enable_debug() {
-        //glEnable(GL_DEBUG_OUTPUT);
-        //glDebugMessageCallback(debug_logger, nullptr);
     }
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {

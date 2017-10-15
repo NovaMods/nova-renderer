@@ -50,7 +50,7 @@ namespace nova {
          * \brief Initiazes the nova_renderer
          *
          * Initializing the nova_renderer is a lot of work. I create an OpenGL context, create a GLFW window, initialize
-         * the texture manager, shader manager, UBO manager, etc. and set up initial OpenGL state.
+         * the texture manager, shader manager, UBO manager, etc. and set`1 up initial OpenGL state.
          */
         nova_renderer();
 
@@ -92,9 +92,9 @@ namespace nova {
 
         // Overrides from iconfig_listener
 
-        void on_config_change(nlohmann::json& new_config);
+        void on_config_change(nlohmann::json& new_config) override;
 
-        void on_config_loaded(nlohmann::json& config);
+        void on_config_loaded(nlohmann::json& config) override;
 
     private:
 
@@ -123,6 +123,7 @@ namespace nova {
         camera player_camera;
 
         VkInstance vulkan_instance;
+        VkDebugReportCallbackEXT debug_callback;
 
         /*!
          * \brief Renders the GUI of Minecraft
@@ -136,8 +137,6 @@ namespace nova {
         void render_composite_passes();
 
         void render_final_pass();
-
-        void enable_debug();
 
         void init_vulkan_state();
 
