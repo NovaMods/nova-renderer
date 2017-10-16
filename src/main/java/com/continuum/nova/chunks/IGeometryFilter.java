@@ -138,7 +138,11 @@ public interface IGeometryFilter {
 
         @Override
         public String toString() {
-            return shouldBeTransparent ? "transparent" : "not_transparent";
+            if (shouldBeTransparent) {
+                return "transparent";
+            } else {
+                return "not_transparent";
+            }
         }
     }
 
@@ -156,7 +160,11 @@ public interface IGeometryFilter {
 
         @Override
         public String toString() {
-            return shouldBeEmissive ? "emissive" : "not_emissive";
+            if (shouldBeEmissive) {
+                return "emissive";
+            } else {
+                return "not_emissive";
+            }
         }
     }
 
