@@ -159,11 +159,12 @@ public class Keyboard {
     private static final HashSet<Integer> keyDownBuffer = new HashSet<>();
 
     private static Keyboard.KeyEvent currentEvent;
-    private static boolean created, initialized, repeat_enabled;
+    private static boolean created;
+    private static boolean initialized;
+    private static boolean repeat_enabled;
 
 
-    private Keyboard() {
-    }
+    private Keyboard() { }
 
     private static void initialize() {
         if (!initialized) {
@@ -250,8 +251,11 @@ public class Keyboard {
     static {
         try {
             for (Field field : Keyboard.class.getFields()) {
-                if (Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers()) &&
-                        Modifier.isFinal(field.getModifiers()) && field.getType().equals(Integer.TYPE) &&
+                boolean isStatic = Modifier.isStatic(field.getModifiers());
+                boolean isPublic = Modifier.isPublic(field.getModifiers());
+                boolean isFinal  = Modifier.isFinal(field.getModifiers());
+
+                if (isStatic && isPublic && isFinal && field.getType().equals(Integer.TYPE) &&
                         field.getName().startsWith("KEY_") && !field.getName().endsWith("WIN")) {
                     int key = field.getInt(null);
                     String name = field.getName().substring(4);

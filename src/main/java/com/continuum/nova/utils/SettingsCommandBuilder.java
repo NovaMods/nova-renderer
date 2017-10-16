@@ -18,13 +18,13 @@ public class SettingsCommandBuilder {
         settings.display_height = mc.displayHeight;
         settings.display_width = mc.displayWidth;
 
-        if (Utils.exists(mc.theWorld)) {
+        if(Utils.exists(mc.theWorld)) {
             settings.should_render_clouds = mc.theWorld.provider.isSurfaceWorld() ? mc.gameSettings.shouldRenderClouds() : 0;
         }
 
         Entity viewEntity = mc.getRenderViewEntity();
 
-        if (Utils.exists(viewEntity)) {
+        if(Utils.exists(viewEntity)) {
             settings.has_blindness = ((EntityLivingBase) viewEntity).isPotionActive(MobEffects.BLINDNESS);
         }
 

@@ -35,7 +35,7 @@ public class Profiler {
     private static Map<String, ProfilerData> profilerDataMap = new HashMap<>();
 
     public static void start(String name) {
-        if (!profilerDataMap.containsKey(name)) {
+        if(!profilerDataMap.containsKey(name)) {
             profilerDataMap.put(name, new ProfilerData());
         }
 
@@ -47,8 +47,8 @@ public class Profiler {
     }
 
     public static void logData() {
-        if (counter >= 100) {
-            for (Map.Entry<String, ProfilerData> entry : profilerDataMap.entrySet()) {
+        if(counter >= 100) {
+            for(Map.Entry<String, ProfilerData> entry : profilerDataMap.entrySet()) {
                 LOG.debug("Section {} has taken an total of {}ms since the game began", entry.getKey(), (double) entry.getValue().total_duration / 1000000.0);
             }
             counter = 0;
@@ -57,6 +57,5 @@ public class Profiler {
         counter++;
     }
 
-    private Profiler() {
-    }
+    private Profiler() { }
 }

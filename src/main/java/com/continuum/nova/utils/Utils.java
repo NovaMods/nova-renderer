@@ -7,8 +7,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class Utils {
-    private Utils() {
-    }
+    private Utils() { }
 
     static boolean exists(Object objectToCheck) {
         return objectToCheck != null;

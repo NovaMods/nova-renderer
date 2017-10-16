@@ -163,12 +163,12 @@ public interface IGeometryFilter {
     static IGeometryFilter parseFilterString(final String filterString) {
         String[] tokens = filterString.split(" ");
 
-        if (tokens.length % 2 == 0) {
+        if(tokens.length % 2 == 0) {
             throw new IllegalArgumentException("Cannot have an even number of tokens in your geometry filter expressions");
         }
 
         IGeometryFilter filter = makeFilterFromToken(tokens[0]);
-        if (tokens.length == 1) {
+        if(tokens.length == 1) {
             return filter;
         }
 
@@ -178,7 +178,7 @@ public interface IGeometryFilter {
     static IGeometryFilter makeFilterExpression(IGeometryFilter previousFilter, String[] tokens, int curToken) {
         IGeometryFilter thisFilter;
 
-        switch (tokens[curToken]) {
+        switch(tokens[curToken]) {
             case "AND":
                 thisFilter = new AndGeometryFilter(previousFilter, makeFilterFromToken(tokens[curToken + 1]));
                 break;
@@ -193,33 +193,37 @@ public interface IGeometryFilter {
 
         boolean hasAnotherExpression = curToken + 2 < tokens.length - 1;
 
-        return hasAnotherExpression ? makeFilterExpression(thisFilter, tokens, curToken + 2) : thisFilter;
+        if(hasAnotherExpression){
+            return makeFilterExpression(thisFilter, tokens, curToken + 2);
+        } else {
+            return thisFilter;
+        }
     }
 
     static IGeometryFilter makeFilterFromToken(final String token) {
-        if (token.startsWith("geometry_type::")) {
+        if(token.startsWith("geometry_type::")) {
             String typeName = token.substring(15);
             GeometryType type = GeometryType.valueOf(typeName.toUpperCase());
             return new GeometryTypeGeometryFilter(type);
 
-        } else if (token.startsWith("name::")) {
+        } else if(token.startsWith("name::")) {
             String name = token.substring(6);
             return new NameGeometryFilter(name);
 
-        } else if (token.startsWith("name_part::")) {
+        } else if(token.startsWith("name_part::")) {
             String namePart = token.substring(11);
             return new NamePartGeometryFilter(namePart);
 
-        } else if (token.equals("transparent")) {
+        } else if(token.equals("transparent")) {
             return new TransparentGeometryFilter(true);
 
-        } else if (token.equals("not_transparent")) {
+        } else if(token.equals("not_transparent")) {
             return new TransparentGeometryFilter(false);
 
-        } else if (token.equals("emissive")) {
+        } else if(token.equals("emissive")) {
             return new EmissiveGeometryFilter(true);
 
-        } else if (token.equals("not_emissive")) {
+        } else if(token.equals("not_emissive")) {
             return new EmissiveGeometryFilter(false);
         }
 

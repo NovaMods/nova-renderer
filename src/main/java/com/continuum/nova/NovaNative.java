@@ -32,7 +32,7 @@ public interface NovaNative extends Library {
             this.num_components = num_components;
 
             this.texture_data = new Memory(width * height * num_components * Native.getNativeSize(Byte.TYPE));
-            for (int i = 0; i < width * height * num_components; i++) {
+            for(int i = 0; i < width * height * num_components; i++) {
                 this.texture_data.setByte(i, texture_data[i]);
             }
         }
@@ -102,7 +102,7 @@ public interface NovaNative extends Library {
 
         public void setVertex_data(List<Integer> vertexData) {
             vertex_data = new Memory(vertexData.size() * Native.getNativeSize(Integer.class));
-            for (int i = 0; i < vertexData.size(); i++) {
+            for(int i = 0; i < vertexData.size(); i++) {
                 Integer data = vertexData.get(i);
                 vertex_data.setInt(i * Native.getNativeSize(Integer.TYPE), data);
             }
@@ -112,7 +112,7 @@ public interface NovaNative extends Library {
 
         public void setIndices(List<Integer> indices) {
             this.indices = new Memory(indices.size() * Native.getNativeSize(Integer.class));
-            for (int i = 0; i < indices.size(); i++) {
+            for(int i = 0; i < indices.size(); i++) {
                 Integer data = indices.get(i);
                 this.indices.setInt(i * Native.getNativeSize(Integer.TYPE), data);
             }

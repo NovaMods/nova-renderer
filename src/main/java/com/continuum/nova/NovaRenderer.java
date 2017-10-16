@@ -88,7 +88,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
         this.resourceManager = resourceManager;
 
-        if (firstLoad) {
+        if(firstLoad) {
             firstLoad = false;
         }
 
@@ -111,12 +111,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
      * @param resourceManager The IResoruceManager to get the textures from
      */
     private void addFreeTextures(IResourceManager resourceManager) {
-        for (ResourceLocation loc : FREE_TEXTURES) {
+        for(ResourceLocation loc : FREE_TEXTURES) {
             try {
                 IResource texture = resourceManager.getResource(loc);
                 BufferedInputStream in = new BufferedInputStream(texture.getInputStream());
                 BufferedImage image = ImageIO.read(in);
-                if (image != null) {
+                if(image != null) {
                     loadTexture(loc, image);
                 } else {
                     LOG.error("Free texture " + loc + " has no data!");
@@ -145,7 +145,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.add_texture(blockColorTexture);
 
         // Copy over all the icon locations
-        for (String spriteName : blockColorMap.getMapUploadedSprites().keySet()) {
+        for(String spriteName : blockColorMap.getMapUploadedSprites().keySet()) {
             TextureAtlasSprite sprite = blockColorMap.getAtlasSprite(spriteName);
             NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
                     sprite.getIconName(),
@@ -175,7 +175,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.info("Adding atlas texture {}", atlasTexture);
         NovaNative.INSTANCE.add_texture(atlasTexture);
 
-        for (TextureAtlasSprite sprite : spriteLocations.values()) {
+        for(TextureAtlasSprite sprite : spriteLocations.values()) {
             NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
                     sprite.getIconName(),
                     sprite.getMinU(),
@@ -191,14 +191,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private NovaNative.mc_atlas_texture getFullImage(int atlasWidth, int atlasHeight, Collection<TextureAtlasSprite> sprites) {
         byte[] imageData = new byte[atlasWidth * atlasHeight * 4];
 
-        for (TextureAtlasSprite sprite : sprites) {
+        for(TextureAtlasSprite sprite : sprites) {
             int startY = sprite.getOriginY() * atlasWidth * 4;
             int startPos = sprite.getOriginX() * 4 + startY;
 
-            if (sprite.getFrameCount() > 0) {
+            if(sprite.getFrameCount() > 0) {
                 int[] data = sprite.getFrameTextureData(0)[0];
-                for (int y = 0; y < sprite.getIconHeight(); y++) {
-                    for (int x = 0; x < sprite.getIconWidth(); x++) {
+                for(int y = 0; y < sprite.getIconHeight(); y++) {
+                    for(int x = 0; x < sprite.getIconWidth(); x++) {
                         // Reverse the order of the color channels
                         int pixel = data[y * sprite.getIconWidth() + x];
 
@@ -274,7 +274,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
-        if (NovaNative.INSTANCE.should_close()) {
+        if(NovaNative.INSTANCE.should_close()) {
             mc.shutdown();
         }
 
@@ -282,28 +282,26 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         boolean shouldUpdateLightmap = entityRenderer.isLightmapUpdateNeeded();
         entityRenderer.updateLightmap(renderPartialTicks);
-        if (shouldUpdateLightmap) {
+        if(shouldUpdateLightmap) {
             sendLightmapTexture(entityRenderer.getLightmapTexture());
         }
 
 
         Profiler.start("render_gui");
-        if (mc.currentScreen != null) {
-
+        if(mc.currentScreen != null) {
             NovaDraw.novaDrawScreen(mc.currentScreen, renderPartialTicks);
-
         }
         Profiler.end("render_gui");
 
         Profiler.start("update_chunks");
         int numChunksUpdated = 0;
-        while (!chunksToUpdate.isEmpty()) {
+        while(!chunksToUpdate.isEmpty()) {
             ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
             // chunkBuilder.createMeshesForChunk(range);
             chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
             updatedChunks.add(range);
             numChunksUpdated++;
-            if (numChunksUpdated > 10) {
+            if(numChunksUpdated > 10) {
                 break;
             }
         }
@@ -311,7 +309,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         Profiler.start("update_player");
         EntityPlayerSP viewEntity = mc.thePlayer;
-        if (viewEntity != null) {
+        if(viewEntity != null) {
             float pitch = viewEntity.rotationPitch;
             float yaw = viewEntity.rotationYaw;
             double x = viewEntity.posX;
@@ -330,7 +328,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.end("update_window");
 
         int newScaleFactor = new ScaledResolution(mc).getScaleFactor() * 2;
-        if (newScaleFactor != scalefactor) {
+        if(newScaleFactor != scalefactor) {
             NovaNative.INSTANCE.set_float_setting("scalefactor", newScaleFactor);
             scalefactor = newScaleFactor;
         }
@@ -348,12 +346,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void setWorld(World world) {
-        if (world != null) {
+        if(world != null) {
             world.addEventListener(chunkUpdateListener);
             this.world = world;
             chunksToUpdate.clear();
 
-            if (chunkBuilder != null) {
+            if(chunkBuilder != null) {
                 chunkBuilder.setWorld(world);
             }
         }
@@ -366,7 +364,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
      * @param image    The texture itself
      */
     public void loadTexture(ResourceLocation location, BufferedImage image) {
-        if (resourceManager == null) {
+        if(resourceManager == null) {
             LOG.error("Trying to load texture " + location + " but there's no resource manager");
             return;
         }
@@ -384,11 +382,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public static String atlasTextureOfSprite(ResourceLocation texture) {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
 
-        if (BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+        if(BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             return BLOCK_COLOR_ATLAS_NAME;
-        } else if (GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture.equals(WHITE_TEXTURE_GUI_LOCATION)) {
+        } else if(GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture.equals(WHITE_TEXTURE_GUI_LOCATION)) {
             return GUI_ATLAS_NAME;
-        } else if (FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+        } else if(FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             return FONT_ATLAS_NAME;
         }
 
@@ -406,7 +404,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         String[] filtersSplit = filters.split("\n");
 
         filterMap = new HashMap<>();
-        for (int i = 0; i < filtersSplit.length; i += 2) {
+        for(int i = 0; i < filtersSplit.length; i += 2) {
             String filterName = filtersSplit[i];
             IGeometryFilter filter = IGeometryFilter.parseFilterString(filtersSplit[i + 1]);
             filterMap.put(filterName, filter);

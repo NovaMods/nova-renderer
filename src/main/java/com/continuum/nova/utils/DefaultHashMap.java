@@ -16,7 +16,7 @@ public class DefaultHashMap<K, V> extends HashMap<K, V> {
 
     @Override
     public V get(Object key) {
-        if (!containsKey(key)) {
+        if(!containsKey(key)) {
             put((K) key, valueSupplier.get());
         }
 

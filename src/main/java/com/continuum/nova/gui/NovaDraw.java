@@ -20,8 +20,6 @@ import java.util.*;
 import java.util.List;
 
 public class NovaDraw {
-
-
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
     private static final float zIncrement = 0.0001f;
 
@@ -33,8 +31,7 @@ public class NovaDraw {
     /**
      * private constructor cause this class only has static things
      */
-    private NovaDraw() {
-    }
+    private NovaDraw() { }
 
     private static void clearBuffers() {
         buffers.clear();
@@ -58,7 +55,7 @@ public class NovaDraw {
      * @param vertexbuffer vertex buffer data
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Float[] vertexbuffer) {
-        if (buffers.containsKey(texture)) {
+        if(buffers.containsKey(texture)) {
             buffers.get(texture).add(indexBuffer, vertexbuffer);
         } else {
             buffers.put(texture, new Buffers().add(indexBuffer, vertexbuffer));
@@ -79,7 +76,7 @@ public class NovaDraw {
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Vertex[] vertices) {
 
         Float[] vertexbuffer = new Float[vertices.length * 9];
-        for (int v = 0; v < vertices.length; v++) {
+        for(int v = 0; v < vertices.length; v++) {
 
             Vec4 transformedVertex = ModelMatrix.mul(new Vec4(vertices[v].x, vertices[v].y, currentZ, 1));
 
@@ -188,7 +185,7 @@ public class NovaDraw {
         clearBuffers();
         screen.drawScreen(mouseX, mouseY, renderPartialTicks);
 
-        for (Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
+        for(Map.Entry<ResourceLocation, Buffers> entry : buffers.entrySet()) {
             Buffers b = entry.getValue();
             ResourceLocation texture = entry.getKey();
             long timeWithAlloc = System.nanoTime();
@@ -219,7 +216,7 @@ public class NovaDraw {
         public float a;
 
         public Vertex(float x, float y, float u, float v, Color color) {
-            if (color == null) {
+            if(color == null) {
                 color = new Color(255, 255, 255);
             }
 
@@ -227,10 +224,10 @@ public class NovaDraw {
             this.y = y;
             this.u = u;
             this.v = v;
-            r = (float) color.getRed() / 255.f;
-            g = (float) color.getGreen() / 255.f;
-            b = (float) color.getBlue() / 255.f;
-            a = (float) color.getAlpha() / 255.f;
+            r = (float)color.getRed() / 255.f;
+            g = (float)color.getGreen() / 255.f;
+            b = (float)color.getBlue() / 255.f;
+            a = (float)color.getAlpha() / 255.f;
         }
     }
 
@@ -246,7 +243,7 @@ public class NovaDraw {
         public Buffers add(Integer[] indexBuffer, Float[] vertexBuffer) {
             // add index buffer
             int indexbuffer_size = this.vertexBuffer.size() / 9;    // 9 is the number of floats per vertex
-            for (int index : indexBuffer) {
+            for(int index : indexBuffer) {
                 this.indexBuffer.add(index + indexbuffer_size);
             }
 
@@ -274,7 +271,7 @@ public class NovaDraw {
             // assign the index buffer
             command.index_buffer_size = indexBuffer.size();
             command.index_buffer = new Memory(command.index_buffer_size * Native.getNativeSize(Integer.TYPE));
-            for (int i = 0; i < command.index_buffer_size; i++) {
+            for(int i = 0; i < command.index_buffer_size; i++) {
                 Integer index = indexBuffer.get(i);
                 command.index_buffer.setInt(i * Native.getNativeSize(Integer.TYPE), (index != null ? index : 0));
             }
@@ -282,7 +279,7 @@ public class NovaDraw {
             // assign the vertex buffer
             command.vertex_buffer_size = vertexBuffer.size();
             command.vertex_buffer = new Memory(command.vertex_buffer_size * Native.getNativeSize(Float.TYPE));
-            for (int i = 0; i < command.vertex_buffer_size; i++) {
+            for(int i = 0; i < command.vertex_buffer_size; i++) {
                 Float vertex = vertexBuffer.get(i);
                 command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (vertex != null ? vertex : 0));
             }

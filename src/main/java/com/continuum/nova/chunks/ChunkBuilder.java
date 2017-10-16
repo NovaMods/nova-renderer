@@ -12,6 +12,8 @@ import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -22,6 +24,7 @@ import java.util.*;
  * @since 27-Jul-17
  */
 public class ChunkBuilder {
+    private static final Logger LOG = LogManager.getLogger(ChunkBuilder.class);
     private static final int VERTEX_COLOR_OFFSET = 3;
     private static final int LIGHTMAP_COORD_OFFSET = 6;
 
@@ -41,9 +44,9 @@ public class ChunkBuilder {
         blockRendererDispatcher = Minecraft.getMinecraft().getBlockRenderDispatcher();
         Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
 
-        for (int x = range.min.x; x <= range.max.x; x++) {
-            for (int y = range.min.y; y < range.max.y; y++) {
-                for (int z = range.min.z; z <= range.max.z; z++) {
+        for(int x = range.min.x; x <= range.max.x; x++) {
+            for(int y = range.min.y; y < range.max.y; y++) {
+                for(int z = range.min.z; z <= range.max.z; z++) {
                     filterBlockAtPos(blocksForFilter, new BlockPos(x, y, z));
                 }
             }
@@ -51,7 +54,7 @@ public class ChunkBuilder {
 
         final int chunkHashCode = 31 * range.min.x + range.min.z;
 
-        for (String filterName : blocksForFilter.keySet()) {
+        for(String filterName : blocksForFilter.keySet()) {
             Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world, new BlockPos(range.min.x, range.min.y, range.min.z));
             renderObj.ifPresent(obj -> {
                 obj.id = chunkHashCode;
@@ -68,17 +71,17 @@ public class ChunkBuilder {
      * Adds the block at the given position to the blocksForFilter map under each filter that matches the block
      *
      * @param blocksForFilter The map of blocks to potentially add the given block to
-     * @param pos             The position of the block to add
+     * @param pos The position of the block to add
      */
     private void filterBlockAtPos(Map<String, List<BlockPos>> blocksForFilter, BlockPos pos) {
         IBlockState blockState = world.getBlockState(pos);
-        if (blockState.getRenderType() == EnumBlockRenderType.INVISIBLE) {
+        if(blockState.getRenderType() == EnumBlockRenderType.INVISIBLE) {
             return;
         }
 
-        for (Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
-            if (entry.getValue().matches(blockState)) {
-                if (!blocksForFilter.containsKey(entry.getKey())) {
+        for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
+            if(entry.getValue().matches(blockState)) {
+                if(!blocksForFilter.containsKey(entry.getKey())) {
                     blocksForFilter.put(entry.getKey(), new ArrayList<>());
                 }
                 blocksForFilter.get(entry.getKey()).add(pos);
@@ -94,10 +97,10 @@ public class ChunkBuilder {
         BlockFluidRenderer fluidRenderer = blockRendererDispatcher.getFluidRenderer();
 
         int blockIndexCounter = 0;
-        for (BlockPos blockPos : positions) {
+        for(BlockPos blockPos : positions) {
             IBlockState blockState = world.getBlockState(blockPos);
 
-            if (blockState.getRenderType() == EnumBlockRenderType.MODEL) {
+            if(blockState.getRenderType() == EnumBlockRenderType.MODEL) {
                 IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
                 int colorMultiplier = blockColors.colorMultiplier(blockState, null, null, 0);
 
@@ -109,19 +112,19 @@ public class ChunkBuilder {
                 actuallyAllValuesOfEnumFacing.add(null);
 
                 int faceIndexCounter = 0;
-                for (EnumFacing facing : actuallyAllValuesOfEnumFacing) {
+                for(EnumFacing facing : actuallyAllValuesOfEnumFacing) {
                     List<BakedQuad> quads = blockModel.getQuads(blockState, facing, 0);
                     boolean shouldSideBeRendered = true;
-                    if (facing != null) {
+                    if(facing != null) {
                         // When Nova explodes and I get invited to Sweden to visit Mojang, the absolute first thing I'm
                         // going to do it find whoever decided to use `null` rather than ADDING ANOTHER FUCKING ENUM
                         // VALUE and I'm going to make them regret everything they've ever done
                         shouldSideBeRendered = blockState.shouldSideBeRendered(world, blockPos, facing);
                     }
                     boolean hasQuads = !quads.isEmpty();
-                    if (shouldSideBeRendered && hasQuads) {
+                    if(shouldSideBeRendered && hasQuads) {
                         int lmCoords;
-                        if (facing == null) {
+                        if(facing == null) {
                             // This logic would be reasonable to write and simple to maintain IF THEY HAD JUST ADDED
                             // ANOTHER FUCKING VALUE TO THEIR STUPID FUCKING ENUM
                             lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(EnumFacing.UP));
@@ -129,15 +132,15 @@ public class ChunkBuilder {
                             lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(facing));
                         }
 
-                        for (BakedQuad quad : quads) {
-                            if (quad.hasTintIndex()) {
+                        for(BakedQuad quad : quads) {
+                            if(quad.hasTintIndex()) {
                                 colorMultiplier = blockColors.colorMultiplier(blockState, world, blockPos, quad.getTintIndex());
                             }
                             int[] quadVertexData = addPosition(quad, blockPos.subtract(chunkPos));
                             setVertexColor(quadVertexData, colorMultiplier);
                             setLightmapCoord(quadVertexData, lmCoords);
 
-                            for (int data : quadVertexData) {
+                            for(int data : quadVertexData) {
                                 vertexData.add(data);
                             }
 
@@ -149,7 +152,7 @@ public class ChunkBuilder {
 
                 blockIndexCounter += faceIndexCounter;
 
-            } else if (blockState.getRenderType() == EnumBlockRenderType.LIQUID) {
+            } else if(blockState.getRenderType() == EnumBlockRenderType.LIQUID) {
                 // Why do liquids have to be different? :(
                 fluidRenderer.renderFluid(world, blockState, blockPos, capturingVertexBuffer);
             }
@@ -158,13 +161,13 @@ public class ChunkBuilder {
         vertexData.addAll(capturingVertexBuffer.getData());
 
         int offset = indices.size();
-        for (int i = 0; i < capturingVertexBuffer.getVertexCount() / 4; i++) {
+        for(int i = 0; i < capturingVertexBuffer.getVertexCount() / 4; i++) {
             indices.addIndicesForFace(offset, 0);
 
             offset += 4;
         }
 
-        if (vertexData.isEmpty()) {
+        if(vertexData.isEmpty()) {
             return Optional.empty();
         }
 
@@ -176,13 +179,13 @@ public class ChunkBuilder {
     }
 
     private void setLightmapCoord(int[] quadVertexData, int lmCoords) {
-        for (int i = 0; i < 4; i++) {
+        for(int i = 0; i < 4; i++) {
             quadVertexData[i * 7 + LIGHTMAP_COORD_OFFSET] = lmCoords;
         }
     }
 
     private void setVertexColor(int[] vertexData, int vertexColor) {
-        for (int i = 0; i < 4; i++) {
+        for(int i = 0; i < 4; i++) {
             vertexData[i * 7 + VERTEX_COLOR_OFFSET] = vertexColor;
         }
     }
@@ -190,7 +193,7 @@ public class ChunkBuilder {
     private int[] addPosition(BakedQuad quad, BlockPos blockPos) {
         int[] data = Arrays.copyOf(quad.getVertexData(), quad.getVertexData().length);
 
-        for (int vertex = 0; vertex < 28; vertex += 7) {
+        for(int vertex = 0; vertex < 28; vertex += 7) {
             addPosToVertex(blockPos, data, vertex);
         }
 
@@ -218,8 +221,8 @@ public class ChunkBuilder {
     /**
      * Returns the IBlockState of the block next to the block at the provided position in the given direction
      *
-     * @param pos       The position to get the block next to
-     * @param world     The world that all these blocks are in
+     * @param pos The position to get the block next to
+     * @param world The world that all these blocks are in
      * @param direction The direction to look in
      * @return The IBlockState of the block in the provided direction
      */
