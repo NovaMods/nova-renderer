@@ -1,19 +1,16 @@
 package com.continuum.nova.input;
 
+import com.continuum.nova.NovaNative;
+import com.continuum.nova.NovaNative.key_char_event;
+import com.continuum.nova.NovaNative.key_press_event;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.InputImplementation;
-
-import com.continuum.nova.NovaNative;
-import com.continuum.nova.NovaNative.key_press_event;
-import com.continuum.nova.NovaNative.key_char_event;
+@SuppressWarnings("unused")
 public class Keyboard {
     public static final int EVENT_SIZE = 18;
     public static final int CHAR_NONE = 0;
@@ -156,13 +153,14 @@ public class Keyboard {
     public static final int KEY_APPS = 221;
     public static final int KEY_POWER = 222;
     public static final int KEY_SLEEP = 223;
+
     private static final String[] keyName = new String[256];
-    private static final Map<String, Integer> keyMap = new HashMap(253);
-    private static boolean created;
-    private static boolean repeat_enabled;
+    private static final Map<String, Integer> keyMap = new HashMap<>(253);
     private static final HashSet<Integer> keyDownBuffer = new HashSet<>();
-    private static Keyboard.KeyEvent current_event;
-    private static boolean initialized;
+
+    private static Keyboard.KeyEvent currentEvent;
+    private static boolean created, initialized, repeat_enabled;
+
 
     private Keyboard() {
     }
@@ -192,11 +190,7 @@ public class Keyboard {
     }
 
     public static boolean isKeyDown(int key) {
-
-
-            return keyDownBuffer.contains(key);
-
-
+        return keyDownBuffer.contains(key);
     }
 
     public static synchronized String getKeyName(int key) {
@@ -204,8 +198,8 @@ public class Keyboard {
     }
 
     public static synchronized int getKeyIndex(String keyName) {
-        Integer ret = (Integer) keyMap.get(keyName);
-        return ret == null ? 0 : ret.intValue();
+        Integer ret = keyMap.get(keyName);
+        return ret == null ? 0 : ret;
     }
 
 
@@ -213,75 +207,63 @@ public class Keyboard {
         key_press_event p = NovaNative.INSTANCE.get_next_key_press_event();
         key_char_event c = NovaNative.INSTANCE.get_next_key_char_event();
 
-        if (p.filled==0 && c.filled==0){
+        if (p.filled == 0 && c.filled == 0) {
             return false;
         }
-        if (p.filled==1 && p.key !=0 &&p.action!=2){
-            if (p.action ==1){
+        if (p.filled == 1 && p.key != 0 && p.action != 2) {
+            if (p.action == 1) {
                 keyDownBuffer.add(p.key);
 
-            } else{
+            } else {
                 keyDownBuffer.remove(p.key);
             }
         }
-        current_event.key = p.key;
-        current_event.character = (char) c.unicode_char;
-        current_event.state = p.action!=0;
-        current_event.repeat = p.action == 2;
+        currentEvent.key = p.key;
+        currentEvent.character = (char) c.unicode_char;
+        currentEvent.state = p.action != 0;
+        currentEvent.repeat = p.action == 2;
+
         return true;
     }
 
 
     public static void enableRepeatEvents(boolean enable) {
-
         repeat_enabled = enable;
-
     }
 
     public static char getEventCharacter() {
-
-        return  current_event.character;
-
+        return currentEvent.character;
     }
 
     public static int getEventKey() {
-
-        return current_event.key;
-
+        return currentEvent.key;
     }
 
     public static boolean getEventKeyState() {
-
-        return current_event.state;
-
+        return currentEvent.state;
     }
 
     public static boolean isRepeatEvent() {
-
-        return current_event.repeat;
-
+        return currentEvent.repeat;
     }
 
     static {
-        Field[] fields = Keyboard.class.getFields();
-
         try {
-            Field[] e = fields;
-            int len$ = fields.length;
-
-            for (int i$ = 0; i$ < len$; ++i$) {
-                Field field = e[i$];
-                if (Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers()) && Modifier.isFinal(field.getModifiers()) && field.getType().equals(Integer.TYPE) && field.getName().startsWith("KEY_") && !field.getName().endsWith("WIN")) {
-                    int key = field.getInt((Object) null);
+            for (Field field : Keyboard.class.getFields()) {
+                if (Modifier.isStatic(field.getModifiers()) && Modifier.isPublic(field.getModifiers()) &&
+                        Modifier.isFinal(field.getModifiers()) && field.getType().equals(Integer.TYPE) &&
+                        field.getName().startsWith("KEY_") && !field.getName().endsWith("WIN")) {
+                    int key = field.getInt(null);
                     String name = field.getName().substring(4);
                     keyName[key] = name;
-                    keyMap.put(name, Integer.valueOf(key));
+                    keyMap.put(name, key);
                 }
             }
-        } catch (Exception var7) {
-            ;
+        } catch (Exception ignored) {
+
         }
-        current_event = new Keyboard.KeyEvent();
+
+        currentEvent = new Keyboard.KeyEvent();
     }
 
     private static final class KeyEvent {

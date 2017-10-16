@@ -7,699 +7,369 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class Utils {
-    private Utils() {}
+    private Utils() {
+    }
 
-    static boolean exists(Object objectToCheck)
-    {
+    static boolean exists(Object objectToCheck) {
         return objectToCheck != null;
     }
 
     public static void initGuiTextureLocations(List<ResourceLocation> locations) {
-        locations.add(new ResourceLocation("gui/bars"));
-        locations.add(new ResourceLocation("gui/book"));
-        locations.add(new ResourceLocation("gui/demo_background"));
-        locations.add(new ResourceLocation("gui/icons"));
-        locations.add(new ResourceLocation("gui/resource_packs"));
-        locations.add(new ResourceLocation("gui/server_selection"));
-        locations.add(new ResourceLocation("gui/spectator_widgets"));
-        // locations.add(new ResourceLocation("gui/stream_indicator")); // non-square texture, breaks
-        locations.add(new ResourceLocation("gui/widgets"));
-        locations.add(new ResourceLocation("gui/world_selection"));
-        locations.add(new ResourceLocation("gui/achievement/achievement_background"));
-        locations.add(new ResourceLocation("gui/achievement/achievement_icons"));
-        locations.add(new ResourceLocation("gui/container/anvil"));
-        locations.add(new ResourceLocation("gui/container/beacon"));
-        locations.add(new ResourceLocation("gui/container/brewing_stand"));
-        locations.add(new ResourceLocation("gui/container/crafting_table"));
-        locations.add(new ResourceLocation("gui/container/dispenser"));
-        locations.add(new ResourceLocation("gui/container/enchanting_table"));
-        locations.add(new ResourceLocation("gui/container/furnace"));
-        locations.add(new ResourceLocation("gui/container/generic_54"));
-        locations.add(new ResourceLocation("gui/container/hopper"));
-        locations.add(new ResourceLocation("gui/container/horse"));
-        locations.add(new ResourceLocation("gui/container/inventory"));
-        locations.add(new ResourceLocation("gui/container/stats_icons"));
-        locations.add(new ResourceLocation("gui/container/villager"));
-        locations.add(new ResourceLocation("gui/container/creative_inventory/tabs"));
-        locations.add(new ResourceLocation("gui/container/creative_inventory/tab_inventory"));
-        locations.add(new ResourceLocation("gui/container/creative_inventory/tab_items"));
-        locations.add(new ResourceLocation("gui/container/creative_inventory/tab_item_search"));
-        locations.add(new ResourceLocation("gui/presets/chaos"));
-        locations.add(new ResourceLocation("gui/presets/delight"));
-        locations.add(new ResourceLocation("gui/presets/drought"));
-        locations.add(new ResourceLocation("gui/presets/isles"));
-        locations.add(new ResourceLocation("gui/presets/luck"));
-        locations.add(new ResourceLocation("gui/presets/madness"));
-        locations.add(new ResourceLocation("gui/presets/water"));
-        locations.add(new ResourceLocation("gui/title/minecraft"));
-        locations.add(new ResourceLocation("gui/title/mojang"));
-        locations.add(new ResourceLocation("gui/title/background/panorama_0"));
-        locations.add(new ResourceLocation("gui/title/background/panorama_1"));
-        locations.add(new ResourceLocation("gui/title/background/panorama_2"));
-        locations.add(new ResourceLocation("gui/title/background/panorama_3"));
-        locations.add(new ResourceLocation("gui/title/background/panorama_4"));
-        locations.add(new ResourceLocation("gui/title/background/panorama_5"));
+        addResources(locations,
+                "gui/bars", "gui/book", "gui/demo_background",
+                "gui/icons", "gui/resource_packs", "gui/server_selection",
+                "gui/spectator_widgets", "gui/widgets", "gui/world_selection",
+
+                // "gui/stream_indicator" // non-square texture, breaks
+
+                "gui/achievement/achievement_background", "gui/achievement/achievement_icons",
+
+                "gui/container/anvil", "gui/container/beacon", "gui/container/brewing_stand",
+                "gui/container/crafting_table", "gui/container/dispenser", "gui/container/enchanting_table",
+                "gui/container/furnace", "gui/container/generic_54", "gui/container/hopper", "gui/container/horse",
+                "gui/container/inventory", "gui/container/stats_icons", "gui/container/villager",
+                "gui/container/creative_inventory/tabs", "gui/container/creative_inventory/tab_inventory",
+                "gui/container/creative_inventory/tab_items", "gui/container/creative_inventory/tab_item_search",
+
+                "gui/presets/chaos", "gui/presets/delight",
+                "gui/presets/drought", "gui/presets/isles",
+                "gui/presets/luck", "gui/presets/madness",
+                "gui/presets/water",
+
+                "gui/title/minecraft", "gui/title/mojang",
+
+                "gui/title/background/panorama_0", "gui/title/background/panorama_1",
+                "gui/title/background/panorama_2", "gui/title/background/panorama_3",
+                "gui/title/background/panorama_4", "gui/title/background/panorama_5"
+        );
     }
 
     public static void initBlockTextureLocations(List<ResourceLocation> locations) {
-        locations.add(new ResourceLocation("blocks/anvil_base"));
-        locations.add(new ResourceLocation("blocks/anvil_top_damaged_0"));
-        locations.add(new ResourceLocation("blocks/anvil_top_damaged_1"));
-        locations.add(new ResourceLocation("blocks/anvil_top_damaged_2"));
-        locations.add(new ResourceLocation("blocks/beacon"));
-        locations.add(new ResourceLocation("blocks/bedrock"));
-        locations.add(new ResourceLocation("blocks/bed_feet_end"));
-        locations.add(new ResourceLocation("blocks/bed_feet_side"));
-        locations.add(new ResourceLocation("blocks/bed_feet_top"));
-        locations.add(new ResourceLocation("blocks/bed_head_end"));
-        locations.add(new ResourceLocation("blocks/bed_head_side"));
-        locations.add(new ResourceLocation("blocks/bed_head_top"));
-        locations.add(new ResourceLocation("blocks/bookshelf"));
-        locations.add(new ResourceLocation("blocks/brewing_stand"));
-        locations.add(new ResourceLocation("blocks/brewing_stand_base"));
-        locations.add(new ResourceLocation("blocks/brick"));
-        locations.add(new ResourceLocation("blocks/brickALT"));
-        locations.add(new ResourceLocation("blocks/brick_ALT"));
-        locations.add(new ResourceLocation("blocks/cactus_side"));
-        locations.add(new ResourceLocation("blocks/cactus_top"));
-        locations.add(new ResourceLocation("blocks/cake_bottom"));
-        locations.add(new ResourceLocation("blocks/cake_inner"));
-        locations.add(new ResourceLocation("blocks/cake_side"));
-        locations.add(new ResourceLocation("blocks/cake_top"));
-        locations.add(new ResourceLocation("blocks/carrots_stage_0"));
-        locations.add(new ResourceLocation("blocks/carrots_stage_1"));
-        locations.add(new ResourceLocation("blocks/carrots_stage_2"));
-        locations.add(new ResourceLocation("blocks/carrots_stage_3"));
-        locations.add(new ResourceLocation("blocks/cauldron_bottom"));
-        locations.add(new ResourceLocation("blocks/cauldron_inner"));
-        locations.add(new ResourceLocation("blocks/cauldron_side"));
-        locations.add(new ResourceLocation("blocks/cauldron_top"));
-        locations.add(new ResourceLocation("blocks/clay"));
-        locations.add(new ResourceLocation("blocks/coal_block"));
-        locations.add(new ResourceLocation("blocks/coal_ore"));
-        locations.add(new ResourceLocation("blocks/coarse_dirt"));
-        locations.add(new ResourceLocation("blocks/coarse_dirtt"));
-        locations.add(new ResourceLocation("blocks/cobblestone-A"));
-        locations.add(new ResourceLocation("blocks/cobblestone"));
-        locations.add(new ResourceLocation("blocks/cobblestone_mossy"));
-        locations.add(new ResourceLocation("blocks/cocoa_stage_0"));
-        locations.add(new ResourceLocation("blocks/cocoa_stage_1"));
-        locations.add(new ResourceLocation("blocks/cocoa_stage_2"));
-        locations.add(new ResourceLocation("blocks/command_block"));
-        locations.add(new ResourceLocation("blocks/command_block.mcmeta"));
-        locations.add(new ResourceLocation("blocks/command_blockk"));
-        locations.add(new ResourceLocation("blocks/comparator_off"));
-        locations.add(new ResourceLocation("blocks/comparator_on"));
-        locations.add(new ResourceLocation("blocks/crafting_table_front"));
-        locations.add(new ResourceLocation("blocks/crafting_table_side"));
-        locations.add(new ResourceLocation("blocks/crafting_table_top"));
-        locations.add(new ResourceLocation("blocks/daylight_detector_side"));
-        locations.add(new ResourceLocation("blocks/daylight_detector_top"));
-        locations.add(new ResourceLocation("blocks/daylight_detector_top2"));
-        locations.add(new ResourceLocation("blocks/deadbush"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_0"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_1"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_2"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_3"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_4"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_5"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_6"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_7"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_8"));
-        locations.add(new ResourceLocation("blocks/destroy_stage_9"));
-        locations.add(new ResourceLocation("blocks/diamond_block"));
-        locations.add(new ResourceLocation("blocks/diamond_ore"));
-        locations.add(new ResourceLocation("blocks/dirt"));
-        locations.add(new ResourceLocation("blocks/dirt_podzol_side"));
-        locations.add(new ResourceLocation("blocks/dirt_podzol_top"));
-        locations.add(new ResourceLocation("blocks/dispenser_front_horizontal"));
-        locations.add(new ResourceLocation("blocks/dispenser_front_vertical"));
-        locations.add(new ResourceLocation("blocks/door_iron_lower"));
-        locations.add(new ResourceLocation("blocks/door_iron_upper"));
-        locations.add(new ResourceLocation("blocks/door_wood_lower"));
-        locations.add(new ResourceLocation("blocks/door_wood_upper"));
-        locations.add(new ResourceLocation("blocks/doubleflower_paeonia"));
-        locations.add(new ResourceLocation("blocks/double_plant_fern_bottom"));
-        locations.add(new ResourceLocation("blocks/double_plant_fern_top"));
-        locations.add(new ResourceLocation("blocks/double_plant_grass_bottom"));
-        locations.add(new ResourceLocation("blocks/double_plant_grass_top"));
-        locations.add(new ResourceLocation("blocks/double_plant_paeonia_bottom"));
-        locations.add(new ResourceLocation("blocks/double_plant_paeonia_top"));
-        locations.add(new ResourceLocation("blocks/double_plant_rose_bottom"));
-        locations.add(new ResourceLocation("blocks/double_plant_rose_top"));
-        locations.add(new ResourceLocation("blocks/double_plant_sunflower_back"));
-        locations.add(new ResourceLocation("blocks/double_plant_sunflower_bottom"));
-        locations.add(new ResourceLocation("blocks/double_plant_sunflower_front"));
-        locations.add(new ResourceLocation("blocks/double_plant_sunflower_top"));
-        locations.add(new ResourceLocation("blocks/double_plant_syringa_bottom"));
-        locations.add(new ResourceLocation("blocks/double_plant_syringa_top"));
-        locations.add(new ResourceLocation("blocks/dragon_egg"));
-        locations.add(new ResourceLocation("blocks/dropper_front_horizontal"));
-        locations.add(new ResourceLocation("blocks/dropper_front_vertical"));
-        locations.add(new ResourceLocation("blocks/emerald_block"));
-        locations.add(new ResourceLocation("blocks/emerald_ore"));
-        locations.add(new ResourceLocation("blocks/emerald_ore.mcmeta"));
-        locations.add(new ResourceLocation("blocks/enchanting_table_bottom"));
-        locations.add(new ResourceLocation("blocks/enchanting_table_side"));
-        locations.add(new ResourceLocation("blocks/enchanting_table_top"));
-        locations.add(new ResourceLocation("blocks/endframe_eye"));
-        locations.add(new ResourceLocation("blocks/endframe_side"));
-        locations.add(new ResourceLocation("blocks/endframe_top"));
-        locations.add(new ResourceLocation("blocks/end_stone"));
-        locations.add(new ResourceLocation("blocks/farmland_dry"));
-        locations.add(new ResourceLocation("blocks/farmland_wet"));
-        locations.add(new ResourceLocation("blocks/fern"));
-        locations.add(new ResourceLocation("blocks/fire_layer_0"));
-        locations.add(new ResourceLocation("blocks/fire_layer_0.mcmeta"));
-        locations.add(new ResourceLocation("blocks/fire_layer_00"));
-        locations.add(new ResourceLocation("blocks/fire_layer_00.mcmeta"));
-        locations.add(new ResourceLocation("blocks/fire_layer_1"));
-        locations.add(new ResourceLocation("blocks/fire_layer_1.mcmeta"));
-        locations.add(new ResourceLocation("blocks/fire_layer_11.mcmeta"));
-        locations.add(new ResourceLocation("blocks/fire_layer_11"));
-        locations.add(new ResourceLocation("blocks/flower_allium"));
-        locations.add(new ResourceLocation("blocks/flower_blue_orchid"));
-        locations.add(new ResourceLocation("blocks/flower_dandelion"));
-        locations.add(new ResourceLocation("blocks/flower_houstonia"));
-        locations.add(new ResourceLocation("blocks/flower_oxeye_daisy"));
-        locations.add(new ResourceLocation("blocks/flower_pot"));
-        locations.add(new ResourceLocation("blocks/flower_rose"));
-        locations.add(new ResourceLocation("blocks/flower_tulip_orange"));
-        locations.add(new ResourceLocation("blocks/flower_tulip_pink"));
-        locations.add(new ResourceLocation("blocks/flower_tulip_red"));
-        locations.add(new ResourceLocation("blocks/flower_tulip_white"));
-        locations.add(new ResourceLocation("blocks/furnace_front_off"));
-        locations.add(new ResourceLocation("blocks/furnace_front_on"));
-        locations.add(new ResourceLocation("blocks/furnace_side"));
-        locations.add(new ResourceLocation("blocks/furnace_top"));
-        locations.add(new ResourceLocation("blocks/gggrass_side_snowed"));
-        locations.add(new ResourceLocation("blocks/ggold_block"));
-        locations.add(new ResourceLocation("blocks/ggrass_side"));
-        locations.add(new ResourceLocation("blocks/ggrass_side_overlay"));
-        locations.add(new ResourceLocation("blocks/ggrass_top"));
-        locations.add(new ResourceLocation("blocks/glass"));
-        locations.add(new ResourceLocation("blocks/glass_black"));
-        locations.add(new ResourceLocation("blocks/glass_blue"));
-        locations.add(new ResourceLocation("blocks/glass_brown"));
-        locations.add(new ResourceLocation("blocks/glass_cyan"));
-        locations.add(new ResourceLocation("blocks/glass_gray"));
-        locations.add(new ResourceLocation("blocks/glass_green"));
-        locations.add(new ResourceLocation("blocks/glass_light_blue"));
-        locations.add(new ResourceLocation("blocks/glass_lime"));
-        locations.add(new ResourceLocation("blocks/glass_magenta"));
-        locations.add(new ResourceLocation("blocks/glass_orange"));
-        locations.add(new ResourceLocation("blocks/glass_pane_top"));
-        locations.add(new ResourceLocation("blocks/glass_pink"));
-        locations.add(new ResourceLocation("blocks/glass_purple"));
-        locations.add(new ResourceLocation("blocks/glass_red"));
-        locations.add(new ResourceLocation("blocks/glass_silver"));
-        locations.add(new ResourceLocation("blocks/glass_white"));
-        locations.add(new ResourceLocation("blocks/glass_yellow"));
-        locations.add(new ResourceLocation("blocks/glowstone"));
-        locations.add(new ResourceLocation("blocks/glowstone.mcmeta"));
-        locations.add(new ResourceLocation("blocks/gold_block"));
-        locations.add(new ResourceLocation("blocks/gold_ore"));
-        locations.add(new ResourceLocation("blocks/grass_side"));
-        locations.add(new ResourceLocation("blocks/grass_side_overlay"));
-        locations.add(new ResourceLocation("blocks/grass_side_overlayALT"));
-        locations.add(new ResourceLocation("blocks/grass_side_snowed"));
-        locations.add(new ResourceLocation("blocks/grass_top"));
-        locations.add(new ResourceLocation("blocks/grass_topALT"));
-        locations.add(new ResourceLocation("blocks/gravel"));
-        locations.add(new ResourceLocation("blocks/hardened_clay"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_black"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_blue"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_brown"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_cyan"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_gray"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_green"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_light_blue"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_lime"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_magenta"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_orange"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_pink"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_purple"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_red"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_silver"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_white"));
-        locations.add(new ResourceLocation("blocks/hardened_clay_stained_yellow"));
-        locations.add(new ResourceLocation("blocks/hay_block_side"));
-        locations.add(new ResourceLocation("blocks/hay_block_top"));
-        locations.add(new ResourceLocation("blocks/hopper_inside"));
-        locations.add(new ResourceLocation("blocks/hopper_outside"));
-        locations.add(new ResourceLocation("blocks/hopper_top"));
-        locations.add(new ResourceLocation("blocks/ice"));
-        locations.add(new ResourceLocation("blocks/ice_packed"));
-        locations.add(new ResourceLocation("blocks/iiron_block"));
-        locations.add(new ResourceLocation("blocks/iron_bars"));
-        locations.add(new ResourceLocation("blocks/iron_block"));
-        locations.add(new ResourceLocation("blocks/iron_ore"));
-        locations.add(new ResourceLocation("blocks/iron_trapdoor"));
-        locations.add(new ResourceLocation("blocks/itemframe_background"));
-        locations.add(new ResourceLocation("blocks/jukebox_side"));
-        locations.add(new ResourceLocation("blocks/jukebox_top"));
-        locations.add(new ResourceLocation("blocks/jukebox_top.mcmeta"));
-        locations.add(new ResourceLocation("blocks/ladder"));
-        locations.add(new ResourceLocation("blocks/lapis_block"));
-        locations.add(new ResourceLocation("blocks/lapis_ore"));
-        locations.add(new ResourceLocation("blocks/lava_flow"));
-        locations.add(new ResourceLocation("blocks/lava_flow.mcmeta"));
-        locations.add(new ResourceLocation("blocks/lava_still"));
-        locations.add(new ResourceLocation("blocks/lava_still.mcmeta"));
-        locations.add(new ResourceLocation("blocks/leaves_acacia"));
-        locations.add(new ResourceLocation("blocks/leaves_big_oak"));
-        locations.add(new ResourceLocation("blocks/leaves_birch"));
-        locations.add(new ResourceLocation("blocks/leaves_jungle"));
-        locations.add(new ResourceLocation("blocks/leaves_oak"));
-        locations.add(new ResourceLocation("blocks/leaves_spruce"));
-        locations.add(new ResourceLocation("blocks/lever"));
-        locations.add(new ResourceLocation("blocks/log_acacia"));
-        locations.add(new ResourceLocation("blocks/log_acacia_top"));
-        locations.add(new ResourceLocation("blocks/log_big_oak"));
-        locations.add(new ResourceLocation("blocks/log_big_oak_top"));
-        locations.add(new ResourceLocation("blocks/log_birch"));
-        locations.add(new ResourceLocation("blocks/log_birch_top"));
-        locations.add(new ResourceLocation("blocks/log_jungle"));
-        locations.add(new ResourceLocation("blocks/log_junglee"));
-        locations.add(new ResourceLocation("blocks/log_jungle_top"));
-        locations.add(new ResourceLocation("blocks/log_oak"));
-        locations.add(new ResourceLocation("blocks/log_oak_top"));
-        locations.add(new ResourceLocation("blocks/log_spruce"));
-        locations.add(new ResourceLocation("blocks/log_spruce_top"));
-        locations.add(new ResourceLocation("blocks/melon_side"));
-        locations.add(new ResourceLocation("blocks/melon_stem_connected"));
-        locations.add(new ResourceLocation("blocks/melon_stem_disconnected"));
-        locations.add(new ResourceLocation("blocks/melon_top"));
-        locations.add(new ResourceLocation("blocks/mob_spawner"));
-        locations.add(new ResourceLocation("blocks/mushroom_block_inside"));
-        locations.add(new ResourceLocation("blocks/mushroom_block_skin_brown"));
-        locations.add(new ResourceLocation("blocks/mushroom_block_skin_red"));
-        locations.add(new ResourceLocation("blocks/mushroom_block_skin_stem"));
-        locations.add(new ResourceLocation("blocks/mushroom_brown"));
-        locations.add(new ResourceLocation("blocks/mushroom_red"));
-        locations.add(new ResourceLocation("blocks/mycelium_side"));
-        locations.add(new ResourceLocation("blocks/mycelium_top"));
-        locations.add(new ResourceLocation("blocks/netherrack"));
-        locations.add(new ResourceLocation("blocks/nether_brick"));
-        locations.add(new ResourceLocation("blocks/nether_wart_stage_0"));
-        locations.add(new ResourceLocation("blocks/nether_wart_stage_1"));
-        locations.add(new ResourceLocation("blocks/nether_wart_stage_2"));
-        locations.add(new ResourceLocation("blocks/noteblock"));
-        locations.add(new ResourceLocation("blocks/obsidian"));
-        locations.add(new ResourceLocation("blocks/piston_bottom"));
-        locations.add(new ResourceLocation("blocks/piston_inner"));
-        locations.add(new ResourceLocation("blocks/piston_side"));
-        locations.add(new ResourceLocation("blocks/piston_top_normal"));
-        locations.add(new ResourceLocation("blocks/piston_top_sticky"));
-        locations.add(new ResourceLocation("blocks/planks_acacia"));
-        locations.add(new ResourceLocation("blocks/planks_big_oak"));
-        locations.add(new ResourceLocation("blocks/planks_birch"));
-        locations.add(new ResourceLocation("blocks/planks_jungle"));
-        locations.add(new ResourceLocation("blocks/planks_oak"));
-        locations.add(new ResourceLocation("blocks/planks_spruce"));
-        locations.add(new ResourceLocation("blocks/portal"));
-        locations.add(new ResourceLocation("blocks/portal.mcmeta"));
-        locations.add(new ResourceLocation("blocks/potatoes_stage_0"));
-        locations.add(new ResourceLocation("blocks/potatoes_stage_1"));
-        locations.add(new ResourceLocation("blocks/potatoes_stage_2"));
-        locations.add(new ResourceLocation("blocks/potatoes_stage_3"));
-        locations.add(new ResourceLocation("blocks/prismarine_bricks"));
-        locations.add(new ResourceLocation("blocks/prismarine_dark"));
-        locations.add(new ResourceLocation("blocks/prismarine_rough"));
-        locations.add(new ResourceLocation("blocks/prismarine_rough.mcmeta"));
-        locations.add(new ResourceLocation("blocks/prismarine_roughh"));
-        locations.add(new ResourceLocation("blocks/pumpkin_face_off"));
-        locations.add(new ResourceLocation("blocks/pumpkin_face_offALT"));
-        locations.add(new ResourceLocation("blocks/pumpkin_face_on"));
-        locations.add(new ResourceLocation("blocks/pumpkin_side"));
-        locations.add(new ResourceLocation("blocks/pumpkin_stem_connected"));
-        locations.add(new ResourceLocation("blocks/pumpkin_stem_disconnected"));
-        locations.add(new ResourceLocation("blocks/pumpkin_top"));
-        locations.add(new ResourceLocation("blocks/qquartz_block_bottom"));
-        locations.add(new ResourceLocation("blocks/quartz_block_bottom"));
-        locations.add(new ResourceLocation("blocks/quartz_block_chiseled"));
-        locations.add(new ResourceLocation("blocks/quartz_block_chiseled_top"));
-        locations.add(new ResourceLocation("blocks/quartz_block_lines"));
-        locations.add(new ResourceLocation("blocks/quartz_block_lines_top"));
-        locations.add(new ResourceLocation("blocks/quartz_block_side"));
-        locations.add(new ResourceLocation("blocks/quartz_block_top"));
-        locations.add(new ResourceLocation("blocks/quartz_ore"));
-        locations.add(new ResourceLocation("blocks/rail_activator"));
-        locations.add(new ResourceLocation("blocks/rail_activator_powered"));
-        locations.add(new ResourceLocation("blocks/rail_detector"));
-        locations.add(new ResourceLocation("blocks/rail_detector_powered"));
-        locations.add(new ResourceLocation("blocks/rail_golden"));
-        locations.add(new ResourceLocation("blocks/rail_golden_powered"));
-        locations.add(new ResourceLocation("blocks/rail_normal"));
-        locations.add(new ResourceLocation("blocks/rail_normal_turned"));
-        locations.add(new ResourceLocation("blocks/redstone_block"));
-        locations.add(new ResourceLocation("blocks/redstone_dust_cross"));
-        locations.add(new ResourceLocation("blocks/redstone_dust_cross_overlay"));
-        locations.add(new ResourceLocation("blocks/redstone_dust_line"));
-        locations.add(new ResourceLocation("blocks/redstone_dust_line_overlay"));
-        locations.add(new ResourceLocation("blocks/redstone_lamp_off"));
-        locations.add(new ResourceLocation("blocks/redstone_lamp_on"));
-        locations.add(new ResourceLocation("blocks/redstone_ore"));
-        locations.add(new ResourceLocation("blocks/redstone_ore.mcmeta"));
-        locations.add(new ResourceLocation("blocks/redstone_torch_off"));
-        locations.add(new ResourceLocation("blocks/redstone_torch_on"));
-        locations.add(new ResourceLocation("blocks/red_sand"));
-        locations.add(new ResourceLocation("blocks/red_sandstone_bottom"));
-        locations.add(new ResourceLocation("blocks/red_sandstone_carved"));
-        locations.add(new ResourceLocation("blocks/red_sandstone_normal"));
-        locations.add(new ResourceLocation("blocks/red_sandstone_smooth"));
-        locations.add(new ResourceLocation("blocks/red_sandstone_top"));
-        locations.add(new ResourceLocation("blocks/reeds"));
-        locations.add(new ResourceLocation("blocks/repeater_off"));
-        locations.add(new ResourceLocation("blocks/repeater_on"));
-        locations.add(new ResourceLocation("blocks/sand"));
-        locations.add(new ResourceLocation("blocks/sandstone_bottom"));
-        locations.add(new ResourceLocation("blocks/sandstone_carved"));
-        locations.add(new ResourceLocation("blocks/sandstone_normal"));
-        locations.add(new ResourceLocation("blocks/sandstone_smooth"));
-        locations.add(new ResourceLocation("blocks/sandstone_top"));
-        locations.add(new ResourceLocation("blocks/sapling_acacia"));
-        locations.add(new ResourceLocation("blocks/sapling_birch"));
-        locations.add(new ResourceLocation("blocks/sapling_jungle"));
-        locations.add(new ResourceLocation("blocks/sapling_oak"));
-        locations.add(new ResourceLocation("blocks/sapling_roofed_oak"));
-        locations.add(new ResourceLocation("blocks/sapling_spruce"));
-        locations.add(new ResourceLocation("blocks/sea_lantern"));
-        locations.add(new ResourceLocation("blocks/slime"));
-        locations.add(new ResourceLocation("blocks/snow"));
-        locations.add(new ResourceLocation("blocks/soul_sand"));
-        locations.add(new ResourceLocation("blocks/soul_sand.mcmeta"));
-        locations.add(new ResourceLocation("blocks/sponge"));
-        locations.add(new ResourceLocation("blocks/spongeALT1"));
-        locations.add(new ResourceLocation("blocks/sponge_wet"));
-        locations.add(new ResourceLocation("blocks/sstone"));
-        locations.add(new ResourceLocation("blocks/stone"));
-        locations.add(new ResourceLocation("blocks/stone1"));
-        locations.add(new ResourceLocation("blocks/stonebrick"));
-        locations.add(new ResourceLocation("blocks/stonebrickALT"));
-        locations.add(new ResourceLocation("blocks/stonebrick_carved"));
-        locations.add(new ResourceLocation("blocks/stonebrick_cracked"));
-        locations.add(new ResourceLocation("blocks/stonebrick_crackedALT"));
-        locations.add(new ResourceLocation("blocks/stonebrick_mossy"));
-        locations.add(new ResourceLocation("blocks/stonebrick_mossyALT"));
-        locations.add(new ResourceLocation("blocks/stone_andesite"));
-        locations.add(new ResourceLocation("blocks/stone_andesite_smooth"));
-        locations.add(new ResourceLocation("blocks/stone_diorite"));
-        locations.add(new ResourceLocation("blocks/stone_diorite_smooth"));
-        locations.add(new ResourceLocation("blocks/stone_granite"));
-        locations.add(new ResourceLocation("blocks/stone_granite_smooth"));
-        locations.add(new ResourceLocation("blocks/stone_slab_side"));
-        locations.add(new ResourceLocation("blocks/stone_slab_top"));
-        locations.add(new ResourceLocation("blocks/tallgrass"));
-        locations.add(new ResourceLocation("blocks/tnt_bottom"));
-        locations.add(new ResourceLocation("blocks/tnt_side"));
-        locations.add(new ResourceLocation("blocks/tnt_top"));
-        locations.add(new ResourceLocation("blocks/torch_on"));
-        locations.add(new ResourceLocation("blocks/torch_on.mcmeta"));
-        locations.add(new ResourceLocation("blocks/trapdoor"));
-        locations.add(new ResourceLocation("blocks/trip_wire"));
-        locations.add(new ResourceLocation("blocks/trip_wire_source"));
-        locations.add(new ResourceLocation("blocks/vine"));
-        locations.add(new ResourceLocation("blocks/waterlily"));
-        locations.add(new ResourceLocation("blocks/water_flow"));
-        locations.add(new ResourceLocation("blocks/water_flow.mcmeta"));
-        locations.add(new ResourceLocation("blocks/water_still"));
-        locations.add(new ResourceLocation("blocks/water_still.mcmeta"));
-        locations.add(new ResourceLocation("blocks/web"));
-        locations.add(new ResourceLocation("blocks/wheat_stage_0"));
-        locations.add(new ResourceLocation("blocks/wheat_stage_1"));
-        locations.add(new ResourceLocation("blocks/wheat_stage_2"));
-        locations.add(new ResourceLocation("blocks/wheat_stage_3"));
-        locations.add(new ResourceLocation("blocks/wheat_stage_4"));
-        locations.add(new ResourceLocation("blocks/wheat_stage_5"));
-        locations.add(new ResourceLocation("blocks/wheat_stage_6"));
-        locations.add(new ResourceLocation("blocks/wheat_stage_7"));
-        locations.add(new ResourceLocation("blocks/wool_colored_black"));
-        locations.add(new ResourceLocation("blocks/wool_colored_blue"));
-        locations.add(new ResourceLocation("blocks/wool_colored_brown"));
-        locations.add(new ResourceLocation("blocks/wool_colored_cyan"));
-        locations.add(new ResourceLocation("blocks/wool_colored_gray"));
-        locations.add(new ResourceLocation("blocks/wool_colored_green"));
-        locations.add(new ResourceLocation("blocks/wool_colored_light_blue"));
-        locations.add(new ResourceLocation("blocks/wool_colored_lime"));
-        locations.add(new ResourceLocation("blocks/wool_colored_magenta"));
-        locations.add(new ResourceLocation("blocks/wool_colored_orange"));
-        locations.add(new ResourceLocation("blocks/wool_colored_pink"));
-        locations.add(new ResourceLocation("blocks/wool_colored_purple"));
-        locations.add(new ResourceLocation("blocks/wool_colored_red"));
-        locations.add(new ResourceLocation("blocks/wool_colored_silver"));
-        locations.add(new ResourceLocation("blocks/wool_colored_white"));
-        locations.add(new ResourceLocation("blocks/wool_colored_yellow"));
-        locations.add(new ResourceLocation("blocks/wwool_colored_pink"));
+        addResources(locations,
+                "blocks/anvil_base", "blocks/anvil_top_damaged_0",
+                "blocks/anvil_top_damaged_1", "blocks/anvil_top_damaged_2",
+
+                "blocks/beacon", "blocks/bedrock",
+
+                "blocks/bed_feet_end", "blocks/bed_feet_side",
+                "blocks/bed_feet_top", "blocks/bed_head_end",
+                "blocks/bed_head_side", "blocks/bed_head_top",
+
+                "blocks/bookshelf",
+                "blocks/brewing_stand", "blocks/brewing_stand_base",
+
+                "blocks/brick", "blocks/brickALT", "blocks/brick_ALT",
+                "blocks/cactus_side", "blocks/cactus_top",
+
+                "blocks/cake_bottom", "blocks/cake_inner",
+                "blocks/cake_side", "blocks/cake_top",
+
+                "blocks/carrots_stage_0", "blocks/carrots_stage_1",
+                "blocks/carrots_stage_2", "blocks/carrots_stage_3",
+
+                "blocks/cauldron_bottom", "blocks/cauldron_inner",
+                "blocks/cauldron_side", "blocks/cauldron_top",
+
+                "blocks/clay",
+                "blocks/coal_block", "blocks/coal_ore",
+                "blocks/coarse_dirt", "blocks/coarse_dirtt",
+                "blocks/cobblestone-A", "blocks/cobblestone", "blocks/cobblestone_mossy",
+
+                "blocks/cocoa_stage_0", "blocks/cocoa_stage_1", "blocks/cocoa_stage_2",
+                "blocks/command_block", "blocks/command_block.mcmeta", "blocks/command_blockk",
+                "blocks/comparator_off", "blocks/comparator_on",
+                "blocks/crafting_table_front", "blocks/crafting_table_side", "blocks/crafting_table_top",
+                "blocks/daylight_detector_side", "blocks/daylight_detector_top", "blocks/daylight_detector_top2",
+                "blocks/deadbush",
+
+                "blocks/destroy_stage_0", "blocks/destroy_stage_1",
+                "blocks/destroy_stage_2", "blocks/destroy_stage_3",
+                "blocks/destroy_stage_4", "blocks/destroy_stage_5",
+                "blocks/destroy_stage_6", "blocks/destroy_stage_7",
+                "blocks/destroy_stage_8", "blocks/destroy_stage_9",
+
+                "blocks/diamond_block", "blocks/diamond_ore",
+                "blocks/dirt", "blocks/dirt_podzol_side", "blocks/dirt_podzol_top",
+                "blocks/dispenser_front_horizontal", "blocks/dispenser_front_vertical",
+                "blocks/door_iron_lower", "blocks/door_iron_upper",
+                "blocks/door_wood_lower", "blocks/door_wood_upper",
+                "blocks/doubleflower_paeonia",
+
+                "blocks/double_plant_fern_bottom", "blocks/double_plant_fern_top",
+                "blocks/double_plant_grass_bottom", "blocks/double_plant_grass_top",
+                "blocks/double_plant_paeonia_bottom", "blocks/double_plant_paeonia_top",
+                "blocks/double_plant_rose_bottom", "blocks/double_plant_rose_top",
+                "blocks/double_plant_sunflower_back", "blocks/double_plant_sunflower_bottom",
+                "blocks/double_plant_sunflower_front", "blocks/double_plant_sunflower_top",
+                "blocks/double_plant_syringa_bottom", "blocks/double_plant_syringa_top",
+
+                "blocks/dragon_egg",
+
+                "blocks/dropper_front_horizontal", "blocks/dropper_front_vertical",
+                "blocks/emerald_block", "blocks/emerald_ore", "blocks/emerald_ore.mcmeta",
+                "blocks/enchanting_table_bottom", "blocks/enchanting_table_side", "blocks/enchanting_table_top",
+                "blocks/endframe_eye", "blocks/endframe_side", "blocks/endframe_top",
+                "blocks/end_stone",
+                "blocks/farmland_dry", "blocks/farmland_wet",
+
+                "blocks/fern",
+
+                "blocks/fire_layer_0", "blocks/fire_layer_0.mcmeta",
+                "blocks/fire_layer_00", "blocks/fire_layer_00.mcmeta",
+                "blocks/fire_layer_1", "blocks/fire_layer_1.mcmeta",
+                "blocks/fire_layer_11.mcmeta", "blocks/fire_layer_11",
+
+                "blocks/flower_allium", "blocks/flower_blue_orchid", "blocks/flower_dandelion",
+                "blocks/flower_houstonia", "blocks/flower_oxeye_daisy", "blocks/flower_pot",
+                "blocks/flower_rose", "blocks/flower_tulip_orange", "blocks/flower_tulip_pink",
+                "blocks/flower_tulip_red", "blocks/flower_tulip_white",
+
+                "blocks/furnace_front_off", "blocks/furnace_front_on",
+                "blocks/furnace_side", "blocks/furnace_top",
+                "blocks/gggrass_side_snowed", "blocks/ggold_block",
+                "blocks/ggrass_side", "blocks/ggrass_side_overlay", "blocks/ggrass_top",
+
+                "blocks/glass", "blocks/glass_black", "blocks/glass_blue",
+                "blocks/glass_brown", "blocks/glass_cyan", "blocks/glass_gray",
+                "blocks/glass_green", "blocks/glass_light_blue", "blocks/glass_lime",
+                "blocks/glass_magenta", "blocks/glass_orange", "blocks/glass_pane_top",
+                "blocks/glass_pink", "blocks/glass_purple", "blocks/glass_red",
+                "blocks/glass_silver", "blocks/glass_white", "blocks/glass_yellow",
+
+                "blocks/glowstone", "blocks/glowstone.mcmeta",
+                "blocks/gold_block", "blocks/gold_ore",
+                "blocks/grass_side", "blocks/grass_side_overlay", "blocks/grass_side_overlayALT",
+                "blocks/grass_side_snowed", "blocks/grass_top", "blocks/grass_topALT",
+                "blocks/gravel",
+
+                "blocks/hardened_clay", "blocks/hardened_clay_stained_black",
+                "blocks/hardened_clay_stained_blue", "blocks/hardened_clay_stained_brown",
+                "blocks/hardened_clay_stained_cyan", "blocks/hardened_clay_stained_gray",
+                "blocks/hardened_clay_stained_green", "blocks/hardened_clay_stained_light_blue",
+                "blocks/hardened_clay_stained_lime", "blocks/hardened_clay_stained_magenta",
+                "blocks/hardened_clay_stained_orange", "blocks/hardened_clay_stained_pink",
+                "blocks/hardened_clay_stained_purple", "blocks/hardened_clay_stained_red",
+                "blocks/hardened_clay_stained_silver", "blocks/hardened_clay_stained_white",
+                "blocks/hardened_clay_stained_yellow",
+
+                "blocks/hay_block_side", "blocks/hay_block_top",
+                "blocks/hopper_inside", "blocks/hopper_outside", "blocks/hopper_top",
+                "blocks/ice", "blocks/ice_packed",
+                "blocks/iiron_block", "blocks/iron_bars", "blocks/iron_block",
+                "blocks/iron_ore", "blocks/iron_trapdoor", "blocks/itemframe_background",
+                "blocks/jukebox_side", "blocks/jukebox_top", "blocks/jukebox_top.mcmeta",
+                "blocks/ladder", "blocks/lapis_block", "blocks/lapis_ore",
+                "blocks/lava_flow", "blocks/lava_flow.mcmeta",
+                "blocks/lava_still", "blocks/lava_still.mcmeta",
+
+                "blocks/leaves_acacia", "blocks/leaves_big_oak",
+                "blocks/leaves_birch", "blocks/leaves_jungle",
+                "blocks/leaves_oak", "blocks/leaves_spruce",
+
+                "blocks/lever",
+
+                "blocks/log_acacia", "blocks/log_acacia_top",
+                "blocks/log_big_oak", "blocks/log_big_oak_top",
+                "blocks/log_birch", "blocks/log_birch_top",
+                "blocks/log_jungle", "blocks/log_junglee", "blocks/log_jungle_top",
+                "blocks/log_oak", "blocks/log_oak_top",
+                "blocks/log_spruce", "blocks/log_spruce_top",
+
+                "blocks/melon_side", "blocks/melon_stem_connected",
+                "blocks/melon_stem_disconnected", "blocks/melon_top",
+                "blocks/mob_spawner",
+
+                "blocks/mushroom_block_inside", "blocks/mushroom_block_skin_brown",
+                "blocks/mushroom_block_skin_red", "blocks/mushroom_block_skin_stem",
+                "blocks/mushroom_brown", "blocks/mushroom_red",
+
+                "blocks/mycelium_side", "blocks/mycelium_top",
+                "blocks/netherrack", "blocks/nether_brick",
+                "blocks/nether_wart_stage_0", "blocks/nether_wart_stage_1", "blocks/nether_wart_stage_2",
+                "blocks/noteblock", "blocks/obsidian",
+
+                "blocks/piston_bottom", "blocks/piston_inner",
+                "blocks/piston_side", "blocks/piston_top_normal",
+                "blocks/piston_top_sticky",
+
+                "blocks/planks_acacia", "blocks/planks_big_oak",
+                "blocks/planks_birch", "blocks/planks_jungle",
+                "blocks/planks_oak", "blocks/planks_spruce",
+
+                "blocks/portal", "blocks/portal.mcmeta",
+                "blocks/potatoes_stage_0", "blocks/potatoes_stage_1",
+                "blocks/potatoes_stage_2", "blocks/potatoes_stage_3",
+
+                "blocks/prismarine_bricks", "blocks/prismarine_dark",
+                "blocks/prismarine_rough", "blocks/prismarine_rough.mcmeta",
+                "blocks/prismarine_roughh",
+
+                "blocks/pumpkin_face_off", "blocks/pumpkin_face_offALT",
+                "blocks/pumpkin_face_on", "blocks/pumpkin_side",
+                "blocks/pumpkin_stem_connected", "blocks/pumpkin_stem_disconnected",
+                "blocks/pumpkin_top",
+
+                "blocks/qquartz_block_bottom", "blocks/quartz_block_bottom",
+                "blocks/quartz_block_chiseled", "blocks/quartz_block_chiseled_top",
+                "blocks/quartz_block_lines", "blocks/quartz_block_lines_top",
+                "blocks/quartz_block_side", "blocks/quartz_block_top",
+                "blocks/quartz_ore",
+
+                "blocks/rail_activator", "blocks/rail_activator_powered",
+                "blocks/rail_detector", "blocks/rail_detector_powered",
+                "blocks/rail_golden", "blocks/rail_golden_powered",
+                "blocks/rail_normal", "blocks/rail_normal_turned",
+
+                "blocks/redstone_block",
+                "blocks/redstone_dust_cross", "blocks/redstone_dust_cross_overlay",
+                "blocks/redstone_dust_line", "blocks/redstone_dust_line_overlay",
+                "blocks/redstone_lamp_off", "blocks/redstone_lamp_on",
+                "blocks/redstone_ore", "blocks/redstone_ore.mcmeta",
+                "blocks/redstone_torch_off", "blocks/redstone_torch_on",
+
+                "blocks/red_sand", "blocks/red_sandstone_bottom",
+                "blocks/red_sandstone_carved", "blocks/red_sandstone_normal",
+                "blocks/red_sandstone_smooth", "blocks/red_sandstone_top",
+
+                "blocks/reeds",
+                "blocks/repeater_off", "blocks/repeater_on",
+
+                "blocks/sand", "blocks/sandstone_bottom",
+                "blocks/sandstone_carved", "blocks/sandstone_normal",
+                "blocks/sandstone_smooth", "blocks/sandstone_top",
+
+                "blocks/sapling_acacia", "blocks/sapling_birch",
+                "blocks/sapling_jungle", "blocks/sapling_oak",
+                "blocks/sapling_roofed_oak", "blocks/sapling_spruce",
+
+                "blocks/sea_lantern", "blocks/slime", "blocks/snow",
+                "blocks/soul_sand", "blocks/soul_sand.mcmeta",
+                "blocks/sponge", "blocks/spongeALT1", "blocks/sponge_wet",
+                "blocks/sstone", "blocks/stone", "blocks/stone1",
+                "blocks/stonebrick", "blocks/stonebrickALT", "blocks/stonebrick_carved",
+                "blocks/stonebrick_cracked", "blocks/stonebrick_crackedALT",
+                "blocks/stonebrick_mossy", "blocks/stonebrick_mossyALT",
+
+                "blocks/stone_andesite", "blocks/stone_andesite_smooth",
+                "blocks/stone_diorite", "blocks/stone_diorite_smooth",
+                "blocks/stone_granite", "blocks/stone_granite_smooth",
+
+                "blocks/stone_slab_side", "blocks/stone_slab_top",
+                "blocks/tallgrass",
+                "blocks/tnt_bottom", "blocks/tnt_side", "blocks/tnt_top",
+                "blocks/torch_on", "blocks/torch_on.mcmeta",
+                "blocks/trapdoor",
+                "blocks/trip_wire", "blocks/trip_wire_source",
+                "blocks/vine", "blocks/waterlily",
+                "blocks/water_flow", "blocks/water_flow.mcmeta",
+                "blocks/water_still", "blocks/water_still.mcmeta",
+                "blocks/web",
+
+                "blocks/wheat_stage_0", "blocks/wheat_stage_1",
+                "blocks/wheat_stage_2", "blocks/wheat_stage_3",
+                "blocks/wheat_stage_4", "blocks/wheat_stage_5",
+                "blocks/wheat_stage_6", "blocks/wheat_stage_7",
+
+                "blocks/wool_colored_black", "blocks/wool_colored_blue",
+                "blocks/wool_colored_brown", "blocks/wool_colored_cyan",
+                "blocks/wool_colored_gray", "blocks/wool_colored_green",
+                "blocks/wool_colored_light_blue", "blocks/wool_colored_lime",
+                "blocks/wool_colored_magenta", "blocks/wool_colored_orange",
+                "blocks/wool_colored_pink", "blocks/wool_colored_purple",
+                "blocks/wool_colored_red", "blocks/wool_colored_silver",
+                "blocks/wool_colored_white", "blocks/wool_colored_yellow",
+                "blocks/wwool_colored_pink"
+        );
     }
 
     public static void initFontTextureLocations(List<ResourceLocation> locations) {
-        locations.add(new ResourceLocation("font/ascii"));
-        locations.add(new ResourceLocation("font/ascii_sga"));
-        locations.add(new ResourceLocation("font/unicode_page_00"));
-        locations.add(new ResourceLocation("font/unicode_page_01"));
-        locations.add(new ResourceLocation("font/unicode_page_02"));
-        locations.add(new ResourceLocation("font/unicode_page_03"));
-        locations.add(new ResourceLocation("font/unicode_page_04"));
-        locations.add(new ResourceLocation("font/unicode_page_05"));
-        locations.add(new ResourceLocation("font/unicode_page_06"));
-        locations.add(new ResourceLocation("font/unicode_page_07"));
-        locations.add(new ResourceLocation("font/unicode_page_09"));
-        locations.add(new ResourceLocation("font/unicode_page_0a"));
-        locations.add(new ResourceLocation("font/unicode_page_0b"));
-        locations.add(new ResourceLocation("font/unicode_page_0c"));
-        locations.add(new ResourceLocation("font/unicode_page_0d"));
-        locations.add(new ResourceLocation("font/unicode_page_0e"));
-        locations.add(new ResourceLocation("font/unicode_page_0f"));
-        locations.add(new ResourceLocation("font/unicode_page_10"));
-        locations.add(new ResourceLocation("font/unicode_page_11"));
-        locations.add(new ResourceLocation("font/unicode_page_12"));
-        locations.add(new ResourceLocation("font/unicode_page_13"));
-        locations.add(new ResourceLocation("font/unicode_page_14"));
-        locations.add(new ResourceLocation("font/unicode_page_15"));
-        locations.add(new ResourceLocation("font/unicode_page_16"));
-        locations.add(new ResourceLocation("font/unicode_page_17"));
-        locations.add(new ResourceLocation("font/unicode_page_18"));
-        locations.add(new ResourceLocation("font/unicode_page_19"));
-        locations.add(new ResourceLocation("font/unicode_page_1a"));
-        locations.add(new ResourceLocation("font/unicode_page_1b"));
-        locations.add(new ResourceLocation("font/unicode_page_1c"));
-        locations.add(new ResourceLocation("font/unicode_page_1d"));
-        locations.add(new ResourceLocation("font/unicode_page_1e"));
-        locations.add(new ResourceLocation("font/unicode_page_1f"));
-        locations.add(new ResourceLocation("font/unicode_page_20"));
-        locations.add(new ResourceLocation("font/unicode_page_21"));
-        locations.add(new ResourceLocation("font/unicode_page_22"));
-        locations.add(new ResourceLocation("font/unicode_page_23"));
-        locations.add(new ResourceLocation("font/unicode_page_24"));
-        locations.add(new ResourceLocation("font/unicode_page_25"));
-        locations.add(new ResourceLocation("font/unicode_page_26"));
-        locations.add(new ResourceLocation("font/unicode_page_27"));
-        locations.add(new ResourceLocation("font/unicode_page_28"));
-        locations.add(new ResourceLocation("font/unicode_page_29"));
-        locations.add(new ResourceLocation("font/unicode_page_2a"));
-        locations.add(new ResourceLocation("font/unicode_page_2b"));
-        locations.add(new ResourceLocation("font/unicode_page_2c"));
-        locations.add(new ResourceLocation("font/unicode_page_2d"));
-        locations.add(new ResourceLocation("font/unicode_page_2e"));
-        locations.add(new ResourceLocation("font/unicode_page_2f"));
-        locations.add(new ResourceLocation("font/unicode_page_30"));
-        locations.add(new ResourceLocation("font/unicode_page_31"));
-        locations.add(new ResourceLocation("font/unicode_page_32"));
-        locations.add(new ResourceLocation("font/unicode_page_33"));
-        locations.add(new ResourceLocation("font/unicode_page_34"));
-        locations.add(new ResourceLocation("font/unicode_page_35"));
-        locations.add(new ResourceLocation("font/unicode_page_36"));
-        locations.add(new ResourceLocation("font/unicode_page_37"));
-        locations.add(new ResourceLocation("font/unicode_page_38"));
-        locations.add(new ResourceLocation("font/unicode_page_39"));
-        locations.add(new ResourceLocation("font/unicode_page_3a"));
-        locations.add(new ResourceLocation("font/unicode_page_3b"));
-        locations.add(new ResourceLocation("font/unicode_page_3c"));
-        locations.add(new ResourceLocation("font/unicode_page_3d"));
-        locations.add(new ResourceLocation("font/unicode_page_3e"));
-        locations.add(new ResourceLocation("font/unicode_page_3f"));
-        locations.add(new ResourceLocation("font/unicode_page_40"));
-        locations.add(new ResourceLocation("font/unicode_page_41"));
-        locations.add(new ResourceLocation("font/unicode_page_42"));
-        locations.add(new ResourceLocation("font/unicode_page_43"));
-        locations.add(new ResourceLocation("font/unicode_page_44"));
-        locations.add(new ResourceLocation("font/unicode_page_45"));
-        locations.add(new ResourceLocation("font/unicode_page_46"));
-        locations.add(new ResourceLocation("font/unicode_page_47"));
-        locations.add(new ResourceLocation("font/unicode_page_48"));
-        locations.add(new ResourceLocation("font/unicode_page_49"));
-        locations.add(new ResourceLocation("font/unicode_page_4a"));
-        locations.add(new ResourceLocation("font/unicode_page_4b"));
-        locations.add(new ResourceLocation("font/unicode_page_4c"));
-        locations.add(new ResourceLocation("font/unicode_page_4d"));
-        locations.add(new ResourceLocation("font/unicode_page_4e"));
-        locations.add(new ResourceLocation("font/unicode_page_4f"));
-        locations.add(new ResourceLocation("font/unicode_page_50"));
-        locations.add(new ResourceLocation("font/unicode_page_51"));
-        locations.add(new ResourceLocation("font/unicode_page_52"));
-        locations.add(new ResourceLocation("font/unicode_page_53"));
-        locations.add(new ResourceLocation("font/unicode_page_54"));
-        locations.add(new ResourceLocation("font/unicode_page_55"));
-        locations.add(new ResourceLocation("font/unicode_page_56"));
-        locations.add(new ResourceLocation("font/unicode_page_57"));
-        locations.add(new ResourceLocation("font/unicode_page_58"));
-        locations.add(new ResourceLocation("font/unicode_page_59"));
-        locations.add(new ResourceLocation("font/unicode_page_5a"));
-        locations.add(new ResourceLocation("font/unicode_page_5b"));
-        locations.add(new ResourceLocation("font/unicode_page_5c"));
-        locations.add(new ResourceLocation("font/unicode_page_5d"));
-        locations.add(new ResourceLocation("font/unicode_page_5e"));
-        locations.add(new ResourceLocation("font/unicode_page_5f"));
-        locations.add(new ResourceLocation("font/unicode_page_60"));
-        locations.add(new ResourceLocation("font/unicode_page_61"));
-        locations.add(new ResourceLocation("font/unicode_page_62"));
-        locations.add(new ResourceLocation("font/unicode_page_63"));
-        locations.add(new ResourceLocation("font/unicode_page_64"));
-        locations.add(new ResourceLocation("font/unicode_page_65"));
-        locations.add(new ResourceLocation("font/unicode_page_66"));
-        locations.add(new ResourceLocation("font/unicode_page_67"));
-        locations.add(new ResourceLocation("font/unicode_page_68"));
-        locations.add(new ResourceLocation("font/unicode_page_69"));
-        locations.add(new ResourceLocation("font/unicode_page_6a"));
-        locations.add(new ResourceLocation("font/unicode_page_6b"));
-        locations.add(new ResourceLocation("font/unicode_page_6c"));
-        locations.add(new ResourceLocation("font/unicode_page_6d"));
-        locations.add(new ResourceLocation("font/unicode_page_6e"));
-        locations.add(new ResourceLocation("font/unicode_page_6f"));
-        locations.add(new ResourceLocation("font/unicode_page_70"));
-        locations.add(new ResourceLocation("font/unicode_page_71"));
-        locations.add(new ResourceLocation("font/unicode_page_72"));
-        locations.add(new ResourceLocation("font/unicode_page_73"));
-        locations.add(new ResourceLocation("font/unicode_page_74"));
-        locations.add(new ResourceLocation("font/unicode_page_75"));
-        locations.add(new ResourceLocation("font/unicode_page_76"));
-        locations.add(new ResourceLocation("font/unicode_page_77"));
-        locations.add(new ResourceLocation("font/unicode_page_78"));
-        locations.add(new ResourceLocation("font/unicode_page_79"));
-        locations.add(new ResourceLocation("font/unicode_page_7a"));
-        locations.add(new ResourceLocation("font/unicode_page_7b"));
-        locations.add(new ResourceLocation("font/unicode_page_7c"));
-        locations.add(new ResourceLocation("font/unicode_page_7d"));
-        locations.add(new ResourceLocation("font/unicode_page_7e"));
-        locations.add(new ResourceLocation("font/unicode_page_7f"));
-        locations.add(new ResourceLocation("font/unicode_page_80"));
-        locations.add(new ResourceLocation("font/unicode_page_81"));
-        locations.add(new ResourceLocation("font/unicode_page_82"));
-        locations.add(new ResourceLocation("font/unicode_page_83"));
-        locations.add(new ResourceLocation("font/unicode_page_84"));
-        locations.add(new ResourceLocation("font/unicode_page_85"));
-        locations.add(new ResourceLocation("font/unicode_page_86"));
-        locations.add(new ResourceLocation("font/unicode_page_87"));
-        locations.add(new ResourceLocation("font/unicode_page_88"));
-        locations.add(new ResourceLocation("font/unicode_page_89"));
-        locations.add(new ResourceLocation("font/unicode_page_8a"));
-        locations.add(new ResourceLocation("font/unicode_page_8b"));
-        locations.add(new ResourceLocation("font/unicode_page_8c"));
-        locations.add(new ResourceLocation("font/unicode_page_8d"));
-        locations.add(new ResourceLocation("font/unicode_page_8e"));
-        locations.add(new ResourceLocation("font/unicode_page_8f"));
-        locations.add(new ResourceLocation("font/unicode_page_90"));
-        locations.add(new ResourceLocation("font/unicode_page_91"));
-        locations.add(new ResourceLocation("font/unicode_page_92"));
-        locations.add(new ResourceLocation("font/unicode_page_93"));
-        locations.add(new ResourceLocation("font/unicode_page_94"));
-        locations.add(new ResourceLocation("font/unicode_page_95"));
-        locations.add(new ResourceLocation("font/unicode_page_96"));
-        locations.add(new ResourceLocation("font/unicode_page_97"));
-        locations.add(new ResourceLocation("font/unicode_page_98"));
-        locations.add(new ResourceLocation("font/unicode_page_99"));
-        locations.add(new ResourceLocation("font/unicode_page_9a"));
-        locations.add(new ResourceLocation("font/unicode_page_9b"));
-        locations.add(new ResourceLocation("font/unicode_page_9c"));
-        locations.add(new ResourceLocation("font/unicode_page_9d"));
-        locations.add(new ResourceLocation("font/unicode_page_9e"));
-        locations.add(new ResourceLocation("font/unicode_page_9f"));
-        locations.add(new ResourceLocation("font/unicode_page_a0"));
-        locations.add(new ResourceLocation("font/unicode_page_a1"));
-        locations.add(new ResourceLocation("font/unicode_page_a2"));
-        locations.add(new ResourceLocation("font/unicode_page_a3"));
-        locations.add(new ResourceLocation("font/unicode_page_a4"));
-        locations.add(new ResourceLocation("font/unicode_page_a5"));
-        locations.add(new ResourceLocation("font/unicode_page_a6"));
-        locations.add(new ResourceLocation("font/unicode_page_a7"));
-        locations.add(new ResourceLocation("font/unicode_page_a8"));
-        locations.add(new ResourceLocation("font/unicode_page_a9"));
-        locations.add(new ResourceLocation("font/unicode_page_aa"));
-        locations.add(new ResourceLocation("font/unicode_page_ab"));
-        locations.add(new ResourceLocation("font/unicode_page_ac"));
-        locations.add(new ResourceLocation("font/unicode_page_ad"));
-        locations.add(new ResourceLocation("font/unicode_page_ae"));
-        locations.add(new ResourceLocation("font/unicode_page_af"));
-        locations.add(new ResourceLocation("font/unicode_page_b0"));
-        locations.add(new ResourceLocation("font/unicode_page_b1"));
-        locations.add(new ResourceLocation("font/unicode_page_b2"));
-        locations.add(new ResourceLocation("font/unicode_page_b3"));
-        locations.add(new ResourceLocation("font/unicode_page_b4"));
-        locations.add(new ResourceLocation("font/unicode_page_b5"));
-        locations.add(new ResourceLocation("font/unicode_page_b6"));
-        locations.add(new ResourceLocation("font/unicode_page_b7"));
-        locations.add(new ResourceLocation("font/unicode_page_b8"));
-        locations.add(new ResourceLocation("font/unicode_page_b9"));
-        locations.add(new ResourceLocation("font/unicode_page_ba"));
-        locations.add(new ResourceLocation("font/unicode_page_bb"));
-        locations.add(new ResourceLocation("font/unicode_page_bc"));
-        locations.add(new ResourceLocation("font/unicode_page_bd"));
-        locations.add(new ResourceLocation("font/unicode_page_be"));
-        locations.add(new ResourceLocation("font/unicode_page_bf"));
-        locations.add(new ResourceLocation("font/unicode_page_c0"));
-        locations.add(new ResourceLocation("font/unicode_page_c1"));
-        locations.add(new ResourceLocation("font/unicode_page_c2"));
-        locations.add(new ResourceLocation("font/unicode_page_c3"));
-        locations.add(new ResourceLocation("font/unicode_page_c4"));
-        locations.add(new ResourceLocation("font/unicode_page_c5"));
-        locations.add(new ResourceLocation("font/unicode_page_c6"));
-        locations.add(new ResourceLocation("font/unicode_page_c7"));
-        locations.add(new ResourceLocation("font/unicode_page_c8"));
-        locations.add(new ResourceLocation("font/unicode_page_c9"));
-        locations.add(new ResourceLocation("font/unicode_page_ca"));
-        locations.add(new ResourceLocation("font/unicode_page_cb"));
-        locations.add(new ResourceLocation("font/unicode_page_cc"));
-        locations.add(new ResourceLocation("font/unicode_page_cd"));
-        locations.add(new ResourceLocation("font/unicode_page_ce"));
-        locations.add(new ResourceLocation("font/unicode_page_cf"));
-        locations.add(new ResourceLocation("font/unicode_page_d0"));
-        locations.add(new ResourceLocation("font/unicode_page_d1"));
-        locations.add(new ResourceLocation("font/unicode_page_d2"));
-        locations.add(new ResourceLocation("font/unicode_page_d3"));
-        locations.add(new ResourceLocation("font/unicode_page_d4"));
-        locations.add(new ResourceLocation("font/unicode_page_d5"));
-        locations.add(new ResourceLocation("font/unicode_page_d6"));
-        locations.add(new ResourceLocation("font/unicode_page_d7"));
-        locations.add(new ResourceLocation("font/unicode_page_f9"));
-        locations.add(new ResourceLocation("font/unicode_page_fa"));
-        locations.add(new ResourceLocation("font/unicode_page_fb"));
-        locations.add(new ResourceLocation("font/unicode_page_fc"));
-        locations.add(new ResourceLocation("font/unicode_page_fd"));
-        locations.add(new ResourceLocation("font/unicode_page_fe"));
-        locations.add(new ResourceLocation("font/unicode_page_ff"));
+        addResources(locations,
+                "font/ascii", "font/ascii_sga",
+
+                "font/unicode_page_00", "font/unicode_page_01", "font/unicode_page_02", "font/unicode_page_03",
+                "font/unicode_page_04", "font/unicode_page_05", "font/unicode_page_06", "font/unicode_page_07",
+                "font/unicode_page_09", "font/unicode_page_0a", "font/unicode_page_0b", "font/unicode_page_0c",
+                "font/unicode_page_0d", "font/unicode_page_0e", "font/unicode_page_0f", "font/unicode_page_10",
+                "font/unicode_page_11", "font/unicode_page_12", "font/unicode_page_13", "font/unicode_page_14",
+                "font/unicode_page_15", "font/unicode_page_16", "font/unicode_page_17", "font/unicode_page_18",
+                "font/unicode_page_19", "font/unicode_page_1a", "font/unicode_page_1b", "font/unicode_page_1c",
+                "font/unicode_page_1d", "font/unicode_page_1e", "font/unicode_page_1f", "font/unicode_page_20",
+                "font/unicode_page_21", "font/unicode_page_22", "font/unicode_page_23", "font/unicode_page_24",
+                "font/unicode_page_25", "font/unicode_page_26", "font/unicode_page_27", "font/unicode_page_28",
+                "font/unicode_page_29", "font/unicode_page_2a", "font/unicode_page_2b", "font/unicode_page_2c",
+                "font/unicode_page_2d", "font/unicode_page_2e", "font/unicode_page_2f", "font/unicode_page_30",
+                "font/unicode_page_31", "font/unicode_page_32", "font/unicode_page_33", "font/unicode_page_34",
+                "font/unicode_page_35", "font/unicode_page_36", "font/unicode_page_37", "font/unicode_page_38",
+                "font/unicode_page_39", "font/unicode_page_3a", "font/unicode_page_3b", "font/unicode_page_3c",
+                "font/unicode_page_3d", "font/unicode_page_3e", "font/unicode_page_3f", "font/unicode_page_40",
+                "font/unicode_page_41", "font/unicode_page_42", "font/unicode_page_43", "font/unicode_page_44",
+                "font/unicode_page_45", "font/unicode_page_46", "font/unicode_page_47", "font/unicode_page_48",
+                "font/unicode_page_49", "font/unicode_page_4a", "font/unicode_page_4b", "font/unicode_page_4c",
+                "font/unicode_page_4d", "font/unicode_page_4e", "font/unicode_page_4f", "font/unicode_page_50",
+                "font/unicode_page_51", "font/unicode_page_52", "font/unicode_page_53", "font/unicode_page_54",
+                "font/unicode_page_55", "font/unicode_page_56", "font/unicode_page_57", "font/unicode_page_58",
+                "font/unicode_page_59", "font/unicode_page_5a", "font/unicode_page_5b", "font/unicode_page_5c",
+                "font/unicode_page_5d", "font/unicode_page_5e", "font/unicode_page_5f", "font/unicode_page_60",
+                "font/unicode_page_61", "font/unicode_page_62", "font/unicode_page_63", "font/unicode_page_64",
+                "font/unicode_page_65", "font/unicode_page_66", "font/unicode_page_67", "font/unicode_page_68",
+                "font/unicode_page_69", "font/unicode_page_6a", "font/unicode_page_6b", "font/unicode_page_6c",
+                "font/unicode_page_6d", "font/unicode_page_6e", "font/unicode_page_6f", "font/unicode_page_70",
+                "font/unicode_page_71", "font/unicode_page_72", "font/unicode_page_73", "font/unicode_page_74",
+                "font/unicode_page_75", "font/unicode_page_76", "font/unicode_page_77", "font/unicode_page_78",
+                "font/unicode_page_79", "font/unicode_page_7a", "font/unicode_page_7b", "font/unicode_page_7c",
+                "font/unicode_page_7d", "font/unicode_page_7e", "font/unicode_page_7f", "font/unicode_page_80",
+                "font/unicode_page_81", "font/unicode_page_82", "font/unicode_page_83", "font/unicode_page_84",
+                "font/unicode_page_85", "font/unicode_page_86", "font/unicode_page_87", "font/unicode_page_88",
+                "font/unicode_page_89", "font/unicode_page_8a", "font/unicode_page_8b", "font/unicode_page_8c",
+                "font/unicode_page_8d", "font/unicode_page_8e", "font/unicode_page_8f", "font/unicode_page_90",
+                "font/unicode_page_91", "font/unicode_page_92", "font/unicode_page_93", "font/unicode_page_94",
+                "font/unicode_page_95", "font/unicode_page_96", "font/unicode_page_97", "font/unicode_page_98",
+                "font/unicode_page_99", "font/unicode_page_9a", "font/unicode_page_9b", "font/unicode_page_9c",
+                "font/unicode_page_9d", "font/unicode_page_9e", "font/unicode_page_9f", "font/unicode_page_a0",
+                "font/unicode_page_a1", "font/unicode_page_a2", "font/unicode_page_a3", "font/unicode_page_a4",
+                "font/unicode_page_a5", "font/unicode_page_a6", "font/unicode_page_a7", "font/unicode_page_a8",
+                "font/unicode_page_a9", "font/unicode_page_aa", "font/unicode_page_ab", "font/unicode_page_ac",
+                "font/unicode_page_ad", "font/unicode_page_ae", "font/unicode_page_af", "font/unicode_page_b0",
+                "font/unicode_page_b1", "font/unicode_page_b2", "font/unicode_page_b3", "font/unicode_page_b4",
+                "font/unicode_page_b5", "font/unicode_page_b6", "font/unicode_page_b7", "font/unicode_page_b8",
+                "font/unicode_page_b9", "font/unicode_page_ba", "font/unicode_page_bb", "font/unicode_page_bc",
+                "font/unicode_page_bd", "font/unicode_page_be", "font/unicode_page_bf", "font/unicode_page_c0",
+                "font/unicode_page_c1", "font/unicode_page_c2", "font/unicode_page_c3", "font/unicode_page_c4",
+                "font/unicode_page_c5", "font/unicode_page_c6", "font/unicode_page_c7", "font/unicode_page_c8",
+                "font/unicode_page_c9", "font/unicode_page_ca", "font/unicode_page_cb", "font/unicode_page_cc",
+                "font/unicode_page_cd", "font/unicode_page_ce", "font/unicode_page_cf", "font/unicode_page_d0",
+                "font/unicode_page_d1", "font/unicode_page_d2", "font/unicode_page_d3", "font/unicode_page_d4",
+                "font/unicode_page_d5", "font/unicode_page_d6", "font/unicode_page_d7", "font/unicode_page_f9",
+                "font/unicode_page_fa", "font/unicode_page_fb", "font/unicode_page_fc", "font/unicode_page_fd",
+                "font/unicode_page_fe", "font/unicode_page_ff"
+        );
     }
 
     public static void initFreeTextures(List<ResourceLocation> locations) {
-        locations.add(new ResourceLocation("textures/misc/unknown_server.png"));
-        locations.add(new ResourceLocation("textures/gui/options_background.png"));
+        addResources(locations, "textures/misc/unknown_server.png", "textures/gui/options_background.png");
     }
 
     public static byte[] getImageData(BufferedImage image) {
-        byte[] convertedImageData = new byte[image.getWidth()*image.getHeight()*4];
+        byte[] convertedImageData = new byte[image.getWidth() * image.getHeight() * 4];
         int counter = 0;
-        for (int y = 0; y < image.getHeight(); y ++) {
-            for (int x = 0;x<image.getWidth();x++) {
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
 
-                Color c = new Color(image.getRGB(x,y),image.getColorModel().hasAlpha());
+                Color c = new Color(image.getRGB(x, y), image.getColorModel().hasAlpha());
 
-                convertedImageData[counter] =(byte) (c.getRed());
-                convertedImageData[counter + 1] = (byte)(c.getGreen());
-                convertedImageData[counter + 2] = (byte)(c.getBlue());
+                convertedImageData[counter] = (byte) (c.getRed());
+                convertedImageData[counter + 1] = (byte) (c.getGreen());
+                convertedImageData[counter + 2] = (byte) (c.getBlue());
                 convertedImageData[counter + 3] = (byte) (image.getColorModel().getNumComponents() == 3 ? 255 : c.getAlpha());
-                counter+=4;
+                counter += 4;
             }
         }
         return convertedImageData;
+    }
+
+
+    private static void addResources(List<ResourceLocation> locations, String... resourceNames) {
+        for (String resourceName : resourceNames)
+            locations.add(new ResourceLocation(resourceName));
     }
 }

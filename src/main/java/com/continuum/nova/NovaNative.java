@@ -32,7 +32,7 @@ public interface NovaNative extends Library {
             this.num_components = num_components;
 
             this.texture_data = new Memory(width * height * num_components * Native.getNativeSize(Byte.TYPE));
-            for(int i = 0; i < width * height * num_components; i++) {
+            for (int i = 0; i < width * height * num_components; i++) {
                 this.texture_data.setByte(i, texture_data[i]);
             }
         }
@@ -102,7 +102,7 @@ public interface NovaNative extends Library {
 
         public void setVertex_data(List<Integer> vertexData) {
             vertex_data = new Memory(vertexData.size() * Native.getNativeSize(Integer.class));
-            for(int i = 0; i < vertexData.size(); i++) {
+            for (int i = 0; i < vertexData.size(); i++) {
                 Integer data = vertexData.get(i);
                 vertex_data.setInt(i * Native.getNativeSize(Integer.TYPE), data);
             }
@@ -112,7 +112,7 @@ public interface NovaNative extends Library {
 
         public void setIndices(List<Integer> indices) {
             this.indices = new Memory(indices.size() * Native.getNativeSize(Integer.class));
-            for(int i = 0; i < indices.size(); i++) {
+            for (int i = 0; i < indices.size(); i++) {
                 Integer data = indices.get(i);
                 this.indices.setInt(i * Native.getNativeSize(Integer.TYPE), data);
             }
@@ -174,9 +174,10 @@ public interface NovaNative extends Library {
         public int action;
         public int mods;
         public int filled;
+
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("button", "action", "mods","filled");
+            return Arrays.asList("button", "action", "mods", "filled");
         }
     }
 
@@ -184,9 +185,10 @@ public interface NovaNative extends Library {
         public int xpos;
         public int ypos;
         public int filled;
+
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("xpos", "ypos","filled");
+            return Arrays.asList("xpos", "ypos", "filled");
         }
     }
 
@@ -194,9 +196,10 @@ public interface NovaNative extends Library {
         public double xoffset;
         public double yoffset;
         public int filled;
+
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("xoffset", "yoffset","filled");
+            return Arrays.asList("xoffset", "yoffset", "filled");
         }
     }
 
@@ -206,28 +209,30 @@ public interface NovaNative extends Library {
         public int action;
         public int mods;
         public int filled;
+
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("key", "scancode", "action","mods","filled");
+            return Arrays.asList("key", "scancode", "action", "mods", "filled");
         }
     }
 
     class key_char_event extends Structure implements Structure.ByValue {
         public long unicode_char;
         public int filled;
+
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("unicode_char","filled");
+            return Arrays.asList("unicode_char", "filled");
         }
     }
 
-    class window_size extends Structure implements Structure.ByValue{
+    class window_size extends Structure implements Structure.ByValue {
         public int height;
         public int width;
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("height","width");
+            return Arrays.asList("height", "width");
         }
     }
 
@@ -248,7 +253,7 @@ public interface NovaNative extends Library {
         EYES
     }
 
-    enum NativeBoolean{
+    enum NativeBoolean {
         FALSE,
         TRUE
     }

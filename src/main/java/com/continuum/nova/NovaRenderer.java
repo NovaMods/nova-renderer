@@ -34,8 +34,6 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -44,39 +42,34 @@ import static com.continuum.nova.NovaConstants.*;
 import static com.continuum.nova.utils.Utils.getImageData;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
-
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
-    private BlockModelShapes shapes;
-
-    private boolean firstLoad = true;
-
+    private static final List<ResourceLocation> BLOCK_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
+    private static final List<ResourceLocation> FONT_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
+    private static final List<ResourceLocation> FREE_TEXTURES = new ArrayList<>();
     private static final List<ResourceLocation> GUI_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
+
     private TextureMap guiAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> guiSpriteLocations = new HashMap<>();
 
-    private static final List<ResourceLocation> BLOCK_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap blockAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> blockSpriteLocations = new HashMap<>();
 
-    private static final List<ResourceLocation> FONT_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap fontAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> fontSpriteLocations = new HashMap<>();
 
-    private static final List<ResourceLocation> FREE_TEXTURES = new ArrayList<>();
-
-    private int height;
-    private int width;
-
-    private boolean resized;
-    private int scalefactor;
-
+    private BlockModelShapes shapes;
     private IResourceManager resourceManager;
-
     private ChunkUpdateListener chunkUpdateListener;
 
     private PriorityQueue<ChunkUpdateListener.BlockUpdateRange> chunksToUpdate;
     private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
     private World world;
+
+    private int height, width;
+
+    private boolean firstLoad = true;
+    private boolean resized;
+    private int scalefactor;
 
     final private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(10);
 
@@ -152,7 +145,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.INSTANCE.add_texture(blockColorTexture);
 
         // Copy over all the icon locations
-        for(String spriteName : blockColorMap.getMapUploadedSprites().keySet()) {
+        for (String spriteName : blockColorMap.getMapUploadedSprites().keySet()) {
             TextureAtlasSprite sprite = blockColorMap.getAtlasSprite(spriteName);
             NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
                     sprite.getIconName(),
@@ -202,10 +195,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             int startY = sprite.getOriginY() * atlasWidth * 4;
             int startPos = sprite.getOriginX() * 4 + startY;
 
-            if(sprite.getFrameCount() > 0) {
+            if (sprite.getFrameCount() > 0) {
                 int[] data = sprite.getFrameTextureData(0)[0];
-                for(int y = 0; y < sprite.getIconHeight(); y++) {
-                    for(int x = 0; x < sprite.getIconWidth(); x++) {
+                for (int y = 0; y < sprite.getIconHeight(); y++) {
+                    for (int x = 0; x < sprite.getIconWidth(); x++) {
                         // Reverse the order of the color channels
                         int pixel = data[y * sprite.getIconWidth() + x];
 
@@ -256,21 +249,16 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
             return Float.compare(range1DistToPlayer, range2DistToPlayer);
         });
-        chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
+        chunkUpdateListener = new ChunkUpdateListener(chunksToUpdate);
     }
 
     private void updateWindowSize() {
         window_size size = NovaNative.INSTANCE.get_window_size();
-        int oldHeight = height;
-        int oldWidth = width;
-        if (oldHeight != size.height || oldWidth != size.width) {
-            resized = true;
-        } else {
-            resized = false;
-        }
+
+        resized = height != size.height || width != size.width;
+
         height = size.height;
         width = size.width;
-
     }
 
     public int getHeight() {
@@ -294,7 +282,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         boolean shouldUpdateLightmap = entityRenderer.isLightmapUpdateNeeded();
         entityRenderer.updateLightmap(renderPartialTicks);
-        if(shouldUpdateLightmap) {
+        if (shouldUpdateLightmap) {
             sendLightmapTexture(entityRenderer.getLightmapTexture());
         }
 
@@ -309,13 +297,13 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         Profiler.start("update_chunks");
         int numChunksUpdated = 0;
-        while(!chunksToUpdate.isEmpty()) {
+        while (!chunksToUpdate.isEmpty()) {
             ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
             // chunkBuilder.createMeshesForChunk(range);
             chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
             updatedChunks.add(range);
             numChunksUpdated++;
-            if(numChunksUpdated > 10) {
+            if (numChunksUpdated > 10) {
                 break;
             }
         }
@@ -323,7 +311,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         Profiler.start("update_player");
         EntityPlayerSP viewEntity = mc.thePlayer;
-        if(viewEntity != null) {
+        if (viewEntity != null) {
             float pitch = viewEntity.rotationPitch;
             float yaw = viewEntity.rotationYaw;
             double x = viewEntity.posX;
@@ -340,10 +328,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.start("update_window");
         updateWindowSize();
         Profiler.end("update_window");
-        int scalefactor = new ScaledResolution(mc).getScaleFactor() * 2;
-        if (scalefactor != this.scalefactor) {
-            NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
-            this.scalefactor = scalefactor;
+
+        int newScaleFactor = new ScaledResolution(mc).getScaleFactor() * 2;
+        if (newScaleFactor != scalefactor) {
+            NovaNative.INSTANCE.set_float_setting("scalefactor", newScaleFactor);
+            scalefactor = newScaleFactor;
         }
 
         printProfilerData();
@@ -359,12 +348,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void setWorld(World world) {
-        if(world != null) {
+        if (world != null) {
             world.addEventListener(chunkUpdateListener);
             this.world = world;
             chunksToUpdate.clear();
 
-            if(chunkBuilder != null) {
+            if (chunkBuilder != null) {
                 chunkBuilder.setWorld(world);
             }
         }
@@ -397,7 +386,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         if (BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             return BLOCK_COLOR_ATLAS_NAME;
-        } else if (GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
+        } else if (GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture.equals(WHITE_TEXTURE_GUI_LOCATION)) {
             return GUI_ATLAS_NAME;
         } else if (FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             return FONT_ATLAS_NAME;
@@ -417,7 +406,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         String[] filtersSplit = filters.split("\n");
 
         filterMap = new HashMap<>();
-        for(int i = 0; i < filtersSplit.length; i += 2) {
+        for (int i = 0; i < filtersSplit.length; i += 2) {
             String filterName = filtersSplit[i];
             IGeometryFilter filter = IGeometryFilter.parseFilterString(filtersSplit[i + 1]);
             filterMap.put(filterName, filter);

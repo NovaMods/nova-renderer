@@ -21,23 +21,20 @@ import java.util.List;
 
 public class NovaDraw {
 
-    private static int mouseX, mouseY;
-
-    static HashMap<ResourceLocation, Buffers> buffers = new HashMap<>();
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
-
     private static final float zIncrement = 0.0001f;
 
-    private static float currentZ;
-
+    private static HashMap<ResourceLocation, Buffers> buffers = new HashMap<>();
     private static Mat4 ModelMatrix = new Mat4();
-
+    private static int mouseX, mouseY;
+    private static float currentZ;
 
     /**
      * private constructor cause this class only has static things
      */
-    private NovaDraw() {}
+    private NovaDraw() {
+    }
 
     private static void clearBuffers() {
         buffers.clear();
@@ -61,14 +58,14 @@ public class NovaDraw {
      * @param vertexbuffer vertex buffer data
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Float[] vertexbuffer) {
-        if(buffers.containsKey(texture)) {
+        if (buffers.containsKey(texture)) {
             buffers.get(texture).add(indexBuffer, vertexbuffer);
         } else {
             buffers.put(texture, new Buffers().add(indexBuffer, vertexbuffer));
         }
     }
 
-    public static void incrementZ(){
+    public static void incrementZ() {
         currentZ = Math.max(currentZ - zIncrement, 0);
     }
 
@@ -84,7 +81,7 @@ public class NovaDraw {
         Float[] vertexbuffer = new Float[vertices.length * 9];
         for (int v = 0; v < vertices.length; v++) {
 
-            Vec4 transformedVertex = ModelMatrix.mul(new Vec4(vertices[v].x,vertices[v].y,currentZ,1));
+            Vec4 transformedVertex = ModelMatrix.mul(new Vec4(vertices[v].x, vertices[v].y, currentZ, 1));
 
             vertexbuffer[v * 9] = transformedVertex.x;
             vertexbuffer[v * 9 + 1] = transformedVertex.y;
@@ -97,22 +94,22 @@ public class NovaDraw {
             vertexbuffer[v * 9 + 8] = vertices[v].a;
         }
 
-        draw(texture,indexBuffer,vertexbuffer);
+        draw(texture, indexBuffer, vertexbuffer);
     }
 
-    public static void translate( float x,float y,float z) {
-        ModelMatrix = ModelMatrix.translate(x,y,z);
+    public static void translate(float x, float y, float z) {
+        ModelMatrix = ModelMatrix.translate(x, y, z);
     }
 
-    public static void rotate(float deg, boolean x,boolean y,boolean z){
-        ModelMatrix = ModelMatrix.rotate((float) Math.toRadians(deg),x ? 1 : 0,y ? 1 : 0,z ? 1 : 0);
+    public static void rotate(float deg, boolean x, boolean y, boolean z) {
+        ModelMatrix = ModelMatrix.rotate((float) Math.toRadians(deg), x ? 1 : 0, y ? 1 : 0, z ? 1 : 0);
     }
 
-    public static void scale( float x,float y,float z){
-        ModelMatrix = ModelMatrix.scale(x,y,z);
+    public static void scale(float x, float y, float z) {
+        ModelMatrix = ModelMatrix.scale(x, y, z);
     }
 
-    public static void resetMatrix(){
+    public static void resetMatrix() {
         ModelMatrix = new Mat4();
     }
 
@@ -124,7 +121,7 @@ public class NovaDraw {
      * The only real difference is that minecraft uses texture coordinates in pixels and we use uv coordinates,
      * but they can be converted by dividing them by 256.
      *
-     * @param texture   the texture
+     * @param texture the texture
      */
     public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords, Color vertexColor) {
         Integer[] indexBuffer = new Integer[]{0, 1, 2, 0, 2, 3};
@@ -147,7 +144,7 @@ public class NovaDraw {
                 new Vertex(
                         rect.x + rect.width, rect.y,
                         textureCoords.x + textureCoords.width, textureCoords.y,
-						vertexColor
+                        vertexColor
                 )
         };
         draw(texture, indexBuffer, vertices);
@@ -155,7 +152,7 @@ public class NovaDraw {
     }
 
     public static void drawRectangle(ResourceLocation texture, Rectangle2D.Float rect, Rectangle2D.Float textureCoords) {
-        drawRectangle(texture, rect, textureCoords,Color.white);
+        drawRectangle(texture, rect, textureCoords, Color.white);
     }
 
     /**
@@ -199,7 +196,7 @@ public class NovaDraw {
             long timePrev = System.nanoTime();
             NovaNative.INSTANCE.add_gui_geometry(guiGeometry);
             long end = System.nanoTime();
-            LOG.trace("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
+            LOG.trace("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: " + ((end - timeWithAlloc) - (end - timePrev)));
             Memory.purge();
         }
 
@@ -222,7 +219,7 @@ public class NovaDraw {
         public float a;
 
         public Vertex(float x, float y, float u, float v, Color color) {
-            if(color == null) {
+            if (color == null) {
                 color = new Color(255, 255, 255);
             }
 
@@ -230,10 +227,10 @@ public class NovaDraw {
             this.y = y;
             this.u = u;
             this.v = v;
-            this.r = (float)color.getRed() / 255.f;
-            this.g = (float)color.getGreen() / 255.f;
-            this.b = (float)color.getBlue() / 255.f;
-            this.a = (float)color.getAlpha() / 255.f;
+            r = (float) color.getRed() / 255.f;
+            g = (float) color.getGreen() / 255.f;
+            b = (float) color.getBlue() / 255.f;
+            a = (float) color.getAlpha() / 255.f;
         }
     }
 
@@ -275,22 +272,22 @@ public class NovaDraw {
             command.texture_name = texture.getResourcePath();
 
             // assign the index buffer
-            command.index_buffer_size = this.indexBuffer.size();
+            command.index_buffer_size = indexBuffer.size();
             command.index_buffer = new Memory(command.index_buffer_size * Native.getNativeSize(Integer.TYPE));
             for (int i = 0; i < command.index_buffer_size; i++) {
-                Integer index = this.indexBuffer.get(i);
-                command.index_buffer.setInt(i * Native.getNativeSize(Integer.TYPE), (int) (index != null ? index : 0));
+                Integer index = indexBuffer.get(i);
+                command.index_buffer.setInt(i * Native.getNativeSize(Integer.TYPE), (index != null ? index : 0));
             }
 
             // assign the vertex buffer
-            command.vertex_buffer_size = this.vertexBuffer.size();
+            command.vertex_buffer_size = vertexBuffer.size();
             command.vertex_buffer = new Memory(command.vertex_buffer_size * Native.getNativeSize(Float.TYPE));
             for (int i = 0; i < command.vertex_buffer_size; i++) {
-                Float vertex = this.vertexBuffer.get(i);
-                command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (float) (vertex != null ? vertex : 0));
+                Float vertex = vertexBuffer.get(i);
+                command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (vertex != null ? vertex : 0));
             }
 
-            command.atlas_name =  NovaRenderer.atlasTextureOfSprite(texture);
+            command.atlas_name = NovaRenderer.atlasTextureOfSprite(texture);
 
             return command;
         }

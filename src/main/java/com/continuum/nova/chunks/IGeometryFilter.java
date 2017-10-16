@@ -2,8 +2,6 @@ package com.continuum.nova.chunks;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockRenderLayer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * @author ddubois
@@ -129,8 +127,6 @@ public interface IGeometryFilter {
     class TransparentGeometryFilter implements IGeometryFilter {
         boolean shouldBeTransparent;
 
-        private static final Logger LOG = LogManager.getLogger(TransparentGeometryFilter.class);
-
         public TransparentGeometryFilter(boolean shouldBeTransparent) {
             this.shouldBeTransparent = shouldBeTransparent;
         }
@@ -142,11 +138,7 @@ public interface IGeometryFilter {
 
         @Override
         public String toString() {
-            if(shouldBeTransparent) {
-                return "transparent";
-            } else {
-                return "not_transparent";
-            }
+            return shouldBeTransparent ? "transparent" : "not_transparent";
         }
     }
 
@@ -164,23 +156,19 @@ public interface IGeometryFilter {
 
         @Override
         public String toString() {
-            if(shouldBeEmissive) {
-                return "emissive";
-            } else {
-                return "not_emissive";
-            }
+            return shouldBeEmissive ? "emissive" : "not_emissive";
         }
     }
 
     static IGeometryFilter parseFilterString(final String filterString) {
         String[] tokens = filterString.split(" ");
 
-        if(tokens.length % 2 == 0) {
+        if (tokens.length % 2 == 0) {
             throw new IllegalArgumentException("Cannot have an even number of tokens in your geometry filter expressions");
         }
 
         IGeometryFilter filter = makeFilterFromToken(tokens[0]);
-        if(tokens.length == 1) {
+        if (tokens.length == 1) {
             return filter;
         }
 
@@ -190,7 +178,7 @@ public interface IGeometryFilter {
     static IGeometryFilter makeFilterExpression(IGeometryFilter previousFilter, String[] tokens, int curToken) {
         IGeometryFilter thisFilter;
 
-        switch(tokens[curToken]) {
+        switch (tokens[curToken]) {
             case "AND":
                 thisFilter = new AndGeometryFilter(previousFilter, makeFilterFromToken(tokens[curToken + 1]));
                 break;
@@ -205,38 +193,33 @@ public interface IGeometryFilter {
 
         boolean hasAnotherExpression = curToken + 2 < tokens.length - 1;
 
-        if(hasAnotherExpression) {
-            return makeFilterExpression(thisFilter, tokens, curToken + 2);
-
-        } else {
-            return thisFilter;
-        }
+        return hasAnotherExpression ? makeFilterExpression(thisFilter, tokens, curToken + 2) : thisFilter;
     }
 
     static IGeometryFilter makeFilterFromToken(final String token) {
-        if(token.startsWith("geometry_type::")) {
+        if (token.startsWith("geometry_type::")) {
             String typeName = token.substring(15);
             GeometryType type = GeometryType.valueOf(typeName.toUpperCase());
             return new GeometryTypeGeometryFilter(type);
 
-        } else if(token.startsWith("name::")) {
+        } else if (token.startsWith("name::")) {
             String name = token.substring(6);
             return new NameGeometryFilter(name);
 
-        } else if(token.startsWith("name_part::")) {
+        } else if (token.startsWith("name_part::")) {
             String namePart = token.substring(11);
             return new NamePartGeometryFilter(namePart);
 
-        } else if(token.equals("transparent")) {
+        } else if (token.equals("transparent")) {
             return new TransparentGeometryFilter(true);
 
-        } else if(token.equals("not_transparent")) {
+        } else if (token.equals("not_transparent")) {
             return new TransparentGeometryFilter(false);
 
-        } else if(token.equals("emissive")) {
+        } else if (token.equals("emissive")) {
             return new EmissiveGeometryFilter(true);
 
-        } else if(token.equals("not_emissive")) {
+        } else if (token.equals("not_emissive")) {
             return new EmissiveGeometryFilter(false);
         }
 

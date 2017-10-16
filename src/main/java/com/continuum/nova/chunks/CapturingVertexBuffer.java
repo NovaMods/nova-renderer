@@ -2,11 +2,9 @@ package com.continuum.nova.chunks;
 
 import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.util.math.BlockPos;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author ddubois
@@ -24,17 +22,17 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
         @Override
         public boolean equals(Object o) {
-            if(this == o) return true;
-            if(!(o instanceof Vertex)) return false;
+            if (this == o) return true;
+            if (!(o instanceof Vertex)) return false;
 
             Vertex vertex = (Vertex) o;
 
-            if(Float.compare(vertex.x, x) != 0) return false;
-            if(Float.compare(vertex.y, y) != 0) return false;
-            if(Float.compare(vertex.z, z) != 0) return false;
+            if (Float.compare(vertex.x, x) != 0) return false;
+            if (Float.compare(vertex.y, y) != 0) return false;
+            if (Float.compare(vertex.z, z) != 0) return false;
             // if(color != vertex.color) return false;
-            if(Float.compare(vertex.u, u) != 0) return false;
-            return Float.compare(vertex.v, v) != 0;
+            return Float.compare(vertex.u, u) == 0 &&
+                    Float.compare(vertex.v, v) != 0;
             // return lmCoord == vertex.lmCoord;
         }
 
@@ -50,7 +48,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
             return result;
         }
 
-        List<Integer> toInts() {
+        private List<Integer> toInts() {
             List<Integer> ints = new ArrayList<>();
 
             ints.add(Float.floatToIntBits(x));
@@ -80,16 +78,16 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
     @Override
     public VertexBuffer pos(double x, double y, double z) {
-        curVertex.x = (float)x - chunkPosition.getX();
-        curVertex.y = (float)y - chunkPosition.getY();
-        curVertex.z = (float)z - chunkPosition.getZ();
+        curVertex.x = (float) x - chunkPosition.getX();
+        curVertex.y = (float) y - chunkPosition.getY();
+        curVertex.z = (float) z - chunkPosition.getZ();
 
         return this;
     }
 
     @Override
     public VertexBuffer color(float red, float green, float blue, float alpha) {
-        return color((int)red * 255, (int)green * 255, (int)blue * 255, (int)alpha * 255);
+        return color((int) red * 255, (int) green * 255, (int) blue * 255, (int) alpha * 255);
     }
 
     @Override
@@ -107,8 +105,8 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
     @Override
     public VertexBuffer tex(double u, double v) {
-        curVertex.u = (float)u;
-        curVertex.v = (float)v;
+        curVertex.u = (float) u;
+        curVertex.v = (float) v;
 
         return this;
     }
@@ -122,17 +120,17 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
     @Override
     public void endVertex() {
-        ++this.vertexCount;
+        ++vertexCount;
 
         boolean shouldAdd = true;
-        for(Vertex v : data) {
-            if(v.equals(data)) {
+        for (Vertex v : data) {
+            if (v.equals(data)) {
                 shouldAdd = false;
                 break;
             }
         }
 
-        if(shouldAdd) {
+        if (shouldAdd) {
             data.add(curVertex);
         }
 
@@ -142,7 +140,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
     public List<Integer> getData() {
         List<Integer> finalData = new ArrayList<>();
 
-        for(Vertex v : data) {
+        for (Vertex v : data) {
             finalData.addAll(v.toInts());
         }
 

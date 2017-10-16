@@ -1,14 +1,14 @@
 package com.continuum.nova.input;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
 import com.continuum.nova.NovaNative;
 import com.continuum.nova.NovaNative.mouse_button_event;
 import com.continuum.nova.NovaNative.mouse_position_event;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 
 public class Mouse {
@@ -51,7 +51,7 @@ public class Mouse {
 
     }
 
-    public static void setCursorPosition(int new_x, int new_y) {
+    public static void setCursorPosition(int newX, int newY) {
 
     }
 
@@ -61,8 +61,9 @@ public class Mouse {
 
             for (int i = 0; i < 16; ++i) {
                 buttonName[i] = "BUTTON" + i;
-                buttonMap.put(buttonName[i], Integer.valueOf(i));
+                buttonMap.put(buttonName[i], i);
             }
+
             initialized = true;
         }
     }
@@ -99,8 +100,8 @@ public class Mouse {
     }
 
     public static int getButtonIndex(String buttonName) {
-        Integer ret = (Integer) buttonMap.get(buttonName);
-        return ret == null ? -1 : ret.intValue();
+        Integer ret = buttonMap.get(buttonName);
+        return ret == null ? -1 : ret;
     }
 
     public static boolean next() {
@@ -109,35 +110,35 @@ public class Mouse {
         mouse_button_event e = NovaNative.INSTANCE.get_next_mouse_button_event();
         mouse_position_event p = NovaNative.INSTANCE.get_next_mouse_position_event();
         NovaNative.mouse_scroll_event s = NovaNative.INSTANCE.get_next_mouse_scroll_event();
-        if (e.filled == 0 && p.filled==0 && s.filled == 0){
+        if (e.filled == 0 && p.filled == 0 && s.filled == 0) {
             return false;
         }
-        if (e.filled == 1){
-            if (e.action ==1){
+        if (e.filled == 1) {
+            if (e.action == 1) {
                 buttonDownBuffer.add(e.button);
 
-            } else{
+            } else {
                 buttonDownBuffer.remove(e.button);
             }
             eventButton = e.button;
             eventState = e.action == 1;
-            LOG.trace("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
+            LOG.trace("button: " + e.button + ";action: " + e.action + ";mods: " + e.mods + "; filled: " + e.filled);
 
-        }else{
+        } else {
             eventButton = -1;
             eventState = false;
         }
-        if(p.filled == 1 ){
+        if (p.filled == 1) {
             dx += p.xpos - x;
             dy += p.ypos - y;
             x = p.xpos;
             y = p.ypos;
             LOG.trace("dx: {} dy: {}", dx, dy);
         }
-        if(s.filled == 1){
-            event_dwheel = (int )s.yoffset;
-            LOG.trace("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
-        }else{
+        if (s.filled == 1) {
+            event_dwheel = (int) s.yoffset;
+            LOG.trace("button: " + e.button + ";action: " + e.action + ";mods: " + e.mods + "; filled: " + e.filled);
+        } else {
             event_dwheel = 0;
         }
 

@@ -14,12 +14,13 @@ import java.util.Map;
  */
 public class Profiler {
     private static final Logger LOG = LogManager.getLogger(Profiler.class);
-
     public static final int NUM_SAMPLES = 120;
+
+    private static int counter;
 
     public static class ProfilerData {
         long startTime;
-        long total_duration = 0;
+        long total_duration;
 
         public void start() {
             startTime = System.nanoTime();
@@ -34,7 +35,7 @@ public class Profiler {
     private static Map<String, ProfilerData> profilerDataMap = new HashMap<>();
 
     public static void start(String name) {
-        if(!profilerDataMap.containsKey(name)) {
+        if (!profilerDataMap.containsKey(name)) {
             profilerDataMap.put(name, new ProfilerData());
         }
 
@@ -45,17 +46,17 @@ public class Profiler {
         profilerDataMap.get(name).stop();
     }
 
-    private static int counter = 0;
-
     public static void logData() {
-        if(counter >= 100) {
-            for(Map.Entry<String, ProfilerData> entry : profilerDataMap.entrySet()) {
+        if (counter >= 100) {
+            for (Map.Entry<String, ProfilerData> entry : profilerDataMap.entrySet()) {
                 LOG.debug("Section {} has taken an total of {}ms since the game began", entry.getKey(), (double) entry.getValue().total_duration / 1000000.0);
             }
             counter = 0;
         }
+
         counter++;
     }
 
-    private Profiler() {}
+    private Profiler() {
+    }
 }

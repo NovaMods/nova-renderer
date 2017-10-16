@@ -18,6 +18,9 @@ import java.util.PriorityQueue;
  * @author ddubois
  */
 public class ChunkUpdateListener implements IWorldEventListener {
+    private static final Logger LOG = LogManager.getLogger(ChunkUpdateListener.class);
+    private PriorityQueue<BlockUpdateRange> chunksToUpdate;
+
     public static class BlockUpdateRange {
         public Vec3i min;
         public Vec3i max;
@@ -34,11 +37,8 @@ public class ChunkUpdateListener implements IWorldEventListener {
                     "), max=(" + max.x + ", " + max.y + ", " + max.z +
                     ")}";
         }
+
     }
-
-    private static final Logger LOG = LogManager.getLogger(ChunkUpdateListener.class);
-
-    private PriorityQueue<BlockUpdateRange> chunksToUpdate;
 
     public ChunkUpdateListener(PriorityQueue<BlockUpdateRange> chunksToUpdate) {
         this.chunksToUpdate = chunksToUpdate;
