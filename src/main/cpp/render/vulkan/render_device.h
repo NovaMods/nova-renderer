@@ -10,6 +10,8 @@
 #include "../windowing/glfw_vk_window.h"
 
 namespace nova {
+#define NUM_FRAME_DATA 2    /* I guess? */
+
     struct gpu_info {
         VkPhysicalDevice device;
         std::vector<VkQueueFamilyProperties> queue_family_props;
@@ -41,6 +43,8 @@ namespace nova {
 
         void find_device_and_queues();
 
+        void create_semaphores();
+
     private:
         std::vector<gpu_info> gpus;
         VkPhysicalDevice physical_device;
@@ -51,6 +55,9 @@ namespace nova {
 
         std::vector<const char *> validation_layers;
         std::vector<const char *> extensions;
+
+        std::vector<VkSemaphore> acquire_semaphores;
+        std::vector<VkSemaphore> render_complete_semaphores;
 
         void create_logical_device_and_queues();
 

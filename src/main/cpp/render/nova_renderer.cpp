@@ -6,7 +6,6 @@
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
 #include "../utils/profiler.h"
-#include "vulkan/vulkan_instance.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -28,6 +27,10 @@ namespace nova {
         LOG(TRACE) << "Created surface";
         context.find_device_and_queues();
         LOG(TRACE) << "Found device and queue";
+        context.create_semaphores();
+        LOG(TRACE) << "Created semaphores";
+
+        LOG(INFO) << "Vulkan code initialized";
 
         ubo_manager = std::make_unique<uniform_buffer_store>();
         textures = std::make_unique<texture_manager>();

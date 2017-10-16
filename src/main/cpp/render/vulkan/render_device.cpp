@@ -240,6 +240,24 @@ namespace nova {
         vkGetDeviceQueue(device, graphics_family_idx, 0, &present_queue);
     }
 
+    void render_device::create_semaphores() {
+        acquire_semaphores.reserve(NUM_FRAME_DATA);
+        render_complete_semaphores.reserve(NUM_FRAME_DATA);
+
+        VkSemaphoreCreateInfo semaphore_create_info = {};
+        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        for(int i = 0; i < NUM_FRAME_DATA; i++) {
+            auto err = vkCreateSemaphore(device, &semaphore_create_info, nullptr, &acquire_semaphores[i]);
+            if(err != VK_SUCCESS) {
+                LOG(TRACE) << "Could not create acquire semaphore " << i;
+            }
+            err = vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_complete_semaphores[i]);
+            if(err != VK_SUCCESS) {
+                LOG(TRACE) << "Could not create render complete semaphore " << i;
+            }
+        }
+    }
+
     VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo,
                                           const VkAllocationCallbacks *pAllocator,
                                           VkDebugReportCallbackEXT *pCallback) {
