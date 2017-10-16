@@ -11,7 +11,6 @@
 #include <json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../data_loading/settings.h"
-#include "../vulkan/render_device.h"
 #include <RenderDocManager.h>
 #include <glm/glm.hpp>
 
@@ -22,6 +21,8 @@ namespace nova {
         int width;
         int height;
     };
+
+    class render_device;
     
     /*!
      * \brief Represents a GLFW window with an OpenGL context

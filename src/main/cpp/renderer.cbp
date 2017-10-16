@@ -2043,9 +2043,6 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/vulkan/render_device.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/vulkan/vulkan_instance.cpp.obj">
-			<Option target="nova-renderer"/>
-		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/windowing/glfw_vk_window.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
@@ -2203,9 +2200,6 @@
 			<Option target="nova-renderer-obj"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/render_device.h">
-			<Option target="nova-renderer-obj"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/vulkan_instance.cpp">
 			<Option target="nova-renderer-obj"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/vulkan_instance.h">

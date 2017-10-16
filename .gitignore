@@ -176,7 +176,8 @@ updatenames.sh
 
 ### Minecraft source and libraries ###
 conf/
-jars/
+!jars/
+jars/*
 !jars/config/
 !jars/shaderpacks/default/
 docs/

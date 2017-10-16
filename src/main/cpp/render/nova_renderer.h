@@ -138,8 +138,6 @@ namespace nova {
 
         void render_final_pass();
 
-        void init_vulkan_state();
-
         void load_new_shaderpack(const std::string &new_shaderpack_name);
 
         void create_framebuffers_from_shaderpack();

@@ -18,11 +18,16 @@ namespace nova {
 
     nova_renderer::nova_renderer() {
         game_window = std::make_unique<glfw_vk_window>();
+        LOG(TRACE) << "Window initialized";
 
-        init_vulkan_state();
-        setup_debug_callback(context.instance);
+        context.create_instance(*game_window);
+        LOG(TRACE) << "Instance created";
+        context.setup_debug_callback();
+        LOG(TRACE) << "Debug callback set up";
         game_window->create_surface(context);
+        LOG(TRACE) << "Created surface";
         context.find_device_and_queues();
+        LOG(TRACE) << "Found device and queue";
 
         ubo_manager = std::make_unique<uniform_buffer_store>();
         textures = std::make_unique<texture_manager>();
@@ -36,15 +41,6 @@ namespace nova {
 		render_settings->update_config_changed();
 
         LOG(INFO) << "Finished sending out initial config";
-
-    }
-
-    void nova_renderer::init_vulkan_state() {
-        LOG(DEBUG) << "Initting Vulkan state";
-
-        context.instance = create_instance(*game_window);
-
-        LOG(DEBUG) << "Vulkan state initialized";
     }
 
     nova_renderer::~nova_renderer() {
@@ -53,7 +49,7 @@ namespace nova {
         textures.reset();
         ubo_manager.reset();
 
-        DestroyDebugReportCallbackEXT(context.instance, context.debug_callback, nullptr);
+        DestroyDebugReportCallbackEXT(context.instance, context.callback, nullptr);
         vkDestroyInstance(context.instance, nullptr);
         game_window.reset();
     }
