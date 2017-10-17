@@ -58,7 +58,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/renderdocapi
         )
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${Vulkan_LIBRARIES} ${JNI_LIBRARIES})
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES})
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
@@ -180,7 +180,10 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
 
-#set_target_properties(nova-renderer-obj PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+add_executable(nova-test test/main.cpp ${NOVA_SOURCE})
+target_link_libraries(nova-test ${COMMON_LINK_LIBS})
+target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
+set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # Not sure if this is actually doing anything
 if(GLFW_COMPILED)

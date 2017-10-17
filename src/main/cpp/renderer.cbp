@@ -163,6 +163,84 @@
 					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nova-test">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/nova-test.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DSTATIC_LINKAGE"/>
+					<Add directory="C:/VulkanSDK/1.0.61.1/Include"/>
+					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include"/>
+					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include/win32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/easyloggingpp/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glad/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-test"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nova-test/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/nova-test.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DSTATIC_LINKAGE"/>
+					<Add directory="C:/VulkanSDK/1.0.61.1/Include"/>
+					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include"/>
+					<Add directory="E:/Program Files/Java/jdk1.8.0_121/include/win32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/easyloggingpp/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glad/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 nova-test/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
 			<Target title="install/local">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option type="4"/>
@@ -188,16 +266,6 @@
 				<Option type="4"/>
 				<MakeCommands>
 					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 edit_cache"/>
-					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="list_install_components">
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
-				<Option type="4"/>
-				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 list_install_components"/>
 					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/Makefile&quot;  VERBOSE=1 clean"/>
@@ -958,6 +1026,7 @@
 		</Build>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glad/src/glad.c">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/include/GLFW/glfw3.h">
 			<Option target="glfw"/>
@@ -1942,6 +2011,7 @@
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz.c">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 			<Option target="miniz_tester"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz_tester.cpp">
@@ -1961,9 +2031,11 @@
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi/RenderDocManager.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi/RenderDocManager.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/glad/src/glad.c.obj">
 			<Option target="nova-renderer"/>
@@ -2054,183 +2126,246 @@
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/direct_buffers.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/direct_buffers.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/loaders/loader_utils.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/loaders/loader_utils.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/loaders/loaders.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/loaders/shader_loading.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/loaders/shader_loading.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/loaders/shader_source_structs.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/loaders/shader_source_structs.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/physics/aabb.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/physics/aabb.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/settings.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/settings.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/geometry_cache/mesh_definition.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/geometry_cache/mesh_definition.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/geometry_cache/mesh_store.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/geometry_cache/mesh_store.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/input/InputHandler.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/input/InputHandler.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/mc_interface/mc_gui_objects.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/mc_interface/mc_objects.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/mc_interface/mc_objects.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/mc_interface/nova.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/mc_interface/nova_facade.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/mc_interface/nova_jni.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/nova_renderer.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/nova_renderer.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/camera.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/camera.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/framebuffer.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/framebuffer.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/gl_mesh.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/gl_mesh.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/render_object.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/render_object.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/shaders/gl_shader_program.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/shaders/gl_shader_program.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/shaders/shaderpack.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/shaders/shaderpack.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/textures/texture2D.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/textures/texture2D.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/textures/texture_manager.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/textures/texture_manager.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/uniform_buffers/gl_uniform_buffer.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/uniform_buffers/uniform_buffer_definitions.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/uniform_buffers/uniform_buffer_store.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/uniform_buffers/uniform_buffer_store.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/uniform_buffers/uniform_buffers_definitions.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/render_device.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/render_device.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/vulkan_instance.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/windowing/glfw_vk_window.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/windowing/glfw_vk_window.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/test/main.cpp">
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/io.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/profiler.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/profiler.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/stb_image_write.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/types.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/utils.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/utils.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>

@@ -82,13 +82,17 @@ namespace nova {
         }
 
         enumerate_gpus();
+        LOG(TRACE) << "Enumerated GPUs";
         select_physical_device();
+        LOG(TRACE) << "Found a physical device that will work I guess";
         create_logical_device_and_queues();
+        LOG(TRACE) << "Basic queue and logical device was found";
     }
 
     void render_device::enumerate_gpus() {
         uint32_t num_devices = 0;
         auto err = vkEnumeratePhysicalDevices(this->instance, &num_devices, nullptr);
+        LOG(TRACE) << "There are " << num_devices << " physical devices";
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not enumerate devices. Are you sure you have a GPU?";
         }
@@ -98,6 +102,7 @@ namespace nova {
 
         std::vector<VkPhysicalDevice> devices(num_devices);
         err = vkEnumeratePhysicalDevices(this->instance, &num_devices, devices.data());
+        LOG(TRACE) << "Got the actual physical devices";
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not enumerate physical devices";
         }
@@ -105,38 +110,50 @@ namespace nova {
             LOG(FATAL) << "Apparently you have zero devices. You know you need a GPU to run Nova, right>";
         }
 
-        this->gpus.reserve(num_devices);
+        this->gpus.resize(num_devices);
+        LOG(TRACE) << "Reserved " << num_devices << " slots for devices";
         for(uint32_t i = 0; i < num_devices; i++) {
-            gpu_info gpu = this->gpus[i];
+            gpu_info& gpu = this->gpus[i];
+            LOG(TRACE) << "Got a pretty reference to the current GPU";
             gpu.device = devices[i];
+            LOG(TRACE) << "Set the GPU device to " << gpu.device;
 
             // get the queues the device supports
             uint32_t num_queues = 0;
             vkGetPhysicalDeviceQueueFamilyProperties(gpu.device, &num_queues, nullptr);
-            gpu.queue_family_props.reserve(num_queues);
+            LOG(TRACE) << "Got the number of queues, there are " << num_queues << " queues";
+            gpu.queue_family_props.resize(num_queues);
             vkGetPhysicalDeviceQueueFamilyProperties(gpu.device, &num_queues, gpu.queue_family_props.data());
+            LOG(TRACE) << "Got the physical device queue properties";
 
             // Get the extensions the device supports
             uint32_t num_extensions;
             vkEnumerateDeviceExtensionProperties(gpu.device, nullptr, &num_extensions, nullptr);
-            gpu.extention_props.reserve(num_extensions);
+            LOG(TRACE) << "We have " << num_extensions << " device extension properties";
+            gpu.extention_props.resize(num_extensions);
+            LOG(TRACE) << "Reserved " << gpu.extention_props.size() << " space for the extension properties";
             vkEnumerateDeviceExtensionProperties(gpu.device, nullptr, &num_extensions, gpu.extention_props.data());
+            LOG(TRACE) << "Got the device extension properties";
 
             vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.device, this->surface, &gpu.surface_capabilities);
+            LOG(TRACE) << "Got the physical device surface capabilities";
 
             uint32_t num_formats = 0;
             vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.device, this->surface, &num_formats, nullptr);
-            gpu.surface_formats.reserve(num_formats);
+            gpu.surface_formats.resize(num_formats);
             vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.device, this->surface, &num_formats, gpu.surface_formats.data());
+            LOG(TRACE) << "Got the physical device's surface formats";
 
             uint32_t num_present_modes;
             vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.device, surface, &num_present_modes, nullptr);
-            gpu.present_modes.reserve(num_present_modes);
+            gpu.present_modes.resize(num_present_modes);
             vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.device, surface, &num_present_modes,
                                                       gpu.present_modes.data());
+            LOG(TRACE) << "Got the surface present modes";
 
             vkGetPhysicalDeviceMemoryProperties(gpu.device, &gpu.mem_props);
             vkGetPhysicalDeviceProperties(gpu.device, &gpu.props);
+            LOG(TRACE) << "Got the memory properties and deice properties";
         }
     }
 
@@ -241,8 +258,8 @@ namespace nova {
     }
 
     void render_device::create_semaphores() {
-        acquire_semaphores.reserve(NUM_FRAME_DATA);
-        render_complete_semaphores.reserve(NUM_FRAME_DATA);
+        acquire_semaphores.resize(NUM_FRAME_DATA);
+        render_complete_semaphores.resize(NUM_FRAME_DATA);
 
         VkSemaphoreCreateInfo semaphore_create_info = {};
         semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
