@@ -25,7 +25,9 @@ namespace nova {
     void render_device::create_instance(glfw_vk_window &window) {
         validation_layers = {
                 "VK_LAYER_LUNARG_core_validation",
-                "VK_LAYER_LUNARG_standard_validation"
+                "VK_LAYER_LUNARG_standard_validation",
+                "VK_LAYER_LUNARG_device_limits",
+                "VK_LAYER_LUNARG_parameter_validation"
         };
 
         VkApplicationInfo app_info = {};
@@ -61,7 +63,6 @@ namespace nova {
             LOG(FATAL) << "Could not create Vulkan instance";
         }
     }
-
 
     void render_device::setup_debug_callback() {
 #ifndef NDEBUG
@@ -153,6 +154,7 @@ namespace nova {
 
             vkGetPhysicalDeviceMemoryProperties(gpu.device, &gpu.mem_props);
             vkGetPhysicalDeviceProperties(gpu.device, &gpu.props);
+            vkGetPhysicalDeviceFeatures(gpu.device, &gpu.supported_features);
             LOG(TRACE) << "Got the memory properties and deice properties";
         }
     }
@@ -219,6 +221,7 @@ namespace nova {
 
         std::vector<VkDeviceQueueCreateInfo> devq_info;
 
+        // TODO: Possibly create a queue for texture streaming and another for geometry streaming?
         const float priority = 1.0;
         for(auto idx : unique_idx) {
             VkDeviceQueueCreateInfo qinfo = {};
@@ -273,6 +276,18 @@ namespace nova {
                 LOG(TRACE) << "Could not create render complete semaphore " << i;
             }
         }
+    }
+
+    void render_device::create_command_pool_and_command_buffers() {
+        create_command_pool();
+        LOG(TRACE) << "Created command pool";
+        create_command_buffers();
+        LOG(TRACE) << "Created command buffers";
+    }
+
+    void render_device::create_command_pool() {
+        VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+        commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     }
 
     VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo,

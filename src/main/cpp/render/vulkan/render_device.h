@@ -20,11 +20,14 @@ namespace nova {
         std::vector<VkSurfaceFormatKHR> surface_formats;
         VkPhysicalDeviceMemoryProperties mem_props;
         VkPhysicalDeviceProperties props;
+        VkPhysicalDeviceFeatures supported_features;
         std::vector<VkPresentModeKHR> present_modes;
     };
 
     /*!
      * \brief An abstraction over Vulkan physical and logical devices
+     *
+     * Pretty sure I need one command buffer pool per thread that does things
      */
     class render_device {
     public:
@@ -37,6 +40,12 @@ namespace nova {
         uint32_t present_family_idx;
         gpu_info *gpu;
 
+        VkPhysicalDevice physical_device;
+        VkDevice device;
+
+        VkQueue graphics_queue;
+        VkQueue present_queue;
+
         void create_instance(glfw_vk_window &window);
 
         void setup_debug_callback();
@@ -45,13 +54,10 @@ namespace nova {
 
         void create_semaphores();
 
+        void create_command_pool_and_command_buffers();
+
     private:
         std::vector<gpu_info> gpus;
-        VkPhysicalDevice physical_device;
-        VkDevice device;
-
-        VkQueue graphics_queue;
-        VkQueue present_queue;
 
         std::vector<const char *> validation_layers;
         std::vector<const char *> extensions;
@@ -64,6 +70,8 @@ namespace nova {
         void enumerate_gpus();
 
         void select_physical_device();
+
+        void create_command_pool();
     };
 
     VkResult
