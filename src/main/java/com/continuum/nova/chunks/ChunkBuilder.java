@@ -16,8 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Splits chunks up into meshes with one mesh for each shader
@@ -29,13 +27,12 @@ public class ChunkBuilder {
     private static final Logger LOG = LogManager.getLogger(ChunkBuilder.class);
     private static final int VERTEX_COLOR_OFFSET = 3;
     private static final int LIGHTMAP_COORD_OFFSET = 6;
-    private World world;
 
     private final Map<String, IGeometryFilter> filters;
-
     private final BlockColors blockColors;
 
     private BlockRendererDispatcher blockRendererDispatcher;
+    private World world;
 
     public ChunkBuilder(Map<String, IGeometryFilter> filters, World world, BlockColors blockColors) {
         this.filters = filters;
@@ -44,7 +41,7 @@ public class ChunkBuilder {
     }
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
-        blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
+        blockRendererDispatcher = Minecraft.getMinecraft().getBlockRenderDispatcher();
         Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
 
         for(int x = range.min.x; x <= range.max.x; x++) {
@@ -78,7 +75,7 @@ public class ChunkBuilder {
      */
     private void filterBlockAtPos(Map<String, List<BlockPos>> blocksForFilter, BlockPos pos) {
         IBlockState blockState = world.getBlockState(pos);
-        if(blockState.getRenderType().equals(EnumBlockRenderType.INVISIBLE)) {
+        if(blockState.getRenderType() == EnumBlockRenderType.INVISIBLE) {
             return;
         }
 
@@ -134,7 +131,7 @@ public class ChunkBuilder {
                         } else {
                             lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(facing));
                         }
-                        
+
                         for(BakedQuad quad : quads) {
                             if(quad.hasTintIndex()) {
                                 colorMultiplier = blockColors.colorMultiplier(blockState, world, blockPos, quad.getTintIndex());

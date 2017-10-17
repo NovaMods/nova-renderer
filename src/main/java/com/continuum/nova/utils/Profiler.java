@@ -14,12 +14,13 @@ import java.util.Map;
  */
 public class Profiler {
     private static final Logger LOG = LogManager.getLogger(Profiler.class);
-
     public static final int NUM_SAMPLES = 120;
+
+    private static int counter;
 
     public static class ProfilerData {
         long startTime;
-        long total_duration = 0;
+        long total_duration;
 
         public void start() {
             startTime = System.nanoTime();
@@ -45,8 +46,6 @@ public class Profiler {
         profilerDataMap.get(name).stop();
     }
 
-    private static int counter = 0;
-
     public static void logData() {
         if(counter >= 100) {
             for(Map.Entry<String, ProfilerData> entry : profilerDataMap.entrySet()) {
@@ -54,8 +53,9 @@ public class Profiler {
             }
             counter = 0;
         }
+
         counter++;
     }
 
-    private Profiler() {}
+    private Profiler() { }
 }

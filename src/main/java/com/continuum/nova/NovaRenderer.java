@@ -34,8 +34,6 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -44,39 +42,34 @@ import static com.continuum.nova.NovaConstants.*;
 import static com.continuum.nova.utils.Utils.getImageData;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
-
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
-    private BlockModelShapes shapes;
-
-    private boolean firstLoad = true;
-
+    private static final List<ResourceLocation> BLOCK_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
+    private static final List<ResourceLocation> FONT_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
+    private static final List<ResourceLocation> FREE_TEXTURES = new ArrayList<>();
     private static final List<ResourceLocation> GUI_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
+
     private TextureMap guiAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> guiSpriteLocations = new HashMap<>();
 
-    private static final List<ResourceLocation> BLOCK_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap blockAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> blockSpriteLocations = new HashMap<>();
 
-    private static final List<ResourceLocation> FONT_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap fontAtlas = new TextureMap("textures");
     private Map<ResourceLocation, TextureAtlasSprite> fontSpriteLocations = new HashMap<>();
 
-    private static final List<ResourceLocation> FREE_TEXTURES = new ArrayList<>();
-
-    private int height;
-    private int width;
-
-    private boolean resized;
-    private int scalefactor;
-
+    private BlockModelShapes shapes;
     private IResourceManager resourceManager;
-
     private ChunkUpdateListener chunkUpdateListener;
 
     private PriorityQueue<ChunkUpdateListener.BlockUpdateRange> chunksToUpdate;
     private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
     private World world;
+
+    private int height, width;
+
+    private boolean firstLoad = true;
+    private boolean resized;
+    private int scalefactor;
 
     final private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(10);
 
@@ -95,7 +88,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
         this.resourceManager = resourceManager;
 
-        if (firstLoad) {
+        if(firstLoad) {
             firstLoad = false;
         }
 
@@ -118,12 +111,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
      * @param resourceManager The IResoruceManager to get the textures from
      */
     private void addFreeTextures(IResourceManager resourceManager) {
-        for (ResourceLocation loc : FREE_TEXTURES) {
+        for(ResourceLocation loc : FREE_TEXTURES) {
             try {
                 IResource texture = resourceManager.getResource(loc);
                 BufferedInputStream in = new BufferedInputStream(texture.getInputStream());
                 BufferedImage image = ImageIO.read(in);
-                if (image != null) {
+                if(image != null) {
                     loadTexture(loc, image);
                 } else {
                     LOG.error("Free texture " + loc + " has no data!");
@@ -182,7 +175,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         LOG.info("Adding atlas texture {}", atlasTexture);
         NovaNative.INSTANCE.add_texture(atlasTexture);
 
-        for (TextureAtlasSprite sprite : spriteLocations.values()) {
+        for(TextureAtlasSprite sprite : spriteLocations.values()) {
             NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
                     sprite.getIconName(),
                     sprite.getMinU(),
@@ -198,7 +191,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private NovaNative.mc_atlas_texture getFullImage(int atlasWidth, int atlasHeight, Collection<TextureAtlasSprite> sprites) {
         byte[] imageData = new byte[atlasWidth * atlasHeight * 4];
 
-        for (TextureAtlasSprite sprite : sprites) {
+        for(TextureAtlasSprite sprite : sprites) {
             int startY = sprite.getOriginY() * atlasWidth * 4;
             int startPos = sprite.getOriginX() * 4 + startY;
 
@@ -256,21 +249,16 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
             return Float.compare(range1DistToPlayer, range2DistToPlayer);
         });
-        chunkUpdateListener  = new ChunkUpdateListener(chunksToUpdate);
+        chunkUpdateListener = new ChunkUpdateListener(chunksToUpdate);
     }
 
     private void updateWindowSize() {
         window_size size = NovaNative.INSTANCE.get_window_size();
-        int oldHeight = height;
-        int oldWidth = width;
-        if (oldHeight != size.height || oldWidth != size.width) {
-            resized = true;
-        } else {
-            resized = false;
-        }
+
+        resized = height != size.height || width != size.width;
+
         height = size.height;
         width = size.width;
-
     }
 
     public int getHeight() {
@@ -286,7 +274,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void updateCameraAndRender(float renderPartialTicks, long systemNanoTime, Minecraft mc) {
-        if (NovaNative.INSTANCE.should_close()) {
+        if(NovaNative.INSTANCE.should_close()) {
             mc.shutdown();
         }
 
@@ -300,10 +288,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
 
         Profiler.start("render_gui");
-        if (mc.currentScreen != null) {
-
+        if(mc.currentScreen != null) {
             NovaDraw.novaDrawScreen(mc.currentScreen, renderPartialTicks);
-
         }
         Profiler.end("render_gui");
 
@@ -340,10 +326,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.start("update_window");
         updateWindowSize();
         Profiler.end("update_window");
-        int scalefactor = new ScaledResolution(mc).getScaleFactor() * 2;
-        if (scalefactor != this.scalefactor) {
-            NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
-            this.scalefactor = scalefactor;
+
+        int newScaleFactor = new ScaledResolution(mc).getScaleFactor() * 2;
+        if(newScaleFactor != scalefactor) {
+            NovaNative.INSTANCE.set_float_setting("scalefactor", newScaleFactor);
+            scalefactor = newScaleFactor;
         }
 
         printProfilerData();
@@ -377,7 +364,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
      * @param image    The texture itself
      */
     public void loadTexture(ResourceLocation location, BufferedImage image) {
-        if (resourceManager == null) {
+        if(resourceManager == null) {
             LOG.error("Trying to load texture " + location + " but there's no resource manager");
             return;
         }
@@ -395,11 +382,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public static String atlasTextureOfSprite(ResourceLocation texture) {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
 
-        if (BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+        if(BLOCK_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             return BLOCK_COLOR_ATLAS_NAME;
-        } else if (GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture == WHITE_TEXTURE_GUI_LOCATION) {
+        } else if(GUI_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation) || texture.equals(WHITE_TEXTURE_GUI_LOCATION)) {
             return GUI_ATLAS_NAME;
-        } else if (FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
+        } else if(FONT_COLOR_TEXTURES_LOCATIONS.contains(strippedLocation)) {
             return FONT_ATLAS_NAME;
         }
 

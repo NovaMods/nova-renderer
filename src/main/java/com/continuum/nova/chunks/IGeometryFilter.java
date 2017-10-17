@@ -2,8 +2,6 @@ package com.continuum.nova.chunks;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockRenderLayer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * @author ddubois
@@ -129,8 +127,6 @@ public interface IGeometryFilter {
     class TransparentGeometryFilter implements IGeometryFilter {
         boolean shouldBeTransparent;
 
-        private static final Logger LOG = LogManager.getLogger(TransparentGeometryFilter.class);
-
         public TransparentGeometryFilter(boolean shouldBeTransparent) {
             this.shouldBeTransparent = shouldBeTransparent;
         }
@@ -142,7 +138,7 @@ public interface IGeometryFilter {
 
         @Override
         public String toString() {
-            if(shouldBeTransparent) {
+            if (shouldBeTransparent) {
                 return "transparent";
             } else {
                 return "not_transparent";
@@ -164,7 +160,7 @@ public interface IGeometryFilter {
 
         @Override
         public String toString() {
-            if(shouldBeEmissive) {
+            if (shouldBeEmissive) {
                 return "emissive";
             } else {
                 return "not_emissive";
@@ -205,9 +201,8 @@ public interface IGeometryFilter {
 
         boolean hasAnotherExpression = curToken + 2 < tokens.length - 1;
 
-        if(hasAnotherExpression) {
+        if(hasAnotherExpression){
             return makeFilterExpression(thisFilter, tokens, curToken + 2);
-
         } else {
             return thisFilter;
         }

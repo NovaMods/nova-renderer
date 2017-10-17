@@ -2,11 +2,9 @@ package com.continuum.nova.chunks;
 
 import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.util.math.BlockPos;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author ddubois
@@ -33,8 +31,8 @@ public class CapturingVertexBuffer extends VertexBuffer {
             if(Float.compare(vertex.y, y) != 0) return false;
             if(Float.compare(vertex.z, z) != 0) return false;
             // if(color != vertex.color) return false;
-            if(Float.compare(vertex.u, u) != 0) return false;
-            return Float.compare(vertex.v, v) != 0;
+            return Float.compare(vertex.u, u) == 0 &&
+                    Float.compare(vertex.v, v) != 0;
             // return lmCoord == vertex.lmCoord;
         }
 
@@ -50,7 +48,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
             return result;
         }
 
-        List<Integer> toInts() {
+        private List<Integer> toInts() {
             List<Integer> ints = new ArrayList<>();
 
             ints.add(Float.floatToIntBits(x));
@@ -122,7 +120,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
     @Override
     public void endVertex() {
-        ++this.vertexCount;
+        ++vertexCount;
 
         boolean shouldAdd = true;
         for(Vertex v : data) {
