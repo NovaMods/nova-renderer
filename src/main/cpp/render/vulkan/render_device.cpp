@@ -8,6 +8,8 @@
 #include "render_device.h"
 
 namespace nova {
+    render_device instance;
+
     bool layers_are_supported(std::vector<const char*>& validation_layers);
 
     std::vector<const char *> get_required_extensions(glfw_vk_window &window);
@@ -58,7 +60,7 @@ namespace nova {
         create_info.ppEnabledLayerNames = validation_layers.data();
 #endif
 
-        VkResult result = vkCreateInstance(&create_info, nullptr, &instance);
+        VkResult result = vkCreateInstance(&create_info, nullptr, &vkInstance);
         if(result != VK_SUCCESS) {
             LOG(FATAL) << "Could not create Vulkan instance";
         }
@@ -71,14 +73,14 @@ namespace nova {
         create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
         create_info.pfnCallback = debug_callback;
 
-        if(CreateDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) != VK_SUCCESS) {
+        if(CreateDebugReportCallbackEXT(vkInstance, &create_info, nullptr, &callback) != VK_SUCCESS) {
             LOG(FATAL) << "Could not set up debug callback";
         }
 #endif
     }
 
     void render_device::find_device_and_queues() {
-        if(instance == nullptr) {
+        if(vkInstance == nullptr) {
             LOG(FATAL) << "Don't call this before creating the Vulkan instance and assigning it to me";
         }
 
@@ -92,7 +94,7 @@ namespace nova {
 
     void render_device::enumerate_gpus() {
         uint32_t num_devices = 0;
-        auto err = vkEnumeratePhysicalDevices(this->instance, &num_devices, nullptr);
+        auto err = vkEnumeratePhysicalDevices(this->vkInstance, &num_devices, nullptr);
         LOG(TRACE) << "There are " << num_devices << " physical devices";
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not enumerate devices. Are you sure you have a GPU?";
@@ -102,7 +104,7 @@ namespace nova {
         }
 
         std::vector<VkPhysicalDevice> devices(num_devices);
-        err = vkEnumeratePhysicalDevices(this->instance, &num_devices, devices.data());
+        err = vkEnumeratePhysicalDevices(this->vkInstance, &num_devices, devices.data());
         LOG(TRACE) << "Got the actual physical devices";
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not enumerate physical devices";

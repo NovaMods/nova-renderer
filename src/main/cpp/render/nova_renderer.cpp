@@ -52,8 +52,8 @@ namespace nova {
         textures.reset();
         ubo_manager.reset();
 
-        DestroyDebugReportCallbackEXT(context.instance, context.callback, nullptr);
-        vkDestroyInstance(context.instance, nullptr);
+        DestroyDebugReportCallbackEXT(context.vkInstance, context.callback, nullptr);
+        vkDestroyInstance(context.vkInstance, nullptr);
         game_window.reset();
     }
 

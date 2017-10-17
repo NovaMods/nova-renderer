@@ -31,7 +31,9 @@ namespace nova {
      */
     class render_device {
     public:
-        VkInstance instance = nullptr;
+        static render_device instance;
+
+        VkInstance vkInstance = nullptr;
         VkSurfaceKHR surface;
 
         VkDebugReportCallbackEXT callback;
