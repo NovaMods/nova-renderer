@@ -11,8 +11,10 @@
 #include <json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../data_loading/settings.h"
+#include "../vulkan/render_device.h"
 #include <RenderDocManager.h>
 #include <glm/glm.hpp>
+#include <vulkan/vulkan.h>
 
 namespace nova {
     struct window_parameters {
@@ -23,6 +25,7 @@ namespace nova {
     };
 
     class render_device;
+    struct gpu_info;
     
     /*!
      * \brief Represents a GLFW window with an OpenGL context
@@ -41,11 +44,9 @@ namespace nova {
 
         ~glfw_vk_window();
 
-        /**
-         * iwindow methods
-         */
-
         int init();
+
+        void create_swapchain(gpu_info* gpu);
 
         void destroy();
 
@@ -81,7 +82,16 @@ namespace nova {
         glm::ivec2 window_dimensions;
         std::unique_ptr<RenderDocManager> renderdoc_manager;
         struct window_parameters windowed_window_parameters;
+
         void set_framebuffer_size(glm::ivec2 new_framebuffer_size);
+
+        VkSurfaceFormatKHR choose_surface_format(std::vector<VkSurfaceFormatKHR>& formats);
+
+        VkPresentModeKHR choose_present_mode(std::vector<VkPresentModeKHR>& modes);
+
+        VkExtent2D choose_surface_extent(VkSurfaceCapabilitiesKHR& caps);
+
+        VkSwapchainKHR swapchain;
     };
 }
 

@@ -8,7 +8,7 @@
 #include "render_device.h"
 
 namespace nova {
-    render_device instance;
+    render_device render_device::instance;
 
     bool layers_are_supported(std::vector<const char*>& validation_layers);
 
@@ -27,9 +27,7 @@ namespace nova {
     void render_device::create_instance(glfw_vk_window &window) {
         validation_layers = {
                 "VK_LAYER_LUNARG_core_validation",
-                "VK_LAYER_LUNARG_standard_validation",
-                "VK_LAYER_LUNARG_device_limits",
-                "VK_LAYER_LUNARG_parameter_validation"
+                "VK_LAYER_LUNARG_standard_validation"
         };
 
         VkApplicationInfo app_info = {};
@@ -60,7 +58,7 @@ namespace nova {
         create_info.ppEnabledLayerNames = validation_layers.data();
 #endif
 
-        VkResult result = vkCreateInstance(&create_info, nullptr, &vkInstance);
+        VkResult result = vkCreateInstance(&create_info, nullptr, &vk_instance);
         if(result != VK_SUCCESS) {
             LOG(FATAL) << "Could not create Vulkan instance";
         }
@@ -73,14 +71,14 @@ namespace nova {
         create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
         create_info.pfnCallback = debug_callback;
 
-        if(CreateDebugReportCallbackEXT(vkInstance, &create_info, nullptr, &callback) != VK_SUCCESS) {
+        if(CreateDebugReportCallbackEXT(vk_instance, &create_info, nullptr, &callback) != VK_SUCCESS) {
             LOG(FATAL) << "Could not set up debug callback";
         }
 #endif
     }
 
     void render_device::find_device_and_queues() {
-        if(vkInstance == nullptr) {
+        if(vk_instance == nullptr) {
             LOG(FATAL) << "Don't call this before creating the Vulkan instance and assigning it to me";
         }
 
@@ -94,7 +92,7 @@ namespace nova {
 
     void render_device::enumerate_gpus() {
         uint32_t num_devices = 0;
-        auto err = vkEnumeratePhysicalDevices(this->vkInstance, &num_devices, nullptr);
+        auto err = vkEnumeratePhysicalDevices(this->vk_instance, &num_devices, nullptr);
         LOG(TRACE) << "There are " << num_devices << " physical devices";
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not enumerate devices. Are you sure you have a GPU?";
@@ -104,7 +102,7 @@ namespace nova {
         }
 
         std::vector<VkPhysicalDevice> devices(num_devices);
-        err = vkEnumeratePhysicalDevices(this->vkInstance, &num_devices, devices.data());
+        err = vkEnumeratePhysicalDevices(this->vk_instance, &num_devices, devices.data());
         LOG(TRACE) << "Got the actual physical devices";
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not enumerate physical devices";
@@ -281,10 +279,8 @@ namespace nova {
     }
 
     void render_device::create_command_pool_and_command_buffers() {
-        create_command_pool();
-        LOG(TRACE) << "Created command pool";
-        create_command_buffers();
-        LOG(TRACE) << "Created command buffers";
+        // TODO: Get the number of threads dynamically based on the user's CPU core count
+        command_buffer_pool = std::make_unique<command_pool>(device, graphics_family_idx, 8);
     }
 
     void render_device::create_command_pool() {

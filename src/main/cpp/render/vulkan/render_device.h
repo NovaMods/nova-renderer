@@ -3,14 +3,18 @@
  * \date 15-Oct-17.
  */
 
+#define NUM_FRAME_DATA 2    /* I guess? */
+
 #ifndef RENDERER_RENDER_DEVICE_H
 #define RENDERER_RENDER_DEVICE_H
 
 #include <vulkan/vulkan.h>
 #include "../windowing/glfw_vk_window.h"
+#include "command_pool.h"
 
 namespace nova {
-#define NUM_FRAME_DATA 2    /* I guess? */
+
+    class glfw_vk_window;
 
     struct gpu_info {
         VkPhysicalDevice device;
@@ -28,12 +32,20 @@ namespace nova {
      * \brief An abstraction over Vulkan physical and logical devices
      *
      * Pretty sure I need one command buffer pool per thread that does things
+     *
+     * Some more things that are needed:
+     *      - A texture uploading queue
+     *      - A chunk uploading queue
+     *      - A render queue
+     *      - I've always seen things with a separate queue for presenting
+     *      - One or more compute shader queues could be awesome, except that Nova won't use many compute shaders by
+     *          default
      */
     class render_device {
     public:
         static render_device instance;
 
-        VkInstance vkInstance = nullptr;
+        VkInstance vk_instance = nullptr;
         VkSurfaceKHR surface;
 
         VkDebugReportCallbackEXT callback;
@@ -47,6 +59,7 @@ namespace nova {
 
         VkQueue graphics_queue;
         VkQueue present_queue;
+        std::unique_ptr<command_pool> command_buffer_pool;
 
         void create_instance(glfw_vk_window &window);
 

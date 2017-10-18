@@ -145,7 +145,7 @@ set(NOVA_SOURCE
         utils/profiler.cpp)
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp utils/stb_image_write.h render/vulkan/vulkan_instance.h render/vulkan/render_device.cpp render/vulkan/render_device.h)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp utils/stb_image_write.h render/vulkan/render_device.cpp render/vulkan/render_device.h)
 endif (WIN32)
 
 if (UNIX)
@@ -156,7 +156,7 @@ endif (UNIX)
 # because there are several sub groups that would be extremely small
 source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
-add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE} ${MINIZ_SOURCE} render/vulkan/device_memory_allocator.cpp render/vulkan/device_memory_allocator.h)
+add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE} ${MINIZ_SOURCE} render/vulkan/device_memory_allocator.cpp render/vulkan/device_memory_allocator.h render/vulkan/command_pool.cpp render/vulkan/command_pool.h)
 set_target_properties(nova-renderer-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)

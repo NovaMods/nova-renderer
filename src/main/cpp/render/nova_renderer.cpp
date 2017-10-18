@@ -29,6 +29,9 @@ namespace nova {
         LOG(TRACE) << "Found device and queue";
         context.create_semaphores();
         LOG(TRACE) << "Created semaphores";
+        context.create_command_pool_and_command_buffers();
+        LOG(TRACE) << "Created command pool";
+        game_window->create_swapchain(context.gpu);
 
         LOG(INFO) << "Vulkan code initialized";
 
@@ -52,8 +55,8 @@ namespace nova {
         textures.reset();
         ubo_manager.reset();
 
-        DestroyDebugReportCallbackEXT(context.vkInstance, context.callback, nullptr);
-        vkDestroyInstance(context.vkInstance, nullptr);
+        DestroyDebugReportCallbackEXT(context.vk_instance, context.callback, nullptr);
+        vkDestroyInstance(context.vk_instance, nullptr);
         game_window.reset();
     }
 
