@@ -176,6 +176,8 @@ namespace nova {
     }
 
     void glfw_vk_window::create_swapchain(gpu_info& gpu) {
+        auto& device = render_device::instance.device;
+
         auto surface_format = choose_surface_format(gpu.surface_formats);
         auto present_mode = choose_present_mode(gpu.present_modes);
         auto extent = choose_surface_extent(gpu.surface_capabilities);
@@ -210,7 +212,40 @@ namespace nova {
 
         info.clipped = VK_TRUE;
 
-        swapchain = render_device::instance.device.createSwapchainKHR(info);
+        swapchain = device.createSwapchainKHR(info);
+
+        swapchain_format = surface_format.format;
+        this->present_mode = present_mode;
+        swapchain_extent = extent;
+
+        std::vector<vk::Image> swapchain_images = device.getSwapchainImagesKHR(swapchain);
+        if(swapchain_images.empty()) {
+            LOG(FATAL) << "The swapchain returned zero images";
+        }
+
+        // More than 255 images in the swapchain? Good lord what are you doing? and will you please stop?
+        for(uint8_t i = 0; i < NUM_FRAME_DATA; i++) {
+            vk::ImageViewCreateInfo image_view_create_info = {};
+
+            image_view_create_info.image = swapchain_images[i];
+            image_view_create_info.viewType = vk::ImageViewType::e2D;
+            image_view_create_info.format = swapchain_format;
+
+            image_view_create_info.components.r = vk::ComponentSwizzle::eR;
+            image_view_create_info.components.g = vk::ComponentSwizzle::eG;
+            image_view_create_info.components.b = vk::ComponentSwizzle::eB;
+            image_view_create_info.components.a = vk::ComponentSwizzle::eA;
+
+            image_view_create_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            image_view_create_info.subresourceRange.baseMipLevel = 0;
+            image_view_create_info.subresourceRange.levelCount = 1;
+            image_view_create_info.subresourceRange.baseArrayLayer = 0;
+            image_view_create_info.subresourceRange.layerCount = 1;
+
+            vk::ImageView image_view = device.createImageView(image_view_create_info);
+
+            this->swapchain_images.push_back(image_view);
+        }
     }
 
     vk::SurfaceFormatKHR glfw_vk_window::choose_surface_format(std::vector<vk::SurfaceFormatKHR> &formats) {

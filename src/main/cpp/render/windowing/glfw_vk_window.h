@@ -91,6 +91,10 @@ namespace nova {
         vk::Extent2D choose_surface_extent(vk::SurfaceCapabilitiesKHR& caps);
 
         vk::SwapchainKHR swapchain;
+        vk::Extent2D swapchain_extent;
+        vk::PresentModeKHR present_mode;
+        vk::Format swapchain_format;
+        std::vector<vk::ImageView> swapchain_images;
     };
 }
 
