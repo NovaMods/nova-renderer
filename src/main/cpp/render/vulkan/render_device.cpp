@@ -14,9 +14,9 @@ namespace nova {
 
     std::vector<const char *> get_required_extensions(glfw_vk_window &window);
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
-            VkDebugReportFlagsEXT flags,
-            VkDebugReportObjectTypeEXT objType,
+    VKAPI_ATTR vk::Bool32 VKAPI_CALL debug_callback(
+            vk::DebugReportFlagsEXT flags,
+            vk::DebugReportObjectTypeEXT objType,
             uint64_t obj,
             size_t location,
             int32_t code,
@@ -30,17 +30,15 @@ namespace nova {
                 "VK_LAYER_LUNARG_standard_validation"
         };
 
-        VkApplicationInfo app_info = {};
-        app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        vk::ApplicationInfo app_info = {};
         app_info.pApplicationName = "Minecraft Nova Renderer";
         app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         app_info.pEngineName = "Nova Renderer 0.5";
         app_info.engineVersion = VK_MAKE_VERSION(0, 5, 0);
         app_info.apiVersion = VK_API_VERSION_1_0;
-        LOG(TRACE) << "Created VkApplicationInfo struct";
+        LOG(TRACE) << "Created vk::ApplicationInfo struct";
 
-        VkInstanceCreateInfo create_info = {};
-        create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        vk::InstanceCreateInfo create_info = {};
         create_info.pApplicationInfo = &app_info;
 
         extensions = get_required_extensions(window);
@@ -58,30 +56,22 @@ namespace nova {
         create_info.ppEnabledLayerNames = validation_layers.data();
 #endif
 
-        VkResult result = vkCreateInstance(&create_info, nullptr, &vk_instance);
-        if(result != VK_SUCCESS) {
-            LOG(FATAL) << "Could not create Vulkan instance";
-        }
+        vk_instance = vk::createInstance(create_info, nullptr);
     }
 
     void render_device::setup_debug_callback() {
 #ifndef NDEBUG
-        VkDebugReportCallbackCreateInfoEXT create_info = {};
-        create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-        create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+        /*vk::DebugReportCallbackCreateInfoEXT create_info = {};
+        create_info.flags = vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eWarning;
         create_info.pfnCallback = debug_callback;
 
-        if(CreateDebugReportCallbackEXT(vk_instance, &create_info, nullptr, &callback) != VK_SUCCESS) {
+        if(CreateDebugReportCallbackEXT(vk_instance, &create_info, nullptr, &callback) != vk::Result::eSuccess) {
             LOG(FATAL) << "Could not set up debug callback";
-        }
+        }*/
 #endif
     }
 
     void render_device::find_device_and_queues() {
-        if(vk_instance == nullptr) {
-            LOG(FATAL) << "Don't call this before creating the Vulkan instance and assigning it to me";
-        }
-
         enumerate_gpus();
         LOG(TRACE) << "Enumerated GPUs";
         select_physical_device();
@@ -91,70 +81,38 @@ namespace nova {
     }
 
     void render_device::enumerate_gpus() {
-        uint32_t num_devices = 0;
-        auto err = vkEnumeratePhysicalDevices(this->vk_instance, &num_devices, nullptr);
-        LOG(TRACE) << "There are " << num_devices << " physical devices";
-        if(err != VK_SUCCESS) {
-            LOG(FATAL) << "Could not enumerate devices. Are you sure you have a GPU?";
-        }
-        if(num_devices == 0) {
-            LOG(FATAL) << "Apparently you have zero devices. You know you need a GPU to run Nova, right>";
+        auto devices = vk_instance.enumeratePhysicalDevices();
+        LOG(TRACE) << "There are " << devices.size() << " physical devices";
+        if(devices.empty()) {
+            LOG(FATAL) << "Apparently you have zero devices. You know you need a GPU to run Nova, right?";
         }
 
-        std::vector<VkPhysicalDevice> devices(num_devices);
-        err = vkEnumeratePhysicalDevices(this->vk_instance, &num_devices, devices.data());
-        LOG(TRACE) << "Got the actual physical devices";
-        if(err != VK_SUCCESS) {
-            LOG(FATAL) << "Could not enumerate physical devices";
-        }
-        if(num_devices == 0) {
-            LOG(FATAL) << "Apparently you have zero devices. You know you need a GPU to run Nova, right>";
-        }
-
-        this->gpus.resize(num_devices);
-        LOG(TRACE) << "Reserved " << num_devices << " slots for devices";
-        for(uint32_t i = 0; i < num_devices; i++) {
+        this->gpus.resize(devices.size());
+        LOG(TRACE) << "Reserved " << devices.size() << " slots for devices";
+        for(uint32_t i = 0; i < devices.size(); i++) {
             gpu_info& gpu = this->gpus[i];
-            LOG(TRACE) << "Got a pretty reference to the current GPU";
             gpu.device = devices[i];
-            LOG(TRACE) << "Set the GPU device to " << gpu.device;
 
             // get the queues the device supports
-            uint32_t num_queues = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(gpu.device, &num_queues, nullptr);
-            LOG(TRACE) << "Got the number of queues, there are " << num_queues << " queues";
-            gpu.queue_family_props.resize(num_queues);
-            vkGetPhysicalDeviceQueueFamilyProperties(gpu.device, &num_queues, gpu.queue_family_props.data());
+            gpu.queue_family_props = gpu.device.getQueueFamilyProperties();
             LOG(TRACE) << "Got the physical device queue properties";
 
             // Get the extensions the device supports
-            uint32_t num_extensions;
-            vkEnumerateDeviceExtensionProperties(gpu.device, nullptr, &num_extensions, nullptr);
-            LOG(TRACE) << "We have " << num_extensions << " device extension properties";
-            gpu.extention_props.resize(num_extensions);
-            LOG(TRACE) << "Reserved " << gpu.extention_props.size() << " space for the extension properties";
-            vkEnumerateDeviceExtensionProperties(gpu.device, nullptr, &num_extensions, gpu.extention_props.data());
+            gpu.extention_props = gpu.device.enumerateDeviceExtensionProperties();
             LOG(TRACE) << "Got the device extension properties";
 
-            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.device, this->surface, &gpu.surface_capabilities);
+            gpu.surface_capabilities = gpu.device.getSurfaceCapabilitiesKHR(surface);
             LOG(TRACE) << "Got the physical device surface capabilities";
 
-            uint32_t num_formats = 0;
-            vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.device, this->surface, &num_formats, nullptr);
-            gpu.surface_formats.resize(num_formats);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.device, this->surface, &num_formats, gpu.surface_formats.data());
+            gpu.surface_formats = gpu.device.getSurfaceFormatsKHR(surface);
             LOG(TRACE) << "Got the physical device's surface formats";
 
-            uint32_t num_present_modes;
-            vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.device, surface, &num_present_modes, nullptr);
-            gpu.present_modes.resize(num_present_modes);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.device, surface, &num_present_modes,
-                                                      gpu.present_modes.data());
+            gpu.present_modes = gpu.device.getSurfacePresentModesKHR(surface);
             LOG(TRACE) << "Got the surface present modes";
 
-            vkGetPhysicalDeviceMemoryProperties(gpu.device, &gpu.mem_props);
-            vkGetPhysicalDeviceProperties(gpu.device, &gpu.props);
-            vkGetPhysicalDeviceFeatures(gpu.device, &gpu.supported_features);
+            gpu.mem_props = gpu.device.getMemoryProperties();
+            gpu.props = gpu.device.getProperties();
+            gpu.supported_features = gpu.device.getFeatures();
             LOG(TRACE) << "Got the memory properties and deice properties";
         }
     }
@@ -165,11 +123,11 @@ namespace nova {
             uint32_t graphics_idx = 0xFFFFFFFF;
             uint32_t present_idx = 0xFFFFFFFF;
 
-            if(gpu.surface_formats.size() == 0) {
+            if(gpu.surface_formats.empty()) {
                 continue;
             }
 
-            if(gpu.present_modes.size() == 0) {
+            if(gpu.present_modes.empty()) {
                 continue;
             }
 
@@ -180,7 +138,7 @@ namespace nova {
                     continue;
                 }
 
-                if(props.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                if(props.queueFlags & vk::QueueFlagBits::eGraphics) {
                     graphics_idx = i;
                     break;
                 }
@@ -194,8 +152,8 @@ namespace nova {
                     continue;
                 }
 
-                VkBool32 supports_present = VK_FALSE;
-                vkGetPhysicalDeviceSurfaceSupportKHR(gpu.device, i, surface, &supports_present);
+                vk::Bool32 supports_present = VK_FALSE;
+                gpu.device.getSurfaceSupportKHR(i, surface, &supports_present);
                 if(supports_present == VK_TRUE) {
                     present_idx = i;
                     break;
@@ -206,7 +164,7 @@ namespace nova {
                 graphics_family_idx = graphics_idx;
                 present_family_idx = present_idx;
                 physical_device = gpu.device;
-                this->gpu = &gpu;
+                this->gpu = gpu;
                 return;
             }
         }
@@ -219,13 +177,12 @@ namespace nova {
         unique_idx.insert(graphics_family_idx);
         unique_idx.insert(present_family_idx);
 
-        std::vector<VkDeviceQueueCreateInfo> devq_info;
+        std::vector<vk::DeviceQueueCreateInfo> devq_info;
 
         // TODO: Possibly create a queue for texture streaming and another for geometry streaming?
         const float priority = 1.0;
         for(auto idx : unique_idx) {
-            VkDeviceQueueCreateInfo qinfo = {};
-            qinfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            vk::DeviceQueueCreateInfo qinfo = {};
             qinfo.queueFamilyIndex = idx;
             qinfo.queueCount = 1;
 
@@ -235,13 +192,12 @@ namespace nova {
 
         // Do I have to look at the loaded shaderpack and see what features it needs? For now I'll just add whatever looks
         // good
-        VkPhysicalDeviceFeatures device_features = {};
+        vk::PhysicalDeviceFeatures device_features = {};
         device_features.geometryShader = VK_TRUE;
         device_features.tessellationShader = VK_TRUE;
         device_features.samplerAnisotropy = VK_TRUE;
 
-        VkDeviceCreateInfo info = {};
-        info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        vk::DeviceCreateInfo info = {};
         info.queueCreateInfoCount = static_cast<uint32_t>(devq_info.size());
         info.pQueueCreateInfos = devq_info.data();
         info.pEnabledFeatures = &device_features;
@@ -251,30 +207,20 @@ namespace nova {
             info.ppEnabledLayerNames = validation_layers.data();
         }
 
-        auto err = vkCreateDevice(physical_device, &info, nullptr, &device);
-        if(err != VK_SUCCESS) {
-            LOG(FATAL) << "Could not create logical device";
-        }
+        device = physical_device.createDevice(info, nullptr);
 
-        vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
-        vkGetDeviceQueue(device, graphics_family_idx, 0, &present_queue);
+        graphics_queue = device.getQueue(graphics_family_idx, 0);
+        present_queue = device.getQueue(graphics_family_idx, 0);
     }
 
     void render_device::create_semaphores() {
         acquire_semaphores.resize(NUM_FRAME_DATA);
         render_complete_semaphores.resize(NUM_FRAME_DATA);
 
-        VkSemaphoreCreateInfo semaphore_create_info = {};
-        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        vk::SemaphoreCreateInfo semaphore_create_info = {};
         for(int i = 0; i < NUM_FRAME_DATA; i++) {
-            auto err = vkCreateSemaphore(device, &semaphore_create_info, nullptr, &acquire_semaphores[i]);
-            if(err != VK_SUCCESS) {
-                LOG(TRACE) << "Could not create acquire semaphore " << i;
-            }
-            err = vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_complete_semaphores[i]);
-            if(err != VK_SUCCESS) {
-                LOG(TRACE) << "Could not create render complete semaphore " << i;
-            }
+            acquire_semaphores[i] = device.createSemaphore(semaphore_create_info, nullptr);
+            render_complete_semaphores[i] = device.createSemaphore(semaphore_create_info, nullptr);
         }
     }
 
@@ -283,34 +229,8 @@ namespace nova {
         command_buffer_pool = std::make_unique<command_pool>(device, graphics_family_idx, 8);
     }
 
-    void render_device::create_command_pool() {
-        VkCommandPoolCreateInfo commandPoolCreateInfo = {};
-        commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    }
-
-    VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo,
-                                          const VkAllocationCallbacks *pAllocator,
-                                          VkDebugReportCallbackEXT *pCallback) {
-        auto func = (PFN_vkCreateDebugReportCallbackEXT) vkGetInstanceProcAddr(instance,
-                                                                               "vkCreateDebugReportCallbackEXT");
-        if(func != nullptr) {
-            return func(instance, pCreateInfo, pAllocator, pCallback);
-        } else {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        }
-    }
-
-    void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback,
-                                       const VkAllocationCallbacks *pAllocator) {
-        auto func = (PFN_vkDestroyDebugReportCallbackEXT) vkGetInstanceProcAddr(instance,
-                                                                                "vkDestroyDebugReportCallbackEXT");
-        if(func != nullptr) {
-            func(instance, callback, pAllocator);
-        }
-    }
-
-// This function should really be called outside of this file, but I want to keep vulkan creation things in here
-// to avoid making nova_renderer.cpp any larger than it needs to be
+    // This function should really be outside of this file, but I want to keep vulkan creation things in here
+    // to avoid making nova_renderer.cpp any larger than it needs to be
     std::vector<const char *> get_required_extensions(glfw_vk_window &window) {
         uint32_t glfw_extensions_count = 0;
         auto glfw_extensions = window.get_required_extensions(&glfw_extensions_count);
@@ -329,11 +249,7 @@ namespace nova {
     }
 
     bool layers_are_supported(std::vector<const char*>& validation_layers) {
-        uint32_t layer_count;
-        vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
-
-        std::vector<VkLayerProperties> available_layers(layer_count);
-        vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
+        auto available_layers = vk::enumerateInstanceLayerProperties();
 
         for(auto layer_name : validation_layers) {
             LOG(TRACE) << "Checking for layer " << layer_name;
@@ -357,9 +273,9 @@ namespace nova {
         return true;
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
-            VkDebugReportFlagsEXT flags,
-            VkDebugReportObjectTypeEXT objType,
+    VKAPI_ATTR vk::Bool32 VKAPI_CALL debug_callback(
+            vk::DebugReportFlagsEXT flags,
+            vk::DebugReportObjectTypeEXT objType,
             uint64_t obj,
             size_t location,
             int32_t code,

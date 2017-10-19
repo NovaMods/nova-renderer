@@ -7,9 +7,10 @@
 #define RENDERER_COMMAND_POOL_H
 
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 #include <vector>
-#include "render_device.h"
+
+#define NUM_FRAME_DATA 2
 
 namespace nova {
     struct command_buffer {
@@ -28,7 +29,7 @@ namespace nova {
          * \param num_threads The number of threads that the system uses. If you're using more than 255 threads then
          * your computer's too powerful
          */
-        command_pool(VkDevice device, uint32_t queue_family_index, uint8_t num_threads);
+        command_pool(vk::Device device, uint32_t queue_family_index, uint32_t num_threads);
 
         /*!
          * \brief Retrieves a new command buffer
@@ -37,9 +38,9 @@ namespace nova {
          */
         command_buffer get_command_buffer(uint8_t thread_idx);
     private:
-        VkDevice device;
+        vk::Device device;
 
-        std::vector<VkCommandPool> command_pools;
+        std::vector<vk::CommandPool> command_pools;
     };
 }
 

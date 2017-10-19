@@ -113,7 +113,7 @@ namespace nova {
 
     int texture_manager::get_max_texture_size() {
         if(max_texture_size < 0) {
-            max_texture_size = render_device::instance.gpu->props.limits.maxImageDimension2D;
+            max_texture_size = render_device::instance.gpu.props.limits.maxImageDimension2D;
 
 			LOG(DEBUG) << "max texturesize reported by gpu: " << max_texture_size;
         }

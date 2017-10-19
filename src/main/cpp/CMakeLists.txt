@@ -103,6 +103,11 @@ set(NOVA_HEADERS
         mc_interface/nova_jni.h
         render/objects/render_object.h
         utils/profiler.h
+        utils/stb_image_write.h
+        render/vulkan/render_device.cpp
+        render/vulkan/render_device.h
+        render/vulkan/device_memory_allocator.h
+        render/vulkan/command_pool.h
         )
 
 set(NOVA_SOURCE
@@ -142,10 +147,13 @@ set(NOVA_SOURCE
         data_loading/loaders/shader_source_structs.cpp
         data_loading/direct_buffers.cpp
         render/objects/render_object.cpp
-        utils/profiler.cpp)
+        utils/profiler.cpp
+        render/vulkan/device_memory_allocator.cpp
+        render/vulkan/command_pool.cpp
+        )
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp utils/stb_image_write.h render/vulkan/render_device.cpp render/vulkan/render_device.h)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
 endif (WIN32)
 
 if (UNIX)
@@ -156,7 +164,7 @@ endif (UNIX)
 # because there are several sub groups that would be extremely small
 source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
-add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE} ${MINIZ_SOURCE} render/vulkan/device_memory_allocator.cpp render/vulkan/device_memory_allocator.h render/vulkan/command_pool.cpp render/vulkan/command_pool.h)
+add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE} ${MINIZ_SOURCE} )
 set_target_properties(nova-renderer-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)
@@ -202,6 +210,4 @@ add_custom_command(TARGET nova-renderer
                    POST_BUILD
                    COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-renderer.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives")
 endif (UNIX)
-
-message(INFO ${Vulkan_LIBRARIES})
 

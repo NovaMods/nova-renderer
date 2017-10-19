@@ -5,7 +5,7 @@
 #ifndef RENDERER_VULKAN_MOD_H
 #define RENDERER_VULKAN_MOD_H
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 #include <memory>
 #include <thread>
 #include "objects/shaders/gl_shader_program.h"
@@ -122,8 +122,6 @@ namespace nova {
         framebuffer_builder main_framebuffer_builder;
 
         camera player_camera;
-
-        render_device context;
 
         /*!
          * \brief Renders the GUI of Minecraft

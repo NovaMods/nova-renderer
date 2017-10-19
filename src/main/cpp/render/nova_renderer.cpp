@@ -19,19 +19,19 @@ namespace nova {
         game_window = std::make_unique<glfw_vk_window>();
         LOG(TRACE) << "Window initialized";
 
-        context.create_instance(*game_window);
+        render_device::instance.create_instance(*game_window);
         LOG(TRACE) << "Instance created";
-        context.setup_debug_callback();
+        render_device::instance.setup_debug_callback();
         LOG(TRACE) << "Debug callback set up";
-        game_window->create_surface(context);
+        game_window->create_surface();
         LOG(TRACE) << "Created surface";
-        context.find_device_and_queues();
+        render_device::instance.find_device_and_queues();
         LOG(TRACE) << "Found device and queue";
-        context.create_semaphores();
+        render_device::instance.create_semaphores();
         LOG(TRACE) << "Created semaphores";
-        context.create_command_pool_and_command_buffers();
+        render_device::instance.create_command_pool_and_command_buffers();
         LOG(TRACE) << "Created command pool";
-        game_window->create_swapchain(context.gpu);
+        game_window->create_swapchain(render_device::instance.gpu);
 
         LOG(INFO) << "Vulkan code initialized";
 
@@ -55,8 +55,7 @@ namespace nova {
         textures.reset();
         ubo_manager.reset();
 
-        DestroyDebugReportCallbackEXT(context.vk_instance, context.callback, nullptr);
-        vkDestroyInstance(context.vk_instance, nullptr);
+        render_device::instance.vk_instance.destroy();
         game_window.reset();
     }
 
@@ -148,8 +147,12 @@ namespace nova {
 
     void nova_renderer::init() {
 		render_settings = std::make_unique<settings>("config/config.json");
-	
-		instance = std::make_unique<nova_renderer>();
+
+        try {
+            instance = std::make_unique<nova_renderer>();
+        } catch(std::exception& e) {
+            LOG(ERROR) << "Could not initialize Nova cause " << e.what();
+        }
     }
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {

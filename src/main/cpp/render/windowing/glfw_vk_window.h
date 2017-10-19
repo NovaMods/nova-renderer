@@ -11,10 +11,9 @@
 #include <json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../data_loading/settings.h"
-#include "../vulkan/render_device.h"
 #include <RenderDocManager.h>
 #include <glm/glm.hpp>
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 namespace nova {
     struct window_parameters {
@@ -46,7 +45,7 @@ namespace nova {
 
         int init();
 
-        void create_swapchain(gpu_info* gpu);
+        void create_swapchain(gpu_info& gpu);
 
         void destroy();
 
@@ -58,7 +57,7 @@ namespace nova {
 
         bool should_close();
 
-        void create_surface(render_device& context);
+        void create_surface();
 
         bool is_active();
 
@@ -85,13 +84,13 @@ namespace nova {
 
         void set_framebuffer_size(glm::ivec2 new_framebuffer_size);
 
-        VkSurfaceFormatKHR choose_surface_format(std::vector<VkSurfaceFormatKHR>& formats);
+        vk::SurfaceFormatKHR choose_surface_format(std::vector<vk::SurfaceFormatKHR>& formats);
 
-        VkPresentModeKHR choose_present_mode(std::vector<VkPresentModeKHR>& modes);
+        vk::PresentModeKHR choose_present_mode(std::vector<vk::PresentModeKHR>& modes);
 
-        VkExtent2D choose_surface_extent(VkSurfaceCapabilitiesKHR& caps);
+        vk::Extent2D choose_surface_extent(vk::SurfaceCapabilitiesKHR& caps);
 
-        VkSwapchainKHR swapchain;
+        vk::SwapchainKHR swapchain;
     };
 }
 

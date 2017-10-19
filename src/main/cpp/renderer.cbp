@@ -2324,15 +2324,19 @@
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/command_pool.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/command_pool.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/device_memory_allocator.cpp">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/device_memory_allocator.h">
 			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/render_device.cpp">
 			<Option target="nova-renderer-obj"/>

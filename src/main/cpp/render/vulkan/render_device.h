@@ -8,7 +8,7 @@
 #ifndef RENDERER_RENDER_DEVICE_H
 #define RENDERER_RENDER_DEVICE_H
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 #include "../windowing/glfw_vk_window.h"
 #include "command_pool.h"
 
@@ -17,15 +17,15 @@ namespace nova {
     class glfw_vk_window;
 
     struct gpu_info {
-        VkPhysicalDevice device;
-        std::vector<VkQueueFamilyProperties> queue_family_props;
-        std::vector<VkExtensionProperties> extention_props;
-        VkSurfaceCapabilitiesKHR surface_capabilities;
-        std::vector<VkSurfaceFormatKHR> surface_formats;
-        VkPhysicalDeviceMemoryProperties mem_props;
-        VkPhysicalDeviceProperties props;
-        VkPhysicalDeviceFeatures supported_features;
-        std::vector<VkPresentModeKHR> present_modes;
+        vk::PhysicalDevice device;
+        std::vector<vk::QueueFamilyProperties> queue_family_props;
+        std::vector<vk::ExtensionProperties> extention_props;
+        vk::SurfaceCapabilitiesKHR surface_capabilities;
+        std::vector<vk::SurfaceFormatKHR> surface_formats;
+        vk::PhysicalDeviceMemoryProperties mem_props;
+        vk::PhysicalDeviceProperties props;
+        vk::PhysicalDeviceFeatures supported_features;
+        std::vector<vk::PresentModeKHR> present_modes;
     };
 
     /*!
@@ -45,20 +45,20 @@ namespace nova {
     public:
         static render_device instance;
 
-        VkInstance vk_instance = nullptr;
-        VkSurfaceKHR surface;
+        vk::Instance vk_instance = nullptr;
+        vk::SurfaceKHR surface;
 
-        VkDebugReportCallbackEXT callback;
+        vk::DebugReportCallbackEXT callback;
 
         uint32_t graphics_family_idx;
         uint32_t present_family_idx;
-        gpu_info *gpu;
+        gpu_info gpu;
 
-        VkPhysicalDevice physical_device;
-        VkDevice device;
+        vk::PhysicalDevice physical_device;
+        vk::Device device;
 
-        VkQueue graphics_queue;
-        VkQueue present_queue;
+        vk::Queue graphics_queue;
+        vk::Queue present_queue;
         std::unique_ptr<command_pool> command_buffer_pool;
 
         void create_instance(glfw_vk_window &window);
@@ -77,24 +77,15 @@ namespace nova {
         std::vector<const char *> validation_layers;
         std::vector<const char *> extensions;
 
-        std::vector<VkSemaphore> acquire_semaphores;
-        std::vector<VkSemaphore> render_complete_semaphores;
+        std::vector<vk::Semaphore> acquire_semaphores;
+        std::vector<vk::Semaphore> render_complete_semaphores;
 
         void create_logical_device_and_queues();
 
         void enumerate_gpus();
 
         void select_physical_device();
-
-        void create_command_pool();
     };
-
-    VkResult
-    CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo,
-                                 const VkAllocationCallbacks *pAllocator, VkDebugReportCallbackEXT *pCallback);
-
-    void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback,
-                                       const VkAllocationCallbacks *pAllocator);
 }
 
 #endif //RENDERER_RENDER_DEVICE_H

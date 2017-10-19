@@ -54,7 +54,7 @@ namespace nova {
         //renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
         //LOG(INFO) << "Hooked into RenderDoc";
 
-        glfwGetFramebufferSize(window, &window_dimensions.x, &window_dimensions.y);
+        // glfwGetFramebufferSize(window, &window_dimensions.x, &window_dimensions.y);
 
         glfwSetKeyCallback(window, key_callback);
 		glfwSetCharCallback(window, key_character_callback);
@@ -109,6 +109,8 @@ namespace nova {
 
         glfwSetWindowMonitor(window, monitor, xPos, yPos, width, height, GLFW_DONT_CARE);
         set_framebuffer_size({width,height});
+
+        //TODO: Rebuild the swapchain, probably
     }
 
     bool glfw_vk_window::should_close() {
@@ -164,20 +166,21 @@ namespace nova {
         return glfwGetRequiredInstanceExtensions(count);
     }
 
-    void glfw_vk_window::create_surface(render_device& context) {
-        auto err = glfwCreateWindowSurface(context.vk_instance, window, nullptr, &context.surface);
+    void glfw_vk_window::create_surface() {
+        VkSurfaceKHR lame_surface;
+        auto err = glfwCreateWindowSurface(render_device::instance.vk_instance, window, nullptr, &lame_surface);
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not create surface";
         }
+        render_device::instance.surface = lame_surface;
     }
 
-    void glfw_vk_window::create_swapchain(gpu_info* gpu) {
-        auto surface_format = choose_surface_format(gpu->surface_formats);
-        auto present_mode = choose_present_mode(gpu->present_modes);
-        auto extent = choose_surface_extent(gpu->surface_capabilities);
+    void glfw_vk_window::create_swapchain(gpu_info& gpu) {
+        auto surface_format = choose_surface_format(gpu.surface_formats);
+        auto present_mode = choose_present_mode(gpu.present_modes);
+        auto extent = choose_surface_extent(gpu.surface_capabilities);
 
-        VkSwapchainCreateInfoKHR info = {};
-        info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        vk::SwapchainCreateInfoKHR info = {};
         info.surface = render_device::instance.surface;
 
         info.minImageCount = NUM_FRAME_DATA;
@@ -187,44 +190,41 @@ namespace nova {
         info.imageExtent = extent;
         info.imageArrayLayers = 1;
 
-        info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+        info.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc;
 
         if(render_device::instance.graphics_family_idx not_eq render_device::instance.present_family_idx) {
             // If the indices are different then we need to share the images
             uint32_t indices[] = {render_device::instance.graphics_family_idx, render_device::instance.present_family_idx};
 
-            info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            info.imageSharingMode = vk::SharingMode::eConcurrent;
             info.queueFamilyIndexCount = 2;
             info.pQueueFamilyIndices = indices;
         } else {
             // If the indices are the same, we can have exclusive access
-            info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            info.imageSharingMode = vk::SharingMode::eExclusive;
         }
 
-        info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-        info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        info.preTransform = vk::SurfaceTransformFlagBitsKHR::eIdentity;
+        info.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
         info.presentMode = present_mode;
 
         info.clipped = VK_TRUE;
 
-        auto err = vkCreateSwapchainKHR(render_device::instance.device, &info, nullptr, &swapchain);
-        if(err != VK_SUCCESS) {
-            LOG(FATAL) << "Could not create swapchain";
-        }
+        swapchain = render_device::instance.device.createSwapchainKHR(info);
     }
 
-    VkSurfaceFormatKHR glfw_vk_window::choose_surface_format(std::vector<VkSurfaceFormatKHR> &formats) {
-        VkSurfaceFormatKHR result = {};
+    vk::SurfaceFormatKHR glfw_vk_window::choose_surface_format(std::vector<vk::SurfaceFormatKHR> &formats) {
+        vk::SurfaceFormatKHR result = {};
 
-        if(formats.size() == 1 and formats[0].format == VK_FORMAT_UNDEFINED) {
-            result.format = VK_FORMAT_B8G8R8A8_UNORM;
-            result.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+        if(formats.size() == 1 and formats[0].format == vk::Format::eUndefined) {
+            result.format = vk::Format::eB8G8R8A8Unorm;
+            result.colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
             return result;
         }
 
         // We want 32 bit rgba and srgb nonlinear... I think? Will have to read up on it more and figure out what's up
         for(auto& fmt : formats) {
-            if(fmt.format == VK_FORMAT_B8G8R8A8_UNORM and fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            if(fmt.format == vk::Format::eB8G8R8A8Unorm and fmt.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
                 return fmt;
             }
         }
@@ -233,8 +233,8 @@ namespace nova {
         return formats[0];
     }
 
-    VkPresentModeKHR glfw_vk_window::choose_present_mode(std::vector<VkPresentModeKHR> &modes) {
-        const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+    vk::PresentModeKHR glfw_vk_window::choose_present_mode(std::vector<vk::PresentModeKHR> &modes) {
+        const vk::PresentModeKHR desired_mode = vk::PresentModeKHR::eMailbox;
 
         // Mailbox mode is best mode (also not sure why)
         for(auto& mode : modes) {
@@ -244,11 +244,11 @@ namespace nova {
         }
 
         // FIFO, like FIFA, is forever
-        return VK_PRESENT_MODE_FIFO_KHR;
+        return vk::PresentModeKHR::eFifo;
     }
 
-    VkExtent2D glfw_vk_window::choose_surface_extent(VkSurfaceCapabilitiesKHR &caps) {
-        VkExtent2D extent;
+    vk::Extent2D glfw_vk_window::choose_surface_extent(vk::SurfaceCapabilitiesKHR &caps) {
+        vk::Extent2D extent;
 
         if(caps.currentExtent.width == -1) {
             extent.width = static_cast<uint32_t>(window_dimensions.x);
