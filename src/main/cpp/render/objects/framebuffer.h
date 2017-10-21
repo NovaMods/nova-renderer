@@ -10,6 +10,7 @@
 #include <vector>
 #include <unordered_map>
 #include <set>
+#include <vulkan/vulkan.hpp>
 
 namespace nova {
     /*!
@@ -22,7 +23,7 @@ namespace nova {
         friend class framebuffer_builder;
 
     public:
-        framebuffer(framebuffer &&other);
+        framebuffer(framebuffer &&other) noexcept;
 
         ~framebuffer();
 
@@ -34,7 +35,7 @@ namespace nova {
 
         void reset_drawbuffers();
 
-        void set_depth_buffer(GLuint depth_buffer);
+        void create_depth_buffer();
 
     private:
         GLuint framebuffer_id;
@@ -54,14 +55,16 @@ namespace nova {
 
         framebuffer(unsigned int width, unsigned int height, unsigned int num_color_attachments);
 
-        void check_status();
+        vk::Format choose_supported_format(vk::Format* formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags flags);
+
+        vk::Format depth_format;
     };
 
     /*!
      * \brief Creates a framebuffer
      *
      * Framebuffers in Nova are pretty complex. Shaders can enable or disable various color attachments, but dealing with
-     * that at runtime is a bitch. \class framebuffer_builder exposes a fluent API which creates a framebuffer wihout any
+     * that at runtime is a bitch. \class framebuffer_builder exposes a fluent API which creates a framebuffer without any
      * fuss. Even better, a framebuffer_builder can be reused as a window changes size, requiring a minimum amount of
      * recalculation!
      */

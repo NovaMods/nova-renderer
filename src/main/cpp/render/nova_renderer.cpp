@@ -228,6 +228,7 @@ namespace nova {
                                 .enable_color_attachment(7);
 
         main_framebuffer = std::make_unique<framebuffer>(main_framebuffer_builder.build());
+        main_framebuffer->create_depth_buffer();
 
         shadow_framebuffer_builder.set_framebuffer_size(settings["shadowMapResolution"], settings["shadowMapResolution"])
                                   .enable_color_attachment(0)
@@ -236,7 +237,7 @@ namespace nova {
                                   .enable_color_attachment(3);
 
         shadow_framebuffer = std::make_unique<framebuffer>(shadow_framebuffer_builder.build());
-
+        shadow_framebuffer->create_depth_buffer();
     }
 
     void nova_renderer::deinit() {

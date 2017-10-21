@@ -3,6 +3,7 @@
 //
 
 #include "framebuffer.h"
+#include "../vulkan/render_device.h"
 #include <easylogging++.h>
 
 namespace nova {
@@ -41,35 +42,20 @@ namespace nova {
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void framebuffer::set_depth_buffer(GLuint depth_buffer) {
-        //glNamedFramebufferTexture(framebuffer_id, GL_DEPTH_ATTACHMENT, depth_buffer, 0);
+    void framebuffer::create_depth_buffer() {
+        // This block just kinda checks that thhe depth bufer we want is available
+        {
+            vk::Format formats[] = {
+                    vk::Format::eD32SfloatS8Uint,
+                    vk::Format::eD24UnormS8Uint
+            };
+            depth_format = choose_supported_format(formats, 2, vk::ImageTiling::eOptimal,
+                                                   vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+        }
+
+        // TODO: Actually create the depth buffer. The tutorial doesn't mention that at this point
         has_depth_buffer = true;
-
-        check_status();
     }
-
-    void framebuffer::check_status() {
-        auto status = 0;//glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-        switch(status) {
-            case GL_FRAMEBUFFER_COMPLETE:
-                LOG(DEBUG) << "Framebuffer " << framebuffer_id << " is complete";
-                break;
-            case GL_FRAMEBUFFER_UNDEFINED:
-                LOG(ERROR) << "Somehow didn't bind the framebuffer";
-                break;
-            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-                LOG(ERROR) << "A necessary attachment is not initialized";
-                break;
-            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-                LOG(ERROR) << "There are no images attached to the framebuffer";
-                break;
-            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-                LOG(ERROR) << "Every drawing buffer has an attachment";
-                break;
-            case GL_FRAMEBUFFER_UNSUPPORTED:
-                LOG(ERROR) << "The framebuffrer format is not supported";
-                break;
-        }}
 
     void framebuffer::bind() {
         //glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
@@ -87,6 +73,22 @@ namespace nova {
         for(const auto& item : color_attachments_map) {
             //glGenerateTextureMipmap(item.second);
         }
+    }
+
+    vk::Format framebuffer::choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
+        for(int i = 0; i < num_formats; i++) {
+            vk::Format& format = formats[i];
+
+            vk::FormatProperties props = render_device::instance.physical_device.getFormatProperties(format);
+
+            if(tiling == vk::ImageTiling::eLinear and (props.linearTilingFeatures & features) == features) {
+                return format;
+            } else if(tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
+                return format;
+            }
+        }
+
+        LOG(FATAL) << "Failed to fine a suitable depth buffer format";
     }
 
     /* framebuffer_builder */
