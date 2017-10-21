@@ -123,6 +123,8 @@ dependencies {
         )
     }
 
+    compile group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.0'
+	
     // Add all the dependencies that Minecraft has
     compile files(
             'jars/libraries/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar',
