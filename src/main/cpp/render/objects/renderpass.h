@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <set>
 #include <vulkan/vulkan.hpp>
+#include "../vulkan/render_device.h"
 
 namespace nova {
     /*!
@@ -22,31 +23,28 @@ namespace nova {
         friend class renderpass_builder;
 
     public:
-        explicit renderpass(vk::RenderPassCreateInfo& create_info);
+        explicit renderpass(vk::RenderPassCreateInfo& create_info, glm::ivec2 size);
 
         renderpass(renderpass &&other) noexcept;
 
         ~renderpass();
 
-        void bind();
-
-        void generate_mipmaps();
-
-        void enable_writing_to_attachment(unsigned int attachment);
-
-        void reset_drawbuffers();
-
-        void create_depth_buffer();
-
     private:
-        GLuint framebuffer_id;
-
-        std::set<GLenum> drawbuffers;
-
-        GLuint* color_attachments;
         bool has_depth_buffer = false;
 
         vk::RenderPass vk_renderpass;
+
+        // TODO: Figure out how to associate framebuffers with subpasses and how to manage swapping out shadow
+        // framebuffers for, you know, shadows
+        // Maybe I want to have a shadow_renderer that handles all that shadow stuff?
+        // TODO: I don't always want to create one framebuffer per swapchain image. The final framebuffer is a special
+        // case and I'm not sure how to handle it
+        vk::Framebuffer framebuffer;
+
+        std::vector<vk::ImageView> color_image_views;
+        vk::ImageView depth_buffer_view;
+
+        void create_framebuffers(glm::ivec2 size);
     };
 
     /*!

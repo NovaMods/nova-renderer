@@ -3,51 +3,49 @@
 //
 
 #include "renderpass.h"
-#include "../vulkan/render_device.h"
 #include <easylogging++.h>
 
 namespace nova {
     /* framebuffer */
 
-    renderpass::renderpass(vk::RenderPassCreateInfo& create_info) {
+    renderpass::renderpass(vk::RenderPassCreateInfo& create_info, glm::ivec2 size) {
         vk_renderpass = render_device::instance.device.createRenderPass(create_info);
+
+        // TODO: Create the depth buffer
+        // TODO: Pass in information about the format of the colorbuffers
+        // TODO: Create the color buffers
+
+        create_framebuffers(size);
     }
 
     renderpass::renderpass(renderpass&& other) noexcept {
-        color_attachments = other.color_attachments;
-        other.color_attachments = nullptr;
-
-        framebuffer_id = other.framebuffer_id;
-        other.framebuffer_id = 0;
-
         has_depth_buffer = other.has_depth_buffer;
+        vk_renderpass = other.vk_renderpass;
     }
 
     renderpass::~renderpass() {
-        LOG(TRACE) << "Deleting framebuffer " << framebuffer_id;
         //glDeleteTextures(color_attachments_map.size(), color_attachments);
         //glDeleteFramebuffers(1, &framebuffer_id);
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void renderpass::create_depth_buffer() {
-                // TODO: Actually create the depth buffer. The tutorial doesn't mention that at this point
-        has_depth_buffer = true;
-    }
+    void renderpass::create_framebuffers(glm::ivec2 size) {
+        vk::ImageView attachments[color_image_views.size() + 1];
+        attachments[color_image_views.size()] = depth_buffer_view;
 
-    void renderpass::bind() {
-        //glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_id);
-    }
+        for(int i = 0; i < color_image_views.size(); i++) {
+            attachments[i] = color_image_views[i];
+        }
 
-    void renderpass::enable_writing_to_attachment(unsigned int attachment) {
-        drawbuffers.insert(GL_COLOR_ATTACHMENT0 + attachment);
-    }
+        vk::FramebufferCreateInfo frambuffer_create_info = {};
+        frambuffer_create_info.renderPass = vk_renderpass;
+        frambuffer_create_info.attachmentCount = static_cast<uint32_t>(color_image_views.size() + 1);
+        frambuffer_create_info.pAttachments = attachments;
+        frambuffer_create_info.width = static_cast<uint32_t>(size.x);
+        frambuffer_create_info.height = static_cast<uint32_t>(size.y);
+        frambuffer_create_info.layers = 1;
 
-    void renderpass::reset_drawbuffers() {
-        drawbuffers.clear();
-    }
-
-    void renderpass::generate_mipmaps() {
+        framebuffer = render_device::instance.device.createFramebuffer(frambuffer_create_info);
     }
 
     /* renderpass_builder */
@@ -108,7 +106,7 @@ namespace nova {
         render_pass_create_info.pSubpasses = &subpass;
         render_pass_create_info.dependencyCount = 0;
 
-        return std::make_unique<renderpass>(render_pass_create_info);
+        return std::make_unique<renderpass>(render_pass_create_info, glm::ivec2{1, 1});
     }
 
     void renderpass_builder::reset() {
