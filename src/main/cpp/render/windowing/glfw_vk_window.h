@@ -45,15 +45,13 @@ namespace nova {
 
         int init();
 
-        void create_swapchain(gpu_info& gpu);
-
         void destroy();
 
         void end_frame();
 
         void set_fullscreen(bool fullscreen);
 
-        glm::vec2 get_size();
+        glm::ivec2 get_size();
 
         bool should_close();
 
@@ -83,18 +81,6 @@ namespace nova {
         struct window_parameters windowed_window_parameters;
 
         void set_framebuffer_size(glm::ivec2 new_framebuffer_size);
-
-        vk::SurfaceFormatKHR choose_surface_format(std::vector<vk::SurfaceFormatKHR>& formats);
-
-        vk::PresentModeKHR choose_present_mode(std::vector<vk::PresentModeKHR>& modes);
-
-        vk::Extent2D choose_surface_extent(vk::SurfaceCapabilitiesKHR& caps);
-
-        vk::SwapchainKHR swapchain;
-        vk::Extent2D swapchain_extent;
-        vk::PresentModeKHR present_mode;
-        vk::Format swapchain_format;
-        std::vector<vk::ImageView> swapchain_images;
     };
 }
 

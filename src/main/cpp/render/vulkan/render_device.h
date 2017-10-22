@@ -61,6 +61,21 @@ namespace nova {
         vk::Queue present_queue;
         std::unique_ptr<command_pool> command_buffer_pool;
 
+        vk::SwapchainKHR swapchain;
+        vk::Extent2D swapchain_extent;
+        vk::PresentModeKHR present_mode;
+        vk::Format swapchain_format;
+        vk::Format depth_format;
+        std::vector<vk::ImageView> swapchain_images;
+
+        std::vector<gpu_info> gpus;
+
+        std::vector<const char *> validation_layers;
+        std::vector<const char *> extensions;
+
+        std::vector<vk::Semaphore> acquire_semaphores;
+        std::vector<vk::Semaphore> render_complete_semaphores;
+
         void create_instance(glfw_vk_window &window);
 
         void setup_debug_callback();
@@ -71,20 +86,23 @@ namespace nova {
 
         void create_command_pool_and_command_buffers();
 
+        void create_swapchain(glm::ivec2 window_dimensions);
+
     private:
-        std::vector<gpu_info> gpus;
+        vk::SurfaceFormatKHR choose_surface_format(std::vector<vk::SurfaceFormatKHR>& formats);
 
-        std::vector<const char *> validation_layers;
-        std::vector<const char *> extensions;
+        vk::PresentModeKHR choose_present_mode(std::vector<vk::PresentModeKHR>& modes);
 
-        std::vector<vk::Semaphore> acquire_semaphores;
-        std::vector<vk::Semaphore> render_complete_semaphores;
+        vk::Extent2D choose_surface_extent(vk::SurfaceCapabilitiesKHR& caps, glm::ivec2& window_dimensions);
 
         void create_logical_device_and_queues();
 
         void enumerate_gpus();
 
         void select_physical_device();
+
+        vk::Format
+    choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
     };
 }
 

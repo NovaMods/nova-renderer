@@ -14,9 +14,10 @@
 #include "../geometry_cache/mesh_store.h"
 #include "objects/textures/texture_manager.h"
 #include "../input/InputHandler.h"
-#include "objects/framebuffer.h"
+#include "objects/renderpass.h"
 #include "objects/camera.h"
 #include "vulkan/render_device.h"
+#include "renderpass_manager.h"
 
 namespace nova {
     /*!
@@ -104,6 +105,7 @@ namespace nova {
         std::unique_ptr<glfw_vk_window> game_window;
 
         std::shared_ptr<shaderpack> loaded_shaderpack;
+        std::shared_ptr<renderpass_manager> render_passes;
 
         std::unique_ptr<texture_manager> textures;
 
@@ -114,12 +116,12 @@ namespace nova {
         std::unique_ptr<uniform_buffer_store> ubo_manager;
 
         std::vector<GLuint> shadow_depth_textures;
-        std::unique_ptr<framebuffer> shadow_framebuffer;
-        framebuffer_builder shadow_framebuffer_builder;
+        std::unique_ptr<renderpass> shadow_framebuffer;
+        renderpass_builder shadow_framebuffer_builder;
 
-        std::unique_ptr<framebuffer> main_framebuffer;
+        std::unique_ptr<renderpass> main_framebuffer;
         std::vector<GLuint> gbuffer_depth_textures;
-        framebuffer_builder main_framebuffer_builder;
+        renderpass_builder main_framebuffer_builder;
 
         camera player_camera;
 

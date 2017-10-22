@@ -31,7 +31,7 @@ namespace nova {
         LOG(TRACE) << "Created semaphores";
         render_device::instance.create_command_pool_and_command_buffers();
         LOG(TRACE) << "Created command pool";
-        game_window->create_swapchain(render_device::instance.gpu);
+        render_device::instance.create_swapchain(game_window->get_size());
 
         LOG(INFO) << "Vulkan code initialized";
 
@@ -39,6 +39,7 @@ namespace nova {
         textures = std::make_unique<texture_manager>();
         meshes = std::make_unique<mesh_store>();
         inputs = std::make_unique<input_handler>();
+
 		render_settings->register_change_listener(ubo_manager.get());
 		render_settings->register_change_listener(game_window.get());
         render_settings->register_change_listener(this);
@@ -213,31 +214,7 @@ namespace nova {
 
     void nova_renderer::create_framebuffers_from_shaderpack() {
         // TODO: Examine the shaderpack and determine what's needed
-        // For now, just create framebuffers with all possible attachments
-
-        auto settings = render_settings->get_options()["settings"];
-
-        main_framebuffer_builder.set_framebuffer_size(settings["viewWidth"], settings["viewHeight"])
-                                .enable_color_attachment(0)
-                                .enable_color_attachment(1)
-                                .enable_color_attachment(2)
-                                .enable_color_attachment(3)
-                                .enable_color_attachment(4)
-                                .enable_color_attachment(5)
-                                .enable_color_attachment(6)
-                                .enable_color_attachment(7);
-
-        main_framebuffer = std::make_unique<framebuffer>(main_framebuffer_builder.build());
-        main_framebuffer->create_depth_buffer();
-
-        shadow_framebuffer_builder.set_framebuffer_size(settings["shadowMapResolution"], settings["shadowMapResolution"])
-                                  .enable_color_attachment(0)
-                                  .enable_color_attachment(1)
-                                  .enable_color_attachment(2)
-                                  .enable_color_attachment(3);
-
-        shadow_framebuffer = std::make_unique<framebuffer>(shadow_framebuffer_builder.build());
-        shadow_framebuffer->create_depth_buffer();
+        render_passes = std::make_unique<renderpass_manager>(loaded_shaderpack);
     }
 
     void nova_renderer::deinit() {

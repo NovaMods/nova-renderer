@@ -97,7 +97,7 @@ set(NOVA_HEADERS
         data_loading/loaders/shader_source_structs.h
         geometry_cache/mesh_definition.h
         render/objects/camera.h
-        render/objects/framebuffer.h
+        render/objects/renderpass.h
         utils/io.h
         data_loading/direct_buffers.h
         mc_interface/nova_jni.h
@@ -142,7 +142,7 @@ set(NOVA_SOURCE
         render/objects/uniform_buffers/uniform_buffers_definitions.cpp
 
         mc_interface/mc_objects.cpp
-        render/objects/framebuffer.cpp
+        render/objects/renderpass.cpp
         render/objects/camera.cpp
         data_loading/loaders/shader_source_structs.cpp
         data_loading/direct_buffers.cpp
@@ -150,7 +150,7 @@ set(NOVA_SOURCE
         utils/profiler.cpp
         render/vulkan/device_memory_allocator.cpp
         render/vulkan/command_pool.cpp
-        )
+        render/renderpass_manager.cpp render/renderpass_manager.h)
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
