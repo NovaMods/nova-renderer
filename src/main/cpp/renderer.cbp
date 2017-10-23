@@ -46,6 +46,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -79,6 +80,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -114,6 +116,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -149,6 +152,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -193,6 +197,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -227,6 +232,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>

@@ -56,6 +56,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/googletest/googletest/include
         ${3RD_PARTY_DIR}/optional
         ${3RD_PARTY_DIR}/renderdocapi
+        ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         )
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES})

@@ -6,7 +6,61 @@
 #ifndef RENDERER_DEVICE_MEMORY_ALLOCATOR_H
 #define RENDERER_DEVICE_MEMORY_ALLOCATOR_H
 
+#include <vulkan/vulkan.hpp>
+
 namespace nova {
+    /*!
+     * \brief An allocation of memory that can be used by something
+     */
+    struct allocation {
+        allocation() :
+                id(0),
+                block_id(0),
+                data(nullptr)
+        {}
+
+        uint32_t id;
+        uint32_t block_id;
+        vk::DeviceMemory device_memory;
+        vk::DeviceSize offset;
+        vk::DeviceSize size;
+        void* data;
+    };
+
+    class memory_pool {
+    public:
+        memory_pool(const uint32_t id, const uint32_t memoty_type_bits, const vk::DeviceSize size, const bool is_host_visible);
+        ~memory_pool();
+
+        bool init();
+        bool shutdown();
+
+        bool allocate(const uint32_t size, const uint32_t align, allocation& allocation);
+        void free(allocation& allocation);
+
+    private:
+        // Pools are linked lists of blocks. We can easily enough merge blocks if they're next to each other and free
+        struct block {
+            uint32_t id;
+            vk::DeviceSize size;
+            vk::DeviceSize offset;
+            block* prev;
+            block* next;
+            bool free;
+        };
+
+        block* head;
+
+        uint32_t id;
+        uint32_t next_block_id;
+        uint32_t memory_type_index;
+        bool host_visible;
+        vk::DeviceMemory device_memory;
+        vk::DeviceSize size;
+        vk::DeviceSize allocated;
+        void* data;
+    };
+
     /*!
      * \brief Handles allocation of GPU memory
      *
@@ -21,7 +75,10 @@ namespace nova {
      *          shaderpacks)
      * - Allocate chunks memory when a new chunk is loaded. Chunks know how much memory their buffers need
      *      - Frequent (chunks are loaded in as the player explores the world)
-     *      - 20k verts * 56 bytes per vert = ~100k bytes for the vertex buffer
+     *      - 20k verts * 64 bytes per vert = ~1.28m bytes for the vertex buffer
+     *      - 20k verts * 2 bytes per index = 40k bytes for indices
+     *      - So like we have 1.32 MB per chunk, which seems super high. That only allows 6060 chunks on an 8 GB card,
+     *          render distance of like 38 assuming no textures
      *      - Should probably have one allocator per thread
      * - Allocate memory for entities
      *      - Each entity needs separate animation memory but can share a model
@@ -55,9 +112,45 @@ namespace nova {
      *      - If a new virtual texture atlas is needed during gameplay, we can leave it active since it might be needed
      *          again
      *      - should collect usage statistics on additional virtual texture buffers
+     *
+     * I have one class to handle creating resources and assigning them memory. The tutorial I'm following has separate
+     * classes. I'm sure there's something about cohesion and coupling in there somewhere but imma do things like this
+     * until I can't
      */
     class device_memory_allocator {
+    public:
+        static device_memory_allocator& get_instance();
 
+        device_memory_allocator();
+
+        void init();    // Why is this separate from the contructor?
+
+        /*!
+         * \brief Allocates and returns a new vk::Image
+         *
+         * If the requested image has a size greater than 512 MB then it gets allocated then and there, rather than
+         * being allocated out of some pool.
+         *
+         * \param device The device to allocate the image on
+         * \param create_info The creation info for the image
+         * \return A new vk::Image which is backed by some real memory
+         */
+        vk::Image make_new_texture(vk::Device device, vk::ImageCreateInfo create_info);
+    private:
+        static device_memory_allocator instance;
+
+        std::vector<memory_pool> pools;
+
+        allocation allocate(const uint32_t size, const uint32_t align, const uint32_t memoty_type_bits, const bool host_visible);
+
+        void free(const allocation& allocation);
+
+        /*!
+         * \brief Frees all allocations that are part of the garbage list
+         *
+         * Maybe I want to add a few resources to a list of garbage, then
+         */
+        void empty_garbage();
     };
 }
 
