@@ -38,7 +38,6 @@ namespace nova {
         bool allocate(const uint32_t size, const uint32_t align, allocation& allocation);
         void free(allocation& allocation);
 
-    private:
         // Pools are linked lists of blocks. We can easily enough merge blocks if they're next to each other and free
         struct block {
             uint32_t id;
@@ -121,25 +120,9 @@ namespace nova {
     public:
         static device_memory_allocator& get_instance();
 
-        device_memory_allocator();
+        device_memory_allocator() noexcept;
 
         void init();    // Why is this separate from the contructor?
-
-        /*!
-         * \brief Allocates and returns a new vk::Image
-         *
-         * If the requested image has a size greater than 512 MB then it gets allocated then and there, rather than
-         * being allocated out of some pool.
-         *
-         * \param device The device to allocate the image on
-         * \param create_info The creation info for the image
-         * \return A new vk::Image which is backed by some real memory
-         */
-        vk::Image make_new_texture(vk::Device device, vk::ImageCreateInfo create_info);
-    private:
-        static device_memory_allocator instance;
-
-        std::vector<memory_pool> pools;
 
         allocation allocate(const uint32_t size, const uint32_t align, const uint32_t memoty_type_bits, const bool host_visible);
 
@@ -151,6 +134,19 @@ namespace nova {
          * Maybe I want to add a few resources to a list of garbage, then
          */
         void empty_garbage();
+
+    private:
+        static device_memory_allocator instance;
+
+        uint32_t next_pool_id;
+        uint32_t garbage_index;
+        uint64_t device_local_memory_mb;
+        uint64_t host_visible_memory_mb;
+
+        std::vector<memory_pool*> pools;
+        std::vector<allocation> garbage[2];
+
+        bool allocate_from_pools(const uint32_t size, const uint32_t align, const uint32_t memory_type_bits, const bool need_host_visible, allocation& alloc);
     };
 }
 
