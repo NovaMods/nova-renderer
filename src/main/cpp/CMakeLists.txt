@@ -107,7 +107,6 @@ set(NOVA_HEADERS
         utils/stb_image_write.h
         render/vulkan/render_device.cpp
         render/vulkan/render_device.h
-        render/vulkan/device_memory_allocator.h
         render/vulkan/command_pool.h
         )
 
@@ -149,7 +148,6 @@ set(NOVA_SOURCE
         data_loading/direct_buffers.cpp
         render/objects/render_object.cpp
         utils/profiler.cpp
-        render/vulkan/device_memory_allocator.cpp
         render/vulkan/command_pool.cpp
         render/renderpass_manager.cpp render/renderpass_manager.h)
 
