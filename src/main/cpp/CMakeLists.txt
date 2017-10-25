@@ -105,8 +105,8 @@ set(NOVA_HEADERS
         render/objects/render_object.h
         utils/profiler.h
         utils/stb_image_write.h
-        render/vulkan/render_device.cpp
-        render/vulkan/render_device.h
+        render/vulkan/render_context.cpp
+        render/vulkan/render_context.h
         render/vulkan/command_pool.h
         )
 

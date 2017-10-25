@@ -16,7 +16,7 @@
 #include "../input/InputHandler.h"
 #include "objects/renderpass.h"
 #include "objects/camera.h"
-#include "vulkan/render_device.h"
+#include "vulkan/render_context.h"
 #include "renderpass_manager.h"
 
 namespace nova {

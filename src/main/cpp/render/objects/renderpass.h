@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <set>
 #include <vulkan/vulkan.hpp>
-#include "../vulkan/render_device.h"
+#include "../vulkan/render_context.h"
 
 namespace nova {
     /*!

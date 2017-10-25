@@ -23,7 +23,7 @@ namespace nova {
         int height;
     };
 
-    class render_device;
+    class render_context;
     struct gpu_info;
     
     /*!

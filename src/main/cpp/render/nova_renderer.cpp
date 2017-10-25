@@ -19,19 +19,19 @@ namespace nova {
         game_window = std::make_unique<glfw_vk_window>();
         LOG(TRACE) << "Window initialized";
 
-        render_device::instance.create_instance(*game_window);
+        render_context::instance.create_instance(*game_window);
         LOG(TRACE) << "Instance created";
-        render_device::instance.setup_debug_callback();
+        render_context::instance.setup_debug_callback();
         LOG(TRACE) << "Debug callback set up";
         game_window->create_surface();
         LOG(TRACE) << "Created surface";
-        render_device::instance.find_device_and_queues();
+        render_context::instance.find_device_and_queues();
         LOG(TRACE) << "Found device and queue";
-        render_device::instance.create_semaphores();
+        render_context::instance.create_semaphores();
         LOG(TRACE) << "Created semaphores";
-        render_device::instance.create_command_pool_and_command_buffers();
+        render_context::instance.create_command_pool_and_command_buffers();
         LOG(TRACE) << "Created command pool";
-        render_device::instance.create_swapchain(game_window->get_size());
+        render_context::instance.create_swapchain(game_window->get_size());
 
         LOG(INFO) << "Vulkan code initialized";
 
@@ -56,7 +56,7 @@ namespace nova {
         textures.reset();
         ubo_manager.reset();
 
-        render_device::instance.vk_instance.destroy();
+        render_context::instance.vk_instance.destroy();
         game_window.reset();
     }
 

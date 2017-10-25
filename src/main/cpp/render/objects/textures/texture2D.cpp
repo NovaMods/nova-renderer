@@ -5,14 +5,29 @@
 #include "texture2D.h"
 #include <stdexcept>
 #include <easylogging++.h>
+#include <vk_mem_alloc.h>
 #include "../../../utils/utils.h"
 
 namespace nova {
-    texture2D::texture2D() : size(0) {
+    texture2D::texture2D() : size(0), context(render_context::instance) {
         //glGenTextures(1, &gl_name);
     }
 
-    void texture2D::set_data(void* pixel_data, glm::ivec2 &dimensions, GLenum format, GLenum type, GLenum internal_format) {
+    void texture2D::set_data(void* pixel_data, glm::u32vec2 &dimensions, vk::Format format, GLenum type, GLenum internal_format) {
+        vk::ImageCreateInfo image_create_info = {};
+        image_create_info.samples = vk::SampleCountFlagBits::e1;
+        image_create_info.mipLevels = 1;
+        image_create_info.arrayLayers = 1;
+        image_create_info.extent = vk::Extent3D{dimensions.x, dimensions.y, 1};
+        image_create_info.tiling = vk::ImageTiling::eLinear;    // Easier to cram data into I think?
+
+        VmaAllocationCreateInfo alloc_create_info = {};
+        alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+        VkImage vk_image = image;
+        vmaCreateImage(context.allocator, &image_create_info, nullptr, &vk_image, nullptr, nullptr);
+        image = vk_image;
+
         GLint previous_texture;
         /*glGetIntegerv(GL_TEXTURE_BINDING_2D, &previous_texture);
         glBindTexture(GL_TEXTURE_2D, gl_name);

@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <easylogging++.h>
 #include "texture_manager.h"
-#include "../../vulkan/render_device.h"
+#include "../../vulkan/render_context.h"
 
 namespace nova {
     texture_manager::texture_manager() {
@@ -113,7 +113,7 @@ namespace nova {
 
     int texture_manager::get_max_texture_size() {
         if(max_texture_size < 0) {
-            max_texture_size = render_device::instance.gpu.props.limits.maxImageDimension2D;
+            max_texture_size = render_context::instance.gpu.props.limits.maxImageDimension2D;
 
 			LOG(DEBUG) << "max texturesize reported by gpu: " << max_texture_size;
         }

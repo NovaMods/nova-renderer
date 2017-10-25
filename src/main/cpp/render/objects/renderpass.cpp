@@ -9,7 +9,7 @@ namespace nova {
     /* framebuffer */
 
     renderpass::renderpass(vk::RenderPassCreateInfo& create_info, glm::ivec2 size) {
-        vk_renderpass = render_device::instance.device.createRenderPass(create_info);
+        vk_renderpass = render_context::instance.device.createRenderPass(create_info);
 
         // TODO: Create the depth buffer
         // TODO: Pass in information about the format of the colorbuffers
@@ -45,7 +45,7 @@ namespace nova {
         frambuffer_create_info.height = static_cast<uint32_t>(size.y);
         frambuffer_create_info.layers = 1;
 
-        framebuffer = render_device::instance.device.createFramebuffer(frambuffer_create_info);
+        framebuffer = render_context::instance.device.createFramebuffer(frambuffer_create_info);
     }
 
     /* renderpass_builder */
@@ -59,7 +59,7 @@ namespace nova {
 
     renderpass_builder& renderpass_builder::add_color_buffer() {
         vk::AttachmentDescription color_attachment = {};
-        color_attachment.format = render_device::instance.swapchain_format;
+        color_attachment.format = render_context::instance.swapchain_format;
         color_attachment.samples = vk::SampleCountFlagBits::e1; // TODO: Potentially increase the sample count if using MSAA
         color_attachment.loadOp = vk::AttachmentLoadOp::eDontCare;
         color_attachment.initialLayout = vk::ImageLayout::eUndefined;
@@ -78,7 +78,7 @@ namespace nova {
     std::unique_ptr<renderpass> renderpass_builder::build() {
         // Don't forget the depth buffer!
         vk::AttachmentDescription depth_attachment = {};
-        depth_attachment.format = render_device::instance.depth_format;
+        depth_attachment.format = render_context::instance.depth_format;
         depth_attachment.samples = vk::SampleCountFlagBits::e1;
         depth_attachment.loadOp = vk::AttachmentLoadOp::eDontCare;
         depth_attachment.storeOp = vk::AttachmentStoreOp::eDontCare;

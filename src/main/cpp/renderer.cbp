@@ -2124,10 +2124,7 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/vulkan/command_pool.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/vulkan/device_memory_allocator.cpp.obj">
-			<Option target="nova-renderer"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/vulkan/render_device.cpp.obj">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/vulkan/render_context.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/windowing/glfw_vk_window.cpp.obj">
@@ -2347,19 +2344,11 @@
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/device_memory_allocator.cpp">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/render_context.cpp">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/device_memory_allocator.h">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/render_device.cpp">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/render_device.h">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/vulkan/render_context.h">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>

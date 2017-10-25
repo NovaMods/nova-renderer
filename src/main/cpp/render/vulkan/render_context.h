@@ -41,9 +41,9 @@ namespace nova {
      *      - One or more compute shader queues could be awesome, except that Nova won't use many compute shaders by
      *          default
      */
-    class render_device {
+    class render_context {
     public:
-        static render_device instance;
+        static render_context instance;
 
         vk::Instance vk_instance = nullptr;
         vk::SurfaceKHR surface;
@@ -76,6 +76,10 @@ namespace nova {
         std::vector<vk::Semaphore> acquire_semaphores;
         std::vector<vk::Semaphore> render_complete_semaphores;
 
+        VmaAllocator allocator;
+
+        ~render_context();
+
         void create_instance(glfw_vk_window &window);
 
         void setup_debug_callback();
@@ -103,6 +107,8 @@ namespace nova {
 
         vk::Format
     choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
+
+
     };
 }
 

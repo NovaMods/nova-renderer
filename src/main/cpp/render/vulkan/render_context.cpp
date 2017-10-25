@@ -3,12 +3,15 @@
  * \date 15-Oct-17.
  */
 
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
+
 #include <easylogging++.h>
 #include <unordered_set>
-#include "render_device.h"
+#include "render_context.h"
 
 namespace nova {
-    render_device render_device::instance;
+    render_context render_context::instance;
 
     bool layers_are_supported(std::vector<const char*>& validation_layers);
 
@@ -24,7 +27,7 @@ namespace nova {
             const char *msg,
             void *userData);
 
-    void render_device::create_instance(glfw_vk_window &window) {
+    void render_context::create_instance(glfw_vk_window &window) {
         validation_layers = {
                 "VK_LAYER_LUNARG_core_validation",
                 "VK_LAYER_LUNARG_standard_validation"
@@ -59,7 +62,7 @@ namespace nova {
         vk_instance = vk::createInstance(create_info, nullptr);
     }
 
-    void render_device::setup_debug_callback() {
+    void render_context::setup_debug_callback() {
 #ifndef NDEBUG
         /*vk::DebugReportCallbackCreateInfoEXT create_info = {};
         create_info.flags = vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eWarning;
@@ -71,7 +74,7 @@ namespace nova {
 #endif
     }
 
-    void render_device::find_device_and_queues() {
+    void render_context::find_device_and_queues() {
         enumerate_gpus();
         LOG(TRACE) << "Enumerated GPUs";
         select_physical_device();
@@ -80,7 +83,7 @@ namespace nova {
         LOG(TRACE) << "Basic queue and logical device was found";
     }
 
-    void render_device::enumerate_gpus() {
+    void render_context::enumerate_gpus() {
         auto devices = vk_instance.enumeratePhysicalDevices();
         LOG(TRACE) << "There are " << devices.size() << " physical devices";
         if(devices.empty()) {
@@ -117,7 +120,7 @@ namespace nova {
         }
     }
 
-    void render_device::select_physical_device() {
+    void render_context::select_physical_device() {
         // TODO: More complex logic to try and use a non-Intel GPU if possible (Vulkan book page 9)
         for(auto &gpu : gpus) {
             uint32_t graphics_idx = 0xFFFFFFFF;
@@ -172,7 +175,7 @@ namespace nova {
         LOG(FATAL) << "Could not find a device with both present and graphics queues";
     }
 
-    void render_device::create_logical_device_and_queues() {
+    void render_context::create_logical_device_and_queues() {
         std::unordered_set<uint32_t> unique_idx;
         unique_idx.insert(graphics_family_idx);
         unique_idx.insert(present_family_idx);
@@ -214,9 +217,14 @@ namespace nova {
 
         graphics_queue = device.getQueue(graphics_family_idx, 0);
         present_queue = device.getQueue(graphics_family_idx, 0);
+
+        VmaAllocatorCreateInfo allocatorInfo = {};
+        allocatorInfo.physicalDevice = physical_device;
+        allocatorInfo.device = device;
+        vmaCreateAllocator(&allocatorInfo, &allocator);
     }
 
-    void render_device::create_semaphores() {
+    void render_context::create_semaphores() {
         acquire_semaphores.resize(NUM_FRAME_DATA);
         render_complete_semaphores.resize(NUM_FRAME_DATA);
 
@@ -227,20 +235,20 @@ namespace nova {
         }
     }
 
-    void render_device::create_command_pool_and_command_buffers() {
+    void render_context::create_command_pool_and_command_buffers() {
         // TODO: Get the number of threads dynamically based on the user's CPU core count
         command_buffer_pool = std::make_unique<command_pool>(device, graphics_family_idx, 8);
     }
 
-    void render_device::create_swapchain(glm::ivec2 window_dimensions) {
-        auto& device = render_device::instance.device;
+    void render_context::create_swapchain(glm::ivec2 window_dimensions) {
+        auto& device = render_context::instance.device;
 
         auto surface_format = choose_surface_format(gpu.surface_formats);
         auto present_mode = choose_present_mode(gpu.present_modes);
         auto extent = choose_surface_extent(gpu.surface_capabilities, window_dimensions);
 
         vk::SwapchainCreateInfoKHR info = {};
-        info.surface = render_device::instance.surface;
+        info.surface = render_context::instance.surface;
 
         info.minImageCount = NUM_FRAME_DATA;
 
@@ -251,9 +259,9 @@ namespace nova {
 
         info.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc;
 
-        if(render_device::instance.graphics_family_idx not_eq render_device::instance.present_family_idx) {
+        if(render_context::instance.graphics_family_idx not_eq render_context::instance.present_family_idx) {
             // If the indices are different then we need to share the images
-            uint32_t indices[] = {render_device::instance.graphics_family_idx, render_device::instance.present_family_idx};
+            uint32_t indices[] = {render_context::instance.graphics_family_idx, render_context::instance.present_family_idx};
 
             info.imageSharingMode = vk::SharingMode::eConcurrent;
             info.queueFamilyIndexCount = 2;
@@ -315,7 +323,7 @@ namespace nova {
         }
     }
 
-    vk::SurfaceFormatKHR render_device::choose_surface_format(std::vector<vk::SurfaceFormatKHR> &formats) {
+    vk::SurfaceFormatKHR render_context::choose_surface_format(std::vector<vk::SurfaceFormatKHR> &formats) {
         vk::SurfaceFormatKHR result = {};
 
         if(formats.size() == 1 and formats[0].format == vk::Format::eUndefined) {
@@ -335,7 +343,7 @@ namespace nova {
         return formats[0];
     }
 
-    vk::PresentModeKHR render_device::choose_present_mode(std::vector<vk::PresentModeKHR> &modes) {
+    vk::PresentModeKHR render_context::choose_present_mode(std::vector<vk::PresentModeKHR> &modes) {
         const vk::PresentModeKHR desired_mode = vk::PresentModeKHR::eMailbox;
 
         // Mailbox mode is best mode (also not sure why)
@@ -349,7 +357,7 @@ namespace nova {
         return vk::PresentModeKHR::eFifo;
     }
 
-    vk::Extent2D render_device::choose_surface_extent(vk::SurfaceCapabilitiesKHR &caps, glm::ivec2& window_dimensions) {
+    vk::Extent2D render_context::choose_surface_extent(vk::SurfaceCapabilitiesKHR &caps, glm::ivec2& window_dimensions) {
         vk::Extent2D extent;
 
         if(caps.currentExtent.width == -1) {
@@ -362,7 +370,7 @@ namespace nova {
         return extent;
     }
 
-    vk::Format render_device::choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
+    vk::Format render_context::choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
         for(int i = 0; i < num_formats; i++) {
             vk::Format& format = formats[i];
 
@@ -376,6 +384,10 @@ namespace nova {
         }
 
         LOG(FATAL) << "Failed to fine a suitable depth buffer format";
+    }
+
+    render_context::~render_context() {
+        vmaDestroyAllocator(allocator);
     }
 
     // This function should really be outside of this file, but I want to keep vulkan creation things in here

@@ -168,10 +168,10 @@ namespace nova {
 
     void glfw_vk_window::create_surface() {
         VkSurfaceKHR lame_surface;
-        auto err = glfwCreateWindowSurface(render_device::instance.vk_instance, window, nullptr, &lame_surface);
+        auto err = glfwCreateWindowSurface(render_context::instance.vk_instance, window, nullptr, &lame_surface);
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not create surface";
         }
-        render_device::instance.surface = lame_surface;
+        render_context::instance.surface = lame_surface;
     }
 }

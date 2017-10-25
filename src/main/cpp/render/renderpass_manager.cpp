@@ -5,7 +5,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include "renderpass_manager.h"
-#include "vulkan/render_device.h"
+#include "vulkan/render_context.h"
 
 namespace nova {
     renderpass_manager::renderpass_manager(std::shared_ptr<shaderpack> shaders) {
