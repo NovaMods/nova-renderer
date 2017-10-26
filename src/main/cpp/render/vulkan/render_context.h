@@ -9,6 +9,7 @@
 #define RENDERER_RENDER_DEVICE_H
 
 #include <vulkan/vulkan.hpp>
+#include <vk_mem_alloc.h>
 #include "../windowing/glfw_vk_window.h"
 #include "command_pool.h"
 

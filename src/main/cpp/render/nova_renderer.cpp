@@ -62,6 +62,7 @@ namespace nova {
 
     void nova_renderer::render_frame() {
         profiler::log_all_profiler_data();
+
         player_camera.recalculate_frustum();
 
         // Make geometry for any new chunks
@@ -90,7 +91,7 @@ namespace nova {
         // stencil buffer when the GUI screen changes
         render_gui();
 
-        game_window->end_frame();
+        end_frame();
     }
 
     void nova_renderer::render_shadow_pass() {
@@ -309,6 +310,19 @@ namespace nova {
 
     std::shared_ptr<shaderpack> nova_renderer::get_shaders() {
         return loaded_shaderpack;
+    }
+
+    void nova_renderer::end_frame() {
+        uint32_t image_index = 0;
+        vk::Result swapchain_result = {};
+
+        vk::PresentInfoKHR present_info = {};
+        present_info.swapchainCount = 1;
+        present_info.pSwapchains = &render_context::instance.swapchain;
+        present_info.pImageIndices = &image_index;
+        present_info.pResults = &swapchain_result;
+
+        render_context::instance.present_queue.presentKHR(present_info);
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {

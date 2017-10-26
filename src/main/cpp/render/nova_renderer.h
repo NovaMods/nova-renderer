@@ -154,6 +154,8 @@ namespace nova {
         void upload_model_matrix(render_object &geom, gl_shader_program &program) const;
 
         void update_gbuffer_ubos();
+
+        void end_frame();
     };
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos);

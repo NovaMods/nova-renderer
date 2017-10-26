@@ -55,11 +55,11 @@ namespace nova {
          * For best performance, call this function once, do ABSOLUTELY EVERYTHING you need to do to this texture, then
          * unbind it
          *
-         * It's worth noting that, if you give me the location that this texture is already bound to, this function won't
-         * make any GL calls. For that reason, it is ABSOLUTELY IMPERATIVE that you call unbind. Always. Forever. When this
-         * texture is no longer active, call unbind. Do it. You're going to forget, and you'll be really sad you can't find
-         * the problem, then you're going to find the bit of code that doesn't bind the texture if it's already bound and
-         * you'll see this comment and you'll understand what you did wrong.
+         * It's worth noting that, if you give me the location that this texture is already bound to, this function
+         * won't make any GL calls. For that reason, it is ABSOLUTELY IMPERATIVE that you call unbind. Always. Forever.
+         * When this texture is no longer active, call unbind. Do it. You're going to forget, and you'll be really sad
+         * you can't find the problem, then you're going to find the bit of code that doesn't bind the texture if it's
+         * already bound and you'll see this comment and you'll understand what you did wrong.
          *
          * \param binding The location to bind this texture to
          *
@@ -72,11 +72,11 @@ namespace nova {
         /*!
          * \brief Sets this texture's data to the given parameters
          *
-         * It's worth noting that this function doesn't do any validation on its data. You specified a LDR texture format
-         * but you gave me HDR data? Sure hope the GPU can deal with that
+         * It's worth noting that this function doesn't do any validation on its data. You specified a LDR texture
+         * format but you gave me HDR data? Sure hope the GPU can deal with that
          *
          * \param pixel_data The raw pixel_data
-         * \param dimensions An array of the dimensions in this texture. For a texture2D that array MUST have two elements
+         * \param dimensions The dimensions of this texture
          * \param format The format of the texture data
          */
         void set_data(void* pixel_data, glm::u32vec2 &dimensions, vk::Format format, GLenum type = GL_FLOAT, GLenum internal_format = GL_RGBA);
@@ -107,7 +107,7 @@ namespace nova {
         /*!
          * \brief Returns the OpenGL identifier used to identify this texture
          */
-        const unsigned int &get_gl_name();
+        const unsigned int get_gl_name();
 
         void set_name(std::string name);
         const std::string& get_name() const;
@@ -118,8 +118,6 @@ namespace nova {
 
         vk::Image image;
         vk::ImageView image_view;
-
-        render_context& context;
     };
 }
 

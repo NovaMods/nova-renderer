@@ -9,11 +9,12 @@
 #include "../../../utils/utils.h"
 
 namespace nova {
-    texture2D::texture2D() : size(0), context(render_context::instance) {
+    texture2D::texture2D() : size(0) {
         //glGenTextures(1, &gl_name);
     }
 
     void texture2D::set_data(void* pixel_data, glm::u32vec2 &dimensions, vk::Format format, GLenum type, GLenum internal_format) {
+        auto& context = render_context::instance;
         vk::ImageCreateInfo image_create_info = {};
         image_create_info.samples = vk::SampleCountFlagBits::e1;
         image_create_info.mipLevels = 1;
@@ -25,7 +26,7 @@ namespace nova {
         alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
         VkImage vk_image = image;
-        vmaCreateImage(context.allocator, &image_create_info, nullptr, &vk_image, nullptr, nullptr);
+        //vmaCreateImage(context.allocator, &image_create_info, nullptr, &vk_image, nullptr, nullptr);
         image = vk_image;
 
         GLint previous_texture;
@@ -41,13 +42,13 @@ namespace nova {
 
     void texture2D::bind(unsigned int binding) {
         //glBindTextureUnit(binding, gl_name);
-        current_location = binding;
+        //current_location = binding;
     }
 
     void texture2D::unbind() {
         //glActiveTexture((GLenum) current_location);
         //glBindTexture(GL_TEXTURE_2D, 0);
-        current_location = -1;
+        //current_location = -1;
     }
 
     int texture2D::get_width() {
@@ -59,15 +60,15 @@ namespace nova {
     }
 
     GLint texture2D::get_format() {
-        return format;
+        return 0;
     }
 
     void texture2D::set_filtering_parameters(texture_filtering_params &params) {
         // TODO
     }
 
-    const unsigned int &texture2D::get_gl_name() {
-        return gl_name;
+    const unsigned int texture2D::get_gl_name() {
+        return 0;
     }
 
     void texture2D::set_name(const std::string name) {
