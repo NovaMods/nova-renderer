@@ -48,6 +48,9 @@ namespace nova {
 		render_settings->update_config_changed();
 
         LOG(INFO) << "Finished sending out initial config";
+
+        vk::SemaphoreCreateInfo create_info = {};
+        swapchain_image_acquire_semaphore = render_context::instance.device.createSemaphore(create_info);
     }
 
     nova_renderer::~nova_renderer() {
@@ -62,6 +65,8 @@ namespace nova {
 
     void nova_renderer::render_frame() {
         profiler::log_all_profiler_data();
+
+        begin_frame();
 
         player_camera.recalculate_frustum();
 
@@ -313,16 +318,22 @@ namespace nova {
     }
 
     void nova_renderer::end_frame() {
-        uint32_t image_index = 0;
         vk::Result swapchain_result = {};
 
         vk::PresentInfoKHR present_info = {};
         present_info.swapchainCount = 1;
         present_info.pSwapchains = &render_context::instance.swapchain;
-        present_info.pImageIndices = &image_index;
+        present_info.pImageIndices = &cur_swapchain_image_index;
         present_info.pResults = &swapchain_result;
 
         render_context::instance.present_queue.presentKHR(present_info);
+    }
+
+    void nova_renderer::begin_frame() {
+        cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
+                                                                               std::numeric_limits<uint32_t>::max(),
+                                                                               swapchain_image_acquire_semaphore,
+                                                                               vk::Fence()).value;
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {

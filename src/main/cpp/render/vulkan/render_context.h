@@ -110,6 +110,7 @@ namespace nova {
     choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 
 
+        void move_swapchain_images_into_correct_format(std::vector<vk::Image> images);
     };
 }
 

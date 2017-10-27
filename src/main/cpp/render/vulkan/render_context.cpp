@@ -241,8 +241,6 @@ namespace nova {
     }
 
     void render_context::create_swapchain(glm::ivec2 window_dimensions) {
-        auto& device = render_context::instance.device;
-
         auto surface_format = choose_surface_format(gpu.surface_formats);
         auto present_mode = choose_present_mode(gpu.present_modes);
         auto extent = choose_surface_extent(gpu.surface_capabilities, window_dimensions);
@@ -259,9 +257,9 @@ namespace nova {
 
         info.imageUsage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc;
 
-        if(render_context::instance.graphics_family_idx not_eq render_context::instance.present_family_idx) {
+        if(graphics_family_idx not_eq present_family_idx) {
             // If the indices are different then we need to share the images
-            uint32_t indices[] = {render_context::instance.graphics_family_idx, render_context::instance.present_family_idx};
+            uint32_t indices[] = {graphics_family_idx, present_family_idx};
 
             info.imageSharingMode = vk::SharingMode::eConcurrent;
             info.queueFamilyIndexCount = 2;
@@ -269,6 +267,8 @@ namespace nova {
         } else {
             // If the indices are the same, we can have exclusive access
             info.imageSharingMode = vk::SharingMode::eExclusive;
+            info.queueFamilyIndexCount = 1;
+            info.pQueueFamilyIndices = &present_family_idx;
         }
 
         info.preTransform = vk::SurfaceTransformFlagBitsKHR::eIdentity;
@@ -321,12 +321,15 @@ namespace nova {
             depth_format = choose_supported_format(formats, 2, vk::ImageTiling::eOptimal,
                                                    vk::FormatFeatureFlagBits::eDepthStencilAttachment);
         }
+
+        // move the swapchain images into the correct layout cause I guess they aren't for some reason?
+        move_swapchain_images_into_correct_format(swapchain_images);
     }
 
     vk::SurfaceFormatKHR render_context::choose_surface_format(std::vector<vk::SurfaceFormatKHR> &formats) {
         vk::SurfaceFormatKHR result = {};
 
-        if(formats.size() == 1 and formats[0].format == vk::Format::eUndefined) {
+        if(formats.size() == 1 && formats[0].format == vk::Format::eUndefined) {
             result.format = vk::Format::eB8G8R8A8Unorm;
             result.colorSpace = vk::ColorSpaceKHR::eSrgbNonlinear;
             return result;
@@ -334,7 +337,7 @@ namespace nova {
 
         // We want 32 bit rgba and srgb nonlinear... I think? Will have to read up on it more and figure out what's up
         for(auto& fmt : formats) {
-            if(fmt.format == vk::Format::eB8G8R8A8Unorm and fmt.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+            if(fmt.format == vk::Format::eB8G8R8A8Unorm && fmt.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
                 return fmt;
             }
         }
@@ -376,7 +379,7 @@ namespace nova {
 
             vk::FormatProperties props = physical_device.getFormatProperties(format);
 
-            if(tiling == vk::ImageTiling::eLinear and (props.linearTilingFeatures & features) == features) {
+            if(tiling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & features) == features) {
                 return format;
             } else if(tiling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & features) == features) {
                 return format;
@@ -388,6 +391,16 @@ namespace nova {
 
     render_context::~render_context() {
         vmaDestroyAllocator(allocator);
+    }
+
+    void render_context::move_swapchain_images_into_correct_format(std::vector<vk::Image> images) {
+        vk::ImageMemoryBarrier move_to_swapchain_format = {};
+        move_to_swapchain_format.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        move_to_swapchain_format.dstAccessMask = vk::AccessFlagBits::eColorAttachmentRead;
+        move_to_swapchain_format.oldLayout = vk::ImageLayout::eUndefined;
+        move_to_swapchain_format.newLayout = vk::ImageLayout::ePresentSrcKHR;
+
+
     }
 
     // This function should really be outside of this file, but I want to keep vulkan creation things in here

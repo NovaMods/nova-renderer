@@ -123,6 +123,10 @@ namespace nova {
         std::vector<GLuint> gbuffer_depth_textures;
         renderpass_builder main_framebuffer_builder;
 
+        uint32_t cur_swapchain_image_index;
+
+        vk::Semaphore swapchain_image_acquire_semaphore;
+
         camera player_camera;
 
         /*!
@@ -156,6 +160,8 @@ namespace nova {
         void update_gbuffer_ubos();
 
         void end_frame();
+
+        void begin_frame();
     };
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos);
