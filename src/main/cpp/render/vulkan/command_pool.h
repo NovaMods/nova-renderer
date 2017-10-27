@@ -14,8 +14,8 @@
 
 namespace nova {
     struct command_buffer {
-        VkCommandBuffer buffer;
-        VkFence fences[NUM_FRAME_DATA];
+        vk::CommandBuffer buffer;
+        vk::Fence fences[NUM_FRAME_DATA];
     };
 
     /*!

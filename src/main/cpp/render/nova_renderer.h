@@ -162,6 +162,8 @@ namespace nova {
         void end_frame();
 
         void begin_frame();
+
+        render_context* context;
     };
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos);

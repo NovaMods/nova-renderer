@@ -51,6 +51,8 @@ namespace nova {
 
         vk::SemaphoreCreateInfo create_info = {};
         swapchain_image_acquire_semaphore = render_context::instance.device.createSemaphore(create_info);
+
+        context = &render_context::instance;
     }
 
     nova_renderer::~nova_renderer() {
@@ -67,6 +69,11 @@ namespace nova {
         profiler::log_all_profiler_data();
 
         begin_frame();
+
+        auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
+
+        vk::CommandBufferBeginInfo cmd_buf_begin_info = {};
+        main_command_buffer.buffer.begin(cmd_buf_begin_info);
 
         player_camera.recalculate_frustum();
 
@@ -95,6 +102,15 @@ namespace nova {
         // optimization - I'd have to watch out for when the user hides the GUI, though. I can just re-render the
         // stencil buffer when the GUI screen changes
         render_gui();
+
+        main_command_buffer.buffer.end();
+
+        vk::SubmitInfo submit_info = {};
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &main_command_buffer.buffer;
+        submit_info.pWaitSemaphores = &swapchain_image_acquire_semaphore;
+        submit_info.waitSemaphoreCount = 1;
+        context->graphics_queue.submit(1, &submit_info, vk::Fence());
 
         end_frame();
     }
