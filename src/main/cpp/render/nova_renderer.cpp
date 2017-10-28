@@ -110,7 +110,7 @@ namespace nova {
         submit_info.pCommandBuffers = &main_command_buffer.buffer;
         submit_info.pWaitSemaphores = &swapchain_image_acquire_semaphore;
         submit_info.waitSemaphoreCount = 1;
-        context->graphics_queue.submit(1, &submit_info, vk::Fence());
+        // context->graphics_queue.submit(1, &submit_info, main_command_buffer.fences[0]);
 
         end_frame();
     }

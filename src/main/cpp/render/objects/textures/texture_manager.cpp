@@ -79,7 +79,7 @@ namespace nova {
                            << ", but I need a number in [1,4]";
         }
 
-        texture.set_data(pixel_data.data(), dimensions, vk::Format::eR8G8B8A8Snorm);
+        texture.set_data(pixel_data.data(), dimensions, vk::Format::eR8G8B8A8Unorm);
 
         atlases[texture_name] = texture;
         LOG(DEBUG) << "Texture atlas " << texture_name << " is OpenGL texture " << texture.get_gl_name();

@@ -168,6 +168,9 @@ namespace nova {
                 present_family_idx = present_idx;
                 physical_device = gpu.device;
                 this->gpu = gpu;
+                LOG(INFO) << "Selected graphics device " << gpu.props.deviceName;
+                LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageDimension2D << " texels in a 2D texture";
+                LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageArrayLayers << " array layers";
                 return;
             }
         }
@@ -386,7 +389,7 @@ namespace nova {
             }
         }
 
-        LOG(FATAL) << "Failed to fine a suitable depth buffer format";
+        LOG(FATAL) << "Failed to find a suitable depth buffer format";
     }
 
     render_context::~render_context() {

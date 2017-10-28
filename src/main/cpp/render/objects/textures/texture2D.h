@@ -79,7 +79,7 @@ namespace nova {
          * \param dimensions The dimensions of this texture
          * \param format The format of the texture data
          */
-        void set_data(void* pixel_data, glm::u32vec2 &dimensions, vk::Format format, GLenum type = GL_FLOAT, GLenum internal_format = GL_RGBA);
+        void set_data(void* pixel_data, glm::u32vec2 &dimensions, vk::Format format);
 
         void set_filtering_parameters(texture_filtering_params &params);
 
@@ -118,6 +118,7 @@ namespace nova {
 
         vk::Image image;
         vk::ImageView image_view;
+        VmaAllocation allocation;
     };
 }
 
