@@ -26,31 +26,29 @@ namespace nova {
         image_create_info.usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
         image_create_info.queueFamilyIndexCount = 1;
         image_create_info.pQueueFamilyIndices = &context.graphics_family_idx;
-        image_create_info.initialLayout = vk::ImageLayout::eTransferDstOptimal;
+        image_create_info.initialLayout = vk::ImageLayout::eUndefined;
 
         VmaAllocationCreateInfo alloc_create_info = {};
         alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        auto props = context.physical_device.getFormatProperties(format);
-        auto masked_features = props.linearTilingFeatures & vk::FormatFeatureFlagBits::eTransferDstKHR;
-        if(masked_features == vk::FormatFeatureFlagBits::eTransferDstKHR) {
-            LOG(INFO) << "Desired format is supported as a transfer source";
-        } else {
-            LOG(ERROR) << "Desired format is not supported as a transfer source :(";
-        }
+        vmaCreateImage(context.allocator, reinterpret_cast<VkImageCreateInfo*>(&image_create_info), &alloc_create_info, reinterpret_cast<VkImage*>(&vk_image), &allocation, nullptr);
 
-        VkImage vk_image = image;
-        vmaCreateImage(context.allocator, reinterpret_cast<VkImageCreateInfo*>(&image_create_info), &alloc_create_info, &vk_image, &allocation, nullptr);
-        image = vk_image;
-
-        if(vk_image == VK_NULL_HANDLE) {
+        if((VkImage)image == VK_NULL_HANDLE) {
             LOG(FATAL) << "Could not create image";
         }
+
+        vk::ImageSubresourceRange subresource_range = {};
+        subresource_range.layerCount = 1;
+        subresource_range.baseArrayLayer = 0;
+        subresource_range.levelCount = 1;
+        subresource_range.baseMipLevel = 0;
+        subresource_range.aspectMask = vk::ImageAspectFlagBits::eColor;
 
         vk::ImageViewCreateInfo img_view_create_info = {};
         img_view_create_info.image = image;
         img_view_create_info.viewType = vk::ImageViewType::e2D;
         img_view_create_info.format = format;
+        img_view_create_info.subresourceRange = subresource_range;
 
         image_view = context.device.createImageView(img_view_create_info);
 
