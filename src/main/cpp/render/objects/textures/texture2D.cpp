@@ -114,7 +114,7 @@ namespace nova {
 
         VmaAllocationCreateInfo staging_buffer_allocation_info = {};
         staging_buffer_allocation_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-        staging_buffer_allocation_info.flags = VMA_ALLOCATION_CREATE_PERSISTENT_MAP_BIT;
+        staging_buffer_allocation_info.flags = 0;
 
         vmaCreateBuffer(context.allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
                         reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
@@ -126,6 +126,8 @@ namespace nova {
 
         transfer_image_format(image, format, layout, vk::ImageLayout::eTransferDstOptimal);
         copy_buffer_to_image(staging_buffer, image, get_width(), get_height());
+        transfer_image_format(image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+        layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
         vmaDestroyBuffer(context.allocator, staging_buffer, staging_buffer_allocation);
     }
@@ -148,7 +150,32 @@ namespace nova {
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
 
-        command_buffer.buffer.pipelineBarrier(0, 0, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        // This block seems weirdly hardcoded and not scalable but idk
+        vk::PipelineStageFlags source_stage;
+        vk::PipelineStageFlags destination_stage;
+        if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eTransferDstOptimal) {
+            barrier.srcAccessMask = vk::AccessFlags();
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+
+            source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destination_stage = vk::PipelineStageFlagBits::eTransfer;
+        } else if (old_layout == vk::ImageLayout::eTransferDstOptimal && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal) {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+            source_stage = vk::PipelineStageFlagBits::eTransfer;
+            destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
+        } else {
+            throw std::invalid_argument("unsupported layout transition!");
+        }
+
+
+        command_buffer.buffer.pipelineBarrier(
+                source_stage, destination_stage,
+                vk::DependencyFlags(),
+                0, nullptr,
+                0, nullptr,
+                1, &barrier);
 
         command_buffer.end_as_single_command();
     }
@@ -169,8 +196,8 @@ namespace nova {
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = 1;
 
-        region.imageOffset = {0, 0, 0};
-        region.imageExtent = {width, height, 1};
+        region.imageOffset = vk::Offset3D{0, 0, 0};
+        region.imageExtent = vk::Extent3D{width, height, 1};
 
         command_buffer.buffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
 
