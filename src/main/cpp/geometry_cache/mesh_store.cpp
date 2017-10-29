@@ -48,7 +48,7 @@ namespace nova {
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
         render_object gui = {};
-        gui.geometry = std::make_unique<gl_mesh>(cur_screen_buffer);
+        gui.geometry = std::make_unique<vk_mesh>(cur_screen_buffer);
         gui.type = geometry_type::gui;
         gui.name = "gui";
         gui.color_texture = command->atlas_name;
@@ -75,7 +75,7 @@ namespace nova {
             const auto& def = std::get<1>(entry);
 
             render_object obj = {};
-            obj.geometry = std::make_unique<gl_mesh>(def);
+            obj.geometry = std::make_unique<vk_mesh>(def);
             obj.type = geometry_type::block;
             obj.name = "chunk";
             obj.parent_id = def.id;

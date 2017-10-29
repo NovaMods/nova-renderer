@@ -2091,9 +2091,6 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/camera.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/gl_mesh.cpp.obj">
-			<Option target="nova-renderer"/>
-		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/render_object.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
@@ -2116,6 +2113,9 @@
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/uniform_buffers/uniform_buffers_definitions.cpp.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/vk_mesh.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/renderpass_manager.cpp.obj">
@@ -2252,14 +2252,6 @@
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/gl_mesh.cpp">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/gl_mesh.h">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/render_object.cpp">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
@@ -2325,6 +2317,14 @@
 			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/uniform_buffers/uniform_buffers_definitions.cpp">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/vk_mesh.cpp">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/vk_mesh.h">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>

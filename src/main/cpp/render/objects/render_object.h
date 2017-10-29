@@ -12,7 +12,7 @@
 #include <memory>
 #include <optional.hpp>
 
-#include "gl_mesh.h"
+#include "vk_mesh.h"
 #include "../../utils/smart_enum.h"
 #include "textures/texture_manager.h"
 
@@ -70,7 +70,7 @@ namespace nova {
          */
         std::string name;
 
-        std::unique_ptr<gl_mesh> geometry;
+        std::unique_ptr<vk_mesh> geometry;
 
         std::string color_texture;
         std::experimental::optional<std::string> normalmap;

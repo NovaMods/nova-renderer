@@ -89,7 +89,7 @@ namespace nova {
         //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_gbuffer_ubos();
 
-        render_gbuffers();
+        render_gbuffers(main_command_buffer.buffer);
 
         render_composite_passes();
 
@@ -119,14 +119,14 @@ namespace nova {
         LOG(TRACE) << "Rendering shadow pass";
     }
 
-    void nova_renderer::render_gbuffers() {
+    void nova_renderer::render_gbuffers(vk::CommandBuffer buffer) {
         LOG(TRACE) << "Rendering gbuffer pass";
 
         // TODO: Get shaders with gbuffers prefix, draw transparents last, etc
         auto& terrain_shader = loaded_shaderpack->get_shader("gbuffers_terrain");
-        render_shader(terrain_shader);
+        render_shader(buffer, terrain_shader);
         auto& water_shader = loaded_shaderpack->get_shader("gbuffers_water");
-        render_shader(water_shader);
+        render_shader(buffer, water_shader);
     }
 
     void nova_renderer::render_composite_passes() {
@@ -243,7 +243,7 @@ namespace nova {
         instance.release();
     }
 
-    void nova_renderer::render_shader(gl_shader_program &shader) {
+    void nova_renderer::render_shader(vk::CommandBuffer buffer, gl_shader_program &shader) {
         LOG(TRACE) << "Rendering everything for shader " << shader.get_name();
         profiler::start(shader.get_name());
         shader.bind();
@@ -276,8 +276,8 @@ namespace nova {
                 upload_model_matrix(geom, shader);
 
                 profiler::start("drawcall");
-                geom.geometry->set_active();
-                geom.geometry->draw();
+                geom.geometry->set_active(buffer);
+                geom.geometry->draw(buffer);
                 profiler::end("drawcall");
             } else {
                 LOG(TRACE) << "Skipping some geometry since it has no data";

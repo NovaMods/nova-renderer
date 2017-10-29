@@ -136,7 +136,7 @@ namespace nova {
 
         void render_shadow_pass();
 
-        void render_gbuffers();
+        void render_gbuffers(vk::CommandBuffer buffer);
 
         void render_composite_passes();
 
@@ -151,7 +151,7 @@ namespace nova {
          *
          * \param shader The shader to render things with
          */
-        void render_shader(gl_shader_program& shader);
+        void render_shader(vk::CommandBuffer shader, gl_shader_program &program);
 
         inline void upload_gui_model_matrix(gl_shader_program &program);
 

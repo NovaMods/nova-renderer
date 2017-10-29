@@ -8,54 +8,38 @@
 
 #include <glad/glad.h>
 #include <vector>
+#include <vulkan/vulkan.hpp>
+#include <vk_mem_alloc.h>
 #include "../../geometry_cache/mesh_definition.h"
 #include "../../data_loading/physics/aabb.h"
+#include "../vulkan/render_context.h"
 
 namespace nova {
-    /*!
-     * \brief Specifies how the data in thie buffer will be used
-     */
-    enum class usage {
-        /*!
-         * \brief The buffer will be updated once and drawn many times
-         */
-                static_draw,
-
-        /*!
-         * \brief The buffer will be updated many times and drawn many times
-         */
-                dynamic_draw,
-    };
-
     /*!
      * \brief Represents a buffer which holds vertex information
      *
      * Buffers of this type can hold positions, positions and texture coordinates, or positions, texture coordinates,
      * lightmap coordinates, normals, and tangents.
      */
-    class gl_mesh {
+    class vk_mesh {
     public:
-        gl_mesh();
+        vk_mesh();
 
-        explicit gl_mesh(const mesh_definition &definition);
+        explicit vk_mesh(const mesh_definition &definition);
 
-        ~gl_mesh();
-
-        void create();
+        ~vk_mesh();
 
         void destroy();
 
         /*!
          * \brief Sets the given data as this vertex buffer's data, and uploads that data to the GPU
          *
-         * \param data The interleaved vertex data
+         * \param vertex_data The interleaved vertex data
          * \param data_format The format of the data (\see format)
          */
-        void set_data(std::vector<int> data, format data_format, usage data_usage);
+        void set_data(std::vector<int> vertex_data, format data_format, std::vector<int> index_data);
 
-        void set_index_array(std::vector<int> data, usage data_usage);
-
-        void set_active() const;
+        void set_active(vk::CommandBuffer command) const;
 
         void draw() const;
 
@@ -71,10 +55,11 @@ namespace nova {
     private:
         format data_format;
 
-        GLuint vertex_buffer;
-        GLuint indices;
+        vk::Buffer vertex_buffer;
+        VmaAllocation vertex_alloc;
 
-        GLenum translate_usage(usage data_usage) const;
+        vk::Buffer indices;
+        VmaAllocation indices_alloc;
 
         /*!
          * \brief Enables all the proper OpenGL vertex attributes for the given format
@@ -83,8 +68,11 @@ namespace nova {
          */
         void enable_vertex_attributes(format data_format);
 
-        unsigned int vertex_array;
-        unsigned int num_indices;
+        uint32_t num_indices;
+
+        void upload_vertex_data(std::vector<int> &vertex_data, const nova::render_context &context);
+
+        void upload_index_data(std::vector<int> index_data, render_context &context);
     };
 }
 

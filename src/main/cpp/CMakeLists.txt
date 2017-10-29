@@ -73,7 +73,7 @@ set(NOVA_HEADERS
 
         render/objects/shaders/gl_shader_program.h
         render/objects/uniform_buffers/gl_uniform_buffer.h
-        render/objects/gl_mesh.h
+        render/objects/vk_mesh.h
         render/objects/textures/texture2D.h
 
         render/windowing/glfw_vk_window.h
@@ -123,7 +123,7 @@ set(NOVA_SOURCE
         input/InputHandler.cpp
 
         render/objects/shaders/gl_shader_program.cpp
-        render/objects/gl_mesh.cpp
+        render/objects/vk_mesh.cpp
         render/objects/textures/texture2D.cpp
 
         render/windowing/glfw_vk_window.cpp
