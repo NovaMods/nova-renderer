@@ -20,8 +20,8 @@ const int CHUNK_DEPTH = 16;
  */
 struct mc_atlas_texture {
     uint32_t width;
-	uint32_t height;
-	uint32_t num_components;
+    uint32_t height;
+    uint32_t num_components;
     unsigned char * texture_data;
 	const char * name;
 };
