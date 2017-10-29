@@ -29,26 +29,14 @@ namespace nova {
         filter texture_upsample_filter;
         filter texture_downsample_filter;
 
-        int num_mipmap_levels;
         int anisotropic_level;
     };
 
-    class texture_creation_exception : public std::exception {
-    };
-
-    class texture_bind_exception : public std::exception {
-    };
-
-/*!
- * \brief Represents a two-dimensional OpenGL texture
- */
+    /*!
+     * \brief Represents a two-dimensional OpenGL texture
+     */
     class texture2D {
     public:
-        /*!
-         * \brief Instantiates a new texture2D, allocating a new texture object on the GPU
-         */
-        texture2D();
-
         /*!
          * \copydoc itexture::bind(unsigned int)
          *
@@ -65,9 +53,9 @@ namespace nova {
          *
          * \throws texture_bind_exception if the texture can't be bound
          */
-        virtual void bind(unsigned int binding);
+        void bind(unsigned int binding);
 
-        virtual void unbind();
+        void unbind();
 
         /*!
          * \brief Sets this texture's data to the given parameters
@@ -79,41 +67,34 @@ namespace nova {
          * \param dimensions The dimensions of this texture
          * \param format The format of the texture data
          */
-        void set_data(void* pixel_data, glm::u32vec2 &dimensions, vk::Format format);
+        void set_data(void* pixel_data, vk::Extent2D &dimensions, vk::Format format);
 
         void set_filtering_parameters(texture_filtering_params &params);
 
-        /*!
-         * \brief Returns the width of this texture
-         *
-         * \return The width of this texture
-         */
-        uint32_t get_width();
-
-        /*!
-         * \brief returns the height of this texture
-         *
-         * \return The height of this texture
-         */
-        uint32_t get_height();
+        vk::Extent2D& get_size();
 
         /*!
          * \brief Returns the format of this texture, as assigned in the constructor
          *
          * \return The format of this texture
          */
-        GLint get_format();
+        vk::Format& get_format();
 
         /*!
-         * \brief Returns the OpenGL identifier used to identify this texture
+         * \brief Returns the Vulkan identifier used to identify this texture
          */
-        const unsigned int get_gl_name();
+        const vk::Image& get_vk_image();
 
         void set_name(std::string name);
         const std::string& get_name() const;
 
+        /*!
+         * \brief Destroys the Vulkan resources associated with this texture
+         */
+        void destroy();
+
     private:
-        glm::u32vec2 size;
+        vk::Extent2D size;
         std::string name;
 
         vk::Image image;

@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     }
 
     auto test_tex = nova::texture2D{};
-    auto size = glm::u32vec2{4096, 2048};
+    auto size = vk::Extent2D{4096, 2048};
     test_tex.set_data(nullptr, size, vk::Format::eR8G8B8A8Unorm);
 
     nova::nova_renderer::instance->render_frame();

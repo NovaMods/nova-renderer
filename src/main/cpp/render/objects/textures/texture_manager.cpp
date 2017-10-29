@@ -26,13 +26,11 @@ namespace nova {
             // Nothing to deallocate, let's just return
             return;
         }
-        // Gather all the textures into a list so we only need one call to delete them
-        std::vector<GLuint> texture_ids(atlases.size());
-        for(auto tex : atlases) {
-            texture_ids.push_back(tex.second.get_gl_name());
+
+        for(auto& tex : atlases) {
+            tex.second.destroy();
         }
 
-        // glDeleteTextures((GLsizei) texture_ids.size(), texture_ids.data());
 
         atlases.clear();
         locations.clear();
@@ -57,32 +55,12 @@ namespace nova {
             pixel_data[i] = float(new_texture.texture_data[i]) / 255.0f;
         }
 
-        auto dimensions = glm::u32vec2{new_texture.width, new_texture.height};
-
-        GLenum format = GL_RGB;
-        switch(new_texture.num_components) {
-            case 1:
-                format = GL_RED;
-                break;
-            case 2:
-                format = GL_RG;
-                break;
-            case 3:
-                format = GL_RGB;
-                break;
-            case 4:
-                format = GL_RGBA;
-                break;
-            default:
-                LOG(ERROR) << "Unsupported number of components. You have " << new_texture.num_components
-                           << " components "
-                           << ", but I need a number in [1,4]";
-        }
+        auto dimensions = vk::Extent2D{new_texture.width, new_texture.height};
 
         texture.set_data(pixel_data.data(), dimensions, vk::Format::eR8G8B8A8Unorm);
 
         atlases[texture_name] = texture;
-        LOG(DEBUG) << "Texture atlas " << texture_name << " is OpenGL texture " << texture.get_gl_name();
+        LOG(DEBUG) << "Texture atlas " << texture_name << " is Vulkan texture " << texture.get_vk_image();
     }
 
     void texture_manager::add_texture_location(mc_texture_atlas_location &location) {

@@ -9,18 +9,17 @@
 #include "../../../utils/utils.h"
 
 namespace nova {
-    texture2D::texture2D() : size(0) {
-    }
-
-    void texture2D::set_data(void* pixel_data, glm::u32vec2 &dimensions, vk::Format format) {
+    void texture2D::set_data(void* pixel_data, vk::Extent2D &dimensions, vk::Format format) {
         this->format = format;
+        size = dimensions;
+
         auto& context = render_context::instance;
         vk::ImageCreateInfo image_create_info = {};
         image_create_info.samples = vk::SampleCountFlagBits::e1;
         image_create_info.imageType = vk::ImageType::e2D;
         image_create_info.mipLevels = 1;
         image_create_info.arrayLayers = 1;
-        image_create_info.extent = vk::Extent3D{dimensions.x, dimensions.y, 1};
+        image_create_info.extent = vk::Extent3D{dimensions.width, dimensions.height, 1};
         image_create_info.tiling = vk::ImageTiling::eOptimal;
         image_create_info.format = format;
         image_create_info.usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
@@ -71,24 +70,20 @@ namespace nova {
         //current_location = -1;
     }
 
-    uint32_t texture2D::get_width() {
-        return size.x;
+    vk::Extent2D& texture2D::get_size() {
+        return size;
     }
 
-    uint32_t texture2D::get_height() {
-        return size.y;
-    }
-
-    GLint texture2D::get_format() {
-        return 0;
+    vk::Format& texture2D::get_format() {
+        return format;
     }
 
     void texture2D::set_filtering_parameters(texture_filtering_params &params) {
         // TODO
     }
 
-    const unsigned int texture2D::get_gl_name() {
-        return 0;
+    const vk::Image& texture2D::get_vk_image() {
+        return image;
     }
 
     void texture2D::set_name(const std::string name) {
@@ -102,7 +97,7 @@ namespace nova {
     void texture2D::upload_data_with_staging_buffer(render_context &context, void *data, vk::Extent3D image_size) {
         vk::Buffer staging_buffer;
         VmaAllocation staging_buffer_allocation;
-        auto size = image_size.width * image_size.height * image_size.depth * 4;
+        auto buffer_size = image_size.width * image_size.height * image_size.depth * 4;
 
         vk::BufferCreateInfo buffer_create_info = {};
         buffer_create_info.queueFamilyIndexCount = 1;
@@ -110,7 +105,7 @@ namespace nova {
         buffer_create_info.usage = vk::BufferUsageFlagBits::eTransferSrc;
 
         // A standard image from disk is 32 bpp in Nova. I'm going to hate myself when Joey wants something else
-        buffer_create_info.size = size;
+        buffer_create_info.size = buffer_size;
 
         VmaAllocationCreateInfo staging_buffer_allocation_info = {};
         staging_buffer_allocation_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
@@ -121,15 +116,20 @@ namespace nova {
 
         void* mapped_data;
         vmaMapMemory(context.allocator, staging_buffer_allocation, &mapped_data);
-        std::memcpy(mapped_data, data, size);
+        std::memcpy(mapped_data, data, buffer_size);
         vmaUnmapMemory(context.allocator, staging_buffer_allocation);
 
         transfer_image_format(image, format, layout, vk::ImageLayout::eTransferDstOptimal);
-        copy_buffer_to_image(staging_buffer, image, get_width(), get_height());
+        copy_buffer_to_image(staging_buffer, image, size.width, size.height);
         transfer_image_format(image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
         layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
         vmaDestroyBuffer(context.allocator, staging_buffer, staging_buffer_allocation);
+    }
+
+    void texture2D::destroy() {
+        auto& context = render_context::instance;
+        vmaDestroyImage(context.allocator, image, allocation);
     }
 
     void transfer_image_format(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout) {
