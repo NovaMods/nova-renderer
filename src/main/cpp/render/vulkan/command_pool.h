@@ -16,6 +16,10 @@ namespace nova {
     struct command_buffer {
         vk::CommandBuffer buffer;
         vk::Fence fences[NUM_FRAME_DATA];
+        uint32_t pool_idx;
+
+        void begin_as_single_commend();
+        void end_as_single_command();
     };
 
     /*!
@@ -37,6 +41,12 @@ namespace nova {
          * \return A command buffer
          */
         command_buffer get_command_buffer(uint8_t thread_idx);
+
+        /*!
+         * \brief Frees the specified command buffer
+         * \param buf The command buffer to free
+         */
+        void free(command_buffer& buf);
     private:
         vk::Device device;
 

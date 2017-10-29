@@ -10,10 +10,10 @@
 
 namespace nova {
     texture2D::texture2D() : size(0) {
-        //glGenTextures(1, &gl_name);
     }
 
     void texture2D::set_data(void* pixel_data, glm::u32vec2 &dimensions, vk::Format format) {
+        this->format = format;
         auto& context = render_context::instance;
         vk::ImageCreateInfo image_create_info = {};
         image_create_info.samples = vk::SampleCountFlagBits::e1;
@@ -21,7 +21,7 @@ namespace nova {
         image_create_info.mipLevels = 1;
         image_create_info.arrayLayers = 1;
         image_create_info.extent = vk::Extent3D{dimensions.x, dimensions.y, 1};
-        image_create_info.tiling = vk::ImageTiling::eLinear;    // Easier to cram data into I think?
+        image_create_info.tiling = vk::ImageTiling::eOptimal;
         image_create_info.format = format;
         image_create_info.usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
         image_create_info.queueFamilyIndexCount = 1;
@@ -29,9 +29,10 @@ namespace nova {
         image_create_info.initialLayout = vk::ImageLayout::eUndefined;
 
         VmaAllocationCreateInfo alloc_create_info = {};
-        alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        alloc_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        vmaCreateImage(context.allocator, reinterpret_cast<VkImageCreateInfo*>(&image_create_info), &alloc_create_info, reinterpret_cast<VkImage*>(&vk_image), &allocation, nullptr);
+        vmaCreateImage(context.allocator, reinterpret_cast<VkImageCreateInfo*>(&image_create_info), &alloc_create_info,
+                       reinterpret_cast<VkImage*>(&image), &allocation, nullptr);
 
         if((VkImage)image == VK_NULL_HANDLE) {
             LOG(FATAL) << "Could not create image";
@@ -51,18 +52,12 @@ namespace nova {
         img_view_create_info.subresourceRange = subresource_range;
 
         image_view = context.device.createImageView(img_view_create_info);
+        layout = image_create_info.initialLayout;
 
         LOG(DEBUG) << "Created new image";
 
-        GLint previous_texture;
-        /*glGetIntegerv(GL_TEXTURE_BINDING_2D, &previous_texture);
-        glBindTexture(GL_TEXTURE_2D, gl_name);
-        glTexImage2D(GL_TEXTURE_2D, 0, internal_format, dimensions.x, dimensions.y, 0, format, type, pixel_data);
-
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        
-        glBindTexture(GL_TEXTURE_2D, (GLuint) previous_texture);*/
+        // Create a staging buffer and use that to upload the data
+        upload_data_with_staging_buffer(context, pixel_data, image_create_info.extent);
     }
 
     void texture2D::bind(unsigned int binding) {
@@ -76,11 +71,11 @@ namespace nova {
         //current_location = -1;
     }
 
-    int texture2D::get_width() {
+    uint32_t texture2D::get_width() {
         return size.x;
     }
 
-    int texture2D::get_height() {
+    uint32_t texture2D::get_height() {
         return size.y;
     }
 
@@ -102,5 +97,83 @@ namespace nova {
 
     const std::string &texture2D::get_name() const {
         return name;
+    }
+
+    void texture2D::upload_data_with_staging_buffer(render_context &context, void *data, vk::Extent3D image_size) {
+        vk::Buffer staging_buffer;
+        VmaAllocation staging_buffer_allocation;
+        auto size = image_size.width * image_size.height * image_size.depth * 4;
+
+        vk::BufferCreateInfo buffer_create_info = {};
+        buffer_create_info.queueFamilyIndexCount = 1;
+        buffer_create_info.pQueueFamilyIndices = &context.graphics_family_idx;
+        buffer_create_info.usage = vk::BufferUsageFlagBits::eTransferSrc;
+
+        // A standard image from disk is 32 bpp in Nova. I'm going to hate myself when Joey wants something else
+        buffer_create_info.size = size;
+
+        VmaAllocationCreateInfo staging_buffer_allocation_info = {};
+        staging_buffer_allocation_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        staging_buffer_allocation_info.flags = VMA_ALLOCATION_CREATE_PERSISTENT_MAP_BIT;
+
+        vmaCreateBuffer(context.allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
+                        reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
+
+        void* mapped_data;
+        vmaMapMemory(context.allocator, staging_buffer_allocation, &mapped_data);
+        std::memcpy(mapped_data, data, size);
+        vmaUnmapMemory(context.allocator, staging_buffer_allocation);
+
+        transfer_image_format(image, format, layout, vk::ImageLayout::eTransferDstOptimal);
+        copy_buffer_to_image(staging_buffer, image, get_width(), get_height());
+
+        vmaDestroyBuffer(context.allocator, staging_buffer, staging_buffer_allocation);
+    }
+
+    void transfer_image_format(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout) {
+        auto& context = render_context::instance;
+        auto command_buffer = context.command_buffer_pool->get_command_buffer(0);
+
+        command_buffer.begin_as_single_commend();
+
+        vk::ImageMemoryBarrier barrier = {};
+        barrier.oldLayout = old_layout;
+        barrier.newLayout = new_layout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        command_buffer.buffer.pipelineBarrier(0, 0, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+        command_buffer.end_as_single_command();
+    }
+
+    void copy_buffer_to_image(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height) {
+        auto& context = render_context::instance;
+        auto command_buffer = context.command_buffer_pool->get_command_buffer(0);
+
+        command_buffer.begin_as_single_commend();
+
+        vk::BufferImageCopy region = {};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+
+        region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+
+        region.imageOffset = {0, 0, 0};
+        region.imageExtent = {width, height, 1};
+
+        command_buffer.buffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
+
+        command_buffer.end_as_single_command();
     }
 }

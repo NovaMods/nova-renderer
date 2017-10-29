@@ -88,14 +88,14 @@ namespace nova {
          *
          * \return The width of this texture
          */
-        int get_width();
+        uint32_t get_width();
 
         /*!
          * \brief returns the height of this texture
          *
          * \return The height of this texture
          */
-        int get_height();
+        uint32_t get_height();
 
         /*!
          * \brief Returns the format of this texture, as assigned in the constructor
@@ -113,13 +113,32 @@ namespace nova {
         const std::string& get_name() const;
 
     private:
-        glm::ivec2 size;
+        glm::u32vec2 size;
         std::string name;
 
         vk::Image image;
         vk::ImageView image_view;
+        vk::Format format;
+        vk::ImageLayout layout;
         VmaAllocation allocation;
+
+        void upload_data_with_staging_buffer(render_context &context, void *data, vk::Extent3D image_size);
     };
+
+    /*!
+     * \brief Transfers an image from one format to another
+     *
+     * This function creates a command buffer, submits it, and blocks until the command buffer is finished executing.
+     * DO NOT use it on the critical path
+     *
+     * \param image The image to transition
+     * \param format The format of the image
+     * \param old_layout The current layout of the image
+     * \param new_layout The desired layout of the image
+     */
+    void transfer_image_format(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout);
+
+    void copy_buffer_to_image(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height);
 }
 
 #endif //RENDERER_TEXTURE_H
