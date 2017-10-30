@@ -177,6 +177,8 @@ namespace nova {
         }
     }
 
+    std::vector<uint32_t> translate_glsl_tp_spirv(std::vector<shader_line> shader_lines);
+
     std::vector<shader_line> load_shader_file(const std::string &shader_path, const std::vector<std::string> &extensions) {
         for(auto &extension : extensions) {
             auto full_shader_path = shader_path + extension;
@@ -185,13 +187,20 @@ namespace nova {
             std::ifstream stream(full_shader_path, std::ios::in);
             if(stream.good()) {
                 LOG(INFO) << "Loading shader file " << full_shader_path;
-                return read_shader_stream(stream, full_shader_path);
+                auto lines = read_shader_stream(stream, full_shader_path);
+                return translate_glsl_tp_spirv(lines);
             } else {
                 LOG(WARNING) << "Could not read file " << full_shader_path;
             }
         }
 
         throw resource_not_found(shader_path);
+    }
+
+    std::vector<uint32_t> translate_glsl_tp_spirv(std::vector<shader_line> shader_lines) {
+
+
+        return std::vector<shader_line>();
     }
 
     std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path) {

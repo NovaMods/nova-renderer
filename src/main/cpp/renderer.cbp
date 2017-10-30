@@ -5,7 +5,7 @@
 		<Option title="renderer"/>
 		<Option makefile_is_custom="1"/>
 		<Option compiler="gcc"/>
-		<Option virtualFolders="CMake Files\;CMake Files\3rdparty\;CMake Files\3rdparty\easyloggingpp\;CMake Files\3rdparty\glfw\;CMake Files\3rdparty\glfw\CMake\;CMake Files\3rdparty\glfw\CMake\modules\;CMake Files\3rdparty\glfw\src\;CMake Files\3rdparty\glm\;CMake Files\3rdparty\glm\cmake\;CMake Files\3rdparty\glm\glm\;CMake Files\3rdparty\glm\test\;CMake Files\3rdparty\glm\test\bug\;CMake Files\3rdparty\glm\test\core\;CMake Files\3rdparty\glm\test\gtc\;CMake Files\3rdparty\glm\test\gtx\;CMake Files\3rdparty\googletest\;CMake Files\3rdparty\googletest\googlemock\;CMake Files\3rdparty\googletest\googletest\;CMake Files\3rdparty\googletest\googletest\cmake\;CMake Files\3rdparty\miniz\;CMake Files\3rdparty\json\;CMake Files\3rdparty\json\cmake\;CMake Files\3rdparty\json\test\;CMake Files\3rdparty\optional\;"/>
+		<Option virtualFolders="CMake Files\;CMake Files\3rdparty\;CMake Files\3rdparty\easyloggingpp\;CMake Files\3rdparty\glfw\;CMake Files\3rdparty\glfw\CMake\;CMake Files\3rdparty\glfw\CMake\modules\;CMake Files\3rdparty\glfw\src\;CMake Files\3rdparty\glm\;CMake Files\3rdparty\glm\cmake\;CMake Files\3rdparty\glm\glm\;CMake Files\3rdparty\glm\test\;CMake Files\3rdparty\glm\test\bug\;CMake Files\3rdparty\glm\test\core\;CMake Files\3rdparty\glm\test\gtc\;CMake Files\3rdparty\glm\test\gtx\;CMake Files\3rdparty\glslang\;CMake Files\3rdparty\glslang\External\;CMake Files\3rdparty\glslang\glslang\;CMake Files\3rdparty\glslang\glslang\OSDependent\;CMake Files\3rdparty\glslang\glslang\OSDependent\Windows\;CMake Files\3rdparty\glslang\OGLCompilersDLL\;CMake Files\3rdparty\glslang\StandAlone\;CMake Files\3rdparty\glslang\SPIRV\;CMake Files\3rdparty\glslang\hlsl\;CMake Files\3rdparty\glslang\gtests\;CMake Files\3rdparty\googletest\;CMake Files\3rdparty\googletest\googlemock\;CMake Files\3rdparty\googletest\googletest\;CMake Files\3rdparty\googletest\googletest\cmake\;CMake Files\3rdparty\miniz\;CMake Files\3rdparty\json\;CMake Files\3rdparty\json\cmake\;CMake Files\3rdparty\json\test\;CMake Files\3rdparty\optional\;"/>
 		<Build>
 			<Target title="all">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
@@ -47,6 +47,8 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -81,6 +83,8 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -117,6 +121,8 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -153,6 +159,8 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -198,6 +206,8 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -233,6 +243,8 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
@@ -1027,6 +1039,560 @@
 					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Experimental">
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 Experimental"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Continuous">
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 Continuous"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Nightly">
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 Nightly"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glslang">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/libglslangd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Makefile&quot;  VERBOSE=1 glslang"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glslang/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/libglslangd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Makefile&quot;  VERBOSE=1 glslang/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="OSDependent">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/libOSDependentd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/Makefile&quot;  VERBOSE=1 OSDependent"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="OSDependent/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/libOSDependentd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/Makefile&quot;  VERBOSE=1 OSDependent/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="OGLCompiler">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/libOGLCompilerd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/Makefile&quot;  VERBOSE=1 OGLCompiler"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="OGLCompiler/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/libOGLCompilerd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/Makefile&quot;  VERBOSE=1 OGLCompiler/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glslang-default-resource-limits">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/libglslang-default-resource-limitsd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 glslang-default-resource-limits"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glslang-default-resource-limits/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/libglslang-default-resource-limitsd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 glslang-default-resource-limits/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glslangValidator">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/glslangValidator.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 glslangValidator"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glslangValidator/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/glslangValidator.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 glslangValidator/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="spirv-remap">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/spirv-remap.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 spirv-remap"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="spirv-remap/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/spirv-remap.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 spirv-remap/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SPIRV">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/libSPIRVd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 SPIRV"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SPIRV/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/libSPIRVd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 SPIRV/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SPVRemapper">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/libSPVRemapperd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 SPVRemapper"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SPVRemapper/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/libSPVRemapperd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 SPVRemapper/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="HLSL">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/libHLSLd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/Makefile&quot;  VERBOSE=1 HLSL"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="HLSL/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/libHLSLd.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/Makefile&quot;  VERBOSE=1 HLSL/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glslangtests">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/glslangtests.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DGLSLANG_TEST_DIRECTORY=&quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/../Test&quot;"/>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Makefile&quot;  VERBOSE=1 glslangtests"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="glslangtests/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/glslangtests.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DGLSLANG_TEST_DIRECTORY=&quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/../Test&quot;"/>
+					<Add option="-DAMD_EXTENSIONS"/>
+					<Add option="-DNV_EXTENSIONS"/>
+					<Add option="-DENABLE_HLSL"/>
+					<Add option="-DGLSLANG_OSINCLUDE_WIN32"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/6.2.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Makefile&quot;  VERBOSE=1 glslangtests/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-6.2.0-posix-seh-rt_v5-rev1/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 		</Build>
@@ -1886,6 +2452,368 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/util/glm.natvis">
 			<Option target="glm_dummy"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/InitializeDll.cpp">
+			<Option target="OGLCompiler"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/InitializeDll.h">
+			<Option target="OGLCompiler"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/GLSL.ext.AMD.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/GLSL.ext.KHR.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/GLSL.ext.NV.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/GLSL.std.450.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/GlslangToSpv.cpp">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/GlslangToSpv.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/InReadableOrder.cpp">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Logger.cpp">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/Logger.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/SPVRemapper.cpp">
+			<Option target="SPVRemapper"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/SPVRemapper.h">
+			<Option target="SPVRemapper"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/SpvBuilder.cpp">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/SpvBuilder.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/bitutils.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/disassemble.cpp">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/disassemble.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/doc.cpp">
+			<Option target="SPIRV"/>
+			<Option target="SPVRemapper"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/doc.h">
+			<Option target="SPIRV"/>
+			<Option target="SPVRemapper"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/hex_float.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/spirv.hpp">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/spvIR.h">
+			<Option target="SPIRV"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/DirStackFileIncluder.h">
+			<Option target="glslangValidator"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/ResourceLimits.cpp">
+			<Option target="glslang-default-resource-limits"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/ResourceLimits.h">
+			<Option target="glslang-default-resource-limits"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/StandAlone.cpp">
+			<Option target="glslangValidator"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/spirv-remap.cpp">
+			<Option target="spirv-remap"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/GenericCodeGen/CodeGen.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/GenericCodeGen/Link.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/BaseTypes.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/Common.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/ConstantUnion.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/InfoSink.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/InitializeGlobals.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/PoolAlloc.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/ResourceLimits.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/ShHandle.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/Types.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/arrays.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/intermediate.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Include/revision.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/Constant.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/InfoSink.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/Initialize.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/Initialize.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/IntermTraverse.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/Intermediate.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/LiveTraverser.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/ParseContextBase.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/ParseHelper.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/ParseHelper.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/PoolAlloc.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/RemoveTree.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/RemoveTree.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/Scan.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/Scan.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/ScanContext.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/ShaderLang.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/SymbolTable.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/SymbolTable.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/Versions.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/Versions.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/gl_types.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/glslang.y">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/glslang_tab.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/glslang_tab.cpp.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/intermOut.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/iomapper.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/iomapper.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/limits.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/linkValidate.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/localintermediate.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/parseConst.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/parseVersions.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/preprocessor/Pp.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpAtom.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpContext.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpContext.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/preprocessor/PpTokens.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/propagateNoContraction.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/propagateNoContraction.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/reflection.cpp">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/MachineIndependent/reflection.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/ossource.cpp">
+			<Option target="OSDependent"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/osinclude.h">
+			<Option target="OSDependent"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/Public/ShaderLang.h">
+			<Option target="glslang"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/AST.FromFile.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/BuiltInResource.FromFile.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Config.FromFile.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/HexFloat.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Hlsl.FromFile.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Initializer.h">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Link.FromFile.Vk.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Link.FromFile.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Pp.FromFile.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Remap.FromFile.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Settings.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Settings.h">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/Spv.FromFile.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/TestFixture.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/TestFixture.h">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/main.cpp">
+			<Option target="glslangtests"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslAttributes.cpp">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslAttributes.h">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslGrammar.cpp">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslGrammar.h">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslOpMap.cpp">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslOpMap.h">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslParseHelper.cpp">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslParseHelper.h">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslParseables.cpp">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslParseables.h">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslScanContext.cpp">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslScanContext.h">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslTokenStream.cpp">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslTokenStream.h">
+			<Option target="HLSL"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/hlslTokens.h">
+			<Option target="HLSL"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/src/gmock-all.cc">
 			<Option target="gmock_main"/>
 			<Option target="gmock"/>
@@ -2513,6 +3441,60 @@
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/test/gtx/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\3rdparty\glm\test\gtx\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/External/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\External\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/External/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\External\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\glslang\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\glslang\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\glslang\OSDependent\Windows\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/glslang/OSDependent/Windows/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\glslang\OSDependent\Windows\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\OGLCompilersDLL\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/OGLCompilersDLL/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\OGLCompilersDLL\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\StandAlone\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/StandAlone/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\StandAlone\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\SPIRV\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/SPIRV/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\SPIRV\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\hlsl\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/hlsl/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\hlsl\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\gtests\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glslang/gtests/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glslang\gtests\"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\3rdparty\googletest\"/>

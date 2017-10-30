@@ -43,6 +43,7 @@ add_subdirectory("${3RD_PARTY_DIR}/easyloggingpp")
 add_subdirectory("${3RD_PARTY_DIR}/miniz")
 add_subdirectory("${3RD_PARTY_DIR}/googletest")
 add_subdirectory("${3RD_PARTY_DIR}/optional")
+add_subdirectory("${3RD_PARTY_DIR}/glslang")
 
 include_directories(SYSTEM
         ${Vulkan_INCLUDE_DIRS}
@@ -57,9 +58,11 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/optional
         ${3RD_PARTY_DIR}/renderdocapi
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
+        ${3RD_PARTY_DIR}/glslang/glslang/include
+        ${3RD_PARTY_DIR}/glslang/SPIRV
         )
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES})
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} OGLCompiler OSDependent SPIRV)
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
