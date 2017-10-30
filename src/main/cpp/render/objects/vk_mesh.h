@@ -37,7 +37,7 @@ namespace nova {
          * \param vertex_data The interleaved vertex data
          * \param data_format The format of the data (\see format)
          */
-        void set_data(std::vector<int>& vertex_data, format data_format, std::vector<int>& index_data);
+        void set_data(const std::vector<int>& vertex_data, const format data_format, const std::vector<int>& index_data);
 
         void set_active(vk::CommandBuffer command) const;
 
@@ -51,6 +51,9 @@ namespace nova {
         format get_format();
 
         bool has_data() const;
+
+        std::vector<vk::VertexInputBindingDescription>& get_binding_descriptions();
+        std::vector<vk::VertexInputAttributeDescription>& get_attribute_descriptions();
 
     private:
         format data_format;
@@ -73,9 +76,9 @@ namespace nova {
 
         uint32_t num_indices;
 
-        void upload_vertex_data(std::vector<int> &vertex_data, const nova::render_context &context);
+        void upload_vertex_data(const std::vector<int> &vertex_data, const nova::render_context &context);
 
-        void upload_index_data(std::vector<int>& index_data, render_context &context);
+        void upload_index_data(const std::vector<int>& index_data, const render_context &context);
     };
 }
 

@@ -31,7 +31,7 @@ namespace nova {
         }
     }
 
-    void vk_mesh::set_data(std::vector<int>& vertex_data, format data_format, std::vector<int>& index_data) {
+    void vk_mesh::set_data(const std::vector<int>& vertex_data, const format data_format, const std::vector<int>& index_data) {
         auto& context = render_context::instance;
         this->data_format = data_format;
 
@@ -114,7 +114,7 @@ namespace nova {
         return num_indices > 0;
     }
 
-    void vk_mesh::upload_vertex_data(std::vector<int> &vertex_data, const render_context &context) {
+    void vk_mesh::upload_vertex_data(const std::vector<int> &vertex_data, const render_context &context) {
         vk::BufferCreateInfo vertex_buffer_create = {};
         vertex_buffer_create.size = vertex_data.size() * sizeof(int);
         vertex_buffer_create.usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer;
@@ -135,7 +135,7 @@ namespace nova {
         vmaUnmapMemory(context.allocator, vertex_alloc);
     }
 
-    void vk_mesh::upload_index_data(std::vector<int>& index_data, render_context &context) {
+    void vk_mesh::upload_index_data(const std::vector<int>& index_data, const render_context &context) {
         vk::BufferCreateInfo index_buffer_create = {};
         index_buffer_create.size = index_data.size() * sizeof(int);
         index_buffer_create.usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer;
@@ -156,5 +156,13 @@ namespace nova {
         vmaUnmapMemory(context.allocator, indices_alloc);
 
         num_indices = static_cast<uint32_t>(index_data.size());
+    }
+
+    std::vector<vk::VertexInputBindingDescription> &vk_mesh::get_binding_descriptions() {
+        return binding_descriptions;
+    }
+
+    std::vector<vk::VertexInputAttributeDescription> &vk_mesh::get_attribute_descriptions() {
+        return attribute_descriptions;
     }
 }

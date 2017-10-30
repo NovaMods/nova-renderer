@@ -132,7 +132,7 @@ namespace nova {
         /*!
          * \brief Renders the GUI of Minecraft
          */
-        void render_gui();
+        void render_gui(vk::CommandBuffer command);
 
         void render_shadow_pass();
 

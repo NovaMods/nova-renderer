@@ -101,7 +101,7 @@ namespace nova {
         // Additionally, I could use the stencil buffer to not draw MC underneath the GUI. Could be a fun
         // optimization - I'd have to watch out for when the user hides the GUI, though. I can just re-render the
         // stencil buffer when the GUI screen changes
-        render_gui();
+        render_gui(main_command_buffer.buffer);
 
         main_command_buffer.buffer.end();
 
@@ -139,7 +139,7 @@ namespace nova {
         //meshes->get_fullscreen_quad->draw();
     }
 
-    void nova_renderer::render_gui() {
+    void nova_renderer::render_gui(vk::CommandBuffer command) {
         LOG(TRACE) << "Rendering GUI";
         //glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -156,7 +156,7 @@ namespace nova {
                 auto color_texture = textures->get_texture(geom.color_texture);
                 color_texture.bind(0);
             }
-            geom.geometry->set_active();
+            geom.geometry->set_active(command);
             geom.geometry->draw();
         }
     }
@@ -277,7 +277,7 @@ namespace nova {
 
                 profiler::start("drawcall");
                 geom.geometry->set_active(buffer);
-                geom.geometry->draw(buffer);
+                geom.geometry->draw();
                 profiler::end("drawcall");
             } else {
                 LOG(TRACE) << "Skipping some geometry since it has no data";
