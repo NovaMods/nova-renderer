@@ -37,7 +37,7 @@ namespace nova {
          * \param vertex_data The interleaved vertex data
          * \param data_format The format of the data (\see format)
          */
-        void set_data(std::vector<int> vertex_data, format data_format, std::vector<int> index_data);
+        void set_data(std::vector<int>& vertex_data, format data_format, std::vector<int>& index_data);
 
         void set_active(vk::CommandBuffer command) const;
 
@@ -61,6 +61,9 @@ namespace nova {
         vk::Buffer indices;
         VmaAllocation indices_alloc;
 
+        std::vector<vk::VertexInputBindingDescription> binding_descriptions;
+        std::vector<vk::VertexInputAttributeDescription> attribute_descriptions;
+
         /*!
          * \brief Enables all the proper OpenGL vertex attributes for the given format
          *
@@ -72,7 +75,7 @@ namespace nova {
 
         void upload_vertex_data(std::vector<int> &vertex_data, const nova::render_context &context);
 
-        void upload_index_data(std::vector<int> index_data, render_context &context);
+        void upload_index_data(std::vector<int>& index_data, render_context &context);
     };
 }
 

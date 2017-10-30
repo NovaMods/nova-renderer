@@ -31,7 +31,7 @@ namespace nova {
         }
     }
 
-    void vk_mesh::set_data(std::vector<int> vertex_data, format data_format, std::vector<int> index_data) {
+    void vk_mesh::set_data(std::vector<int>& vertex_data, format data_format, std::vector<int>& index_data) {
         auto& context = render_context::instance;
         this->data_format = data_format;
 
@@ -51,64 +51,59 @@ namespace nova {
     }
 
     void vk_mesh::enable_vertex_attributes(format data_format) {
-        /*switch(data_format) {
+        switch(data_format) {
             case format::POS:
-                // We only need to set up positional data
-                // Positions are always at vertex attribute 0
-                glEnableVertexAttribArray(0);   // Position
+                // Location in shader, buffer binding, data format, offset in buffer
+                attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
 
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+                // Binding, stride, input rate
+                binding_descriptions.emplace_back(0, 12, vk::VertexInputRate::eVertex);         // Position
 
                 break;
 
             case format::POS_UV:
-                glEnableVertexAttribArray(0);   // Position
-                glEnableVertexAttribArray(1);   // Texture UV
+                // Location in shader, buffer binding, data format, offset in buffer
+                attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
+                attribute_descriptions.emplace_back(1, 0, vk::Format::eR32G32Sfloat,    12);    // UV
 
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr);
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
+                // Binding, stride, input rate
+                binding_descriptions.emplace_back(0, 20, vk::VertexInputRate::eVertex);         // Position
+                binding_descriptions.emplace_back(1, 20, vk::VertexInputRate::eVertex);         // UV
 
                 break;
 
             case format::POS_UV_COLOR:
-                glEnableVertexAttribArray(0);   // Position
-                glEnableVertexAttribArray(1);   // Texture UV
-                glEnableVertexAttribArray(2);   // Vertex color
+                // Location in shader, buffer binding, data format, offset in buffer
+                attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat,    0);  // Position
+                attribute_descriptions.emplace_back(1, 0, vk::Format::eR32G32Sfloat,       12); // UV
+                attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32B32A32Sfloat, 20); // Color
 
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), nullptr);
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *) (3 * sizeof(GLfloat)));
-                glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void *) (5 * sizeof(GLfloat)));
+                // Binding, stride, input rate
+                binding_descriptions.emplace_back(0, 36, vk::VertexInputRate::eVertex);         // Position
+                binding_descriptions.emplace_back(1, 36, vk::VertexInputRate::eVertex);         // UV
+                binding_descriptions.emplace_back(2, 36, vk::VertexInputRate::eVertex);         // Color
 
                 break;
 
             case format::POS_COLOR_UV_LIGHTMAPUV_NORMAL_TANGENT:
-                glEnableVertexAttribArray(0);   // Position
-                glEnableVertexAttribArray(1);   // Texture UV
-                glEnableVertexAttribArray(2);   // Lightmap UV
-                glEnableVertexAttribArray(3);   // Normal
-                glEnableVertexAttribArray(4);   // Tangent
-                glEnableVertexAttribArray(5);   // Color
+                // Location in shader, buffer binding, data format, offset in buffer
+                attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
+                attribute_descriptions.emplace_back(1, 0, vk::Format::eR8G8B8A8Unorm,   12);    // Color
+                attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32Sfloat,    16);    // UV
+                attribute_descriptions.emplace_back(3, 0, vk::Format::eR16G16Unorm,     24);    // Lightmap UV
+                attribute_descriptions.emplace_back(4, 0, vk::Format::eR32G32B32Sfloat, 32);    // Normal
+                attribute_descriptions.emplace_back(5, 0, vk::Format::eR32G32B32Sfloat, 48);    // Tangent
 
-                // position
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), nullptr);
-
-                // color
-                glVertexAttribPointer(5, 4, GL_UNSIGNED_BYTE, GL_FALSE, 13 * sizeof(GLfloat), (void *) (12 * sizeof(GLbyte)));
-
-                // texture UV
-                glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (16 * sizeof(GLbyte)));
-
-                // lightmap UV
-                glVertexAttribPointer(2, 2, GL_SHORT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (24 * sizeof(GLbyte)));
-
-                // normal
-                glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (32 * sizeof(GLbyte)));
-
-                // tangent
-                glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 13 * sizeof(GLfloat), (void *) (44 * sizeof(GLbyte)));
+                // Binding, stride, input rate
+                binding_descriptions.emplace_back(0, 56, vk::VertexInputRate::eVertex);         // Position
+                binding_descriptions.emplace_back(1, 56, vk::VertexInputRate::eVertex);         // Color
+                binding_descriptions.emplace_back(2, 56, vk::VertexInputRate::eVertex);         // UV
+                binding_descriptions.emplace_back(3, 56, vk::VertexInputRate::eVertex);         // Lightmap
+                binding_descriptions.emplace_back(4, 56, vk::VertexInputRate::eVertex);         // Normal
+                binding_descriptions.emplace_back(5, 56, vk::VertexInputRate::eVertex);         // Tangent
 
                 break;
-        }*/
+        }
     }
 
     format vk_mesh::get_format() {
@@ -140,7 +135,7 @@ namespace nova {
         vmaUnmapMemory(context.allocator, vertex_alloc);
     }
 
-    void vk_mesh::upload_index_data(std::vector<int> index_data, render_context &context) {
+    void vk_mesh::upload_index_data(std::vector<int>& index_data, render_context &context) {
         vk::BufferCreateInfo index_buffer_create = {};
         index_buffer_create.size = index_data.size() * sizeof(int);
         index_buffer_create.usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer;
