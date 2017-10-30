@@ -46,11 +46,23 @@ namespace nova {
      * of the file, returns the full text of the file. If the file cannot be found with any of the provided
      * extensions, then a not_found is thrown
      *
+     * This function also compiled the shader to SPIR-V if needed and hopefully throw reasonable errors
+     *
      * \param shader_path The path to the shader
      * \param extensions A list of extensions to try
-     * \return The full source of the shader file
+     * \return The SPIR-V of the shader file
      */
-    std::vector<shader_line> load_shader_file(const std::string &shader_path, const std::vector<std::string> &extensions);
+    std::vector<uint32_t> load_shader_file(std::basic_string<char, std::char_traits<char>, std::allocator<char>> shader_path,
+                                               std::vector<std::string> extensions, EShLanguage shader_stage);
+
+    /*!
+     * \brief Translates GLSL code to SPIR-V
+     *
+     * \param shader_lines The source lines of the code to translate
+     * \param shader_stage The shader stage to compile for
+     * \return The SPIR-V code
+     */
+    std::vector<uint32_t> translate_glsl_tp_spirv(std::vector<shader_line> shader_lines, EShLanguage shader_stage);
 
     /*!
      * \brief Loads the shader file from the provided istream

@@ -43,8 +43,8 @@ namespace nova {
 
         optional<std::shared_ptr<shader_definition>> fallback_def;
 
-        std::vector<shader_line> vertex_source;
-        std::vector<shader_line> fragment_source;
+        std::vector<uint32_t> vertex_source;
+        std::vector<uint32_t> fragment_source;
         // TODO: Figure out how to handle geometry and tessellation shaders
 
         /*!

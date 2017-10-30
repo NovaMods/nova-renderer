@@ -58,7 +58,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/optional
         ${3RD_PARTY_DIR}/renderdocapi
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
-        ${3RD_PARTY_DIR}/glslang/glslang/include
+        ${3RD_PARTY_DIR}/glslang/glslang/Public
         ${3RD_PARTY_DIR}/glslang/SPIRV
         )
 
