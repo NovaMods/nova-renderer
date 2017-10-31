@@ -7,6 +7,8 @@
 #include <easylogging++.h>
 #include <vk_mem_alloc.h>
 #include "../../../utils/utils.h"
+#include "../../vulkan/render_context.h"
+#include "../../vulkan/command_pool.h"
 
 namespace nova {
     void texture2D::set_data(void* pixel_data, vk::Extent2D &dimensions, vk::Format format) {

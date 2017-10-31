@@ -7,6 +7,7 @@
 #include <easylogging++.h>
 #include "texture_manager.h"
 #include "../../vulkan/render_context.h"
+#include "../../../mc_interface/mc_objects.h"
 
 namespace nova {
     texture_manager::texture_manager() {

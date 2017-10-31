@@ -8,18 +8,22 @@
 #include <vulkan/vulkan.hpp>
 #include <memory>
 #include <thread>
-#include "objects/shaders/gl_shader_program.h"
-#include "objects/uniform_buffers/uniform_buffer_store.h"
-#include "windowing/glfw_vk_window.h"
-#include "../geometry_cache/mesh_store.h"
-#include "objects/textures/texture_manager.h"
-#include "../input/InputHandler.h"
 #include "objects/renderpass.h"
 #include "objects/camera.h"
-#include "vulkan/render_context.h"
-#include "renderpass_manager.h"
+#include "../data_loading/settings.h"
 
 namespace nova {
+    class gl_shader_program;
+    class uniform_buffer_store;
+    class glfw_vk_window;
+    class mesh_store;
+    class texture_manager;
+    class input_handler;
+    class render_context;
+    class renderpass_manager;
+    class shaderpack;
+    class render_object;
+
     /*!
      * \brief Initializes everything this mod needs, creating its own window
      *

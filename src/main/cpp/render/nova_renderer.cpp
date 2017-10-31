@@ -6,6 +6,17 @@
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
 #include "../utils/profiler.h"
+#include "objects/render_object.h"
+#include "../data_loading/settings.h"
+#include "windowing/glfw_vk_window.h"
+#include "vulkan/command_pool.h"
+#include "../geometry_cache/mesh_store.h"
+#include "objects/render_object.h"
+#include "objects/vk_mesh.h"
+#include "objects/uniform_buffers/uniform_buffer_definitions.h"
+#include "objects/uniform_buffers/uniform_buffer_store.h"
+#include "../input/InputHandler.h"
+#include "renderpass_manager.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>

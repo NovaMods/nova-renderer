@@ -10,9 +10,9 @@
 #include <unordered_map>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include "../../../mc_interface/mc_objects.h"
 #include "texture2D.h"
 #include "../../../utils/smart_enum.h"
+#include "../../../mc_interface/mc_objects.h"
 
 namespace nova {
     /*!

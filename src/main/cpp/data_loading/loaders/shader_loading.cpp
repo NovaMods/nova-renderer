@@ -95,8 +95,11 @@ namespace nova {
                 // All shaderpacks are in the shaderpacks folder
                 auto shader_path = "shaderpacks/" + shaderpack_name + "/shaders/" + shader.name;
 
-                shader.vertex_source = load_shader_file(shader_path, vertex_extensions, EShLangVertex);
-                shader.fragment_source = load_shader_file(shader_path, fragment_extensions, EShLangFragment);
+                auto vertex_source = load_shader_file(shader_path, vertex_extensions);
+                shader.vertex_source = translate_glsl_to_spirv(vertex_source, EShLangVertex);
+
+                auto fragment_source = load_shader_file(shader_path, fragment_extensions);
+                shader.fragment_source = translate_glsl_to_spirv(fragment_source, EShLangFragment);
 
                 sources.push_back(shader);
             } catch(std::exception& e) {
@@ -179,8 +182,7 @@ namespace nova {
         }
     }
 
-    std::vector<uint32_t> load_shader_file(std::basic_string<char, std::char_traits<char>, std::allocator<char>> shader_path,
-                                               std::vector<std::string> extensions, EShLanguage shader_stage) {
+    std::vector<shader_line> load_shader_file(std::string shader_path, std::vector<std::string> extensions) {
         for(auto &extension : extensions) {
             auto full_shader_path = shader_path + extension;
             LOG(TRACE) << "Trying to load shader file " << full_shader_path;
@@ -188,8 +190,7 @@ namespace nova {
             std::ifstream stream(full_shader_path, std::ios::in);
             if(stream.good()) {
                 LOG(INFO) << "Loading shader file " << full_shader_path;
-                auto lines = read_shader_stream(stream, full_shader_path);
-                return translate_glsl_tp_spirv(lines, shader_stage);
+                return read_shader_stream(stream, full_shader_path);
             } else {
                 LOG(WARNING) << "Could not read file " << full_shader_path;
             }
@@ -198,7 +199,7 @@ namespace nova {
         throw resource_not_found(shader_path);
     }
 
-    std::vector<uint32_t> translate_glsl_tp_spirv(std::vector<shader_line> shader_lines, EShLanguage shader_stage) {
+    std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line> shader_lines, EShLanguage shader_stage) {
         std::stringstream ss;
         for(auto& line : shader_lines) {
             ss << line.line << "\n";
@@ -245,8 +246,7 @@ namespace nova {
         LOG(TRACE) << "Dealing with included file " << file_to_include;
 
         try {
-            return load_shader_file(file_to_include, {""},
-                                    EShLangTessControl);
+            return load_shader_file(file_to_include, {""});
         } catch(resource_not_found& e) {
             throw std::runtime_error("Could not load included file " + file_to_include);
         }

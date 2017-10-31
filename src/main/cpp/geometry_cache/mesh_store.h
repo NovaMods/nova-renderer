@@ -19,6 +19,8 @@
 #include "../mc_interface/mc_objects.h"
 
 namespace nova {
+    class mesh_definition;
+
     /*!
          * \brief Provides access to the meshes that Nova will want to deal with
          *

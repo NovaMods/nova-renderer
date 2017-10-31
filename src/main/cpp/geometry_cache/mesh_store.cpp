@@ -11,6 +11,8 @@
 #include <iomanip>
 #include "mesh_store.h"
 #include "../../../render/nova_renderer.h"
+#include "mesh_definition.h"
+#include "../render/objects/vk_mesh.h"
 
 namespace nova {
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {

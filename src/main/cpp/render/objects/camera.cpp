@@ -6,6 +6,7 @@
 #include "camera.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <utility>
+#include "../../data_loading/physics/aabb.h"
 
 namespace nova {
     glm::mat4& camera::get_projection_matrix() {

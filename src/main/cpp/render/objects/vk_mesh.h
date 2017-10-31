@@ -11,10 +11,10 @@
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
 #include "../../geometry_cache/mesh_definition.h"
-#include "../../data_loading/physics/aabb.h"
-#include "../vulkan/render_context.h"
 
 namespace nova {
+    class render_context;
+
     /*!
      * \brief Represents a buffer which holds vertex information
      *

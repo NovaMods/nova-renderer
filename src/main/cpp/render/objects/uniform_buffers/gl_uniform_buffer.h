@@ -8,10 +8,11 @@
 
 #include <string>
 #include <glad/glad.h>
-#include "../shaders/gl_shader_program.h"
 #include <GLFW/glfw3.h>
 
 namespace nova {
+    class gl_shader_program;
+
     /*!
      * \brief A nice interface for uniform buffer objects
      */

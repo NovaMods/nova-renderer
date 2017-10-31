@@ -107,10 +107,8 @@ namespace nova {
         //glDeleteProgram(gl_name);
     }
 
-    void gl_shader_program::create_shader(const std::vector<shader_line>& shader_source, const GLenum shader_type) {
-        LOG(TRACE) << "Creating a shader from source\n" << shader_source;
-
-        std::string full_shader_source;
+    void gl_shader_program::create_shader(const std::vector<uint32_t>& shader_source, const GLenum shader_type) {
+       /* std::string full_shader_source;
         auto& version_line = shader_source[0].line;
         LOG(TRACE) << "Version line: '" << version_line << "'";
 
@@ -127,7 +125,7 @@ namespace nova {
 
         //auto shader_name = glCreateShader(shader_type);
 
-        const char *shader_source_char = full_shader_source.c_str();
+        const char *shader_source_char = full_shader_source.c_str();*/
 
         //glShaderSource(shader_name, 1, &shader_source_char, nullptr);
 

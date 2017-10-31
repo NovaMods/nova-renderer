@@ -52,8 +52,7 @@ namespace nova {
      * \param extensions A list of extensions to try
      * \return The SPIR-V of the shader file
      */
-    std::vector<uint32_t> load_shader_file(std::basic_string<char, std::char_traits<char>, std::allocator<char>> shader_path,
-                                               std::vector<std::string> extensions, EShLanguage shader_stage);
+    std::vector<shader_line> load_shader_file(std::string shader_path, std::vector<std::string> extensions);
 
     /*!
      * \brief Translates GLSL code to SPIR-V
@@ -62,7 +61,7 @@ namespace nova {
      * \param shader_stage The shader stage to compile for
      * \return The SPIR-V code
      */
-    std::vector<uint32_t> translate_glsl_tp_spirv(std::vector<shader_line> shader_lines, EShLanguage shader_stage);
+    std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line> shader_lines, EShLanguage shader_stage);
 
     /*!
      * \brief Loads the shader file from the provided istream

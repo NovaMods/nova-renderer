@@ -9,6 +9,8 @@
 #include <easylogging++.h>
 #include <unordered_set>
 #include "render_context.h"
+#include "../windowing/glfw_vk_window.h"
+#include "command_pool.h"
 
 namespace nova {
     render_context render_context::instance;

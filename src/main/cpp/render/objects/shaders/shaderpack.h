@@ -12,15 +12,15 @@
 #include <vector>
 #include <string>
 #include <functional>
-#include <unordered_map>
 #include <initializer_list>
 #include <mutex>
 #include <optional.hpp>
 
 #include "gl_shader_program.h"
-#include "../../../data_loading/loaders/shader_source_structs.h"
 
 namespace nova {
+    class shader_definition;
+
     /*!
      * \brief Represents a shaderpack in all of its glory, along with some meta information about the options that this
      * shaderpack sets

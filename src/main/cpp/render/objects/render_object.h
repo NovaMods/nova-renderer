@@ -12,12 +12,14 @@
 #include <memory>
 #include <optional.hpp>
 
-#include "vk_mesh.h"
 #include "../../utils/smart_enum.h"
 #include "textures/texture_manager.h"
+#include "../../data_loading/physics/aabb.h"
 
 
 namespace nova {
+    class vk_mesh;
+
     SMART_ENUM(geometry_type, \
     block, \
     entity, \

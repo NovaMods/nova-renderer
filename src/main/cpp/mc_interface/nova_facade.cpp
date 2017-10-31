@@ -22,6 +22,8 @@
 #include "../render/windowing/glfw_vk_window.h"
 #include "../utils/utils.h"
 #include "../utils/profiler.h"
+#include "../geometry_cache/mesh_store.h"
+#include "../mc_interface/mc_objects.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../utils/stb_image_write.h"

@@ -12,12 +12,14 @@
 #include <string>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
-#include "../../vulkan/render_context.h"
+#include <vk_mem_alloc.h>
 
 namespace nova {
-/*!
- * \brief Encapsulates the parameters for texture filtering
- */
+    class render_context;
+
+    /*!
+     * \brief Encapsulates the parameters for texture filtering
+     */
     class texture_filtering_params {
     public:
         enum filter {

@@ -6,10 +6,10 @@
 #ifndef RENDERER_RENDER_PASS_MANAGER_H
 #define RENDERER_RENDER_PASS_MANAGER_H
 
-#include "objects/shaders/shaderpack.h"
-#include "objects/renderpass.h"
-
 namespace nova {
+    class shaderpack;
+    class renderpass;
+
     /*!
      * \brief Holds all the render passes that we made from the loaded shaderpack
      *

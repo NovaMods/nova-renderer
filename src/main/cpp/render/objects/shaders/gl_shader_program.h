@@ -130,7 +130,7 @@ namespace nova {
          */
         std::string filter;
 
-        void create_shader(const std::vector<shader_line>& shader_source, GLenum shader_type);
+        void create_shader(const std::vector<uint32_t>& shader_source, GLenum shader_type);
 
         void check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line>& line_map);
 

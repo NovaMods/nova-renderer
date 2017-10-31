@@ -10,12 +10,12 @@
 
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
-#include "../windowing/glfw_vk_window.h"
-#include "command_pool.h"
+#include <glm/glm.hpp>
 
 namespace nova {
 
     class glfw_vk_window;
+    class command_pool;
 
     struct gpu_info {
         vk::PhysicalDevice device;
