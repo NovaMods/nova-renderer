@@ -1,0 +1,62 @@
+{
+    "gbuffers_terrain": {
+        "states": [
+            "DisableAlphaWrite"
+        ],
+
+        "vertexShader": "shaders/gbuffers_terrain",
+        "fragmentShader": "shaders/gbuffers_terrain",
+
+        "vertexFields": [
+            {"field": "Position"},
+            {"field": "Color"},
+            {"field": "UV0"},
+            {"field": "Lightmap_UV"},
+            {"field": "Normal"},
+            {"field": "Tangent"}
+        ],
+
+        "samplerStates": [
+            {
+                "samplerIndex": 0,
+                "textureFilter": "Point"
+            }
+        ],
+
+        "textures": [
+            {
+                "__comment": "Can put the regexes in a separate file",
+                "textureIndex": 0,
+                "textureLocation": "InUserPackage",
+                "textureName": "atlas.terrain",
+                "filesRegex": "blocks/.*(?<!_n).png$"
+            },
+            {
+                "textureIndex": 1,
+                "textureLocation": "InUserPackage",
+                "textureName": "atlas.terrain.normals",
+                "filesRegex": "blocks/.*_n.png$"
+            },
+            {
+                "textureIndex": 2,
+                "textureLocation": "InUserPackage",
+                "textureName": "atlas.terrain.data",
+                "filesRegex": "blocks/.*_s.png$"
+            },
+            {
+                "textureIndex": 3,
+                "textureLocation": "Dynamic",
+                "textureName": "Brightness"
+            },
+            {
+                "textureIndex": 4,
+                "textureLocation": "Dynamic",
+                "textureName": "Noise"
+            }
+        ],
+        
+        "filters": "geometry_type::block AND not_transparent",
+        "fallback": "gbuffers_textures_lit",
+        "renderpass": "Gbuffers"
+    }
+}

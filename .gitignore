@@ -183,6 +183,7 @@ jars/*
 !docs/
 docs/*
 !docs/schemas/
+!docs/examples/
 runtime/
 temp/
 eclipse/
