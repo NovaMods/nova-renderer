@@ -8,22 +8,24 @@
 
 #include <easylogging++.h>
 #include "gl_shader_program.h"
+#include "../../vulkan/render_context.h"
 
 namespace nova {
     gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {
+        device = render_context::instance.device;
         LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
         filter = source.filter_expression;
         LOG(TRACE) << "Created filter expression " << filter;
-        create_shader(source.vertex_source, GL_VERTEX_SHADER);
+        create_shader(source.vertex_source, vk::ShaderStageFlagBits::eVertex);
         LOG(TRACE) << "Creatd vertex shader";
-        create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
+        create_shader(source.fragment_source, vk::ShaderStageFlagBits::eFragment);
         LOG(TRACE) << "Created fragment shader";
 
         link();
     }
 
     gl_shader_program::gl_shader_program(gl_shader_program &&other) noexcept :
-            name(std::move(other.name)), filter(std::move(other.filter)) {
+            name(std::move(other.name)), filter(std::move(other.filter)), shader_modules(std::move(other.shader_modules)) {
 
         this->gl_name = other.gl_name;
 
@@ -102,30 +104,39 @@ namespace nova {
     }
 
     gl_shader_program::~gl_shader_program() {
-        // Commented because move semantics are hard
-        //LOG(DEBUG) << "Deleting program " << gl_name;
-        //glDeleteProgram(gl_name);
+        for(auto& flags_module_pair : shader_modules) {
+            device.destroyShaderModule(flags_module_pair.second);
+        }
     }
 
-    void gl_shader_program::create_shader(const std::vector<uint32_t>& shader_source, const GLenum shader_type) {
-       /* std::string full_shader_source;
-        auto& version_line = shader_source[0].line;
-        LOG(TRACE) << "Version line: '" << version_line << "'";
+    void gl_shader_program::create_shader(const std::vector<uint32_t>& shader_source, const vk::ShaderStageFlags flags) {
+        vk::ShaderModuleCreateInfo create_info = {};
+        create_info.codeSize = shader_source.size();
+        create_info.pCode = shader_source.data();
 
-        if(version_line == "#version 450") {
-            // GLSL 450 code! This is the simplest: just concatenate all the lines in the shader file
-            std::for_each(
-                    std::begin(shader_source), std::end(shader_source),
-                    [&](auto &line) { full_shader_source.append(line.line + "\n"); }
-            );
+        auto module = device.createShaderModule(create_info);
+        shader_modules[flags] = module;
 
-        } else {
-            throw wrong_shader_version(shader_source[0].line);
-        }
 
-        //auto shader_name = glCreateShader(shader_type);
 
-        const char *shader_source_char = full_shader_source.c_str();*/
+        /* std::string full_shader_source;
+         auto& version_line = shader_source[0].line;
+         LOG(TRACE) << "Version line: '" << version_line << "'";
+
+         if(version_line == "#version 450") {
+             // GLSL 450 code! This is the simplest: just concatenate all the lines in the shader file
+             std::for_each(
+                     std::begin(shader_source), std::end(shader_source),
+                     [&](auto &line) { full_shader_source.append(line.line + "\n"); }
+             );
+
+         } else {
+             throw wrong_shader_version(shader_source[0].line);
+         }
+
+         //auto shader_name = glCreateShader(shader_type);
+
+         const char *shader_source_char = full_shader_source.c_str();*/
 
         //glShaderSource(shader_name, 1, &shader_source_char, nullptr);
 

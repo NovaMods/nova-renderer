@@ -79,6 +79,8 @@ namespace nova {
 
         VmaAllocator allocator;
 
+        vk::PipelineCache pipeline_cache;
+
         ~render_context();
 
         void create_instance(glfw_vk_window &window);

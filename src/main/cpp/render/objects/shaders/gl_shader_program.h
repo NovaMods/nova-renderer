@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <glad/glad.h>
+#include <vulkan/vulkan.hpp>
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
 
@@ -121,6 +122,9 @@ namespace nova {
         std::vector<GLuint> added_shaders;
 
         std::unordered_map<std::string, GLint> uniform_locations;
+        std::unordered_map<vk::ShaderStageFlags, vk::ShaderModule> shader_modules;
+
+        vk::Device device;
 
         /*!
          * \brief The filter that the renderer should use to get the geometry for this shader
@@ -130,7 +134,7 @@ namespace nova {
          */
         std::string filter;
 
-        void create_shader(const std::vector<uint32_t>& shader_source, GLenum shader_type);
+        void create_shader(const std::vector<uint32_t>& shader_source, vk::ShaderStageFlags flags);
 
         void check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line>& line_map);
 
