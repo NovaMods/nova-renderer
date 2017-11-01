@@ -35,6 +35,8 @@ namespace nova {
     }
 
     void gl_shader_program::link() {
+
+
         //gl_name = glCreateProgram();
         //glObjectLabel(GL_PROGRAM, gl_name, (GLsizei) name.length(), name.c_str());
         LOG(TRACE) << "Created shader program " << gl_name;
@@ -116,35 +118,6 @@ namespace nova {
 
         auto module = device.createShaderModule(create_info);
         shader_modules[flags] = module;
-
-
-
-        /* std::string full_shader_source;
-         auto& version_line = shader_source[0].line;
-         LOG(TRACE) << "Version line: '" << version_line << "'";
-
-         if(version_line == "#version 450") {
-             // GLSL 450 code! This is the simplest: just concatenate all the lines in the shader file
-             std::for_each(
-                     std::begin(shader_source), std::end(shader_source),
-                     [&](auto &line) { full_shader_source.append(line.line + "\n"); }
-             );
-
-         } else {
-             throw wrong_shader_version(shader_source[0].line);
-         }
-
-         //auto shader_name = glCreateShader(shader_type);
-
-         const char *shader_source_char = full_shader_source.c_str();*/
-
-        //glShaderSource(shader_name, 1, &shader_source_char, nullptr);
-
-        //glCompileShader(shader_name);
-
-        //check_for_shader_errors(shader_name, shader_source);
-
-        //added_shaders.push_back(shader_name);
     }
 
     std::string & gl_shader_program::get_filter() noexcept {

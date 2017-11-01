@@ -43,6 +43,9 @@ namespace nova {
         render_context::instance.create_command_pool_and_command_buffers();
         LOG(TRACE) << "Created command pool";
         render_context::instance.create_swapchain(game_window->get_size());
+        LOG(TRACE) << "Created swapchain";
+        render_context::instance.create_pipeline_cache();
+        LOG(TRACE) << "Pipeline cache created";
 
         LOG(INFO) << "Vulkan code initialized";
 

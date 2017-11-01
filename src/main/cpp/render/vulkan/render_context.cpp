@@ -412,6 +412,11 @@ namespace nova {
 
     }
 
+    void render_context::create_pipeline_cache() {
+        vk::PipelineCacheCreateInfo cache_create_info = {};
+        pipeline_cache = device.createPipelineCache(cache_create_info);
+    }
+
     // This function should really be outside of this file, but I want to keep vulkan creation things in here
     // to avoid making nova_renderer.cpp any larger than it needs to be
     std::vector<const char *> get_required_extensions(glfw_vk_window &window) {

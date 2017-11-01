@@ -95,6 +95,8 @@ namespace nova {
 
         void create_swapchain(glm::ivec2 window_dimensions);
 
+        void create_pipeline_cache();
+
     private:
         vk::SurfaceFormatKHR choose_surface_format(std::vector<vk::SurfaceFormatKHR>& formats);
 
