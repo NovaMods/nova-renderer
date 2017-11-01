@@ -180,7 +180,9 @@ conf/
 jars/*
 !jars/config/
 !jars/shaderpacks/default/
-docs/
+!docs/
+docs/*
+!docs/schemas/
 runtime/
 temp/
 eclipse/
