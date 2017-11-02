@@ -10,13 +10,13 @@
 #include "../data_loading/settings.h"
 #include "windowing/glfw_vk_window.h"
 #include "vulkan/command_pool.h"
-#include "../geometry_cache/mesh_store.h"
+#include "objects/meshes/mesh_store.h"
 #include "objects/render_object.h"
 #include "objects/vk_mesh.h"
 #include "objects/uniform_buffers/uniform_buffer_definitions.h"
 #include "objects/uniform_buffers/uniform_buffer_store.h"
 #include "../input/InputHandler.h"
-#include "renderpass_manager.h"
+#include "objects/renderpasses/renderpass_manager.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -238,7 +238,8 @@ namespace nova {
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
 		LOG(INFO) << "Loading a new shaderpack";
         LOG(INFO) << "Name of shaderpack " << new_shaderpack_name;
-        loaded_shaderpack = std::make_shared<shaderpack>(load_shaderpack(new_shaderpack_name));
+        loaded_shaderpack = std::make_shared<shaderpack>(
+                load_shaderpack(new_shaderpack_name, render_passes->get_main_renderpass()));
         LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
         LOG(INFO) << "Loading complete";
 		

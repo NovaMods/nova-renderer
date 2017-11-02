@@ -11,7 +11,7 @@
 #include "../../vulkan/render_context.h"
 
 namespace nova {
-    gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {
+    gl_shader_program::gl_shader_program(const shader_definition &source, vk::RenderPass renderpass) : name(source.name) {
         device = render_context::instance.device;
         LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
         filter = source.filter_expression;
@@ -107,7 +107,7 @@ namespace nova {
 
     gl_shader_program::~gl_shader_program() {
         for(auto& flags_module_pair : shader_modules) {
-            device.destroyShaderModule(flags_module_pair.second);
+            device.destroyShaderModule(std::get<1>(flags_module_pair));
         }
     }
 
@@ -117,7 +117,7 @@ namespace nova {
         create_info.pCode = shader_source.data();
 
         auto module = device.createShaderModule(create_info);
-        shader_modules[flags] = module;
+        shader_modules.emplace_back(flags, module);
     }
 
     std::string & gl_shader_program::get_filter() noexcept {

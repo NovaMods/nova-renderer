@@ -14,6 +14,7 @@
 #include "loader_utils.h"
 #include "../../render/objects/shaders/shaderpack.h"
 #include "../../utils/utils.h"
+#include "../../render/objects/renderpass.h"
 
 namespace nova {
     /*!
@@ -37,16 +38,16 @@ namespace nova {
             ".vert.spv"
     };
 
-    shaderpack load_shaderpack(const std::string &shaderpack_name) {
+    shaderpack load_shaderpack(const std::string &shaderpack_name, std::shared_ptr<nova::renderpass> parent_renderpass) {
         LOG(DEBUG) << "Loading shaderpack " << shaderpack_name;
         auto shader_sources = std::unordered_map<std::string, shader_definition>{};
         if(is_zip_file(shaderpack_name)) {
             LOG(TRACE) << "Loading shaderpack " << shaderpack_name << " from a zip file";
-            return load_sources_from_zip_file(shaderpack_name, shader_names);
+            return load_sources_from_zip_file(shaderpack_name, shader_names, parent_renderpass);
 
         } else {
             LOG(TRACE) << "Loading shaderpack " << shaderpack_name << " from a regular folder";
-            return load_sources_from_folder(shaderpack_name, shader_names);
+            return load_sources_from_folder(shaderpack_name, shader_names, parent_renderpass);
         }
     }
 
@@ -64,13 +65,13 @@ namespace nova {
 
         std::vector<shader_definition> definitions;
         for(auto& definition : definitions_array) {
-            definitions.push_back(shader_definition(definition));
+            definitions.emplace_back(definition);
         }
 
         return definitions;
     }
 
-    shaderpack load_sources_from_folder(const std::string &shaderpack_name, const std::vector<std::string> &shader_names) {
+    shaderpack load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names, std::shared_ptr<renderpass> parent_renderpass) {
         std::vector<shader_definition> sources;
 
         // First, load in the shaders.json file so we can see what we're
@@ -109,7 +110,7 @@ namespace nova {
 
         warn_for_missing_fallbacks(sources);
 
-        return shaderpack(shaderpack_name, shaders_json, sources);
+        return shaderpack(shaderpack_name, shaders_json, sources, parent_renderpass);
     }
 
     void warn_for_missing_fallbacks(std::vector<shader_definition> sources) {
@@ -252,7 +253,7 @@ namespace nova {
         }
     }
 
-    shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, const std::vector<std::string> &shader_names) {
+    shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names, std::shared_ptr<renderpass> parent_renderpass) {
         LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
         throw std::runtime_error("Zipped shaderpacks not yet supported");
     }

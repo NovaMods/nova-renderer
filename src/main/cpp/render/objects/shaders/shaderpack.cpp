@@ -8,16 +8,18 @@
 #include <algorithm>
 #include <utility>
 #include "shaderpack.h"
+#include "../renderpass.h"
 
 #include <easylogging++.h>
 
 namespace nova {
-    shaderpack::shaderpack(std::string name, nlohmann::json shaders_json, std::vector<shader_definition> &shaders) {
+    shaderpack::shaderpack(const std::string &name, nlohmann::json shaders_json, std::vector<shader_definition> shaders,
+                               std::shared_ptr<nova::renderpass> parent_renderpass) {
         this->name = std::move(name);
         for(auto& shader : shaders) {
             LOG(TRACE) << "Adding shader " << shader.name;
             try {
-                loaded_shaders.emplace(shader.name, gl_shader_program(shader));
+                loaded_shaders.emplace(shader.name, gl_shader_program(shader, parent_renderpass->get_renderpass()));
             } catch(std::exception& e) {
                 LOG(ERROR) << "Could not load shader " << shader.name << " because " << e.what();
             }
@@ -34,8 +36,10 @@ namespace nova {
         return loaded_shaders;
     }
 
-    void shaderpack::operator=(const shaderpack &other) {
+    shaderpack& shaderpack::operator=(const shaderpack &other) {
         loaded_shaders = other.loaded_shaders;
+
+        return *this;
     }
 
     std::string &shaderpack::get_name() {

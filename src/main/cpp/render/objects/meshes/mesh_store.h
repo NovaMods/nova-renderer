@@ -13,10 +13,10 @@
 #include <functional>
 #include <unordered_map>
 #include <queue>
-#include "../render/objects/render_object.h"
-#include "../render/objects/shaders/shaderpack.h"
-#include "../mc_interface/mc_gui_objects.h"
-#include "../mc_interface/mc_objects.h"
+#include "../render_object.h"
+#include "../shaders/shaderpack.h"
+#include "../../../mc_interface/mc_gui_objects.h"
+#include "../../../mc_interface/mc_objects.h"
 
 namespace nova {
     class mesh_definition;

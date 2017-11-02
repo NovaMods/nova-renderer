@@ -2992,16 +2992,7 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/data_loading/loaders/shader_source_structs.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/data_loading/physics/aabb.cpp.obj">
-			<Option target="nova-renderer"/>
-		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/data_loading/settings.cpp.obj">
-			<Option target="nova-renderer"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/geometry_cache/mesh_definition.cpp.obj">
-			<Option target="nova-renderer"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/geometry_cache/mesh_store.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/input/InputHandler.cpp.obj">
@@ -3013,16 +3004,28 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/mc_interface/nova_facade.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/physics/aabb.cpp.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/nova_renderer.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/camera.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/meshes/mesh_definition.cpp.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/meshes/mesh_store.cpp.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/render_object.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/renderpass.cpp.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/renderpasses/renderpass_manager.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/shaders/gl_shader_program.cpp.obj">
@@ -3044,9 +3047,6 @@
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/vk_mesh.cpp.obj">
-			<Option target="nova-renderer"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/renderpass_manager.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/vulkan/command_pool.cpp.obj">
@@ -3100,35 +3100,11 @@
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/physics/aabb.cpp">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/physics/aabb.h">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/settings.cpp">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/data_loading/settings.h">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/geometry_cache/mesh_definition.cpp">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/geometry_cache/mesh_definition.h">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/geometry_cache/mesh_store.cpp">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/geometry_cache/mesh_store.h">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
@@ -3164,6 +3140,14 @@
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/physics/aabb.cpp">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/physics/aabb.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/nova_renderer.cpp">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
@@ -3180,6 +3164,22 @@
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/meshes/mesh_definition.cpp">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/meshes/mesh_definition.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/meshes/mesh_store.cpp">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/meshes/mesh_store.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/render_object.cpp">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
@@ -3193,6 +3193,18 @@
 			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/renderpass.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/renderpasses/materials.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/renderpasses/renderpass_manager.cpp">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/renderpasses/renderpass_manager.h">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
@@ -3253,14 +3265,6 @@
 			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/vk_mesh.h">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/renderpass_manager.cpp">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/renderpass_manager.h">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>

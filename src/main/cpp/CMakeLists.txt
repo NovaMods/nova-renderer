@@ -91,15 +91,15 @@ set(NOVA_HEADERS
         data_loading/loaders/loaders.h
         data_loading/loaders/shader_loading.h
         data_loading/loaders/loader_utils.h
-        geometry_cache/mesh_store.h
+        render/objects/meshes/mesh_store.h
         render/objects/render_object.h
         render/objects/uniform_buffers/uniform_buffer_store.h
         render/objects/uniform_buffers/uniform_buffer_definitions.h
         render/objects/uniform_buffers/gl_uniform_buffer.h
 
-        data_loading/physics/aabb.h
+        physics/aabb.h
         data_loading/loaders/shader_source_structs.h
-        geometry_cache/mesh_definition.h
+        render/objects/meshes/mesh_definition.h
         render/objects/camera.h
         render/objects/renderpass.h
         utils/io.h
@@ -138,9 +138,9 @@ set(NOVA_SOURCE
         data_loading/loaders/loader_utils.cpp
 
         render/objects/shaders/shaderpack.cpp
-        geometry_cache/mesh_store.cpp
-        data_loading/physics/aabb.cpp
-        geometry_cache/mesh_definition.cpp
+        render/objects/meshes/mesh_store.cpp
+        physics/aabb.cpp
+        render/objects/meshes/mesh_definition.cpp
 
         render/objects/uniform_buffers/uniform_buffers_definitions.cpp
 
@@ -152,7 +152,9 @@ set(NOVA_SOURCE
         render/objects/render_object.cpp
         utils/profiler.cpp
         render/vulkan/command_pool.cpp
-        render/renderpass_manager.cpp render/renderpass_manager.h)
+        render/objects/renderpasses/renderpass_manager.cpp render/objects/renderpasses/renderpass_manager.h
+        render/objects/renderpasses/materials.h
+        )
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)

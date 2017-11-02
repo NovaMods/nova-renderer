@@ -11,6 +11,7 @@
 #include <istream>
 #include <unordered_map>
 #include <vector>
+#include <tuple>
 
 #include <glad/glad.h>
 #include <vulkan/vulkan.hpp>
@@ -71,7 +72,7 @@ namespace nova {
         /*!
          * \brief Constructs a gl_shader_program
          */
-        explicit gl_shader_program(const shader_definition &source);
+        explicit gl_shader_program(const shader_definition &source, vk::RenderPass renderpass);
 
         /*!
          * \brief Default copy constructor
@@ -122,7 +123,7 @@ namespace nova {
         std::vector<GLuint> added_shaders;
 
         std::unordered_map<std::string, GLint> uniform_locations;
-        std::unordered_map<vk::ShaderStageFlags, vk::ShaderModule> shader_modules;
+        std::vector<std::tuple<vk::ShaderStageFlags, vk::ShaderModule>> shader_modules;
 
         vk::Device device;
 

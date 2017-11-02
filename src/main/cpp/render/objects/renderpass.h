@@ -29,6 +29,8 @@ namespace nova {
 
         ~renderpass();
 
+        vk::RenderPass get_renderpass();
+
     private:
         bool has_depth_buffer = false;
 
@@ -45,47 +47,6 @@ namespace nova {
         vk::ImageView depth_buffer_view;
 
         void create_framebuffers(glm::ivec2 size);
-    };
-
-    /*!
-     * \brief A builder for renderbuffers
-     */
-    class renderpass_builder {
-    public:
-        /*!
-         * \brief Sets the framebuffer size to the specified value
-         *
-         * \param width The desired width of the framebuffer
-         * \param height The desired height of the framebuffer
-         * \return This framebuffer_builder object
-         */
-        renderpass_builder &set_framebuffer_size(unsigned int width, unsigned int height);
-
-        /*!
-         * \brief Adds a color buffer to the renderpass
-         *
-         * Insertion order is maintained
-         */
-        renderpass_builder &add_color_buffer();
-
-        /*!
-         * \brief Creates a framebuffer with the settings specified in this framebuffer_builder
-         *
-         * \return The newly constructed framebuffer object
-         */
-        std::unique_ptr<renderpass> build();
-
-        /*!
-         * \brief Resets this framebuffer builder, clearing all the information stored within
-         */
-        void reset();
-
-    private:
-        unsigned int width;
-        unsigned int height;
-
-        std::vector<vk::AttachmentDescription> attachments;
-        std::vector<vk::AttachmentReference> color_refs;
     };
 }
 

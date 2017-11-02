@@ -20,6 +20,7 @@
 
 namespace nova {
     class shader_definition;
+    class renderpass;
 
     /*!
      * \brief Represents a shaderpack in all of its glory, along with some meta information about the options that this
@@ -38,7 +39,8 @@ namespace nova {
          * \param shaderpack_name The name of the shaderpcack to load
          *
          */
-        shaderpack(std::string name, nlohmann::json shaders_json, std::vector<shader_definition> &shaders);
+        shaderpack(const std::string &name, nlohmann::json shaders_json, std::vector<shader_definition> shaders,
+                   std::shared_ptr<nova::renderpass> ptr);
 
         gl_shader_program &operator[](std::string key);
 
@@ -46,7 +48,7 @@ namespace nova {
 
 		std::unordered_map<std::string, gl_shader_program> &get_loaded_shaders();
 
-        void operator=(const shaderpack& other);
+        shaderpack& operator=(const shaderpack& other);
 
         std::string& get_name();
 
