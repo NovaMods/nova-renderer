@@ -17,6 +17,101 @@
 #include "../../render/objects/renderpass.h"
 
 namespace nova {
+    const TBuiltInResource gl45Limits = {
+            /* .MaxLights = */ 32,
+            /* .MaxClipPlanes = */ 6,
+            /* .MaxTextureUnits = */ 32,
+            /* .MaxTextureCoords = */ 32,
+            /* .MaxVertexAttribs = */ 64,
+            /* .MaxVertexUniformComponents = */ 4096,
+            /* .MaxVaryingFloats = */ 64,
+            /* .MaxVertexTextureImageUnits = */ 32,
+            /* .MaxCombinedTextureImageUnits = */ 80,
+            /* .MaxTextureImageUnits = */ 32,
+            /* .MaxFragmentUniformComponents = */ 4096,
+            /* .MaxDrawBuffers = */ 32,
+            /* .MaxVertexUniformVectors = */ 128,
+            /* .MaxVaryingVectors = */ 8,
+            /* .MaxFragmentUniformVectors = */ 16,
+            /* .MaxVertexOutputVectors = */ 16,
+            /* .MaxFragmentInputVectors = */ 15,
+            /* .MinProgramTexelOffset = */ -8,
+            /* .MaxProgramTexelOffset = */ 7,
+            /* .MaxClipDistances = */ 8,
+            /* .MaxComputeWorkGroupCountX = */ 65535,
+            /* .MaxComputeWorkGroupCountY = */ 65535,
+            /* .MaxComputeWorkGroupCountZ = */ 65535,
+            /* .MaxComputeWorkGroupSizeX = */ 1024,
+            /* .MaxComputeWorkGroupSizeY = */ 1024,
+            /* .MaxComputeWorkGroupSizeZ = */ 64,
+            /* .MaxComputeUniformComponents = */ 1024,
+            /* .MaxComputeTextureImageUnits = */ 16,
+            /* .MaxComputeImageUniforms = */ 8,
+            /* .MaxComputeAtomicCounters = */ 8,
+            /* .MaxComputeAtomicCounterBuffers = */ 1,
+            /* .MaxVaryingComponents = */ 60,
+            /* .MaxVertexOutputComponents = */ 64,
+            /* .MaxGeometryInputComponents = */ 64,
+            /* .MaxGeometryOutputComponents = */ 128,
+            /* .MaxFragmentInputComponents = */ 128,
+            /* .MaxImageUnits = */ 8,
+            /* .MaxCombinedImageUnitsAndFragmentOutputs = */ 8,
+            /* .MaxCombinedShaderOutputResources = */ 8,
+            /* .MaxImageSamples = */ 0,
+            /* .MaxVertexImageUniforms = */ 0,
+            /* .MaxTessControlImageUniforms = */ 0,
+            /* .MaxTessEvaluationImageUniforms = */ 0,
+            /* .MaxGeometryImageUniforms = */ 0,
+            /* .MaxFragmentImageUniforms = */ 8,
+            /* .MaxCombinedImageUniforms = */ 8,
+            /* .MaxGeometryTextureImageUnits = */ 16,
+            /* .MaxGeometryOutputVertices = */ 256,
+            /* .MaxGeometryTotalOutputComponents = */ 1024,
+            /* .MaxGeometryUniformComponents = */ 1024,
+            /* .MaxGeometryVaryingComponents = */ 64,
+            /* .MaxTessControlInputComponents = */ 128,
+            /* .MaxTessControlOutputComponents = */ 128,
+            /* .MaxTessControlTextureImageUnits = */ 16,
+            /* .MaxTessControlUniformComponents = */ 1024,
+            /* .MaxTessControlTotalOutputComponents = */ 4096,
+            /* .MaxTessEvaluationInputComponents = */ 128,
+            /* .MaxTessEvaluationOutputComponents = */ 128,
+            /* .MaxTessEvaluationTextureImageUnits = */ 16,
+            /* .MaxTessEvaluationUniformComponents = */ 1024,
+            /* .MaxTessPatchComponents = */ 120,
+            /* .MaxPatchVertices = */ 32,
+            /* .MaxTessGenLevel = */ 64,
+            /* .MaxViewports = */ 16,
+            /* .MaxVertexAtomicCounters = */ 0,
+            /* .MaxTessControlAtomicCounters = */ 0,
+            /* .MaxTessEvaluationAtomicCounters = */ 0,
+            /* .MaxGeometryAtomicCounters = */ 0,
+            /* .MaxFragmentAtomicCounters = */ 8,
+            /* .MaxCombinedAtomicCounters = */ 8,
+            /* .MaxAtomicCounterBindings = */ 1,
+            /* .MaxVertexAtomicCounterBuffers = */ 0,
+            /* .MaxTessControlAtomicCounterBuffers = */ 0,
+            /* .MaxTessEvaluationAtomicCounterBuffers = */ 0,
+            /* .MaxGeometryAtomicCounterBuffers = */ 0,
+            /* .MaxFragmentAtomicCounterBuffers = */ 1,
+            /* .MaxCombinedAtomicCounterBuffers = */ 1,
+            /* .MaxAtomicCounterBufferSize = */ 16384,
+            /* .MaxTransformFeedbackBuffers = */ 4,
+            /* .MaxTransformFeedbackInterleavedComponents = */ 64,
+            /* .MaxCullDistances = */ 8,
+            /* .MaxCombinedClipAndCullDistances = */ 8,
+            /* .MaxSamples = */ 4,
+            /* .limits = */ {
+                                       /* .nonInductiveForLoops = */ true,
+                                       /* .whileLoops = */ true,
+                                       /* .doWhileLoops = */ true,
+                                       /* .generalUniformIndexing = */ true,
+                                       /* .generalAttributeMatrixVectorIndexing = */ true,
+                                       /* .generalVaryingIndexing = */ true,
+                                       /* .generalSamplerIndexing = */ true,
+                                       /* .generalVariableIndexing = */ true,
+                                       /* .generalConstantMatrixVectorIndexing = */ true,
+                               }};
     /*!
      * \brief Holds the name of all the shaders to load
      *
@@ -38,16 +133,16 @@ namespace nova {
             ".vert.spv"
     };
 
-    shaderpack load_shaderpack(const std::string &shaderpack_name, std::shared_ptr<nova::renderpass> parent_renderpass) {
+    std::vector<shader_definition> load_shaderpack(const std::string &shaderpack_name) {
         LOG(DEBUG) << "Loading shaderpack " << shaderpack_name;
         auto shader_sources = std::unordered_map<std::string, shader_definition>{};
         if(is_zip_file(shaderpack_name)) {
             LOG(TRACE) << "Loading shaderpack " << shaderpack_name << " from a zip file";
-            return load_sources_from_zip_file(shaderpack_name, shader_names, parent_renderpass);
+            return load_sources_from_zip_file(shaderpack_name, shader_names);
 
         } else {
             LOG(TRACE) << "Loading shaderpack " << shaderpack_name << " from a regular folder";
-            return load_sources_from_folder(shaderpack_name, shader_names, parent_renderpass);
+            return load_sources_from_folder(shaderpack_name, shader_names);
         }
     }
 
@@ -71,7 +166,7 @@ namespace nova {
         return definitions;
     }
 
-    shaderpack load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names, std::shared_ptr<renderpass> parent_renderpass) {
+    std::vector<shader_definition> load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names) {
         std::vector<shader_definition> sources;
 
         // First, load in the shaders.json file so we can see what we're
@@ -110,7 +205,7 @@ namespace nova {
 
         warn_for_missing_fallbacks(sources);
 
-        return shaderpack(shaderpack_name, shaders_json, sources, parent_renderpass);
+        return sources;
     }
 
     void warn_for_missing_fallbacks(std::vector<shader_definition> sources) {
@@ -201,6 +296,7 @@ namespace nova {
     }
 
     std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line> shader_lines, EShLanguage shader_stage) {
+
         std::stringstream ss;
         for(auto& line : shader_lines) {
             ss << line.line << "\n";
@@ -210,14 +306,16 @@ namespace nova {
         auto str_data = shader_string.data();
 
         auto glsl_ast = glslang::TShader{shader_stage};
-        glsl_ast.setStrings(&str_data, static_cast<int>(shader_string.size()));
-        glsl_ast.parse(nullptr, 450, false, EShMsgDefault);
+        glsl_ast.setStrings(&str_data, 1);
+        glsl_ast.parse(&gl45Limits, 450, false, EShMsgDefault);
 
         // TODO: Check the output log and let the user know what's up
 
         auto spirv_output = std::vector<uint32_t>{};
         auto& intermediate = *glsl_ast.getIntermediate();
         GlslangToSpv(intermediate, spirv_output);
+        // TODO: gbuffers_terrain.vert seems to cause a crash where an inserted member is an array with length 0. Must
+        // investigate further
 
         return spirv_output;
     }
@@ -253,7 +351,7 @@ namespace nova {
         }
     }
 
-    shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names, std::shared_ptr<renderpass> parent_renderpass) {
+    std::vector<shader_definition> load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names) {
         LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
         throw std::runtime_error("Zipped shaderpacks not yet supported");
     }

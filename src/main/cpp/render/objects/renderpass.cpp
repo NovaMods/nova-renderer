@@ -8,7 +8,7 @@
 namespace nova {
     /* framebuffer */
 
-    renderpass::renderpass(vk::RenderPassCreateInfo& create_info, glm::ivec2 size) {
+    renderpass::renderpass(vk::RenderPassCreateInfo& create_info, vk::Extent2D size) {
         vk_renderpass = render_context::instance.device.createRenderPass(create_info);
 
         // TODO: Create the depth buffer
@@ -29,7 +29,7 @@ namespace nova {
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void renderpass::create_framebuffers(glm::ivec2 size) {
+    void renderpass::create_framebuffers(vk::Extent2D size) {
         vk::ImageView attachments[color_image_views.size() + 1];
         attachments[color_image_views.size()] = depth_buffer_view;
 
@@ -41,8 +41,8 @@ namespace nova {
         frambuffer_create_info.renderPass = vk_renderpass;
         frambuffer_create_info.attachmentCount = static_cast<uint32_t>(color_image_views.size() + 1);
         frambuffer_create_info.pAttachments = attachments;
-        frambuffer_create_info.width = static_cast<uint32_t>(size.x);
-        frambuffer_create_info.height = static_cast<uint32_t>(size.y);
+        frambuffer_create_info.width = static_cast<uint32_t>(size.width);
+        frambuffer_create_info.height = static_cast<uint32_t>(size.height);
         frambuffer_create_info.layers = 1;
 
         framebuffer = render_context::instance.device.createFramebuffer(frambuffer_create_info);

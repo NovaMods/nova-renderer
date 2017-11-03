@@ -23,7 +23,7 @@ namespace nova {
         friend class renderpass_builder;
 
     public:
-        explicit renderpass(vk::RenderPassCreateInfo& create_info, glm::ivec2 size);
+        explicit renderpass(vk::RenderPassCreateInfo& create_info, vk::Extent2D size);
 
         renderpass(renderpass &&other) noexcept;
 
@@ -46,7 +46,7 @@ namespace nova {
         std::vector<vk::ImageView> color_image_views;
         vk::ImageView depth_buffer_view;
 
-        void create_framebuffers(glm::ivec2 size);
+        void create_framebuffers(vk::Extent2D size);
     };
 }
 

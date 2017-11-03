@@ -25,8 +25,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names,
-                                          std::shared_ptr<nova::renderpass> ptr);
+    std::vector<shader_definition> load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names);
 
     /*!
      * \brief Loads the source file of all the shaders with the provided names
@@ -38,8 +37,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    shaderpack load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names,
-                                        std::shared_ptr<nova::renderpass> ptr);
+    std::vector<shader_definition> load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names);
 
     /*!
      * \brief Tries to load a single shader file from a folder

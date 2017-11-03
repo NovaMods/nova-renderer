@@ -20,6 +20,7 @@
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <ShaderLang.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -236,22 +237,24 @@ namespace nova {
     }
 
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
-		LOG(INFO) << "Loading a new shaderpack";
-        LOG(INFO) << "Name of shaderpack " << new_shaderpack_name;
-        loaded_shaderpack = std::make_shared<shaderpack>(
-                load_shaderpack(new_shaderpack_name, render_passes->get_main_renderpass()));
+        if(!glslang::InitializeProcess()) {
+            LOG(FATAL) << "Could not initialize shader compiler";
+        }
+
+		LOG(INFO) << "Loading a new shaderpack named " << new_shaderpack_name;
+
+        auto shader_definitions = load_shaderpack(new_shaderpack_name);
+
         LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
+
+
+
         LOG(INFO) << "Loading complete";
 		
         link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), *ubo_manager);
         LOG(DEBUG) << "Linked up UBOs";
 
-        create_framebuffers_from_shaderpack();
-    }
-
-    void nova_renderer::create_framebuffers_from_shaderpack() {
-        // TODO: Examine the shaderpack and determine what's needed
-        render_passes = std::make_unique<renderpass_manager>(loaded_shaderpack);
+        glslang::FinalizeProcess();
     }
 
     void nova_renderer::deinit() {

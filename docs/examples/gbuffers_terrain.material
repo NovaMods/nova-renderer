@@ -25,38 +25,103 @@
 
         "textures": [
             {
-                "__comment": "Can put the regexes in a separate file",
                 "textureIndex": 0,
                 "textureLocation": "InUserPackage",
-                "textureName": "atlas.terrain",
-                "filesRegex": "blocks/.*(?<!_n).png$"
+                "textureName": "atlas.terrain"
             },
             {
                 "textureIndex": 1,
                 "textureLocation": "InUserPackage",
-                "textureName": "atlas.terrain.normals",
-                "filesRegex": "blocks/.*_n.png$"
+                "textureName": "atlas.terrain.normals"
             },
             {
                 "textureIndex": 2,
                 "textureLocation": "InUserPackage",
-                "textureName": "atlas.terrain.data",
-                "filesRegex": "blocks/.*_s.png$"
+                "textureName": "atlas.terrain.data"
             },
             {
-                "textureIndex": 3,
+                "textureIndex": 4,
+                "textureLocation": "InUserPackage",
+                "textureName": "custom.gaux1"
+            },
+            {
+                "textureIndex": 5,
+                "textureLocation": "InUserPackage",
+                "textureName": "custom.gaux2"
+            },
+            {
+                "textureIndex": 6,
+                "textureLocation": "InUserPackage",
+                "textureName": "custom.gaux3"
+            },
+            {
+                "textureIndex": 7,
+                "textureLocation": "InUserPackage",
+                "textureName": "custom.gaux4"
+            },
+
+            {
+                "textureIndex": 9,
                 "textureLocation": "Dynamic",
                 "textureName": "Brightness"
             },
             {
-                "textureIndex": 4,
+                "textureIndex": 10,
+                "textureLocation": "Dynamic",
+                "textureName": "depthtex0"
+            },
+            {
+                "textureIndex": 11,
+                "textureLocation": "Dynamic",
+                "textureName": "depthtex1"
+            },
+            {
+                "textureIndex": 12,
                 "textureLocation": "Dynamic",
                 "textureName": "Noise"
+            },
+
+            {
+                "textureIndex": 16,
+                "textureLocation": "Dynamic",
+                "textureName": "shadow.main"
+            },
+            {
+                "textureIndex": 17,
+                "textureLocation": "Dynamic",
+                "textureName": "shadow.secondary"
+            },
+            {
+                "textureIndex": 18,
+                "textureLocation": "Dynamic",
+                "textureName": "shadow.color0"
+            },
+            {
+                "textureIndex": 19,
+                "textureLocation": "Dynamic",
+                "textureName": "shadow.color1"
+            },
+            {
+                "textureIndex": 20,
+                "textureLocation": "Dynamic",
+                "textureName": "shadow.color2"
+            },
+            {
+                "textureIndex": 21,
+                "textureLocation": "Dynamic",
+                "textureName": "shadow.color3"
             }
         ],
         
         "filters": "geometry_type::block AND not_transparent",
         "fallback": "gbuffers_textures_lit",
-        "renderpass": "Gbuffers"
+        "passIndex": "4",
+
+        "outputs": [
+            {
+                "index": 0,
+                "format": "R8G8B8A8"
+            }
+        ]
     }
 }

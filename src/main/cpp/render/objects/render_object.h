@@ -14,7 +14,7 @@
 
 #include "../../utils/smart_enum.h"
 #include "textures/texture_manager.h"
-#include "../../data_loading/physics/aabb.h"
+#include "../../physics/aabb.h"
 
 
 namespace nova {

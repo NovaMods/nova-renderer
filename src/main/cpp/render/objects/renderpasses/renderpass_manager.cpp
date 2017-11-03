@@ -73,12 +73,12 @@ namespace nova {
     }
 
     void renderpass_manager::create_main_renderpass(vk::Extent2D& window_size) {
-        main_renderpass = renderpass_builder()
+        /*main_renderpass = renderpass_builder()
                 .set_framebuffer_size(window_size.width, window_size.height)
                 .add_color_buffer()
                 .build();
 
-        LOG(TRACE) << "Created main renderpass";
+        LOG(TRACE) << "Created main renderpass";*/
     }
 
     std::shared_ptr<renderpass> renderpass_manager::get_main_renderpass() {

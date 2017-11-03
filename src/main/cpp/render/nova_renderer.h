@@ -109,7 +109,6 @@ namespace nova {
         std::unique_ptr<glfw_vk_window> game_window;
 
         std::shared_ptr<shaderpack> loaded_shaderpack;
-        std::shared_ptr<renderpass_manager> render_passes;
 
         std::unique_ptr<texture_manager> textures;
 
@@ -121,11 +120,9 @@ namespace nova {
 
         std::vector<GLuint> shadow_depth_textures;
         std::unique_ptr<renderpass> shadow_framebuffer;
-        renderpass_builder shadow_framebuffer_builder;
 
         std::unique_ptr<renderpass> main_framebuffer;
         std::vector<GLuint> gbuffer_depth_textures;
-        renderpass_builder main_framebuffer_builder;
 
         uint32_t cur_swapchain_image_index;
 
@@ -147,8 +144,6 @@ namespace nova {
         void render_final_pass();
 
         void load_new_shaderpack(const std::string &new_shaderpack_name);
-
-        void create_framebuffers_from_shaderpack();
 
         /*!
          * \brief Renders all the geometry that uses the specified shader, setting up textures and whatnot
