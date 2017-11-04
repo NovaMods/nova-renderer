@@ -27,7 +27,7 @@ namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
     nova_renderer::nova_renderer() {
-        game_window = std::make_unique<glfw_vk_window>();
+        game_window = std::make_shared<glfw_vk_window>();
         LOG(TRACE) << "Window initialized";
 
         render_context::instance.create_instance(*game_window);
@@ -49,10 +49,10 @@ namespace nova {
 
         LOG(INFO) << "Vulkan code initialized";
 
-        ubo_manager = std::make_unique<uniform_buffer_store>();
-        textures = std::make_unique<texture_manager>();
-        meshes = std::make_unique<mesh_store>();
-        inputs = std::make_unique<input_handler>();
+        ubo_manager = std::make_shared<uniform_buffer_store>();
+        textures = std::make_shared<texture_manager>();
+        meshes = std::make_shared<mesh_store>();
+        inputs = std::make_shared<input_handler>();
 
 		render_settings->register_change_listener(ubo_manager.get());
 		render_settings->register_change_listener(game_window.get());
@@ -180,10 +180,10 @@ namespace nova {
         return game_window->should_close();
     }
 
-	std::unique_ptr<settings> nova_renderer::render_settings;
+	std::shared_ptr<settings> nova_renderer::render_settings;
 
     void nova_renderer::init() {
-		render_settings = std::make_unique<settings>("config/config.json");
+		render_settings = std::make_shared<settings>("config/config.json");
 
         try {
             instance = std::make_unique<nova_renderer>();
@@ -246,7 +246,7 @@ namespace nova {
 
         LOG(INFO) << "Loading complete";
 		
-        link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), *ubo_manager);
+        link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), ubo_manager);
         LOG(DEBUG) << "Linked up UBOs";
     }
 
@@ -363,8 +363,10 @@ namespace nova {
                                                                                vk::Fence()).value;
     }
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos) {
-        nova::foreach(shaders, [&](auto shader) { ubos.register_all_buffers_with_shader(shader.second); });
+    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {
+        for(auto& shader : shaders) {
+            ubos->register_all_buffers_with_shader(shader.second);
+        }
     }
 }
 

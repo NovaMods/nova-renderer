@@ -104,24 +104,24 @@ namespace nova {
 
     private:
 
-		static std::unique_ptr<settings> render_settings; 
+		static std::shared_ptr<settings> render_settings;
 
-        std::unique_ptr<glfw_vk_window> game_window;
+        std::shared_ptr<glfw_vk_window> game_window;
 
         std::shared_ptr<shaderpack> loaded_shaderpack;
 
-        std::unique_ptr<texture_manager> textures;
+        std::shared_ptr<texture_manager> textures;
 
-        std::unique_ptr<input_handler> inputs;
+        std::shared_ptr<input_handler> inputs;
 
-        std::unique_ptr<mesh_store> meshes;
+        std::shared_ptr<mesh_store> meshes;
 
-        std::unique_ptr<uniform_buffer_store> ubo_manager;
+        std::shared_ptr<uniform_buffer_store> ubo_manager;
 
         std::vector<GLuint> shadow_depth_textures;
-        std::unique_ptr<renderpass> shadow_framebuffer;
+        std::shared_ptr<renderpass> shadow_framebuffer;
 
-        std::unique_ptr<renderpass> main_framebuffer;
+        std::shared_ptr<renderpass> main_framebuffer;
         std::vector<GLuint> gbuffer_depth_textures;
 
         uint32_t cur_swapchain_image_index;
@@ -165,7 +165,7 @@ namespace nova {
         render_context* context;
     };
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos);
+    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos);
 }
 
 #endif //RENDERER_VULKAN_MOD_H

@@ -53,9 +53,10 @@ layout(std140) uniform per_frame_uniforms {
     float centerDepthSmooth;
 };
 
-in vec2 uv;
-in vec4 color;
-in vec2 lightmap_uv;
+layout(location = 0) in vec2 uv;
+layout(location = 1) in vec4 color;
+layout(location = 2) in vec2 lightmap_uv;
+layout(location = 3) in vec3 normal;
 
 layout(location = 0) out vec4 color_out;
 
