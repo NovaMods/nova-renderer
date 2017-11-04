@@ -29,18 +29,11 @@ namespace nova {
     class shaderpack {
     public:
         /*!
-         * \brief Loads the shaderpack with the given name
-         *
-         * This is kinda gross because the shaderpack loading logic is all
-         * in the data_loading module... thing is, there's no longer any
-         * reason to keep that running in a separate thread, so why not put
-         * it here?
-         *
+         * \brief Constructs a new shaderpack from the provided shader definitions
          * \param shaderpack_name The name of the shaderpcack to load
          *
          */
-        shaderpack(const std::string &name, nlohmann::json shaders_json, std::vector<shader_definition> shaders,
-                   std::shared_ptr<nova::renderpass> ptr);
+        shaderpack(const std::string &name, nlohmann::json shaders_json, std::vector<shader_definition> shaders);
 
         gl_shader_program &operator[](std::string key);
 

@@ -13,8 +13,7 @@
 #include <easylogging++.h>
 
 namespace nova {
-    shaderpack::shaderpack(const std::string &name, nlohmann::json shaders_json, std::vector<shader_definition> shaders,
-                               std::shared_ptr<nova::renderpass> parent_renderpass) {
+    shaderpack::shaderpack(const std::string &name, nlohmann::json shaders_json, std::vector<shader_definition> shaders) {
         this->name = std::move(name);
         for(auto& shader : shaders) {
             LOG(TRACE) << "Adding shader " << shader.name;

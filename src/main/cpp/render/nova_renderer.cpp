@@ -183,7 +183,7 @@ namespace nova {
 	std::shared_ptr<settings> nova_renderer::render_settings;
 
     void nova_renderer::init() {
-		render_settings = std::make_shared<settings>("config/config.json");
+        render_settings = std::make_shared<settings>("config/config.json");
 
         try {
             instance = std::make_unique<nova_renderer>();
@@ -242,7 +242,7 @@ namespace nova {
 
         LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
 
-        // TODO: Wire everything together
+        loaded_shaderpack = std::make_shared<shaderpack>(shader_definitions);
 
         LOG(INFO) << "Loading complete";
 		
