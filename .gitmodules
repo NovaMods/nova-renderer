@@ -25,6 +25,15 @@
 [submodule "src/main/cpp/3rdparty/VulkanMemoryAllocator"]
 	path = src/main/cpp/3rdparty/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "src/main/cpp/3rdparty/shaderc"]
+	path = src/main/cpp/3rdparty/shaderc
+	url = https://github.com/google/shaderc.git
+[submodule "src/main/cpp/3rdparty/spirv-tools"]
+	path = src/main/cpp/3rdparty/spirv-tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git
+[submodule "src/main/cpp/3rdparty/spirv-headers"]
+	path = src/main/cpp/3rdparty/spirv-headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers.git
 [submodule "src/main/cpp/3rdparty/glslang"]
 	path = src/main/cpp/3rdparty/glslang
 	url = https://github.com/KhronosGroup/glslang.git

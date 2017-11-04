@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <shaderc/shaderc.h>
 
 #include "shader_source_structs.h"
 
@@ -61,7 +62,7 @@ namespace nova {
      * \param shader_stage The shader stage to compile for
      * \return The SPIR-V code
      */
-    std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line> shader_lines, EShLanguage shader_stage);
+    std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line> shader_lines, shaderc_shader_kind shader_stage);
 
     /*!
      * \brief Loads the shader file from the provided istream
