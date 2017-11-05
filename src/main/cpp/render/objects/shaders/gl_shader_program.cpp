@@ -113,7 +113,7 @@ namespace nova {
 
     void gl_shader_program::create_shader(const std::vector<uint32_t>& shader_source, const vk::ShaderStageFlags flags) {
         vk::ShaderModuleCreateInfo create_info = {};
-        create_info.codeSize = shader_source.size();
+        create_info.codeSize = shader_source.size() * sizeof(uint32_t);
         create_info.pCode = shader_source.data();
 
         auto module = device.createShaderModule(create_info);
