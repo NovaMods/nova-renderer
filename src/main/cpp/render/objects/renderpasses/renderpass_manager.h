@@ -31,7 +31,7 @@ namespace nova {
      */
     class renderpass_manager {
     public:
-        explicit renderpass_manager(std::shared_ptr<shaderpack> shaders);
+        renderpass_manager();
 
         /*!
          * \brief Rebuilds the entire renderpasses

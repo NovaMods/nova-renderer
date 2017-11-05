@@ -10,7 +10,7 @@
 #include <easylogging++.h>
 
 namespace nova {
-    renderpass_manager::renderpass_manager(std::shared_ptr<shaderpack> shaders) {
+    renderpass_manager::renderpass_manager() {
         // TODO: Inspect each shader, figure out which ones draw to which target, and build renderpasses based on that info
         // For now I'll just create the swapchain renderpass to make sure I hae the code
 

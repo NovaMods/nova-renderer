@@ -210,11 +210,12 @@ namespace nova {
         shaderc::Compiler compiler;
         shaderc::CompileOptions compile_options;
         compile_options.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
+        compile_options.SetSourceLanguage(shaderc_source_language_glsl);    // TODO: Auto-detect this
         compile_options.SetWarningsAsErrors();  // TODO: Make this configurable from shaders.json or something
         // TODO: Let users set optimization level too
 
         auto source = ss.str();
-        auto result = compiler.CompileGlslToSpvAssembly(source, shader_stage, shader_lines[0].shader_name.c_str(),
+        auto result = compiler.CompileGlslToSpv(source, shader_stage, shader_lines[0].shader_name.c_str(),
                                                         compile_options);
 
         if(result.GetCompilationStatus() != shaderc_compilation_status_success) {

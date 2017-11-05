@@ -241,6 +241,8 @@ namespace nova {
 
         LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
 
+        renderpasses = std::make_shared<renderpass_manager>();
+
         loaded_shaderpack = std::make_shared<shaderpack>(new_shaderpack_name, shader_definitions.shaders, renderpasses->get_final_renderpass());
 
         LOG(INFO) << "Loading complete";
