@@ -26,7 +26,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    std::vector<shader_definition> load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names);
+    shaderpack_definition load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names);
 
     /*!
      * \brief Loads the source file of all the shaders with the provided names
@@ -38,7 +38,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    std::vector<shader_definition> load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names);
+    shaderpack_definition load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names);
 
     /*!
      * \brief Tries to load a single shader file from a folder
@@ -106,7 +106,7 @@ namespace nova {
      * \param include_line The line with the #include statement on it
      * \return The filename that is being included
      */
-    std::string get_filename_from_include(const std::string include_line);
+    std::string get_filename_from_include(std::string include_line);
 
     /*!
      * \brief Figures out the names of the shaders to load into this shaderpack based on the given json structure

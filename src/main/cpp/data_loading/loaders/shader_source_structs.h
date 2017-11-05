@@ -55,6 +55,11 @@ namespace nova {
         shader_definition(nlohmann::json &json);
     };
 
+    struct shaderpack_definition {
+        std::vector<shader_definition> shaders;
+        nlohmann::json shaders_json;
+    };
+
     el::base::Writer& operator<<(el::base::Writer& out, const std::vector<shader_line>& lines);
 
     el::base::Writer& operator<<(el::base::Writer& out, const shader_line& line);

@@ -28,7 +28,7 @@ namespace nova {
      * \param shaderpack_name The name of the shaderpack to load
      * \return The loaded shaderpack
      */
-    std::vector<shader_definition> load_shaderpack(const std::string &shaderpack_name);
+    shaderpack_definition load_shaderpack(const std::string &shaderpack_name);
 }
 
 #endif //RENDERER_LOADERS_H

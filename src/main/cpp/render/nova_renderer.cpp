@@ -25,6 +25,7 @@ INITIALIZE_EASYLOGGINGPP
 
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
+    std::shared_ptr<settings> nova_renderer::render_settings;
 
     nova_renderer::nova_renderer() {
         game_window = std::make_shared<glfw_vk_window>();
@@ -180,8 +181,6 @@ namespace nova {
         return game_window->should_close();
     }
 
-	std::shared_ptr<settings> nova_renderer::render_settings;
-
     void nova_renderer::init() {
         render_settings = std::make_shared<settings>("config/config.json");
 
@@ -242,7 +241,7 @@ namespace nova {
 
         LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
 
-        loaded_shaderpack = std::make_shared<shaderpack>(shader_definitions);
+        loaded_shaderpack = std::make_shared<shaderpack>(new_shaderpack_name, shader_definitions.shaders, renderpasses->get_final_renderpass());
 
         LOG(INFO) << "Loading complete";
 		

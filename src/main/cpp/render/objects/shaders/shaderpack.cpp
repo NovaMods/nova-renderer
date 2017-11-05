@@ -13,12 +13,13 @@
 #include <easylogging++.h>
 
 namespace nova {
-    shaderpack::shaderpack(const std::string &name, nlohmann::json shaders_json, std::vector<shader_definition> shaders) {
+    shaderpack::shaderpack(const std::string &name, std::vector<shader_definition>& shaders, std::shared_ptr<renderpass> our_renderpass) {
         this->name = std::move(name);
+
         for(auto& shader : shaders) {
             LOG(TRACE) << "Adding shader " << shader.name;
             try {
-                loaded_shaders.emplace(shader.name, gl_shader_program(shader, parent_renderpass->get_renderpass()));
+                loaded_shaders.emplace(shader.name, gl_shader_program(shader, our_renderpass->get_renderpass()));
             } catch(std::exception& e) {
                 LOG(ERROR) << "Could not load shader " << shader.name << " because " << e.what();
             }

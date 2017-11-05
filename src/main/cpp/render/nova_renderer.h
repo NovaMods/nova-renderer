@@ -118,11 +118,7 @@ namespace nova {
 
         std::shared_ptr<uniform_buffer_store> ubo_manager;
 
-        std::vector<GLuint> shadow_depth_textures;
-        std::shared_ptr<renderpass> shadow_framebuffer;
-
-        std::shared_ptr<renderpass> main_framebuffer;
-        std::vector<GLuint> gbuffer_depth_textures;
+        std::shared_ptr<renderpass_manager> renderpasses;
 
         uint32_t cur_swapchain_image_index;
 

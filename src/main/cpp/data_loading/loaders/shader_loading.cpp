@@ -37,7 +37,7 @@ namespace nova {
             ".vert.spv"
     };
 
-    std::vector<shader_definition> load_shaderpack(const std::string &shaderpack_name) {
+    shaderpack_definition load_shaderpack(const std::string &shaderpack_name) {
         LOG(DEBUG) << "Loading shaderpack " << shaderpack_name;
         auto shader_sources = std::unordered_map<std::string, shader_definition>{};
         if(is_zip_file(shaderpack_name)) {
@@ -70,7 +70,7 @@ namespace nova {
         return definitions;
     }
 
-    std::vector<shader_definition> load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names) {
+    shaderpack_definition load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names) {
         std::vector<shader_definition> sources;
 
         // First, load in the shaders.json file so we can see what we're
@@ -109,7 +109,7 @@ namespace nova {
 
         warn_for_missing_fallbacks(sources);
 
-        return sources;
+        return {sources, shaders_json};
     }
 
     void warn_for_missing_fallbacks(std::vector<shader_definition> sources) {
@@ -256,7 +256,7 @@ namespace nova {
         }
     }
 
-    std::vector<shader_definition> load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names) {
+    shaderpack_definition load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names) {
         LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
         throw std::runtime_error("Zipped shaderpacks not yet supported");
     }
