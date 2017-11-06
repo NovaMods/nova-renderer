@@ -115,7 +115,7 @@
         
         "filters": "geometry_type::block AND not_transparent",
         "fallback": "gbuffers_textures_lit",
-        "passIndex": "4",
+        "passIndex": 4,
 
         "outputs": [
             {

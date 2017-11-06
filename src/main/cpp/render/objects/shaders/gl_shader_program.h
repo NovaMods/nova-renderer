@@ -67,8 +67,6 @@ namespace nova {
      */
     class gl_shader_program {
     public:
-        GLuint gl_name;
-
         /*!
          * \brief Constructs a gl_shader_program
          */
@@ -105,25 +103,14 @@ namespace nova {
 
         std::string& get_name() noexcept;
 
-        /*!
-         * \brief Finds the uniform location of the given uniform variable
-         *
-         * The first time this method is called for a given string, it calls glGetUniformLocation to get the uniform
-         * location. The result of that function is then cached so that glGetUniformLocation only needs to be called
-         * once for every uniform variable, no matter how many times you upload data to that variable
-         *
-         * \param uniform_name The name of the uniform variable to get the location of
-         * \return The location of the desired uniform variable
-         */
-        GLint get_uniform_location(std::string uniform_name);
-
     private:
         std::string name;
 
-        std::vector<GLuint> added_shaders;
-
-        std::unordered_map<std::string, GLint> uniform_locations;
-        std::vector<std::tuple<vk::ShaderStageFlags, vk::ShaderModule>> shader_modules;
+        vk::ShaderModule vertex_module;
+        vk::ShaderModule fragment_module;
+        std::experimental::optional<vk::ShaderModule> geometry_module;
+        std::experimental::optional<vk::ShaderModule> tessellation_evaluation_module;
+        std::experimental::optional<vk::ShaderModule> tessellation_control_module;
 
         vk::Device device;
 
@@ -137,11 +124,7 @@ namespace nova {
 
         void create_shader(const std::vector<uint32_t>& shader_source, vk::ShaderStageFlags flags);
 
-        void check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line>& line_map);
-
-        void link();
-
-        void check_for_linking_errors();
+        void link(vk::RenderPass pass);
     };
 }
 
