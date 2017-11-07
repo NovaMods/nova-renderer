@@ -14,7 +14,7 @@ namespace nova {
     }
 
     vk_mesh::vk_mesh(const mesh_definition &definition) {
-        set_data(definition.vertex_data, definition.vertex_format, definition.indices);
+        set_data(definition.vertex_data, definition.indices);
     }
 
     vk_mesh::~vk_mesh() {
@@ -31,14 +31,12 @@ namespace nova {
         }
     }
 
-    void vk_mesh::set_data(const std::vector<int>& vertex_data, const format data_format, const std::vector<int>& index_data) {
+    void vk_mesh::set_data(const std::vector<int>& vertex_data, const std::vector<int>& index_data) {
         auto& context = render_context::instance;
         this->data_format = data_format;
 
         upload_vertex_data(vertex_data, context);
         upload_index_data(index_data, context);
-
-        enable_vertex_attributes(data_format);
     }
 
     void vk_mesh::set_active(vk::CommandBuffer command) const {
@@ -48,62 +46,6 @@ namespace nova {
 
     void vk_mesh::draw() const {
         //glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, nullptr);
-    }
-
-    void vk_mesh::enable_vertex_attributes(format data_format) {
-        switch(data_format) {
-            case format::POS:
-                // Location in shader, buffer binding, data format, offset in buffer
-                attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
-
-                // Binding, stride, input rate
-                binding_descriptions.emplace_back(0, 12, vk::VertexInputRate::eVertex);         // Position
-
-                break;
-
-            case format::POS_UV:
-                // Location in shader, buffer binding, data format, offset in buffer
-                attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
-                attribute_descriptions.emplace_back(1, 0, vk::Format::eR32G32Sfloat,    12);    // UV
-
-                // Binding, stride, input rate
-                binding_descriptions.emplace_back(0, 20, vk::VertexInputRate::eVertex);         // Position
-                binding_descriptions.emplace_back(1, 20, vk::VertexInputRate::eVertex);         // UV
-
-                break;
-
-            case format::POS_UV_COLOR:
-                // Location in shader, buffer binding, data format, offset in buffer
-                attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat,    0);  // Position
-                attribute_descriptions.emplace_back(1, 0, vk::Format::eR32G32Sfloat,       12); // UV
-                attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32B32A32Sfloat, 20); // Color
-
-                // Binding, stride, input rate
-                binding_descriptions.emplace_back(0, 36, vk::VertexInputRate::eVertex);         // Position
-                binding_descriptions.emplace_back(1, 36, vk::VertexInputRate::eVertex);         // UV
-                binding_descriptions.emplace_back(2, 36, vk::VertexInputRate::eVertex);         // Color
-
-                break;
-
-            case format::POS_COLOR_UV_LIGHTMAPUV_NORMAL_TANGENT:
-                // Location in shader, buffer binding, data format, offset in buffer
-                attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
-                attribute_descriptions.emplace_back(1, 0, vk::Format::eR8G8B8A8Unorm,   12);    // Color
-                attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32Sfloat,    16);    // UV
-                attribute_descriptions.emplace_back(3, 0, vk::Format::eR16G16Unorm,     24);    // Lightmap UV
-                attribute_descriptions.emplace_back(4, 0, vk::Format::eR32G32B32Sfloat, 32);    // Normal
-                attribute_descriptions.emplace_back(5, 0, vk::Format::eR32G32B32Sfloat, 48);    // Tangent
-
-                // Binding, stride, input rate
-                binding_descriptions.emplace_back(0, 56, vk::VertexInputRate::eVertex);         // Position
-                binding_descriptions.emplace_back(1, 56, vk::VertexInputRate::eVertex);         // Color
-                binding_descriptions.emplace_back(2, 56, vk::VertexInputRate::eVertex);         // UV
-                binding_descriptions.emplace_back(3, 56, vk::VertexInputRate::eVertex);         // Lightmap
-                binding_descriptions.emplace_back(4, 56, vk::VertexInputRate::eVertex);         // Normal
-                binding_descriptions.emplace_back(5, 56, vk::VertexInputRate::eVertex);         // Tangent
-
-                break;
-        }
     }
 
     format vk_mesh::get_format() {
@@ -156,13 +98,5 @@ namespace nova {
         vmaUnmapMemory(context.allocator, indices_alloc);
 
         num_indices = static_cast<uint32_t>(index_data.size());
-    }
-
-    std::vector<vk::VertexInputBindingDescription> &vk_mesh::get_binding_descriptions() {
-        return binding_descriptions;
-    }
-
-    std::vector<vk::VertexInputAttributeDescription> &vk_mesh::get_attribute_descriptions() {
-        return attribute_descriptions;
     }
 }

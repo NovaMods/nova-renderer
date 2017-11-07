@@ -13,7 +13,10 @@
             {"field": "UV0"},
             {"field": "Lightmap_UV"},
             {"field": "Normal"},
-            {"field": "Tangent"}
+            {"field": "Tangent"},
+            {"field": "MidtexCoord"},
+            {"field": "VirtualTextureId"},
+            {"field": "BlockId"}
         ],
 
         "samplerStates": [
@@ -27,89 +30,106 @@
             {
                 "textureIndex": 0,
                 "textureLocation": "InUserPackage",
-                "textureName": "atlas.terrain"
+                "textureName": "atlas.terrain",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 1,
                 "textureLocation": "InUserPackage",
-                "textureName": "atlas.terrain.normals"
+                "textureName": "atlas.terrain.normals",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 2,
                 "textureLocation": "InUserPackage",
-                "textureName": "atlas.terrain.data"
+                "textureName": "atlas.terrain.data",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 4,
                 "textureLocation": "InUserPackage",
-                "textureName": "custom.gaux1"
+                "textureName": "custom.gaux1",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 5,
                 "textureLocation": "InUserPackage",
-                "textureName": "custom.gaux2"
+                "textureName": "custom.gaux2",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 6,
                 "textureLocation": "InUserPackage",
-                "textureName": "custom.gaux3"
+                "textureName": "custom.gaux3",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 7,
                 "textureLocation": "InUserPackage",
-                "textureName": "custom.gaux4"
+                "textureName": "custom.gaux4",
+                "mipmap": "false"
             },
 
             {
                 "textureIndex": 9,
                 "textureLocation": "Dynamic",
-                "textureName": "Brightness"
+                "textureName": "Brightness",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 10,
                 "textureLocation": "Dynamic",
-                "textureName": "depthtex0"
+                "textureName": "depthtex0",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 11,
                 "textureLocation": "Dynamic",
-                "textureName": "depthtex1"
+                "textureName": "depthtex1",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 12,
                 "textureLocation": "Dynamic",
-                "textureName": "Noise"
+                "textureName": "Noise",
+                "mipmap": "false"
             },
 
             {
                 "textureIndex": 16,
                 "textureLocation": "Dynamic",
-                "textureName": "shadow.main"
+                "textureName": "shadow.main",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 17,
                 "textureLocation": "Dynamic",
-                "textureName": "shadow.secondary"
+                "textureName": "shadow.secondary",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 18,
                 "textureLocation": "Dynamic",
-                "textureName": "shadow.color0"
+                "textureName": "shadow.color0",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 19,
                 "textureLocation": "Dynamic",
-                "textureName": "shadow.color1"
+                "textureName": "shadow.color1",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 20,
                 "textureLocation": "Dynamic",
-                "textureName": "shadow.color2"
+                "textureName": "shadow.color2",
+                "mipmap": "false"
             },
             {
                 "textureIndex": 21,
                 "textureLocation": "Dynamic",
-                "textureName": "shadow.color3"
+                "textureName": "shadow.color3",
+                "mipmap": "false"
             }
         ],
         

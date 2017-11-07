@@ -243,7 +243,7 @@ namespace nova {
 
         renderpasses = std::make_shared<renderpass_manager>();
 
-        loaded_shaderpack = std::make_shared<shaderpack>(new_shaderpack_name, shader_definitions.shaders, renderpasses->get_final_renderpass());
+        loaded_shaderpack = std::make_shared<shaderpack>(new_shaderpack_name, shader_definitions, renderpasses->get_final_renderpass());
 
         LOG(INFO) << "Loading complete";
 		
@@ -304,7 +304,6 @@ namespace nova {
     inline void nova_renderer::upload_model_matrix(render_object &geom, gl_shader_program &program) const {
         glm::mat4 model_matrix = glm::translate(glm::mat4(1), geom.position);
 
-        auto model_matrix_location = program.get_uniform_location("gbufferModel");
         //glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &model_matrix[0][0]);
     }
 
@@ -320,7 +319,6 @@ namespace nova {
         gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
         gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
 
-        auto model_matrix_location = program.get_uniform_location("gbufferModel");
 
         //glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &gui_model[0][0]);
     }

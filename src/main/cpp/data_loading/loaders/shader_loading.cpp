@@ -37,7 +37,7 @@ namespace nova {
             ".vert.spv"
     };
 
-    shaderpack_definition load_shaderpack(const std::string &shaderpack_name) {
+    std::vector<std::pair<material_state, shader_definition>> load_shaderpack(const std::string &shaderpack_name) {
         LOG(DEBUG) << "Loading shaderpack " << shaderpack_name;
         auto shader_sources = std::unordered_map<std::string, shader_definition>{};
         if(is_zip_file(shaderpack_name)) {
@@ -50,35 +50,23 @@ namespace nova {
         }
     }
 
-    std::vector<shader_definition> get_shader_definitions(nlohmann::json &shaders_json) {
-        // Check if the top-level element is an array or an object. If it's
-        // an array, load all the elements of the array into shader
-        // definition objects. If it's an object, look for a property
-        // called 'shaders' which should be an array. Load the definitions
-        // from there.
-
-        nlohmann::json &definitions_array = shaders_json;
-        if(shaders_json.is_object()) {
-            definitions_array = shaders_json["shaders"];
-        }
-
-        std::vector<shader_definition> definitions;
-        for(auto& definition : definitions_array) {
-            definitions.emplace_back(definition);
+    std::vector<material_state> get_material_definitions(nlohmann::json &shaders_json) {
+        std::vector<material_state> definitions;
+        for(auto& definition : shaders_json) {
+            definitions.emplace_back(create_material_from_json(definition));
         }
 
         return definitions;
     }
 
-    shaderpack_definition load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names) {
+    std::vector<std::pair<material_state, shader_definition>> load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names) {
         std::vector<shader_definition> sources;
 
         // First, load in the shaders.json file so we can see what we're
         // dealing with
         std::ifstream shaders_json_file("shaderpacks/" + shaderpack_name + "/shaders.json");
-        // TODO: Load a default shaders.json file, store it somewhere
-        // accessable, and load it if there isn't a shaders.json in the
-        // shaderpack
+        // TODO: Load a default shaders.json file, store it somewhere accessable, and load it if there isn't a
+        // shaders.json in the shaderpack
         nlohmann::json shaders_json;
         if(shaders_json_file.is_open()) {
             shaders_json_file >> shaders_json;
@@ -88,7 +76,7 @@ namespace nova {
         }
 
         // Figure out all the shader files that we need to load
-        auto shaders = get_shader_definitions(shaders_json);
+        auto material_definitions = get_material_definitions(shaders_json);
 
         for(auto &shader : shaders) {
             try {
@@ -257,7 +245,7 @@ namespace nova {
         }
     }
 
-    shaderpack_definition load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names) {
+    std::vector<std::pair<material_state, shader_definition>> load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names) {
         LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
         throw std::runtime_error("Zipped shaderpacks not yet supported");
     }

@@ -26,7 +26,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    shaderpack_definition load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names);
+    std::vector<std::pair<material_state, shader_definition>> load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names);
 
     /*!
      * \brief Loads the source file of all the shaders with the provided names
@@ -38,7 +38,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    shaderpack_definition load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names);
+    std::vector<std::pair<material_state, shader_definition>> load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names);
 
     /*!
      * \brief Tries to load a single shader file from a folder
@@ -114,7 +114,7 @@ namespace nova {
      * \param shaders_json The JSON structure with the names of all the shaders to load
      * \return A list of all the shader_definition objects described by the given JSON
      */
-    std::vector<shader_definition> get_shader_definitions(nlohmann::json &shaders_json);
+    std::vector<material_state> get_material_definitions(nlohmann::json &shaders_json);
 
     /*!
      * \brief Prints our a warning for every shader described in the shaders.json file which does not specify a

@@ -15,8 +15,6 @@
 #include "../../render/objects/shaders/shaderpack.h"
 
 namespace nova {
-    class shader_definition;
-
     /*!
      * \brief Loads the shaderpack with the given name
      *
@@ -28,7 +26,7 @@ namespace nova {
      * \param shaderpack_name The name of the shaderpack to load
      * \return The loaded shaderpack
      */
-    shaderpack_definition load_shaderpack(const std::string &shaderpack_name);
+    std::vector<std::pair<material_state, shader_definition>> load_shaderpack(const std::string &shaderpack_name);
 }
 
 #endif //RENDERER_LOADERS_H

@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <json.hpp>
 
 namespace nova {
     /*!
@@ -99,11 +100,15 @@ namespace nova {
     enum class vertex_field {
         /*!
          * \brief The vertex position
+         *
+         * 12 bytes
          */
         position,
 
         /*!
          * \brief The vertex color
+         *
+         * 4 bytes
          */
         color,
 
@@ -113,6 +118,8 @@ namespace nova {
          * Except not really, because Nova's virtual textures means that the UVs for a block or entity or whatever
          * could change on the fly, so this is kinda more of a preprocessor define that replaces the UV with a lookup
          * in the UV table
+         *
+         * 8 bytes (might try 4)
          */
         main_uv,
 
@@ -120,31 +127,48 @@ namespace nova {
          * \brief The UV coordinate in the lightmap texture
          *
          * This is a real UV and it doesn't change for no good reason
+         *
+         * 2 bytes
          */
         lightmap_uv,
 
         /*!
          * \brief Vertex normal
+         *
+         * 12 bytes
          */
         normal,
 
         /*!
          * \brief Vertex tangents
+         *
+         * 12 bytes
          */
         tangent,
+
+        /*!
+         * \brief The texture coordinate of the middle of the quad
+         *
+         * 8 bytes
+         */
+        mid_tex_coord,
 
         /*!
          * \brief A uint32_t that's a unique identifier for the texture that this vertex uses
          *
          * This is generated at runtime by Nova, so it may change a lot depending on what resourcepacks are loaded and
          * if they use CTM or random detail textures or whatever
+         *
+         * 4 bytes
          */
         virtual_texture_id,
 
         /*!
-         * \brief The ID of the current block
+         * \brief Some information about the current block/entity/whatever
+         *
+         * 12 bytes
          */
-        block_id,
+        mc_entity_id,
 
         /*!
          * \brief Useful if you want to skip a vertex attribute
@@ -195,6 +219,11 @@ namespace nova {
          * it can into the virtual texture atlas, so it doesn't really care what atlas you request.
          */
         std::string texture_name;
+
+        /*!
+         * \brief If true, calculates mipmaps for this texture before the shaders is drawn
+         */
+        bool calculate_mipmaps;
     };
 
     /*!
@@ -218,6 +247,18 @@ namespace nova {
      * \brief Represents the configuration for a single pipeline
      */
     struct material_state {
+        /*!
+         * \brief The name of this material_state
+         */
+        std::string name;
+
+        /*!
+         * \brief The material_state that this material_state inherits from
+         *
+         * I may or may not make this a pointer to another material_state. Depends on how the code ends up being
+         */
+        std::string parent;
+
         /*!
          * \brief Defines the rasterizer state that's active for this material state
          */
@@ -309,7 +350,25 @@ namespace nova {
          * Nocva to bind colortex4 to shader output 2
          */
         std::vector<framebuffer_output> outputs;
+
+        /*!
+         * \brief The width of the output texture we're rendering to
+         *
+         * If this is not set by the .material file, then its value comes from the framebuffer that it renders to. I
+         * mostly put this member in this struct as a convenient way to pass it into a shader creation
+         */
+        uint32_t output_width;
+
+        /*!
+         * \brief The height of the output texture we're rendering to
+         *
+         * If this is not set by the .material file, then its value comes from the framebuffer that it renders to. I
+         * mostly put this member in this struct as a convenient way to pass it into a shader creation
+         */
+        uint32_t output_height;
     };
+
+    material_state create_material_from_json(const nlohmann::json &material_json);
 }
 
 #endif //RENDERER_MATERIALS_H

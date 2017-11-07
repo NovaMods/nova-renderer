@@ -17,60 +17,31 @@
 #include <vulkan/vulkan.hpp>
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
+#include "../renderpasses/materials.h"
 
 
 namespace nova {
-    /*!
-     * \brief Represents an error in compiling a shader
-     */
-    class compilation_error : public std::runtime_error {
-    public:
-        /*!
-         * \brief Constructs a compilation_error with the provided message, using the given list of shader_lines to
-         * map from line number in the error message to line number and shader file on disk
-         *
-         * \param error_message The compilation message, straight from the driver
-         * \param source_lines The list of source_line objects that maps from line in the shader sent to the driver
-         * to the line number and shader file on disk
-         */
-        compilation_error(const std::string &error_message, const std::vector<shader_line> source_lines);
-
-    private:
-
-        std::string
-        get_original_line_message(const std::string &error_message, const std::vector<shader_line> source_lines);
-    };
-
-    class wrong_shader_version : public std::runtime_error {
-    public:
-        wrong_shader_version(const std::string &version_line);
-    };
-
-    class program_linking_failure : public std::runtime_error {
-    public:
-        program_linking_failure(const std::string name) : std::runtime_error("Program " + name + " failed to link") {};
-    };
 
     /*!
      * \brief Represents an OpenGL shader program
      *
-     * Shader programs can include between two and five shaders. At the bare minimum, a shader program needs a vertex shader
-     * and a fragment shader. A shader program can also have a geometry shader, a tessellation control shader, and a
-     * tessellation evaluation shader. Note that if a shader program has one of the tessellation shaders, it must also have
-     * the other tessellation shader.
+     * Shader programs can include between two and five shaders. At the bare minimum, a shader program needs a vertex
+     * shader and a fragment shader. A shader program can also have a geometry shader, a tessellation control shader,
+     * and a tessellation evaluation shader. Note that if a shader program has one of the tessellation shaders, it must
+     * also have the other tessellation shader.
      *
-     * A gl_shader_program does a couple of things. First, it holds a reference to the OpenGL object. Second, it holds all
-     * the configuration options declared in the shader. Third, it possibly holds the uniforms and attributes defined in
-     * this shader. There's a good chance that I won't end up with uniform and attribute information. This class will also
-     * hold the map from line in the shader sent to the compiler and the line number and shader file that the line came from
-     * on disk
+     * A gl_shader_program does a couple of things. First, it holds a reference to the OpenGL object. Second, it holds
+     * all  the configuration options declared in the shader. Third, it possibly holds the uniforms and attributes
+     * defined in this shader. There's a good chance that I won't end up with uniform and attribute information. This
+     * class will also hold the map from line in the shader sent to the compiler and the line number and shader file
+     * that the line came from on disk
      */
     class gl_shader_program {
     public:
         /*!
          * \brief Constructs a gl_shader_program
          */
-        explicit gl_shader_program(const shader_definition &source, vk::RenderPass renderpass);
+        explicit gl_shader_program(const shader_definition &source, const material_state& material, vk::RenderPass renderpass);
 
         /*!
          * \brief Default copy constructor
@@ -82,8 +53,8 @@ namespace nova {
         /**
          * \brief Move constructor
          *
-         * I expect that this constructor will only be called when returning a fully linked shader from a builder function.
-         * If this is not the case, this will throw an error. Be watchful.
+         * I expect that this constructor will only be called when returning a fully linked shader from a builder
+         * function. If this is not the case, this will throw an error. Be watchful.
          */
         gl_shader_program(gl_shader_program &&other) noexcept;
 
@@ -122,9 +93,9 @@ namespace nova {
          */
         std::string filter;
 
-        void create_shader(const std::vector<uint32_t>& shader_source, vk::ShaderStageFlags flags);
+        void create_shader_module(const std::vector<uint32_t> &shader_source, vk::ShaderStageFlags flags);
 
-        void link(vk::RenderPass pass);
+        void create_pipeline(vk::RenderPass pass, const material_state &material);
     };
 }
 

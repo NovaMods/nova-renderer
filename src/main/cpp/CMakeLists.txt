@@ -156,6 +156,7 @@ set(NOVA_SOURCE
         render/vulkan/command_pool.cpp
         render/objects/renderpasses/renderpass_manager.cpp render/objects/renderpasses/renderpass_manager.h
         render/objects/renderpasses/materials.h
+        render/objects/renderpasses/materials.cpp
         )
 
 if (WIN32)
@@ -175,7 +176,7 @@ if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 endif()
 
-add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE} ${MINIZ_SOURCE} )
+add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE} ${MINIZ_SOURCE})
 set_target_properties(nova-renderer-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)

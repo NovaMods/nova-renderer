@@ -11043,6 +11043,9 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/renderpass.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/renderpasses/materials.cpp.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/renderpasses/renderpass_manager.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
@@ -11211,6 +11214,10 @@
 			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/renderpass.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/renderpasses/materials.cpp">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>
