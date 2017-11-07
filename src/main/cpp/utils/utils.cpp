@@ -89,5 +89,13 @@ namespace nova {
 
         return ss.str();
     }
+
+    void contains_key(const nlohmann::json& json_obj, const std::string key, std::function<void(nlohmann::json&)> key_exists_func) {
+        const auto& itr = json_obj.find(key);
+        if(itr != material_json.end()) {
+            auto& json_node = json_obj.at(key);
+            key_exists_func(json_node);
+        }
+    }
 }
 

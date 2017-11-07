@@ -260,6 +260,11 @@ namespace nova {
         std::string parent;
 
         /*!
+         * \brief All of the symbols in the shader that are defined by this state
+         */
+        std::vector<std::string> defines;
+
+        /*!
          * \brief Defines the rasterizer state that's active for this material state
          */
         std::vector<state_enum> states;
@@ -368,7 +373,14 @@ namespace nova {
         uint32_t output_height;
     };
 
-    material_state create_material_from_json(const nlohmann::json &material_json);
+    material_state create_material_from_json(const std::string& material_state_name, const std::string& parent_state_name, const nlohmann::json& material_json);
+
+    /*!
+     * \brief Translates a string from a material file to a state_enum value
+     * \param state_to_decode The string to translate to a state
+     * \return The decoded state
+     */
+    state_enum decode_state(const std::string& state_to_decode);
 }
 
 #endif //RENDERER_MATERIALS_H

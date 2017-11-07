@@ -52,8 +52,18 @@ namespace nova {
 
     std::vector<material_state> get_material_definitions(nlohmann::json &shaders_json) {
         std::vector<material_state> definitions;
-        for(auto& definition : shaders_json) {
-            definitions.emplace_back(create_material_from_json(definition));
+        for(auto itr = shaders_json.begin(); itr < shaders_json.end(); ++itr) {
+            auto material_state_name = itr.key();
+            auto json_node = itr.value();
+            auto parent_state_name = std::string{""};
+
+            int colon_pos = material_state_name.find(':');
+            if(colon_pos != std::string::npos) {
+                parent_state_name = material_state_name.substr(colon_pos + 1);
+                material_state_name = material_state_name.substr(0, colon_pos - 1);
+            }
+
+            definitions.emplace_back(create_material_from_json(material_state_name, parent_state_name, json_node));
         }
 
         return definitions;
@@ -78,7 +88,7 @@ namespace nova {
         // Figure out all the shader files that we need to load
         auto material_definitions = get_material_definitions(shaders_json);
 
-        for(auto &shader : shaders) {
+        /*for(auto &shader : shaders) {
             try {
                 // All shaderpacks are in the shaderpacks folder
                 auto shader_path = "shaderpacks/" + shaderpack_name + "/shaders/" + shader.name;
@@ -93,11 +103,11 @@ namespace nova {
             } catch(std::exception& e) {
                 LOG(ERROR) << "Could not load shader " << shader.name << ". Reason: " << e.what();
             }
-        }
+        }*/
 
         warn_for_missing_fallbacks(sources);
 
-        return {sources, shaders_json};
+        return {};
     }
 
     void warn_for_missing_fallbacks(std::vector<shader_definition> sources) {
