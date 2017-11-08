@@ -61,6 +61,20 @@ namespace nova {
             ret_val.geometry_shader = std::experimental::make_optional(geometry_shader.get<std::string>());
         });
 
+        if_contains_key(material_json, "tessellationEvaluationShader", [&](const nlohmann::json& tese_shader) {
+            ret_val.tessellation_evaluation_shader = std::experimental::make_optional(tese_shader.get<std::string>());
+        });
+
+        if_contains_key(material_json, "tessellationControlShader", [&](const nlohmann::json& tesc_shader) {
+            ret_val.tessellation_control_shader = std::experimental::make_optional(tesc_shader.get<std::string>());
+        });
+
+        if_contains_key(material_json, "vertexFields", [&](const nlohmann::json& vertex_fields) {
+            for(const auto& vertex_field : vertex_fields) {
+                ret_val.vertex_fields.push_back(decode_vertex_field(vertex_field));
+            }
+        });
+
         return ret_val;
     }
 
@@ -128,5 +142,11 @@ namespace nova {
         }
 
         LOG(FATAL) << "Invalid value for a texture filter enum: '" << texture_filter_enum_str << "'";
+    }
+
+    vertex_field_enum decode_vertex_field(const nlohmann::json &vertex_field_json) {
+        const std::string vertex_field_str = vertex_field_json["field"];
+
+        // TODO: Flesh out this function by converting to vertex_field_enum values
     }
 }

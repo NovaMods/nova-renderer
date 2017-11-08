@@ -98,7 +98,7 @@ namespace nova {
     /*!
      * \brief The kind of data in a vertex attribute
      */
-    enum class vertex_field {
+    enum class vertex_field_enum {
         /*!
          * \brief The vertex position
          *
@@ -315,7 +315,7 @@ namespace nova {
          *
          * The index in the array is the attribute index that the vertex field is bound to
          */
-        std::vector<vertex_field> vertex_fields;
+        std::vector<vertex_field_enum> vertex_fields;
 
         /*!
          * \brief All the sampler states that are defined for this material_state. Still not sure how they work though
@@ -403,16 +403,23 @@ namespace nova {
     /*!
      * \brief Translates a string from a material file to a texture_filter_enum value
      * \param texture_filter_enum_str The string to translate into a texture_filter_enum
-     * \return The tanslated texture_filter_enum
+     * \return The translated texture_filter_enum
      */
     texture_filter_enum decode_texture_filter_enum(const std::string &texture_filter_enum_str);
 
     /*!
-     * \brief Translates a string from a matrial file into a texture_wrap_mode_enum value
+     * \brief Translates a string from a material file into a texture_wrap_mode_enum value
      * \param wrap_mode The string to translate into a texture_wrap_mode_enum
      * \return The translated texture_wrap_mode_enum
      */
     wrap_mode_enum decode_wrap_mode_enum(const std::string &wrap_mode);
+
+    /*!
+     * \brief Translates a JSON object into a member of the vertex field enum
+     * \param wrap_mode The string to translate into a vertex_field_enum
+     * \return The translated vertex_field_enum
+     */
+    vertex_field_enum decode_vertex_field(const nlohmann::json &vertex_field_json);
 }
 
 #endif //RENDERER_MATERIALS_H
