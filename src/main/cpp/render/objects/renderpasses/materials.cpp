@@ -8,29 +8,57 @@
 #include "../../../utils/utils.h"
 
 namespace nova {
-    material_state create_from_json(const std::string& material_state_name, const std::string& parent_state_name, const nlohmann::json& material_json) {
+    material_state create_material_from_json(const std::string& material_state_name, const std::string& parent_state_name, const nlohmann::json& material_json) {
         material_state ret_val = {};
 
         ret_val.name = material_state_name;
         ret_val.parent = parent_state_name;
 
-        if_contains_key(material_json, "states", [&](nlohmann::json& states) {
+        if_contains_key(material_json, "states", [&](const auto& states) {
             for(auto& state : states) {
                 state_enum decoded_state = decode_state(state);
                 ret_val.states.push_back(decoded_state);
             }
         });
 
-        if_contains_key(material_json, "defines", [&](auto& defines) {
+        if_contains_key(material_json, "defines", [&](const auto& defines) {
             for(auto& define : defines) {
                 ret_val.defines.push_back(define);
             }
         });
 
-        if_contains_key(material_json, "samplerStates", [&](auto& sampler_states) {
+        if_contains_key(material_json, "samplerStates", [&](const auto& sampler_states) {
             for(auto& sampler_state : sampler_states) {
                 ret_val.sampler_states.push_back(decode_sampler_state(sampler_state));
             }
+        });
+
+        if_contains_key(material_json, "depthBias", [&](const auto& depth_bias) {
+            ret_val.depth_bias = depth_bias;
+        });
+
+        if_contains_key(material_json, "slopeScaledDepthBias", [&](const auto& slope_scaled_depth_bias){
+            ret_val.slope_scaled_depth_bias = slope_scaled_depth_bias;
+        });
+
+        if_contains_key(material_json, "depthBiasOGL", [&](const auto& depth_bias_ogl) {
+            ret_val.depth_bias = depth_bias_ogl;
+        });
+
+        if_contains_key(material_json, "slopeScaledDepthBiasOGL", [&](const auto& slope_scaled_depth_bias_ogl){
+            ret_val.slope_scaled_depth_bias = slope_scaled_depth_bias_ogl;
+        });
+
+        if_contains_key(material_json, "vertexShader", [&](const auto& vertex_shader) {
+            ret_val.vertex_shader = vertex_shader;
+        });
+
+        if_contains_key(material_json, "fragmentShader", [&](const auto& fragment_shader) {
+            ret_val.fragment_shader = fragment_shader;
+        });
+
+        if_contains_key(material_json, "geometryShader", [&](const nlohmann::json& geometry_shader) {
+            ret_val.geometry_shader = std::experimental::make_optional(geometry_shader.get<std::string>());
         });
 
         return ret_val;

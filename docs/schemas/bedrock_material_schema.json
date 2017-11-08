@@ -34,11 +34,11 @@
                 },
                 "depthBiasOGL": {
                     "type": "number",
-                    "description": "Offset the value written to the depth buffer"
+                    "description": "Offset the value written to the depth buffer. If this value is present then Nova ignores depthBias"
                 }, 
                 "slopeScaledDepthBiasOGL": {
                     "type": "number",
-                    "description": "Offset the value written to the depth buffer"
+                    "description": "Offset the value written to the depth buffer. If this value is present then Nove ignores slopeScaledDepthBias"
                 }, 
                 "vertexShader" : {
                     "type": "string",
@@ -46,7 +46,7 @@
                 },
                 "vrGeometryShader": {
                     "type": "string",
-                    "description": "Provides the filepath for the VR geometry shader to use for this state"
+                    "description": "Provides the filepath for the VR geometry shader to use for this state. Nova ignores this value since it doesn't deal with VR"
                 },
                 "fragmentShader": {
                     "type": "string",

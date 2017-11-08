@@ -137,7 +137,7 @@ namespace nova {
      * \param json_obj The JSON object to look for the key in
      * \param key_exists_func The function to excute if the key exists
      */
-    void if_contains_key(const nlohmann::json& json_obj, const std::string key, std::function<void(nlohmann::json&)> key_exists_func);
+    void if_contains_key(const nlohmann::json& json_obj, const std::string key, std::function<void(const nlohmann::json&)> key_exists_func);
 }
 
 #endif //RENDERER_UTILS_H

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <json.hpp>
+#include <optional.hpp>
 
 namespace nova {
     /*!
@@ -291,7 +292,7 @@ namespace nova {
          * Except not really, cause if you leave off the extension then Nova will try using the `.geom` and `.geo`
          * extensions. This is kinda just a hint
          */
-        std::string geometry_shader;
+        std::experimental::optional<std::string> geometry_shader;
 
         /*!
          * \brief The path from the resourcepack or shaderpack root to the tessellation evaluation shader
@@ -299,7 +300,7 @@ namespace nova {
          * Except not really, cause if you leave off the extension then Nova will try using the `.test` and `.tse`
          * extensions. This is kinda just a hint
          */
-        std::string tessellation_evaluation_shader;
+        std::experimental::optional<std::string> tessellation_evaluation_shader;
 
         /*!
          * \brief The path from the resourcepack or shaderpack root to the tessellation control shader
@@ -307,7 +308,7 @@ namespace nova {
          * Except not really, cause if you leave off the extension then Nova will try using the `.tesc` and `.tsc`
          * extensions. This is kinda just a hint
          */
-        std::string tessellation_control_shader;
+        std::experimental::optional<std::string> tessellation_control_shader;
 
         /*!
          * \brief Sets up the vertex fields that Nova will bind to this shader
@@ -371,6 +372,16 @@ namespace nova {
          * mostly put this member in this struct as a convenient way to pass it into a shader creation
          */
         uint32_t output_height;
+
+        /*!
+         * \brief A bias to apply to the depth
+         */
+        float depth_bias;
+
+        /*!
+         * \brief The depth bias, scaled by slope I guess?
+         */
+        float slope_scaled_depth_bias;
     };
 
     material_state create_material_from_json(const std::string& material_state_name, const std::string& parent_state_name, const nlohmann::json& material_json);
@@ -381,6 +392,13 @@ namespace nova {
      * \return The decoded state
      */
     state_enum decode_state(const std::string& state_to_decode);
+
+    /*!
+     * \brief Translates a JSON object into a sampler_state object
+     * \param json The JSON object to translate
+     * \return The translated sampler_state
+     */
+    sampler_state decode_sampler_state(const nlohmann::json& json);
 
     /*!
      * \brief Translates a string from a material file to a texture_filter_enum value
