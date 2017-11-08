@@ -63,7 +63,7 @@ namespace nova {
         point
     };
 
-    enum class texture_wrap_mode_enum {
+    enum class wrap_mode_enum {
         repeat,
         clamp
     };
@@ -91,7 +91,7 @@ namespace nova {
         /*!
          * \brief How the texutre should wrap at the edges
          */
-        texture_wrap_mode_enum wrap_mode;
+        wrap_mode_enum wrap_mode;
     };
 
     /*!
@@ -381,6 +381,20 @@ namespace nova {
      * \return The decoded state
      */
     state_enum decode_state(const std::string& state_to_decode);
+
+    /*!
+     * \brief Translates a string from a material file to a texture_filter_enum value
+     * \param texture_filter_enum_str The string to translate into a texture_filter_enum
+     * \return The tanslated texture_filter_enum
+     */
+    texture_filter_enum decode_texture_filter_enum(const std::string &texture_filter_enum_str);
+
+    /*!
+     * \brief Translates a string from a matrial file into a texture_wrap_mode_enum value
+     * \param wrap_mode The string to translate into a texture_wrap_mode_enum
+     * \return The translated texture_wrap_mode_enum
+     */
+    wrap_mode_enum decode_wrap_mode_enum(const std::string &wrap_mode);
 }
 
 #endif //RENDERER_MATERIALS_H
