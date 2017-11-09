@@ -147,6 +147,38 @@ namespace nova {
     vertex_field_enum decode_vertex_field(const nlohmann::json &vertex_field_json) {
         const std::string vertex_field_str = vertex_field_json["field"];
 
-        // TODO: Flesh out this function by converting to vertex_field_enum values
+        if(vertex_field_str == "Position") {
+            return vertex_field_enum::position;
+
+        } else if(vertex_field_str == "Color") {
+            return vertex_field_enum::color;
+
+        } else if(vertex_field_str == "UV0" || vertex_field_str == "MainUV") {
+            return vertex_field_enum::main_uv;
+
+        } else if(vertex_field_str == "UV1" || vertex_field_str == "LightmapUV") {
+            return vertex_field_enum::lightmap_uv;
+
+        } else if(vertex_field_str == "Normal") {
+            return vertex_field_enum::normal;
+
+        } else if(vertex_field_str == "Tangent") {
+            return vertex_field_enum::tangent;
+
+        } else if(vertex_field_str == "MidTexCoord") {
+            return vertex_field_enum::mid_tex_coord;
+
+        } else if(vertex_field_str == "VirtualTextureId") {
+            return vertex_field_enum::virtual_texture_id;
+
+        } else if(vertex_field_str == "McEntityId") {
+            return vertex_field_enum::mc_entity_id;
+
+        } else if(vertex_field_str == "Empty") {
+            return vertex_field_enum::empty;
+
+        }
+
+        LOG(FATAL) << "Invalid vertex field: '" << vertex_field_str << "'";
     }
 }
