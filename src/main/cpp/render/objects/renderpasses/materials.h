@@ -177,6 +177,28 @@ namespace nova {
         empty
     };
 
+    struct stencil_buffer_state {
+        /*!
+         * \brief The stencil function to use
+         */
+        stencil_func_enum stencil_func;
+
+        /*!
+         * \brief What to do when the stencil test fails
+         */
+        stencil_or_depth_op_enum stencil_fail_op;
+
+        /*!
+         * \brief The depth fail op I guess? Or is it what to do when both the depth and stencil functions fail?
+         */
+        stencil_or_depth_op_enum stencil_depth_fail_op;
+
+        /*!
+         * \brief What to do when the stencil tests passes
+         */
+        stencil_or_depth_op_enum stencil_pass_op;
+    };
+
     enum class texture_location_enum {
         dynamic,
         in_user_package
