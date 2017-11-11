@@ -75,6 +75,14 @@ namespace nova {
             }
         });
 
+        if_contains_key(material_json, "frontFace", [&](const nlohmann::json& front_face_obj) {
+            ret_val.front_face = decode_stencil_buffer_state(front_face_obj);
+        });
+
+        if_contains_key(material_json, "backFace", [&](const nlohmann::json back_face_obj) {
+            ret_val.back_face = decode_stencil_buffer_state(back_face_obj);
+        });
+
         return ret_val;
     }
 
@@ -180,5 +188,86 @@ namespace nova {
         }
 
         LOG(FATAL) << "Invalid vertex field: '" << vertex_field_str << "'";
+    }
+
+    comparison_func_enum decode_comparison_func_enum(const std::string& comparison_func) {
+        if(comparison_func == "Always") {
+            return comparison_func_enum::always;
+
+        } else if(comparison_func == "Never") {
+            return comparison_func_enum::never;
+
+        } else if(comparison_func == "Less") {
+            return comparison_func_enum::less;
+
+        } else if(comparison_func == "LessEqual") {
+            return comparison_func_enum::less_equal;
+
+        } else if(comparison_func == "GreaterEqual") {
+            return comparison_func_enum::greater_equal;
+
+        } else if(comparison_func == "Equal") {
+            return comparison_func_enum::equal;
+
+        } else if(comparison_func == "Replace") {
+            return comparison_func_enum::replace;
+
+        } else if(comparison_func == "NotEqual") {
+            return comparison_func_enum::not_equal;
+        }
+
+        LOG(FATAL) << "Invalid comparison function '" << comparison_func << "'";
+    }
+
+    stencil_or_depth_op_enum decode_stencil_or_depth_op_enum(const std::string& op) {
+        if(op == "Keep") {
+            return stencil_or_depth_op_enum::keep;
+
+        } else if(op == "Zero") {
+            return stencil_or_depth_op_enum::zero;
+
+        } else if(op == "Replace") {
+            return stencil_or_depth_op_enum::replace;
+
+        } else if(op == "Increment") {
+            return stencil_or_depth_op_enum::increment;
+
+        } else if(op == "IncrementAndWrap") {
+            return stencil_or_depth_op_enum::increment_and_wrap;
+
+        } else if(op == "Decrement") {
+            return stencil_or_depth_op_enum::decrement;
+
+        } else if(op == "DecrementAndSwap") {
+            return stencil_or_depth_op_enum::decrement_and_wrap;
+
+        } else if(op == "Invert") {
+            return stencil_or_depth_op_enum::invert;
+
+        }
+
+        LOG(FATAL) << "Invalid stencil or depth operation '" << op << "'";
+    }
+
+    stencil_buffer_state decode_stencil_buffer_state(const nlohmann::json &json) {
+        auto ret_val = stencil_buffer_state{};
+
+        if_contains_key(json, "stencilFunc", [&](const std::string& stencil_func) {
+            ret_val.stencil_func = decode_comparison_func_enum(stencil_func);
+        });
+
+        if_contains_key(json, "stencilFailOp", [&](const std::string& stencil_fail_op) {
+            ret_val.stencil_fail_op = decode_stencil_or_depth_op_enum(stencil_fail_op);
+        });
+
+        if_contains_key(json, "stencilDepthFailOp", [&](const std::string& stencil_depth_fail_op) {
+            ret_val.stencil_depth_fail_op = decode_stencil_or_depth_op_enum(stencil_depth_fail_op);
+        });
+
+        if_contains_key(json, "stencilPassOp", [&](const std::string& stencil_pass_op) {
+            ret_val.stencil_pass_op = decode_stencil_or_depth_op_enum(stencil_pass_op);
+        });
+
+        return ret_val;
     }
 }

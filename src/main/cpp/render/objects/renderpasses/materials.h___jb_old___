@@ -432,12 +432,12 @@ namespace nova {
         std::vector<vertex_field_enum> vertex_fields;
 
         /*!
-         * \brief The stencil buffer operations to perform on the front faces
+         * \brief The stencil buffer operations to perform on the front face
          */
         stencil_buffer_state front_face;
 
         /*!
-         * \brief The stencil buffer operations to perform on the back faces
+         * \brief 
          */
         stencil_buffer_state back_face;
 
@@ -548,8 +548,6 @@ namespace nova {
     comparison_func_enum decode_comparison_func_enum(const std::string& comparison_func);
 
     stencil_or_depth_op_enum decode_stencil_or_depth_op_enum(const std::string& op);
-
-    stencil_buffer_state decode_stencil_buffer_state(const nlohmann::json &json);
 }
 
 #endif //RENDERER_MATERIALS_H
