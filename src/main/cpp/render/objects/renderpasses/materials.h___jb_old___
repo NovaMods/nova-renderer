@@ -290,7 +290,7 @@ namespace nova {
         /*!
          * \brief What to do when the stencil tests passes
          */
-        optional<stencil_or_depth_op_enum> stencil_pass_op;
+        stencil_or_depth_op_enum stencil_pass_op;
     };
 
     enum class texture_location_enum {

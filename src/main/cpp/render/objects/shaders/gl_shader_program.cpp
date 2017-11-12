@@ -82,8 +82,8 @@ namespace nova {
         vk::Viewport viewport = {};
         viewport.x = 0;
         viewport.y = 0;
-        viewport.width = material.output_width;
-        viewport.height = material.output_height;
+        viewport.width = *material.output_width;
+        viewport.height = *material.output_height;
 
         vk::PipelineViewportStateCreateInfo viewport_create_info = {};
         viewport_create_info.scissorCount = 1;

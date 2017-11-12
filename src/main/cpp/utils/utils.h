@@ -18,6 +18,9 @@
 
 #include <easylogging++.h>
 #include <glm/glm.hpp>
+#include <optional.hpp>
+
+using namespace std::experimental;
 
 /*!
  * \brief Initializes the logging system
@@ -26,7 +29,7 @@ void initialize_logging();
 
 namespace nova {
     /*!
-     * \brief Calls the fucntion once for every element in the provided container
+     * \brief Calls the function once for every element in the provided container
      *
      * \param container The container to perform an action for each element in
      * \param thingToDo The action to perform for each element in the collection
@@ -53,8 +56,8 @@ namespace nova {
      */
     class resource_not_found : public std::exception {
     public:
-        resource_not_found(const std::string& msg);
-        virtual const char * what() const noexcept;
+        explicit resource_not_found(const std::string& msg);
+        const char * what() const noexcept override;
     private:
         std::string message;
     };
@@ -135,9 +138,38 @@ namespace nova {
      * \brief Checks if the given value is in the provided json
      * \param key The key to look for
      * \param json_obj The JSON object to look for the key in
-     * \param key_exists_func The function to excute if the key exists
+     * \param decoder A function that deserializes the value
+     * \return An optional that wraps the
      */
-    void if_contains_key(const nlohmann::json& json_obj, const std::string key, std::function<void(const nlohmann::json&)> key_exists_func);
+    template <typename ValType>
+    optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string key, std::function<ValType(const nlohmann::json&)> decoder) {
+        const auto& itr = json_obj.find(key);
+        if(itr != json_obj.end()) {
+            auto& json_node = json_obj.at(key);
+            ValType val = decoder(json_node);
+            return optional<ValType>{std::move(val)};
+        }
+
+        return optional<ValType>{};
+    }
+
+    /*!
+     * \brief Checks if the given value is in the provided json
+     * \param key The key to look for
+     * \param json_obj The JSON object to look for the key in
+     * \param decoder A function that deserializes the value
+     * \return An optional that wraps the
+     */
+    template <typename ValType>
+    optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string key) {
+        const auto& itr = json_obj.find(key);
+        if(itr != json_obj.end()) {
+            auto& json_node = json_obj.at(key);
+            return optional<ValType>(json_node.get<ValType>());
+        }
+
+        return optional<ValType>{};
+    }
 }
 
 #endif //RENDERER_UTILS_H

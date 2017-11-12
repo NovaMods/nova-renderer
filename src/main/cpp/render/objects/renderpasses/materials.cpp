@@ -14,74 +14,62 @@ namespace nova {
         ret_val.name = material_state_name;
         ret_val.parent = parent_state_name;
 
-        if_contains_key(material_json, "states", [&](const auto& states) {
+        ret_val.states = get_json_value<std::vector<state_enum>>(material_json, "states", [&](const auto& states) {
+            auto vec = std::vector<state_enum>{};
             for(auto& state : states) {
-                state_enum decoded_state = decode_state(state);
-                ret_val.states.push_back(decoded_state);
+                vec.push_back(decode_state(state));
             }
+            return vec;
         });
 
-        if_contains_key(material_json, "defines", [&](const auto& defines) {
+        ret_val.defines = get_json_value<std::vector<std::string>>(material_json, "defines", [&](const auto& defines) {
+            auto vec = std::vector<std::string>{};
             for(auto& define : defines) {
-                ret_val.defines.push_back(define);
+                vec.push_back(define);
             }
+            return vec;
         });
 
-        if_contains_key(material_json, "samplerStates", [&](const auto& sampler_states) {
+        ret_val.sampler_states = get_json_value<std::vector<sampler_state>>(material_json, "samplerStates", [&](const auto& sampler_states) {
+            auto vec = std::vector<sampler_state>{};
             for(auto& sampler_state : sampler_states) {
-                ret_val.sampler_states.push_back(decode_sampler_state(sampler_state));
+                vec.push_back(decode_sampler_state(sampler_state));
             }
+            return vec;
         });
 
-        if_contains_key(material_json, "depthBias", [&](const auto& depth_bias) {
-            ret_val.depth_bias = depth_bias;
-        });
+        // Sometimes I have to use the type name, sometimes auto works. Go figure
+        ret_val.depth_bias = get_json_value<float>(material_json, "depthBias");
 
-        if_contains_key(material_json, "slopeScaledDepthBias", [&](const auto& slope_scaled_depth_bias){
-            ret_val.slope_scaled_depth_bias = slope_scaled_depth_bias;
-        });
+        ret_val.slope_scaled_depth_bias = get_json_value<float>(material_json, "slopeScaledDepthBias");
 
-        if_contains_key(material_json, "depthBiasOGL", [&](const auto& depth_bias_ogl) {
-            ret_val.depth_bias = depth_bias_ogl;
-        });
+        ret_val.depth_bias = get_json_value<float>(material_json, "depthBiasOGL");
 
-        if_contains_key(material_json, "slopeScaledDepthBiasOGL", [&](const auto& slope_scaled_depth_bias_ogl){
-            ret_val.slope_scaled_depth_bias = slope_scaled_depth_bias_ogl;
-        });
+        ret_val.slope_scaled_depth_bias = get_json_value<float>(material_json, "slopeScaledDepthBiasOGL");
 
-        if_contains_key(material_json, "vertexShader", [&](const auto& vertex_shader) {
-            ret_val.vertex_shader = vertex_shader;
-        });
+        ret_val.vertex_shader = get_json_value<std::string>(material_json, "vertexShader");
 
-        if_contains_key(material_json, "fragmentShader", [&](const auto& fragment_shader) {
-            ret_val.fragment_shader = fragment_shader;
-        });
+        ret_val.fragment_shader = get_json_value<std::string>(material_json, "fragmentShader");
 
-        if_contains_key(material_json, "geometryShader", [&](const nlohmann::json& geometry_shader) {
-            ret_val.geometry_shader = std::experimental::make_optional(geometry_shader.get<std::string>());
-        });
+        ret_val.geometry_shader  = get_json_value<std::string>(material_json, "geometryShader");
 
-        if_contains_key(material_json, "tessellationEvaluationShader", [&](const nlohmann::json& tese_shader) {
-            ret_val.tessellation_evaluation_shader = std::experimental::make_optional(tese_shader.get<std::string>());
-        });
+        ret_val.tessellation_evaluation_shader = get_json_value<std::string>(material_json, "tessellationEvaluationShader");
 
-        if_contains_key(material_json, "tessellationControlShader", [&](const nlohmann::json& tesc_shader) {
-            ret_val.tessellation_control_shader = std::experimental::make_optional(tesc_shader.get<std::string>());
-        });
+        ret_val.tessellation_control_shader = get_json_value<std::string>(material_json, "tessellationControlShader");
 
-        if_contains_key(material_json, "vertexFields", [&](const nlohmann::json& vertex_fields) {
+        ret_val.vertex_fields = get_json_value<std::vector<vertex_field_enum>>(material_json, "vertexFields", [&](const nlohmann::json& vertex_fields) {
+            auto vec = std::vector<vertex_field_enum>{};
             for(const auto& vertex_field : vertex_fields) {
-                ret_val.vertex_fields.push_back(decode_vertex_field(vertex_field));
+                vec.push_back(decode_vertex_field(vertex_field));
             }
+            return vec;
         });
 
-        if_contains_key(material_json, "frontFace", [&](const nlohmann::json& front_face_obj) {
-            ret_val.front_face = decode_stencil_buffer_state(front_face_obj);
-        });
+        ret_val.front_face = get_json_value<stencil_buffer_state>(material_json, "frontFace", decode_stencil_buffer_state);
 
-        if_contains_key(material_json, "backFace", [&](const nlohmann::json back_face_obj) {
-            ret_val.back_face = decode_stencil_buffer_state(back_face_obj);
-        });
+        ret_val.back_face = get_json_value<stencil_buffer_state>(material_json, "backFace", decode_stencil_buffer_state);
+
+        ret_val.stencil_ref = get_json_value<int>(material_json, "stencilRef");
 
         return ret_val;
     }
@@ -252,21 +240,13 @@ namespace nova {
     stencil_buffer_state decode_stencil_buffer_state(const nlohmann::json &json) {
         auto ret_val = stencil_buffer_state{};
 
-        if_contains_key(json, "stencilFunc", [&](const std::string& stencil_func) {
-            ret_val.stencil_func = decode_comparison_func_enum(stencil_func);
-        });
+        ret_val.stencil_func = get_json_value<comparison_func_enum>(json, "stencilFunc", decode_comparison_func_enum);
 
-        if_contains_key(json, "stencilFailOp", [&](const std::string& stencil_fail_op) {
-            ret_val.stencil_fail_op = decode_stencil_or_depth_op_enum(stencil_fail_op);
-        });
+        ret_val.stencil_fail_op = get_json_value<stencil_or_depth_op_enum>(json, "stencilFailOp", decode_stencil_or_depth_op_enum);
 
-        if_contains_key(json, "stencilDepthFailOp", [&](const std::string& stencil_depth_fail_op) {
-            ret_val.stencil_depth_fail_op = decode_stencil_or_depth_op_enum(stencil_depth_fail_op);
-        });
+        ret_val.stencil_depth_fail_op = get_json_value<stencil_or_depth_op_enum>(json, "stencilDepthFailOp", decode_stencil_or_depth_op_enum);
 
-        if_contains_key(json, "stencilPassOp", [&](const std::string& stencil_pass_op) {
-            ret_val.stencil_pass_op = decode_stencil_or_depth_op_enum(stencil_pass_op);
-        });
+        ret_val.stencil_pass_op = get_json_value<stencil_or_depth_op_enum>(json, "stencilPassOp", decode_stencil_or_depth_op_enum);
 
         return ret_val;
     }
