@@ -69,7 +69,29 @@ namespace nova {
 
         ret_val.back_face = get_json_value<stencil_buffer_state>(material_json, "backFace", decode_stencil_buffer_state);
 
-        ret_val.stencil_ref = get_json_value<int>(material_json, "stencilRef");
+        ret_val.stencil_ref = get_json_value<uint32_t>(material_json, "stencilRef");
+
+        ret_val.stencil_read_mask = get_json_value<uint32_t>(material_json, "stencilReadMask");
+
+        ret_val.stencil_write_mask = get_json_value<uint32_t>(material_json, "stencilWriteMask");
+
+        ret_val.msaa_support = get_json_value<msaa_support_enum>(material_json, "msaaSupport", decode_msaa_support_enum);
+
+        ret_val.primitive_mode = get_json_value<primitive_mode_enum>(material_json, "primitiveMode", decode_primitive_mode_enum);
+
+        ret_val.source_blend_factor = get_json_value<blend_source_enum>(material_json, "blendSrc", decode_blend_source_enum);
+
+        ret_val.destination_blend_factor = get_json_value<blend_source_enum>(material_json, "blendDst", decode_blend_source_enum);
+
+        ret_val.textures = get_json_value<std::vector<texture>>(material_json, "textures", [&](const nlohmann::json& textures) {
+            auto vec = std::vector<texture>{};
+
+            for(const auto& texture_field : textures) {
+                vec.push_back(decode_texture(texture_field));
+            }
+
+            return vec;
+        });
 
         return ret_val;
     }
@@ -249,5 +271,83 @@ namespace nova {
         ret_val.stencil_pass_op = get_json_value<stencil_or_depth_op_enum>(json, "stencilPassOp", decode_stencil_or_depth_op_enum);
 
         return ret_val;
+    }
+
+    msaa_support_enum decode_msaa_support_enum(const std::string& msaa_support_str) {
+        if(msaa_support_str == "MSAA") {
+            return msaa_support_enum::msaa;
+
+        } else if(msaa_support_str == "Both") {
+            return msaa_support_enum::both;
+        }
+
+        LOG(FATAL) << "Invalid value for msaaSupport: '" << msaa_support_str << "'";
+    }
+
+    primitive_mode_enum decode_primitive_mode_enum(const std::string& primitive_mode_str) {
+        if(primitive_mode_str == "Line") {
+            return primitive_mode_enum::line;
+
+        } else if(primitive_mode_str == "Triangle") {
+            return primitive_mode_enum::triangle;
+
+        }
+
+        LOG(FATAL) << "Invalid primitive mode: '" << primitive_mode_str << "'";
+    }
+
+    blend_source_enum decode_blend_source_enum(const std::string& blend_source_str) {
+        if(blend_source_str == "SourceColor") {
+            return blend_source_enum::source_color;
+
+        } else if(blend_source_str == "Zero") {
+            return blend_source_enum::zero;
+
+        } else if(blend_source_str == "One") {
+            return blend_source_enum::one;
+
+        } else if(blend_source_str == "SourceAlpha") {
+            return blend_source_enum::source_alpha;
+
+        } else if(blend_source_str == "OneMinusSourceAlpha") {
+            return blend_source_enum::one_minus_source_alpha;
+
+        } else if(blend_source_str == "DstColor") {
+            return blend_source_enum::dest_color;
+
+        } else if(blend_source_str == "OneMinusDstColor") {
+            return blend_source_enum::one_minus_dest_color;
+
+        }
+
+        LOG(FATAL) << "Invalid blend source '" << blend_source_str << "'";
+    }
+
+    texture decode_texture(const nlohmann::json& texture_json) {
+        auto tex = texture{};
+
+        // If we don't have these, it's an error
+        // TODO: A better parser for this stuff. Maybe extend optional to have an exception or error string or something?
+        tex.index = get_json_value<uint32_t>(texture_json, "textureIndex").value();
+
+        tex.texture_location = get_json_value<texture_location_enum>(texture_json, "textureLocation", decode_texture_location_enum).value();
+
+        tex.texture_name = get_json_value<std::string>(texture_json, "textureName").value();
+
+        tex.calculate_mipmaps = get_json_value<bool>(texture_json, "calculateMipmaps");
+
+        return tex;
+    }
+
+    texture_location_enum decode_texture_location_enum(const std::string& texture_location_str) {
+        if(texture_location_str == "InUserPackage") {
+            return texture_location_enum::in_user_package;
+
+        } else if(texture_location_str == "Dynamic") {
+            return texture_location_enum::dynamic;
+
+        }
+
+        LOG(FATAL) << "Invalid texture location enum '" << texture_location_str << "'";
     }
 }

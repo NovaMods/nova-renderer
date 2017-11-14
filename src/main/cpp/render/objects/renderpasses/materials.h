@@ -340,7 +340,7 @@ namespace nova {
         /*!
          * \brief If true, calculates mipmaps for this texture before the shaders is drawn
          */
-        bool calculate_mipmaps;
+        optional<bool> calculate_mipmaps;
     };
 
     /*!
@@ -358,6 +358,29 @@ namespace nova {
          * that Vulkan supports, and it should almost always be RGBA, but I don't feel like writing them all out
          */
         std::string format;
+    };
+
+    enum class msaa_support_enum {
+        msaa,
+        both
+    };
+
+    /*!
+     * \brief What sort of primitive to draw
+     */
+    enum class primitive_mode_enum {
+        line,
+        triangle
+    };
+
+    enum class blend_source_enum {
+        source_color,
+        zero,
+        one,
+        source_alpha,
+        one_minus_source_alpha,
+        dest_color,
+        one_minus_dest_color
     };
 
     /*!
@@ -512,7 +535,37 @@ namespace nova {
         /*!
          * \brief A reference to a stencil somehow?
          */
-        optional<int> stencil_ref;
+        optional<uint32_t> stencil_ref;
+
+        /*!
+         * \brief The mastk to use when reading from the stencil buffer
+         */
+        optional<uint32_t> stencil_read_mask;
+
+        /*!
+         * \brief The mask to use when writing to the stencil buffer
+         */
+        optional<uint32_t> stencil_write_mask;
+
+        /*!
+         * \brief How to handle MSAA for this state
+         */
+        optional<msaa_support_enum> msaa_support;
+
+        /*!
+         * \brief
+         */
+        optional<primitive_mode_enum> primitive_mode;
+
+        /*!
+         * \brief Where to get the blending factor for the soource
+         */
+        optional<blend_source_enum> source_blend_factor;
+
+        /*!
+         * \brief Where to get the blending factor for the destination
+         */
+        optional<blend_source_enum> destination_blend_factor;
     };
 
     material_state create_material_from_json(const std::string& material_state_name, const std::string& parent_state_name, const nlohmann::json& material_json);
@@ -557,6 +610,16 @@ namespace nova {
     stencil_or_depth_op_enum decode_stencil_or_depth_op_enum(const std::string& op);
 
     stencil_buffer_state decode_stencil_buffer_state(const nlohmann::json &json);
+
+    msaa_support_enum decode_msaa_support_enum(const std::string& msaa_support_str);
+
+    primitive_mode_enum decode_primitive_mode_enum(const std::string& primitive_mode_str);
+
+    blend_source_enum decode_blend_source_enum(const std::string& blend_source_str);
+
+    texture decode_texture(const nlohmann::json& texture_json);
+
+    texture_location_enum decode_texture_location_enum(const std::string& texture_location_str);
 }
 
 #endif //RENDERER_MATERIALS_H
