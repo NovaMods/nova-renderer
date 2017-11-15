@@ -93,6 +93,10 @@ namespace nova {
             return vec;
         });
 
+        ret_val.alpha_src = get_json_value<blend_source_enum>(material_json, "alphaSrc", decode_blend_source_enum);
+        ret_val.alpha_dst = get_json_value<blend_source_enum>(material_json, "alphaDst", decode_blend_source_enum);
+        ret_val.depth_func = get_json_value<comparison_func_enum>(material_json, "depthFunc", decode_comparison_func_enum);
+
         return ret_val;
     }
 

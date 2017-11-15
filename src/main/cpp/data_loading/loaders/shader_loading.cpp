@@ -50,12 +50,12 @@ namespace nova {
         }
     }
 
-    std::vector<material_state> get_material_definitions(nlohmann::json &shaders_json) {
+    std::vector<material_state> get_material_definitions(const nlohmann::json &shaders_json) {
         std::vector<material_state> definitions;
         for(auto itr = shaders_json.begin(); itr < shaders_json.end(); ++itr) {
             auto material_state_name = itr.key();
             auto json_node = itr.value();
-            auto parent_state_name = std::string{""};
+            auto parent_state_name = std::string{};
 
             int colon_pos = material_state_name.find(':');
             if(colon_pos != std::string::npos) {
@@ -72,11 +72,16 @@ namespace nova {
     std::vector<std::pair<material_state, shader_definition>> load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names) {
         std::vector<shader_definition> sources;
 
-        // First, load in the shaders.json file so we can see what we're
-        // dealing with
+        // Look in the materials directory and load whatever files are there
+        // If any of the files have Bedrock names, use the default Bedrock files to make up for anything the user didn't
+        //  write
+        // If any of the files have Optifine Shaders names, use the default Optifine Shaders files to make up for
+        //  anything the user didn't write
+        // If we don't find any Optifine Shaders or Bedrock names, the shaderpack is doing its own thing and we should
+        //  respect that
+
         std::ifstream shaders_json_file("shaderpacks/" + shaderpack_name + "/shaders.json");
-        // TODO: Load a default shaders.json file, store it somewhere accessable, and load it if there isn't a
-        // shaders.json in the shaderpack
+
         nlohmann::json shaders_json;
         if(shaders_json_file.is_open()) {
             shaders_json_file >> shaders_json;

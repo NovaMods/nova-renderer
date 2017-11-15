@@ -566,6 +566,21 @@ namespace nova {
          * \brief Where to get the blending factor for the destination
          */
         optional<blend_source_enum> destination_blend_factor;
+
+        /*!
+         * \brief How to get the source alpha in a blend
+         */
+        optional<blend_source_enum> alpha_src;
+
+        /*!
+         * \brief How to get the destination alpha in a blend
+         */
+        optional<blend_source_enum> alpha_dst;
+
+        /*!
+         * \brief The function to use for the depth test
+         */
+        optional<comparison_func_enum> depth_func;
     };
 
     material_state create_material_from_json(const std::string& material_state_name, const std::string& parent_state_name, const nlohmann::json& material_json);

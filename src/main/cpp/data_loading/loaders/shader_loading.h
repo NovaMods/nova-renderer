@@ -114,7 +114,7 @@ namespace nova {
      * \param shaders_json The JSON structure with the names of all the shaders to load
      * \return A list of all the shader_definition objects described by the given JSON
      */
-    std::vector<material_state> get_material_definitions(nlohmann::json &shaders_json);
+    std::vector<material_state> get_material_definitions(const nlohmann::json &shaders_json);
 
     /*!
      * \brief Prints our a warning for every shader described in the shaders.json file which does not specify a
@@ -125,7 +125,7 @@ namespace nova {
     void warn_for_missing_fallbacks(std::vector<shader_definition> shaders);
 
     /*!
-     * \brief Loads the default shader.json file from disk
+     * \brief Loads the default shaders.json file from disk
      *
      * This function caches the shaders.json file, so it should only load once
      *
