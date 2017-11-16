@@ -7,6 +7,7 @@
 
 #include <easylogging++.h>
 #include <shaderc/shaderc.hpp>
+#include <experimental/filesystem>
 
 #include "loaders.h"
 #include "shader_loading.h"
@@ -14,6 +15,8 @@
 #include "../../render/objects/shaders/shaderpack.h"
 #include "../../utils/utils.h"
 #include "../../render/objects/renderpass.h"
+
+using fs = std::experimental::filesystem::v1;
 
 namespace nova {
     /*!
@@ -79,6 +82,13 @@ namespace nova {
         //  anything the user didn't write
         // If we don't find any Optifine Shaders or Bedrock names, the shaderpack is doing its own thing and we should
         //  respect that
+
+        // For right now we're assuming that the material files in the loaded shderpack are the only ones in the world
+        // cause it's easier
+
+        std::string materials_directory_path_str = "shaderpacks/" + shaderpack_name + "/materials";
+        auto shader_path = fs::path{materials_directory_path_str};
+        auto directory_iter = fs::directory_iterator(shader_path);
 
         std::ifstream shaders_json_file("shaderpacks/" + shaderpack_name + "/shaders.json");
 
