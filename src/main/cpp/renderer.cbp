@@ -5,7 +5,7 @@
 		<Option title="renderer"/>
 		<Option makefile_is_custom="1"/>
 		<Option compiler="gcc"/>
-		<Option virtualFolders="CMake Files\;CMake Files\3rdparty\;CMake Files\3rdparty\easyloggingpp\;CMake Files\3rdparty\glfw\;CMake Files\3rdparty\glfw\CMake\;CMake Files\3rdparty\glfw\CMake\modules\;CMake Files\3rdparty\glfw\src\;CMake Files\3rdparty\spirv-headers\;CMake Files\3rdparty\spirv-headers\example\;CMake Files\3rdparty\glm\;CMake Files\3rdparty\glm\cmake\;CMake Files\3rdparty\glm\glm\;CMake Files\3rdparty\glm\test\;CMake Files\3rdparty\glm\test\bug\;CMake Files\3rdparty\glm\test\core\;CMake Files\3rdparty\glm\test\gtc\;CMake Files\3rdparty\glm\test\gtx\;CMake Files\3rdparty\glslang\;CMake Files\3rdparty\glslang\External\;CMake Files\3rdparty\glslang\glslang\;CMake Files\3rdparty\glslang\glslang\OSDependent\;CMake Files\3rdparty\glslang\glslang\OSDependent\Windows\;CMake Files\3rdparty\glslang\OGLCompilersDLL\;CMake Files\3rdparty\glslang\StandAlone\;CMake Files\3rdparty\glslang\SPIRV\;CMake Files\3rdparty\glslang\hlsl\;CMake Files\3rdparty\glslang\gtests\;CMake Files\3rdparty\googletest\;CMake Files\3rdparty\googletest\googlemock\;CMake Files\3rdparty\googletest\googletest\;CMake Files\3rdparty\googletest\googletest\cmake\;CMake Files\3rdparty\shaderc\;CMake Files\3rdparty\shaderc\libshaderc\;CMake Files\3rdparty\shaderc\libshaderc_util\;CMake Files\3rdparty\shaderc\cmake\;CMake Files\3rdparty\shaderc\third_party\;CMake Files\3rdparty\shaderc\glslc\;CMake Files\3rdparty\shaderc\glslc\test\;CMake Files\3rdparty\shaderc\examples\;CMake Files\3rdparty\shaderc\examples\online-compile\;CMake Files\3rdparty\miniz\;CMake Files\3rdparty\json\;CMake Files\3rdparty\json\cmake\;CMake Files\3rdparty\json\test\;CMake Files\3rdparty\optional\;CMake Files\3rdparty\spirv-tools\;CMake Files\3rdparty\spirv-tools\external\;CMake Files\3rdparty\spirv-tools\source\;CMake Files\3rdparty\spirv-tools\source\comp\;CMake Files\3rdparty\spirv-tools\source\opt\;CMake Files\3rdparty\spirv-tools\source\link\;CMake Files\3rdparty\spirv-tools\tools\;CMake Files\3rdparty\spirv-tools\tools\lesspipe\;CMake Files\3rdparty\spirv-tools\tools\emacs\;CMake Files\3rdparty\spirv-tools\test\;CMake Files\3rdparty\spirv-tools\test\comp\;CMake Files\3rdparty\spirv-tools\test\link\;CMake Files\3rdparty\spirv-tools\test\opt\;CMake Files\3rdparty\spirv-tools\test\stats\;CMake Files\3rdparty\spirv-tools\test\util\;CMake Files\3rdparty\spirv-tools\test\val\;CMake Files\3rdparty\spirv-tools\examples\;CMake Files\3rdparty\spirv-tools\examples\cpp-interface\;"/>
+		<Option virtualFolders="CMake Files\;CMake Files\3rdparty\;CMake Files\3rdparty\easyloggingpp\;CMake Files\3rdparty\glfw\;CMake Files\3rdparty\glfw\CMake\;CMake Files\3rdparty\glfw\CMake\modules\;CMake Files\3rdparty\glfw\src\;CMake Files\3rdparty\spirv-headers\;CMake Files\3rdparty\spirv-headers\example\;CMake Files\3rdparty\glm\;CMake Files\3rdparty\glm\cmake\;CMake Files\3rdparty\glm\glm\;CMake Files\3rdparty\glm\test\;CMake Files\3rdparty\glm\test\bug\;CMake Files\3rdparty\glm\test\core\;CMake Files\3rdparty\glm\test\ext\;CMake Files\3rdparty\glm\test\gtc\;CMake Files\3rdparty\glm\test\gtx\;CMake Files\3rdparty\glslang\;CMake Files\3rdparty\glslang\External\;CMake Files\3rdparty\glslang\glslang\;CMake Files\3rdparty\glslang\glslang\OSDependent\;CMake Files\3rdparty\glslang\glslang\OSDependent\Windows\;CMake Files\3rdparty\glslang\OGLCompilersDLL\;CMake Files\3rdparty\glslang\StandAlone\;CMake Files\3rdparty\glslang\SPIRV\;CMake Files\3rdparty\glslang\hlsl\;CMake Files\3rdparty\glslang\gtests\;CMake Files\3rdparty\googletest\;CMake Files\3rdparty\googletest\googlemock\;CMake Files\3rdparty\googletest\googlemock\cmake\;CMake Files\3rdparty\googletest\googletest\;CMake Files\3rdparty\googletest\googletest\cmake\;CMake Files\3rdparty\shaderc\;CMake Files\3rdparty\shaderc\libshaderc\;CMake Files\3rdparty\shaderc\libshaderc_util\;CMake Files\3rdparty\shaderc\cmake\;CMake Files\3rdparty\shaderc\third_party\;CMake Files\3rdparty\shaderc\glslc\;CMake Files\3rdparty\shaderc\glslc\test\;CMake Files\3rdparty\shaderc\examples\;CMake Files\3rdparty\shaderc\examples\online-compile\;CMake Files\3rdparty\miniz\;CMake Files\3rdparty\json\;CMake Files\3rdparty\json\cmake\;CMake Files\3rdparty\json\test\;CMake Files\3rdparty\optional\;CMake Files\3rdparty\spirv-tools\;CMake Files\3rdparty\spirv-tools\external\;CMake Files\3rdparty\spirv-tools\source\;CMake Files\3rdparty\spirv-tools\source\comp\;CMake Files\3rdparty\spirv-tools\source\opt\;CMake Files\3rdparty\spirv-tools\source\link\;CMake Files\3rdparty\spirv-tools\tools\;CMake Files\3rdparty\spirv-tools\tools\lesspipe\;CMake Files\3rdparty\spirv-tools\tools\emacs\;CMake Files\3rdparty\spirv-tools\test\;CMake Files\3rdparty\spirv-tools\test\comp\;CMake Files\3rdparty\spirv-tools\test\link\;CMake Files\3rdparty\spirv-tools\test\opt\;CMake Files\3rdparty\spirv-tools\test\stats\;CMake Files\3rdparty\spirv-tools\test\util\;CMake Files\3rdparty\spirv-tools\test\val\;CMake Files\3rdparty\spirv-tools\examples\;CMake Files\3rdparty\spirv-tools\examples\cpp-interface\;"/>
 		<Build>
 			<Target title="all">
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
@@ -28,7 +28,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="nova-renderer">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/nova-renderer.dll" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/nova-rendererd.dll" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option object_output="./"/>
 				<Option type="3"/>
@@ -63,7 +63,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="nova-renderer/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/nova-renderer.dll" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/nova-rendererd.dll" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
 				<Option object_output="./"/>
 				<Option type="3"/>
@@ -304,7 +304,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="glfw">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/libglfw3.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/libglfw3d.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -330,7 +330,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="glfw/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/libglfw3.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/libglfw3d.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -355,6 +355,50 @@
 					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
+			<Target title="catch_main">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/CMakeFiles/catch_main.dir/catch_main.objlib" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/thirdparty/catch"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 catch_main"/>
+					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="catch_main/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/CMakeFiles/catch_main.dir/catch_main.objlib" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/thirdparty/catch"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 catch_main/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
 			<Target title="json_unit">
 				<Option output="E:/Documents/nova-renderer/src/main/cpp/json_unit.exe" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
@@ -363,6 +407,7 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/thirdparty/catch"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/src"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
@@ -386,6 +431,7 @@
 				<Option compiler="gcc"/>
 				<Compiler>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/thirdparty/catch"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/src"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
@@ -408,9 +454,7 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add option="-D_CRT_SECURE_NO_WARNINGS"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm"/>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/test/external"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/.."/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
@@ -433,9 +477,7 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add option="-D_CRT_SECURE_NO_WARNINGS"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm"/>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/test/external"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/.."/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
@@ -452,13 +494,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example1">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example1.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example1.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -474,13 +516,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example1/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example1.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example1.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -495,14 +537,58 @@
 					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
+			<Target title="miniz">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/libminiz.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 miniz"/>
+					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="miniz/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/libminiz.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 miniz/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
 			<Target title="example2">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example2.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example2.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -518,13 +604,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example2/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example2.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example2.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -539,58 +625,14 @@
 					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="miniz_tester">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/miniz_tester.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 miniz_tester"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="miniz_tester/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/miniz_tester.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
-					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 miniz_tester/fast"/>
-					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
 			<Target title="example3">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example3.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example3.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -606,13 +648,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example3/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example3.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example3.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -628,13 +670,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example4">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example4.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example4.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -650,13 +692,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example4/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example4.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example4.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -672,13 +714,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example5">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example5.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example5.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -694,13 +736,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example5/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example5.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example5.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -716,13 +758,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example6">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example6.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example6.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -738,13 +780,13 @@
 				</MakeCommands>
 			</Target>
 			<Target title="example6/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin_linux/example6.exe" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin_linux"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/bin/example6.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/bin"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
-					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/."/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -760,7 +802,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="gmock_main">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/libgmock_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/libgmock_maind.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -785,7 +827,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="gmock_main/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/libgmock_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/libgmock_maind.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -810,7 +852,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="gmock">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/libgmock.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/libgmockd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -835,7 +877,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="gmock/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/libgmock.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/libgmockd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -860,7 +902,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="gtest">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/libgtest.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/libgtestd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -883,7 +925,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="gtest/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/libgtest.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/libgtestd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -906,7 +948,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="gtest_main">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/libgtest_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/libgtest_maind.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -929,7 +971,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="gtest_main/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/libgtest_main.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest/libgtest_maind.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/gtest"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1046,7 +1088,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Headers-example">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example/libSPIRV-Headers-example.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example/libSPIRV-Headers-exampled.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1068,7 +1110,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Headers-example/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example/libSPIRV-Headers-example.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example/libSPIRV-Headers-exampled.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1090,7 +1132,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Headers-example-1.1">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example/libSPIRV-Headers-example-1.1.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example/libSPIRV-Headers-example-1.1d.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1112,7 +1154,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Headers-example-1.1/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example/libSPIRV-Headers-example-1.1.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example/libSPIRV-Headers-example-1.1d.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/example"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1154,7 +1196,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Tools">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/libSPIRV-Tools.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/libSPIRV-Toolsd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1162,6 +1204,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1181,7 +1224,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Tools/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/libSPIRV-Tools.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/libSPIRV-Toolsd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1189,6 +1232,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1248,7 +1292,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Tools-opt">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt/libSPIRV-Tools-opt.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt/libSPIRV-Tools-optd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1256,6 +1300,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -1275,7 +1320,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Tools-opt/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt/libSPIRV-Tools-opt.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt/libSPIRV-Tools-optd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1283,6 +1328,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -1302,7 +1348,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Tools-link">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/link/libSPIRV-Tools-link.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/link/libSPIRV-Tools-linkd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/link"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1310,6 +1356,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -1329,7 +1376,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="SPIRV-Tools-link/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/link/libSPIRV-Tools-link.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/link/libSPIRV-Tools-linkd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/link"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -1337,6 +1384,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -1364,6 +1412,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1391,6 +1440,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1418,6 +1468,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1444,6 +1495,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1470,6 +1522,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1496,6 +1549,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1522,6 +1576,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1548,6 +1603,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1574,6 +1630,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1601,6 +1658,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
@@ -1628,6 +1686,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -1655,6 +1714,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -1682,6 +1742,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -1709,6 +1770,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -1736,6 +1798,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1766,6 +1829,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1796,6 +1860,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1826,6 +1891,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1856,6 +1922,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1886,6 +1953,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1916,6 +1984,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1946,6 +2015,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -1976,6 +2046,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2006,6 +2077,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2036,6 +2108,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2066,6 +2139,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2096,6 +2170,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2126,6 +2201,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2156,6 +2232,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2186,6 +2263,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2216,6 +2294,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2246,6 +2325,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2276,6 +2356,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2306,6 +2387,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2336,6 +2418,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2366,6 +2449,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2396,6 +2480,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2426,6 +2511,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2456,6 +2542,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2486,6 +2573,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2516,6 +2604,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2546,6 +2635,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2576,6 +2666,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2606,6 +2697,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2636,6 +2728,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2666,6 +2759,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2696,6 +2790,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2726,6 +2821,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2756,6 +2852,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2786,6 +2883,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2816,6 +2914,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2846,6 +2945,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2876,6 +2976,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2906,6 +3007,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2936,6 +3038,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2966,6 +3069,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -2996,6 +3100,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3026,6 +3131,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3056,6 +3162,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3086,6 +3193,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3116,6 +3224,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3146,6 +3255,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3176,6 +3286,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3206,6 +3317,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3236,6 +3348,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3266,6 +3379,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3296,6 +3410,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3326,6 +3441,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3356,6 +3472,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3386,6 +3503,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3416,6 +3534,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3446,6 +3565,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3476,6 +3596,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3506,6 +3627,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3536,6 +3658,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3566,6 +3689,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3596,6 +3720,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3626,6 +3751,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3656,6 +3782,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3686,6 +3813,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3716,6 +3844,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3746,6 +3875,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3776,6 +3906,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3806,6 +3937,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3836,6 +3968,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3866,6 +3999,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3896,6 +4030,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3926,6 +4061,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3956,6 +4092,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -3986,6 +4123,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4016,6 +4154,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4046,6 +4185,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4076,6 +4216,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4106,6 +4247,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4136,6 +4278,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4166,6 +4309,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4196,6 +4340,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4226,6 +4371,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4256,6 +4402,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4286,6 +4433,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4316,6 +4464,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4346,6 +4495,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4376,6 +4526,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4406,6 +4557,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4436,6 +4588,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4466,6 +4619,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4496,6 +4650,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4526,6 +4681,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4556,6 +4712,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4586,6 +4743,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4616,6 +4774,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4646,6 +4805,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4676,6 +4836,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4706,6 +4867,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4736,6 +4898,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4766,6 +4929,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4796,6 +4960,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4826,6 +4991,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4856,6 +5022,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4886,6 +5053,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4916,6 +5084,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4946,6 +5115,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -4967,6 +5137,130 @@
 					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
+			<Target title="test_ir_context">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/test_ir_context.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DSPIRV_WINDOWS"/>
+					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 test_ir_context"/>
+					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_ir_context/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/test_ir_context.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DSPIRV_WINDOWS"/>
+					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 test_ir_context/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_pass_merge_return">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/test_pass_merge_return.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DSPIRV_WINDOWS"/>
+					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 test_pass_merge_return"/>
+					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_pass_merge_return/fast">
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/test_pass_merge_return.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DSPIRV_WINDOWS"/>
+					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include-fixed"/>
+					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 test_pass_merge_return/fast"/>
+					<CompileFile command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/mingw32-make.exe -f &quot;E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
 			<Target title="test_stats_aggregate">
 				<Option output="E:/Documents/nova-renderer/src/main/cpp/test_stats_aggregate.exe" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp"/>
@@ -4976,6 +5270,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5006,6 +5301,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5036,6 +5332,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5066,6 +5363,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5096,6 +5394,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5126,6 +5425,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5156,6 +5456,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5186,6 +5487,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5216,6 +5518,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5246,6 +5549,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5276,6 +5580,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5306,6 +5611,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5336,6 +5642,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5366,6 +5673,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5396,6 +5704,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5426,6 +5735,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5456,6 +5766,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5486,6 +5797,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5516,6 +5828,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5546,6 +5859,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5576,6 +5890,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5606,6 +5921,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5636,6 +5952,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5666,6 +5983,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5696,6 +6014,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5726,6 +6045,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5756,6 +6076,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5786,6 +6107,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5816,6 +6138,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5846,6 +6169,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5876,6 +6200,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5906,6 +6231,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5936,6 +6262,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5966,6 +6293,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -5996,6 +6324,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -6026,6 +6355,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -6056,6 +6386,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -6086,6 +6417,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -6116,6 +6448,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -6146,6 +6479,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -6176,6 +6510,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -6206,6 +6541,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools"/>
@@ -6236,6 +6572,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -6262,6 +6599,7 @@
 				<Compiler>
 					<Add option="-DSPIRV_WINDOWS"/>
 					<Add option="-DSPIRV_COLOR_TERMINAL"/>
+					<Add option="-DSPIRV_CHECK_CONTEXT"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/include"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-headers/include"/>
@@ -6912,7 +7250,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="shaderc_util">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc_util/libshaderc_util.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc_util/libshaderc_utild.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc_util"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -6937,7 +7275,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="shaderc_util/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc_util/libshaderc_util.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc_util/libshaderc_utild.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc_util"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -7466,7 +7804,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="shaderc">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/libshaderc.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/libshadercd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -7492,7 +7830,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="shaderc/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/libshaderc.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/libshadercd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -7630,7 +7968,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="shaderc_shared">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/libshaderc_shared.dll" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/libshaderc_sharedd.dll" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc"/>
 				<Option object_output="./"/>
 				<Option type="3"/>
@@ -7658,7 +7996,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="shaderc_shared/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/libshaderc_shared.dll" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/libshaderc_sharedd.dll" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc"/>
 				<Option object_output="./"/>
 				<Option type="3"/>
@@ -8008,7 +8346,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="glslc">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/glslc/libglslc.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/glslc/libglslcd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/glslc"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -8034,7 +8372,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="glslc/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/glslc/libglslc.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/glslc/libglslcd.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/glslc"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -8312,6 +8650,14 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/easyloggingpp/src/easylogging++.cc">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/easyloggingpp/src/easylogging++.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glad/src/glad.c">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
@@ -8343,7 +8689,16 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/internal.h">
 			<Option target="glfw"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/mappings.h">
+			<Option target="glfw"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/monitor.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/osmesa_context.c">
+			<Option target="glfw"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/osmesa_context.h">
 			<Option target="glfw"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/vulkan.c">
@@ -8370,10 +8725,10 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/win32_platform.h">
 			<Option target="glfw"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/win32_time.c">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/win32_thread.c">
 			<Option target="glfw"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/win32_tls.c">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/win32_time.c">
 			<Option target="glfw"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/win32_window.c">
@@ -8383,9 +8738,6 @@
 			<Option target="glfw"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/CMakeLists.txt">
-			<Option target="glm_dummy"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/copying.txt">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/common.hpp">
@@ -8409,10 +8761,10 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/_vectorize.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/dummy.cpp">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/compute_vector_relational.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_common.hpp">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/dummy.cpp">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_common.inl">
@@ -8421,16 +8773,10 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_common_simd.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_exponential.hpp">
-			<Option target="glm_dummy"/>
-		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_exponential.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_exponential_simd.inl">
-			<Option target="glm_dummy"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_geometric.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_geometric.inl">
@@ -8439,16 +8785,10 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_geometric_simd.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_integer.hpp">
-			<Option target="glm_dummy"/>
-		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_integer.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_integer_simd.inl">
-			<Option target="glm_dummy"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_matrix.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_matrix.inl">
@@ -8457,25 +8797,16 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_matrix_simd.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_packing.hpp">
-			<Option target="glm_dummy"/>
-		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_packing.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_packing_simd.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_trigonometric.hpp">
-			<Option target="glm_dummy"/>
-		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_trigonometric.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_trigonometric_simd.inl">
-			<Option target="glm_dummy"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_vector_relational.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/func_vector_relational.inl">
@@ -8487,7 +8818,7 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/glm.cpp">
 			<Option target="glm_dummy"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/precision.hpp">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/qualifier.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/detail/setup.hpp">
@@ -8613,6 +8944,18 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/ext.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/ext/vec1.hpp">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/ext/vec1.inl">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/ext/vector_relational.hpp">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/ext/vector_relational.inl">
+			<Option target="glm_dummy"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/fwd.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
@@ -8626,12 +8969,6 @@
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtc/bitfield.inl">
-			<Option target="glm_dummy"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtc/color_encoding.hpp">
-			<Option target="glm_dummy"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtc/color_encoding.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtc/color_space.hpp">
@@ -8650,12 +8987,6 @@
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtc/epsilon.inl">
-			<Option target="glm_dummy"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtc/functions.hpp">
-			<Option target="glm_dummy"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtc/functions.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtc/integer.hpp">
@@ -8769,6 +9100,12 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/closest_point.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/color_encoding.hpp">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/color_encoding.inl">
+			<Option target="glm_dummy"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/color_space.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
@@ -8823,6 +9160,12 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/extended_min_max.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/exterior_product.hpp">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/exterior_product.inl">
+			<Option target="glm_dummy"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/fast_exponential.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
@@ -8842,6 +9185,12 @@
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/float_notmalize.inl">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/functions.hpp">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/functions.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/gradient_paint.hpp">
@@ -8896,6 +9245,12 @@
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/matrix_decompose.inl">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/matrix_factorisation.hpp">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/matrix_factorisation.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/matrix_interpolation.hpp">
@@ -9042,6 +9397,12 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/string_cast.inl">
 			<Option target="glm_dummy"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/texture.hpp">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/texture.inl">
+			<Option target="glm_dummy"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/transform.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
@@ -9064,6 +9425,9 @@
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/type_trait.inl">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/vec_swizzle.hpp">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/gtx/vector_angle.hpp">
@@ -9160,6 +9524,9 @@
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/glm/vector_relational.hpp">
+			<Option target="glm_dummy"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/manual.md">
 			<Option target="glm_dummy"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/readme.md">
@@ -9545,7 +9912,7 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/src/gtest_main.cc">
 			<Option target="gtest_main"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/catch.hpp">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/CMakeFiles/catch_main.dir/src/unit.cpp.obj">
 			<Option target="json_unit"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-algorithms.cpp">
@@ -9555,6 +9922,9 @@
 			<Option target="json_unit"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-capacity.cpp">
+			<Option target="json_unit"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-cbor.cpp">
 			<Option target="json_unit"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-class_const_iterator.cpp">
@@ -9614,7 +9984,16 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-json_pointer.cpp">
 			<Option target="json_unit"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-meta.cpp">
+			<Option target="json_unit"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-modifiers.cpp">
+			<Option target="json_unit"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-msgpack.cpp">
+			<Option target="json_unit"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-noexcept.cpp">
 			<Option target="json_unit"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-pointer_access.cpp">
@@ -9635,43 +10014,72 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-testsuites.cpp">
 			<Option target="json_unit"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-udt.cpp">
+			<Option target="json_unit"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit-unicode.cpp">
 			<Option target="json_unit"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit.cpp">
-			<Option target="json_unit"/>
+			<Option target="catch_main"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/example1.c">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/examples/example1.c">
 			<Option target="example1"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/example2.c">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/examples/example2.c">
 			<Option target="example2"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/example3.c">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/examples/example3.c">
 			<Option target="example3"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/example4.c">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/examples/example4.c">
 			<Option target="example4"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/example5.c">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/examples/example5.c">
 			<Option target="example5"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/example6.c">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/examples/example6.c">
 			<Option target="example6"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz.c">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
-			<Option target="miniz_tester"/>
+			<Option target="miniz"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz_tester.cpp">
-			<Option target="miniz_tester"/>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+			<Option target="miniz"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/timer.cpp">
-			<Option target="miniz_tester"/>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz_tdef.c">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+			<Option target="miniz"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/timer.h">
-			<Option target="miniz_tester"/>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz_tdef.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+			<Option target="miniz"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz_tinfl.c">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+			<Option target="miniz"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz_tinfl.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+			<Option target="miniz"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz_zip.c">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+			<Option target="miniz"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/miniz_zip.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+			<Option target="miniz"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/optional/test_optional.cpp">
 			<Option target="test_optional"/>
@@ -10176,6 +10584,12 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt/mem_pass.h">
 			<Option target="SPIRV-Tools-opt"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt/merge_return_pass.cpp">
+			<Option target="SPIRV-Tools-opt"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt/merge_return_pass.h">
+			<Option target="SPIRV-Tools-opt"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/source/opt/module.cpp">
 			<Option target="SPIRV-Tools-opt"/>
 		</Unit>
@@ -10602,6 +11016,9 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/instruction_test.cpp">
 			<Option target="test_instruction"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/ir_context_test.cpp">
+			<Option target="test_ir_context"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/ir_loader_test.cpp">
 			<Option target="test_ir_loader"/>
 		</Unit>
@@ -10636,6 +11053,9 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/pass_manager_test.cpp">
 			<Option target="test_pass_manager"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/pass_merge_return_test.cpp">
+			<Option target="test_pass_merge_return"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/pass_test.cpp">
 			<Option target="test_pass_pass"/>
 		</Unit>
@@ -10667,6 +11087,8 @@
 			<Option target="test_pass_strength_reduction"/>
 			<Option target="test_pass_set_spec_const_default_value"/>
 			<Option target="test_line_debug_info"/>
+			<Option target="test_ir_context"/>
+			<Option target="test_pass_merge_return"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/pass_utils.h">
 			<Option target="test_cfg_cleanup"/>
@@ -10696,6 +11118,8 @@
 			<Option target="test_pass_strength_reduction"/>
 			<Option target="test_pass_set_spec_const_default_value"/>
 			<Option target="test_line_debug_info"/>
+			<Option target="test_ir_context"/>
+			<Option target="test_pass_merge_return"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/test/opt/set_spec_const_default_value_test.cpp">
 			<Option target="test_pass_set_spec_const_default_value"/>
@@ -10989,10 +11413,22 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/spirv-tools/tools/val/val.cpp">
 			<Option target="spirv-val"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/easyloggingpp/src/easylogging++.cc.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/glad/src/glad.c.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/miniz/miniz.c.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/miniz/miniz_tdef.c.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/miniz/miniz_tinfl.c.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/miniz/miniz_zip.c.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/renderdocapi/RenderDocManager.cpp.obj">
@@ -11471,6 +11907,12 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/test/core/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\3rdparty\glm\test\core\"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/test/ext/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glm\test\ext\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/test/ext/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\3rdparty\glm\test\ext\"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glm/test/gtc/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\3rdparty\glm\test\gtc\"/>
 		</Unit>
@@ -11552,6 +11994,24 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\3rdparty\googletest\googlemock\"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/cmake/gmock.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googlemock\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/cmake/gmock_main.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googlemock\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/cmake/gmock.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googlemock\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/cmake/gmock_main.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googlemock\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/cmake/gmock.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googlemock\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googlemock/cmake/gmock_main.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googlemock\cmake\"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\"/>
 		</Unit>
@@ -11567,13 +12027,37 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/internal_utils.cmake">
 			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
 		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/internal_utils.cmake">
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/gtest.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/gtest_main.pc.in">
 			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/internal_utils.cmake">
 			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/gtest.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/gtest_main.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/internal_utils.cmake">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/gtest.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/gtest_main.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/internal_utils.cmake">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/gtest.pc.in">
+			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/googletest/googletest/cmake/gtest_main.pc.in">
 			<Option virtualFolder="CMake Files\3rdparty\googletest\googletest\cmake\"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/CMakeLists.txt">

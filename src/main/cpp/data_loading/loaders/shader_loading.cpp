@@ -8,15 +8,14 @@
 #include <easylogging++.h>
 #include <shaderc/shaderc.hpp>
 #include <experimental/filesystem>
+#include <sstream>
 
 #include "loaders.h"
 #include "shader_loading.h"
 #include "loader_utils.h"
-#include "../../render/objects/shaders/shaderpack.h"
 #include "../../utils/utils.h"
 #include "../../render/objects/renderpass.h"
 
-using fs = std::experimental::filesystem::v1;
 
 namespace nova {
     /*!
@@ -86,22 +85,34 @@ namespace nova {
         // For right now we're assuming that the material files in the loaded shderpack are the only ones in the world
         // cause it's easier
 
-        std::string materials_directory_path_str = "shaderpacks/" + shaderpack_name + "/materials";
-        auto shader_path = fs::path{materials_directory_path_str};
-        auto directory_iter = fs::directory_iterator(shader_path);
+        std::vector<material_state> materials;
 
-        std::ifstream shaders_json_file("shaderpacks/" + shaderpack_name + "/shaders.json");
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        std::wstring materials_directory_path_str = converter.from_bytes("shaderpacks/" + shaderpack_name + "/materials");
+        auto shader_path = std::experimental::filesystem::path(materials_directory_path_str);
+        auto directory_iter = std::experimental::filesystem::directory_iterator(shader_path);
+        for(const auto& item : directory_iter) {
+            if(!std::experimental::filesystem::is_regular_file(item.path())) {
+                continue;
+            }
 
-        nlohmann::json shaders_json;
-        if(shaders_json_file.is_open()) {
-            shaders_json_file >> shaders_json;
+            if(item.path().extension() != std::experimental::filesystem::path(L".material")) {
+                continue;
+            }
 
-        } else {
-            shaders_json = get_default_shaders_json();
+            std::stringstream ss;
+            ss << item.path();
+            std::string str = ss.str();
+
+            nlohmann::json materials_json;
+            materials_json << ss;
+
+
+            auto material_definitions = get_material_definitions(materials_json);
+            materials.insert(materials.end(), material_definitions.begin(), material_definitions.end());
         }
 
         // Figure out all the shader files that we need to load
-        auto material_definitions = get_material_definitions(shaders_json);
 
         /*for(auto &shader : shaders) {
             try {

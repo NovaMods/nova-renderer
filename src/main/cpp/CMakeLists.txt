@@ -25,10 +25,10 @@ set(CMAKE_CONFIGURATION_TYPES Debug) # This seems to be needed to actually chang
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+set(CMAKE_INSTALL_PREFIX E:\\Documents\\nova-renderer\\build)
+
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
-
-file(RELATIVE_PATH FILE_VAR install/lib/cmake/glm "${CMAKE_INSTALL_PREFIX}")
 
 find_package(Vulkan)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -66,7 +66,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
         )
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} shaderc)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} shaderc stdc++fs)
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
@@ -121,6 +121,10 @@ set(NOVA_SOURCE
         # Need to compile third party stuff, too...
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
+        3rdparty/miniz/miniz_tdef.c
+        3rdparty/miniz/miniz_tinfl.c
+        3rdparty/miniz/miniz_zip.c
+        3rdparty/easyloggingpp/src/easylogging++.cc
 
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
