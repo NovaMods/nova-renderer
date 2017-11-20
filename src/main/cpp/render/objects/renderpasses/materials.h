@@ -343,23 +343,6 @@ namespace nova {
         optional<bool> calculate_mipmaps;
     };
 
-    /*!
-     * \brief Tells Nova what framebuffer attachments you output to, and what format you expect them to be in
-     */
-    struct framebuffer_output {
-        /*!
-         * \brief The index of the framebuffer attachment you're writing to. You don't get more than 8, no matter how
-         * loud you yell
-         */
-        uint8_t index;
-
-        /*!
-         * \brief The format of the framebuffer attachment that you want to write to. This should be one of the formats
-         * that Vulkan supports, and it should almost always be RGBA, but I don't feel like writing them all out
-         */
-        std::string format;
-    };
-
     enum class msaa_support_enum {
         msaa,
         both
@@ -502,9 +485,9 @@ namespace nova {
          * frameuffer_output struct is the index in the framebuffer. For example, a framebuffer_output at index 2 in
          * this array with an index member of 4 tells Nova that when the shader associated with this material state
          * outputs to location 2, that data should be written to colortex4. Alteriately, you can think of it as telling
-         * Nocva to bind colortex4 to shader output 2
+         * Nova to bind colortex4 to shader output 2
          */
-        optional<std::vector<framebuffer_output>> outputs;
+        optional<std::vector<uint8_t>> outputs;
 
         /*!
          * \brief The width of the output texture we're rendering to
@@ -581,6 +564,16 @@ namespace nova {
          * \brief The function to use for the depth test
          */
         optional<comparison_func_enum> depth_func;
+
+        /*!
+         * \brief Tells Nova if this state handles transparent objects
+         */
+        optional<bool> has_transparency;
+
+        /*!
+         * \brief Tells Nova is this state handles cutout objects
+         */
+        optional<bool> has_cutout;
     };
 
     material_state create_material_from_json(const std::string& material_state_name, const std::string& parent_state_name, const nlohmann::json& material_json);

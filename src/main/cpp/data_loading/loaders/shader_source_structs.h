@@ -16,6 +16,7 @@
 #include <json.hpp>
 
 #include <easylogging++.h>
+#include "../../render/objects/renderpasses/materials.h"
 
 // While I usually don't like to do this, I'm tires of typing so much
 using namespace std::experimental;
@@ -52,7 +53,7 @@ namespace nova {
          */
         std::vector<unsigned int> drawbuffers;
 
-        shader_definition(nlohmann::json &json);
+        explicit shader_definition(const nova::material_state &material);
     };
 
     struct shaderpack_definition {

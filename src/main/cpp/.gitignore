@@ -145,3 +145,4 @@ ENV/
 bin_linux/
 
 **.pc
+**.cbp

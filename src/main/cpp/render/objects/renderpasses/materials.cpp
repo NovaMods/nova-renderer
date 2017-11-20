@@ -97,6 +97,14 @@ namespace nova {
         ret_val.alpha_dst = get_json_value<blend_source_enum>(material_json, "alphaDst", decode_blend_source_enum);
         ret_val.depth_func = get_json_value<comparison_func_enum>(material_json, "depthFunc", decode_comparison_func_enum);
 
+        ret_val.filters = get_json_value<std::string>(material_json, "filters");
+        ret_val.fallback = get_json_value<std::string>(material_json, "fallback");
+        ret_val.pass_index = get_json_value<uint32_t>(material_json, "passIndex");
+        ret_val.has_transparency = get_json_value<bool>(material_json, "hasTransparency");
+        ret_val.has_cutout = get_json_value<bool>(material_json, "hasCutout");
+
+        ret_val.outputs = get_json_value<std::vector<uint8_t>>(material_json, "outputs");
+
         return ret_val;
     }
 

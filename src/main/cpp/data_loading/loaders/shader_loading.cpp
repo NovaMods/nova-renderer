@@ -100,40 +100,50 @@ namespace nova {
                 continue;
             }
 
+            // I do like using temporary variables for everything...
             std::stringstream ss;
             ss << item.path();
-            std::string str = ss.str();
-
             nlohmann::json materials_json;
             materials_json << ss;
-
 
             auto material_definitions = get_material_definitions(materials_json);
             materials.insert(materials.end(), material_definitions.begin(), material_definitions.end());
         }
 
-        // Figure out all the shader files that we need to load
+        // TODO: fill in missing values from parent states
 
-        /*for(auto &shader : shaders) {
-            try {
-                // All shaderpacks are in the shaderpacks folder
-                auto shader_path = "shaderpacks/" + shaderpack_name + "/shaders/" + shader.name;
+        auto pack_def = std::vector<std::pair<material_state, shader_definition>>{};
 
-                auto vertex_source = load_shader_file(shader_path, vertex_extensions);
-                shader.vertex_source = translate_glsl_to_spirv(vertex_source, shaderc_vertex_shader);
+        for(const auto& state : materials) {
 
-                auto fragment_source = load_shader_file(shader_path, fragment_extensions);
-                shader.fragment_source = translate_glsl_to_spirv(fragment_source, shaderc_fragment_shader);
+            auto shader_def = shader_definition(state);
 
-                sources.push_back(shader);
-            } catch(std::exception& e) {
-                LOG(ERROR) << "Could not load shader " << shader.name << ". Reason: " << e.what();
+            if(state.vertex_shader) {
+                auto vertex_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.vertex_shader;
+                auto vertex_soruce = load_shader_file(vertex_path, vertex_extensions);
+                shader_def.vertex_source = translate_glsl_to_spirv(vertex_soruce, shaderc_vertex_shader);
+            } else {
+                LOG(ERROR) << "Material state " << state.name << " does not define a vertex shader, it will not be loaded";
+                continue;
             }
-        }*/
+
+            if(state.fragment_shader) {
+                auto fragment_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.fragment_shader;
+                auto fragment_source = load_shader_file(fragment_path, fragment_extensions);
+                shader_def.fragment_source = translate_glsl_to_spirv(fragment_source, shaderc_fragment_shader);
+            } else {
+                LOG(ERROR) << "Material state " << state.name << " does not define a fragment shader, it will not be loaded";
+                continue;
+            }
+
+            // TODO: Tessellation and geometry
+
+            pack_def.emplace_back(state, shader_def);
+        }
 
         warn_for_missing_fallbacks(sources);
 
-        return {};
+        return pack_def;
     }
 
     void warn_for_missing_fallbacks(std::vector<shader_definition> sources) {
