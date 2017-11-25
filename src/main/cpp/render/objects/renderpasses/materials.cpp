@@ -77,7 +77,7 @@ namespace nova {
 
         ret_val.msaa_support = get_json_value<msaa_support_enum>(material_json, "msaaSupport", decode_msaa_support_enum);
 
-        ret_val.primitive_mode = get_json_value<primitive_mode_enum>(material_json, "primitiveMode", decode_primitive_mode_enum);
+        ret_val.primitive_mode = get_json_value<vk::PrimitiveTopology>(material_json, "primitiveMode", decode_primitive_mode_enum);
 
         ret_val.source_blend_factor = get_json_value<blend_source_enum>(material_json, "blendSrc", decode_blend_source_enum);
 
@@ -95,7 +95,7 @@ namespace nova {
 
         ret_val.alpha_src = get_json_value<blend_source_enum>(material_json, "alphaSrc", decode_blend_source_enum);
         ret_val.alpha_dst = get_json_value<blend_source_enum>(material_json, "alphaDst", decode_blend_source_enum);
-        ret_val.depth_func = get_json_value<comparison_func_enum>(material_json, "depthFunc", decode_comparison_func_enum);
+        ret_val.depth_func = get_json_value<vk::CompareOp>(material_json, "depthFunc", decode_comparison_func_enum);
 
         ret_val.filters = get_json_value<std::string>(material_json, "filters");
         ret_val.fallback = get_json_value<std::string>(material_json, "fallback");
@@ -132,6 +132,9 @@ namespace nova {
 
         } else if(state_to_decode == "EnableAlphaToCoverage") {
             return state_enum::enable_alpha_to_coverage;
+
+        } else if(state_to_decode == "DisableDepthTest") {
+            return state_enum::disable_depth_test;
         }
 
         // EVERYTHING IS A FATAL ERROR WHOO
@@ -212,59 +215,56 @@ namespace nova {
         LOG(FATAL) << "Invalid vertex field: '" << vertex_field_str << "'";
     }
 
-    comparison_func_enum decode_comparison_func_enum(const std::string& comparison_func) {
+    vk::CompareOp decode_comparison_func_enum(const std::string& comparison_func) {
         if(comparison_func == "Always") {
-            return comparison_func_enum::always;
+            return vk::CompareOp::eAlways;
 
         } else if(comparison_func == "Never") {
-            return comparison_func_enum::never;
+            return vk::CompareOp::eNever;
 
         } else if(comparison_func == "Less") {
-            return comparison_func_enum::less;
+            return vk::CompareOp::eLess;
 
         } else if(comparison_func == "LessEqual") {
-            return comparison_func_enum::less_equal;
+            return vk::CompareOp::eLessOrEqual;
 
         } else if(comparison_func == "GreaterEqual") {
-            return comparison_func_enum::greater_equal;
+            return vk::CompareOp::eGreaterOrEqual;
 
         } else if(comparison_func == "Equal") {
-            return comparison_func_enum::equal;
-
-        } else if(comparison_func == "Replace") {
-            return comparison_func_enum::replace;
+            return vk::CompareOp::eEqual;
 
         } else if(comparison_func == "NotEqual") {
-            return comparison_func_enum::not_equal;
+            return vk::CompareOp::eNotEqual;
         }
 
         LOG(FATAL) << "Invalid comparison function '" << comparison_func << "'";
     }
 
-    stencil_or_depth_op_enum decode_stencil_or_depth_op_enum(const std::string& op) {
+    vk::StencilOp decode_stencil_op_enum(const std::string &op) {
         if(op == "Keep") {
-            return stencil_or_depth_op_enum::keep;
+            return vk::StencilOp::eKeep;
 
         } else if(op == "Zero") {
-            return stencil_or_depth_op_enum::zero;
+            return vk::StencilOp::eZero;
 
         } else if(op == "Replace") {
-            return stencil_or_depth_op_enum::replace;
+            return vk::StencilOp::eReplace;
 
         } else if(op == "Increment") {
-            return stencil_or_depth_op_enum::increment;
+            return vk::StencilOp::eIncrementAndClamp;
 
         } else if(op == "IncrementAndWrap") {
-            return stencil_or_depth_op_enum::increment_and_wrap;
+            return vk::StencilOp::eIncrementAndWrap;
 
         } else if(op == "Decrement") {
-            return stencil_or_depth_op_enum::decrement;
+            return vk::StencilOp::eDecrementAndClamp
 
         } else if(op == "DecrementAndSwap") {
-            return stencil_or_depth_op_enum::decrement_and_wrap;
+            return vk::StencilOp::eDecrementAndWrap
 
         } else if(op == "Invert") {
-            return stencil_or_depth_op_enum::invert;
+            return vk::StencilOp::eInvert;
 
         }
 
@@ -274,13 +274,13 @@ namespace nova {
     stencil_buffer_state decode_stencil_buffer_state(const nlohmann::json &json) {
         auto ret_val = stencil_buffer_state{};
 
-        ret_val.stencil_func = get_json_value<comparison_func_enum>(json, "stencilFunc", decode_comparison_func_enum);
+        ret_val.stencil_func = get_json_value<vk::CompareOp>(json, "stencilFunc", decode_comparison_func_enum);
 
-        ret_val.stencil_fail_op = get_json_value<stencil_or_depth_op_enum>(json, "stencilFailOp", decode_stencil_or_depth_op_enum);
+        ret_val.stencil_fail_op = get_json_value<vk::StencilOp>(json, "stencilFailOp", decode_stencil_op_enum);
 
-        ret_val.stencil_depth_fail_op = get_json_value<stencil_or_depth_op_enum>(json, "stencilDepthFailOp", decode_stencil_or_depth_op_enum);
+        ret_val.stencil_depth_fail_op = get_json_value<vk::StencilOp>(json, "stencilDepthFailOp", decode_stencil_op_enum);
 
-        ret_val.stencil_pass_op = get_json_value<stencil_or_depth_op_enum>(json, "stencilPassOp", decode_stencil_or_depth_op_enum);
+        ret_val.stencil_pass_op = get_json_value<vk::StencilOp>(json, "stencilPassOp", decode_stencil_op_enum);
 
         return ret_val;
     }
@@ -296,12 +296,12 @@ namespace nova {
         LOG(FATAL) << "Invalid value for msaaSupport: '" << msaa_support_str << "'";
     }
 
-    primitive_mode_enum decode_primitive_mode_enum(const std::string& primitive_mode_str) {
+    vk::PrimitiveTopology decode_primitive_mode_enum(const std::string& primitive_mode_str) {
         if(primitive_mode_str == "Line") {
-            return primitive_mode_enum::line;
+            return vk::PrimitiveTopology::eLineList;
 
         } else if(primitive_mode_str == "Triangle") {
-            return primitive_mode_enum::triangle;
+            return vk::PrimitiveTopology::eTriangleList;
 
         }
 

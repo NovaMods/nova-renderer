@@ -11,6 +11,7 @@
 #include <vector>
 #include <json.hpp>
 #include <optional.hpp>
+#include <vulkan/vulkan.hpp>
 
 using namespace std::experimental;
 
@@ -38,6 +39,11 @@ namespace nova {
          * \brief Don't write to the depth buffer
          */
         disable_depth_write,
+
+        /*!
+         * \brief Don't perform a depth test
+         */
+        disable_depth_test,
 
         /*!
          * \brief Perform the stencil test
@@ -179,118 +185,26 @@ namespace nova {
         empty
     };
 
-    /*!
-     * \brief The function to use when comparing a value to either the stencil or the depth buffer
-     */
-    enum class comparison_func_enum {
-        /*!
-         * \brief Always pass
-         */
-        always,
-
-        /*!
-         * \brief Never pass
-         */
-        never,
-
-        /*!
-         * \brief Pass if the compared value is less than the value in the buffer
-         */
-        less,
-
-        /*!
-         * \brief Pass if the comparison value is less than or equal to the value in the buffer
-         */
-        less_equal,
-
-        /*!
-         * \brief Pass if the comparison value is greater than or equal to the value in the buffer
-         */
-        greater_equal,
-
-        /*!
-         * \brief Pass if the comparison value is equal to the value in the buffer
-         */
-        equal,
-
-        /*!
-         * \brief Replace the value in the buffer
-         *
-         * Wait... why is this a comparison function?
-         */
-        replace,
-
-        /*!
-         * \brief Pass if the comparison value is not equal to the value in the buffer
-         */
-        not_equal
-    };
-
-    /*!
-     * \brief The operation to perform if the test passes
-     */
-    enum class stencil_or_depth_op_enum {
-        /*!
-         * \brief Keep the value in the buffer
-         */
-        keep,
-
-        /*!
-         * \brief Set the buffe to zero
-         */
-        zero,
-
-        /*!
-         * \brief Replace the value in the buffer (with the comparison value I guess)
-         */
-        replace,
-
-        /*!
-         * \brief Increment the value in the buffer
-         */
-        increment,
-
-        /*!
-         * \brief increment the value in the buffer. If the buffer would overflow then wrap the overflow
-         */
-        increment_and_wrap,
-
-        /*!
-         * \brief Decrement the value in the buffer
-         */
-        decrement,
-
-        /*!
-         * \brief Decrement the value in the buffer. If the buffer would underflow then wrap the underflow
-         */
-        decrement_and_wrap,
-
-        /*!
-         * \brief Invert the value in the buffer
-         */
-        invert
-    };
-
     struct stencil_buffer_state {
         /*!
          * \brief The stencil function to use
          */
-        optional<comparison_func_enum> stencil_func;
+        optional<vk::CompareOp> stencil_func;
 
         /*!
          * \brief What to do when the stencil test fails
          */
-        optional<stencil_or_depth_op_enum> stencil_fail_op;
+        optional<vk::StencilOp> stencil_fail_op;
 
         /*!
          * \brief The depth fail op I guess? Or is it what to do when both the depth and stencil functions fail?
          */
-        optional<stencil_or_depth_op_enum> stencil_depth_fail_op;
+        optional<vk::StencilOp> stencil_depth_fail_op;
 
         /*!
          * \brief What to do when the stencil tests passes
          */
-        optional<stencil_or_depth_op_enum> stencil_pass_op;
+        optional<vk::StencilOp> stencil_pass_op;
     };
 
     enum class texture_location_enum {
@@ -345,25 +259,8 @@ namespace nova {
 
     enum class msaa_support_enum {
         msaa,
-        both
-    };
-
-    /*!
-     * \brief What sort of primitive to draw
-     */
-    enum class primitive_mode_enum {
-        line,
-        triangle
-    };
-
-    enum class blend_source_enum {
-        source_color,
-        zero,
-        one,
-        source_alpha,
-        one_minus_source_alpha,
-        dest_color,
-        one_minus_dest_color
+        both,
+        none
     };
 
     /*!
@@ -538,7 +435,7 @@ namespace nova {
         /*!
          * \brief
          */
-        optional<primitive_mode_enum> primitive_mode;
+        optional<vk::PrimitiveTopology> primitive_mode;
 
         /*!
          * \brief Where to get the blending factor for the soource
@@ -563,7 +460,7 @@ namespace nova {
         /*!
          * \brief The function to use for the depth test
          */
-        optional<comparison_func_enum> depth_func;
+        optional<vk::CompareOp> depth_func;
 
         /*!
          * \brief Tells Nova if this state handles transparent objects
@@ -613,15 +510,15 @@ namespace nova {
      */
     vertex_field_enum decode_vertex_field(const nlohmann::json &vertex_field_json);
 
-    comparison_func_enum decode_comparison_func_enum(const std::string& comparison_func);
+    vk::CompareOp decode_comparison_func_enum(const std::string& comparison_func);
 
-    stencil_or_depth_op_enum decode_stencil_or_depth_op_enum(const std::string& op);
+    vk::StencilOp decode_stencil_op_enum(const std::string &op);
 
     stencil_buffer_state decode_stencil_buffer_state(const nlohmann::json &json);
 
     msaa_support_enum decode_msaa_support_enum(const std::string& msaa_support_str);
 
-    primitive_mode_enum decode_primitive_mode_enum(const std::string& primitive_mode_str);
+    vk::PrimitiveTopology decode_primitive_mode_enum(const std::string& primitive_mode_str);
 
     blend_source_enum decode_blend_source_enum(const std::string& blend_source_str);
 

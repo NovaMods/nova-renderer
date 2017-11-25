@@ -31,6 +31,12 @@ namespace nova {
     void gl_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material) {
         // Creates a pipeline out of compiled shaders
 
+        vk::GraphicsPipelineCreateInfo pipeline_create_info = {};
+
+        /**
+         * Shader stages
+         */
+
         std::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos;
 
         vk::PipelineShaderStageCreateInfo vertex_create_info = {};
@@ -45,11 +51,18 @@ namespace nova {
         fragment_create_info.pName = "main";
         stage_create_infos.push_back(fragment_create_info);
 
+        pipeline_create_info.stageCount = static_cast<uint32_t>(stage_create_infos.size());
+        pipeline_create_info.pStages = stage_create_infos.data();
+
+        /**
+         * Vertex input state
+         */
+
         // The vertex data is known by Nova. It just is. Each shader has inputs for all the vertex data because honestly
         // doing it differently is super hard. This will waste some VRAM but the number of vertices per chunk and
         // number of chunks will present a much easier win, especially since chunks are the big stuff and they will
         // always have all the vertex attributes
-        vk::PipelineVertexInputStateCreateInfo vertex_stage_create_info = {};
+        vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info = {};
 
         std::vector<vk::VertexInputBindingDescription> binding_descriptions;
         std::vector<vk::VertexInputAttributeDescription> attribute_descriptions;
@@ -70,26 +83,102 @@ namespace nova {
         binding_descriptions.emplace_back(4, 56, vk::VertexInputRate::eVertex);         // Normal
         binding_descriptions.emplace_back(5, 56, vk::VertexInputRate::eVertex);         // Tangent
 
-        vertex_stage_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
-        vertex_stage_create_info.pVertexAttributeDescriptions = attribute_descriptions.data();
+        vertex_input_state_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
+        vertex_input_state_create_info.pVertexAttributeDescriptions = attribute_descriptions.data();
 
-        vertex_stage_create_info.vertexBindingDescriptionCount = static_cast<uint32_t>(binding_descriptions.size());
-        vertex_stage_create_info.pVertexBindingDescriptions = binding_descriptions.data();
+        vertex_input_state_create_info.vertexBindingDescriptionCount = static_cast<uint32_t>(binding_descriptions.size());
+        vertex_input_state_create_info.pVertexBindingDescriptions = binding_descriptions.data();
+
+        pipeline_create_info.pVertexInputState = &vertex_input_state_create_info;
+
+        /**
+         * Pipeline input assembly
+         */
 
         vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info = {};
-        input_assembly_create_info.topology = vk::PrimitiveTopology::eTriangleList;
+        input_assembly_create_info.topology = *material.primitive_mode;
+
+        pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
+
+        /**
+         * Tessellation state
+         */
+
+        pipeline_create_info.pTessellationState = nullptr;
+
+        /**
+         * \brief Viewport state
+         */
 
         vk::Viewport viewport = {};
         viewport.x = 0;
         viewport.y = 0;
         viewport.width = *material.output_width;
         viewport.height = *material.output_height;
+        viewport.minDepth = 0;
+        viewport.maxDepth = 1;
+
+        vk::Rect2D scissor = {};
+        scissor.offset = {0, 0};
+        scissor.extent = {*material.output_width, *material.output_height};
 
         vk::PipelineViewportStateCreateInfo viewport_create_info = {};
         viewport_create_info.scissorCount = 1;
+        viewport_create_info.pScissors = &scissor;
+        viewport_create_info.viewportCount = 1;
         viewport_create_info.pViewports = &viewport;
 
+        pipeline_create_info.pViewportState = &viewport_create_info;
 
+        /**
+         * Rasterization state
+         */
+
+        vk::PipelineRasterizationStateCreateInfo raster_create_info = {};
+        raster_create_info.polygonMode = vk::PolygonMode::eFill;
+        raster_create_info.cullMode == vk::CullModeFlagBits::eBack;
+        raster_create_info.frontFace = vk::FrontFace::eCounterClockwise;
+        raster_create_info.lineWidth = 1;
+
+        if(material.depth_bias) {
+            raster_create_info.depthBiasEnable = static_cast<vk::Bool32>(true);
+            raster_create_info.depthBiasConstantFactor = *material.depth_bias;
+
+            if(material.slope_scaled_depth_bias) {
+                raster_create_info.depthBiasSlopeFactor = *material.slope_scaled_depth_bias;
+            }
+        }
+
+        pipeline_create_info.pRasterizationState = &raster_create_info;
+
+        /**
+         * Multisample state
+         *
+         * While Nova supports MSAA, it won't be useful on shaderpacks that implement deferred rendering and is thus
+         * off by default
+         */
+
+        if(material.msaa_support) {
+            if(*material.msaa_support != msaa_support_enum::none) {
+                vk::PipelineMultisampleStateCreateInfo multisample_create_info = {};
+
+                pipeline_create_info.pMultisampleState = &multisample_create_info;
+            }
+        }
+
+        /**
+         * Depth and stencil state
+         */
+
+        vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
+        const auto& states_end = (*material.states).end();
+        const auto& states = *material.states;
+        depth_stencil_create_info.depthTestEnable = static_cast<vk::Bool32>((std::find(states.begin(), states.end(), state_enum::disable_depth_test) == states_end));
+        depth_stencil_create_info.depthWriteEnable = static_cast<vk::Bool32>((std::find(states.begin(), states.end(), state_enum::disable_depth_write) == states_end));
+        depth_stencil_create_info.depthCompareOp = *material.depth_func;
+
+        depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states.begin(), states.end(), state_enum::enable_stencil_test) != states_end);
+        // TODO: Handle stancil stuff when I'm less tired
 
     }
 

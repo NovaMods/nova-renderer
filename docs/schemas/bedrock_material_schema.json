@@ -21,7 +21,7 @@
                     "type": "array",
                     "items": {
                         "type": "string",
-                        "enum": ["Blending", "InvertCulling", "DisableCulling", "DisableDepthWrite", "EnableStencilTest", "StencilWrite", "DisableColorWrite", "EnableAlphaToCoverage"]
+                        "enum": ["Blending", "InvertCulling", "DisableCulling", "DisableDepthWrite", "DisableDepthWrite", "EnableStencilTest", "StencilWrite", "DisableColorWrite", "EnableAlphaToCoverage"]
                     },
                     "description": "The renderer states that need to be active when rendring this state"
                 },

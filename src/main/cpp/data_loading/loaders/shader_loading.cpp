@@ -146,7 +146,7 @@ namespace nova {
         return pack_def;
     }
 
-    void warn_for_missing_fallbacks(std::vector<shader_definition> sources) {
+    void warn_for_missing_fallbacks(std::vector<shader_definition>& sources) {
         // Verify that all the fallbacks exist
         for(auto def : sources) {
             if(def.fallback_name) {
@@ -175,7 +175,7 @@ namespace nova {
      * \param file_path The file path to lop the name off of
      * \return The path to the folder that the provided file resides in
      */
-    auto get_file_path(const std::string file_path) {
+    auto get_file_path(const std::string &file_path) {
         auto slash_pos = file_path.find_last_of('/');
         return file_path.substr(0, slash_pos + 1);
     }
@@ -193,7 +193,7 @@ namespace nova {
         return afterShaderpacks.substr(0,new_slash_pos);
     }
 
-    std::string get_filename_from_include(const std::string include_line) {
+    std::string get_filename_from_include(const std::string& include_line) {
         auto quote_pos = include_line.find('"');
         return include_line.substr(quote_pos + 1, include_line.size() - quote_pos - 2);
     }
@@ -216,7 +216,7 @@ namespace nova {
         }
     }
 
-    std::vector<shader_line> load_shader_file(std::string shader_path, std::vector<std::string> extensions) {
+    std::vector<shader_line> load_shader_file(std::string& shader_path, std::vector<std::string>& extensions) {
         for(auto &extension : extensions) {
             auto full_shader_path = shader_path + extension;
             LOG(TRACE) << "Trying to load shader file " << full_shader_path;
@@ -233,7 +233,7 @@ namespace nova {
         throw resource_not_found(shader_path);
     }
 
-    std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line> shader_lines, shaderc_shader_kind shader_stage) {
+    std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line>& shader_lines, shaderc_shader_kind shader_stage) {
 
         std::stringstream ss;
         for(auto& line : shader_lines) {
