@@ -41,7 +41,7 @@ namespace nova {
         /*!
          * \brief Constructs a gl_shader_program
          */
-        explicit gl_shader_program(const shader_definition &source, const material_state& material, vk::RenderPass renderpass);
+        gl_shader_program(const shader_definition &source, const material_state& material, vk::RenderPass renderpass, vk::PipelineCache pipeline_cache);
 
         /*!
          * \brief Default copy constructor
@@ -77,6 +77,8 @@ namespace nova {
     private:
         std::string name;
 
+        vk::Pipeline pipeline;
+
         vk::ShaderModule vertex_module;
         vk::ShaderModule fragment_module;
         std::experimental::optional<vk::ShaderModule> geometry_module;
@@ -95,7 +97,7 @@ namespace nova {
 
         void create_shader_module(const std::vector<uint32_t> &shader_source, vk::ShaderStageFlags flags);
 
-        void create_pipeline(vk::RenderPass pass, const material_state &material);
+        void create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache);
     };
 }
 

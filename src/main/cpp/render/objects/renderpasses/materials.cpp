@@ -65,23 +65,41 @@ namespace nova {
             return vec;
         });
 
-        ret_val.front_face = get_json_value<stencil_buffer_state>(material_json, "frontFace", decode_stencil_buffer_state);
+        ret_val.front_face = get_json_value<vk::StencilOpState>(material_json, "frontFace", decode_stencil_buffer_state);
 
-        ret_val.back_face = get_json_value<stencil_buffer_state>(material_json, "backFace", decode_stencil_buffer_state);
+        ret_val.back_face = get_json_value<vk::StencilOpState>(material_json, "backFace", decode_stencil_buffer_state);
 
         ret_val.stencil_ref = get_json_value<uint32_t>(material_json, "stencilRef");
 
         ret_val.stencil_read_mask = get_json_value<uint32_t>(material_json, "stencilReadMask");
 
+        if(ret_val.stencil_write_mask) {
+            if(ret_val.front_face) {
+                (*ret_val.front_face).compareMask = *ret_val.stencil_write_mask;
+            }
+            if(ret_val.back_face) {
+                (*ret_val.back_face).compareMask = *ret_val.stencil_write_mask;
+            }
+        }
+
         ret_val.stencil_write_mask = get_json_value<uint32_t>(material_json, "stencilWriteMask");
+
+        if(ret_val.stencil_write_mask) {
+            if(ret_val.front_face) {
+                (*ret_val.front_face).writeMask = *ret_val.stencil_write_mask;
+            }
+            if(ret_val.back_face) {
+                (*ret_val.back_face).writeMask = *ret_val.stencil_write_mask;
+            }
+        }
 
         ret_val.msaa_support = get_json_value<msaa_support_enum>(material_json, "msaaSupport", decode_msaa_support_enum);
 
         ret_val.primitive_mode = get_json_value<vk::PrimitiveTopology>(material_json, "primitiveMode", decode_primitive_mode_enum);
 
-        ret_val.source_blend_factor = get_json_value<blend_source_enum>(material_json, "blendSrc", decode_blend_source_enum);
+        ret_val.source_blend_factor = get_json_value<vk::BlendFactor>(material_json, "blendSrc", decode_blend_source_enum);
 
-        ret_val.destination_blend_factor = get_json_value<blend_source_enum>(material_json, "blendDst", decode_blend_source_enum);
+        ret_val.destination_blend_factor = get_json_value<vk::BlendFactor>(material_json, "blendDst", decode_blend_source_enum);
 
         ret_val.textures = get_json_value<std::vector<texture>>(material_json, "textures", [&](const nlohmann::json& textures) {
             auto vec = std::vector<texture>{};
@@ -93,8 +111,8 @@ namespace nova {
             return vec;
         });
 
-        ret_val.alpha_src = get_json_value<blend_source_enum>(material_json, "alphaSrc", decode_blend_source_enum);
-        ret_val.alpha_dst = get_json_value<blend_source_enum>(material_json, "alphaDst", decode_blend_source_enum);
+        ret_val.alpha_src = get_json_value<vk::BlendFactor>(material_json, "alphaSrc", decode_blend_source_enum);
+        ret_val.alpha_dst = get_json_value<vk::BlendFactor>(material_json, "alphaDst", decode_blend_source_enum);
         ret_val.depth_func = get_json_value<vk::CompareOp>(material_json, "depthFunc", decode_comparison_func_enum);
 
         ret_val.filters = get_json_value<std::string>(material_json, "filters");
@@ -103,7 +121,13 @@ namespace nova {
         ret_val.has_transparency = get_json_value<bool>(material_json, "hasTransparency");
         ret_val.has_cutout = get_json_value<bool>(material_json, "hasCutout");
 
-        ret_val.outputs = get_json_value<std::vector<uint8_t>>(material_json, "outputs");
+        ret_val.outputs = get_json_value<std::vector<output_info>>(material_json, "outputs", [&](const nlohmann::json outputs){
+            auto vec = std::vector<output_info>{};
+            for(const auto output_field : outputs) {
+                vec.push_back(decode_outputs(output_field));
+            }
+            return vec;
+        });
 
         return ret_val;
     }
@@ -258,10 +282,10 @@ namespace nova {
             return vk::StencilOp::eIncrementAndWrap;
 
         } else if(op == "Decrement") {
-            return vk::StencilOp::eDecrementAndClamp
+            return vk::StencilOp::eDecrementAndClamp;
 
         } else if(op == "DecrementAndSwap") {
-            return vk::StencilOp::eDecrementAndWrap
+            return vk::StencilOp::eDecrementAndWrap;
 
         } else if(op == "Invert") {
             return vk::StencilOp::eInvert;
@@ -271,16 +295,16 @@ namespace nova {
         LOG(FATAL) << "Invalid stencil or depth operation '" << op << "'";
     }
 
-    stencil_buffer_state decode_stencil_buffer_state(const nlohmann::json &json) {
-        auto ret_val = stencil_buffer_state{};
+    vk::StencilOpState decode_stencil_buffer_state(const nlohmann::json &json) {
+        auto ret_val = vk::StencilOpState{};
 
-        ret_val.stencil_func = get_json_value<vk::CompareOp>(json, "stencilFunc", decode_comparison_func_enum);
+        ret_val.compareOp = *get_json_value<vk::CompareOp>(json, "stencilFunc", decode_comparison_func_enum);
 
-        ret_val.stencil_fail_op = get_json_value<vk::StencilOp>(json, "stencilFailOp", decode_stencil_op_enum);
+        ret_val.failOp = *get_json_value<vk::StencilOp>(json, "stencilFailOp", decode_stencil_op_enum);
 
-        ret_val.stencil_depth_fail_op = get_json_value<vk::StencilOp>(json, "stencilDepthFailOp", decode_stencil_op_enum);
+        ret_val.depthFailOp = *get_json_value<vk::StencilOp>(json, "stencilDepthFailOp", decode_stencil_op_enum);
 
-        ret_val.stencil_pass_op = get_json_value<vk::StencilOp>(json, "stencilPassOp", decode_stencil_op_enum);
+        ret_val.passOp = *get_json_value<vk::StencilOp>(json, "stencilPassOp", decode_stencil_op_enum);
 
         return ret_val;
     }
@@ -308,27 +332,27 @@ namespace nova {
         LOG(FATAL) << "Invalid primitive mode: '" << primitive_mode_str << "'";
     }
 
-    blend_source_enum decode_blend_source_enum(const std::string& blend_source_str) {
+    vk::BlendFactor decode_blend_source_enum(const std::string& blend_source_str) {
         if(blend_source_str == "SourceColor") {
-            return blend_source_enum::source_color;
+            return vk::BlendFactor::eSrcColor;
 
         } else if(blend_source_str == "Zero") {
-            return blend_source_enum::zero;
+            return vk::BlendFactor::eZero;
 
         } else if(blend_source_str == "One") {
-            return blend_source_enum::one;
+            return vk::BlendFactor::eOne;
 
         } else if(blend_source_str == "SourceAlpha") {
-            return blend_source_enum::source_alpha;
+            return vk::BlendFactor::eSrcAlpha;
 
         } else if(blend_source_str == "OneMinusSourceAlpha") {
-            return blend_source_enum::one_minus_source_alpha;
+            return vk::BlendFactor::eOneMinusSrcAlpha;
 
         } else if(blend_source_str == "DstColor") {
-            return blend_source_enum::dest_color;
+            return vk::BlendFactor::eDstColor;
 
         } else if(blend_source_str == "OneMinusDstColor") {
-            return blend_source_enum::one_minus_dest_color;
+            return vk::BlendFactor::eOneMinusDstColor;
 
         }
 
@@ -361,5 +385,14 @@ namespace nova {
         }
 
         LOG(FATAL) << "Invalid texture location enum '" << texture_location_str << "'";
+    }
+
+    output_info decode_outputs(const nlohmann::json& output_info_json) {
+        auto ret_val = output_info{};
+
+        ret_val.index = *get_json_value<uint8_t>(output_info_json, "index");
+        ret_val.blending = *get_json_value<bool>(output_info_json, "blending");
+
+        return ret_val;
     }
 }

@@ -185,28 +185,6 @@ namespace nova {
         empty
     };
 
-    struct stencil_buffer_state {
-        /*!
-         * \brief The stencil function to use
-         */
-        optional<vk::CompareOp> stencil_func;
-
-        /*!
-         * \brief What to do when the stencil test fails
-         */
-        optional<vk::StencilOp> stencil_fail_op;
-
-        /*!
-         * \brief The depth fail op I guess? Or is it what to do when both the depth and stencil functions fail?
-         */
-        optional<vk::StencilOp> stencil_depth_fail_op;
-
-        /*!
-         * \brief What to do when the stencil tests passes
-         */
-        optional<vk::StencilOp> stencil_pass_op;
-    };
-
     enum class texture_location_enum {
         dynamic,
         in_user_package
@@ -261,6 +239,11 @@ namespace nova {
         msaa,
         both,
         none
+    };
+
+    struct output_info {
+        uint8_t index;
+        bool blending;
     };
 
     /*!
@@ -339,12 +322,12 @@ namespace nova {
         /*!
          * \brief The stencil buffer operations to perform on the front faces
          */
-        optional<stencil_buffer_state> front_face;
+        optional<vk::StencilOpState> front_face;
 
         /*!
          * \brief The stencil buffer operations to perform on the back faces
          */
-        optional<stencil_buffer_state> back_face;
+        optional<vk::StencilOpState> back_face;
 
         /*!
          * \brief All the sampler states that are defined for this material_state. Still not sure how they work though
@@ -384,7 +367,7 @@ namespace nova {
          * outputs to location 2, that data should be written to colortex4. Alteriately, you can think of it as telling
          * Nova to bind colortex4 to shader output 2
          */
-        optional<std::vector<uint8_t>> outputs;
+        optional<std::vector<output_info>> outputs;
 
         /*!
          * \brief The width of the output texture we're rendering to
@@ -440,22 +423,22 @@ namespace nova {
         /*!
          * \brief Where to get the blending factor for the soource
          */
-        optional<blend_source_enum> source_blend_factor;
+        optional<vk::BlendFactor> source_blend_factor;
 
         /*!
          * \brief Where to get the blending factor for the destination
          */
-        optional<blend_source_enum> destination_blend_factor;
+        optional<vk::BlendFactor> destination_blend_factor;
 
         /*!
          * \brief How to get the source alpha in a blend
          */
-        optional<blend_source_enum> alpha_src;
+        optional<vk::BlendFactor> alpha_src;
 
         /*!
          * \brief How to get the destination alpha in a blend
          */
-        optional<blend_source_enum> alpha_dst;
+        optional<vk::BlendFactor> alpha_dst;
 
         /*!
          * \brief The function to use for the depth test
@@ -514,17 +497,19 @@ namespace nova {
 
     vk::StencilOp decode_stencil_op_enum(const std::string &op);
 
-    stencil_buffer_state decode_stencil_buffer_state(const nlohmann::json &json);
+    vk::StencilOpState decode_stencil_buffer_state(const nlohmann::json &json);
 
     msaa_support_enum decode_msaa_support_enum(const std::string& msaa_support_str);
 
     vk::PrimitiveTopology decode_primitive_mode_enum(const std::string& primitive_mode_str);
 
-    blend_source_enum decode_blend_source_enum(const std::string& blend_source_str);
+    vk::BlendFactor decode_blend_source_enum(const std::string& blend_source_str);
 
     texture decode_texture(const nlohmann::json& texture_json);
 
     texture_location_enum decode_texture_location_enum(const std::string& texture_location_str);
+
+    output_info decode_outputs(const nlohmann::json& output_info_json);
 }
 
 #endif //RENDERER_MATERIALS_H

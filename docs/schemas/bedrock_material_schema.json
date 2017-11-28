@@ -103,7 +103,7 @@
                     "properties": {
                         "stencilFunc": {
                             "type": "string",
-                            "enum": ["Always", "Never", "Less", "LessEqual", "GreaterEqual", "Equal", "Replace", "NotEqual"],
+                            "enum": ["Always", "Never", "Less", "LessEqual", "GreaterEqual", "Equal", "NotEqual"],
                             "description": "What stencil function to use for the back faces in this state"
                         },
                         "stencilFailOp": {
@@ -116,7 +116,7 @@
                             "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
                             "description": "What to do when the stencil and depth tests fail (I think)"
                         },
-                        "StencilPassOp": {
+                        "stencilPassOp": {
                             "type": "string",
                             "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
                             "description": "What to do when the stencil test passes"

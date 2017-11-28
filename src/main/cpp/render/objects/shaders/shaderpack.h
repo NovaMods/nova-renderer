@@ -63,6 +63,10 @@ namespace nova {
          * \brief The options that the shaders in this shaderpack set
          */
         nlohmann::json options;
+        vk::PipelineCache pipeline_cache;
+        vk::Device device;
+
+        void create_pipeline_cache();
     };
 }
 

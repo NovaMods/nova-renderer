@@ -285,7 +285,8 @@ namespace nova {
         LOG(TRACE) << "Dealing with included file " << file_to_include;
 
         try {
-            return load_shader_file(file_to_include, {""});
+            auto extensions = std::vector<std::string>{""};
+            return load_shader_file(file_to_include, extensions);
         } catch(resource_not_found& e) {
             throw std::runtime_error("Could not load included file " + file_to_include);
         }
