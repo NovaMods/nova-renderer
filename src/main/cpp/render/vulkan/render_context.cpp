@@ -120,7 +120,7 @@ namespace nova {
             gpu.mem_props = gpu.device.getMemoryProperties();
             gpu.props = gpu.device.getProperties();
             gpu.supported_features = gpu.device.getFeatures();
-            LOG(TRACE) << "Got the memory properties and deice properties";
+            LOG(TRACE) << "Got the memory properties and device properties";
         }
     }
 

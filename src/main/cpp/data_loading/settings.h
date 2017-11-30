@@ -59,7 +59,7 @@ namespace nova {
          *
          * \param filename The name of the file to load the config from
          */
-        settings(std::string filename);
+        explicit settings(std::string filename);
 
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer

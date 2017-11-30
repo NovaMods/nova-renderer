@@ -39,7 +39,12 @@ namespace nova {
             accum += buf;
         }
 
-        return nlohmann::json::parse(accum.c_str());
+        try {
+            return nlohmann::json::parse(accum.c_str());
+        } catch(std::exception& e) {
+            LOG(ERROR) << e.what();
+            return {};
+        }
     }
 
     std::vector<std::string> split(const std::string &s, char delim) {

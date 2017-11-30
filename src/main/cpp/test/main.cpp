@@ -12,13 +12,11 @@ bool is_format_supported(vk::PhysicalDevice& physical_device, vk::Format format,
 int main(int argc, char **argv) {
     nova::nova_renderer::init();
 
+    /*
     auto test_tex = nova::texture2D{};
     auto size = vk::Extent2D{4096, 2048};
     test_tex.set_data(nullptr, size, vk::Format::eR8G8B8A8Unorm);
-
-    auto& settings = nova::nova_renderer::instance->get_render_settings();
-    settings.get_options()["settings"]["loadedShaderpack"] = "default";
-    settings.update_config_changed();
+     */
 
     nova::nova_renderer::instance->render_frame();
 }

@@ -103,8 +103,8 @@ namespace nova {
             // I do like using temporary variables for everything...
             std::stringstream ss;
             ss << item.path();
-            nlohmann::json materials_json;
-            materials_json << ss;
+            auto stream = std::ifstream{ss.str()};
+            auto materials_json = load_json_from_stream(stream);
 
             auto material_definitions = get_material_definitions(materials_json);
             materials.insert(materials.end(), material_definitions.begin(), material_definitions.end());
