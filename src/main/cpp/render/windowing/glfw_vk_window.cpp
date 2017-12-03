@@ -10,6 +10,8 @@
 #include <dxgi.h>
 #include "../../input/InputHandler.h"
 #include "../nova_renderer.h"
+#include "../vulkan/render_context.h"
+
 namespace nova {
     void error_callback(int error, const char *description) {
         LOG(ERROR) << "Error " << error << ": " << description;

@@ -153,7 +153,6 @@ set(NOVA_SOURCE
         render/objects/uniform_buffers/uniform_buffers_definitions.cpp
 
         mc_interface/mc_objects.cpp
-        render/objects/renderpass.cpp
         render/objects/camera.cpp
         data_loading/loaders/shader_source_structs.cpp
         data_loading/direct_buffers.cpp

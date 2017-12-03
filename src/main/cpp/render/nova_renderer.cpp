@@ -17,6 +17,7 @@
 #include "objects/uniform_buffers/uniform_buffer_store.h"
 #include "../input/InputHandler.h"
 #include "objects/renderpasses/renderpass_manager.h"
+#include "vulkan/render_context.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>

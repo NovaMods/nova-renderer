@@ -6,7 +6,6 @@
 #include <vulkan/vulkan.hpp>
 #include "renderpass_manager.h"
 #include "../../vulkan/render_context.h"
-#include "../renderpass.h"
 #include <easylogging++.h>
 
 namespace nova {
@@ -42,7 +41,7 @@ namespace nova {
         vk::SubpassDescription subpass = {};
         subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
         subpass.colorAttachmentCount = static_cast<uint32_t>(color_refs.size());
-        subpass.pColorAttachments = color_refs.data();git add
+        subpass.pColorAttachments = color_refs.data();
 
         vk::RenderPassCreateInfo render_pass_create_info = {};
         render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());

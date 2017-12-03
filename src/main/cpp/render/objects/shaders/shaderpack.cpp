@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <utility>
 #include "shaderpack.h"
-#include "../renderpass.h"
+#include "../../vulkan/render_context.h"
 
 #include <easylogging++.h>
 
