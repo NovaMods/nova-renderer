@@ -11,7 +11,7 @@
 #include "../../vulkan/render_context.h"
 
 namespace nova {
-    gl_shader_program::gl_shader_program(const shader_definition &source, const material_state& material, vk::RenderPass renderpass, vk::PipelineCache pipeline_cache) : name(source.name) {
+    gl_shader_program::gl_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache) : name(source.name) {
         device = render_context::instance.device;
         LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
         filter = source.filter_expression;

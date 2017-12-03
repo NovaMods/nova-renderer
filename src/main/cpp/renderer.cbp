@@ -304,7 +304,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="glfw">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/libglfw3d.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/libglfw3.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src"/>
 				<Option object_output="./"/>
 				<Option type="2"/>
@@ -330,7 +330,7 @@
 				</MakeCommands>
 			</Target>
 			<Target title="glfw/fast">
-				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/libglfw3d.a" prefix_auto="0" extension_auto="0"/>
+				<Option output="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src/libglfw3.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="E:/Documents/nova-renderer/src/main/cpp/3rdparty/glfw/src"/>
 				<Option object_output="./"/>
 				<Option type="2"/>

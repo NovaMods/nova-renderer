@@ -10,7 +10,6 @@
 
 namespace nova {
     class shaderpack;
-    class renderpass;
 
     /*!
      * \brief Holds all the render passes that we made from the loaded shaderpack
@@ -31,7 +30,7 @@ namespace nova {
      */
     class renderpass_manager {
     public:
-        renderpass_manager();
+        renderpass_manager(const vk::Extent2D& main_shadow_size, const vk::Extent2D& light_shadow_size, const vk::Extent2D& window_size);
 
         /*!
          * \brief Rebuilds the entire renderpasses
@@ -40,20 +39,26 @@ namespace nova {
          *
          * And since there's new renderpasses we'll need to rebuild our pipelines as well...
          *
-         * \param window_size
+         * \param window_size The size of the window we're rendering to
          */
-        void rebuild_all(vk::Extent2D& window_size);
+        void rebuild_all(const vk::Extent2D& main_shadow_size, const vk::Extent2D& light_shadow_size, const vk::Extent2D& window_size);
 
-        std::shared_ptr<renderpass> get_main_renderpass();
-        std::shared_ptr<renderpass> get_final_renderpass();
+        const vk::RenderPass get_main_renderpass() const;
+        const vk::RenderPass get_final_renderpass() const;
 
     private:
-        void create_final_renderpass(vk::Extent2D& window_size);
+        vk::RenderPass main_shadow_pass;
+        vk::RenderPass light_shadow_pass;
+        vk::RenderPass main_pass;
+        vk::RenderPass final_pass;
 
-        void create_main_renderpass(vk::Extent2D& window_size);
+        std::vector<vk::Framebuffer> final_framebuffers;
 
-        std::shared_ptr<renderpass> final_renderpass;
-        std::shared_ptr<renderpass> main_renderpass;
+        void create_final_renderpass(const vk::Extent2D& window_size);
+
+        void create_main_renderpass(const vk::Extent2D& window_size);
+
+        void create_final_framebuffers(const vk::Extent2D &window_size);
     };
 }
 

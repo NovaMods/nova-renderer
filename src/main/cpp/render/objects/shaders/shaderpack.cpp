@@ -13,7 +13,7 @@
 #include <easylogging++.h>
 
 namespace nova {
-    shaderpack::shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, std::shared_ptr<renderpass> our_renderpass) :
+    shaderpack::shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass) :
             name(name), device(render_context::instance.device) {
 
         create_pipeline_cache();
@@ -21,7 +21,7 @@ namespace nova {
         for(auto& shader : shaders) {
             LOG(TRACE) << "Adding shader " << shader.second.name;
             try {
-                loaded_shaders.emplace(shader.second.name, gl_shader_program(shader.second, shader.first, our_renderpass->get_renderpass(), pipeline_cache));
+                loaded_shaders.emplace(shader.second.name, gl_shader_program(shader.second, shader.first, our_renderpass, pipeline_cache));
             } catch(std::exception& e) {
                 LOG(ERROR) << "Could not load shader " << shader.second.name << " because " << e.what();
             }

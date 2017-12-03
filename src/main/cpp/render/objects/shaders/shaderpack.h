@@ -32,7 +32,7 @@ namespace nova {
          * \brief Constructs a new shaderpack from the provided shader definitions
          * \param shaderpack_name The name of the shaderpcack to load
          */
-        shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, std::shared_ptr<renderpass> our_renderpass);
+        shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass);
 
         gl_shader_program &operator[](std::string key);
 

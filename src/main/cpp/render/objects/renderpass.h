@@ -16,14 +16,12 @@
 namespace nova {
     /*!
      * \brief A renderpass object
-     *
-     * I've made this wrapper to better manage adding and accessing framebuffer attachments,
      */
     class renderpass {
         friend class renderpass_builder;
 
     public:
-        explicit renderpass(vk::RenderPassCreateInfo& create_info, vk::Extent2D size);
+        renderpass(vk::RenderPassCreateInfo& create_info, vk::Extent2D size);
 
         renderpass(renderpass &&other) noexcept;
 
@@ -42,11 +40,6 @@ namespace nova {
         // TODO: I don't always want to create one framebuffer per swapchain image. The final framebuffer is a special
         // case and I'm not sure how to handle it
         vk::Framebuffer framebuffer;
-
-        std::vector<vk::ImageView> color_image_views;
-        vk::ImageView depth_buffer_view;
-
-        void create_framebuffers(vk::Extent2D size);
     };
 }
 
