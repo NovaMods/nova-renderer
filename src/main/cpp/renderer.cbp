@@ -11485,6 +11485,9 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/shaders/gl_shader_program.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/shaders/shader_resource_manager.cpp.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/objects/shaders/shaderpack.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
@@ -11669,6 +11672,12 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/shaders/gl_shader_program.h">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/shaders/shader_resource_manager.cpp">
+			<Option target="nova-renderer-obj"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/shaders/shader_resource_manager.h">
+			<Option target="nova-renderer-obj"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/render/objects/shaders/shaderpack.cpp">
 			<Option target="nova-renderer-obj"/>

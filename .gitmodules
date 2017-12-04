@@ -37,3 +37,6 @@
 [submodule "src/main/cpp/3rdparty/glslang"]
 	path = src/main/cpp/3rdparty/glslang
 	url = https://github.com/KhronosGroup/glslang.git
+[submodule "docs/nova-renderer.wiki"]
+	path = docs/nova-renderer.wiki
+	url = https://github.com/NovaMods/nova-renderer.wiki.git

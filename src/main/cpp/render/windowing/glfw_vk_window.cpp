@@ -56,8 +56,6 @@ namespace nova {
         //renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
         //LOG(INFO) << "Hooked into RenderDoc";
 
-        // glfwGetFramebufferSize(window, &window_dimensions.x, &window_dimensions.y);
-
         glfwSetKeyCallback(window, key_callback);
 		glfwSetCharCallback(window, key_character_callback);
 		glfwSetMouseButtonCallback(window, mouse_button_callback);
