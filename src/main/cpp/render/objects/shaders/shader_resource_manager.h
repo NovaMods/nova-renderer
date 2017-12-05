@@ -66,6 +66,8 @@ namespace nova {
          * DESCRIPTOR SETS
          */
 
+        void create_descriptor_pool();
+
         void create_desriptor_sets();
 
         /*
@@ -78,7 +80,6 @@ namespace nova {
 
         void create_aniso_filter();
 
-        void create_descriptor_pool();
 
     };
 }

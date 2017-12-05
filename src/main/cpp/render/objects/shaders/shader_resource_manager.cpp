@@ -182,7 +182,7 @@ namespace nova {
             per_model_dsl,
         };
 
-        auto alloc_info =  vk::DescriptorSetAllocateInfo()
+        auto alloc_info = vk::DescriptorSetAllocateInfo()
                         .setDescriptorPool(descriptor_pool)
                         .setDescriptorSetCount(8)
                         .setPSetLayouts(layouts);
