@@ -13,12 +13,14 @@ namespace nova {
         create_custom_textures_dsl();
         create_shadow_textures_dsl();
         create_depth_textures_dsl();
-        create_noise_tex_dsl();
+        create_common_ds();
         create_framebuffer_top_dsl();
         create_framebuffer_bottom_dsl();
         create_block_light_dsl();
 
         create_descriptor_pool();
+
+        create_desriptor_sets();
     }
 
     void shader_resource_manager::create_block_textures_dsl() {
@@ -80,16 +82,29 @@ namespace nova {
         depth_textures_dsl = device.createDescriptorSetLayout(create_info);
     }
 
-    void shader_resource_manager::create_noise_tex_dsl() {
+    void shader_resource_manager::create_common_ds() {
         vk::DescriptorSetLayoutBinding bindings[] = {
                 vk::DescriptorSetLayoutBinding().setBinding(15).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(16).setDescriptorType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+        };
+
+        vk::DescriptorSetLayoutCreateInfo create_info = {};
+        create_info.bindingCount = 2;
+        create_info.pBindings = bindings;
+
+        common_dsl = device.createDescriptorSetLayout(create_info);
+    }
+
+    void shader_resource_manager::create_per_model_dsl() {
+        vk::DescriptorSetLayoutBinding bindings[] = {
+                vk::DescriptorSetLayoutBinding().setBinding(17).setDescriptorType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
         };
 
         vk::DescriptorSetLayoutCreateInfo create_info = {};
         create_info.bindingCount = 1;
         create_info.pBindings = bindings;
 
-        noise_tex_dsl = device.createDescriptorSetLayout(create_info);
+        per_model_dsl = device.createDescriptorSetLayout(create_info);
     }
 
     void shader_resource_manager::create_framebuffer_top_dsl() {
@@ -135,16 +150,6 @@ namespace nova {
         block_light_dsl = device.createDescriptorSetLayout(create_info);
     }
 
-    void shader_resource_manager::create_block_textures_ds() {
-        vk::DescriptorSetLayout layouts[] = {
-
-        };
-
-        auto alloc_info = vk::DescriptorSetAllocateInfo()
-            .setDescriptorPool(descriptor_pool)
-            .setDescriptorSetCount(4)
-            .setPSetLayouts(nullptr);
-    }
 
     void shader_resource_manager::create_descriptor_pool() {
         vk::DescriptorPoolCreateInfo pool_create_info = {};
@@ -161,6 +166,38 @@ namespace nova {
         pool_create_info.pPoolSizes = sizes;
 
         descriptor_pool = device.createDescriptorPool(pool_create_info);
+    }
+
+
+    void shader_resource_manager::create_desriptor_sets() {
+        vk::DescriptorSetLayout layouts[] = {
+            block_textures_dsl,
+            custom_textures_dsl,
+            shadow_textures_dsl,
+            depth_textures_dsl,
+            common_dsl,
+            framebuffer_top_dsl,
+            framebuffer_bottom_dsl,
+            block_light_dsl,
+            per_model_dsl,
+        };
+
+        auto alloc_info =  vk::DescriptorSetAllocateInfo()
+                        .setDescriptorPool(descriptor_pool)
+                        .setDescriptorSetCount(8)
+                        .setPSetLayouts(layouts);
+
+        auto descriptor_sets = device.allocateDescriptorSets(alloc_info);
+
+        block_textures          = descriptor_sets[0];
+        custom_textures         = descriptor_sets[1];
+        shadow_textures         = descriptor_sets[2];
+        depth_textures          = descriptor_sets[3];
+        common_descriptors      = descriptor_sets[4];
+        framebuffer_top         = descriptor_sets[5];
+        framebuffer_bottom      = descriptor_sets[6];
+        block_light             = descriptor_sets[7];
+        per_model_descriptors   = descriptor_sets[8];
     }
 }
 

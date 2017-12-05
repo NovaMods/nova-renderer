@@ -23,12 +23,23 @@ namespace nova {
         vk::DescriptorSetLayout custom_textures_dsl;
         vk::DescriptorSetLayout shadow_textures_dsl;
         vk::DescriptorSetLayout depth_textures_dsl;
-        vk::DescriptorSetLayout noise_tex_dsl;
+        vk::DescriptorSetLayout common_dsl;
         vk::DescriptorSetLayout framebuffer_top_dsl;
         vk::DescriptorSetLayout framebuffer_bottom_dsl;
         vk::DescriptorSetLayout block_light_dsl;
+        vk::DescriptorSetLayout per_model_dsl;
 
         vk::DescriptorPool descriptor_pool;
+
+        vk::DescriptorSet block_textures;
+        vk::DescriptorSet custom_textures;
+        vk::DescriptorSet shadow_textures;
+        vk::DescriptorSet depth_textures;
+        vk::DescriptorSet common_descriptors;
+        vk::DescriptorSet framebuffer_top;
+        vk::DescriptorSet framebuffer_bottom;
+        vk::DescriptorSet block_light;
+        vk::DescriptorSet per_model_descriptors;
 
         /*
          * DESCRIPTOR SET LAYOUTS
@@ -41,7 +52,7 @@ namespace nova {
 
         void create_depth_textures_dsl();
 
-        void create_noise_tex_dsl();
+        void create_common_ds();
 
         void create_framebuffer_top_dsl();
 
@@ -49,11 +60,13 @@ namespace nova {
 
         void create_block_light_dsl();
 
+        void create_per_model_dsl();
+
         /*
          * DESCRIPTOR SETS
          */
 
-        void create_block_textures_ds();
+        void create_desriptor_sets();
 
         /*
          * SAMPLERS
@@ -66,7 +79,6 @@ namespace nova {
         void create_aniso_filter();
 
         void create_descriptor_pool();
-
 
     };
 }
