@@ -19,20 +19,45 @@ namespace nova {
     private:
         vk::Device device;
 
-        vk::DescriptorSetLayout main_ds;
-        vk::DescriptorSetLayout block_light_ds;
+        vk::DescriptorSetLayout block_textures_dsl;
+        vk::DescriptorSetLayout custom_textures_dsl;
+        vk::DescriptorSetLayout shadow_textures_dsl;
+        vk::DescriptorSetLayout depth_textures_dsl;
+        vk::DescriptorSetLayout noise_tex_dsl;
+        vk::DescriptorSetLayout framebuffer_top_dsl;
+        vk::DescriptorSetLayout framebuffer_bottom_dsl;
+        vk::DescriptorSetLayout block_light_dsl;
 
-        /*!
-         * \brief Creates a DSL that everything except the block light shader uses
-         */
-        void create_main_dsl();
+        vk::DescriptorPool descriptor_pool;
 
-        /*!
-         * \brief Creates a DSL with the shadow cubemap
+        /*
+         * DESCRIPTOR SET LAYOUTS
          */
+        void create_block_textures_dsl();
+
+        void create_custom_textures_dsl();
+
+        void create_shadow_textures_dsl();
+
+        void create_depth_textures_dsl();
+
+        void create_noise_tex_dsl();
+
+        void create_framebuffer_top_dsl();
+
+        void create_framebuffer_bottom_dsl();
+
         void create_block_light_dsl();
 
+        /*
+         * DESCRIPTOR SETS
+         */
+
         void create_block_textures_ds();
+
+        /*
+         * SAMPLERS
+         */
 
         void create_point_sampler();
 
@@ -41,6 +66,8 @@ namespace nova {
         void create_aniso_filter();
 
         void create_descriptor_pool();
+
+
     };
 }
 
