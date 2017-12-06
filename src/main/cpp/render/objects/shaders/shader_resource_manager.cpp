@@ -3,6 +3,7 @@
  * \date 03-Dec-17.
  */
 
+#include <easylogging++.h>
 #include "shader_resource_manager.h"
 #include "../../vulkan/render_context.h"
 
@@ -154,6 +155,11 @@ namespace nova {
 
 
     void shader_resource_manager::create_pipeline_layouts() {
+        auto max_bound_descriptor_sets = render_context::instance.gpu.props.limits.maxBoundDescriptorSets;
+        if(max_bound_descriptor_sets < 6) {
+            LOG(FATAL) << "We need at least 6 descriptor sets at a time, but your system only supports " << max_bound_descriptor_sets;
+        }
+
         vk::DescriptorSetLayout shadow_set_layouts[] = {
                 block_textures_dsl,
                 common_dsl,

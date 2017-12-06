@@ -10,7 +10,7 @@
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
-#include "meshes/mesh_definition.h"
+#include "mesh_definition.h"
 
 namespace nova {
     class render_context;

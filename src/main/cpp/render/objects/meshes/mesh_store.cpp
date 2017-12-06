@@ -12,7 +12,7 @@
 #include "mesh_store.h"
 #include "../../nova_renderer.h"
 #include "mesh_definition.h"
-#include "../vk_mesh.h"
+#include "vk_mesh.h"
 
 namespace nova {
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {

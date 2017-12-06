@@ -12,7 +12,7 @@
 #include "vulkan/command_pool.h"
 #include "objects/meshes/mesh_store.h"
 #include "objects/render_object.h"
-#include "objects/vk_mesh.h"
+#include "objects/meshes/vk_mesh.h"
 #include "objects/uniform_buffers/uniform_buffer_definitions.h"
 #include "objects/uniform_buffers/uniform_buffer_store.h"
 #include "../input/InputHandler.h"

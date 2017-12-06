@@ -6,8 +6,8 @@
 #include <stdexcept>
 #include <easylogging++.h>
 #include "vk_mesh.h"
-#include "../windowing/glfw_vk_window.h"
-#include "../vulkan/render_context.h"
+#include "../../windowing/glfw_vk_window.h"
+#include "../../vulkan/render_context.h"
 
 namespace nova {
     vk_mesh::vk_mesh() : num_indices(0) {
