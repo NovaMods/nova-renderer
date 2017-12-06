@@ -16,6 +16,8 @@ namespace nova {
     public:
         shader_resource_manager();
 
+        ~shader_resource_manager();
+
     private:
         vk::Device device;
 
@@ -28,6 +30,11 @@ namespace nova {
         vk::DescriptorSetLayout framebuffer_bottom_dsl;
         vk::DescriptorSetLayout block_light_dsl;
         vk::DescriptorSetLayout per_model_dsl;
+
+        vk::PipelineLayout shadow_pl;
+        vk::PipelineLayout gbuffers_pl;
+        vk::PipelineLayout deferred_light_pl;
+        vk::PipelineLayout fullscreen_pass_pl;
 
         vk::DescriptorPool descriptor_pool;
 
@@ -61,6 +68,12 @@ namespace nova {
         void create_block_light_dsl();
 
         void create_per_model_dsl();
+
+        /*
+         * PIPELINE LAYOUTS
+         */
+
+        void create_pipeline_layouts();
 
         /*
          * DESCRIPTOR SETS

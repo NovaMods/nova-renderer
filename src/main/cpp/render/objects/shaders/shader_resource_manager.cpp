@@ -151,6 +151,67 @@ namespace nova {
     }
 
 
+    void shader_resource_manager::create_pipeline_layouts() {
+        vk::DescriptorSetLayout shadow_set_layouts[] = {
+                block_textures_dsl,
+                common_dsl,
+                per_model_dsl,
+                custom_textures_dsl,
+        };
+
+        vk::PipelineLayoutCreateInfo shadow_pl_create_info = vk::PipelineLayoutCreateInfo()
+            .setSetLayoutCount(4)
+            .setPSetLayouts(shadow_set_layouts);
+
+        shadow_pl = device.createPipelineLayout(shadow_pl_create_info);
+
+
+        vk::DescriptorSetLayout gbuffers_set_layouts[] = {
+                block_textures_dsl,
+                shadow_textures_dsl,
+                common_dsl,
+                per_model_dsl,
+                custom_textures_dsl,
+        };
+
+        auto gbuffers_pl_create_info = vk::PipelineLayoutCreateInfo()
+            .setSetLayoutCount(5)
+            .setPSetLayouts(gbuffers_set_layouts);
+
+        gbuffers_pl = device.createPipelineLayout(gbuffers_pl_create_info);
+
+
+        vk::DescriptorSetLayout deferred_light_set_layouts[] = {
+                depth_textures_dsl,
+                common_dsl,
+                per_model_dsl,
+                block_light_dsl
+        };
+
+        auto deferred_light_pl_create_info = vk::PipelineLayoutCreateInfo()
+            .setSetLayoutCount(4)
+            .setPSetLayouts(deferred_light_set_layouts);
+
+        deferred_light_pl = device.createPipelineLayout(deferred_light_pl_create_info);
+
+
+        vk::DescriptorSetLayout fullscreen_pass_layouts[] = {
+                shadow_textures_dsl,
+                depth_textures_dsl,
+                common_dsl,
+                per_model_dsl,
+                framebuffer_top_dsl,
+                framebuffer_bottom_dsl,
+        };
+
+        auto fullscreen_pass_pl_create_info = vk::PipelineLayoutCreateInfo()
+            .setSetLayoutCount(6)
+            .setPSetLayouts(fullscreen_pass_layouts);
+
+        fullscreen_pass_pl = device.createPipelineLayout(fullscreen_pass_pl_create_info);
+    }
+
+
     void shader_resource_manager::create_descriptor_pool() {
         vk::DescriptorPoolCreateInfo pool_create_info = {};
         pool_create_info.maxSets = 32;  // Nova hopefully won't need too many
@@ -198,6 +259,10 @@ namespace nova {
         framebuffer_bottom      = descriptor_sets[6];
         block_light             = descriptor_sets[7];
         per_model_descriptors   = descriptor_sets[8];
+    }
+
+    shader_resource_manager::~shader_resource_manager() {
+        device.destroyDescriptorPool(descriptor_pool);
     }
 }
 
