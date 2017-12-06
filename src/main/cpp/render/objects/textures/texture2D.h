@@ -71,8 +71,6 @@ namespace nova {
          */
         void set_data(void* pixel_data, vk::Extent2D &dimensions, vk::Format format);
 
-        void set_filtering_parameters(texture_filtering_params &params);
-
         vk::Extent2D& get_size();
 
         /*!

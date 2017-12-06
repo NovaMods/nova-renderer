@@ -18,6 +18,8 @@ namespace nova {
         create_framebuffer_bottom_dsl();
         create_block_light_dsl();
 
+        create_pipeline_layouts();
+
         create_descriptor_pool();
 
         create_desriptor_sets();
@@ -229,7 +231,6 @@ namespace nova {
         descriptor_pool = device.createDescriptorPool(pool_create_info);
     }
 
-
     void shader_resource_manager::create_desriptor_sets() {
         vk::DescriptorSetLayout layouts[] = {
             block_textures_dsl,
@@ -260,6 +261,7 @@ namespace nova {
         block_light             = descriptor_sets[7];
         per_model_descriptors   = descriptor_sets[8];
     }
+
 
     shader_resource_manager::~shader_resource_manager() {
         device.destroyDescriptorPool(descriptor_pool);

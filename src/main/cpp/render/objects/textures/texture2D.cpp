@@ -80,10 +80,6 @@ namespace nova {
         return format;
     }
 
-    void texture2D::set_filtering_parameters(texture_filtering_params &params) {
-        // TODO
-    }
-
     const vk::Image& texture2D::get_vk_image() {
         return image;
     }
