@@ -48,6 +48,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/minitrace"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -83,6 +84,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/minitrace"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -120,6 +122,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/minitrace"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -157,6 +160,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/minitrace"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -203,6 +207,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/minitrace"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -239,6 +244,7 @@
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/renderdocapi"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/VulkanMemoryAllocator/src"/>
 					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/shaderc/libshaderc/include"/>
+					<Add directory="E:/Documents/nova-renderer/src/main/cpp/3rdparty/minitrace"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/x86_64-w64-mingw32"/>
 					<Add directory="E:/mingw-w64/x86_64-7.1.0-posix-seh-rt_v5-rev2/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/7.1.0/include/c++/backward"/>
@@ -10023,6 +10029,14 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/json/test/src/unit.cpp">
 			<Option target="catch_main"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/minitrace/minitrace.c">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/minitrace/minitrace.h">
+			<Option target="nova-renderer-obj"/>
+			<Option target="nova-test"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/3rdparty/miniz/examples/example1.c">
 			<Option target="example1"/>
 		</Unit>
@@ -11419,6 +11433,9 @@
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/glad/src/glad.c.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
+		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/minitrace/minitrace.c.obj">
+			<Option target="nova-renderer"/>
+		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/3rdparty/miniz/miniz.c.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
@@ -11513,9 +11530,6 @@
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/render/windowing/glfw_vk_window.cpp.obj">
-			<Option target="nova-renderer"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/utils/profiler.cpp.obj">
 			<Option target="nova-renderer"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/CMakeFiles/nova-renderer-obj.dir/utils/utils.cpp.obj">
@@ -11759,14 +11773,6 @@
 			<Option target="nova-test"/>
 		</Unit>
 		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/io.h">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/profiler.cpp">
-			<Option target="nova-renderer-obj"/>
-			<Option target="nova-test"/>
-		</Unit>
-		<Unit filename="E:/Documents/nova-renderer/src/main/cpp/utils/profiler.h">
 			<Option target="nova-renderer-obj"/>
 			<Option target="nova-test"/>
 		</Unit>

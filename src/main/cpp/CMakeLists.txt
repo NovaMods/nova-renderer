@@ -64,6 +64,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/renderdocapi
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
+        ${3RD_PARTY_DIR}/minitrace
         )
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} shaderc stdc++fs)
@@ -110,7 +111,6 @@ set(NOVA_HEADERS
         data_loading/direct_buffers.h
         mc_interface/nova_jni.h
         render/objects/render_object.h
-        utils/profiler.h
         utils/stb_image_write.h
         render/vulkan/render_context.cpp
         render/vulkan/render_context.h
@@ -125,6 +125,7 @@ set(NOVA_SOURCE
         3rdparty/miniz/miniz_tinfl.c
         3rdparty/miniz/miniz_zip.c
         3rdparty/easyloggingpp/src/easylogging++.cc
+        3rdparty/minitrace/minitrace.c
 
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
@@ -157,7 +158,6 @@ set(NOVA_SOURCE
         data_loading/loaders/shader_source_structs.cpp
         data_loading/direct_buffers.cpp
         render/objects/render_object.cpp
-        utils/profiler.cpp
         render/vulkan/command_pool.cpp
         render/objects/renderpasses/renderpass_manager.cpp render/objects/renderpasses/renderpass_manager.h
         render/objects/renderpasses/materials.h

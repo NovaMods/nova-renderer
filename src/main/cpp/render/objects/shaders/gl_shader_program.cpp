@@ -219,10 +219,6 @@ namespace nova {
         pipeline = device.createGraphicsPipeline(cache, pipeline_create_info);
     }
 
-    void gl_shader_program::bind() noexcept {
-        //glUseProgram(gl_name);
-    }
-
     gl_shader_program::~gl_shader_program() {
         device.destroyShaderModule(vertex_module);
         device.destroyShaderModule(fragment_module);

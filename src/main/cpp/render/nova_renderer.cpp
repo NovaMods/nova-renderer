@@ -5,7 +5,6 @@
 #include "nova_renderer.h"
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
-#include "../utils/profiler.h"
 #include "objects/render_object.h"
 #include "../data_loading/settings.h"
 #include "windowing/glfw_vk_window.h"
@@ -21,6 +20,7 @@
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <minitrace.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -79,11 +79,11 @@ namespace nova {
 
         render_context::instance.vk_instance.destroy();
         game_window.reset();
+
+        mtr_shutdown();
     }
 
     void nova_renderer::render_frame() {
-        profiler::log_all_profiler_data();
-
         begin_frame();
 
         auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
@@ -161,7 +161,6 @@ namespace nova {
 
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
-        gui_shader.bind();
 
         upload_gui_model_matrix(gui_shader);
 
@@ -183,6 +182,11 @@ namespace nova {
     }
 
     void nova_renderer::init() {
+        mtr_init("nova_profile.json");
+        MTR_META_PROCESS_NAME("Nova Renderer")
+        MTR_META_THREAD_NAME("Main Nova Thread")
+
+        MTR_SCOPE("INIT", "MainInit")
         render_settings = std::make_shared<settings>("config/config.json");
 
         try {
@@ -260,15 +264,13 @@ namespace nova {
 
     void nova_renderer::render_shader(vk::CommandBuffer buffer, gl_shader_program &shader) {
         LOG(TRACE) << "Rendering everything for shader " << shader.get_name();
-        profiler::start(shader.get_name());
-        shader.bind();
 
-        profiler::start("get_meshes_for_shader");
+        MTR_SCOPE("RenderLoop", "render_shader");
+
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
-        profiler::end("get_meshes_for_shader");
-        profiler::start("process_all");
+        LOG(INFO) << "Rendering " << geometry.size() << " things";
+        MTR_BEGIN("RenderLoop", "process_all");
         for(auto& geom : geometry) {
-            profiler::start("process_renderable");
 
             // if(!player_camera.has_object_in_frustum(geom.bounding_box)) {
             //     continue;
@@ -290,18 +292,13 @@ namespace nova {
 
                 upload_model_matrix(geom, shader);
 
-                profiler::start("drawcall");
                 geom.geometry->set_active(buffer);
                 geom.geometry->draw();
-                profiler::end("drawcall");
             } else {
                 LOG(TRACE) << "Skipping some geometry since it has no data";
             }
-            profiler::end("process_renderable");
         }
-        profiler::end("process_all");
-
-        profiler::end(shader.get_name());
+        MTR_END("RenderLoop", "process_all")
     }
 
     inline void nova_renderer::upload_model_matrix(render_object &geom, gl_shader_program &program) const {

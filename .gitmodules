@@ -40,3 +40,6 @@
 [submodule "docs/nova-renderer.wiki"]
 	path = docs/nova-renderer.wiki
 	url = https://github.com/NovaMods/nova-renderer.wiki.git
+[submodule "src/main/cpp/3rdparty/minitrace"]
+	path = src/main/cpp/3rdparty/minitrace
+	url = https://github.com/hrydgard/minitrace.git

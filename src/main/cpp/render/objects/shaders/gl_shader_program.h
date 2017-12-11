@@ -65,11 +65,6 @@ namespace nova {
          */
         ~gl_shader_program();
 
-        /*!
-         * \brief Sets this shader as the currently active shader
-         */
-        void bind() noexcept;
-
         std::string& get_filter() noexcept;
 
         std::string& get_name() noexcept;
