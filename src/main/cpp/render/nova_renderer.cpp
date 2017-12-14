@@ -201,7 +201,7 @@ namespace nova {
         LOG(INFO) << "Shaderpack in settings: " << shaderpack_name;
 
         if(!loaded_shaderpack) {
-            LOG(DEBUG) << "There's currenty no shaderpack, so we're loading a new one";
+            LOG(DEBUG) << "There's currently no shaderpack, so we're loading a new one";
             load_new_shaderpack(shaderpack_name);
             return;
         }
@@ -269,6 +269,7 @@ namespace nova {
 
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
         LOG(INFO) << "Rendering " << geometry.size() << " things";
+
         MTR_BEGIN("RenderLoop", "process_all");
         for(auto& geom : geometry) {
 

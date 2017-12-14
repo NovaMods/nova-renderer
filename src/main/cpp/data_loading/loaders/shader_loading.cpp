@@ -86,26 +86,34 @@ namespace nova {
 
         std::vector<material_state> materials;
 
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        std::wstring materials_directory_path_str = converter.from_bytes("shaderpacks/" + shaderpack_name + "/materials");
-        auto shader_path = std::experimental::filesystem::path(materials_directory_path_str);
+        //std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        //std::wstring materials_directory_path_str = converter.from_bytes("shaderpacks/" + shaderpack_name + "/materials");
+        //LOG(DEBUG) << "Wide string directory path: " << materials_directory_path_str;
+        auto shader_path = std::experimental::filesystem::path("shaderpacks/" + shaderpack_name + "/materials");
+        //LOG(DEBUG) << "Shader_path: " << shader_path.generic_string();
         auto directory_iter = std::experimental::filesystem::directory_iterator(shader_path);
         for(const auto& item : directory_iter) {
-            if(!std::experimental::filesystem::is_regular_file(item.path())) {
-                continue;
-            }
-
-            if(item.path().extension() != std::experimental::filesystem::path(L".material")) {
-                continue;
-            }
-
             // I do like using temporary variables for everything...
             std::stringstream ss;
             ss << item.path();
-            auto stream = std::ifstream{ss.str()};
+
+            if(!std::experimental::filesystem::is_regular_file(item.path())) {
+                LOG(INFO) << "Skipping non-regular file " << ss.str();
+                continue;
+            }
+
+            if(item.path().extension() != std::experimental::filesystem::path(".material")) {
+                LOG(INFO) << "Skipping non-material file " << ss.str();
+                continue;
+            }
+
+            LOG(DEBUG) << "Loading file " << ss.str();
+            auto stream = std::ifstream{"shaderpacks/default/materials\\gbuffers_terrain.material"};
             auto materials_json = load_json_from_stream(stream);
+            LOG(DEBUG) << "Parsed material file into JSON";
 
             auto material_definitions = get_material_definitions(materials_json);
+            LOG(DEBUG) << "Retrieved all the material states from that file";
             materials.insert(materials.end(), material_definitions.begin(), material_definitions.end());
         }
 

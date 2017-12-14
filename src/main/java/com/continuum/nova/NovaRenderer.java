@@ -407,8 +407,15 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         String filters = NovaNative.INSTANCE.get_shaders_and_filters();
         Profiler.end("load_shaderpack");
 
+        if(filters.length() < 2 || filters.length() % 2 != 0) {
+            throw new IllegalStateException("Must have a POT number of filters and shader names");
+        }
+
         Profiler.start("build_filters");
         String[] filtersSplit = filters.split("\n");
+
+        LOG.debug("Filters: '{}'", String.join(", ", filtersSplit));
+        LOG.debug("Received {} shaders with filters", filtersSplit.length);
 
         filterMap = new HashMap<>();
         for(int i = 0; i < filtersSplit.length; i += 2) {

@@ -170,6 +170,8 @@ NOVA_API char* get_shaders_and_filters() {
         num_chars += 2;
     }
 
+    LOG(DEBUG) << "There are a total of " << shaders.size() << " shaders, which have a total of " << num_chars << " needed for their filters and names";
+
     auto* filters = new char[num_chars];
     int write_pos = 0;
     for(auto& entry : shaders) {

@@ -36,6 +36,7 @@ namespace nova {
         std::string accum;
 
         while(getline(stream, buf)) {
+            LOG(DEBUG) << buf;
             accum += buf;
         }
 
