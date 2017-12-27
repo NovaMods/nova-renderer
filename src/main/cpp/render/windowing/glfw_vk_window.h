@@ -11,7 +11,9 @@
 #include <json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../data_loading/settings.h"
+#if __win32__
 #include <RenderDocManager.h>
+#endif
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 
@@ -77,7 +79,9 @@ namespace nova {
         static bool active;
         GLFWwindow *window;
         glm::ivec2 window_dimensions;
+#if __win32__
         std::unique_ptr<RenderDocManager> renderdoc_manager;
+#endif
         struct window_parameters windowed_window_parameters;
 
         void set_framebuffer_size(glm::ivec2 new_framebuffer_size);

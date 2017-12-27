@@ -59,7 +59,7 @@ task buildDll(type: Exec, dependsOn: invokeCMake) {
         if(Os.isFamily(Os.FAMILY_WINDOWS)) {
             commandLine 'mingw32-make', '-f', 'Makefile', 'nova-renderer'
         } else {
-            commandLine 'make', '-F', 'Makefile', 'nova-renderer'
+            commandLine 'make', '-f', 'Makefile', 'nova-renderer'
         }
     } else if(hasMSVC()) {
         commandLine 'msbuild', '/t:Build', '/m', 'nova-renderer.vcxproj'
