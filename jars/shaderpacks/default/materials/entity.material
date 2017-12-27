@@ -1,0 +1,666 @@
+{
+  "entity_static": {
+    "vertexShader": "shaders/entity.vertex",
+    "vrGeometryShader": "shaders/entity.geometry",
+    "fragmentShader": "shaders/entity.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Normal" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA"
+
+  },
+
+  "entity_flat_color": {
+    "vertexShader": "shaders/position.vertex",
+    "vrGeometryShader": "shaders/position.geometry",
+    "fragmentShader": "shaders/current_color.fragment",
+    "msaaSupport": "Both"
+  },
+
+  "entity_flat_color_line:entity_flat_color": {
+    "defines": [ "LINE_STRIP" ],
+    "primitiveMode": "Line",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Color" }
+    ]
+  },
+
+  "entity:entity_static": {
+    "defines": [ "USE_OVERLAY" ],
+
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Normal" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "Both"
+  },
+
+  "opaque_block:entity_static": {
+    "msaaSupport": "Both"
+  },
+
+  "entity_nocull:entity": {
+    "states": [ "DisableCulling" ]
+  },
+
+  "entity_change_color:entity_nocull": {
+    "defines": [
+      "USE_OVERLAY",
+      "USE_COLOR_MASK"
+    ]
+  },
+
+  "entity_alphatest:entity_nocull": {
+    "defines": [ "ALPHA_TEST" ],
+    "samplerStates": [
+      {
+        "samplerIndex": 1,
+        "textureWrap": "Repeat"
+      }
+    ],
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Normal" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "Both"
+
+  },
+
+  "item_in_hand_entity_alphatest:entity_alphatest": {
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Normal" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "Both"
+
+  },
+
+  "entity_alphablend:entity_nocull": {
+    "states": [
+      "Blending"
+    ],
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Color" },
+      { "field": "Normal" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "Both"
+
+  },
+
+  "guardian_ghost:entity_alphablend": {
+    "defines": [ "USE_COLOR_MASK" ]
+  },
+
+  "entity_emissive:entity": {
+    "defines": [ "USE_EMISSIVE" ]
+  },
+
+  "entity_emissive_alpha:entity_nocull": {
+    "defines": [
+      "ALPHA_TEST",
+      "USE_EMISSIVE"
+    ]
+  },
+
+  "entity_emissive_alpha_one_sided:entity": {
+    "defines": [
+      "ALPHA_TEST",
+      "USE_EMISSIVE"
+    ]
+  },
+
+  "entity_custom:entity": {
+    "states": [ "Blending" ],
+    "defines": [ "ALPHA_TEST", "Blending", "USE_OVERLAY", "USE_MASK" ],
+
+    "blendSrc": "SourceColor",
+    "blendDst": "Zero"
+  },
+
+  "slime_outer:entity": {
+    "states": [ "Blending" ]
+  },
+
+  "item_in_hand:entity": {
+    "defines": [ "COLOR_BASED", "NO_TEXTURE", "ITEM_IN_HAND" ],
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Normal" },
+      { "field": "Color" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "Both"
+
+  },
+
+  "map_marker": {
+    "defines": [ "ALPHA_TEST" ],
+
+    "vertexShader": "shaders/color_uv.vertex",
+    "vrGeometryShader": "shaders/color_uv.geometry",
+    "fragmentShader": "shaders/color_texture.fragment"
+  },
+
+  "charged_creeper:entity_static": {
+    "defines": [ "USE_UV_ANIM" ],
+    "states": [ "Blending", "DisableCulling", "DisableDepthWrite" ],
+    "blendSrc": "SourceAlpha",
+    "blendDst": "One",
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureWrap": "Repeat"
+      }
+    ]
+  },
+
+  "item_in_hand_glint:item_in_hand": {
+    "defines": [
+      "GLINT"
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 1,
+        "textureWrap": "Repeat"
+      }
+    ],
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Normal" },
+      { "field": "Color" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA",
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "atlas.items"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "entity_glint:entity": {
+    "defines": [
+      "GLINT"
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 1,
+        "textureWrap": "Repeat"
+      }
+    ],
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "atlas.terrain"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "entity_alphatest_glint:entity_alphatest": {
+    "defines": [
+      "GLINT"
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 1,
+        "textureWrap": "Repeat"
+      }
+    ],
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "atlas.terrain"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "entity_alphatest_glint_item:entity_alphatest": {
+    "defines": [
+      "GLINT"
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 1,
+        "textureWrap": "Repeat"
+      }
+    ],
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "atlas.items"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "entity_change_color_glint:entity_glint": {
+    "defines": [
+      "USE_COLOR_MASK"
+    ]
+  },
+
+  "entity_alphatest_change_color_glint:entity_alphatest_glint": {
+    "defines": [
+      "USE_COLOR_MASK"
+    ]
+  },
+
+  "entity_alphatest_change_color:entity_change_color": {
+    "states": [ "DisableAlphaWrite" ],
+    "defines": [
+      "ALPHA_TEST",
+      "USE_COLOR_MASK"
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 1,
+        "textureWrap": "Repeat"
+      }
+    ]
+  },
+
+  "entity_alphatest_change_color_glint:entity_change_color": {
+    "defines": [
+      "ALPHA_TEST",
+      "USE_COLOR_MASK",
+      "GLINT"
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 1,
+        "textureWrap": "Repeat"
+      }
+    ],
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "atlas.items"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "beacon_beam:entity_nocull": {
+    "defines": [
+      "COLOR_BASED",
+      "USE_COLOR_BLEND",
+      "USE_UV_ANIM"
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureWrap": "Repeat"
+      }
+    ]
+  },
+
+  "beacon_beam_transparent:entity": {
+    "states": [ "Blending", "DisableCulling", "DisableDepthWrite" ],
+    "vertexShader": "shaders/color_uv.vertex",
+    "vrGeometryShader": "shaders/color_uv.geometry",
+    "fragmentShader": "shaders/color_texture.fragment",
+    "blendSrc": "SourceAlpha",
+    "blendDst": "OneMinusSrcAlpha",
+    "alphaSrc": "One",
+    "alphaDst": "Zero"
+  },
+  "entity_multitexture:entity": {
+    "defines": [
+      "USE_MULTITEXTURE"
+    ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 1,
+        "textureWrap": "Clamp"
+      },
+      {
+        "samplerIndex": 2,
+        "textureWrap": "Clamp"
+      }
+    ]
+  },
+  "entity_multitexture_color_mask:entity_multitexture": {
+    "defines": [
+      "COLOR_SECOND_TEXTURE"
+    ]
+  },
+  "entity_multitexture_alpha_test:entity_multitexture": {
+    "states": [ "DisableCulling" ],
+    "defines": [
+      "ALPHA_TEST"
+    ]
+  },
+  "entity_multitexture_alpha_test_color_mask:entity_multitexture_color_mask": {
+    "states": [ "DisableCulling" ],
+    "defines": [
+      "ALPHA_TEST"
+    ]
+  },
+
+  "entity_lead_base:entity": {
+    "states": [
+      "Blending",
+      "DisableCulling"
+    ]
+  },
+
+  "moving_block": {
+    "vertexShader": "shaders/renderchunk.vertex",
+    "vrGeometryShader": "shaders/renderchunk.geometry",
+    "fragmentShader": "shaders/renderchunk.fragment",
+
+    "defines": [ "LOW_PRECISION", "TEXEL_AA", "ATLAS_TEXTURE", "AS_ENTITY_RENDERER" ],
+
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "TexelAA"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear"
+      }
+    ]
+  },
+
+  "moving_block_seasons:moving_block": {
+    "defines": [ "SEASONS" ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "TexelAA"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear"
+      },
+      {
+        "samplerIndex": 2,
+        "textureFilter": "Point"
+      }
+    ]
+  },
+
+  "moving_block_alpha_seasons:moving_block_seasons": {
+    "defines": [ "ALPHA_TEST" ],
+    "states": [ "DisableCulling", "EnableAlphaToCoverage" ]
+  },
+
+  "moving_block_alpha_single_side:moving_block": {
+    "defines": [ "ALPHA_TEST" ],
+    "states": [ "EnableAlphaToCoverage" ]
+  },
+
+  "moving_block_alpha:moving_block_alpha_single_side": {
+    "states": [ "DisableCulling" ],
+    // z-fighting fix
+    "depthBias": 100.0,
+    "slopeScaledDepthBias": 0.1,
+    "depthBiasOGL": 0.5,
+    "slopeScaledDepthBiasOGL": 0.5
+  },
+
+  "moving_block_double_side:moving_block": {
+    "states": [ "DisableCulling" ]
+  },
+
+  "moving_block_blend:moving_block": {
+    "defines": [ "BLEND" ],
+    "states": [ "Blending" ]
+  },
+
+
+
+
+  "armor_leather_1:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/leather_1"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "armor_leather_2:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/leather_2"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+
+  "armor_leather_1_color:entity_alphatest_change_color_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/leather_1"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "armor_leather_2_color:entity_alphatest_change_color_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/leather_2"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "armor_chain_1:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/chain_1"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "armor_chain_2:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/chain_2"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+
+  "armor_iron_1:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/iron_1"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "armor_iron_2:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/iron_2"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+
+  "armor_diamond_1:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/diamond_1"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "armor_diamond_2:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/diamond_2"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+
+  "armor_gold_1:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/gold_1"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "armor_gold_2:entity_alphatest_glint": {
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/models/armor/gold_2"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/misc/enchanted_item_glint"
+      }
+    ]
+  },
+
+  "entity_beam:entity_nocull": {
+    "defines": [ "USE_UV_ANIM", "ALPHA_TEST", "COLOR_BASED" ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureWrap": "Repeat"
+      }
+    ]
+  },
+
+  "entity_beam_additive:entity_alphablend": {
+    "defines": [ "COLOR_BASED", "NO_TEXTURE" ],
+    "states": [ "Blending", "DisableDepthWrite" ],
+
+    "blendSrc": "SourceAlpha",
+    "blendDst": "One"
+  },
+
+  "entity_dissolve_layer0:entity": {
+    "defines": [ "TINTED_ALPHA_TEST" ],
+    "states": [ "DisableColorWrite" ]
+  },
+
+  "entity_dissolve_layer1:entity": {
+    "depthFunc": "Equal"
+  }
+}

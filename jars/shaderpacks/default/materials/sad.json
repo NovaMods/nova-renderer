@@ -1,0 +1,10 @@
+[
+	{"path":"materials/sad.material"},
+	{"path":"materials/entity.material"},
+	{"path":"materials/terrain.material"},
+	{"path":"materials/terrain.material", "defines":["FOG"], "tag":"_fog"},
+	{"path":"materials/terrain.material", "defines":["ALWAYS_LIT"], "tag":"_lit"},
+	{"path":"materials/portal.material"},
+	{"path":"materials/portal.material", "defines":["FOG"], "tag":"_fog"},
+	{"path":"materials/portal.material", "defines":["ALWAYS_LIT"], "tag":"_lit"}
+]

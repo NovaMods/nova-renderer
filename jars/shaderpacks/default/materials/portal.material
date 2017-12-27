@@ -1,0 +1,27 @@
+{
+  "portal_base": {
+    "defines": [ "ENABLE_FOG", "END_PORTAL" ],
+    "states": ["Blending", "DisableDepthWrite"],
+
+
+    "vertexShader": "shaders/end_portal.vertex",
+    "vrGeometryShader": "shaders/end_portal.geometry",
+    "fragmentShader": "shaders/end_portal.fragment",
+
+    "blendSrc": "One",
+    "blendDst": "SourceAlpha",
+
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "Point",
+        "textureWrap": "Repeat"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Point",
+        "textureWrap": "Repeat"
+      }
+    ]
+  }
+}

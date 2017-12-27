@@ -1,0 +1,274 @@
+{
+  "block_overlay": {
+    "states": [
+      "Blending",
+      "DisableDepthWrite",
+      "DisableAlphaWrite",
+      "StencilWrite",
+      "EnableStencilTest"
+    ],
+    "depthBias": 100.0,
+    "slopeScaledDepthBias": 15.0,
+    "depthBiasOGL": 100.0,
+    "slopeScaledDepthBiasOGL": 20.0,
+    "depthFunc": "LessEqual",
+    "vertexShader": "shaders/uv.vertex",
+    "vrGeometryShader": "shaders/uv.geometry",
+    "fragmentShader": "shaders/texture_cutout.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "UV1" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA",
+
+    "frontFace": {
+      "stencilFunc": "NotEqual",
+      "stencilFailOp": "Keep",
+      "stencilDepthFailOp": "Keep",
+      "stencilPassOp": "Replace"
+    },
+
+    "backFace": {
+      "stencilFunc": "NotEqual",
+      "stencilFailOp": "Keep",
+      "stencilDepthFailOp": "Keep",
+      "stencilPassOp": "Replace"
+    },
+
+    "stencilRef": 2,
+    "stencilReadMask": 2,
+    "stencilWriteMask": 2
+
+  },
+  "selection_overlay:block_overlay": {
+    "blendSrc": "DestColor",
+    "blendDst": "SourceColor",
+    "vertexShader": "shaders/uv_selection_overlay.vertex"
+
+  },
+
+  "selection_overlay_level:selection_overlay": {
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Normal" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA"
+
+  },
+
+  "selection_overlay_item:selection_overlay": {
+
+  },
+
+  "fullscreen_cube_overlay": {
+    "vertexShader": "shaders/uv.vertex",
+    "vrGeometryShader": "shaders/uv.geometry",
+    "fragmentShader": "shaders/texture_ccolor.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA"
+
+  },
+  "fullscreen_cube_overlay_blend:fullscreen_cube_overlay": {
+    "states": [ "Blending" ]
+  },
+  "fullscreen_cube_overlay_opaque:fullscreen_cube_overlay": {
+    "states": [ "DisableCulling" ]
+  },
+  "selection_overlay_opaque:selection_overlay": {
+    "fragmentShader": "shaders/current_color.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "UV1" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA"
+
+  },
+  "selection_overlay_double_sided:selection_overlay": {
+    "states": [
+      "DisableCulling"
+    ]
+  },
+  "cracks_overlay:block_overlay": {
+    "blendSrc": "DestColor",
+    "blendDst": "Zero",
+    "depthFunc": "LessEqual",
+    "fragmentShader": "shaders/texture.fragment"
+  },
+  "cracks_overlay_alpha_test:cracks_overlay": {
+    "states": [
+      "DisableCulling"
+    ],
+    "defines": [
+      "ALPHA_TEST"
+    ]
+  },
+  "cracks_overlay_tile_entity:cracks_overlay": {
+    "vertexShader": "shaders/uv_scale.vertex",
+    "vrGeometryShader": "shaders/uv.geometry",
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureWrap": "Repeat"
+      }
+    ]
+  },
+  "name_tag": {
+    "states": [
+      "Blending"
+    ],
+    "depthFunc": "Always",
+    "vertexShader": "shaders/position.vertex",
+    "vrGeometryShader": "shaders/position.geometry",
+    "fragmentShader": "shaders/current_color.fragment",
+    "vertexFields": [
+      { "field": "Position" }
+    ],
+    "msaaSupport": "MSAA"
+
+  },
+  "name_tag_depth_tested:name_tag": {
+    "depthFunc": "LessEqual"
+  },
+  "sign_text": {
+    "states": [
+      "Blending"
+    ],
+    "defines": [
+      "ALPHA_TEST",
+      "USE_LIGHTING"
+    ],
+    "depthBias": 10.0,
+    "slopeScaledDepthBias": 2.0,
+    "depthBiasOGL": 10.0,
+    "slopeScaledDepthBiasOGL": 10.0,
+    "depthFunc": "LessEqual",
+    "vertexShader": "shaders/color_uv.vertex",
+    "vrGeometryShader": "shaders/color_uv.geometry",
+    "fragmentShader": "shaders/text.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Color" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA"
+
+  },
+  "name_text_depth_tested:sign_text": { },
+  "white_mat": {
+    "vertexShader": "shaders/position.vertex",
+    "vrGeometryShader": "shaders/position.geometry",
+    "fragmentShader": "shaders/flat_white.fragment"
+  },
+  "rain": {
+    "defines": ["COMFORT_MODE"],
+    "states": [
+      "DisableCulling",
+      "DisableDepthWrite",
+      "Blending"
+    ],
+    "blendSrc": "SourceAlpha",
+    "blendDst": "OneMinusSrcAlpha",
+    "depthFunc": "LessEqual",
+    "vertexShader": "shaders/rain_snow.vertex",
+    "vrGeometryShader": "shaders/rain_snow.geometry",
+    "fragmentShader": "shaders/rain_snow.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Color" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA",
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/environment/weather"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InAppPackage",
+        "textureName": "DYNAMIC_WEATHER"
+      }
+    ]
+  },
+  "snow": {
+    "defines": ["COMFORT_MODE"],
+    "states": [
+      "DisableCulling",
+      "DisableDepthWrite",
+      "Blending"
+    ],
+    "blendSrc": "SourceAlpha",
+    "blendDst": "OneMinusSrcAlpha",
+    "depthFunc": "LessEqual",
+    "vertexShader": "shaders/rain_snow.vertex",
+    "vrGeometryShader": "shaders/rain_snow.geometry",
+    "fragmentShader": "shaders/rain_snow.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Color" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA",
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "textures/environment/weather"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "InAppPackage",
+        "textureName": "DYNAMIC_WEATHER"
+      }
+    ]
+  },
+  "weather": {
+    "defines": [
+      "ALPHA_TEST"
+    ],
+    "states": [
+      "DisableCulling"
+    ],
+    "depthFunc": "LessEqual",
+    "vertexShader": "shaders/weather.vertex",
+    "vrGeometryShader": "shaders/weather.geometry",
+    "fragmentShader": "shaders/weather.fragment"
+  },
+  "lightning": {
+    "states": [
+      "DisableCulling",
+      "Blending"
+    ],
+    "depthFunc": "LessEqual",
+    "blendSrc": "SourceAlpha",
+    "blendDst": "One",
+    "vertexShader": "shaders/color.vertex",
+    "vrGeometryShader": "shaders/color.geometry",
+    "fragmentShader": "shaders/color.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Color" }
+    ],
+    "msaaSupport": "MSAA"
+
+  },
+  "debug": {
+    "depthFunc": "LessEqual",
+    "vertexShader": "shaders/color.vertex",
+    "vrGeometryShader": "shaders/color.geometry",
+    "fragmentShader": "shaders/color.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Color" }
+    ],
+    "msaaSupport": "MSAA"
+
+  }
+}

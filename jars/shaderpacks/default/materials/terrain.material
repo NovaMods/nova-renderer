@@ -1,0 +1,259 @@
+{
+  "terrain_opaque": {
+    "vertexShader": "shaders/renderchunk.vertex",
+    "vrGeometryShader": "shaders/renderchunk.geometry",
+    "fragmentShader": "shaders/renderchunk.fragment",
+
+    "defines": [ "LOW_PRECISION", "TEXEL_AA", "ATLAS_TEXTURE" ],
+    "states": [ "DisableAlphaWrite" ],
+
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "TexelAA"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear"
+      }
+    ],
+
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "UV1" },
+      { "field": "Color" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA",
+
+    "textures": [
+      {
+        "textureIndex": 0,
+        "textureLocation": "InUserPackage",
+        "textureName": "atlas.terrain"
+      },
+      {
+        "textureIndex": 1,
+        "textureLocation": "Dynamic",
+        "textureName": "Brightness"
+      },
+      {
+        "textureIndex": 2,
+        "textureLocation": "Dynamic",
+        "textureName": "SeasonFoliage"
+      }
+    ]
+  },
+
+  "terrain_opaque_seasons:terrain_opaque": {
+    "defines": [ "SEASONS" ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "TexelAA"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear"
+      },
+      {
+        "samplerIndex": 2,
+        "textureFilter": "Point"
+      }
+    ]
+
+  },
+
+  "terrain_blend:terrain_opaque": {
+    "defines": [ "BLEND" ],
+    "states": [
+      "Blending"
+    ]
+  },
+
+  "terrain_water:terrain_blend": {
+    "defines": [ "NEAR_WATER" ],
+
+    "states": [
+      "Blending"
+    ],
+
+    // Fix z-fighting by offsetting water polygons by epsilon
+    "depthBias": 100.0,
+    "slopeScaledDepthBias": 0.1,
+    "depthBiasOGL": 0.5,
+    "slopeScaledDepthBiasOGL": 0.5
+  },
+
+  "terrain_water_below_stencil": {
+    "vertexShader": "shaders/renderchunk.vertex",
+    "vrGeometryShader": "shaders/renderchunk.geometry",
+    "fragmentShader": "shaders/renderchunk.fragment",
+
+    "states": [
+      "InvertCulling",
+      "DisableDepthWrite",
+      "EnableStencilTest",
+      "StencilWrite",
+      "DisableColorWrite"
+    ],
+
+    "defines": [ "BYPASS_PIXEL_SHADER" ],
+
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "UV1" },
+      { "field": "Color" },
+      { "field": "UV0" }
+    ],
+
+    "frontFace": {
+      "stencilFunc": "Always",
+      "stencilFailOp": "Keep",
+      "stencilDepthFailOp": "Keep",
+      "stencilPassOp": "Replace"
+    },
+
+    "backFace": {
+      "stencilFunc": "Always",
+      "stencilFailOp": "Keep",
+      "stencilDepthFailOp": "Keep",
+      "stencilPassOp": "Replace"
+    },
+
+    "stencilRef": 2,
+    "stencilReadMask": 255,
+    "stencilWriteMask": 2
+  },
+
+  "terrain_blend_below:terrain_blend": {
+    "states": [ "InvertCulling", "Blending", "EnableStencilTest" ]
+  },
+
+  "terrain_water_below:terrain_water": {
+    "states": [ "InvertCulling", "Blending", "EnableStencilTest" ]
+  },
+
+  "terrain_doubleside:terrain_opaque": {
+    "states": [ "DisableCulling" ]
+  },
+
+  "terrain_alpha_single_side:terrain_opaque": {
+    "defines": [ "ALPHA_TEST" ],
+    "states": [ "EnableAlphaToCoverage" ]
+  },
+
+  "terrain_alpha_seasons:terrain_opaque": {
+    "defines": [ "ALPHA_TEST", "SEASONS" ],
+    "states": [ "DisableCulling", "EnableAlphaToCoverage" ],
+    "samplerStates": [
+      {
+        "samplerIndex": 0,
+        "textureFilter": "TexelAA"
+      },
+      {
+        "samplerIndex": 1,
+        "textureFilter": "Bilinear"
+      },
+      {
+        "samplerIndex": 2,
+        "textureFilter": "Point"
+      }
+    ]
+
+  },
+
+  "terrain_alpha:terrain_alpha_single_side": {
+    "states": [ "DisableCulling" ],
+
+    // z-fighting fix
+    "depthBias": 100.0,
+    "slopeScaledDepthBias": 0.1,
+    "depthBiasOGL": 0.5,
+    "slopeScaledDepthBiasOGL": 0.5
+  },
+
+  "terrain_opaque_fog:terrain_opaque": {
+    "defines": [ "FOG" ]
+  },
+
+  "terrain_opaque_fog_no_cull:terrain_opaque_fog": {
+    "states":  [ "DisableCulling" ]
+  },
+
+  "terrain_water_fog:terrain_water": {
+    "defines": [ "FOG", "BLEND", "NEAR_WATER" ]
+  },
+
+  "terrain_water_below_fog:terrain_water_fog": {
+    "states": [ "InvertCulling", "Blending", "EnableStencilTest" ]
+  },
+
+  "terrain_blend_fog:terrain_blend": {
+    "defines": [ "FOG", "BLEND" ]
+  },
+
+  "terrain_blend_below_fog:terrain_blend_fog": {
+    "states": [ "InvertCulling", "Blending", "EnableStencilTest" ]
+  },
+
+  "terrain_doubleside_fog:terrain_doubleside": {
+    "defines": [ "FOG" ]
+  },
+
+  "terrain_alpha_single_side_fog:terrain_alpha_single_side": {
+    "defines": [ "FOG" ]
+  },
+
+  "terrain_alpha_fog:terrain_alpha": {
+    "defines": [ "FOG" ]
+  },
+
+  "terrain_far:terrain_opaque": {
+    "defines": [
+      "FOG",
+      "LOW_PRECISION"
+    ]
+  },
+
+  "terrain_seasons_far:terrain_opaque_seasons": {
+    "defines": [
+      "FOG",
+      "LOW_PRECISION"
+    ]
+  },
+
+  "terrain_seasons_far_alpha:terrain_opaque_seasons": {
+    "defines": [
+      "FOG",
+      "LOW_PRECISION",
+      "SEASONS_FAR"
+    ]
+  },
+
+  "terrain_fading_in:terrain_far": {
+    "defines": [ "ALLOW_FADE" ]
+  },
+
+  "terrain_seasons_fading_in:terrain_seasons_far": {
+    "defines": [ "ALLOW_FADE" ]
+  },
+
+  "terrain_seasons_fading_in_alpha:terrain_seasons_far_alpha": {
+    "defines": [ "ALLOW_FADE" ]
+  },
+
+  "terrain_inside_block": {
+    "depthFunc": "LessEqual",
+
+    "vertexShader": "shaders/position.vertex",
+    "vrGeometryShader": "shaders/position.geometry",
+    "fragmentShader": "shaders/current_color.fragment",
+    "vertexFields": [
+      { "field": "Position" }
+    ],
+    "msaaSupport": "MSAA"
+
+  }
+
+}

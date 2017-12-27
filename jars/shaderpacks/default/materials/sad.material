@@ -1,0 +1,16 @@
+{
+  "clouds": {
+    "states": [ "DisableAlphaWrite" ],
+    "vertexShader": "shaders/cloud.vertex",
+    "vrGeometryShader": "shaders/cloud.geometry",
+    "fragmentShader": "shaders/color.fragment",
+    "vertexFields": [
+      { "field": "Position" },
+      { "field": "Color" },
+      { "field": "UV0" }
+    ],
+    "msaaSupport": "MSAA"
+
+  }
+}
+
