@@ -169,9 +169,9 @@ namespace nova {
     sampler_state decode_sampler_state(const nlohmann::json& json) {
         sampler_state new_sampler_state = {};
 
-        new_sampler_state.sampler_index = json["samplerIndex"];
-        new_sampler_state.filter = decode_texture_filter_enum(json["filter"]);
-        new_sampler_state.wrap_mode = decode_wrap_mode_enum(json["wrapMode"]);
+        new_sampler_state.sampler_index = get_json_value<std::uint32_t>(json, "samplerIndex").value_or(0);
+        new_sampler_state.filter = get_json_value<texture_filter_enum>(json, "textureFilter", decode_texture_filter_enum).value_or(texture_filter_enum::point);
+        new_sampler_state.wrap_mode = get_json_value<wrap_mode_enum>(json, "wrapMode", decode_wrap_mode_enum).value_or(wrap_mode_enum::clamp);
 
         return new_sampler_state;
     }

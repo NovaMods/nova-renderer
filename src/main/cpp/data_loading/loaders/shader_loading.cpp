@@ -53,7 +53,7 @@ namespace nova {
 
     std::vector<material_state> get_material_definitions(const nlohmann::json &shaders_json) {
         std::vector<material_state> definitions;
-        for(auto itr = shaders_json.begin(); itr < shaders_json.end(); ++itr) {
+        for(auto itr = shaders_json.begin(); itr != shaders_json.end(); ++itr) {
             auto material_state_name = itr.key();
             auto json_node = itr.value();
             auto parent_state_name = std::string{};
@@ -96,19 +96,21 @@ namespace nova {
             // I do like using temporary variables for everything...
             std::stringstream ss;
             ss << item.path();
+            auto stringpath = ss.str().substr(1);
+            stringpath = stringpath.substr(0, stringpath.size() - 1);
 
             if(!std::experimental::filesystem::is_regular_file(item.path())) {
-                LOG(INFO) << "Skipping non-regular file " << ss.str();
+                LOG(INFO) << "Skipping non-regular file " << stringpath;
                 continue;
             }
 
             if(item.path().extension() != std::experimental::filesystem::path(".material")) {
-                LOG(INFO) << "Skipping non-material file " << ss.str();
+                LOG(INFO) << "Skipping non-material file " << stringpath;
                 continue;
             }
 
-            LOG(DEBUG) << "Loading file " << ss.str();
-            auto stream = std::ifstream{"shaderpacks/default/materials\\gbuffers_terrain.material"};
+            LOG(DEBUG) << "Loading file " << stringpath;
+            auto stream = std::ifstream{stringpath};
             auto materials_json = load_json_from_stream(stream);
             LOG(DEBUG) << "Parsed material file into JSON";
 

@@ -32,11 +32,15 @@ namespace nova {
     }
 
     nlohmann::json load_json_from_stream(std::istream& stream) {
+        if(stream.bad()) {
+            LOG(ERROR) << "Bad stream~ EOF? " << stream.eof() << " If not, it must be something else. Returning empty JSON cause life is hard";
+            return {};
+        }
+
         std::string buf;
         std::string accum;
 
         while(getline(stream, buf)) {
-            LOG(DEBUG) << buf;
             accum += buf;
         }
 
