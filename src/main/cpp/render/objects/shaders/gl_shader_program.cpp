@@ -180,8 +180,8 @@ namespace nova {
         depth_stencil_create_info.depthCompareOp = *material.depth_func;
 
         depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states.begin(), states.end(), state_enum::enable_stencil_test) != states_end);
-        depth_stencil_create_info.back = *material.back_face;
-        depth_stencil_create_info.front = *material.front_face;
+        depth_stencil_create_info.back = (*material.back_face).to_vk_stencil_op_state();
+        depth_stencil_create_info.front = (*material.front_face).to_vk_stencil_op_state();
         depth_stencil_create_info.minDepthBounds = 0;
         depth_stencil_create_info.maxDepthBounds = 1;
 

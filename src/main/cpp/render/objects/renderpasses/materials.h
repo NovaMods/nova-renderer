@@ -12,6 +12,7 @@
 #include <json.hpp>
 #include <optional.hpp>
 #include <vulkan/vulkan.hpp>
+#include <unordered_map>
 
 using namespace std::experimental;
 
@@ -63,7 +64,12 @@ namespace nova {
         /*!
          * \brief Enable alpha to coverage
          */
-        enable_alpha_to_coverage
+        enable_alpha_to_coverage,
+
+        /*!
+         * \brief Don't write alpha
+         */
+        disable_alpha_write,
     };
 
     enum class texture_filter_enum {
@@ -87,7 +93,7 @@ namespace nova {
          * \brief The index of the sampler. This might correspond directly with the texture but I hope not cause I don't
          * want to write a number of sampler blocks
          */
-        uint32_t sampler_index;
+        optional<uint32_t> sampler_index;
 
         /*!
          * \brief What kind of texture filter to use
@@ -95,12 +101,12 @@ namespace nova {
          * texel_aa does something that I don't want to figure out right now. Bilinear is your regular bilinear filter,
          * and point is the point filter. Aniso isn't an option and I kinda hope it stays that way
          */
-        texture_filter_enum filter;
+        optional<texture_filter_enum> filter;
 
         /*!
          * \brief How the texutre should wrap at the edges
          */
-        wrap_mode_enum wrap_mode;
+        optional<wrap_mode_enum> wrap_mode;
     };
 
     /*!
@@ -187,7 +193,8 @@ namespace nova {
 
     enum class texture_location_enum {
         dynamic,
-        in_user_package
+        in_user_package,
+        in_app_package
     };
 
     /*!
@@ -246,6 +253,17 @@ namespace nova {
         bool blending;
     };
 
+    struct stencil_op_state {
+        optional<vk::StencilOp> fail_op;
+        optional<vk::StencilOp> pass_op;
+        optional<vk::StencilOp> depth_fail_op;
+        optional<vk::CompareOp> compare_op;
+        optional<uint32_t> compare_mask;
+        optional<uint32_t> write_mask;
+
+        vk::StencilOpState to_vk_stencil_op_state() const;
+    };
+
     /*!
      * \brief Represents the configuration for a single pipeline
      */
@@ -260,7 +278,7 @@ namespace nova {
          *
          * I may or may not make this a pointer to another material_state. Depends on how the code ends up being
          */
-        std::string parent;
+        optional<std::string> parent;
 
         /*!
          * \brief All of the symbols in the shader that are defined by this state
@@ -322,12 +340,12 @@ namespace nova {
         /*!
          * \brief The stencil buffer operations to perform on the front faces
          */
-        optional<vk::StencilOpState> front_face;
+        optional<stencil_op_state> front_face;
 
         /*!
          * \brief The stencil buffer operations to perform on the back faces
          */
-        optional<vk::StencilOpState> back_face;
+        optional<stencil_op_state> back_face;
 
         /*!
          * \brief All the sampler states that are defined for this material_state. Still not sure how they work though
@@ -456,7 +474,7 @@ namespace nova {
         optional<bool> has_cutout;
     };
 
-    material_state create_material_from_json(const std::string& material_state_name, const std::string& parent_state_name, const nlohmann::json& material_json);
+    material_state create_material_from_json(const std::string& material_state_name, const optional<std::string>& parent_state_name, const nlohmann::json& material_json);
 
     /*!
      * \brief Translates a string from a material file to a state_enum value
@@ -497,7 +515,7 @@ namespace nova {
 
     vk::StencilOp decode_stencil_op_enum(const std::string &op);
 
-    vk::StencilOpState decode_stencil_buffer_state(const nlohmann::json &json);
+    stencil_op_state decode_stencil_buffer_state(const nlohmann::json &json);
 
     msaa_support_enum decode_msaa_support_enum(const std::string& msaa_support_str);
 

@@ -8,7 +8,7 @@
 #include "../../../utils/utils.h"
 
 namespace nova {
-    material_state create_material_from_json(const std::string& material_state_name, const std::string& parent_state_name, const nlohmann::json& material_json) {
+    material_state create_material_from_json(const std::string& material_state_name, const optional<std::string>& parent_state_name, const nlohmann::json& material_json) {
         material_state ret_val = {};
 
         ret_val.name = material_state_name;
@@ -65,9 +65,9 @@ namespace nova {
             return vec;
         });
 
-        ret_val.front_face = get_json_value<vk::StencilOpState>(material_json, "frontFace", decode_stencil_buffer_state);
+        ret_val.front_face = get_json_value<stencil_op_state>(material_json, "frontFace", decode_stencil_buffer_state);
 
-        ret_val.back_face = get_json_value<vk::StencilOpState>(material_json, "backFace", decode_stencil_buffer_state);
+        ret_val.back_face = get_json_value<stencil_op_state>(material_json, "backFace", decode_stencil_buffer_state);
 
         ret_val.stencil_ref = get_json_value<uint32_t>(material_json, "stencilRef");
 
@@ -75,10 +75,10 @@ namespace nova {
 
         if(ret_val.stencil_write_mask) {
             if(ret_val.front_face) {
-                (*ret_val.front_face).compareMask = *ret_val.stencil_write_mask;
+                (*ret_val.front_face).compare_mask = ret_val.stencil_write_mask;
             }
             if(ret_val.back_face) {
-                (*ret_val.back_face).compareMask = *ret_val.stencil_write_mask;
+                (*ret_val.back_face).compare_mask = ret_val.stencil_write_mask;
             }
         }
 
@@ -86,10 +86,10 @@ namespace nova {
 
         if(ret_val.stencil_write_mask) {
             if(ret_val.front_face) {
-                (*ret_val.front_face).writeMask = *ret_val.stencil_write_mask;
+                (*ret_val.front_face).write_mask = ret_val.stencil_write_mask;
             }
             if(ret_val.back_face) {
-                (*ret_val.back_face).writeMask = *ret_val.stencil_write_mask;
+                (*ret_val.back_face).write_mask = ret_val.stencil_write_mask;
             }
         }
 
@@ -159,6 +159,9 @@ namespace nova {
 
         } else if(state_to_decode == "DisableDepthTest") {
             return state_enum::disable_depth_test;
+
+        } else if(state_to_decode == "DisableAlphaWrite") {
+            return state_enum::disable_alpha_write;
         }
 
         // EVERYTHING IS A FATAL ERROR WHOO
@@ -295,16 +298,16 @@ namespace nova {
         LOG(FATAL) << "Invalid stencil or depth operation '" << op << "'";
     }
 
-    vk::StencilOpState decode_stencil_buffer_state(const nlohmann::json &json) {
-        auto ret_val = vk::StencilOpState{};
+    stencil_op_state decode_stencil_buffer_state(const nlohmann::json &json) {
+        auto ret_val = stencil_op_state{};
 
-        ret_val.compareOp = *get_json_value<vk::CompareOp>(json, "stencilFunc", decode_comparison_func_enum);
+        ret_val.compare_op = get_json_value<vk::CompareOp>(json, "stencilFunc", decode_comparison_func_enum);
 
-        ret_val.failOp = *get_json_value<vk::StencilOp>(json, "stencilFailOp", decode_stencil_op_enum);
+        ret_val.fail_op = get_json_value<vk::StencilOp>(json, "stencilFailOp", decode_stencil_op_enum);
 
-        ret_val.depthFailOp = *get_json_value<vk::StencilOp>(json, "stencilDepthFailOp", decode_stencil_op_enum);
+        ret_val.depth_fail_op = get_json_value<vk::StencilOp>(json, "stencilDepthFailOp", decode_stencil_op_enum);
 
-        ret_val.passOp = *get_json_value<vk::StencilOp>(json, "stencilPassOp", decode_stencil_op_enum);
+        ret_val.pass_op = get_json_value<vk::StencilOp>(json, "stencilPassOp", decode_stencil_op_enum);
 
         return ret_val;
     }
@@ -345,13 +348,16 @@ namespace nova {
         } else if(blend_source_str == "SourceAlpha") {
             return vk::BlendFactor::eSrcAlpha;
 
-        } else if(blend_source_str == "OneMinusSourceAlpha") {
+        } else if(blend_source_str == "OneMinusSrcAlpha") {
             return vk::BlendFactor::eOneMinusSrcAlpha;
 
-        } else if(blend_source_str == "DstColor") {
+        } else if(blend_source_str == "OneMinusSrcColor") {
+            return vk::BlendFactor::eOneMinusSrcColor;
+
+        } else if(blend_source_str == "DestColor") {
             return vk::BlendFactor::eDstColor;
 
-        } else if(blend_source_str == "OneMinusDstColor") {
+        } else if(blend_source_str == "OneMinusDestColor") {
             return vk::BlendFactor::eOneMinusDstColor;
 
         }
@@ -382,6 +388,8 @@ namespace nova {
         } else if(texture_location_str == "Dynamic") {
             return texture_location_enum::dynamic;
 
+        } else if(texture_location_str == "InAppPackage") {
+            return texture_location_enum::in_app_package;
         }
 
         LOG(FATAL) << "Invalid texture location enum '" << texture_location_str << "'";
@@ -392,6 +400,19 @@ namespace nova {
 
         ret_val.index = *get_json_value<uint8_t>(output_info_json, "index");
         ret_val.blending = *get_json_value<bool>(output_info_json, "blending");
+
+        return ret_val;
+    }
+
+    vk::StencilOpState stencil_op_state::to_vk_stencil_op_state() const {
+        auto ret_val = vk::StencilOpState{};
+
+        ret_val.compareMask = compare_mask.value_or(0);
+        ret_val.compareOp = compare_op.value_or(vk::CompareOp::eAlways);
+        ret_val.depthFailOp = depth_fail_op.value_or(vk::StencilOp::eKeep);
+        ret_val.failOp = fail_op.value_or(vk::StencilOp::eKeep);
+        ret_val.passOp = pass_op.value_or(vk::StencilOp::eReplace);
+        ret_val.writeMask = write_mask.value_or(0xFFFFFFFF);
 
         return ret_val;
     }
