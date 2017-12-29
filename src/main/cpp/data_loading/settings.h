@@ -8,7 +8,7 @@
 
 #include <string>
 #include <vector>
-#include <json.hpp>
+#include <json.h>
 
 
 namespace nova {
@@ -27,7 +27,7 @@ namespace nova {
          *
          * \param new_config The updated configuration
          */
-        virtual void on_config_change(nlohmann::json &new_config) = 0;
+        virtual void on_config_change(Json::Value& new_config) = 0;
 
         /*!
          * \brief Tells listeners that the configuration has been loaded
@@ -43,7 +43,7 @@ namespace nova {
          *
          * \param config The configuration that was loaded
          */
-        virtual void on_config_loaded(nlohmann::json &config) = 0;
+        virtual void on_config_loaded(Json::Value& config) = 0;
     };
 
     /*!
@@ -66,7 +66,7 @@ namespace nova {
          */
         void register_change_listener(iconfig_listener *new_listener);
 
-        nlohmann::json &get_options();
+        Json::Value &get_options();
 
         /*!
          * \brief Updates all the change listeners with the current state of the settings
@@ -84,7 +84,7 @@ namespace nova {
         void update_config_loaded();
 
     private:
-        nlohmann::json options;
+        Json::Value options;
         std::vector<iconfig_listener *> config_change_listeners;
     };
 }
