@@ -126,35 +126,46 @@ namespace nova {
 
             auto shader_def = shader_definition(state);
 
-            if(state.vertex_shader) {
+            bool either_empty = false;
+
+            if (state.vertex_shader) {
                 auto vertex_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.vertex_shader;
                 auto vertex_soruce = load_shader_file(vertex_path, vertex_extensions);
-                if(vertex_soruce.size() > 0) {
+                if (!vertex_soruce.empty()) {
                     shader_def.vertex_source = translate_glsl_to_spirv(vertex_soruce, shaderc_vertex_shader);
                 } else {
                     LOG(ERROR) << "No data read for vertex shader " << vertex_path;
+                    either_empty = true;
                 }
             } else {
-                LOG(ERROR) << "Material state " << state.name << " does not define a vertex shader, it will not be loaded";
+                LOG(ERROR) << "Material state " << state.name
+                           << " does not define a vertex shader, it will not be loaded";
                 continue;
             }
 
-            if(state.fragment_shader) {
+            if (state.fragment_shader) {
                 auto fragment_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.fragment_shader;
                 auto fragment_source = load_shader_file(fragment_path, fragment_extensions);
-                if(fragment_source.size() > 0) {
+                if (!fragment_source.empty()) {
                     shader_def.fragment_source = translate_glsl_to_spirv(fragment_source, shaderc_fragment_shader);
                 } else {
                     LOG(ERROR) << "No data for fragment shader " << fragment_path;
+                    either_empty = true;
                 }
             } else {
-                LOG(ERROR) << "Material state " << state.name << " does not define a fragment shader, it will not be loaded";
+                LOG(ERROR) << "Material state " << state.name
+                           << " does not define a fragment shader, it will not be loaded";
                 continue;
             }
 
             // TODO: Tessellation and geometry
 
-            pack_def.emplace_back(state, shader_def);
+            if (!either_empty) {
+                // Missing a vertex of fragment shader? Let's just not load this shader!
+                // TODO: Figure out some way to handle a missing essential shader, or make the fallback system super
+                // robust
+                pack_def.emplace_back(state, shader_def);
+            }
         }
 
         warn_for_missing_fallbacks(sources);

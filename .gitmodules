@@ -10,9 +10,6 @@
 [submodule "src/main/cpp/3rdparty/easyloggingpp"]
 	path = src/main/cpp/3rdparty/easyloggingpp
 	url = https://github.com/easylogging/easyloggingpp.git
-[submodule "src/main/cpp/3rdparty/json"]
-	path = src/main/cpp/3rdparty/json
-	url = https://github.com/nlohmann/json.git
 [submodule "src/main/cpp/3rdparty/googletest"]
 	path = src/main/cpp/3rdparty/googletest
 	url = https://github.com/google/googletest.git
