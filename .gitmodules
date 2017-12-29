@@ -40,3 +40,6 @@
 [submodule "src/main/cpp/3rdparty/minitrace"]
 	path = src/main/cpp/3rdparty/minitrace
 	url = https://github.com/hrydgard/minitrace.git
+[submodule "src/main/cpp/3rdparty/jsoncpp"]
+	path = src/main/cpp/3rdparty/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp.git
