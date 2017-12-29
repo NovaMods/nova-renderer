@@ -78,7 +78,6 @@
       "Blending"
     ],
 
-    // Fix z-fighting by offsetting water polygons by epsilon
     "depthBias": 100.0,
     "slopeScaledDepthBias": 0.1,
     "depthBiasOGL": 0.5,

@@ -15,7 +15,6 @@
 #include "loader_utils.h"
 #include "../../utils/utils.h"
 
-
 namespace nova {
     /*!
      * \brief Holds the name of all the shaders to load
@@ -61,7 +60,7 @@ namespace nova {
             int colon_pos = material_state_name.find(':');
             if(colon_pos != std::string::npos) {
                 parent_state_name = material_state_name.substr(colon_pos + 1);
-                material_state_name = material_state_name.substr(0, colon_pos - 1);
+                material_state_name = material_state_name.substr(0, colon_pos);
             }
 
             definitions.emplace_back(create_material_from_json(material_state_name, parent_state_name, json_node));
@@ -130,7 +129,11 @@ namespace nova {
             if(state.vertex_shader) {
                 auto vertex_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.vertex_shader;
                 auto vertex_soruce = load_shader_file(vertex_path, vertex_extensions);
-                shader_def.vertex_source = translate_glsl_to_spirv(vertex_soruce, shaderc_vertex_shader);
+                if(vertex_soruce.size() > 0) {
+                    shader_def.vertex_source = translate_glsl_to_spirv(vertex_soruce, shaderc_vertex_shader);
+                } else {
+                    LOG(ERROR) << "No data read for vertex shader " << vertex_path;
+                }
             } else {
                 LOG(ERROR) << "Material state " << state.name << " does not define a vertex shader, it will not be loaded";
                 continue;
@@ -139,7 +142,11 @@ namespace nova {
             if(state.fragment_shader) {
                 auto fragment_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.fragment_shader;
                 auto fragment_source = load_shader_file(fragment_path, fragment_extensions);
-                shader_def.fragment_source = translate_glsl_to_spirv(fragment_source, shaderc_fragment_shader);
+                if(fragment_source.size() > 0) {
+                    shader_def.fragment_source = translate_glsl_to_spirv(fragment_source, shaderc_fragment_shader);
+                } else {
+                    LOG(ERROR) << "No data for fragment shader " << fragment_path;
+                }
             } else {
                 LOG(ERROR) << "Material state " << state.name << " does not define a fragment shader, it will not be loaded";
                 continue;
@@ -239,7 +246,9 @@ namespace nova {
             }
         }
 
-        throw resource_not_found(shader_path);
+        LOG(ERROR) << "Could not load shader file " << shader_path;
+
+        return {};
     }
 
     std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line>& shader_lines, shaderc_shader_kind shader_stage) {
