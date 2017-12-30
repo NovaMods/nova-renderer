@@ -36,6 +36,7 @@ find_package(JNI)
 
 # need to compile GLFW and JSON
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
+add_subdirectory(${3RD_PARTY_DIR}/json)
 add_subdirectory(${3RD_PARTY_DIR}/glm)
 add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
@@ -54,7 +55,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/glad/include
         ${3RD_PARTY_DIR}/glm
         ${3RD_PARTY_DIR}/miniz
-        ${3RD_PARTY_DIR}/jsoncpp/dist/json
+        ${3RD_PARTY_DIR}/json/src
         ${3RD_PARTY_DIR}/googletest/googletest/include
         ${3RD_PARTY_DIR}/optional
         ${3RD_PARTY_DIR}/renderdocapi
@@ -123,7 +124,6 @@ set(NOVA_SOURCE
         3rdparty/miniz/miniz_zip.c
         3rdparty/easyloggingpp/src/easylogging++.cc
         3rdparty/minitrace/minitrace.c
-        3rdparty/jsoncpp/dist/jsoncpp.cpp
 
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
