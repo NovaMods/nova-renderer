@@ -163,13 +163,6 @@ task initSubmodules(dependsOn: cleanupMcp) << {
                 standardOutput = os
                 errorOutput = os
             }
-
-            def result2 = exec {
-                commandLine 'python', 'amalagate.py'
-                standardOutput = os
-                errorOutput = os
-                workingDir = 'src/main/cpp/3rdparty/jsoncpp'
-            }
         } catch(Exception e) {
             throw new GradleScriptException(os.toString(), e)
         }
