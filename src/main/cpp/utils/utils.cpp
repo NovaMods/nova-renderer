@@ -41,7 +41,22 @@ namespace nova {
         std::string accum;
 
         while(getline(stream, buf)) {
-            accum += buf;
+            bool line_is_comment = false;
+
+            // Ensure that the line isn't a comment
+            // Gonna discard all the lines with // as the first non-whitespace character
+            auto comment_pos = buf.find("//");
+            if(comment_pos != std::string::npos) {
+                for(auto i = 0; i < comment_pos; i++) {
+                    if(buf[i] != ' ' && buf[i] != '\t' && buf[i] != '\n') {
+                        line_is_comment = true;
+                    }
+                }
+            }
+
+            if(!line_is_comment) {
+                accum += buf;
+            }
         }
 
         try {
