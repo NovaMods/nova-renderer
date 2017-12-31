@@ -434,6 +434,7 @@
 
   "moving_block_alpha:moving_block_alpha_single_side": {
     "states": [ "DisableCulling" ],
+    // z-fighting fix
     "depthBias": 100.0,
     "slopeScaledDepthBias": 0.1,
     "depthBiasOGL": 0.5,

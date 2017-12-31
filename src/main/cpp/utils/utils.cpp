@@ -47,10 +47,16 @@ namespace nova {
             // Gonna discard all the lines with // as the first non-whitespace character
             auto comment_pos = buf.find("//");
             if(comment_pos != std::string::npos) {
+                line_is_comment = true;
+                LOG(TRACE) << "Found possible comment line `" << buf << "`";
                 for(auto i = 0; i < comment_pos; i++) {
                     if(buf[i] != ' ' && buf[i] != '\t' && buf[i] != '\n') {
-                        line_is_comment = true;
+                        line_is_comment = false;
+                        LOG(TRACE) << "There's stuff in front of it so it hopefully isn't a comment";
                     }
+                }
+                if(line_is_comment) {
+                    LOG(DEBUG) << "Skipping comment line `" << buf << "`";
                 }
             }
 

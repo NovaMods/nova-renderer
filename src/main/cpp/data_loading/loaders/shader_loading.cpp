@@ -108,13 +108,10 @@ namespace nova {
                 continue;
             }
 
-            LOG(DEBUG) << "Loading file " << stringpath;
             auto stream = std::ifstream{stringpath};
             auto materials_json = load_json_from_stream(stream);
-            LOG(DEBUG) << "Parsed material file into JSON";
 
             auto material_definitions = get_material_definitions(materials_json);
-            LOG(DEBUG) << "Retrieved all the material states from that file";
             materials.insert(materials.end(), material_definitions.begin(), material_definitions.end());
         }
 
@@ -128,7 +125,7 @@ namespace nova {
 
             bool either_empty = false;
 
-            if (state.vertex_shader) {
+            if(state.vertex_shader) {
                 auto vertex_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.vertex_shader;
                 auto vertex_soruce = load_shader_file(vertex_path, vertex_extensions);
                 if (!vertex_soruce.empty()) {
@@ -138,12 +135,11 @@ namespace nova {
                     either_empty = true;
                 }
             } else {
-                LOG(ERROR) << "Material state " << state.name
-                           << " does not define a vertex shader, it will not be loaded";
+                LOG(ERROR) << "Material state " << state.name << " does not define a vertex shader, it will not be loaded";
                 continue;
             }
 
-            if (state.fragment_shader) {
+            if(state.fragment_shader) {
                 auto fragment_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.fragment_shader;
                 auto fragment_source = load_shader_file(fragment_path, fragment_extensions);
                 if (!fragment_source.empty()) {
@@ -153,8 +149,7 @@ namespace nova {
                     either_empty = true;
                 }
             } else {
-                LOG(ERROR) << "Material state " << state.name
-                           << " does not define a fragment shader, it will not be loaded";
+                LOG(ERROR) << "Material state " << state.name << " does not define a fragment shader, it will not be loaded";
                 continue;
             }
 
@@ -253,7 +248,7 @@ namespace nova {
                 LOG(INFO) << "Loading shader file " << full_shader_path;
                 return read_shader_stream(stream, full_shader_path);
             } else {
-                LOG(WARNING) << "Could not read file " << full_shader_path;
+                LOG(INFO) << "Could not read file " << full_shader_path;
             }
         }
 
