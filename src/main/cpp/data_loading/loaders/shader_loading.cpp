@@ -108,7 +108,7 @@ namespace nova {
             }
 
             LOG(DEBUG) << "Loading file " << ss.str();
-            auto stream = std::ifstream{"shaderpacks/default/materials\\gbuffers_terrain.material"};
+            auto stream = std::ifstream{item.path().generic_string()};
             auto materials_json = load_json_from_stream(stream);
             LOG(DEBUG) << "Parsed material file into JSON";
 
