@@ -8,7 +8,7 @@
 #include <easylogging++.h>
 
 namespace nova {
-    shader_definition::shader_definition(const nova::material_state &material) : name(material.name), filter_expression(*material.filters)  {
+    shader_definition::shader_definition(const nova::material_state &material) : name(material.name), filter_expression(material.filters.value_or(""))  {
         if(material.fallback) {
             std::string fallback_name_str = *material.fallback;
             fallback_name = optional<std::string>(fallback_name_str);

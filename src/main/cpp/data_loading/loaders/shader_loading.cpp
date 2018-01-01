@@ -15,7 +15,6 @@
 #include "loader_utils.h"
 #include "../../utils/utils.h"
 
-
 namespace nova {
     /*!
      * \brief Holds the name of all the shaders to load
@@ -53,7 +52,7 @@ namespace nova {
 
     std::vector<material_state> get_material_definitions(const nlohmann::json &shaders_json) {
         std::vector<material_state> definitions;
-        for(auto itr = shaders_json.begin(); itr < shaders_json.end(); ++itr) {
+        for(auto itr = shaders_json.begin(); itr != shaders_json.end(); ++itr) {
             auto material_state_name = itr.key();
             auto json_node = itr.value();
             auto parent_state_name = std::string{};
@@ -61,7 +60,7 @@ namespace nova {
             int colon_pos = material_state_name.find(':');
             if(colon_pos != std::string::npos) {
                 parent_state_name = material_state_name.substr(colon_pos + 1);
-                material_state_name = material_state_name.substr(0, colon_pos - 1);
+                material_state_name = material_state_name.substr(0, colon_pos);
             }
 
             definitions.emplace_back(create_material_from_json(material_state_name, parent_state_name, json_node));
@@ -96,24 +95,23 @@ namespace nova {
             // I do like using temporary variables for everything...
             std::stringstream ss;
             ss << item.path();
+            auto stringpath = ss.str().substr(1);
+            stringpath = stringpath.substr(0, stringpath.size() - 1);
 
             if(!std::experimental::filesystem::is_regular_file(item.path())) {
-                LOG(INFO) << "Skipping non-regular file " << ss.str();
+                LOG(INFO) << "Skipping non-regular file " << stringpath;
                 continue;
             }
 
             if(item.path().extension() != std::experimental::filesystem::path(".material")) {
-                LOG(INFO) << "Skipping non-material file " << ss.str();
+                LOG(INFO) << "Skipping non-material file " << stringpath;
                 continue;
             }
 
-            LOG(DEBUG) << "Loading file " << ss.str();
-            auto stream = std::ifstream{item.path().generic_string()};
+            auto stream = std::ifstream{stringpath};
             auto materials_json = load_json_from_stream(stream);
-            LOG(DEBUG) << "Parsed material file into JSON";
 
             auto material_definitions = get_material_definitions(materials_json);
-            LOG(DEBUG) << "Retrieved all the material states from that file";
             materials.insert(materials.end(), material_definitions.begin(), material_definitions.end());
         }
 
@@ -125,10 +123,17 @@ namespace nova {
 
             auto shader_def = shader_definition(state);
 
+            bool either_empty = false;
+
             if(state.vertex_shader) {
                 auto vertex_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.vertex_shader;
                 auto vertex_soruce = load_shader_file(vertex_path, vertex_extensions);
-                shader_def.vertex_source = translate_glsl_to_spirv(vertex_soruce, shaderc_vertex_shader);
+                if (!vertex_soruce.empty()) {
+                    shader_def.vertex_source = translate_glsl_to_spirv(vertex_soruce, shaderc_vertex_shader);
+                } else {
+                    LOG(ERROR) << "No data read for vertex shader " << vertex_path;
+                    either_empty = true;
+                }
             } else {
                 LOG(ERROR) << "Material state " << state.name << " does not define a vertex shader, it will not be loaded";
                 continue;
@@ -137,7 +142,12 @@ namespace nova {
             if(state.fragment_shader) {
                 auto fragment_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.fragment_shader;
                 auto fragment_source = load_shader_file(fragment_path, fragment_extensions);
-                shader_def.fragment_source = translate_glsl_to_spirv(fragment_source, shaderc_fragment_shader);
+                if (!fragment_source.empty()) {
+                    shader_def.fragment_source = translate_glsl_to_spirv(fragment_source, shaderc_fragment_shader);
+                } else {
+                    LOG(ERROR) << "No data for fragment shader " << fragment_path;
+                    either_empty = true;
+                }
             } else {
                 LOG(ERROR) << "Material state " << state.name << " does not define a fragment shader, it will not be loaded";
                 continue;
@@ -145,7 +155,12 @@ namespace nova {
 
             // TODO: Tessellation and geometry
 
-            pack_def.emplace_back(state, shader_def);
+            if (!either_empty) {
+                // Missing a vertex of fragment shader? Let's just not load this shader!
+                // TODO: Figure out some way to handle a missing essential shader, or make the fallback system super
+                // robust
+                pack_def.emplace_back(state, shader_def);
+            }
         }
 
         warn_for_missing_fallbacks(sources);
@@ -233,11 +248,13 @@ namespace nova {
                 LOG(INFO) << "Loading shader file " << full_shader_path;
                 return read_shader_stream(stream, full_shader_path);
             } else {
-                LOG(WARNING) << "Could not read file " << full_shader_path;
+                LOG(INFO) << "Could not read file " << full_shader_path;
             }
         }
 
-        throw resource_not_found(shader_path);
+        LOG(ERROR) << "Could not load shader file " << shader_path;
+
+        return {};
     }
 
     std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line>& shader_lines, shaderc_shader_kind shader_stage) {

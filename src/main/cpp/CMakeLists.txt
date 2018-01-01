@@ -22,7 +22,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-set(CMAKE_INSTALL_PREFIX E:\\Documents\\nova-renderer)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
@@ -105,11 +105,12 @@ set(NOVA_HEADERS
         render/objects/camera.h
         render/objects/renderpass.h
         utils/io.h
+        render/objects/shaders/shader_resource_manager.h
         data_loading/direct_buffers.h
         mc_interface/nova_jni.h
         render/objects/render_object.h
         utils/stb_image_write.h
-        render/vulkan/render_context.cpp
+        render/objects/renderpasses/renderpass_manager.h
         render/vulkan/render_context.h
         render/vulkan/command_pool.h
         )
@@ -156,10 +157,12 @@ set(NOVA_SOURCE
         data_loading/direct_buffers.cpp
         render/objects/render_object.cpp
         render/vulkan/command_pool.cpp
-        render/objects/renderpasses/renderpass_manager.cpp render/objects/renderpasses/renderpass_manager.h
+        render/objects/renderpasses/renderpass_manager.cpp
         render/objects/renderpasses/materials.h
         render/objects/renderpasses/materials.cpp
-        render/objects/shaders/shader_resource_manager.cpp render/objects/shaders/shader_resource_manager.h
+
+        render/vulkan/render_context.cpp
+        render/objects/shaders/shader_resource_manager.cpp
         )
 
 if (WIN32)

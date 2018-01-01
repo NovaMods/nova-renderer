@@ -7,7 +7,6 @@
 #include "../../utils/utils.h"
 
 #include <easylogging++.h>
-#include <dxgi.h>
 #include "../../input/InputHandler.h"
 #include "../nova_renderer.h"
 #include "../vulkan/render_context.h"
@@ -53,8 +52,10 @@ namespace nova {
         }
         LOG(INFO) << "GLFW window created";
 
-        //renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
-        //LOG(INFO) << "Hooked into RenderDoc";
+#if __win32__
+        renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
+        LOG(INFO) << "Hooked into RenderDoc";
+#endif
 
         glfwSetKeyCallback(window, key_callback);
 		glfwSetCharCallback(window, key_character_callback);
