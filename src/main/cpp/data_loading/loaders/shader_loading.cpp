@@ -126,7 +126,7 @@ namespace nova {
             bool either_empty = false;
 
             if(state.vertex_shader) {
-                auto vertex_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.vertex_shader;
+                auto vertex_path = "shaderpacks/" + shaderpack_name + "/" + state.vertex_shader.value();
                 auto vertex_soruce = load_shader_file(vertex_path, vertex_extensions);
                 if (!vertex_soruce.empty()) {
                     shader_def.vertex_source = translate_glsl_to_spirv(vertex_soruce, shaderc_vertex_shader);

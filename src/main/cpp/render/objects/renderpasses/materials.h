@@ -188,7 +188,7 @@ namespace nova {
         /*!
          * \brief Useful if you want to skip a vertex attribute
          */
-        empty
+        empty,
     };
 
     enum class texture_location_enum {
