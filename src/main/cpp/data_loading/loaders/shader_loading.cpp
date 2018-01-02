@@ -50,20 +50,77 @@ namespace nova {
         }
     }
 
+    template<typename Type>
+    void fill_in_material_state_field(const std::string& our_name, std::unordered_map<std::string, material_state>& all_materials, std::function<optional<Type>&(material_state&)> get_field_from_material) {
+        auto& us = all_materials[our_name];
+        auto& cur_state = us;
+        bool value_found = (bool)get_field_from_material(us);
+
+        while(!value_found) {
+            const auto& parent_name = cur_state.parent;
+            if(parent_name) {
+                cur_state = all_materials[parent_name.value()];
+                auto field_value = get_field_from_material(cur_state);
+                if(field_value) {
+                    get_field_from_material(us) = field_value.value();
+                    value_found = true;
+                }
+
+            } else {
+                break;
+            }
+        }
+    }
+
     std::vector<material_state> get_material_definitions(const nlohmann::json &shaders_json) {
-        std::vector<material_state> definitions;
+        std::unordered_map<std::string, material_state> definition_map;
         for(auto itr = shaders_json.begin(); itr != shaders_json.end(); ++itr) {
             auto material_state_name = itr.key();
             auto json_node = itr.value();
-            auto parent_state_name = std::string{};
+            optional<std::string> parent_state_name = optional<std::string>{};
 
             int colon_pos = material_state_name.find(':');
             if(colon_pos != std::string::npos) {
-                parent_state_name = material_state_name.substr(colon_pos + 1);
+                parent_state_name = make_optional<std::string>(material_state_name.substr(colon_pos + 1));
                 material_state_name = material_state_name.substr(0, colon_pos);
             }
 
-            definitions.emplace_back(create_material_from_json(material_state_name, parent_state_name, json_node));
+            definition_map[material_state_name] = create_material_from_json(material_state_name, parent_state_name, json_node);
+        }
+
+        std::vector<material_state> definitions;
+
+        // I don't really know the O(n) for this thing. It's at least O(n) and probs O(nlogn) but someone mathy can
+        // figure it out
+        for(const auto& item : definition_map) {
+            auto& cur_state = item.second;
+            if(!cur_state.parent) {
+                // No parent? I guess we get what we have then
+                continue;
+            }
+
+            // This is the best API I know how to make for this. If you know a better one, please gib
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.defines;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.states;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.pass_index;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.outputs;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.output_width;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.output_height;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.depth_bias;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.slope_scaled_depth_bias;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.stencil_ref;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.stencil_read_mask;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.msaa_support;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.primitive_mode;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.source_blend_factor;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.destination_blend_factor;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.alpha_src;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.alpha_dst;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.depth_func;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.has_transparency;});
+            fill_in_material_state_field(item.first, definition_map, [](material_state state) {return state.has_cutout;});
+
+            definitions.push_back(cur_state);
         }
 
         return definitions;
@@ -85,17 +142,15 @@ namespace nova {
 
         std::vector<material_state> materials;
 
-        //std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        //std::wstring materials_directory_path_str = converter.from_bytes("shaderpacks/" + shaderpack_name + "/materials");
-        //LOG(DEBUG) << "Wide string directory path: " << materials_directory_path_str;
         auto shader_path = std::experimental::filesystem::path("shaderpacks/" + shaderpack_name + "/materials");
-        //LOG(DEBUG) << "Shader_path: " << shader_path.generic_string();
         auto directory_iter = std::experimental::filesystem::directory_iterator(shader_path);
         for(const auto& item : directory_iter) {
             // I do like using temporary variables for everything...
             std::stringstream ss;
             ss << item.path();
             auto stringpath = ss.str().substr(1);
+            // std::path's stream insertino operator adds double quotes. yay. I'm so glad the std authors made
+            // filesystem so straightforward to use
             stringpath = stringpath.substr(0, stringpath.size() - 1);
 
             if(!std::experimental::filesystem::is_regular_file(item.path())) {
@@ -140,7 +195,7 @@ namespace nova {
             }
 
             if(state.fragment_shader) {
-                auto fragment_path = "shaderpacks/" + shaderpack_name + "/shaders/" + *state.fragment_shader;
+                auto fragment_path = "shaderpacks/" + shaderpack_name + "/" + state.fragment_shader.value();
                 auto fragment_source = load_shader_file(fragment_path, fragment_extensions);
                 if (!fragment_source.empty()) {
                     shader_def.fragment_source = translate_glsl_to_spirv(fragment_source, shaderc_fragment_shader);

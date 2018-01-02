@@ -100,7 +100,7 @@ namespace nova {
          */
 
         vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info = {};
-        input_assembly_create_info.topology = *material.primitive_mode;
+        input_assembly_create_info.topology = material.primitive_mode.value_or(vk::PrimitiveTopology::eTriangleList);
 
         pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
 
@@ -177,11 +177,15 @@ namespace nova {
         vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
         depth_stencil_create_info.depthTestEnable = static_cast<vk::Bool32>((std::find(states.begin(), states.end(), state_enum::disable_depth_test) == states_end));
         depth_stencil_create_info.depthWriteEnable = static_cast<vk::Bool32>((std::find(states.begin(), states.end(), state_enum::disable_depth_write) == states_end));
-        depth_stencil_create_info.depthCompareOp = *material.depth_func;
+        depth_stencil_create_info.depthCompareOp = material.depth_func.value_or(vk::CompareOp::eLess);
 
         depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states.begin(), states.end(), state_enum::enable_stencil_test) != states_end);
-        depth_stencil_create_info.back = (*material.back_face).to_vk_stencil_op_state();
-        depth_stencil_create_info.front = (*material.front_face).to_vk_stencil_op_state();
+        if(material.back_face) {
+            depth_stencil_create_info.back = material.back_face.value().to_vk_stencil_op_state();
+        }
+        if(material.front_face) {
+            depth_stencil_create_info.front = material.front_face.value().to_vk_stencil_op_state();
+        }
         depth_stencil_create_info.minDepthBounds = 0;
         depth_stencil_create_info.maxDepthBounds = 1;
 
