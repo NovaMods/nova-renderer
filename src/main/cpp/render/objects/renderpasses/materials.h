@@ -268,6 +268,16 @@ namespace nova {
      * \brief Represents the configuration for a single pipeline
      */
     struct material_state {
+        std::string& get_name();
+
+        optional<std::string>& get_parent_name();
+
+        optional<material_state>& get_parent();
+
+        optional<std::vector<std::string>>& get_defines();
+
+        optional<std::string>& get_states();
+
         /*!
          * \brief The name of this material_state
          */
@@ -278,7 +288,12 @@ namespace nova {
          *
          * I may or may not make this a pointer to another material_state. Depends on how the code ends up being
          */
-        optional<std::string> parent;
+        optional<std::string> parent_name;
+
+        /*!
+         * \brief The actual parent material
+         */
+        optional<material_state*> parent;
 
         /*!
          * \brief All of the symbols in the shader that are defined by this state
