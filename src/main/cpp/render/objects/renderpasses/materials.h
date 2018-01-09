@@ -17,6 +17,15 @@
 using namespace std::experimental;
 
 namespace nova {
+#define GET_FIELD(mat, field) [&]() {\
+    if(mat.field) { \
+        return mat.field; \
+    } else if(mat.parent) { \
+        return mat.parent.field; \
+    } else { \
+        return mat.field; \
+    }();
+
     /*!
      * \brief Controlls the rasterizer's state
      */
@@ -268,16 +277,6 @@ namespace nova {
      * \brief Represents the configuration for a single pipeline
      */
     struct material_state {
-        std::string& get_name();
-
-        optional<std::string>& get_parent_name();
-
-        optional<material_state>& get_parent();
-
-        optional<std::vector<std::string>>& get_defines();
-
-        optional<std::string>& get_states();
-
         /*!
          * \brief The name of this material_state
          */

@@ -12,7 +12,7 @@ namespace nova {
         material_state ret_val = {};
 
         ret_val.name = material_state_name;
-        ret_val.parent = parent_state_name;
+        ret_val.parent_name = parent_state_name;
 
         ret_val.states = get_json_value<std::vector<state_enum>>(material_json, "states", [&](const auto& states) {
             auto vec = std::vector<state_enum>{};
@@ -123,7 +123,7 @@ namespace nova {
 
         ret_val.outputs = get_json_value<std::vector<output_info>>(material_json, "outputs", [&](const nlohmann::json outputs){
             auto vec = std::vector<output_info>{};
-            for(const auto output_field : outputs) {
+            for(const auto& output_field : outputs) {
                 vec.push_back(decode_outputs(output_field));
             }
             return vec;
