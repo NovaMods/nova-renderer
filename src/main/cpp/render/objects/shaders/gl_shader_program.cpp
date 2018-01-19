@@ -32,9 +32,9 @@ namespace nova {
     void
     gl_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
         // Creates a pipeline out of compiled shaders
-        auto states = GET_
-        const auto& states_end = (*material.states).end();
-        const auto& states = *material.states;
+        auto states_opt = get_member(material, [](material_state& state) {return state.states;});
+        auto states_vec = states_opt.value_or(std::vector<state_enum>{});
+        const auto& states_end = states_vec.end();
 
         vk::GraphicsPipelineCreateInfo pipeline_create_info = {};
 
@@ -101,6 +101,7 @@ namespace nova {
          */
 
         vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info = {};
+
         input_assembly_create_info.topology = material.primitive_mode.value_or(vk::PrimitiveTopology::eTriangleList);
 
         pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
@@ -118,8 +119,8 @@ namespace nova {
         vk::Viewport viewport = {};
         viewport.x = 0;
         viewport.y = 0;
-        viewport.width = *material.output_width;
-        viewport.height = *material.output_height;
+        viewport.width = get_member(material, [](auto& mat) {return mat.output_width;}).value_or(640);
+        viewport.height = get_member(material, [](auto& mat) {return mat.output_height}).value_or(480);
         viewport.minDepth = 0;
         viewport.maxDepth = 1;
 
@@ -176,11 +177,11 @@ namespace nova {
          */
 
         vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
-        depth_stencil_create_info.depthTestEnable = static_cast<vk::Bool32>((std::find(states.begin(), states.end(), state_enum::disable_depth_test) == states_end));
-        depth_stencil_create_info.depthWriteEnable = static_cast<vk::Bool32>((std::find(states.begin(), states.end(), state_enum::disable_depth_write) == states_end));
+        depth_stencil_create_info.depthTestEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::disable_depth_test) == states_end));
+        depth_stencil_create_info.depthWriteEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::disable_depth_write) == states_end));
         depth_stencil_create_info.depthCompareOp = material.depth_func.value_or(vk::CompareOp::eLess);
 
-        depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states.begin(), states.end(), state_enum::enable_stencil_test) != states_end);
+        depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states_vec.begin(), states_vec.end(), state_enum::enable_stencil_test) != states_end);
         if(material.back_face) {
             depth_stencil_create_info.back = material.back_face.value().to_vk_stencil_op_state();
         }

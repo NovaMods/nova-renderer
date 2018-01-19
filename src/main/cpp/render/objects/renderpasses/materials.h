@@ -17,15 +17,6 @@
 using namespace std::experimental;
 
 namespace nova {
-#define GET_FIELD(mat, field) [&]() {\
-    if(mat.field) { \
-        return mat.field; \
-    } else if(mat.parent) { \
-        return mat.parent.field; \
-    } else { \
-        return mat.field; \
-    }();
-
     /*!
      * \brief Controlls the rasterizer's state
      */
@@ -542,6 +533,19 @@ namespace nova {
     texture_location_enum decode_texture_location_enum(const std::string& texture_location_str);
 
     output_info decode_outputs(const nlohmann::json& output_info_json);
+
+    template <typename RetType>
+    optional<RetType> get_member(const material_state& material, std::function<optional<RetType>(material_state&)> field_accessor) {
+        auto member = field_accessor(material);
+
+        if(member) {
+            return member;
+        } else if(material.parent) {
+            return get_member(*material.parent.value(), field_accessor);
+        } else {
+            return member;
+        }
+    }
 }
 
 #endif //RENDERER_MATERIALS_H
