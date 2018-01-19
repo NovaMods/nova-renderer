@@ -17,6 +17,15 @@
 using namespace std::experimental;
 
 namespace nova {
+#define GET_FIELD(mat, field) [&]() {\
+    if(mat.field) { \
+        return mat.field; \
+    } else if(mat.parent) { \
+        return mat.parent.field; \
+    } else { \
+        return mat.field; \
+    }();
+
     /*!
      * \brief Controlls the rasterizer's state
      */
@@ -278,7 +287,12 @@ namespace nova {
          *
          * I may or may not make this a pointer to another material_state. Depends on how the code ends up being
          */
-        optional<std::string> parent;
+        optional<std::string> parent_name;
+
+        /*!
+         * \brief The actual parent material
+         */
+        optional<material_state*> parent;
 
         /*!
          * \brief All of the symbols in the shader that are defined by this state
