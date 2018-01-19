@@ -17,7 +17,7 @@ namespace nova {
         filter = source.filter_expression;
         LOG(TRACE) << "Created filter expression " << filter;
         create_shader_module(source.vertex_source, vk::ShaderStageFlagBits::eVertex);
-        LOG(TRACE) << "Creatd vertex shader";
+        LOG(TRACE) << "Created vertex shader";
         create_shader_module(source.fragment_source, vk::ShaderStageFlagBits::eFragment);
         LOG(TRACE) << "Created fragment shader";
 
@@ -32,6 +32,7 @@ namespace nova {
     void
     gl_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
         // Creates a pipeline out of compiled shaders
+        auto states = GET_
         const auto& states_end = (*material.states).end();
         const auto& states = *material.states;
 
