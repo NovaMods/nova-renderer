@@ -9,6 +9,8 @@
 
 namespace nova {
 
+    std::shared_ptr<shader_resource_manager> shader_resource_manager::instance;
+
     shader_resource_manager::shader_resource_manager() : device(render_context::instance.device) {
         create_block_textures_dsl();
         create_custom_textures_dsl();
@@ -271,6 +273,14 @@ namespace nova {
 
     shader_resource_manager::~shader_resource_manager() {
         device.destroyDescriptorPool(descriptor_pool);
+    }
+
+    std::shared_ptr<shader_resource_manager> shader_resource_manager::get_instance() {
+        if(!instance) {
+            instance = std::make_shared<shader_resource_manager>();
+        }
+
+        return instance;
     }
 }
 

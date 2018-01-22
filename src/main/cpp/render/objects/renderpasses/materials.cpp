@@ -17,7 +17,7 @@ namespace nova {
         ret_val.states = get_json_value<std::vector<state_enum>>(material_json, "states", [&](const auto& states) {
             auto vec = std::vector<state_enum>{};
             for(auto& state : states) {
-                vec.push_back(decode_state(state));
+                vec.push_back(state_enum::from_string(state));
             }
             return vec;
         });
@@ -58,9 +58,11 @@ namespace nova {
         ret_val.tessellation_control_shader = get_json_value<std::string>(material_json, "tessellationControlShader");
 
         ret_val.vertex_fields = get_json_value<std::vector<vertex_field_enum>>(material_json, "vertexFields", [&](const nlohmann::json& vertex_fields) {
+            LOG(TRACE) << "Parsing vertex field `" << vertex_fields << "`";
             auto vec = std::vector<vertex_field_enum>{};
             for(const auto& vertex_field : vertex_fields) {
-                vec.push_back(decode_vertex_field(vertex_field));
+                LOG(TRACE) << "Current field: `" << vertex_field << "`";
+                vec.push_back(vertex_field_enum::from_string(vertex_field["field"]));
             }
             return vec;
         });
@@ -93,7 +95,7 @@ namespace nova {
             }
         }
 
-        ret_val.msaa_support = get_json_value<msaa_support_enum>(material_json, "msaaSupport", decode_msaa_support_enum);
+        ret_val.msaa_support = get_json_value<msaa_support_enum>(material_json, "msaaSupport", msaa_support_enum::from_string);
 
         ret_val.primitive_mode = get_json_value<vk::PrimitiveTopology>(material_json, "primitiveMode", decode_primitive_mode_enum);
 
@@ -129,117 +131,19 @@ namespace nova {
             return vec;
         });
 
+        ret_val.pass = get_json_value<pass_enum>(material_json, "pass", pass_enum::from_string);
+
         return ret_val;
-    }
-
-    state_enum decode_state(const std::string& state_to_decode) {
-        if(state_to_decode == "Blending") {
-            return state_enum::blending;
-
-        } else if(state_to_decode == "InvertCulling") {
-            return state_enum::invert_culing;
-
-        } else if(state_to_decode == "DisableCulling") {
-            return state_enum::disable_culling;
-
-        } else if(state_to_decode == "DisableDepthWrite") {
-            return state_enum::disable_depth_write;
-
-        } else if(state_to_decode == "EnableStencilTest") {
-            return state_enum::enable_stencil_test;
-
-        } else if(state_to_decode == "StencilWrite") {
-            return state_enum::stencil_write;
-
-        } else if(state_to_decode == "DisableColorWrite") {
-            return state_enum::disable_color_write;
-
-        } else if(state_to_decode == "EnableAlphaToCoverage") {
-            return state_enum::enable_alpha_to_coverage;
-
-        } else if(state_to_decode == "DisableDepthTest") {
-            return state_enum::disable_depth_test;
-
-        } else if(state_to_decode == "DisableAlphaWrite") {
-            return state_enum::disable_alpha_write;
-        }
-
-        // EVERYTHING IS A FATAL ERROR WHOO
-        // TODO: Fail gracefully
-        LOG(FATAL) << "Invalid value in the states array: '" << state_to_decode << "'";
     }
 
     sampler_state decode_sampler_state(const nlohmann::json& json) {
         sampler_state new_sampler_state = {};
 
         new_sampler_state.sampler_index = get_json_value<std::uint32_t>(json, "samplerIndex").value_or(0);
-        new_sampler_state.filter = get_json_value<texture_filter_enum>(json, "textureFilter", decode_texture_filter_enum).value_or(texture_filter_enum::point);
-        new_sampler_state.wrap_mode = get_json_value<wrap_mode_enum>(json, "wrapMode", decode_wrap_mode_enum).value_or(wrap_mode_enum::clamp);
+        new_sampler_state.filter = get_json_value<texture_filter_enum>(json, "textureFilter", texture_filter_enum::from_string).value_or(texture_filter_enum::Point);
+        new_sampler_state.wrap_mode = get_json_value<wrap_mode_enum>(json, "wrapMode", wrap_mode_enum::from_string).value_or(wrap_mode_enum::Clamp);
 
         return new_sampler_state;
-    }
-
-    wrap_mode_enum decode_wrap_mode_enum(const std::string &wrap_mode) {
-        if(wrap_mode == "Clamp") {
-            return wrap_mode_enum::clamp;
-
-        } else if(wrap_mode == "Repeat") {
-            return wrap_mode_enum::repeat;
-        }
-
-        LOG(FATAL) << "Invalid wrap mode: '" << wrap_mode << "'";
-    }
-
-    texture_filter_enum decode_texture_filter_enum(const std::string &texture_filter_enum_str) {
-        if(texture_filter_enum_str == "TexelAA") {
-            return texture_filter_enum::texel_aa;
-
-        } else if(texture_filter_enum_str == "Bilinear") {
-            return texture_filter_enum ::bilinear;
-
-        } else if(texture_filter_enum_str == "Point") {
-            return texture_filter_enum::point;
-        }
-
-        LOG(FATAL) << "Invalid value for a texture filter enum: '" << texture_filter_enum_str << "'";
-    }
-
-    vertex_field_enum decode_vertex_field(const nlohmann::json &vertex_field_json) {
-        const std::string vertex_field_str = vertex_field_json["field"];
-
-        if(vertex_field_str == "Position") {
-            return vertex_field_enum::position;
-
-        } else if(vertex_field_str == "Color") {
-            return vertex_field_enum::color;
-
-        } else if(vertex_field_str == "UV0" || vertex_field_str == "MainUV") {
-            return vertex_field_enum::main_uv;
-
-        } else if(vertex_field_str == "UV1" || vertex_field_str == "LightmapUV") {
-            return vertex_field_enum::lightmap_uv;
-
-        } else if(vertex_field_str == "Normal") {
-            return vertex_field_enum::normal;
-
-        } else if(vertex_field_str == "Tangent") {
-            return vertex_field_enum::tangent;
-
-        } else if(vertex_field_str == "MidTexCoord") {
-            return vertex_field_enum::mid_tex_coord;
-
-        } else if(vertex_field_str == "VirtualTextureId") {
-            return vertex_field_enum::virtual_texture_id;
-
-        } else if(vertex_field_str == "McEntityId") {
-            return vertex_field_enum::mc_entity_id;
-
-        } else if(vertex_field_str == "Empty") {
-            return vertex_field_enum::empty;
-
-        }
-
-        LOG(FATAL) << "Invalid vertex field: '" << vertex_field_str << "'";
     }
 
     vk::CompareOp decode_comparison_func_enum(const std::string& comparison_func) {
@@ -312,17 +216,6 @@ namespace nova {
         return ret_val;
     }
 
-    msaa_support_enum decode_msaa_support_enum(const std::string& msaa_support_str) {
-        if(msaa_support_str == "MSAA") {
-            return msaa_support_enum::msaa;
-
-        } else if(msaa_support_str == "Both") {
-            return msaa_support_enum::both;
-        }
-
-        LOG(FATAL) << "Invalid value for msaaSupport: '" << msaa_support_str << "'";
-    }
-
     vk::PrimitiveTopology decode_primitive_mode_enum(const std::string& primitive_mode_str) {
         if(primitive_mode_str == "Line") {
             return vk::PrimitiveTopology::eLineList;
@@ -372,27 +265,13 @@ namespace nova {
         // TODO: A better parser for this stuff. Maybe extend optional to have an exception or error string or something?
         tex.index = get_json_value<uint32_t>(texture_json, "textureIndex").value();
 
-        tex.texture_location = get_json_value<texture_location_enum>(texture_json, "textureLocation", decode_texture_location_enum).value();
+        tex.texture_location = get_json_value<texture_location_enum>(texture_json, "textureLocation", texture_location_enum::from_string).value();
 
         tex.texture_name = get_json_value<std::string>(texture_json, "textureName").value();
 
         tex.calculate_mipmaps = get_json_value<bool>(texture_json, "calculateMipmaps");
 
         return tex;
-    }
-
-    texture_location_enum decode_texture_location_enum(const std::string& texture_location_str) {
-        if(texture_location_str == "InUserPackage") {
-            return texture_location_enum::in_user_package;
-
-        } else if(texture_location_str == "Dynamic") {
-            return texture_location_enum::dynamic;
-
-        } else if(texture_location_str == "InAppPackage") {
-            return texture_location_enum::in_app_package;
-        }
-
-        LOG(FATAL) << "Invalid texture location enum '" << texture_location_str << "'";
     }
 
     output_info decode_outputs(const nlohmann::json& output_info_json) {

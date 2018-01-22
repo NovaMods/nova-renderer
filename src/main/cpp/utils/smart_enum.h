@@ -59,12 +59,17 @@ public:                                                             \
         });                                                         \
         if (it == name_map().end()) {                               \
             /*value not found*/                                     \
-            throw EnumName::Exception();                            \
+            throw EnumName::Exception(s);                            \
         } else {                                                    \
             return EnumName(it->first);                             \
         }                                                           \
     }                                                               \
-    class Exception : public std::exception {};                     \
+    class Exception : public std::exception {                       \
+        std::string msg;                                            \
+    public:                                                         \
+        explicit Exception(std::string value) { msg = value + " is not a member of " + #EnumName; } \
+        virtual const char* what() const noexcept { return msg.c_str(); }          \
+    };                                                              \
     static std::unordered_map<int,std::string>& name_map() {        \
         static std::unordered_map<int,std::string> name_map_0;      \
         if(name_map_0.size() == 0) {                                \

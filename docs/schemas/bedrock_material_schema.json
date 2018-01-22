@@ -203,7 +203,7 @@
             "properties":{
                 "field": {
                     "type": "string",
-                    "enum": ["Position", "UV0", "UV1", "Color", "Normal", "MainUV", "LightmapUV", "Tangent", "MidTexCoord", "VirtualTextureId", "McEntityId", "Empty"],
+                    "enum": ["Position", "UV0", "UV1", "Color", "Normal", "Tangent", "MidTexCoord", "VirtualTextureId", "McEntityId", "Empty"],
                     "description": "Declares which vertex field this object refers to. Here's how it goes down:\n\n* Position (float3): Vertex position\t* UV0 (half2): Primary UV coordinate, used for the color, normal, and data texture\n* UV1 (fixed2): Secondary UV, used for the lightmap\n* Color (fixed4): Vertex color, used for biome color\n* Normal (float3): Vertex normal\n* MainUV (half2): Nova-specific name for UV0\n* LightmapUv (fixed2): Nova-specific name for UV1\n* Tangent (float3): Vertex tangent. Hopefully not Nova only\n* MidTexCoord (half2): The texture coordinate of the main texture at the center of the quad. Nova-only\n* VirtualTextureId (uint32): A unique ID that represents this face's texture. Generated at runtime by Nova, this value helps Nova know what textures to make resident in the GPU\n* McEntityId (float4): A collection of data about the current block. Nova only\n* Empty: Specified that the vertex binding of this index should not be bound. Useful maybe, but definitely Nova-only"
                 }
             }

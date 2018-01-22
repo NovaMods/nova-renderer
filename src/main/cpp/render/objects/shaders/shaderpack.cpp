@@ -23,9 +23,7 @@ namespace nova {
             if(!shader_def.vertex_source.empty() && !shader_def.fragment_source.empty()) {
                 LOG(TRACE) << "Adding shader " << shader.second.name;
                 try {
-                    loaded_shaders.emplace(shader.second.name,
-                                           gl_shader_program(shader.second, shader.first, our_renderpass,
-                                                             pipeline_cache));
+                    loaded_shaders.emplace(shader.second.name, gl_shader_program(shader.second, shader.first, our_renderpass, pipeline_cache));
                 } catch (std::exception &e) {
                     LOG(ERROR) << "Could not load shader " << shader.second.name << " because " << e.what();
                 }

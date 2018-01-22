@@ -50,6 +50,33 @@ namespace nova {
         }
     }
 
+    template<typename Type>
+    void fill_in_material_state_field(const std::string& our_name, std::unordered_map<std::string, material_state>& all_materials, std::function<optional<Type>&(material_state&)> get_field_from_material) {
+        auto &us = all_materials[our_name];
+        auto &cur_state = us;
+        bool value_found = (bool) get_field_from_material(us);
+
+        while(!value_found) {
+            const auto &parent_name = cur_state.parent_name;
+            if(parent_name) {
+                cur_state = all_materials[parent_name.value()];
+                auto field_value = get_field_from_material(cur_state);
+                if(field_value) {
+                    get_field_from_material(us) = field_value.value();
+                    value_found = true;
+                }
+
+            } else {
+                break;
+            }
+        }
+    }
+
+    template<typename Type>
+    void fill_field(const std::string& name, std::unordered_map<std::string, material_state> materials, optional<Type> material_state::* ptr) {
+        fill_in_material_state_field<Type>(name, materials, [ptr](material_state& s) -> optional<Type>&{ return s.*ptr; });
+    }
+
     std::vector<material_state> get_material_definitions(const nlohmann::json &shaders_json) {
         std::unordered_map<std::string, material_state> definition_map;
         for(auto itr = shaders_json.begin(); itr != shaders_json.end(); ++itr) {
@@ -64,7 +91,9 @@ namespace nova {
                 material_state_name = material_state_name.substr(0, colon_pos);
             }
 
-            definition_map[material_state_name] = create_material_from_json(material_state_name, parent_state_name, json_node);
+            auto material = create_material_from_json(material_state_name, parent_state_name, json_node);
+            definition_map[material_state_name] = material;
+            LOG(TRACE) << "Inserted a material named " << material_state_name;
         }
 
         std::vector<material_state> definitions;
@@ -73,12 +102,35 @@ namespace nova {
         // figure it out
         for(const auto& item : definition_map) {
             auto& cur_state = item.second;
-            if(!cur_state.parent) {
+
+            definitions.push_back(cur_state);
+
+            if(!cur_state.parent_name) {
                 // No parent? I guess we get what we have then
                 continue;
             }
 
-            definitions.push_back(cur_state);
+            fill_field(item.first, definition_map, &material_state::defines);
+            fill_field(item.first, definition_map, &material_state::states);
+            fill_field(item.first, definition_map, &material_state::pass_index);
+            fill_field(item.first, definition_map, &material_state::outputs);
+            fill_field(item.first, definition_map, &material_state::output_width);
+            fill_field(item.first, definition_map, &material_state::output_height);
+            fill_field(item.first, definition_map, &material_state::depth_bias);
+            fill_field(item.first, definition_map, &material_state::slope_scaled_depth_bias);
+            fill_field(item.first, definition_map, &material_state::stencil_ref);
+            fill_field(item.first, definition_map, &material_state::stencil_read_mask);
+            fill_field(item.first, definition_map, &material_state::msaa_support);
+            fill_field(item.first, definition_map, &material_state::primitive_mode);
+            fill_field(item.first, definition_map, &material_state::source_blend_factor);
+            fill_field(item.first, definition_map, &material_state::destination_blend_factor);
+            fill_field(item.first, definition_map, &material_state::alpha_src);
+            fill_field(item.first, definition_map, &material_state::alpha_dst);
+            fill_field(item.first, definition_map, &material_state::depth_func);
+            fill_field(item.first, definition_map, &material_state::has_transparency);
+            fill_field(item.first, definition_map, &material_state::has_cutout);
+
+            LOG(TRACE) << "Filed in all fields on material " << cur_state.name;
         }
 
         return definitions;

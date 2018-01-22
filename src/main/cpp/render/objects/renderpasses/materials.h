@@ -13,6 +13,7 @@
 #include <optional.hpp>
 #include <vulkan/vulkan.hpp>
 #include <unordered_map>
+#include "../../../utils/smart_enum.h"
 
 using namespace std::experimental;
 
@@ -20,68 +21,68 @@ namespace nova {
     /*!
      * \brief Controlls the rasterizer's state
      */
-    enum class state_enum {
-        /*!
-         * \brief Enable blending for this material state
-         */
-        blending,
+    SMART_ENUM(state_enum,
+    /*!
+     * \brief Enable blending for this material state
+     */
+               Blending,
 
-        /*!
-         * \brief Render backfaces and cull frontfaces
-         */
-        invert_culing,
+    /*!
+     * \brief Render backfaces and cull frontfaces
+     */
+               InvertCuling,
 
-        /*!
-         * \brief Don't cull backfaces or frontfaces
-         */
-        disable_culling,
+    /*!
+     * \brief Don't cull backfaces or frontfaces
+     */
+               DisableCulling,
 
-        /*!
-         * \brief Don't write to the depth buffer
-         */
-        disable_depth_write,
+    /*!
+     * \brief Don't write to the depth buffer
+     */
+               DisableDepthWrite,
 
-        /*!
-         * \brief Don't perform a depth test
-         */
-        disable_depth_test,
+    /*!
+     * \brief Don't perform a depth test
+     */
+               DisableDepthTest,
 
-        /*!
-         * \brief Perform the stencil test
-         */
-        enable_stencil_test,
+    /*!
+     * \brief Perform the stencil test
+     */
+               EnableStencilTest,
 
-        /*!
-         * \brief Write to the stencil buffer
-         */
-        stencil_write,
+    /*!
+     * \brief Write to the stencil buffer
+     */
+               StencilWrite,
 
-        /*!
-         * \brief Don't write to the color buffer
-         */
-        disable_color_write,
+    /*!
+     * \brief Don't write to the color buffer
+     */
+               DisableColorWrite,
 
-        /*!
-         * \brief Enable alpha to coverage
-         */
-        enable_alpha_to_coverage,
+    /*!
+     * \brief Enable alpha to coverage
+     */
+               EnableAlphaToCoverage,
 
-        /*!
-         * \brief Don't write alpha
-         */
-        disable_alpha_write,
-    };
+    /*!
+     * \brief Don't write alpha
+     */
+               DisableAlphaWrite,
+    );
 
-    enum class texture_filter_enum {
-        texel_aa,
-        bilinear,
-        point
-    };
+    SMART_ENUM(texture_filter_enum,
+        TexelAA,
+        Bilinear,
+        Point
+    );
 
-    enum class wrap_mode_enum {
-        repeat,
-        clamp
-    };
+    SMART_ENUM(wrap_mode_enum,
+        Repeat,
+        Clamp
+    );
 
     /*!
      * \brief Defines a sampler to use for a texture
@@ -112,20 +113,20 @@ namespace nova {
     /*!
      * \brief The kind of data in a vertex attribute
      */
-    enum class vertex_field_enum {
+    SMART_ENUM(vertex_field_enum,
         /*!
          * \brief The vertex position
          *
          * 12 bytes
          */
-        position,
+        Position,
 
         /*!
          * \brief The vertex color
          *
          * 4 bytes
          */
-        color,
+        Color,
 
         /*!
          * \brief The UV coordinate of this object
@@ -136,7 +137,7 @@ namespace nova {
          *
          * 8 bytes (might try 4)
          */
-        main_uv,
+        UV0,
 
         /*!
          * \brief The UV coordinate in the lightmap texture
@@ -145,28 +146,28 @@ namespace nova {
          *
          * 2 bytes
          */
-        lightmap_uv,
+        UV1,
 
         /*!
          * \brief Vertex normal
          *
          * 12 bytes
          */
-        normal,
+        Normal,
 
         /*!
          * \brief Vertex tangents
          *
          * 12 bytes
          */
-        tangent,
+        Tangent,
 
         /*!
          * \brief The texture coordinate of the middle of the quad
          *
          * 8 bytes
          */
-        mid_tex_coord,
+        MidTexCoord,
 
         /*!
          * \brief A uint32_t that's a unique identifier for the texture that this vertex uses
@@ -176,26 +177,26 @@ namespace nova {
          *
          * 4 bytes
          */
-        virtual_texture_id,
+        VirtualTextureId,
 
         /*!
          * \brief Some information about the current block/entity/whatever
          *
          * 12 bytes
          */
-        mc_entity_id,
+        McEntityId,
 
         /*!
          * \brief Useful if you want to skip a vertex attribute
          */
-        empty,
-    };
+        Empty,
+    );
 
-    enum class texture_location_enum {
-        dynamic,
-        in_user_package,
-        in_app_package
-    };
+    SMART_ENUM(texture_location_enum,
+        Dynamic,
+        InUserPackage,
+        InAppPackage
+    );
 
     /*!
      * \brief A texture definition in a material file
@@ -242,11 +243,11 @@ namespace nova {
         optional<bool> calculate_mipmaps;
     };
 
-    enum class msaa_support_enum {
-        msaa,
-        both,
-        none
-    };
+    SMART_ENUM(msaa_support_enum,
+        MSAA,
+        Both,
+        None
+    );
 
     struct output_info {
         uint8_t index;
@@ -263,6 +264,16 @@ namespace nova {
 
         vk::StencilOpState to_vk_stencil_op_state() const;
     };
+
+    SMART_ENUM(pass_enum,
+        VirtualTextureFeedback,
+        BlockShadow,
+        Celestial_Shadow,
+        Gbuffer,
+        Deferred,
+        Compoaite,
+        Final
+    );
 
     /*!
      * \brief Represents the configuration for a single pipeline
@@ -371,6 +382,11 @@ namespace nova {
          * \brief The material_state to use if this one's shaders can't be found
          */
         optional<std::string> fallback;
+
+        /*!
+         * \brief The pass this material is part of
+         */
+        optional<pass_enum> pass;
 
         /*!
          * \brief When this material state will be drawn
@@ -482,39 +498,11 @@ namespace nova {
     material_state create_material_from_json(const std::string& material_state_name, const optional<std::string>& parent_state_name, const nlohmann::json& material_json);
 
     /*!
-     * \brief Translates a string from a material file to a state_enum value
-     * \param state_to_decode The string to translate to a state
-     * \return The decoded state
-     */
-    state_enum decode_state(const std::string& state_to_decode);
-
-    /*!
      * \brief Translates a JSON object into a sampler_state object
      * \param json The JSON object to translate
      * \return The translated sampler_state
      */
     sampler_state decode_sampler_state(const nlohmann::json& json);
-
-    /*!
-     * \brief Translates a string from a material file to a texture_filter_enum value
-     * \param texture_filter_enum_str The string to translate into a texture_filter_enum
-     * \return The translated texture_filter_enum
-     */
-    texture_filter_enum decode_texture_filter_enum(const std::string &texture_filter_enum_str);
-
-    /*!
-     * \brief Translates a string from a material file into a texture_wrap_mode_enum value
-     * \param wrap_mode The string to translate into a texture_wrap_mode_enum
-     * \return The translated texture_wrap_mode_enum
-     */
-    wrap_mode_enum decode_wrap_mode_enum(const std::string &wrap_mode);
-
-    /*!
-     * \brief Translates a JSON object into a member of the vertex field enum
-     * \param wrap_mode The string to translate into a vertex_field_enum
-     * \return The translated vertex_field_enum
-     */
-    vertex_field_enum decode_vertex_field(const nlohmann::json &vertex_field_json);
 
     vk::CompareOp decode_comparison_func_enum(const std::string& comparison_func);
 
@@ -522,30 +510,14 @@ namespace nova {
 
     stencil_op_state decode_stencil_buffer_state(const nlohmann::json &json);
 
-    msaa_support_enum decode_msaa_support_enum(const std::string& msaa_support_str);
-
     vk::PrimitiveTopology decode_primitive_mode_enum(const std::string& primitive_mode_str);
 
     vk::BlendFactor decode_blend_source_enum(const std::string& blend_source_str);
 
     texture decode_texture(const nlohmann::json& texture_json);
 
-    texture_location_enum decode_texture_location_enum(const std::string& texture_location_str);
-
     output_info decode_outputs(const nlohmann::json& output_info_json);
 
-    template <typename RetType>
-    optional<RetType> get_member(const material_state& material, std::function<optional<RetType>(material_state&)> field_accessor) {
-        auto member = field_accessor(material);
-
-        if(member) {
-            return member;
-        } else if(material.parent) {
-            return get_member(*material.parent.value(), field_accessor);
-        } else {
-            return member;
-        }
-    }
 }
 
 #endif //RENDERER_MATERIALS_H

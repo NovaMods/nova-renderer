@@ -32,8 +32,7 @@ namespace nova {
     void
     gl_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
         // Creates a pipeline out of compiled shaders
-        auto states_opt = get_member(material, [](material_state& state) {return state.states;});
-        auto states_vec = states_opt.value_or(std::vector<state_enum>{});
+        auto states_vec = material.states.value_or(std::vector<state_enum>{});
         const auto& states_end = states_vec.end();
 
         vk::GraphicsPipelineCreateInfo pipeline_create_info = {};
@@ -119,14 +118,14 @@ namespace nova {
         vk::Viewport viewport = {};
         viewport.x = 0;
         viewport.y = 0;
-        viewport.width = get_member(material, [](auto& mat) {return mat.output_width;}).value_or(640);
-        viewport.height = get_member(material, [](auto& mat) {return mat.output_height}).value_or(480);
+        viewport.width = 1;
+        viewport.height = 1;
         viewport.minDepth = 0;
         viewport.maxDepth = 1;
 
         vk::Rect2D scissor = {};
         scissor.offset = vk::Offset2D{0, 0};
-        scissor.extent = vk::Extent2D{*material.output_width, *material.output_height};
+        scissor.extent = vk::Extent2D{material.output_width.value_or(640), material.output_height.value_or(480)};
 
         vk::PipelineViewportStateCreateInfo viewport_create_info = {};
         viewport_create_info.scissorCount = 1;
@@ -135,6 +134,12 @@ namespace nova {
         viewport_create_info.pViewports = &viewport;
 
         pipeline_create_info.pViewportState = &viewport_create_info;
+
+        /**
+         * Renderpass
+         */
+
+        pipeline_create_info.renderPass = pass;
 
         /**
          * Rasterization state
@@ -164,24 +169,20 @@ namespace nova {
          * off by default
          */
 
-        if(material.msaa_support) {
-            if(*material.msaa_support != msaa_support_enum::none) {
-                vk::PipelineMultisampleStateCreateInfo multisample_create_info = {};
+        vk::PipelineMultisampleStateCreateInfo multisample_create_info = {};
 
-                pipeline_create_info.pMultisampleState = &multisample_create_info;
-            }
-        }
+        pipeline_create_info.pMultisampleState = &multisample_create_info;
 
         /**
          * Depth and stencil state
          */
 
         vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
-        depth_stencil_create_info.depthTestEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::disable_depth_test) == states_end));
-        depth_stencil_create_info.depthWriteEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::disable_depth_write) == states_end));
+        depth_stencil_create_info.depthTestEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::DisableDepthTest) == states_end));
+        depth_stencil_create_info.depthWriteEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::DisableDepthWrite) == states_end));
         depth_stencil_create_info.depthCompareOp = material.depth_func.value_or(vk::CompareOp::eLess);
 
-        depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states_vec.begin(), states_vec.end(), state_enum::enable_stencil_test) != states_end);
+        depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states_vec.begin(), states_vec.end(), state_enum::EnableStencilTest) != states_end);
         if(material.back_face) {
             depth_stencil_create_info.back = material.back_face.value().to_vk_stencil_op_state();
         }
@@ -204,11 +205,11 @@ namespace nova {
         attachmentBlendStates.resize(8);    // TODO: Change for the total number of framebuffers (once we detect that)
         for(const auto& output : *material.outputs) {
             attachmentBlendStates[output.index].blendEnable = static_cast<vk::Bool32>(output.blending);
-            attachmentBlendStates[output.index].srcColorBlendFactor = *material.source_blend_factor;
-            attachmentBlendStates[output.index].dstColorBlendFactor = *material.destination_blend_factor;
+            attachmentBlendStates[output.index].srcColorBlendFactor = material.source_blend_factor.value_or(vk::BlendFactor::eSrcAlpha);
+            attachmentBlendStates[output.index].dstColorBlendFactor = material.destination_blend_factor.value_or(vk::BlendFactor::eOneMinusSrcAlpha);
             attachmentBlendStates[output.index].colorBlendOp = vk::BlendOp::eAdd;
-            attachmentBlendStates[output.index].srcAlphaBlendFactor = *material.source_blend_factor;
-            attachmentBlendStates[output.index].dstAlphaBlendFactor = *material.destination_blend_factor;
+            attachmentBlendStates[output.index].srcAlphaBlendFactor = material.source_blend_factor.value_or(vk::BlendFactor::eSrcAlpha);
+            attachmentBlendStates[output.index].dstAlphaBlendFactor = material.destination_blend_factor.value_or(vk::BlendFactor::eOneMinusSrcAlpha);
             attachmentBlendStates[output.index].alphaBlendOp = vk::BlendOp::eAdd;
             attachmentBlendStates[output.index].colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
         }
@@ -219,6 +220,12 @@ namespace nova {
         // material struct too huge
 
         pipeline_create_info.pColorBlendState = &blend_create_info;
+
+        /**
+         * Descriptor sets
+         */
+
+
 
         // TODO: Handle dynamic state
 

@@ -18,7 +18,11 @@ namespace nova {
 
         ~shader_resource_manager();
 
+        static std::shared_ptr<shader_resource_manager> get_instance();
+
     private:
+        static std::shared_ptr<shader_resource_manager> instance;
+
         vk::Device device;
 
         vk::DescriptorSetLayout block_textures_dsl;
