@@ -20,6 +20,7 @@ namespace nova {
         create_framebuffer_top_dsl();
         create_framebuffer_bottom_dsl();
         create_block_light_dsl();
+        create_per_model_dsl();
 
         create_pipeline_layouts();
 
@@ -45,9 +46,9 @@ namespace nova {
 
     void shader_resource_manager::create_custom_textures_dsl() {
         vk::DescriptorSetLayoutBinding bindings[] = {
-                vk::DescriptorSetLayoutBinding().setBinding(7).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
-                vk::DescriptorSetLayoutBinding().setBinding(8).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
-                vk::DescriptorSetLayoutBinding().setBinding(9).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(7) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(8) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(9) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
                 vk::DescriptorSetLayoutBinding().setBinding(10).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
         };
 
@@ -60,8 +61,8 @@ namespace nova {
 
     void shader_resource_manager::create_shadow_textures_dsl() {
         vk::DescriptorSetLayoutBinding bindings[] = {
-                vk::DescriptorSetLayoutBinding().setBinding(4).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
-                vk::DescriptorSetLayoutBinding().setBinding(5).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(4) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(5) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
                 vk::DescriptorSetLayoutBinding().setBinding(13).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
                 vk::DescriptorSetLayoutBinding().setBinding(14).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
         };
@@ -75,7 +76,7 @@ namespace nova {
 
     void shader_resource_manager::create_depth_textures_dsl() {
         vk::DescriptorSetLayoutBinding bindings[] = {
-                vk::DescriptorSetLayoutBinding().setBinding(6).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(6) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
                 vk::DescriptorSetLayoutBinding().setBinding(11).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
                 vk::DescriptorSetLayoutBinding().setBinding(12).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
         };
@@ -129,9 +130,9 @@ namespace nova {
 
     void shader_resource_manager::create_framebuffer_bottom_dsl() {
         vk::DescriptorSetLayoutBinding bindings[] = {
-                vk::DescriptorSetLayoutBinding().setBinding(7).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
-                vk::DescriptorSetLayoutBinding().setBinding(8).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
-                vk::DescriptorSetLayoutBinding().setBinding(9).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(7) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(8) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(9) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
                 vk::DescriptorSetLayoutBinding().setBinding(10).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
         };
 
@@ -144,7 +145,7 @@ namespace nova {
 
     void shader_resource_manager::create_block_light_dsl() {
         vk::DescriptorSetLayoutBinding bindings[] = {
-                vk::DescriptorSetLayoutBinding().setBinding(4).setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(4) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
                 vk::DescriptorSetLayoutBinding().setBinding(16).setDescriptorType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
         };
 
@@ -173,7 +174,7 @@ namespace nova {
             .setSetLayoutCount(4)
             .setPSetLayouts(shadow_set_layouts);
 
-        shadow_pl = device.createPipelineLayout(shadow_pl_create_info);
+        layouts[pass_enum::Shadow] = device.createPipelineLayout(shadow_pl_create_info);
 
 
         vk::DescriptorSetLayout gbuffers_set_layouts[] = {
@@ -188,7 +189,24 @@ namespace nova {
             .setSetLayoutCount(5)
             .setPSetLayouts(gbuffers_set_layouts);
 
-        gbuffers_pl = device.createPipelineLayout(gbuffers_pl_create_info);
+        layouts[pass_enum::Gbuffer] = device.createPipelineLayout(gbuffers_pl_create_info);
+
+
+        vk::DescriptorSetLayout transparent_set_layout[] = {
+                block_textures_dsl,
+                shadow_textures_dsl,
+                depth_textures_dsl,
+                common_dsl,
+                per_model_dsl,
+                custom_textures_dsl,
+                framebuffer_bottom_dsl
+        };
+
+        auto transparenty_pl_create_info = vk::PipelineLayoutCreateInfo()
+            .setSetLayoutCount(7)
+            .setPSetLayouts(transparent_set_layout);
+
+        layouts[pass_enum::Transparent] = device.createPipelineLayout(transparenty_pl_create_info);
 
 
         vk::DescriptorSetLayout deferred_light_set_layouts[] = {
@@ -202,7 +220,7 @@ namespace nova {
             .setSetLayoutCount(4)
             .setPSetLayouts(deferred_light_set_layouts);
 
-        deferred_light_pl = device.createPipelineLayout(deferred_light_pl_create_info);
+        layouts[pass_enum::DeferredLight] = device.createPipelineLayout(deferred_light_pl_create_info);
 
 
         vk::DescriptorSetLayout fullscreen_pass_layouts[] = {
@@ -218,7 +236,7 @@ namespace nova {
             .setSetLayoutCount(6)
             .setPSetLayouts(fullscreen_pass_layouts);
 
-        fullscreen_pass_pl = device.createPipelineLayout(fullscreen_pass_pl_create_info);
+        layouts[pass_enum::Fullscreen] = device.createPipelineLayout(fullscreen_pass_pl_create_info);
     }
 
 
@@ -229,7 +247,7 @@ namespace nova {
 
         // TODO: Tune these values for actual usage needs
         vk::DescriptorPoolSize sizes[] = {
-                vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(9),
+                vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(25),
                 vk::DescriptorPoolSize().setType(vk::DescriptorType::eInputAttachment).setDescriptorCount(16),
                 vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(2),
         };
@@ -281,6 +299,10 @@ namespace nova {
         }
 
         return instance;
+    }
+
+    vk::PipelineLayout shader_resource_manager::get_layout_for_pass(pass_enum pass) {
+        return layouts[pass];
     }
 }
 

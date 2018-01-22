@@ -9,6 +9,7 @@
 #include <easylogging++.h>
 #include "gl_shader_program.h"
 #include "../../vulkan/render_context.h"
+#include "shader_resource_manager.h"
 
 namespace nova {
     gl_shader_program::gl_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache) : name(source.name) {
@@ -202,7 +203,7 @@ namespace nova {
         blend_create_info.logicOpEnable = static_cast<vk::Bool32>(false);   // Not 100% how to use this so imma just disable it
 
         auto attachmentBlendStates = std::vector<vk::PipelineColorBlendAttachmentState>{};
-        attachmentBlendStates.resize(8);    // TODO: Change for the total number of framebuffers (once we detect that)
+        attachmentBlendStates.resize(material.outputs.value_or(std::vector<output_info>{}).size());
         for(const auto& output : *material.outputs) {
             attachmentBlendStates[output.index].blendEnable = static_cast<vk::Bool32>(output.blending);
             attachmentBlendStates[output.index].srcColorBlendFactor = material.source_blend_factor.value_or(vk::BlendFactor::eSrcAlpha);
@@ -225,7 +226,8 @@ namespace nova {
          * Descriptor sets
          */
 
-
+        auto shader_resources = shader_resource_manager::get_instance();
+        pipeline_create_info.layout = shader_resources->get_layout_for_pass(material.pass.value_or(pass_enum::Gbuffer));
 
         // TODO: Handle dynamic state
 

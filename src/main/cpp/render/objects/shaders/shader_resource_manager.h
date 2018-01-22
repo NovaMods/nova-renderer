@@ -7,6 +7,7 @@
 #define RENDERER_DESCRIPTOR_SET_MANAGER_H
 
 #include <vulkan/vulkan.hpp>
+#include "../renderpasses/materials.h"
 
 namespace nova {
     /*!
@@ -19,6 +20,8 @@ namespace nova {
         ~shader_resource_manager();
 
         static std::shared_ptr<shader_resource_manager> get_instance();
+
+        vk::PipelineLayout get_layout_for_pass(pass_enum pass);
 
     private:
         static std::shared_ptr<shader_resource_manager> instance;
@@ -35,10 +38,7 @@ namespace nova {
         vk::DescriptorSetLayout block_light_dsl;
         vk::DescriptorSetLayout per_model_dsl;
 
-        vk::PipelineLayout shadow_pl;
-        vk::PipelineLayout gbuffers_pl;
-        vk::PipelineLayout deferred_light_pl;
-        vk::PipelineLayout fullscreen_pass_pl;
+        std::unordered_map<pass_enum, vk::PipelineLayout, pass_enum::Hasher> layouts;
 
         vk::DescriptorPool descriptor_pool;
 

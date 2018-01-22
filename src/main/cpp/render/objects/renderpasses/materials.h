@@ -266,13 +266,11 @@ namespace nova {
     };
 
     SMART_ENUM(pass_enum,
-        VirtualTextureFeedback,
-        BlockShadow,
-        Celestial_Shadow,
+        Shadow,
         Gbuffer,
-        Deferred,
-        Compoaite,
-        Final
+        Transparent,
+        DeferredLight,
+        Fullscreen
     );
 
     /*!
