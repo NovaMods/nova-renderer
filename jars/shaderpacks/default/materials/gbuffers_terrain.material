@@ -36,48 +36,48 @@
             {
                 "textureIndex": 1,
                 "textureLocation": "InUserPackage",
-                "textureName": "atlas.terrain.normals",
+                "textureName": "Brightness",
                 "mipmap": "false"
             },
             {
                 "textureIndex": 2,
                 "textureLocation": "InUserPackage",
+                "textureName": "atlas.terrain.normals",
+                "mipmap": "false"
+            },
+            {
+                "textureIndex": 3,
+                "textureLocation": "InUserPackage",
                 "textureName": "atlas.terrain.data",
-                "mipmap": "false"
-            },
-            {
-                "textureIndex": 4,
-                "textureLocation": "InUserPackage",
-                "textureName": "custom.gaux1",
-                "mipmap": "false"
-            },
-            {
-                "textureIndex": 5,
-                "textureLocation": "InUserPackage",
-                "textureName": "custom.gaux2",
-                "mipmap": "false"
-            },
-            {
-                "textureIndex": 6,
-                "textureLocation": "InUserPackage",
-                "textureName": "custom.gaux3",
                 "mipmap": "false"
             },
             {
                 "textureIndex": 7,
                 "textureLocation": "InUserPackage",
+                "textureName": "custom.gaux1",
+                "mipmap": "false"
+            },
+            {
+                "textureIndex": 8,
+                "textureLocation": "InUserPackage",
+                "textureName": "custom.gaux2",
+                "mipmap": "false"
+            },
+            {
+                "textureIndex": 9,
+                "textureLocation": "Dynamic",
+                "textureName": "custom.gaux3",
+                "mipmap": "false"
+            },
+            {
+                "textureIndex": 10,
+                "textureLocation": "Dynamic",
                 "textureName": "custom.gaux4",
                 "mipmap": "false"
             },
 
             {
-                "textureIndex": 9,
-                "textureLocation": "Dynamic",
-                "textureName": "Brightness",
-                "mipmap": "false"
-            },
-            {
-                "textureIndex": 10,
+                "textureIndex": 6,
                 "textureLocation": "Dynamic",
                 "textureName": "depthtex0",
                 "mipmap": "false"
@@ -91,32 +91,39 @@
             {
                 "textureIndex": 12,
                 "textureLocation": "Dynamic",
-                "textureName": "Noise",
+                "textureName": "depthtex2",
                 "mipmap": "false"
             },
 
             {
-                "textureIndex": 13,
+                "textureIndex": 4,
                 "textureLocation": "Dynamic",
                 "textureName": "shadow.main",
                 "mipmap": "false"
             },
             {
-                "textureIndex": 14,
+                "textureIndex": 5,
                 "textureLocation": "Dynamic",
                 "textureName": "shadow.secondary",
                 "mipmap": "false"
             },
             {
-                "textureIndex": 15,
+                "textureIndex": 13,
                 "textureLocation": "Dynamic",
                 "textureName": "shadow.color0",
                 "mipmap": "false"
             },
             {
-                "textureIndex": 16,
+                "textureIndex": 14,
                 "textureLocation": "Dynamic",
                 "textureName": "shadow.color1",
+                "mipmap": "false"
+            },
+
+            {
+                "textureIndex": 15,
+                "textureLocation": "Dynamic",
+                "textureName": "noisetex",
                 "mipmap": "false"
             }
         ],
@@ -127,7 +134,6 @@
         "passIndex": 4,
         "hasTransparency": false,
         "hasCutout": false,
-        "renderpassName": "MainShadow",
 
         "outputs": [
             { 
