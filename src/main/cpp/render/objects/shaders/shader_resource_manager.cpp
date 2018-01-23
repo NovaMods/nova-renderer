@@ -146,7 +146,7 @@ namespace nova {
     void shader_resource_manager::create_block_light_dsl() {
         vk::DescriptorSetLayoutBinding bindings[] = {
                 vk::DescriptorSetLayoutBinding().setBinding(4) .setDescriptorType(vk::DescriptorType::eSampledImage).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
-                vk::DescriptorSetLayoutBinding().setBinding(16).setDescriptorType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
+                vk::DescriptorSetLayoutBinding().setBinding(18).setDescriptorType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(1).setStageFlags(vk::ShaderStageFlagBits::eAll),
         };
 
         vk::DescriptorSetLayoutCreateInfo create_info = {};
@@ -249,7 +249,7 @@ namespace nova {
         vk::DescriptorPoolSize sizes[] = {
                 vk::DescriptorPoolSize().setType(vk::DescriptorType::eSampledImage).setDescriptorCount(25),
                 vk::DescriptorPoolSize().setType(vk::DescriptorType::eInputAttachment).setDescriptorCount(16),
-                vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(2),
+                vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(3),
         };
 
         pool_create_info.pPoolSizes = sizes;
@@ -272,7 +272,7 @@ namespace nova {
 
         auto alloc_info = vk::DescriptorSetAllocateInfo()
                         .setDescriptorPool(descriptor_pool)
-                        .setDescriptorSetCount(8)
+                        .setDescriptorSetCount(9)
                         .setPSetLayouts(layouts);
 
         auto descriptor_sets = device.allocateDescriptorSets(alloc_info);
