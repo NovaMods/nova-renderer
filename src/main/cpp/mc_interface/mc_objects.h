@@ -10,6 +10,11 @@
 
 #include "mc_gui_objects.h"
 #include <cstdint>
+
+const int CHUNK_WIDTH = 16;
+const int CHUNK_HEIGHT = 256;
+const int CHUNK_DEPTH = 16;
+
 /*!
  * \brief Holds the information that comes from MC textures
  */
@@ -32,22 +37,61 @@ struct mc_texture_atlas_location {
     float max_v;
 };
 
+struct mc_block_definition {
+	const char * name;
+	int light_opacity;
+    int light_value;
+	int is_opaque;
+	int block_light;
+	int is_cube;
+
+	bool is_emissive() const;
+	bool is_transparent() const;
+};
+
 /*!
  * \brief Represents a block in Minecraft, along with any attributes it might have
  */
 struct mc_block {
+	int id;
     bool is_on_fire;
-    int block_id;
+	float ao;
+    char * state;
 };
 
 /*!
- * \brief Represents a chunk in Minecraft. It's really just a large array of blocks and an ID so I don't have to rebuild
- * the geometry every frame
+ * \brief Represents a chunk in Minecraft. It's really just a large array of blocks and an ID
  */
-struct mc_chunk {
-    long chunk_id;  //!< Unique identifier for the chunk
-    bool is_dirty;  //!< Has the chunk changed since it was last sent to Nova?
-    mc_block blocks[16 * 16 * 16];  //!< All the blocks in the chunk
+struct mc_chunk_render_object {
+	int format;
+	float x;
+	float y;
+	float z;
+	int id;
+	int* vertex_data;
+	int* indices;
+	int vertex_buffer_size;
+	int index_buffer_size;
+
+};
+
+/*!
+ * \brief Represents a single quad in Minecraft
+ */
+struct mc_baked_quad {
+	int num_vertices;
+	int tint_index;
+	const char * texture_name;
+    int vertex_data[28];
+};
+
+/*!
+ * \brief Represents a simple model (i.e. a model with only one variant (I think))
+ */
+struct mc_baked_model {
+    const char * block_state;
+	int num_quads;
+    mc_baked_quad* quads;
 };
 
 /*!
@@ -73,13 +117,13 @@ struct mc_render_gui_params {
     mc_gui_screen cur_screen;
 };
 
-struct mc_gui_send_buffer_command {
+struct mc_gui_geometry {
     const char *texture_name;  //!< The resource name of the texture.
 	int index_buffer_size;
 	int vertex_buffer_size;
 	int* index_buffer;
     float* vertex_buffer;
-	const char* atlas_name;
+	const char * atlas_name;
 };
 
 /*!
@@ -109,7 +153,7 @@ struct mc_settings {
  * \brief Tells Nova to add this chunk to its list of potential chunks to render
  */
 struct mc_add_chunk_command {
-    mc_chunk new_chunk;
+    mc_chunk_render_object new_chunk;
 
     float chunk_x;
     float chunk_y;
@@ -122,8 +166,6 @@ struct mc_add_chunk_command {
 struct mc_set_gui_screen_command {
     mc_gui_screen screen;
 };
-
-
 
 struct mouse_button_event {
 	int button;

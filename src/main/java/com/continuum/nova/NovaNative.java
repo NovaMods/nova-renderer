@@ -1,6 +1,8 @@
 package com.continuum.nova;
 
 import com.sun.jna.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,9 +10,14 @@ import java.util.List;
 public interface NovaNative extends Library {
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
 
-    String GUI_ATLAS_NAME = "gui";
-    String BLOCK_COLOR_ATLAS_NAME = "block_color";
-    String FONT_ATLAS_NAME = "font";
+    Logger LOG = LogManager.getLogger(NovaNative.class);
+
+    enum NovaVertexFormat {
+        POS,
+        POS_UV,
+        POS_UV_LIGHTMAPUV_NORMAL_TANGENT,
+        POS_UV_COLOR
+    }
 
     class mc_atlas_texture extends Structure {
         public int width;
@@ -38,6 +45,16 @@ public interface NovaNative extends Library {
         public List<String> getFieldOrder() {
             return Arrays.asList("width", "height", "num_components", "texture_data");
         }
+
+        @Override
+        public String toString() {
+            return "mc_atlas_texture{" +
+                    "width=" + width +
+                    ", height=" + height +
+                    ", num_components=" + num_components +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
     }
 
     class mc_texture_atlas_location extends Structure {
@@ -59,40 +76,53 @@ public interface NovaNative extends Library {
         public List<String> getFieldOrder() {
             return Arrays.asList("name", "min_u", "max_u", "min_v", "max_v");
         }
-    }
-
-    class mc_block extends Structure {
-        public boolean is_on_fire;
-        public int block_id;
 
         @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("is_on_fire", "block_id");
+        public String toString() {
+            return "mc_texture_atlas_location{" +
+                    "name='" + name + '\'' +
+                    ", min_u=" + min_u +
+                    ", max_u=" + max_u +
+                    ", min_v=" + min_v +
+                    ", max_v=" + max_v +
+                    '}';
         }
     }
 
-    class mc_chunk extends Structure {
-        public long chunk_id;
+    class mc_chunk_render_object extends Structure {
+        public int format;
+        public float x;
+        public float y;
+        public float z;
+        public int id;
+        public Pointer vertex_data; // int[]
+        public Pointer indices;     // int[]
+        public int vertex_buffer_size;
+        public int index_buffer_size;
 
-        public boolean is_dirty;
-        public mc_block[] blocks = new mc_block[16 * 16 * 16];
+        public void setVertex_data(List<Integer> vertexData) {
+            vertex_data = new Memory(vertexData.size() * Native.getNativeSize(Integer.class));
+            for(int i = 0; i < vertexData.size(); i++) {
+                Integer data = vertexData.get(i);
+                vertex_data.setInt(i * Native.getNativeSize(Integer.TYPE), data);
+            }
+
+            vertex_buffer_size = vertexData.size();
+        }
+
+        public void setIndices(List<Integer> indices) {
+            this.indices = new Memory(indices.size() * Native.getNativeSize(Integer.class));
+            for(int i = 0; i < indices.size(); i++) {
+                Integer data = indices.get(i);
+                this.indices.setInt(i * Native.getNativeSize(Integer.TYPE), data);
+            }
+
+            index_buffer_size = indices.size();
+        }
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("chunk_id", "is_dirty", "blocks");
-        }
-    }
-
-    class mc_render_world_params extends Structure {
-        public double camera_x;
-        public double camera_y;
-        public double camera_z;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList(
-                    "camera_x", "camera_y", "camera_z"
-            );
+            return Arrays.asList("format", "x", "y", "z", "id", "vertex_data", "indices", "vertex_buffer_size", "index_buffer_size");
         }
     }
 
@@ -125,20 +155,7 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_add_chunk_command extends Structure {
-        public mc_chunk new_chunk;
-
-        public float chunk_x;
-        public float chunk_y;
-        public float chunk_z;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("new_chunk", "chunk_x", "chunk_y", "chunk_z");
-        }
-    }
-
-    class mc_gui_send_buffer_command extends Structure {
+    class mc_gui_buffer extends Structure {
         public String texture_name;
         public int index_buffer_size;
         public int vertex_buffer_size;
@@ -148,7 +165,7 @@ public interface NovaNative extends Library {
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "sprite_name");
+            return Arrays.asList("particle_texture", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "sprite_name");
         }
     }
 
@@ -240,6 +257,8 @@ public interface NovaNative extends Library {
 
     void execute_frame();
 
+    void send_lightmap_texture(int[] data, int length, int width, int height);
+
     void add_texture(mc_atlas_texture texture);
 
     void add_texture_location(mc_texture_atlas_location location);
@@ -248,9 +267,15 @@ public interface NovaNative extends Library {
 
     void reset_texture_manager();
 
+    void add_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
+
     boolean should_close();
 
-    void send_gui_buffer_command(mc_gui_send_buffer_command command);
+    void add_gui_geometry(mc_gui_buffer buffer);
+
+    void clear_gui_buffers();
+
+    void set_mouse_grabbed(boolean grabbed);
 
     mouse_button_event get_next_mouse_button_event();
 
@@ -262,13 +287,17 @@ public interface NovaNative extends Library {
 
     key_char_event get_next_key_char_event();
 
-    void clear_gui_buffers();
-
     window_size get_window_size();
 
-    void set_string_setting(String setting,String value);
+    void set_fullscreen(int fullscreen);
+
+    boolean display_is_active();
+
+    void set_string_setting(String setting, String value);
 
     void set_float_setting(String setting_name, float setting_value);
 
-    void set_fullscreen(int fullscreen);
+    void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
+
+    String get_shaders_and_filters();
 }

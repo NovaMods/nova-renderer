@@ -18,12 +18,12 @@
 #include <optional.hpp>
 
 #include "gl_shader_program.h"
-#include "geometry_filter.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
 
 namespace nova {
     /*!
-     * \brief Represents a shaderpack in all of its glory
+     * \brief Represents a shaderpack in all of its glory, along with some meta information about the options that this
+     * shaderpack sets
      */
     class shaderpack {
     public:
@@ -42,17 +42,33 @@ namespace nova {
 
         gl_shader_program &operator[](std::string key);
 
-        std::unordered_map<std::string, gl_shader_program> &get_loaded_shaders();
+        gl_shader_program& get_shader(std::string key);
+
+		std::unordered_map<std::string, gl_shader_program> &get_loaded_shaders();
 
         void operator=(const shaderpack& other);
 
         std::string& get_name();
 
     private:
-
         std::unordered_map<std::string, gl_shader_program> loaded_shaders;
 
         std::string name;
+
+        /*!
+         * \brief The indices of the framebuffer attachments that any of the non-shadow shaders write to
+         */
+        std::vector<unsigned int> all_drawbuffers;
+
+        /*!
+         * \brief The indices of all the framebuffer attachments that any of the shadow shaders write to
+         */
+        std::vector<unsigned int> shadow_drawbuffers;
+
+        /*!
+         * \brief The options that the shaders in this shaderpack set
+         */
+        nlohmann::json options;
     };
 }
 

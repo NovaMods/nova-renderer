@@ -15,7 +15,6 @@
 #include <glad/glad.h>
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
-#include "geometry_filter.h"
 
 
 namespace nova {
@@ -64,18 +63,21 @@ namespace nova {
      * hold the map from line in the shader sent to the compiler and the line number and shader file that the line came from
      * on disk
      */
-    class NOVA_API gl_shader_program {
+    class gl_shader_program {
     public:
         GLuint gl_name;
 
         /*!
          * \brief Constructs a gl_shader_program
          */
-        gl_shader_program(const shader_definition &source);
+        explicit gl_shader_program(const shader_definition &source);
 
-        gl_shader_program(gl_shader_program &other);
-
-        gl_shader_program(const gl_shader_program &other);
+        /*!
+         * \brief Default copy constructor
+         *
+         * \param other The thing to copygit add -A :/
+         */
+		gl_shader_program(const gl_shader_program &other) = default;
 
         /**
          * \brief Move constructor
@@ -83,9 +85,9 @@ namespace nova {
          * I expect that this constructor will only be called when returning a fully linked shader from a builder function.
          * If this is not the case, this will throw an error. Be watchful.
          */
-        gl_shader_program(gl_shader_program &&other);
+        gl_shader_program(gl_shader_program &&other) noexcept;
 
-        gl_shader_program() {};
+        gl_shader_program() = default;
 
         /*!
          * \brief Deletes this shader and all it holds dear
@@ -97,14 +99,28 @@ namespace nova {
          */
         void bind() noexcept;
 
-        geometry_filter& get_filter() noexcept;
+        std::string& get_filter() noexcept;
 
         std::string& get_name() noexcept;
+
+        /*!
+         * \brief Finds the uniform location of the given uniform variable
+         *
+         * The first time this method is called for a given string, it calls glGetUniformLocation to get the uniform
+         * location. The result of that function is then cached so that glGetUniformLocation only needs to be called
+         * once for every uniform variable, no matter how many times you upload data to that variable
+         *
+         * \param uniform_name The name of the uniform variable to get the location of
+         * \return The location of the desired uniform variable
+         */
+        GLint get_uniform_location(std::string uniform_name);
 
     private:
         std::string name;
 
         std::vector<GLuint> added_shaders;
+
+        std::unordered_map<std::string, GLint> uniform_locations;
 
         /*!
          * \brief The filter that the renderer should use to get the geometry for this shader
@@ -112,18 +128,16 @@ namespace nova {
          * Since there's a one-to-one correlation between shaders and filters, I thought it'd be best to put the
          * filter with the shader
          */
-        geometry_filter filter;
+        std::string filter;
 
-        void create_shader(const std::vector<shader_line> shader_source, const GLenum shader_type);
+        void create_shader(const std::vector<shader_line>& shader_source, GLenum shader_type);
 
-        void check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line> line_map);
+        void check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line>& line_map);
 
         void link();
 
         void check_for_linking_errors();
     };
-
-    geometry_filter figure_out_filters(std::vector<std::string> filter_names);
 }
 
 #endif //RENDERER_GL_SHADER_H

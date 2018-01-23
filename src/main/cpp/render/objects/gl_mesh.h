@@ -9,7 +9,7 @@
 #include <glad/glad.h>
 #include <vector>
 #include "../../geometry_cache/mesh_definition.h"
-#include "../../data_loading/physics/AABB.h"
+#include "../../data_loading/physics/aabb.h"
 
 namespace nova {
     /*!
@@ -37,7 +37,7 @@ namespace nova {
     public:
         gl_mesh();
 
-        gl_mesh(mesh_definition &definition);
+        explicit gl_mesh(const mesh_definition &definition);
 
         ~gl_mesh();
 
@@ -51,9 +51,9 @@ namespace nova {
          * \param data The interleaved vertex data
          * \param data_format The format of the data (\see format)
          */
-        void set_data(std::vector<float> data, format data_format, usage data_usage);
+        void set_data(std::vector<int> data, format data_format, usage data_usage);
 
-        void set_index_array(std::vector<unsigned short> data, usage data_usage);
+        void set_index_array(std::vector<int> data, usage data_usage);
 
         void set_active() const;
 
@@ -66,13 +66,15 @@ namespace nova {
          */
         format get_format();
 
+        bool has_data() const;
+
     private:
         format data_format;
 
         GLuint vertex_buffer;
         GLuint indices;
 
-        GLenum translate_usage(const usage data_usage) const;
+        GLenum translate_usage(usage data_usage) const;
 
         /*!
          * \brief Enables all the proper OpenGL vertex attributes for the given format
@@ -83,16 +85,6 @@ namespace nova {
 
         unsigned int vertex_array;
         unsigned int num_indices;
-
-        AABB aabb;
-
-        /*!
-         * \brief Examines the vertices in the given vector, finding the minimum and maximum bounds in each axis
-         *
-         * \param vertices The vertices the get the bounds of
-         * \param data_format The format of the vertices. Necessary for knowing the desired stride
-         */
-        void compute_aabb(std::vector<float> &vertices, format data_format);
     };
 }
 

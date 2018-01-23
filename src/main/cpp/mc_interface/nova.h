@@ -18,6 +18,26 @@ extern "C" {
  */
 NOVA_API void initialize();
 
+/**
+ * Textures
+ */
+
+/*!
+ * \brief Updates the lightmap texture that Nova keeps
+ *
+ * All the code in this code path, and all the code that deals with lightmaps, is Minecraft-specific and will not be
+ * useful when Nova is ported to other games. Thus, and code that touches a lightmap should be kept as decoupled from
+ * the rest of the renderer as possible
+ * 
+ * MC lightmap is BGRA
+ *
+ * \param data The lightmap data
+ * \param count The number of elements in the lightmap data
+ * \param width The width of the lightmap
+ * \param height The height of the lightmap
+ */
+NOVA_API void send_lightmap_texture(int* data, int count, int width, int height);
+
 /*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture
  *
@@ -52,6 +72,16 @@ NOVA_API int get_max_texture_size();
 NOVA_API void reset_texture_manager();
 
 /*!
+ * \brief Adds a chunk to Minecraft, or updates an existing chunk
+ *
+ * Chunks are identified by their chunk ID. Nova maintains a mapping from chunk ID to render_objects for that chunk.
+ * This lets Nova clean out the geometry for an old chunk to make room for a new chunk
+ *
+ * \param chunk The chunk to add to Nova
+ */
+NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object* chunk);
+
+/*!
  * \brief Updates the Nova Renderer and renders the current frame
  */
 NOVA_API void execute_frame();
@@ -63,11 +93,18 @@ NOVA_API void execute_frame();
  * needs to be made aware of any window events. This function, and a couple others, poll the native code for any new
  * window events. This one triggers if the user decides to close Nova's renderer
  *
- * \return Trus if the window should close, false otherwise
+ * \return True if the window should close, false otherwise
  */
 NOVA_API bool should_close();
 
-NOVA_API void send_gui_buffer_command(mc_gui_send_buffer_command * command);
+/*!
+ * \brief Checks if the window has focus
+ *
+ * \return True if the GLFW window is active, false otherwise
+ */
+NOVA_API bool display_is_active();
+
+NOVA_API void add_gui_geometry(mc_gui_geometry * gui_geometry);
 
 /*!
 * \brief Gets the current window size
@@ -107,6 +144,23 @@ NOVA_API void set_string_setting(const char * setting_name, const char * setting
 */
 NOVA_API void set_float_setting(const char * setting_name, float setting_value);
 
+/*!
+ * \brief Sets the player camera's location and rotation to the given values
+ *
+ * \param x The X-coordinate of the camera's position
+ * \param y The y-coordinate of the camera's position
+ * \param z The X-coordinate of the camera's position
+ * \param yaw The camera's yaw
+ * \param pitch The camera's pitch
+ */
+NOVA_API void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
+
+NOVA_API void set_mouse_grabbed(int grabbed);
+
+/**
+ * Pass mouse and key events to Minecraft
+ */
+
 NOVA_API struct mouse_button_event  get_next_mouse_button_event();
 
 NOVA_API struct mouse_position_event  get_next_mouse_position_event();
@@ -116,6 +170,10 @@ NOVA_API struct mouse_scroll_event  get_next_mouse_scroll_event();
 NOVA_API struct key_press_event  get_next_key_press_event();
 
 NOVA_API struct key_char_event  get_next_key_char_event();
+
+NOVA_API int get_num_loaded_shaders();
+
+NOVA_API char* get_shaders_and_filters();
 
 };  // End extern C
     // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.

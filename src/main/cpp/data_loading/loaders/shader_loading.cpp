@@ -1,5 +1,5 @@
 /*!
- * \brief Impliments the functions in shader_loading.h
+ * \brief Implements the functions in shader_loading.h
  *
  * \author ddubois 
  * \date 03-Sep-16.
@@ -36,6 +36,7 @@ namespace nova {
     };
 
     shaderpack load_shaderpack(const std::string &shaderpack_name) {
+        LOG(DEBUG) << "Loading shaderpack " << shaderpack_name;
         auto shader_sources = std::unordered_map<std::string, shader_definition>{};
         if(is_zip_file(shaderpack_name)) {
             LOG(TRACE) << "Loading shaderpack " << shaderpack_name << " from a zip file";
@@ -60,7 +61,7 @@ namespace nova {
         }
 
         std::vector<shader_definition> definitions;
-        for(auto definition : definitions_array) {
+        for(auto& definition : definitions_array) {
             definitions.push_back(shader_definition(definition));
         }
 
@@ -96,8 +97,8 @@ namespace nova {
                 shader.fragment_source = load_shader_file(shader_path, fragment_extensions);
 
                 sources.push_back(shader);
-            } catch(std::exception e) {
-                LOG(ERROR) << e.what();
+            } catch(std::exception& e) {
+                LOG(ERROR) << "Could not load shader " << shader.name << ". Reason: " << e.what();
             }
         }
 
@@ -148,7 +149,9 @@ namespace nova {
      */
     auto get_shaderpack_name(const std::string &file_path) {
         auto slash_pos = file_path.find('/');
-        return file_path.substr(0, slash_pos);
+        auto afterShaderpacks=file_path.substr(slash_pos+1,file_path.size());
+        auto new_slash_pos = afterShaderpacks.find('/');
+        return afterShaderpacks.substr(0,new_slash_pos);
     }
 
     std::string get_filename_from_include(const std::string include_line) {
@@ -158,13 +161,18 @@ namespace nova {
 
     auto get_included_file_path(const std::string &shader_path, const std::string &included_file_name) {
         if(included_file_name[0] == '/') {
+            
             // This is an absolute include and it should be relative to the root directory
+            //LOG(INFO) << "Loading include file path " << shader_path;
             auto shaderpack_name = get_shaderpack_name(shader_path);
-            return shaderpack_name + "/shaders" + included_file_name;
+            //LOG(INFO) << "Loading include file 1 name" << shaderpack_name;
+            //LOG(INFO) << "Loading include file 1" << (shaderpack_name + "/shaders" + included_file_name);
+            return "shaderpacks/"+shaderpack_name + "/shaders" + included_file_name;
 
         } else {
             // The include file is a relative include, this one's actually simpler
             auto folder_name = get_file_path(shader_path);
+            //LOG(INFO) << "Loading include file 2" << (folder_name + included_file_name);
             return folder_name + included_file_name;
         }
     }
@@ -172,10 +180,11 @@ namespace nova {
     std::vector<shader_line> load_shader_file(const std::string &shader_path, const std::vector<std::string> &extensions) {
         for(auto &extension : extensions) {
             auto full_shader_path = shader_path + extension;
-            LOG(TRACE) << "Loading shader file " << full_shader_path;
+            LOG(TRACE) << "Trying to load shader file " << full_shader_path;
 
             std::ifstream stream(full_shader_path, std::ios::in);
             if(stream.good()) {
+                LOG(INFO) << "Loading shader file " << full_shader_path;
                 return read_shader_stream(stream, full_shader_path);
             } else {
                 LOG(WARNING) << "Could not read file " << full_shader_path;
@@ -190,7 +199,7 @@ namespace nova {
         std::string line;
         auto line_counter = 1;
         while(std::getline(stream, line, '\n')) {
-            if(line.find("#include") == 0) {
+            if(line.find("#include") == 0) { 
                 auto included_file = load_included_file(shader_path, line);
                 file_source.insert(file_source.end(), std::begin(included_file), std::end(included_file));
 
@@ -209,19 +218,22 @@ namespace nova {
         auto file_to_include = get_included_file_path(shader_path, included_file_name);
         LOG(TRACE) << "Dealing with included file " << file_to_include;
 
-        return load_shader_file(file_to_include, {""});
+        try {
+            return load_shader_file(file_to_include, {""});
+        } catch(resource_not_found& e) {
+            throw std::runtime_error("Could not load included file " + file_to_include);
+        }
     }
 
     shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, const std::vector<std::string> &shader_names) {
         LOG(FATAL) << "Cannot load zipped shaderpack " << shaderpack_name;
-        auto fake_vector = std::vector<shader_definition>{};
-        return {"", {}, fake_vector};
+        throw std::runtime_error("Zipped shaderpacks not yet supported");
     }
 
     nlohmann::json& get_default_shaders_json() {
         static nlohmann::json default_shaders_json;
 
-        if(default_shaders_json.size() == 0) {
+        if(default_shaders_json.empty()) {
             std::ifstream default_json_file("config/shaders.json");
             if(default_json_file.is_open()) {
                 //default_json_file >> default_shaders_json;

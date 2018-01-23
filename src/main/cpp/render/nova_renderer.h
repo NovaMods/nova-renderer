@@ -8,11 +8,14 @@
 #include <memory>
 #include <thread>
 #include "objects/shaders/gl_shader_program.h"
-#include "uniform_buffer_store.h"
+#include "objects/uniform_buffers/uniform_buffer_store.h"
 #include "windowing/glfw_gl_window.h"
 #include "../geometry_cache/mesh_store.h"
 #include "objects/textures/texture_manager.h"
 #include "../input/InputHandler.h"
+#include "objects/framebuffer.h"
+#include "objects/camera.h"
+
 namespace nova {
     /*!
      * \brief Initializes everything this mod needs, creating its own window
@@ -82,6 +85,10 @@ namespace nova {
 
         mesh_store& get_mesh_store();
 
+        camera& get_player_camera();
+
+        std::shared_ptr<shaderpack> get_shaders();
+
         // Overrides from iconfig_listener
 
         void on_config_change(nlohmann::json& new_config);
@@ -94,7 +101,7 @@ namespace nova {
 
         std::unique_ptr<glfw_gl_window> game_window;
 
-        std::experimental::optional<shaderpack> loaded_shaderpack;
+        std::shared_ptr<shaderpack> loaded_shaderpack;
 
         std::unique_ptr<texture_manager> textures;
 
@@ -104,6 +111,15 @@ namespace nova {
 
         std::unique_ptr<uniform_buffer_store> ubo_manager;
 
+        std::vector<GLuint> shadow_depth_textures;
+        std::unique_ptr<framebuffer> shadow_framebuffer;
+        framebuffer_builder shadow_framebuffer_builder;
+
+        std::unique_ptr<framebuffer> main_framebuffer;
+        std::vector<GLuint> gbuffer_depth_textures;
+        framebuffer_builder main_framebuffer_builder;
+
+        camera player_camera;
 
         /*!
          * \brief Renders the GUI of Minecraft
@@ -123,6 +139,21 @@ namespace nova {
         void init_opengl_state() const;
 
         void load_new_shaderpack(const std::string &new_shaderpack_name);
+
+        void create_framebuffers_from_shaderpack();
+
+        /*!
+         * \brief Renders all the geometry that uses the specified shader, setting up textures and whatnot
+         *
+         * \param shader The shader to render things with
+         */
+        void render_shader(gl_shader_program& shader);
+
+        inline void upload_gui_model_matrix(gl_shader_program &program);
+
+        void upload_model_matrix(render_object &geom, gl_shader_program &program) const;
+
+        void update_gbuffer_ubos();
     };
 
     void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos);

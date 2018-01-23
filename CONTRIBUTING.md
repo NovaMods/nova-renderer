@@ -1,5 +1,5 @@
 # How to contribute
-Here's some guidelines for contributing to the Vulkan Mod
+Here's some guidelines for contributing to the Nova Renderer
 
 ## Making Changes
 The procedure for actually contributing is fairly simple:

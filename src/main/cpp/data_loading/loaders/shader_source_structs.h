@@ -15,6 +15,8 @@
 #include <optional.hpp>
 #include <json.hpp>
 
+#include <easylogging++.h>
+
 // While I usually don't like to do this, I'm tires of typing so much
 using namespace std::experimental;
 
@@ -36,7 +38,7 @@ namespace nova {
      */
     struct shader_definition {
         std::string name;
-        std::vector<std::string> filters;
+        std::string filter_expression;
         optional<std::string> fallback_name;
 
         optional<std::shared_ptr<shader_definition>> fallback_def;
@@ -45,19 +47,17 @@ namespace nova {
         std::vector<shader_line> fragment_source;
         // TODO: Figure out how to handle geometry and tessellation shaders
 
-        shader_definition(nlohmann::json &json) {
-            name = json["name"];
+        /*!
+         * \brief The framebuffer attachments that this shader writes to
+         */
+        std::vector<unsigned int> drawbuffers;
 
-            for(auto filter : json["filters"]) {
-                filters.push_back(filter);
-            }
-
-            if(json.find("fallback") != json.end()) {
-                std::string fallback_name_str = json["fallback"];
-                fallback_name = optional<std::string>(fallback_name_str);
-            }
-        }
+        shader_definition(nlohmann::json &json);
     };
+
+    el::base::Writer& operator<<(el::base::Writer& out, const std::vector<shader_line>& lines);
+
+    el::base::Writer& operator<<(el::base::Writer& out, const shader_line& line);
 }
 
 #endif //RENDERER_SHADER_SOURCE_STRUCTS_H

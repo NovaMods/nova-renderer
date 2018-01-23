@@ -16,6 +16,9 @@
 #include <json.hpp>
 #include <fstream>
 
+#include <easylogging++.h>
+#include <glm/glm.hpp>
+
 /*!
  * \brief Initializes the logging system
  */
@@ -32,6 +35,18 @@ namespace nova {
     void foreach(Cont container, Func thingToDo) {
         std::for_each(std::cbegin(container), std::cend(container), thingToDo);
     };
+
+    template<typename Out>
+    void split(const std::string &s, char delim, Out result) {
+        std::stringstream ss;
+        ss.str(s);
+        std::string item;
+        while (std::getline(ss, item, delim)) {
+            *(result++) = item;
+        }
+    }
+
+    std::vector<std::string> split(const std::string &s, char delim);
 
     /*!
      * \brief Simple exception to represent that a resouce can not be found
@@ -57,6 +72,64 @@ namespace nova {
      * use it after calling this function of you'll have a bad time
      */
     nlohmann::json load_json_from_stream(std::istream& stream);
+
+    /*!
+     * \brief Stream insertion for glm::ivec3
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::ivec3 &vec);
+
+    /*!
+     * \brief Stream insertion for glm::vec2
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec2 &vec);
+
+    /*!
+     * \brief Stream insertion for glm::vec3
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec3 &vec);
+
+    /*!
+     * \brief Stream insertion for glm::vec4
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec4 &vec);
+
+    /*!
+     * \brief Stream insertion for glm::vec4
+     *
+     * \param out The stream to write to
+     * \param vec The vector to write
+     * \return The written to stream
+     */
+    template <typename T>
+    el::base::Writer &operator<<(el::base::Writer &out, const std::vector<T> &vec) {
+        out << "(";
+        for(auto& val : vec) {
+            out << val << ", ";
+        }
+        out << ")";
+
+        return out;
+    }
+
+    std::string print_color(unsigned int color);
+
+    std::string print_array(int data[], int num_elements);
 }
 
 #endif //RENDERER_UTILS_H

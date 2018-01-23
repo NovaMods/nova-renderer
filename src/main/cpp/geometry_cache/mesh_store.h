@@ -12,8 +12,8 @@
 #include <mutex>
 #include <functional>
 #include <unordered_map>
+#include <queue>
 #include "../render/objects/render_object.h"
-#include "../render/objects/shaders/geometry_filter.h"
 #include "../render/objects/shaders/shaderpack.h"
 #include "../mc_interface/mc_gui_objects.h"
 #include "../mc_interface/mc_objects.h"
@@ -26,17 +26,14 @@ namespace nova {
          */
     class mesh_store {
     public:
-        void add_gui_buffers(mc_gui_send_buffer_command* command);
+        void add_gui_buffers(mc_gui_geometry* command);
 
         /*!
-         * \brief Sets the shaderpack reference to the given shaderpack
+         * \brief Adds a chunk to the mesh store if the chunk doesn't exist, or replaces the chunks if it does exist
          *
-         * This object needs to keep a reference to the current shaderpack so that it can apply all the right filters
-         * when a new piece of geometry is loaded, determining which shader should render the bit of geometry
-         *
-         * \param new_shaderpack The new shaderpack to use for retrieving filters from
+         * \param chunk The chunk to add or update
          */
-        void set_shaderpack(shaderpack& new_shaderpack);
+        void add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk);
 
         /*!
          * \brief Retrieves the list of meshes that the shader with the provided name should render
@@ -46,28 +43,39 @@ namespace nova {
          */
         std::vector<render_object>& get_meshes_for_shader(std::string shader_name);
 
+        /*!
+         * \brief Takes geometry that's been added in the last frame and sends it to the GPU
+         */
+        void upload_new_geometry();
 
         /*!
         * \brief Removes all gui render objects and thereby deletes all the buffers
         */
         void remove_gui_render_objects();
 
+        /*!
+         * \brief Removes all known render objects that come from the given ID
+         *
+         * This method shoudl be called when updating a chunk, or when unloading a chunk
+         *
+         * \param parent_id The id of the objects to remove
+         */
+        void remove_render_objects_with_parent(long parent_id);
+
     private:
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
 
-        shaderpack* shaders;
-
+        std::mutex chunk_parts_to_upload_lock;
         /*!
-         * \brief Puts the provided render object into all the proper lists, so that it can be rendered by the right
-         * shader
-         *
-         * \param object The render_object to sort
+         * \brief A list of chunk renderable things that are ready to upload to the GPU
          */
-        void sort_render_object(render_object& object);
+        std::queue<std::tuple<std::string, mesh_definition>> chunk_parts_to_upload;
 
+        float seconds_spent_updating_chunks = 0;
+        long total_chunks_updated = 0;
 
         /*!
-         * \brief Removes all the render_objects from the lists of render_objects that match the given fitler funciton
+         * \brief Removes all the render_objects from the lists of render_objects that match the given filter function
          *
          * The idea here is that when things like the GUI screen change, or when a chunk changes, old geometry will need
          * to be removed. This should accomplish that.
@@ -75,15 +83,6 @@ namespace nova {
          * \param filter The function to use to decide which (if any) objects to remove
          */
         void remove_render_objects(std::function<bool(render_object&)> fitler);
-
-        /*!
-         * \brief Determines if a given obejct matches a given geometry filter
-         *
-         * \param object The object to check the matching of
-         * \param filter The filter to check the object agains
-         * \return True if the object matches, false if not
-         */
-        bool matches_filter(render_object& object, geometry_filter &filter);
     };
 
 };
