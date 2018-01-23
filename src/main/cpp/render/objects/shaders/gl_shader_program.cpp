@@ -8,135 +8,259 @@
 
 #include <easylogging++.h>
 #include "gl_shader_program.h"
+#include "../../vulkan/render_context.h"
+#include "shader_resource_manager.h"
 
 namespace nova {
-    gl_shader_program::gl_shader_program(const shader_definition &source) : name(source.name) {
+    gl_shader_program::gl_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache) : name(source.name) {
+        device = render_context::instance.device;
         LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
         filter = source.filter_expression;
         LOG(TRACE) << "Created filter expression " << filter;
-        create_shader(source.vertex_source, GL_VERTEX_SHADER);
-        LOG(TRACE) << "Creatd vertex shader";
-        create_shader(source.fragment_source, GL_FRAGMENT_SHADER);
+        create_shader_module(source.vertex_source, vk::ShaderStageFlagBits::eVertex);
+        LOG(TRACE) << "Created vertex shader";
+        create_shader_module(source.fragment_source, vk::ShaderStageFlagBits::eFragment);
         LOG(TRACE) << "Created fragment shader";
 
-        link();
+        create_pipeline(renderpass, material, pipeline_cache);
+        LOG(TRACE) << "Created pipeline";
     }
 
     gl_shader_program::gl_shader_program(gl_shader_program &&other) noexcept :
             name(std::move(other.name)), filter(std::move(other.filter)) {
-
-        this->gl_name = other.gl_name;
-
-        // Make the other shader not a thing
-        other.gl_name = 0;
-        other.added_shaders.clear();
     }
 
-    void gl_shader_program::link() {
-        gl_name = glCreateProgram();
-        glObjectLabel(GL_PROGRAM, gl_name, (GLsizei) name.length(), name.c_str());
-        LOG(TRACE) << "Created shader program " << gl_name;
+    void
+    gl_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
+        // Creates a pipeline out of compiled shaders
+        auto states_vec = material.states.value_or(std::vector<state_enum>{});
+        const auto& states_end = states_vec.end();
 
-        for(GLuint shader : added_shaders) {
-            glAttachShader(gl_name, shader);
-        }
+        vk::GraphicsPipelineCreateInfo pipeline_create_info = {};
 
-        glLinkProgram(gl_name);
-        check_for_linking_errors();
+        /**
+         * Shader stages
+         */
 
-        LOG(DEBUG) << "Program " << name << " linked successfully";
+        std::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos;
 
-        for(GLuint shader : added_shaders) {
-            // Clean up our resources. I'm told that this is a good thing.
-            glDetachShader(gl_name, shader);
-            glDeleteShader(shader);
-        }
+        vk::PipelineShaderStageCreateInfo vertex_create_info = {};
+        vertex_create_info.stage = vk::ShaderStageFlagBits::eVertex;
+        vertex_create_info.module = vertex_module;
+        vertex_create_info.pName = "main";
+        stage_create_infos.push_back(vertex_create_info);
 
-        LOG(DEBUG) << "Cleaned up resources";
-    }
+        vk::PipelineShaderStageCreateInfo fragment_create_info = {};
+        fragment_create_info.stage = vk::ShaderStageFlagBits::eFragment;
+        fragment_create_info.module = fragment_module;
+        fragment_create_info.pName = "main";
+        stage_create_infos.push_back(fragment_create_info);
 
-    void gl_shader_program::check_for_shader_errors(GLuint shader_to_check, const std::vector<shader_line>& line_map) {
-        GLint success = 0;
+        pipeline_create_info.stageCount = static_cast<uint32_t>(stage_create_infos.size());
+        pipeline_create_info.pStages = stage_create_infos.data();
 
-        glGetShaderiv(shader_to_check, GL_COMPILE_STATUS, &success);
+        /**
+         * Vertex input state
+         */
 
-        if(success == GL_FALSE) {
-            GLint log_size = 0;
-            glGetShaderiv(shader_to_check, GL_INFO_LOG_LENGTH, &log_size);
+        // The vertex data is known by Nova. It just is. Each shader has inputs for all the vertex data because honestly
+        // doing it differently is super hard. This will waste some VRAM but the number of vertices per chunk and
+        // number of chunks will present a much easier win, especially since chunks are the big stuff and they will
+        // always have all the vertex attributes
+        vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info = {};
 
-            std::vector<GLchar> error_log((unsigned long long int) log_size);
-            glGetShaderInfoLog(shader_to_check, log_size, &log_size, &error_log[0]);
+        std::vector<vk::VertexInputBindingDescription> binding_descriptions;
+        std::vector<vk::VertexInputAttributeDescription> attribute_descriptions;
 
-            if(log_size > 0) {
-                glDeleteShader(shader_to_check);
-                LOG(ERROR) << error_log.data();
-                throw compilation_error(error_log.data(), line_map);
+        // Location in shader, buffer binding, data format, offset in buffer
+        attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
+        attribute_descriptions.emplace_back(1, 0, vk::Format::eR8G8B8A8Unorm,   12);    // Color
+        attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32Sfloat,    16);    // UV
+        attribute_descriptions.emplace_back(3, 0, vk::Format::eR16G16Unorm,     24);    // Lightmap UV
+        attribute_descriptions.emplace_back(4, 0, vk::Format::eR32G32B32Sfloat, 32);    // Normal
+        attribute_descriptions.emplace_back(5, 0, vk::Format::eR32G32B32Sfloat, 48);    // Tangent
+
+        // Binding, stride, input rate
+        binding_descriptions.emplace_back(0, 56, vk::VertexInputRate::eVertex);         // Position
+        binding_descriptions.emplace_back(1, 56, vk::VertexInputRate::eVertex);         // Color
+        binding_descriptions.emplace_back(2, 56, vk::VertexInputRate::eVertex);         // UV
+        binding_descriptions.emplace_back(3, 56, vk::VertexInputRate::eVertex);         // Lightmap
+        binding_descriptions.emplace_back(4, 56, vk::VertexInputRate::eVertex);         // Normal
+        binding_descriptions.emplace_back(5, 56, vk::VertexInputRate::eVertex);         // Tangent
+
+        vertex_input_state_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
+        vertex_input_state_create_info.pVertexAttributeDescriptions = attribute_descriptions.data();
+
+        vertex_input_state_create_info.vertexBindingDescriptionCount = static_cast<uint32_t>(binding_descriptions.size());
+        vertex_input_state_create_info.pVertexBindingDescriptions = binding_descriptions.data();
+
+        pipeline_create_info.pVertexInputState = &vertex_input_state_create_info;
+
+        /**
+         * Pipeline input assembly
+         */
+
+        vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info = {};
+
+        input_assembly_create_info.topology = material.primitive_mode.value_or(vk::PrimitiveTopology::eTriangleList);
+
+        pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
+
+        /**
+         * Tessellation state
+         */
+
+        pipeline_create_info.pTessellationState = nullptr;
+
+        /**
+         * \brief Viewport state
+         */
+
+        vk::Viewport viewport = {};
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = 1;
+        viewport.height = 1;
+        viewport.minDepth = 0;
+        viewport.maxDepth = 1;
+
+        vk::Rect2D scissor = {};
+        scissor.offset = vk::Offset2D{0, 0};
+        scissor.extent = vk::Extent2D{material.output_width.value_or(640), material.output_height.value_or(480)};
+
+        vk::PipelineViewportStateCreateInfo viewport_create_info = {};
+        viewport_create_info.scissorCount = 1;
+        viewport_create_info.pScissors = &scissor;
+        viewport_create_info.viewportCount = 1;
+        viewport_create_info.pViewports = &viewport;
+
+        pipeline_create_info.pViewportState = &viewport_create_info;
+
+        /**
+         * Renderpass
+         */
+
+        pipeline_create_info.renderPass = pass;
+
+        /**
+         * Rasterization state
+         */
+
+        vk::PipelineRasterizationStateCreateInfo raster_create_info = {};
+        raster_create_info.polygonMode = vk::PolygonMode::eFill;
+        raster_create_info.cullMode == vk::CullModeFlagBits::eBack;
+        raster_create_info.frontFace = vk::FrontFace::eCounterClockwise;
+        raster_create_info.lineWidth = 1;
+
+        if(material.depth_bias) {
+            raster_create_info.depthBiasEnable = static_cast<vk::Bool32>(true);
+            raster_create_info.depthBiasConstantFactor = *material.depth_bias;
+
+            if(material.slope_scaled_depth_bias) {
+                raster_create_info.depthBiasSlopeFactor = *material.slope_scaled_depth_bias;
             }
         }
-    }
 
-    void gl_shader_program::check_for_linking_errors() {
-        GLint is_linked = 0;
-        glGetProgramiv(gl_name, GL_LINK_STATUS, &is_linked);
+        pipeline_create_info.pRasterizationState = &raster_create_info;
 
-        if(is_linked == GL_FALSE) {
-            GLint log_length = 0;
-            glGetProgramiv(gl_name, GL_INFO_LOG_LENGTH, &log_length);
+        /**
+         * Multisample state
+         *
+         * While Nova supports MSAA, it won't be useful on shaderpacks that implement deferred rendering and is thus
+         * off by default
+         */
 
-            GLchar *info_log = (GLchar *) malloc(log_length * sizeof(GLchar));
-            glGetProgramInfoLog(gl_name, log_length, &log_length, info_log);
+        vk::PipelineMultisampleStateCreateInfo multisample_create_info = {};
 
-            if(log_length > 0) {
-                glDeleteProgram(gl_name);
+        pipeline_create_info.pMultisampleState = &multisample_create_info;
 
-                LOG(ERROR) << "Error linking program " << gl_name << ":\n" << info_log;
+        /**
+         * Depth and stencil state
+         */
 
-                throw program_linking_failure(name);
-            }
+        vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
+        depth_stencil_create_info.depthTestEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::DisableDepthTest) == states_end));
+        depth_stencil_create_info.depthWriteEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::DisableDepthWrite) == states_end));
+        depth_stencil_create_info.depthCompareOp = material.depth_func.value_or(vk::CompareOp::eLess);
 
+        depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states_vec.begin(), states_vec.end(), state_enum::EnableStencilTest) != states_end);
+        if(material.back_face) {
+            depth_stencil_create_info.back = material.back_face.value().to_vk_stencil_op_state();
         }
-    }
+        if(material.front_face) {
+            depth_stencil_create_info.front = material.front_face.value().to_vk_stencil_op_state();
+        }
+        depth_stencil_create_info.minDepthBounds = 0;
+        depth_stencil_create_info.maxDepthBounds = 1;
 
-    void gl_shader_program::bind() noexcept {
-        //LOG(INFO) << "Binding program " << name;
-        glUseProgram(gl_name);
+        pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
+
+        /**
+         * Color blend state
+         */
+
+        vk::PipelineColorBlendStateCreateInfo blend_create_info = {};
+        blend_create_info.logicOpEnable = static_cast<vk::Bool32>(false);   // Not 100% how to use this so imma just disable it
+
+        auto attachmentBlendStates = std::vector<vk::PipelineColorBlendAttachmentState>{};
+        attachmentBlendStates.resize(material.outputs.value_or(std::vector<output_info>{}).size());
+        for(const auto& output : *material.outputs) {
+            attachmentBlendStates[output.index].blendEnable = static_cast<vk::Bool32>(output.blending);
+            attachmentBlendStates[output.index].srcColorBlendFactor = material.source_blend_factor.value_or(vk::BlendFactor::eSrcAlpha);
+            attachmentBlendStates[output.index].dstColorBlendFactor = material.destination_blend_factor.value_or(vk::BlendFactor::eOneMinusSrcAlpha);
+            attachmentBlendStates[output.index].colorBlendOp = vk::BlendOp::eAdd;
+            attachmentBlendStates[output.index].srcAlphaBlendFactor = material.source_blend_factor.value_or(vk::BlendFactor::eSrcAlpha);
+            attachmentBlendStates[output.index].dstAlphaBlendFactor = material.destination_blend_factor.value_or(vk::BlendFactor::eOneMinusSrcAlpha);
+            attachmentBlendStates[output.index].alphaBlendOp = vk::BlendOp::eAdd;
+            attachmentBlendStates[output.index].colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+        }
+        blend_create_info.attachmentCount = static_cast<uint32_t>(attachmentBlendStates.size());
+        blend_create_info.pAttachments = attachmentBlendStates.data();
+
+        // Ignoring blend constants here as well - they probably won't be used and I don't want to make the Nova
+        // material struct too huge
+
+        pipeline_create_info.pColorBlendState = &blend_create_info;
+
+        /**
+         * Descriptor sets
+         */
+
+        auto shader_resources = shader_resource_manager::get_instance();
+        pipeline_create_info.layout = shader_resources->get_layout_for_pass(material.pass.value_or(pass_enum::Gbuffer));
+
+        // TODO: Handle dynamic state
+
+        pipeline = device.createGraphicsPipeline(cache, pipeline_create_info);
     }
 
     gl_shader_program::~gl_shader_program() {
-        // Commented because move semantics are hard
-        //LOG(DEBUG) << "Deleting program " << gl_name;
-        //glDeleteProgram(gl_name);
+        device.destroyShaderModule(vertex_module);
+        device.destroyShaderModule(fragment_module);
+
+        if(geometry_module) {
+            device.destroyShaderModule(*geometry_module);
+        }
+        if(tessellation_evaluation_module) {
+            device.destroyShaderModule(*tessellation_evaluation_module);
+        }
+        if(tessellation_control_module) {
+            device.destroyShaderModule(*tessellation_control_module);
+        }
     }
 
-    void gl_shader_program::create_shader(const std::vector<shader_line>& shader_source, const GLenum shader_type) {
-        LOG(TRACE) << "Creating a shader from source\n" << shader_source;
+    void gl_shader_program::create_shader_module(const std::vector<uint32_t> &shader_source, vk::ShaderStageFlags flags) {
+        vk::ShaderModuleCreateInfo create_info = {};
+        create_info.codeSize = shader_source.size() * sizeof(uint32_t);
+        create_info.pCode = shader_source.data();
 
-        std::string full_shader_source;
-        auto& version_line = shader_source[0].line;
-        LOG(TRACE) << "Version line: '" << version_line << "'";
+        auto module = device.createShaderModule(create_info);
 
-        if(version_line == "#version 450") {
-            // GLSL 450 code! This is the simplest: just concatenate all the lines in the shader file
-            std::for_each(
-                    std::begin(shader_source), std::end(shader_source),
-                    [&](auto &line) { full_shader_source.append(line.line + "\n"); }
-            );
-
-        } else {
-            throw wrong_shader_version(shader_source[0].line);
+        if(flags == vk::ShaderStageFlagBits::eVertex) {
+            vertex_module = module;
+        } else if(flags == vk::ShaderStageFlagBits::eFragment) {
+            fragment_module = module;
         }
-
-        auto shader_name = glCreateShader(shader_type);
-
-        const char *shader_source_char = full_shader_source.c_str();
-
-        glShaderSource(shader_name, 1, &shader_source_char, nullptr);
-
-        glCompileShader(shader_name);
-
-        check_for_shader_errors(shader_name, shader_source);
-
-        added_shaders.push_back(shader_name);
     }
 
     std::string & gl_shader_program::get_filter() noexcept {
@@ -145,29 +269,6 @@ namespace nova {
 
     std::string &gl_shader_program::get_name() noexcept {
         return name;
-    }
-
-    GLint gl_shader_program::get_uniform_location(const std::string uniform_name) {
-        auto location_in_uniform_locations = uniform_locations.find(uniform_name);
-        if(location_in_uniform_locations == uniform_locations.end()) {
-            uniform_locations[uniform_name] = glGetUniformLocation(gl_name, uniform_name.c_str());
-        }
-
-        return uniform_locations[uniform_name];
-    }
-
-    wrong_shader_version::wrong_shader_version(const std::string &version_line) :
-            std::runtime_error(
-                    "Invalid version line: '" + version_line + "'. Please only use GLSL version 450 (NOT compatibility profile)"
-            ) {}
-
-    compilation_error::compilation_error(const std::string &error_message,
-                                         const std::vector<shader_line> source_lines) :
-            std::runtime_error(error_message + get_original_line_message(error_message, source_lines)) {}
-
-    std::string compilation_error::get_original_line_message(const std::string &error_message,
-                                                             const std::vector<shader_line> source_lines) {
-        return "This logic isn't implemented yet";
     }
 
 }

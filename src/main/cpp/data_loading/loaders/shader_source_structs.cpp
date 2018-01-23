@@ -4,18 +4,13 @@
  */
 
 #include "shader_source_structs.h"
+#include "../../render/objects/renderpasses/materials.h"
 #include <easylogging++.h>
 
 namespace nova {
-    shader_definition::shader_definition(nlohmann::json& json)  {
-        name = json["name"];
-
-        LOG(DEBUG) << "Creating shader definition from json " << json;
-
-        filter_expression = json["filters"];
-
-        if(json.find("fallback") != json.end()) {
-            std::string fallback_name_str = json["fallback"];
+    shader_definition::shader_definition(const nova::material_state &material) : name(material.name), filter_expression(material.filters.value_or(""))  {
+        if(material.fallback) {
+            std::string fallback_name_str = *material.fallback;
             fallback_name = optional<std::string>(fallback_name_str);
         }
     }

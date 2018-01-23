@@ -10,9 +10,6 @@
 [submodule "src/main/cpp/3rdparty/easyloggingpp"]
 	path = src/main/cpp/3rdparty/easyloggingpp
 	url = https://github.com/easylogging/easyloggingpp.git
-[submodule "src/main/cpp/3rdparty/json"]
-	path = src/main/cpp/3rdparty/json
-	url = https://github.com/nlohmann/json.git
 [submodule "src/main/cpp/3rdparty/googletest"]
 	path = src/main/cpp/3rdparty/googletest
 	url = https://github.com/google/googletest.git
@@ -22,3 +19,27 @@
 [submodule "src/main/cpp/3rdparty/renderdocapi"]
 	path = src/main/cpp/3rdparty/renderdocapi
 	url = https://github.com/NovaMods/RenderDoc-Manager.git
+[submodule "src/main/cpp/3rdparty/VulkanMemoryAllocator"]
+	path = src/main/cpp/3rdparty/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "src/main/cpp/3rdparty/shaderc"]
+	path = src/main/cpp/3rdparty/shaderc
+	url = https://github.com/google/shaderc.git
+[submodule "src/main/cpp/3rdparty/spirv-tools"]
+	path = src/main/cpp/3rdparty/spirv-tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git
+[submodule "src/main/cpp/3rdparty/spirv-headers"]
+	path = src/main/cpp/3rdparty/spirv-headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers.git
+[submodule "src/main/cpp/3rdparty/glslang"]
+	path = src/main/cpp/3rdparty/glslang
+	url = https://github.com/KhronosGroup/glslang.git
+[submodule "docs/nova-renderer.wiki"]
+	path = docs/nova-renderer.wiki
+	url = https://github.com/NovaMods/nova-renderer.wiki.git
+[submodule "src/main/cpp/3rdparty/minitrace"]
+	path = src/main/cpp/3rdparty/minitrace
+	url = https://github.com/hrydgard/minitrace.git
+[submodule "src/main/cpp/3rdparty/json"]
+    path = src/main/cpp/3rdparty/json
+    url = https://github.com/nlohmann/json.git

@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <glm/glm.hpp>
-#include "../utils/smart_enum.h"
+#include "../../../utils/smart_enum.h"
 
 namespace nova {
     /*!

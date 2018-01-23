@@ -18,10 +18,15 @@ namespace nova {
     /*!
      * \brief Loads the shaderpack with the given name
      *
+     * This function should build the renderpass when when loading the shaderpack, not have the renderpass passed in
+     *
+     * TODO: Make this fucntion return a shaderpack definition, which will ahve all the sahder definitions and the
+     * material definitions
+     *
      * \param shaderpack_name The name of the shaderpack to load
      * \return The loaded shaderpack
      */
-    shaderpack load_shaderpack(const std::string &shaderpack_name);
+    std::vector<std::pair<material_state, shader_definition>> load_shaderpack(const std::string &shaderpack_name);
 }
 
 #endif //RENDERER_LOADERS_H

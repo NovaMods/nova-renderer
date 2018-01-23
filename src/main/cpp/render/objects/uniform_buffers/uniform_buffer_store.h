@@ -10,11 +10,11 @@
 #include <unordered_map>
 #include <json.hpp>
 #include "../../../data_loading/settings.h"
-#include "../shaders/gl_shader_program.h"
 #include "uniform_buffer_definitions.h"
 #include "gl_uniform_buffer.h"
 
 namespace nova {
+    class gl_shader_program;
 
     /*!
      * \brief Holds all the uniform buffers that Nova needs to use

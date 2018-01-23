@@ -16,19 +16,18 @@ endfunction()
 
 # Initialize cmake options
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
-
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CONFIGURATION_TYPES Debug) # This seems to be needed to actually change
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
+
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
-find_package(OpenGL)
+find_package(Vulkan)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -36,28 +35,36 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 find_package(JNI)
 
 # need to compile GLFW and JSON
-add_subdirectory("${3RD_PARTY_DIR}/glfw")
-add_subdirectory("${3RD_PARTY_DIR}/json")
-add_subdirectory("${3RD_PARTY_DIR}/glm")
-add_subdirectory("${3RD_PARTY_DIR}/easyloggingpp")
-add_subdirectory("${3RD_PARTY_DIR}/miniz")
-add_subdirectory("${3RD_PARTY_DIR}/googletest")
-add_subdirectory("${3RD_PARTY_DIR}/optional")
+add_subdirectory(${3RD_PARTY_DIR}/glfw)
+add_subdirectory(${3RD_PARTY_DIR}/json)
+add_subdirectory(${3RD_PARTY_DIR}/glm)
+add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
+add_subdirectory(${3RD_PARTY_DIR}/miniz)
+add_subdirectory(${3RD_PARTY_DIR}/googletest)
+add_subdirectory(${3RD_PARTY_DIR}/optional)
+add_subdirectory(${3RD_PARTY_DIR}/spirv-headers)
+add_subdirectory(${3RD_PARTY_DIR}/spirv-tools)
+add_subdirectory(${3RD_PARTY_DIR}/glslang)
+add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 
 include_directories(SYSTEM
+        ${Vulkan_INCLUDE_DIRS}
         ${JNI_INCLUDE_DIRS}
-        "${3RD_PARTY_DIR}/glfw/include"
-        "${3RD_PARTY_DIR}/easyloggingpp/src"
-        "${3RD_PARTY_DIR}/glad/include"
-        "${3RD_PARTY_DIR}/glm"
-        "${3RD_PARTY_DIR}/miniz"
-        "${3RD_PARTY_DIR}/json/src"
-        "${3RD_PARTY_DIR}/googletest/googletest/include"
-        "${3RD_PARTY_DIR}/optional"
-        "${3RD_PARTY_DIR}/renderdocapi"
+        ${3RD_PARTY_DIR}/glfw/include
+        ${3RD_PARTY_DIR}/easyloggingpp/src
+        ${3RD_PARTY_DIR}/glad/include
+        ${3RD_PARTY_DIR}/glm
+        ${3RD_PARTY_DIR}/miniz
+        ${3RD_PARTY_DIR}/json/src
+        ${3RD_PARTY_DIR}/googletest/googletest/include
+        ${3RD_PARTY_DIR}/optional
+        ${3RD_PARTY_DIR}/renderdocapi
+        ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
+        ${3RD_PARTY_DIR}/shaderc/libshaderc/include
+        ${3RD_PARTY_DIR}/minitrace
         )
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${OPENGL_LIBRARIES} ${JNI_LIBRARIES})
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} shaderc stdc++fs)
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
@@ -71,14 +78,12 @@ set(NOVA_HEADERS
 
         render/objects/shaders/gl_shader_program.h
         render/objects/uniform_buffers/gl_uniform_buffer.h
-        render/objects/gl_mesh.h
+        render/objects/meshes/vk_mesh.h
         render/objects/textures/texture2D.h
 
-        render/windowing/glfw_gl_window.h
+        render/windowing/glfw_vk_window.h
 
 		input/InputHandler.h
-
-        interfaces/iwindow.h
 
         mc_interface/mc_gui_objects.h
         mc_interface/mc_objects.h
@@ -88,28 +93,37 @@ set(NOVA_HEADERS
         data_loading/loaders/loaders.h
         data_loading/loaders/shader_loading.h
         data_loading/loaders/loader_utils.h
-        geometry_cache/mesh_store.h
+        render/objects/meshes/mesh_store.h
         render/objects/render_object.h
         render/objects/uniform_buffers/uniform_buffer_store.h
         render/objects/uniform_buffers/uniform_buffer_definitions.h
         render/objects/uniform_buffers/gl_uniform_buffer.h
 
-        data_loading/physics/aabb.h
+        physics/aabb.h
         data_loading/loaders/shader_source_structs.h
-        geometry_cache/mesh_definition.h
+        render/objects/meshes/mesh_definition.h
         render/objects/camera.h
-        render/objects/framebuffer.h
+        render/objects/renderpass.h
         utils/io.h
+        render/objects/shaders/shader_resource_manager.h
         data_loading/direct_buffers.h
         mc_interface/nova_jni.h
         render/objects/render_object.h
-        utils/profiler.h
+        utils/stb_image_write.h
+        render/objects/renderpasses/renderpass_manager.h
+        render/vulkan/render_context.h
+        render/vulkan/command_pool.h
         )
 
 set(NOVA_SOURCE
         # Need to compile third party stuff, too...
         3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
+        3rdparty/miniz/miniz_tdef.c
+        3rdparty/miniz/miniz_tinfl.c
+        3rdparty/miniz/miniz_zip.c
+        3rdparty/easyloggingpp/src/easylogging++.cc
+        3rdparty/minitrace/minitrace.c
 
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
@@ -119,10 +133,10 @@ set(NOVA_SOURCE
         input/InputHandler.cpp
 
         render/objects/shaders/gl_shader_program.cpp
-        render/objects/gl_mesh.cpp
+        render/objects/meshes/vk_mesh.cpp
         render/objects/textures/texture2D.cpp
 
-        render/windowing/glfw_gl_window.cpp
+        render/windowing/glfw_vk_window.cpp
 
         utils/utils.cpp
 
@@ -131,22 +145,28 @@ set(NOVA_SOURCE
         data_loading/loaders/loader_utils.cpp
 
         render/objects/shaders/shaderpack.cpp
-        geometry_cache/mesh_store.cpp
-        data_loading/physics/aabb.cpp
-        geometry_cache/mesh_definition.cpp
+        render/objects/meshes/mesh_store.cpp
+        physics/aabb.cpp
+        render/objects/meshes/mesh_definition.cpp
 
         render/objects/uniform_buffers/uniform_buffers_definitions.cpp
 
         mc_interface/mc_objects.cpp
-        render/objects/framebuffer.cpp
         render/objects/camera.cpp
         data_loading/loaders/shader_source_structs.cpp
         data_loading/direct_buffers.cpp
         render/objects/render_object.cpp
-        utils/profiler.cpp)
+        render/vulkan/command_pool.cpp
+        render/objects/renderpasses/renderpass_manager.cpp
+        render/objects/renderpasses/materials.h
+        render/objects/renderpasses/materials.cpp
+
+        render/vulkan/render_context.cpp
+        render/objects/shaders/shader_resource_manager.cpp
+        )
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp utils/stb_image_write.h)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
 endif (WIN32)
 
 if (UNIX)
@@ -181,7 +201,10 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
 
-#set_target_properties(nova-renderer-obj PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+add_executable(nova-test test/main.cpp ${NOVA_SOURCE})
+target_link_libraries(nova-test ${COMMON_LINK_LIBS})
+target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
+set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 # Not sure if this is actually doing anything
 if(GLFW_COMPILED)
@@ -201,27 +224,3 @@ add_custom_command(TARGET nova-renderer
                    COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-renderer.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives")
 endif (UNIX)
 
-# Setup the nova-test executable
-#set(TEST_SOURCE_FILES
-#        3rdparty/glad/src/glad.c
-
-#        test/main.cpp
-
-#        test/model/loaders/shader_loading_test.cpp
-#        test/render/objects/textures/texture_manager_test.cpp
-#        test/render/objects/shaders/gl_shader_program_test.cpp
-#        test/geometry_cache/mesh_store_test.cpp
-#        test/test_utils.cpp
-#        test/test_utils.h)
-
-#source_group("test" FILES ${TEST_SOURCE_FILES})
-
-#add_executable(nova-test ${TEST_SOURCE_FILES} ${NOVA_SOURCE})
-#target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
-#target_link_libraries(nova-test gtest ${COMMON_LINK_LIBS})
-#set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-
-# Needed for a similar reason as the libary
-#if (MSVC)
-#    nova_set_all_target_outputs(nova-test "run")
-#endif()

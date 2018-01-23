@@ -19,9 +19,9 @@ const int CHUNK_DEPTH = 16;
  * \brief Holds the information that comes from MC textures
  */
 struct mc_atlas_texture {
-    int width;
-    int height;
-    int num_components;
+    uint32_t width;
+    uint32_t height;
+    uint32_t num_components;
     unsigned char * texture_data;
 	const char * name;
 };

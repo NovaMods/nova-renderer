@@ -16,6 +16,7 @@
 #include <json.hpp>
 
 #include <easylogging++.h>
+#include "../../render/objects/renderpasses/materials.h"
 
 // While I usually don't like to do this, I'm tires of typing so much
 using namespace std::experimental;
@@ -43,8 +44,8 @@ namespace nova {
 
         optional<std::shared_ptr<shader_definition>> fallback_def;
 
-        std::vector<shader_line> vertex_source;
-        std::vector<shader_line> fragment_source;
+        std::vector<uint32_t> vertex_source;
+        std::vector<uint32_t> fragment_source;
         // TODO: Figure out how to handle geometry and tessellation shaders
 
         /*!
@@ -52,7 +53,12 @@ namespace nova {
          */
         std::vector<unsigned int> drawbuffers;
 
-        shader_definition(nlohmann::json &json);
+        explicit shader_definition(const nova::material_state &material);
+    };
+
+    struct shaderpack_definition {
+        std::vector<shader_definition> shaders;
+        nlohmann::json shaders_json;
     };
 
     el::base::Writer& operator<<(el::base::Writer& out, const std::vector<shader_line>& lines);

@@ -3,6 +3,7 @@
 //
 
 #include "render_object.h"
+#include "meshes/vk_mesh.h"
 
 namespace nova {
     render_object::render_object(render_object &&other) noexcept {

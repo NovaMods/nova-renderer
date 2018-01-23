@@ -7,9 +7,9 @@
 #define RENDERER_CAMERA_H
 
 #include <glm/glm.hpp>
-#include "../../data_loading/physics/aabb.h"
-
 namespace nova {
+    class aabb;
+
     /*!
      * \brief A camera that can render things.
      *

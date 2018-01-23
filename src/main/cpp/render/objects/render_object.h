@@ -12,12 +12,14 @@
 #include <memory>
 #include <optional.hpp>
 
-#include "gl_mesh.h"
 #include "../../utils/smart_enum.h"
 #include "textures/texture_manager.h"
+#include "../../physics/aabb.h"
 
 
 namespace nova {
+    class vk_mesh;
+
     SMART_ENUM(geometry_type, \
     block, \
     entity, \
@@ -70,7 +72,7 @@ namespace nova {
          */
         std::string name;
 
-        std::unique_ptr<gl_mesh> geometry;
+        std::unique_ptr<vk_mesh> geometry;
 
         std::string color_texture;
         std::experimental::optional<std::string> normalmap;

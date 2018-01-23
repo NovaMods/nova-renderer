@@ -10,7 +10,9 @@
 #include <regex>
 #include <iomanip>
 #include "mesh_store.h"
-#include "../../../render/nova_renderer.h"
+#include "../../nova_renderer.h"
+#include "mesh_definition.h"
+#include "vk_mesh.h"
 
 namespace nova {
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
@@ -48,7 +50,7 @@ namespace nova {
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
         render_object gui = {};
-        gui.geometry = std::make_unique<gl_mesh>(cur_screen_buffer);
+        gui.geometry = std::make_unique<vk_mesh>(cur_screen_buffer);
         gui.type = geometry_type::gui;
         gui.name = "gui";
         gui.color_texture = command->atlas_name;
@@ -75,7 +77,7 @@ namespace nova {
             const auto& def = std::get<1>(entry);
 
             render_object obj = {};
-            obj.geometry = std::make_unique<gl_mesh>(def);
+            obj.geometry = std::make_unique<vk_mesh>(def);
             obj.type = geometry_type::block;
             obj.name = "chunk";
             obj.parent_id = def.id;

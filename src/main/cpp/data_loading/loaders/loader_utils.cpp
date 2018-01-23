@@ -6,7 +6,8 @@
  */
 
 #define MINIZ_HEADER_FILE_ONLY
-#include "miniz.c"
+
+#include <miniz_zip.h>
 #include "loader_utils.h"
 
 namespace nova {

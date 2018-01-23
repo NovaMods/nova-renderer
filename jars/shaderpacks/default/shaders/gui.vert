@@ -54,10 +54,12 @@ layout(std140) uniform per_frame_uniforms {
     float centerDepthSmooth;
 };
 
-uniform mat4 gbufferModel;
+layout(std140) uniform per_model_uniforms{
+    mat4 gbufferModel;
+};
 
-out vec2 uv;
-out vec4 color;
+layout(location = 0) out vec2 uv;
+layout(location = 1) out vec4 color;
 
 void main() {
     gl_Position = gbufferModel * vec4(position_in, 1.0f);

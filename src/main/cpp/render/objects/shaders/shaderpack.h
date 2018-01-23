@@ -12,15 +12,16 @@
 #include <vector>
 #include <string>
 #include <functional>
-#include <unordered_map>
 #include <initializer_list>
 #include <mutex>
 #include <optional.hpp>
 
 #include "gl_shader_program.h"
-#include "../../../data_loading/loaders/shader_source_structs.h"
 
 namespace nova {
+    class shader_definition;
+    class renderpass;
+
     /*!
      * \brief Represents a shaderpack in all of its glory, along with some meta information about the options that this
      * shaderpack sets
@@ -28,17 +29,10 @@ namespace nova {
     class shaderpack {
     public:
         /*!
-         * \brief Loads the shaderpack with the given name
-         *
-         * This is kinda gross because the shaderpack loading logic is all
-         * in the data_loading module... thing is, there's no longer any
-         * reason to keep that running in a separate thread, so why not put
-         * it here?
-         *
+         * \brief Constructs a new shaderpack from the provided shader definitions
          * \param shaderpack_name The name of the shaderpcack to load
-         *
          */
-        shaderpack(std::string name, nlohmann::json shaders_json, std::vector<shader_definition> &shaders);
+        shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass);
 
         gl_shader_program &operator[](std::string key);
 
@@ -46,7 +40,7 @@ namespace nova {
 
 		std::unordered_map<std::string, gl_shader_program> &get_loaded_shaders();
 
-        void operator=(const shaderpack& other);
+        shaderpack& operator=(const shaderpack& other);
 
         std::string& get_name();
 
@@ -69,6 +63,10 @@ namespace nova {
          * \brief The options that the shaders in this shaderpack set
          */
         nlohmann::json options;
+        vk::PipelineCache pipeline_cache;
+        vk::Device device;
+
+        void create_pipeline_cache();
     };
 }
 

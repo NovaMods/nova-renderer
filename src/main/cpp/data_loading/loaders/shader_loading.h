@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <shaderc/shaderc.h>
 
 #include "shader_source_structs.h"
 
@@ -25,7 +26,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    shaderpack load_sources_from_zip_file(const std::string &shaderpack_name, const std::vector<std::string> &shader_names);
+    std::vector<std::pair<material_state, shader_definition>> load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names);
 
     /*!
      * \brief Loads the source file of all the shaders with the provided names
@@ -37,7 +38,7 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    shaderpack load_sources_from_folder(const std::string &shaderpack_name, const std::vector<std::string> &shader_names);
+    std::vector<std::pair<material_state, shader_definition>> load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names);
 
     /*!
      * \brief Tries to load a single shader file from a folder
@@ -46,11 +47,22 @@ namespace nova {
      * of the file, returns the full text of the file. If the file cannot be found with any of the provided
      * extensions, then a not_found is thrown
      *
+     * This function also compiled the shader to SPIR-V if needed and hopefully throw reasonable errors
+     *
      * \param shader_path The path to the shader
      * \param extensions A list of extensions to try
-     * \return The full source of the shader file
+     * \return The SPIR-V of the shader file
      */
-    std::vector<shader_line> load_shader_file(const std::string &shader_path, const std::vector<std::string> &extensions);
+    std::vector<shader_line> load_shader_file(std::string& shader_path, std::vector<std::string>& extensions);
+
+    /*!
+     * \brief Translates GLSL code to SPIR-V
+     *
+     * \param shader_lines The source lines of the code to translate
+     * \param shader_stage The shader stage to compile for
+     * \return The SPIR-V code
+     */
+    std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line>& shader_lines, shaderc_shader_kind shader_stage);
 
     /*!
      * \brief Loads the shader file from the provided istream
@@ -94,7 +106,7 @@ namespace nova {
      * \param include_line The line with the #include statement on it
      * \return The filename that is being included
      */
-    std::string get_filename_from_include(const std::string include_line);
+    std::string get_filename_from_include(std::string& include_line);
 
     /*!
      * \brief Figures out the names of the shaders to load into this shaderpack based on the given json structure
@@ -102,7 +114,7 @@ namespace nova {
      * \param shaders_json The JSON structure with the names of all the shaders to load
      * \return A list of all the shader_definition objects described by the given JSON
      */
-    std::vector<shader_definition> get_shader_definitions(nlohmann::json &shaders_json);
+    std::vector<material_state> get_material_definitions(const nlohmann::json &shaders_json);
 
     /*!
      * \brief Prints our a warning for every shader described in the shaders.json file which does not specify a
@@ -110,10 +122,10 @@ namespace nova {
      *
      * \param shaders The list of shader definitions from the shaders.json file
      */
-    void warn_for_missing_fallbacks(std::vector<shader_definition> shaders);
+    void warn_for_missing_fallbacks(std::vector<shader_definition>& shaders);
 
     /*!
-     * \brief Loads the default shader.json file from disk
+     * \brief Loads the default shaders.json file from disk
      *
      * This function caches the shaders.json file, so it should only load once
      *

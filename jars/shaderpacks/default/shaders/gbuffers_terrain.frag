@@ -1,8 +1,9 @@
 #version 450
 
-layout(binding = 0) uniform sampler2D colortex;
+layout(set = 0, binding = 0) uniform sampler2D colortex;
+layout(binding = 4) uniform sampler2D lightmap;
 
-layout(std140) uniform per_frame_uniforms {
+layout(std140, set = 17, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
     mat4 gbufferPreviousModelView;
@@ -54,17 +55,23 @@ layout(std140) uniform per_frame_uniforms {
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec4 color;
+layout(location = 2) in vec2 lightmap_uv;
+layout(location = 3) in vec3 normal;
 
 layout(location = 0) out vec4 color_out;
 
 void main() {
     if(textureSize(colortex, 0).x > 0) {
         vec4 tex_sample = texture(colortex, uv);
-        if(tex_sample.a < 0.01) {
+        if(tex_sample.a < 0.5) {
             discard;
         }
-        color_out = tex_sample * color;
+        color_out = tex_sample;
     } else {
         color_out = vec4(1, 0, 1, 1);
     }
+
+    color_out.rgb *= texture(lightmap, lightmap_uv).rgb * color.rgb / 255.0f;
+
+    // color_out = vec4(1, 0, 1, 1); // color;
 }

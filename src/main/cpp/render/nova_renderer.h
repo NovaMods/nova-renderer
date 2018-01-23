@@ -5,18 +5,25 @@
 #ifndef RENDERER_VULKAN_MOD_H
 #define RENDERER_VULKAN_MOD_H
 
+#include <vulkan/vulkan.hpp>
 #include <memory>
 #include <thread>
-#include "objects/shaders/gl_shader_program.h"
-#include "objects/uniform_buffers/uniform_buffer_store.h"
-#include "windowing/glfw_gl_window.h"
-#include "../geometry_cache/mesh_store.h"
-#include "objects/textures/texture_manager.h"
-#include "../input/InputHandler.h"
-#include "objects/framebuffer.h"
+#include <unordered_map>
 #include "objects/camera.h"
+#include "../data_loading/settings.h"
 
 namespace nova {
+    class gl_shader_program;
+    class uniform_buffer_store;
+    class glfw_vk_window;
+    class mesh_store;
+    class texture_manager;
+    class input_handler;
+    class render_context;
+    class renderpass_manager;
+    class shaderpack;
+    class render_object;
+
     /*!
      * \brief Initializes everything this mod needs, creating its own window
      *
@@ -49,7 +56,7 @@ namespace nova {
          * \brief Initiazes the nova_renderer
          *
          * Initializing the nova_renderer is a lot of work. I create an OpenGL context, create a GLFW window, initialize
-         * the texture manager, shader manager, UBO manager, etc. and set up initial OpenGL state.
+         * the texture manager, shader manager, UBO manager, etc. and set`1 up initial OpenGL state.
          */
         nova_renderer();
 
@@ -81,7 +88,7 @@ namespace nova {
 
         input_handler& get_input_handler();
 
-        glfw_gl_window& get_game_window();
+        glfw_vk_window& get_game_window();
 
         mesh_store& get_mesh_store();
 
@@ -91,72 +98,70 @@ namespace nova {
 
         // Overrides from iconfig_listener
 
-        void on_config_change(nlohmann::json& new_config);
+        void on_config_change(nlohmann::json& new_config) override;
 
-        void on_config_loaded(nlohmann::json& config);
+        void on_config_loaded(nlohmann::json& config) override;
 
     private:
 
-		static std::unique_ptr<settings> render_settings; 
+		static std::shared_ptr<settings> render_settings;
 
-        std::unique_ptr<glfw_gl_window> game_window;
+        std::shared_ptr<glfw_vk_window> game_window;
 
         std::shared_ptr<shaderpack> loaded_shaderpack;
 
-        std::unique_ptr<texture_manager> textures;
+        std::shared_ptr<texture_manager> textures;
 
-        std::unique_ptr<input_handler> inputs;
+        std::shared_ptr<input_handler> inputs;
 
-        std::unique_ptr<mesh_store> meshes;
+        std::shared_ptr<mesh_store> meshes;
 
-        std::unique_ptr<uniform_buffer_store> ubo_manager;
+        std::shared_ptr<uniform_buffer_store> ubo_manager;
 
-        std::vector<GLuint> shadow_depth_textures;
-        std::unique_ptr<framebuffer> shadow_framebuffer;
-        framebuffer_builder shadow_framebuffer_builder;
+        std::shared_ptr<renderpass_manager> renderpasses;
 
-        std::unique_ptr<framebuffer> main_framebuffer;
-        std::vector<GLuint> gbuffer_depth_textures;
-        framebuffer_builder main_framebuffer_builder;
+        uint32_t cur_swapchain_image_index;
+
+        vk::Semaphore swapchain_image_acquire_semaphore;
 
         camera player_camera;
 
         /*!
          * \brief Renders the GUI of Minecraft
          */
-        void render_gui();
+        void render_gui(vk::CommandBuffer command);
 
         void render_shadow_pass();
 
-        void render_gbuffers();
+        void render_gbuffers(vk::CommandBuffer buffer);
 
         void render_composite_passes();
 
         void render_final_pass();
 
-        void enable_debug();
-
-        void init_opengl_state() const;
-
         void load_new_shaderpack(const std::string &new_shaderpack_name);
-
-        void create_framebuffers_from_shaderpack();
 
         /*!
          * \brief Renders all the geometry that uses the specified shader, setting up textures and whatnot
          *
          * \param shader The shader to render things with
          */
-        void render_shader(gl_shader_program& shader);
+        void render_shader(vk::CommandBuffer shader, gl_shader_program &program);
 
         inline void upload_gui_model_matrix(gl_shader_program &program);
 
         void upload_model_matrix(render_object &geom, gl_shader_program &program) const;
 
         void update_gbuffer_ubos();
+
+        void end_frame();
+
+        void begin_frame();
+
+        render_context* context;
     };
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, uniform_buffer_store &ubos);
+    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos);
 }
 
 #endif //RENDERER_VULKAN_MOD_H

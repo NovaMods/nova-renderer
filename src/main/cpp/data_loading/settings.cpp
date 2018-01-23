@@ -7,10 +7,12 @@
 #include "../utils/utils.h"
 
 #include <easylogging++.h>
+#include <minitrace.h>
 
 namespace nova {
     settings::settings(std::string filename) {
         LOG(INFO) << "Loading config from " << filename;
+        MTR_SCOPE("Init", "settings::setttings")
 
 		std::ifstream config_file(filename);
 		if(config_file.is_open()) {

@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <easylogging++.h>
 #include "texture_manager.h"
+#include "../../vulkan/render_context.h"
+#include "../../../mc_interface/mc_objects.h"
 
 namespace nova {
     texture_manager::texture_manager() {
@@ -25,23 +27,21 @@ namespace nova {
             // Nothing to deallocate, let's just return
             return;
         }
-        // Gather all the textures into a list so we only need one call to delete them
-        std::vector<GLuint> texture_ids(atlases.size());
-        for(auto tex : atlases) {
-            texture_ids.push_back(tex.second.get_gl_name());
+
+        for(auto& tex : atlases) {
+            tex.second.destroy();
         }
 
-        glDeleteTextures((GLsizei) texture_ids.size(), texture_ids.data());
 
         atlases.clear();
         locations.clear();
 
-        atlases["lightmap"] = texture2D{};
+        atlases["lightmap"] = texture2D();
     }
 
     void texture_manager::update_texture(std::string texture_name, void* data, glm::ivec2 &size, GLenum format, GLenum type, GLenum internal_format) {
         auto &texture = atlases[texture_name];
-        texture.set_data(data, size, format, type, internal_format);
+        //texture.set_data(data, size, format, type, internal_format);
     }
 
     void texture_manager::add_texture(mc_atlas_texture &new_texture) {
@@ -51,37 +51,17 @@ namespace nova {
         texture.set_name(texture_name);
 
         std::vector<float> pixel_data(
-                (size_t) (new_texture.width * new_texture.height * new_texture.num_components));
+                (std::size_t) (new_texture.width * new_texture.height * new_texture.num_components));
         for(int i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
             pixel_data[i] = float(new_texture.texture_data[i]) / 255.0f;
         }
 
-        auto dimensions = glm::ivec2{new_texture.width, new_texture.height};
+        auto dimensions = vk::Extent2D{new_texture.width, new_texture.height};
 
-        GLenum format = GL_RGB;
-        switch(new_texture.num_components) {
-            case 1:
-                format = GL_RED;
-                break;
-            case 2:
-                format = GL_RG;
-                break;
-            case 3:
-                format = GL_RGB;
-                break;
-            case 4:
-                format = GL_RGBA;
-                break;
-            default:
-                LOG(ERROR) << "Unsupported number of components. You have " << new_texture.num_components
-                           << " components "
-                           << ", but I need a number in [1,4]";
-        }
-
-        texture.set_data(pixel_data.data(), dimensions, format);
+        texture.set_data(pixel_data.data(), dimensions, vk::Format::eR8G8B8A8Unorm);
 
         atlases[texture_name] = texture;
-        LOG(DEBUG) << "Texture atlas " << texture_name << " is OpenGL texture " << texture.get_gl_name();
+        LOG(DEBUG) << "Texture atlas " << texture_name << " is Vulkan texture " << texture.get_vk_image();
     }
 
     void texture_manager::add_texture_location(mc_texture_atlas_location &location) {
@@ -112,7 +92,7 @@ namespace nova {
 
     int texture_manager::get_max_texture_size() {
         if(max_texture_size < 0) {
-            glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+            max_texture_size = render_context::instance.gpu.props.limits.maxImageDimension2D;
 
 			LOG(DEBUG) << "max texturesize reported by gpu: " << max_texture_size;
         }

@@ -32,14 +32,45 @@ namespace nova {
     }
 
     nlohmann::json load_json_from_stream(std::istream& stream) {
+        if(stream.bad()) {
+            LOG(ERROR) << "Bad stream~ EOF? " << stream.eof() << " If not, it must be something else. Returning empty JSON cause life is hard";
+            return {};
+        }
+
         std::string buf;
         std::string accum;
 
         while(getline(stream, buf)) {
-            accum += buf;
+            bool line_is_comment = false;
+
+            // Ensure that the line isn't a comment
+            // Gonna discard all the lines with // as the first non-whitespace character
+            auto comment_pos = buf.find("//");
+            if(comment_pos != std::string::npos) {
+                line_is_comment = true;
+                LOG(TRACE) << "Found possible comment line `" << buf << "`";
+                for(auto i = 0; i < comment_pos; i++) {
+                    if(buf[i] != ' ' && buf[i] != '\t' && buf[i] != '\n') {
+                        line_is_comment = false;
+                        LOG(TRACE) << "There's stuff in front of it so it hopefully isn't a comment";
+                    }
+                }
+                if(line_is_comment) {
+                    LOG(DEBUG) << "Skipping comment line `" << buf << "`";
+                }
+            }
+
+            if(!line_is_comment) {
+                accum += buf;
+            }
         }
 
-        return nlohmann::json::parse(accum.c_str());
+        try {
+            return nlohmann::json::parse(accum.c_str());
+        } catch(std::exception& e) {
+            LOG(ERROR) << e.what();
+            return {};
+        }
     }
 
     std::vector<std::string> split(const std::string &s, char delim) {
