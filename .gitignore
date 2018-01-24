@@ -1,7 +1,6 @@
 
 # Created by https://www.gitignore.io/api/c++,cmake,intellij,java,vim,sublimetext
 
-src/main/net/minecraft/*
 ### C++ ###
 # Compiled Object files
 *.slo

@@ -106,13 +106,16 @@ task decompileMcp(dependsOn: downloadMcp) {
         }
     }
 }
-
-task copyMcCode(type: Copy, dependsOn: decompileMcp) {
-    from 'mcp/bin/minecraft'
-    into 'src/main/java'
+task copyMcCodeMC(type: Copy, dependsOn: decompileMcp) {
+    from 'mcp/src/minecraft/net'
+    into 'src/main/java/net'
+}
+task copyMcCodeMCP(type: Copy, dependsOn: copyMcCodeMC) {
+    from 'mcp/src/minecraft/mcp'
+    into 'src/main/java/mcp'
 }
 
-task copyMcAssets(type: Copy, dependsOn: copyMcCode) {
+task copyMcAssets(type: Copy, dependsOn: copyMcCodeMCP) {
     from 'temp/src/minecraft/assets'
     into 'src/main/resources/assets'
 }
