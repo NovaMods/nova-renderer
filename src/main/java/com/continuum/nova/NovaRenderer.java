@@ -285,13 +285,13 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
 
         EntityRenderer entityRenderer = Minecraft.getMinecraft().entityRenderer;
-
+/*
         boolean shouldUpdateLightmap = entityRenderer.isLightmapUpdateNeeded();
         entityRenderer.updateLightmap(renderPartialTicks);
         if(shouldUpdateLightmap) {
             sendLightmapTexture(entityRenderer.getLightmapTexture());
         }
-
+*/
 
         Profiler.start("render_gui");
         if (mc.currentScreen != null) {
