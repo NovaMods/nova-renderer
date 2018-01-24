@@ -1,9 +1,9 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform sampler2D colortex;
-layout(binding = 4) uniform sampler2D lightmap;
+layout(set = 2, binding = 0) uniform sampler2D colortex;
+layout(set = 2, binding = 3) uniform sampler2D lightmap;
 
-layout(std140, set = 17, binding = 0) uniform per_frame_uniforms {
+layout(set = 0, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
     mat4 gbufferPreviousModelView;
