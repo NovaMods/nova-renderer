@@ -115,13 +115,44 @@ task copyMcCodeMCP(type: Copy, dependsOn: copyMcCodeMC) {
     into 'src/main/java/mcp'
 }
 
-task copyMcAssets(type: Copy, dependsOn: copyMcCodeMCP) {
-    from 'temp/src/minecraft/assets'
+
+task copyMcCodeJars(dependsOn: copyMcCodeMCP) {
+    
+       
+        copy {
+            from 'mcp/jars/assets'
+            into 'jars/assets'
+        }
+        copy {
+            from 'mcp/jars/libraries'
+            into 'jars/libraries'
+        }
+        copy {
+            from 'mcp/jars/saves'
+            into 'jars/saves'
+        }
+        copy {
+            from 'mcp/jars/versions'
+            into 'jars/versions'
+        }
+        copy {
+            from 'mcp/jars/server.properties'
+            into 'jars/'
+        }
+        copy {
+            from 'mcp/jars/servers.dat'
+            into 'jars/'
+        }
+    
+}
+
+task copyMcAssets(type: Copy, dependsOn: copyMcCodeJars) {
+    from 'mcp/temp/src/minecraft/assets'
     into 'src/main/resources/assets'
 }
 
 task copyMcPack(type: Copy, dependsOn: copyMcAssets) {
-    from 'temp/src/minecraft/pack.png'
+    from 'mcp/temp/src/minecraft/pack.png'
     into 'src/main/resources/pack.png'
 }
 
