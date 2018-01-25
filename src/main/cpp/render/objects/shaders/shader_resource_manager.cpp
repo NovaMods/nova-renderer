@@ -180,9 +180,9 @@ namespace nova {
                 per_model_dsl,
                 block_textures_dsl,
                 custom_textures_dsl,
+                shadow_textures_dsl,
                 framebuffer_bottom_dsl,
                 depth_textures_dsl,
-                shadow_textures_dsl,
         };
 
         auto transparenty_pl_create_info = vk::PipelineLayoutCreateInfo()
@@ -195,6 +195,8 @@ namespace nova {
         vk::DescriptorSetLayout deferred_light_set_layouts[] = {
                 common_dsl,
                 per_model_dsl,
+                framebuffer_top_dsl,
+                framebuffer_bottom_dsl,
                 depth_textures_dsl,
                 block_light_dsl
         };
