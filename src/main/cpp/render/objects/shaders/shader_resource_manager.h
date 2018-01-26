@@ -85,7 +85,7 @@ namespace nova {
 
         void create_descriptor_pool();
 
-        void create_desriptor_sets();
+        void create_descriptor_sets();
 
         /*
          * SAMPLERS

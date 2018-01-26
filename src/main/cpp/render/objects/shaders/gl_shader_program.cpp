@@ -235,8 +235,13 @@ namespace nova {
     }
 
     gl_shader_program::~gl_shader_program() {
-        device.destroyShaderModule(vertex_module);
-        device.destroyShaderModule(fragment_module);
+        if(vertex_module) {
+            device.destroyShaderModule(vertex_module);
+        }
+
+        if(fragment_module) {
+            device.destroyShaderModule(fragment_module);
+        }
 
         if(geometry_module) {
             device.destroyShaderModule(*geometry_module);

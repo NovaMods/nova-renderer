@@ -162,7 +162,6 @@ namespace nova {
      */
     template <typename ValType>
     optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string key) {
-        LOG(INFO) << "Getting JSON value " << key;
         const auto& itr = json_obj.find(key);
         if(itr != json_obj.end()) {
             auto& json_node = json_obj.at(key);
