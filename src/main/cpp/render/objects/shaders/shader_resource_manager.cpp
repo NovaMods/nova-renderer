@@ -159,8 +159,8 @@ namespace nova {
 
     void shader_resource_manager::create_pipeline_layouts() {
         auto max_bound_descriptor_sets = render_context::instance.gpu.props.limits.maxBoundDescriptorSets;
-        if(max_bound_descriptor_sets < 6) {
-            LOG(FATAL) << "We need 6 descriptor sets at a time, but your system only supports " << max_bound_descriptor_sets;
+        if(max_bound_descriptor_sets < 7) {
+            LOG(FATAL) << "We need 7 descriptor sets at a time, but your system only supports " << max_bound_descriptor_sets;
         }
 
         vk::DescriptorSetLayout shadow_set_layouts[] = {
@@ -219,7 +219,7 @@ namespace nova {
         };
 
         auto deferred_light_pl_create_info = vk::PipelineLayoutCreateInfo()
-            .setSetLayoutCount(4)
+            .setSetLayoutCount(6)
             .setPSetLayouts(deferred_light_set_layouts);
 
         layouts[pass_enum::DeferredLight] = device.createPipelineLayout(deferred_light_pl_create_info);
