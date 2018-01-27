@@ -219,7 +219,7 @@ namespace nova {
         };
 
         auto deferred_light_pl_create_info = vk::PipelineLayoutCreateInfo()
-            .setSetLayoutCount(4)
+            .setSetLayoutCount(6)
             .setPSetLayouts(deferred_light_set_layouts);
 
         layouts[pass_enum::DeferredLight] = device.createPipelineLayout(deferred_light_pl_create_info);
