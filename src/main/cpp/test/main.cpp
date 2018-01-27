@@ -10,6 +10,7 @@ bool is_format_supported(vk::PhysicalDevice& physical_device, vk::Format format,
 }
 
 int main(int argc, char **argv) {
+    // Hackyboye - allocated a bunch of memory, then free it, so we know there's space
     nova::nova_renderer::init();
 
     /*

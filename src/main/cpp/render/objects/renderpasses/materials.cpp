@@ -58,10 +58,8 @@ namespace nova {
         ret_val.tessellation_control_shader = get_json_value<std::string>(material_json, "tessellationControlShader");
 
         ret_val.vertex_fields = get_json_value<std::vector<vertex_field_enum>>(material_json, "vertexFields", [&](const nlohmann::json& vertex_fields) {
-            LOG(TRACE) << "Parsing vertex field `" << vertex_fields << "`";
             auto vec = std::vector<vertex_field_enum>{};
             for(const auto& vertex_field : vertex_fields) {
-                LOG(TRACE) << "Current field: `" << vertex_field << "`";
                 vec.push_back(vertex_field_enum::from_string(vertex_field["field"]));
             }
             return vec;
