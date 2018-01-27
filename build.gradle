@@ -75,7 +75,7 @@ task printProps << {
 
 }
 
-task runNova(type: JavaExec, dependsOn: ['buildDll', 'build']) << {
+task runNova(type: JavaExec, dependsOn: ['buildDll', 'build']) {
     dependsOn buildDll
     classpath = sourceSets.main.runtimeClasspath
     main = 'Start'
