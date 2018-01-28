@@ -29,7 +29,7 @@ namespace nova {
 
     void uniform_buffer_store::on_config_loaded(nlohmann::json &config) {}
 
-    void uniform_buffer_store::register_all_buffers_with_shader(const gl_shader_program &shader) noexcept {
+    void uniform_buffer_store::register_all_buffers_with_shader(const vk_shader_program &shader) noexcept {
         per_frame_uniforms_buffer.link_to_shader(shader);
     }
 

@@ -34,7 +34,7 @@ namespace nova {
     fullscreen_quad, \
     particle, \
     lit_particle, \
-    eyes);
+    eyes)
 
     /*!
      * \brief Represents something that can be rendered

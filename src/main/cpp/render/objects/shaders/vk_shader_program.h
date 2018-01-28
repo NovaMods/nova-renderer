@@ -11,7 +11,6 @@
 #include <istream>
 #include <unordered_map>
 #include <vector>
-#include <tuple>
 
 #include <glad/glad.h>
 #include <vulkan/vulkan.hpp>
@@ -36,19 +35,19 @@ namespace nova {
      * class will also hold the map from line in the shader sent to the compiler and the line number and shader file
      * that the line came from on disk
      */
-    class gl_shader_program {
+    class vk_shader_program {
     public:
         /*!
          * \brief Constructs a gl_shader_program
          */
-        gl_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache);
+        vk_shader_program(const shader_definition &source, const material_state& material, vk::RenderPass renderpass, vk::PipelineCache pipeline_cache);
 
         /*!
          * \brief Default copy constructor
          *
          * \param other The thing to copygit add -A :/
          */
-		gl_shader_program(const gl_shader_program &other) = default;
+		vk_shader_program(const vk_shader_program &other) = default;
 
         /**
          * \brief Move constructor
@@ -56,14 +55,14 @@ namespace nova {
          * I expect that this constructor will only be called when returning a fully linked shader from a builder
          * function. If this is not the case, this will throw an error. Be watchful.
          */
-        gl_shader_program(gl_shader_program &&other) noexcept;
+        vk_shader_program(vk_shader_program &&other) noexcept;
 
-        gl_shader_program() = default;
+        vk_shader_program() = default;
 
         /*!
          * \brief Deletes this shader and all it holds dear
          */
-        ~gl_shader_program();
+        ~vk_shader_program();
 
         std::string& get_filter() noexcept;
 

@@ -28,14 +28,14 @@ namespace nova {
 
 	input_handler::input_handler() {
 		create_keymap();
-	};
+	}
 
-	input_handler::~input_handler() {};
+	input_handler::~input_handler() {}
 
 	void input_handler::queue_mouse_button_event(struct mouse_button_event e) {
 		std::lock_guard<std::mutex> lock_guard(lock_button);
 		mouse_button_event_queue.push(e);
-	};
+	}
 
 	struct mouse_button_event input_handler::dequeue_mouse_button_event() {
 		std::lock_guard<std::mutex> lock_guard(lock_button);
@@ -45,13 +45,13 @@ namespace nova {
 			return e;
 		}
 		return { 0,0,0,0 };
-	};
+	}
 
 
 	void input_handler::queue_mouse_position_event(struct mouse_position_event e) {
 		std::lock_guard<std::mutex> lock_guard(lock_position);
 		mouse_position_event_queue.push(e);
-	};
+	}
 
 	struct mouse_position_event input_handler::dequeue_mouse_position_event() {
 		std::lock_guard<std::mutex> lock_guard(lock_position);
@@ -66,7 +66,7 @@ namespace nova {
     void input_handler::queue_mouse_scroll_event(struct mouse_scroll_event e) {
         std::lock_guard<std::mutex> lock_guard(lock_scroll);
         mouse_scroll_event_queue.push(e);
-    };
+    }
 
     struct mouse_scroll_event input_handler::dequeue_mouse_scroll_event() {
         std::lock_guard<std::mutex> lock_guard(lock_scroll);

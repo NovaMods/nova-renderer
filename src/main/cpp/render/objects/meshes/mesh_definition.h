@@ -20,7 +20,7 @@ namespace nova {
         POS, \
         POS_UV, \
         POS_COLOR_UV_LIGHTMAPUV_NORMAL_TANGENT, \
-        POS_UV_COLOR);
+        POS_UV_COLOR)
 
     /*!
      * \brief Defines the geometry in a mesh so that you can just throw the mesh onto the GPU and not care

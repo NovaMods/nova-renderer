@@ -17,15 +17,14 @@
 #include "../shaders/shaderpack.h"
 #include "../../../mc_interface/mc_gui_objects.h"
 #include "../../../mc_interface/mc_objects.h"
+#include "mesh_definition.h"
 
 namespace nova {
-    class mesh_definition;
-
     /*!
-         * \brief Provides access to the meshes that Nova will want to deal with
-         *
-         * The primary way it does this is by allowing the user to specify
-         */
+     * \brief Provides access to the meshes that Nova will want to deal with
+     *
+     * The primary way it does this is by allowing the user to specify
+     */
     class mesh_store {
     public:
         void add_gui_buffers(mc_gui_geometry* command);
@@ -87,6 +86,6 @@ namespace nova {
         void remove_render_objects(std::function<bool(render_object&)> fitler);
     };
 
-};
+}
 
 #endif //RENDERER_GEOMETRY_CACHE_H

@@ -45,6 +45,7 @@ namespace nova {
 
         const vk::RenderPass get_main_renderpass() const;
         const vk::RenderPass get_final_renderpass() const;
+        const vk::Framebuffer get_framebuffer(uint32_t framebuffer_idx) const;
 
     private:
         vk::RenderPass main_shadow_pass;

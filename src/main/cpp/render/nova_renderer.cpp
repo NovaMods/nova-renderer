@@ -90,6 +90,7 @@ namespace nova {
 
         vk::CommandBufferBeginInfo cmd_buf_begin_info = {};
         main_command_buffer.buffer.begin(cmd_buf_begin_info);
+        LOG(TRACE) << "Began command buffer";
 
         player_camera.recalculate_frustum();
 
@@ -101,16 +102,21 @@ namespace nova {
 
         render_shadow_pass();
 
-        // main_framebuffer->bind();
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_gbuffer_ubos();
 
         render_gbuffers(main_command_buffer.buffer);
 
         render_composite_passes();
 
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        auto window_size = game_window->get_size();
+
+        vk::RenderPassBeginInfo begin_final_pass = vk::RenderPassBeginInfo()
+                .setRenderPass(renderpasses->get_final_renderpass())
+                .setFramebuffer(renderpasses->get_framebuffer(cur_swapchain_image_index))
+                .setRenderArea({{0, 0}, {static_cast<uint32_t>(window_size.x), static_cast<uint32_t>(window_size.y)}});
+
+        main_command_buffer.buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
+
         render_final_pass();
 
         // We want to draw the GUI on top of the other things, so we'll render it last
@@ -119,14 +125,16 @@ namespace nova {
         // stencil buffer when the GUI screen changes
         render_gui(main_command_buffer.buffer);
 
+        main_command_buffer.buffer.endRenderPass();
+
         main_command_buffer.buffer.end();
 
-        vk::SubmitInfo submit_info = {};
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &main_command_buffer.buffer;
-        submit_info.pWaitSemaphores = &swapchain_image_acquire_semaphore;
-        submit_info.waitSemaphoreCount = 1;
-        // context->graphics_queue.submit(1, &submit_info, main_command_buffer.fences[0]);
+        // TODO: ParameterValidation(ERROR): object: 0x0 type: 0 location: 220 msgCode: -1: vkQueueSubmit: required parameter pSubmits[0].pWaitDstStageMask specified as NULL. (null)
+        vk::SubmitInfo submit_info = vk::SubmitInfo()
+                .setCommandBufferCount(1)
+                .setPCommandBuffers(&main_command_buffer.buffer)
+                .setWaitSemaphoreCount(0);
+        context->graphics_queue.submit(1, &submit_info, main_command_buffer.fences[cur_swapchain_image_index]);
 
         end_frame();
     }
@@ -157,7 +165,6 @@ namespace nova {
 
     void nova_renderer::render_gui(vk::CommandBuffer command) {
         LOG(TRACE) << "Rendering GUI";
-        //glClear(GL_DEPTH_BUFFER_BIT);
 
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
@@ -167,12 +174,18 @@ namespace nova {
         // Render GUI objects
         std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
         for(const auto& geom : gui_geometry) {
+            // TODO: Bind the descriptor sets
             if (!geom.color_texture.empty()) {
                 auto color_texture = textures->get_texture(geom.color_texture);
                 color_texture.bind(0);
             }
-            geom.geometry->set_active(command);
-            geom.geometry->draw();
+
+            // Bind the mesh
+            vk::DeviceSize offset = 0;
+            command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
+            command.bindIndexBuffer(geom.geometry->indices, offset, vk::IndexType::eUint32);
+
+            command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
         }
     }
 
@@ -262,13 +275,13 @@ namespace nova {
         instance.release();
     }
 
-    void nova_renderer::render_shader(vk::CommandBuffer buffer, gl_shader_program &shader) {
+    void nova_renderer::render_shader(vk::CommandBuffer command, vk_shader_program &shader) {
         LOG(TRACE) << "Rendering everything for shader " << shader.get_name();
 
         MTR_SCOPE("RenderLoop", "render_shader");
 
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
-        LOG(INFO) << "Rendering " << geometry.size() << " things";
+        LOG(TRACE) << "Rendering " << geometry.size() << " things";
 
         MTR_BEGIN("RenderLoop", "process_all");
         for(auto& geom : geometry) {
@@ -293,8 +306,12 @@ namespace nova {
 
                 upload_model_matrix(geom, shader);
 
-                geom.geometry->set_active(buffer);
-                geom.geometry->draw();
+                // Bind the mesh
+                vk::DeviceSize offset = 0;
+                command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
+                command.bindIndexBuffer(geom.geometry->indices, offset, vk::IndexType::eUint32);
+
+                command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
             } else {
                 LOG(TRACE) << "Skipping some geometry since it has no data";
             }
@@ -302,13 +319,13 @@ namespace nova {
         MTR_END("RenderLoop", "process_all")
     }
 
-    inline void nova_renderer::upload_model_matrix(render_object &geom, gl_shader_program &program) const {
+    inline void nova_renderer::upload_model_matrix(render_object &geom, vk_shader_program &program) const {
         glm::mat4 model_matrix = glm::translate(glm::mat4(1), geom.position);
 
         //glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &model_matrix[0][0]);
     }
 
-    void nova_renderer::upload_gui_model_matrix(gl_shader_program &program) {
+    void nova_renderer::upload_gui_model_matrix(vk_shader_program &program) {
         auto config = render_settings->get_options()["settings"];
         float view_width = config["viewWidth"];
         float view_height = config["viewHeight"];
@@ -319,9 +336,6 @@ namespace nova {
         gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
         gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
         gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
-
-
-        //glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &gui_model[0][0]);
     }
 
     void nova_renderer::update_gbuffer_ubos() {
@@ -353,17 +367,21 @@ namespace nova {
         present_info.pImageIndices = &cur_swapchain_image_index;
         present_info.pResults = &swapchain_result;
 
+        // Ensure everything is done before we submit
+        context->graphics_queue.waitIdle();
+
         render_context::instance.present_queue.presentKHR(present_info);
     }
 
     void nova_renderer::begin_frame() {
+        LOG(TRACE) << "Beginning frame";
         cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
                                                                                std::numeric_limits<uint32_t>::max(),
                                                                                swapchain_image_acquire_semaphore,
                                                                                vk::Fence()).value;
     }
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {
+    void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {
         for(auto& shader : shaders) {
             ubos->register_all_buffers_with_shader(shader.second);
         }

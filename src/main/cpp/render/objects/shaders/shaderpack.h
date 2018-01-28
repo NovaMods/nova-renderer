@@ -16,7 +16,7 @@
 #include <mutex>
 #include <optional.hpp>
 
-#include "gl_shader_program.h"
+#include "vk_shader_program.h"
 
 namespace nova {
     class shader_definition;
@@ -34,18 +34,18 @@ namespace nova {
          */
         shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass);
 
-        gl_shader_program &operator[](std::string key);
+        vk_shader_program &operator[](std::string key);
 
-        gl_shader_program& get_shader(std::string key);
+        vk_shader_program& get_shader(std::string key);
 
-		std::unordered_map<std::string, gl_shader_program> &get_loaded_shaders();
+		std::unordered_map<std::string, vk_shader_program> &get_loaded_shaders();
 
         shaderpack& operator=(const shaderpack& other);
 
         std::string& get_name();
 
     private:
-        std::unordered_map<std::string, gl_shader_program> loaded_shaders;
+        std::unordered_map<std::string, vk_shader_program> loaded_shaders;
 
         std::string name;
 

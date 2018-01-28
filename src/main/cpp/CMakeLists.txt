@@ -76,7 +76,7 @@ set(NOVA_HEADERS
         render/objects/textures/texture_manager.h
         utils/types.h
 
-        render/objects/shaders/gl_shader_program.h
+        render/objects/shaders/vk_shader_program.h
         render/objects/uniform_buffers/gl_uniform_buffer.h
         render/objects/meshes/vk_mesh.h
         render/objects/textures/texture2D.h
@@ -132,7 +132,7 @@ set(NOVA_SOURCE
 
         input/InputHandler.cpp
 
-        render/objects/shaders/gl_shader_program.cpp
+        render/objects/shaders/vk_shader_program.cpp
         render/objects/meshes/vk_mesh.cpp
         render/objects/textures/texture2D.cpp
 
@@ -172,6 +172,18 @@ endif (WIN32)
 if (UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g")
 endif (UNIX)
+
+if(MSVC)
+    # Force to always compile with W4
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    # Update if necessary
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+endif()
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small

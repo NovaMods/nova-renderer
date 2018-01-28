@@ -39,10 +39,6 @@ namespace nova {
          */
         void set_data(const std::vector<int>& vertex_data, const std::vector<int>& index_data);
 
-        void set_active(vk::CommandBuffer command) const;
-
-        void draw() const;
-
         /*!
          * \brief Returns the format of this vertex buffer
          *
@@ -52,16 +48,16 @@ namespace nova {
 
         bool has_data() const;
 
+        vk::Buffer vertex_buffer;
+        vk::Buffer indices;
+
+        uint32_t num_indices;
     private:
         format data_format;
 
-        vk::Buffer vertex_buffer;
         VmaAllocation vertex_alloc;
 
-        vk::Buffer indices;
         VmaAllocation indices_alloc;
-
-        uint32_t num_indices;
 
         void upload_vertex_data(const std::vector<int> &vertex_data, const nova::render_context &context);
 

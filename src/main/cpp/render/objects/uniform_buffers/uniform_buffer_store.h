@@ -14,7 +14,7 @@
 #include "gl_uniform_buffer.h"
 
 namespace nova {
-    class gl_shader_program;
+    class vk_shader_program;
 
     /*!
      * \brief Holds all the uniform buffers that Nova needs to use
@@ -33,7 +33,7 @@ namespace nova {
          */
         uniform_buffer_store();
 
-        void register_all_buffers_with_shader(const gl_shader_program &shader) noexcept;
+        void register_all_buffers_with_shader(const vk_shader_program &shader) noexcept;
 
         void update();
 

@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include <easylogging++.h>
-#include "gl_shader_program.h"
+#include "vk_shader_program.h"
 #include "../../vulkan/render_context.h"
 #include "shader_resource_manager.h"
 
 namespace nova {
-    gl_shader_program::gl_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache) : name(source.name) {
+    vk_shader_program::vk_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache) : name(source.name) {
         device = render_context::instance.device;
         LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
         filter = source.filter_expression;
@@ -26,12 +26,12 @@ namespace nova {
         LOG(TRACE) << "Created pipeline";
     }
 
-    gl_shader_program::gl_shader_program(gl_shader_program &&other) noexcept :
+    vk_shader_program::vk_shader_program(vk_shader_program &&other) noexcept :
             name(std::move(other.name)), filter(std::move(other.filter)) {
     }
 
     void
-    gl_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
+    vk_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
         // Creates a pipeline out of compiled shaders
         auto states_vec = material.states.value_or(std::vector<state_enum>{});
         const auto& states_end = states_vec.end();
@@ -62,6 +62,8 @@ namespace nova {
         /**
          * Vertex input state
          */
+
+        // TOOD: Read this from the material
 
         // The vertex data is known by Nova. It just is. Each shader has inputs for all the vertex data because honestly
         // doing it differently is super hard. This will waste some VRAM but the number of vertices per chunk and
@@ -234,7 +236,7 @@ namespace nova {
         pipeline = device.createGraphicsPipeline(cache, pipeline_create_info);
     }
 
-    gl_shader_program::~gl_shader_program() {
+    vk_shader_program::~vk_shader_program() {
         if(vertex_module) {
             device.destroyShaderModule(vertex_module);
         }
@@ -254,7 +256,7 @@ namespace nova {
         }
     }
 
-    void gl_shader_program::create_shader_module(const std::vector<uint32_t> &shader_source, vk::ShaderStageFlags flags) {
+    void vk_shader_program::create_shader_module(const std::vector<uint32_t> &shader_source, vk::ShaderStageFlags flags) {
         vk::ShaderModuleCreateInfo create_info = {};
         create_info.codeSize = shader_source.size() * sizeof(uint32_t);
         create_info.pCode = shader_source.data();
@@ -268,11 +270,11 @@ namespace nova {
         }
     }
 
-    std::string & gl_shader_program::get_filter() noexcept {
+    std::string & vk_shader_program::get_filter() noexcept {
         return filter;
     }
 
-    std::string &gl_shader_program::get_name() noexcept {
+    std::string &vk_shader_program::get_name() noexcept {
         return name;
     }
 
