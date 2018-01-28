@@ -35,18 +35,18 @@ task invokeCMake(type: Exec) {
     if(hasGCC()) {
         if(Os.isFamily(Os.FAMILY_WINDOWS)) {
             println 'Configuring for MinGW'
-            commandLine 'cmake', '-G', 'MinGW Makefiles'
+            commandLine 'cmake', '-G', 'MinGW Makefiles','-DCMAKE_BUILD_TYPE=RELEASE'
         } else {
             println 'Configuring for GCC'
-            commandLine 'cmake', '-G', 'Unix Makefiles'
+            commandLine 'cmake', '-G', 'Unix Makefiles','-DCMAKE_BUILD_TYPE=RELEASE'
         }
     } else if(hasMSVC()) {
         if(System.properties['sun.arch.data.model'].toString().contains("64")) {
             println 'Configuring for MSVC 64-bit'
-            commandLine 'cmake', '-G', 'Visual Studio 15 2017 Win64'
+            commandLine 'cmake', '-G', 'Visual Studio 15 2017 Win64','-DCMAKE_BUILD_TYPE=RELEASE'
         } else {
             println 'Configuring for MSVC 32-bit'
-            commandLine 'cmake', '-G', 'Visual Studio 15'
+            commandLine 'cmake', '-G', 'Visual Studio 15','-DCMAKE_BUILD_TYPE=RELEASE'
         }
     } else {
         println 'No suitable compiler found'
