@@ -11,7 +11,7 @@
 #include <GLFW/glfw3.h>
 
 namespace nova {
-    class gl_shader_program;
+    class vk_shader_program;
 
     /*!
      * \brief A nice interface for uniform buffer objects
@@ -33,7 +33,7 @@ namespace nova {
             old.name = "";
         }
 
-        void link_to_shader(const gl_shader_program &shader) {
+        void link_to_shader(const vk_shader_program &shader) {
             //auto ubo_index = glGetUniformBlockIndex(shader.gl_name, name.c_str());
             //glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
             //glBindBufferBase(GL_UNIFORM_BUFFER, ubo_index, gl_name);

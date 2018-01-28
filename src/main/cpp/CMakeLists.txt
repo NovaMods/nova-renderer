@@ -76,7 +76,7 @@ set(NOVA_HEADERS
         render/objects/textures/texture_manager.h
         utils/types.h
 
-        render/objects/shaders/gl_shader_program.h
+        render/objects/shaders/vk_shader_program.h
         render/objects/uniform_buffers/gl_uniform_buffer.h
         render/objects/meshes/vk_mesh.h
         render/objects/textures/texture2D.h
@@ -132,7 +132,7 @@ set(NOVA_SOURCE
 
         input/InputHandler.cpp
 
-        render/objects/shaders/gl_shader_program.cpp
+        render/objects/shaders/vk_shader_program.cpp
         render/objects/meshes/vk_mesh.cpp
         render/objects/textures/texture2D.cpp
 

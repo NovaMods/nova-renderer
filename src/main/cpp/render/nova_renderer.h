@@ -13,7 +13,7 @@
 #include "../data_loading/settings.h"
 
 namespace nova {
-    class gl_shader_program;
+    class vk_shader_program;
     class uniform_buffer_store;
     class glfw_vk_window;
     class mesh_store;
@@ -146,11 +146,11 @@ namespace nova {
          *
          * \param shader The shader to render things with
          */
-        void render_shader(vk::CommandBuffer shader, gl_shader_program &program);
+        void render_shader(vk::CommandBuffer shader, vk_shader_program &program);
 
-        inline void upload_gui_model_matrix(gl_shader_program &program);
+        inline void upload_gui_model_matrix(vk_shader_program &program);
 
-        void upload_model_matrix(render_object &geom, gl_shader_program &program) const;
+        void upload_model_matrix(render_object &geom, vk_shader_program &program) const;
 
         void update_gbuffer_ubos();
 
@@ -161,7 +161,7 @@ namespace nova {
         render_context* context;
     };
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos);
+    void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos);
 }
 
 #endif //RENDERER_VULKAN_MOD_H

@@ -99,4 +99,8 @@ namespace nova {
             final_framebuffers[i] = ctx.device.createFramebuffer(framebuffer_create_info);
         }
     }
+
+    const vk::Framebuffer renderpass_manager::get_framebuffer(uint32_t framebuffer_idx) const {
+        return final_framebuffers[framebuffer_idx];
+    }
 }

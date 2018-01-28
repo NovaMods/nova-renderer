@@ -39,15 +39,6 @@ namespace nova {
         upload_index_data(index_data, context);
     }
 
-    void vk_mesh::set_active(vk::CommandBuffer command) const {
-        vk::DeviceSize offset = 0;
-        command.bindVertexBuffers(0, 1, &vertex_buffer, &offset);
-    }
-
-    void vk_mesh::draw() const {
-        //glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, nullptr);
-    }
-
     format vk_mesh::get_format() {
         return data_format;
     }

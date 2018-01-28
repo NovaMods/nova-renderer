@@ -23,7 +23,7 @@ namespace nova {
             if(!shader_def.vertex_source.empty() && !shader_def.fragment_source.empty()) {
                 LOG(TRACE) << "Adding shader " << shader.second.name;
                 try {
-                    loaded_shaders.emplace(shader.second.name, gl_shader_program(shader.second, shader.first, our_renderpass, pipeline_cache));
+                    loaded_shaders.emplace(shader.second.name, vk_shader_program(shader.second, shader.first, our_renderpass, pipeline_cache));
                 } catch (std::exception &e) {
                     LOG(ERROR) << "Could not load shader " << shader.second.name << " because " << e.what();
                 }
@@ -35,11 +35,11 @@ namespace nova {
         LOG(TRACE) << "Shaderpack created";
     }
 
-    gl_shader_program &shaderpack::operator[](std::string key) {
+    vk_shader_program &shaderpack::operator[](std::string key) {
         return get_shader(std::move(key));
     }
 
-    std::unordered_map<std::string, gl_shader_program> &shaderpack::get_loaded_shaders() {
+    std::unordered_map<std::string, vk_shader_program> &shaderpack::get_loaded_shaders() {
         return loaded_shaders;
     }
 
@@ -53,7 +53,7 @@ namespace nova {
         return name;
     }
 
-    gl_shader_program &shaderpack::get_shader(std::string key) {
+    vk_shader_program &shaderpack::get_shader(std::string key) {
         return loaded_shaders[key];
     }
 

@@ -118,7 +118,7 @@ namespace nova {
         return (bool) glfwWindowShouldClose(window);
     }
 
-    glm::ivec2 glfw_vk_window::get_size() {
+    glm::uvec2 glfw_vk_window::get_size() {
         return window_dimensions;
     }
 

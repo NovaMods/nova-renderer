@@ -109,8 +109,17 @@ namespace nova {
 
         render_composite_passes();
 
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        auto& final_renderpass = renderpasses->get_final_renderpass();
+        auto window_size = game_window->get_size();
+
+        vk::RenderPassBeginInfo begin_final_pass = vk::RenderPassBeginInfo()
+                .setRenderPass(renderpasses->get_main_renderpass())
+                .setFramebuffer(renderpasses->get_framebuffer(cur_swapchain_image_index))
+                .setRenderArea({{0, 0}, {window_size.x, window_size.y}});
+
+        main_command_buffer.buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
+
         render_final_pass();
 
         // We want to draw the GUI on top of the other things, so we'll render it last
@@ -118,6 +127,8 @@ namespace nova {
         // optimization - I'd have to watch out for when the user hides the GUI, though. I can just re-render the
         // stencil buffer when the GUI screen changes
         render_gui(main_command_buffer.buffer);
+
+        main_command_buffer.buffer.endRenderPass();
 
         main_command_buffer.buffer.end();
 
@@ -167,12 +178,18 @@ namespace nova {
         // Render GUI objects
         std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
         for(const auto& geom : gui_geometry) {
+            // TODO: Bind the descriptor sets
             if (!geom.color_texture.empty()) {
                 auto color_texture = textures->get_texture(geom.color_texture);
                 color_texture.bind(0);
             }
-            geom.geometry->set_active(command);
-            geom.geometry->draw();
+
+            // Bind the mesh
+            vk::DeviceSize offset = 0;
+            command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
+            command.bindIndexBuffer(geom.geometry->indices, offset, vk::IndexType::eUint32);
+
+            command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
         }
     }
 
@@ -262,7 +279,7 @@ namespace nova {
         instance.release();
     }
 
-    void nova_renderer::render_shader(vk::CommandBuffer buffer, gl_shader_program &shader) {
+    void nova_renderer::render_shader(vk::CommandBuffer command, vk_shader_program &shader) {
         LOG(TRACE) << "Rendering everything for shader " << shader.get_name();
 
         MTR_SCOPE("RenderLoop", "render_shader");
@@ -293,8 +310,12 @@ namespace nova {
 
                 upload_model_matrix(geom, shader);
 
-                geom.geometry->set_active(buffer);
-                geom.geometry->draw();
+                // Bind the mesh
+                vk::DeviceSize offset = 0;
+                command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
+                command.bindIndexBuffer(geom.geometry->indices, offset, vk::IndexType::eUint32);
+
+                command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
             } else {
                 LOG(TRACE) << "Skipping some geometry since it has no data";
             }
@@ -302,13 +323,13 @@ namespace nova {
         MTR_END("RenderLoop", "process_all")
     }
 
-    inline void nova_renderer::upload_model_matrix(render_object &geom, gl_shader_program &program) const {
+    inline void nova_renderer::upload_model_matrix(render_object &geom, vk_shader_program &program) const {
         glm::mat4 model_matrix = glm::translate(glm::mat4(1), geom.position);
 
         //glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &model_matrix[0][0]);
     }
 
-    void nova_renderer::upload_gui_model_matrix(gl_shader_program &program) {
+    void nova_renderer::upload_gui_model_matrix(vk_shader_program &program) {
         auto config = render_settings->get_options()["settings"];
         float view_width = config["viewWidth"];
         float view_height = config["viewHeight"];
@@ -363,7 +384,7 @@ namespace nova {
                                                                                vk::Fence()).value;
     }
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, gl_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {
+    void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {
         for(auto& shader : shaders) {
             ubos->register_all_buffers_with_shader(shader.second);
         }
