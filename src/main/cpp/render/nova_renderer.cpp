@@ -130,11 +130,10 @@ namespace nova {
         main_command_buffer.buffer.end();
 
         // TODO: ParameterValidation(ERROR): object: 0x0 type: 0 location: 220 msgCode: -1: vkQueueSubmit: required parameter pSubmits[0].pWaitDstStageMask specified as NULL. (null)
-        vk::SubmitInfo submit_info = {};
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &main_command_buffer.buffer;
-        submit_info.pWaitSemaphores = &swapchain_image_acquire_semaphore;
-        submit_info.waitSemaphoreCount = 1;
+        vk::SubmitInfo submit_info = vk::SubmitInfo()
+                .setCommandBufferCount(1)
+                .setPCommandBuffers(&main_command_buffer.buffer)
+                .setWaitSemaphoreCount(0);
         context->graphics_queue.submit(1, &submit_info, main_command_buffer.fences[cur_swapchain_image_index]);
 
         end_frame();
@@ -367,6 +366,9 @@ namespace nova {
         present_info.pSwapchains = &render_context::instance.swapchain;
         present_info.pImageIndices = &cur_swapchain_image_index;
         present_info.pResults = &swapchain_result;
+
+        // Ensure everything is done before we submit
+        context->graphics_queue.waitIdle();
 
         render_context::instance.present_queue.presentKHR(present_info);
     }

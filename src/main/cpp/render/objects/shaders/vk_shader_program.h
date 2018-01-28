@@ -11,7 +11,6 @@
 #include <istream>
 #include <unordered_map>
 #include <vector>
-#include <tuple>
 
 #include <glad/glad.h>
 #include <vulkan/vulkan.hpp>
@@ -41,7 +40,7 @@ namespace nova {
         /*!
          * \brief Constructs a gl_shader_program
          */
-        vk_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache);
+        vk_shader_program(const shader_definition &source, const material_state& material, vk::RenderPass renderpass, vk::PipelineCache pipeline_cache);
 
         /*!
          * \brief Default copy constructor
