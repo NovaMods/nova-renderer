@@ -90,6 +90,7 @@ namespace nova {
 
         vk::CommandBufferBeginInfo cmd_buf_begin_info = {};
         main_command_buffer.buffer.begin(cmd_buf_begin_info);
+        LOG(TRACE) << "Began command buffer";
 
         player_camera.recalculate_frustum();
 
@@ -101,22 +102,18 @@ namespace nova {
 
         render_shadow_pass();
 
-        // main_framebuffer->bind();
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_gbuffer_ubos();
 
         render_gbuffers(main_command_buffer.buffer);
 
         render_composite_passes();
 
-
-        auto& final_renderpass = renderpasses->get_final_renderpass();
         auto window_size = game_window->get_size();
 
         vk::RenderPassBeginInfo begin_final_pass = vk::RenderPassBeginInfo()
-                .setRenderPass(renderpasses->get_main_renderpass())
+                .setRenderPass(renderpasses->get_final_renderpass())
                 .setFramebuffer(renderpasses->get_framebuffer(cur_swapchain_image_index))
-                .setRenderArea({{0, 0}, {window_size.x, window_size.y}});
+                .setRenderArea({{0, 0}, {static_cast<uint32_t>(window_size.x), static_cast<uint32_t>(window_size.y)}});
 
         main_command_buffer.buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
 
@@ -132,12 +129,13 @@ namespace nova {
 
         main_command_buffer.buffer.end();
 
+        // TODO: ParameterValidation(ERROR): object: 0x0 type: 0 location: 220 msgCode: -1: vkQueueSubmit: required parameter pSubmits[0].pWaitDstStageMask specified as NULL. (null)
         vk::SubmitInfo submit_info = {};
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &main_command_buffer.buffer;
         submit_info.pWaitSemaphores = &swapchain_image_acquire_semaphore;
         submit_info.waitSemaphoreCount = 1;
-        // context->graphics_queue.submit(1, &submit_info, main_command_buffer.fences[0]);
+        context->graphics_queue.submit(1, &submit_info, main_command_buffer.fences[cur_swapchain_image_index]);
 
         end_frame();
     }
@@ -168,7 +166,6 @@ namespace nova {
 
     void nova_renderer::render_gui(vk::CommandBuffer command) {
         LOG(TRACE) << "Rendering GUI";
-        //glClear(GL_DEPTH_BUFFER_BIT);
 
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
@@ -285,7 +282,7 @@ namespace nova {
         MTR_SCOPE("RenderLoop", "render_shader");
 
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
-        LOG(INFO) << "Rendering " << geometry.size() << " things";
+        LOG(TRACE) << "Rendering " << geometry.size() << " things";
 
         MTR_BEGIN("RenderLoop", "process_all");
         for(auto& geom : geometry) {
@@ -340,9 +337,6 @@ namespace nova {
         gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
         gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
         gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
-
-
-        //glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &gui_model[0][0]);
     }
 
     void nova_renderer::update_gbuffer_ubos() {
@@ -378,6 +372,7 @@ namespace nova {
     }
 
     void nova_renderer::begin_frame() {
+        LOG(TRACE) << "Beginning frame";
         cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
                                                                                std::numeric_limits<uint32_t>::max(),
                                                                                swapchain_image_acquire_semaphore,

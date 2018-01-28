@@ -37,7 +37,7 @@ namespace nova {
     template <typename Cont, typename Func>
     void foreach(Cont container, Func thingToDo) {
         std::for_each(std::cbegin(container), std::cend(container), thingToDo);
-    };
+    }
 
     template<typename Out>
     void split(const std::string &s, char delim, Out result) {

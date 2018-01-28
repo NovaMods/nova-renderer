@@ -71,6 +71,7 @@ namespace nova {
     }
 
     void mesh_store::upload_new_geometry() {
+        LOG(TRACE) << "Uploading " << chunk_parts_to_upload.size() << " new objects";
         chunk_parts_to_upload_lock.lock();
         while(!chunk_parts_to_upload.empty()) {
             const auto& entry = chunk_parts_to_upload.front();

@@ -71,18 +71,18 @@ namespace nova {
      * \brief Don't write alpha
      */
                DisableAlphaWrite,
-    );
+    )
 
     SMART_ENUM(texture_filter_enum,
         TexelAA,
         Bilinear,
         Point
-    );
+    )
 
     SMART_ENUM(wrap_mode_enum,
         Repeat,
         Clamp
-    );
+    )
 
     /*!
      * \brief Defines a sampler to use for a texture
@@ -190,13 +190,13 @@ namespace nova {
          * \brief Useful if you want to skip a vertex attribute
          */
         Empty,
-    );
+    )
 
     SMART_ENUM(texture_location_enum,
         Dynamic,
         InUserPackage,
         InAppPackage
-    );
+    )
 
     /*!
      * \brief A texture definition in a material file
@@ -247,7 +247,7 @@ namespace nova {
         MSAA,
         Both,
         None
-    );
+    )
 
     struct output_info {
         uint8_t index;
@@ -271,7 +271,7 @@ namespace nova {
         Transparent,
         DeferredLight,
         Fullscreen
-    );
+    )
 
     /*!
      * \brief Represents the configuration for a single pipeline

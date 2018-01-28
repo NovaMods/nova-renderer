@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <utility>
 #include "../../physics/aabb.h"
+#include <easylogging++.h>
 
 namespace nova {
     glm::mat4& camera::get_projection_matrix() {
@@ -38,6 +39,7 @@ namespace nova {
     }
 
     void camera::recalculate_frustum() {
+        LOG(TRACE) << "Recalcaulting view frustum";
         glm::mat4 proj = get_projection_matrix();
         glm::mat4 modl = get_view_matrix();
         glm::mat4 clip;

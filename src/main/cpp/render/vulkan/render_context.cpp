@@ -393,6 +393,7 @@ namespace nova {
             }
         }
 
+        // A fatal log causes a crash so not having a return here is fine
         LOG(FATAL) << "Failed to find a suitable depth buffer format";
     }
 

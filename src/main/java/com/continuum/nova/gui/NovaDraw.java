@@ -197,7 +197,7 @@ public class NovaDraw {
             long timeWithAlloc = System.nanoTime();
             NovaNative.mc_gui_buffer guiGeometry = b.toNativeCommand(texture);
             long timePrev = System.nanoTime();
-            NovaNative.INSTANCE.tatu(guiGeometry);
+            NovaNative.INSTANCE.add_gui_geometry(guiGeometry);
             long end = System.nanoTime();
             LOG.trace("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
             Memory.purge();

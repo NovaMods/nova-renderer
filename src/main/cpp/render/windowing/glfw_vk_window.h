@@ -53,7 +53,7 @@ namespace nova {
 
         void set_fullscreen(bool fullscreen);
 
-        glm::uvec2 get_size();
+        glm::ivec2 get_size();
 
         bool should_close();
 
@@ -78,7 +78,7 @@ namespace nova {
     private:
         static bool active;
         GLFWwindow *window;
-        glm::uvec2 window_dimensions;
+        glm::ivec2 window_dimensions;
 #if __win32__
         std::unique_ptr<RenderDocManager> renderdoc_manager;
 #endif
