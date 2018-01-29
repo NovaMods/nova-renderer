@@ -12,7 +12,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <glad/glad.h>
 #include <vulkan/vulkan.hpp>
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"

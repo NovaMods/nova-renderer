@@ -1,4 +1,3 @@
-#include "glad/glad.h"
 #include "InputHandler.h"
 #include "../render/nova_renderer.h"
 #include "../render/windowing/glfw_vk_window.h"

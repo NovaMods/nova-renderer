@@ -7,7 +7,6 @@
 
 #define GLFW_VULKAN_SUPPORT
 
-#include <glad/glad.h>
 #include <json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../data_loading/settings.h"

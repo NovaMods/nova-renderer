@@ -39,26 +39,30 @@ namespace nova {
         atlases["lightmap"] = texture2D();
     }
 
-    void texture_manager::update_texture(std::string texture_name, void* data, glm::ivec2 &size, GLenum format, GLenum type, GLenum internal_format) {
+    void texture_manager::update_texture(std::string texture_name, void* data, glm::ivec2 &size, vk::Format format) {
         auto &texture = atlases[texture_name];
         //texture.set_data(data, size, format, type, internal_format);
     }
 
     void texture_manager::add_texture(mc_atlas_texture &new_texture) {
-        LOG(INFO) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
+        LOG(DEBUG) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
         std::string texture_name = new_texture.name;
+        LOG(TRACE) << "Saved texture name";
         texture2D texture;
+        LOG(TRACE) << "Created texture object";
         texture.set_name(texture_name);
 
-        std::vector<float> pixel_data(
-                (std::size_t) (new_texture.width * new_texture.height * new_texture.num_components));
+        std::vector<float> pixel_data((std::size_t) (new_texture.width * new_texture.height * new_texture.num_components));
         for(int i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
             pixel_data[i] = float(new_texture.texture_data[i]) / 255.0f;
         }
 
+        LOG(TRACE) << "Added pixel data to buffer";
+
         auto dimensions = vk::Extent2D{new_texture.width, new_texture.height};
 
         texture.set_data(pixel_data.data(), dimensions, vk::Format::eR8G8B8A8Unorm);
+        LOG(TRACE) << "Sent texture data to GPU";
 
         atlases[texture_name] = texture;
         LOG(DEBUG) << "Texture atlas " << texture_name << " is Vulkan texture " << texture.get_vk_image();
