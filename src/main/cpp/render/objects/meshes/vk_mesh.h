@@ -6,7 +6,6 @@
 #ifndef RENDERER_GL_VERTEX_BUFFER_H
 #define RENDERER_GL_VERTEX_BUFFER_H
 
-#include <glad/glad.h>
 #include <vector>
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>

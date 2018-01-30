@@ -13,7 +13,6 @@
  */
 
 #include <minitrace.h>
-#include "glad/glad.h"
 #include "nova.h"
 #include "../render/nova_renderer.h"
 #include "../render/objects/textures/texture_manager.h"
@@ -50,7 +49,7 @@ NOVA_API void reset_texture_manager() {
 
 NOVA_API void send_lightmap_texture(int* data, int count, int width, int height) {
     auto size = glm::ivec2{width, height};
-    TEXTURE_MANAGER.update_texture("lightmap", data, size, GL_BGRA, GL_UNSIGNED_BYTE);
+    TEXTURE_MANAGER.update_texture("lightmap", data, size, vk::Format::eB8G8R8A8Snorm);
     auto& lightmap = TEXTURE_MANAGER.get_texture("lightmap");
     lightmap.bind(4);
 }

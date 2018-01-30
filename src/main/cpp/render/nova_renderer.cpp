@@ -49,6 +49,11 @@ namespace nova {
         render_context::instance.create_pipeline_cache();
         LOG(TRACE) << "Pipeline cache created";
 
+
+        vk::FenceCreateInfo fence_create_info = {};
+
+        next_swapchain_image_acquired_fence = render_context::instance.device.createFence(fence_create_info);
+
         LOG(INFO) << "Vulkan code initialized";
 
         ubo_manager = std::make_shared<uniform_buffer_store>();
@@ -378,7 +383,7 @@ namespace nova {
         cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
                                                                                std::numeric_limits<uint32_t>::max(),
                                                                                swapchain_image_acquire_semaphore,
-                                                                               vk::Fence()).value;
+                                                                               next_swapchain_image_acquired_fence).value;
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {

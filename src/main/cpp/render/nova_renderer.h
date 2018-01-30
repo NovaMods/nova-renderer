@@ -124,6 +124,8 @@ namespace nova {
 
         vk::Semaphore swapchain_image_acquire_semaphore;
 
+        vk::Fence next_swapchain_image_acquired_fence;
+
         camera player_camera;
 
         /*!

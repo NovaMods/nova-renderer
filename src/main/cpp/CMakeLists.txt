@@ -117,7 +117,6 @@ set(NOVA_HEADERS
 
 set(NOVA_SOURCE
         # Need to compile third party stuff, too...
-        3rdparty/glad/src/glad.c
         3rdparty/miniz/miniz.c
         3rdparty/miniz/miniz_tdef.c
         3rdparty/miniz/miniz_tinfl.c
