@@ -206,7 +206,7 @@ task initSubmodules(dependsOn: cleanupMcp) << {
         println "${outputAsString}"
     }
 }
-task invokeCMakeOnce(type: Exec,dependsOn: initSubmodules) {
+task invokeCMakeOnce(type: Exec,dependsOn: initSubmodules) << {
     if(hasGCC()) {
         if(Os.isFamily(Os.FAMILY_WINDOWS)) {
             println 'Configuring for MinGW'
