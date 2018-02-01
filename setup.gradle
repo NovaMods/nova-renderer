@@ -207,6 +207,7 @@ task initSubmodules(dependsOn: cleanupMcp) << {
     }
 }
 
+
 task setup(dependsOn: initSubmodules) << {
     logger.info('Nova setup succesfully')
 }

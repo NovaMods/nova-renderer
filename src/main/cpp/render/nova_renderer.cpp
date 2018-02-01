@@ -22,6 +22,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <minitrace.h>
 
+#define UINT32_MAX  ((uint32_t)-1)
+
 INITIALIZE_EASYLOGGINGPP
 
 namespace nova {
@@ -381,7 +383,7 @@ namespace nova {
     void nova_renderer::begin_frame() {
         LOG(TRACE) << "Beginning frame";
         cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
-                                                                               std::numeric_limits<uint32_t>::max(),
+                                                                               UINT32_MAX,
                                                                                swapchain_image_acquire_semaphore,
                                                                                next_swapchain_image_acquired_fence).value;
     }
