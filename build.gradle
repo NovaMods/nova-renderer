@@ -54,7 +54,7 @@ task invokeCMake(type: Exec) {
     workingDir 'src/main/cpp'
 }
 
-task buildDll(type: Exec){//, dependsOn: invokeCMake) {
+task buildDll(type: Exec, dependsOn: invokeCMake) {
     if(hasGCC()) {
         if(Os.isFamily(Os.FAMILY_WINDOWS)) {
             commandLine 'mingw32-make', '-f', 'Makefile', 'nova-renderer'
