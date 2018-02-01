@@ -24,6 +24,10 @@
 
 INITIALIZE_EASYLOGGINGPP
 
+#ifdef max
+#undef max
+#endif
+
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
     std::shared_ptr<settings> nova_renderer::render_settings;
@@ -48,11 +52,6 @@ namespace nova {
         LOG(TRACE) << "Created swapchain";
         render_context::instance.create_pipeline_cache();
         LOG(TRACE) << "Pipeline cache created";
-
-
-        vk::FenceCreateInfo fence_create_info = {};
-
-        next_swapchain_image_acquired_fence = render_context::instance.device.createFence(fence_create_info);
 
         LOG(INFO) << "Vulkan code initialized";
 
@@ -134,7 +133,6 @@ namespace nova {
 
         main_command_buffer.buffer.end();
 
-        // TODO: ParameterValidation(ERROR): object: 0x0 type: 0 location: 220 msgCode: -1: vkQueueSubmit: required parameter pSubmits[0].pWaitDstStageMask specified as NULL. (null)
         vk::SubmitInfo submit_info = vk::SubmitInfo()
                 .setCommandBufferCount(1)
                 .setPCommandBuffers(&main_command_buffer.buffer)
@@ -224,13 +222,13 @@ namespace nova {
             return;
         }
 
-        bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
+        /*bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
         if(shaderpack_in_settings_is_new) {
             LOG(DEBUG) << "Shaderpack " << shaderpack_name << " is about to replace shaderpack " << loaded_shaderpack->get_name();
             load_new_shaderpack(shaderpack_name);
         }
 
-        LOG(DEBUG) << "Finished dealing with possible new shaderpack";
+        LOG(DEBUG) << "Finished dealing with possible new shaderpack";*/
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
@@ -383,7 +381,7 @@ namespace nova {
         cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
                                                                                std::numeric_limits<uint32_t>::max(),
                                                                                swapchain_image_acquire_semaphore,
-                                                                               next_swapchain_image_acquired_fence).value;
+                                                                               vk::Fence()).value;
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {

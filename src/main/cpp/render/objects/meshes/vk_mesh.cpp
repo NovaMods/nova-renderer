@@ -23,11 +23,11 @@ namespace nova {
 
     void vk_mesh::destroy() {
         if((VkBuffer)vertex_buffer != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(render_context::instance.allocator, vertex_buffer, vertex_alloc);
+            vmaDestroyBuffer(render_context::instance.allocator, (VkBuffer)vertex_buffer, vertex_alloc);
         }
 
         if((VkBuffer)indices != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(render_context::instance.allocator, indices, indices_alloc);
+            vmaDestroyBuffer(render_context::instance.allocator, (VkBuffer)indices, indices_alloc);
         }
     }
 

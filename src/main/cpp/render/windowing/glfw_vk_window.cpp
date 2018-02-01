@@ -168,7 +168,7 @@ namespace nova {
     }
 
     void glfw_vk_window::create_surface() {
-        auto err = glfwCreateWindowSurface(render_context::instance.vk_instance, window, nullptr, reinterpret_cast<VkSurfaceKHR *>(&render_context::instance.surface));
+        auto err = glfwCreateWindowSurface((VkInstance)render_context::instance.vk_instance, window, nullptr, reinterpret_cast<VkSurfaceKHR *>(&render_context::instance.surface));
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not create surface";
         }

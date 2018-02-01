@@ -122,12 +122,12 @@ namespace nova {
         transfer_image_format(image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
         layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
-        vmaDestroyBuffer(context.allocator, staging_buffer, staging_buffer_allocation);
+        vmaDestroyBuffer(context.allocator, (VkBuffer)staging_buffer, staging_buffer_allocation);
     }
 
     void texture2D::destroy() {
         auto& context = render_context::instance;
-        vmaDestroyImage(context.allocator, image, allocation);
+        vmaDestroyImage(context.allocator, (VkImage)image, allocation);
     }
 
     void transfer_image_format(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout) {

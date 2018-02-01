@@ -5,23 +5,23 @@
 namespace nova {
 
 
-	void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+	void key_callback(GLFWwindow *, int key, int scancode, int action, int mods) {
 		nova_renderer::instance->get_input_handler().queue_key_press_event({key,scancode,action,mods,1});
 	}
 
-	void key_character_callback(GLFWwindow *window, unsigned int key) {
+	void key_character_callback(GLFWwindow *, unsigned int key) {
 		nova_renderer::instance->get_input_handler().queue_key_char_event({  key,1 });
 	}
 
-	void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+	void mouse_button_callback(GLFWwindow *, int button, int action, int mods) {
 		nova_renderer::instance->get_input_handler().queue_mouse_button_event({ button,action,mods ,1 });
 	}
 
-	void mouse_position_callback(GLFWwindow *window, double xpos, double ypos) {
-		nova_renderer::instance->get_input_handler().queue_mouse_position_event({(int)xpos,(int) nova_renderer::instance->get_game_window().get_size().y-(int) ypos,1 });
+	void mouse_position_callback(GLFWwindow *, double xpos, double ypos) {
+		nova_renderer::instance->get_input_handler().queue_mouse_position_event({(int)xpos,nova_renderer::instance->get_game_window().get_size().y-(int) ypos,1 });
 	}
 
-    void mouse_scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+    void mouse_scroll_callback(GLFWwindow *, double xoffset, double yoffset) {
         nova_renderer::instance->get_input_handler().queue_mouse_scroll_event({ xoffset,yoffset,1 });
     }
 
@@ -38,7 +38,7 @@ namespace nova {
 
 	struct mouse_button_event input_handler::dequeue_mouse_button_event() {
 		std::lock_guard<std::mutex> lock_guard(lock_button);
-		if (mouse_button_event_queue.size() != 0) {
+		if (mouse_button_event_queue.empty()) {
 			struct mouse_button_event e = mouse_button_event_queue.front();
 			mouse_button_event_queue.pop();
 			return e;
@@ -54,7 +54,7 @@ namespace nova {
 
 	struct mouse_position_event input_handler::dequeue_mouse_position_event() {
 		std::lock_guard<std::mutex> lock_guard(lock_position);
-		if (mouse_position_event_queue.size() != 0) {
+		if (mouse_position_event_queue.empty()) {
 			struct mouse_position_event e = mouse_position_event_queue.front();
 			mouse_position_event_queue.pop();
 			return e;
@@ -69,7 +69,7 @@ namespace nova {
 
     struct mouse_scroll_event input_handler::dequeue_mouse_scroll_event() {
         std::lock_guard<std::mutex> lock_guard(lock_scroll);
-        if(mouse_scroll_event_queue.size() != 0) {
+        if(mouse_scroll_event_queue.empty()) {
             struct mouse_scroll_event e = mouse_scroll_event_queue.front();
             mouse_scroll_event_queue.pop();
             return e;
@@ -86,7 +86,7 @@ namespace nova {
 	key_press_event input_handler::dequeue_key_press_event()
 	{
 		std::lock_guard<std::mutex> lock_guard(lock_key_press);
-		if (key_press_event_queue.size() != 0) {
+		if (key_press_event_queue.empty()) {
 			struct key_press_event e = key_press_event_queue.front();
 			key_press_event_queue.pop();
 			e.key =(int) keymap[e.key];
@@ -104,7 +104,7 @@ namespace nova {
 	key_char_event input_handler::dequeue_key_char_event()
 	{
 		std::lock_guard<std::mutex> lock_guard(lock_key_char);
-		if (key_char_event_queue.size() != 0) {
+		if (key_char_event_queue.empty()) {
 			struct key_char_event e = key_char_event_queue.front();
 			key_char_event_queue.pop();
 			return e;

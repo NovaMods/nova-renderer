@@ -30,8 +30,8 @@ namespace nova {
             name(std::move(other.name)), filter(std::move(other.filter)) {
     }
 
-    void
-    vk_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
+    void vk_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
+        // TODO: vkResetFences seems to happen from here?
         // Creates a pipeline out of compiled shaders
         auto states_vec = material.states.value_or(std::vector<state_enum>{});
         const auto& states_end = states_vec.end();

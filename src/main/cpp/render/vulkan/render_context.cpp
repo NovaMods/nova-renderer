@@ -226,8 +226,8 @@ namespace nova {
         present_queue = device.getQueue(graphics_family_idx, 0);
 
         VmaAllocatorCreateInfo allocatorInfo = {};
-        allocatorInfo.physicalDevice = physical_device;
-        allocatorInfo.device = device;
+        allocatorInfo.physicalDevice = (VkPhysicalDevice)physical_device;
+        allocatorInfo.device = (VkDevice)device;
         vmaCreateAllocator(&allocatorInfo, &allocator);
     }
 
