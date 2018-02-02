@@ -71,15 +71,24 @@ namespace nova {
 
         vk::SemaphoreCreateInfo create_info = {};
         swapchain_image_acquire_semaphore = render_context::instance.device.createSemaphore(create_info);
+        render_finished_semaphore = render_context::instance.device.createSemaphore(create_info);
 
         context = &render_context::instance;
     }
 
     nova_renderer::~nova_renderer() {
+        // Ensure everything is done before we exit
+        context->graphics_queue.waitIdle();
+
         inputs.reset();
         meshes.reset();
         textures.reset();
         ubo_manager.reset();
+
+        auto& device = render_context::instance.device;
+
+        device.destroySemaphore(swapchain_image_acquire_semaphore);
+        device.destroySemaphore(render_finished_semaphore);
 
         render_context::instance.vk_instance.destroy();
         game_window.reset();
@@ -133,11 +142,28 @@ namespace nova {
 
         main_command_buffer.buffer.end();
 
+<<<<<<< HEAD
+=======
+        cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
+                                                                                        std::numeric_limits<uint32_t>::max(),
+                                                                                        swapchain_image_acquire_semaphore,
+                                                                                        vk::Fence()).value;
+
+        vk::Semaphore wait_semaphores[] = {swapchain_image_acquire_semaphore};
+        vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+        vk::Semaphore signal_semaphores[] = {render_finished_semaphore};
+
+>>>>>>> 5065eeeabba7f649753ca82717a684086a32b023
         vk::SubmitInfo submit_info = vk::SubmitInfo()
                 .setCommandBufferCount(1)
                 .setPCommandBuffers(&main_command_buffer.buffer)
-                .setWaitSemaphoreCount(0);
-        context->graphics_queue.submit(1, &submit_info, main_command_buffer.fences[cur_swapchain_image_index]);
+                .setWaitSemaphoreCount(1)
+                .setPWaitSemaphores(wait_semaphores)
+                .setPWaitDstStageMask(wait_stages)
+                .setSignalSemaphoreCount(1)
+                .setPSignalSemaphores(signal_semaphores);
+
+        context->graphics_queue.submit(1, &submit_info, vk::Fence());
 
         end_frame();
     }
@@ -378,10 +404,11 @@ namespace nova {
 
     void nova_renderer::begin_frame() {
         LOG(TRACE) << "Beginning frame";
+
         cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
-                                                                               std::numeric_limits<uint32_t>::max(),
-                                                                               swapchain_image_acquire_semaphore,
-                                                                               vk::Fence()).value;
+                                                                                        std::numeric_limits<uint32_t>::max(),
+                                                                                        swapchain_image_acquire_semaphore,
+                                                                                        vk::Fence()).value;
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {

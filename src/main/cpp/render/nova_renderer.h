@@ -124,6 +124,8 @@ namespace nova {
 
         vk::Semaphore swapchain_image_acquire_semaphore;
 
+        vk::Semaphore render_finished_semaphore;
+
         camera player_camera;
 
         /*!
