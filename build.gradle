@@ -103,9 +103,6 @@ repositories {
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    // Uses ASM for transforming Minecraft's source code
-    compile group: 'org.ow2.asm', name: 'asm', version: '5.1'
-
     // JNA, for calling the C++ code
     // compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
     
