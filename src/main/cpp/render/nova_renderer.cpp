@@ -142,8 +142,6 @@ namespace nova {
 
         main_command_buffer.buffer.end();
 
-<<<<<<< HEAD
-=======
         cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
                                                                                         std::numeric_limits<uint32_t>::max(),
                                                                                         swapchain_image_acquire_semaphore,
@@ -153,7 +151,6 @@ namespace nova {
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
         vk::Semaphore signal_semaphores[] = {render_finished_semaphore};
 
->>>>>>> 5065eeeabba7f649753ca82717a684086a32b023
         vk::SubmitInfo submit_info = vk::SubmitInfo()
                 .setCommandBufferCount(1)
                 .setPCommandBuffers(&main_command_buffer.buffer)
