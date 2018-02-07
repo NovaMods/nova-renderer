@@ -8,6 +8,9 @@
 import com.bloidonia.groovy.extensions.FileExtensionMethods
 import org.gradle.internal.os.OperatingSystem
 
+import java.nio.file.FileSystems
+import java.nio.file.Files
+
 buildscript {
     repositories {
         mavenCentral()
@@ -207,7 +210,11 @@ task initSubmodules(dependsOn: cleanupMcp) << {
     }
 }
 
-task setup(dependsOn: initSubmodules) << {
+task createSymlinkForVulkanSnowflake(dependsOn: initSubmodules) << {
+    Files.createSymbolicLink(FileSystems.getDefault().getPath("src", "main", "cpp", "3rdparty", "glalang", "External", "spirv-tools"), FileSystems.getDefault().getPath("src", "main", "cpp", "3rdparty", "spirv-tools"))
+}
+
+task setup(dependsOn: createSymlinkForVulkanSnowflake) << {
     logger.info('Nova setup succesfully')
 }
 

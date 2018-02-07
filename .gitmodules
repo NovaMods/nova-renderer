@@ -43,3 +43,6 @@
 [submodule "src/main/cpp/3rdparty/json"]
     path = src/main/cpp/3rdparty/json
     url = https://github.com/nlohmann/json.git
+[submodule "src/main/cpp/3rdparty/Vulkan-LoaderAndValidationLayers"]
+	path = src/main/cpp/3rdparty/Vulkan-LoaderAndValidationLayers
+	url = https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers.git

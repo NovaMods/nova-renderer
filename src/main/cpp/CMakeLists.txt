@@ -18,23 +18,30 @@ endfunction()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DCMAKE_BUILD_TYPE=RELEASE")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
-find_package(Vulkan)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 find_package(JNI)
 
+set(EXTERNAL_SOURCE_ROOT ${3RD_PARTY_DIR})
+set(SPIRV_TOOLS_INCLUDE_DIR ${3RD_PARTY_DIR}/spirv-tools/include)
+set(SPIRV_TOOLS_BINARY_ROOT ${3RD_PARTY_DIR}/spirv-tools)
+set(BUILD_TESTS OFF)
+set(BUILD_DEMOS OFF)
+set(BUILD_ICD OFF)
+
 # need to compile GLFW and JSON
+add_subdirectory(${3RD_PARTY_DIR}/Vulkan-LoaderAndValidationLayers)
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 add_subdirectory(${3RD_PARTY_DIR}/glm)
@@ -48,7 +55,6 @@ add_subdirectory(${3RD_PARTY_DIR}/glslang)
 add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 
 include_directories(SYSTEM
-        ${Vulkan_INCLUDE_DIRS}
         ${JNI_INCLUDE_DIRS}
         ${3RD_PARTY_DIR}/glfw/include
         ${3RD_PARTY_DIR}/easyloggingpp/src
@@ -62,9 +68,10 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
         ${3RD_PARTY_DIR}/minitrace
+        ${3RD_PARTY_DIR}/Vulkan-LoaderAndValidationLayers/include/vulkan
         )
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} shaderc stdc++fs)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} vulkan-1 ${JNI_LIBRARIES} shaderc stdc++fs)
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
@@ -169,9 +176,9 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fsanitize=address -fno-omit-frame-pointer")
-    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
-    set(COMMON_LINK_LIBS "-lasan ${COMMON_LINK_LIBS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fsanitize=address")
+    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
+    set(COMMON_LINK_LIBS "asan ${COMMON_LINK_LIBS}")
 endif (UNIX)
 
 if(MSVC)
@@ -183,7 +190,8 @@ if(MSVC)
     endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Update if necessary
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic -fno-omit-frame-pointer")
+    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer")
 endif()
 
 # For now just put everthing in a single nova source group
