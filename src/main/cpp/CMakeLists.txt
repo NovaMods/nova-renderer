@@ -33,12 +33,10 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 find_package(JNI)
 
-set(EXTERNAL_SOURCE_ROOT ${3RD_PARTY_DIR})
-set(SPIRV_TOOLS_INCLUDE_DIR ${3RD_PARTY_DIR}/spirv-tools/include)
-set(SPIRV_TOOLS_BINARY_ROOT ${3RD_PARTY_DIR}/spirv-tools)
-set(BUILD_TESTS OFF)
 set(BUILD_DEMOS OFF)
 set(BUILD_ICD OFF)
+
+set(SHADERC_SKIP_TESTS TRUE)
 
 # need to compile GLFW and JSON
 add_subdirectory(${3RD_PARTY_DIR}/Vulkan-LoaderAndValidationLayers)
@@ -47,12 +45,7 @@ add_subdirectory(${3RD_PARTY_DIR}/json)
 add_subdirectory(${3RD_PARTY_DIR}/glm)
 add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
-add_subdirectory(${3RD_PARTY_DIR}/googletest)
 add_subdirectory(${3RD_PARTY_DIR}/optional)
-add_subdirectory(${3RD_PARTY_DIR}/spirv-headers)
-add_subdirectory(${3RD_PARTY_DIR}/spirv-tools)
-add_subdirectory(${3RD_PARTY_DIR}/glslang)
-add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 
 include_directories(SYSTEM
         ${JNI_INCLUDE_DIRS}
@@ -68,7 +61,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
         ${3RD_PARTY_DIR}/minitrace
-        ${3RD_PARTY_DIR}/Vulkan-LoaderAndValidationLayers/include/vulkan
+        ${3RD_PARTY_DIR}/Vulkan-LoaderAndValidationLayers/include
         )
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} vulkan-1 ${JNI_LIBRARIES} shaderc stdc++fs)
@@ -198,7 +191,7 @@ endif()
 # because there are several sub groups that would be extremely small
 source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
-add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${GLAD_SOURCE} ${MINIZ_SOURCE})
+add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE})
 set_target_properties(nova-renderer-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)
