@@ -19,9 +19,9 @@ namespace nova {
 
     std::vector<const char *> get_required_extensions(glfw_vk_window &window);
 
-    VKAPI_ATTR vk::Bool32 VKAPI_CALL debug_callback(
-            vk::DebugReportFlagsEXT flags,
-            vk::DebugReportObjectTypeEXT objType,
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
+            VkDebugReportFlagsEXT flags,
+            VkDebugReportObjectTypeEXT objType,
             uint64_t obj,
             size_t location,
             int32_t code,
@@ -68,13 +68,17 @@ namespace nova {
 
     void render_context::setup_debug_callback() {
 #ifndef NDEBUG
-        /*vk::DebugReportCallbackCreateInfoEXT create_info = {};
-        create_info.flags = vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eWarning;
-        create_info.pfnCallback = debug_callback;
+        CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vk_instance.getProcAddr("vkCreateDebugReportCallbackEXT");
+        DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vk_instance.getProcAddr("vkDestroyDebugReportCallbackEXT");
 
-        if(CreateDebugReportCallbackEXT(vk_instance, &create_info, nullptr, &callback) != vk::Result::eSuccess) {
+        VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
+        callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+        callbackCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+        callbackCreateInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)debug_callback;
+
+        if(CreateDebugReportCallback(vk_instance, &callbackCreateInfo, nullptr, &debug_report_callback) != VK_SUCCESS) {
             LOG(FATAL) << "Could not set up debug callback";
-        }*/
+        }
 #endif
     }
 
@@ -398,7 +402,23 @@ namespace nova {
     }
 
     render_context::~render_context() {
+#ifndef NDEBUG
+        DestroyDebugReportCallback(vk_instance, debug_report_callback, nullptr);
+#endif
+
         vmaDestroyAllocator(allocator);
+
+        for(auto& semi : acquire_semaphores) {
+            device.destroySemaphore(semi);
+        }
+
+        for(auto& semi : render_complete_semaphores) {
+            device.destroySemaphore(semi);
+        }
+
+        device.destroyPipelineCache(pipeline_cache);
+
+        vk_instance.destroy();
     }
 
     void render_context::move_swapchain_images_into_correct_format(std::vector<vk::Image> images) {
@@ -432,7 +452,6 @@ namespace nova {
 #ifndef NDEBUG
         extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
-        //extensions.push_back("VK_KHR_swapchain");
 
         return extensions;
     }
@@ -462,17 +481,41 @@ namespace nova {
         return true;
     }
 
-    VKAPI_ATTR vk::Bool32 VKAPI_CALL debug_callback(
-            vk::DebugReportFlagsEXT flags,
-            vk::DebugReportObjectTypeEXT objType,
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
+            VkDebugReportFlagsEXT flags,
+            VkDebugReportObjectTypeEXT objType,
             uint64_t obj,
             size_t location,
             int32_t code,
-            const char *layerPrefix,
+            const char *layer_prefix,
             const char *msg,
             void *userData) {
 
-        LOG(INFO) << "validation layer: " << msg;
+        if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
+        {
+            LOG(ERROR) << "API: " << layer_prefix << msg;
+        };
+        // Warnings may hint at unexpected / non-spec API usage
+        if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
+        {
+            LOG(WARNING) << "API: " << layer_prefix << msg;
+        };
+        // May indicate sub-optimal usage of the API
+        if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
+        {
+            LOG(WARNING) << "API: " << layer_prefix << msg;
+        };
+        // Informal messages that may become handy during debugging
+        if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
+        {
+            LOG(INFO) << "API: " << layer_prefix << msg;
+        }
+        // Diagnostic info from the Vulkan loader and layers
+        // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
+        if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
+        {
+            LOG(DEBUG) << "API: " << layer_prefix << msg;
+        }
 
         return VK_FALSE;
     }

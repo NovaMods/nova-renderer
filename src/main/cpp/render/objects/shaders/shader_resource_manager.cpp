@@ -292,6 +292,31 @@ namespace nova {
 
     shader_resource_manager::~shader_resource_manager() {
         device.destroyDescriptorPool(descriptor_pool);
+
+        for(auto& stuff : layouts) {
+            device.destroyPipelineLayout(stuff.second);
+        }
+
+        device.destroyDescriptorSetLayout(block_textures_dsl);
+        device.destroyDescriptorSetLayout(custom_textures_dsl);
+        device.destroyDescriptorSetLayout(shadow_textures_dsl);
+        device.destroyDescriptorSetLayout(depth_textures_dsl);
+        device.destroyDescriptorSetLayout(common_dsl);
+        device.destroyDescriptorSetLayout(framebuffer_top_dsl);
+        device.destroyDescriptorSetLayout(framebuffer_bottom_dsl);
+        device.destroyDescriptorSetLayout(block_light_dsl);
+        device.destroyDescriptorSetLayout(per_model_dsl);
+
+        // Highly ineffecient but it's destruction code so idc
+        device.freeDescriptorSets(descriptor_pool, 1, &block_textures);
+        device.freeDescriptorSets(descriptor_pool, 1, &custom_textures);
+        device.freeDescriptorSets(descriptor_pool, 1, &shadow_textures);
+        device.freeDescriptorSets(descriptor_pool, 1, &depth_textures);
+        device.freeDescriptorSets(descriptor_pool, 1, &common_descriptors);
+        device.freeDescriptorSets(descriptor_pool, 1, &framebuffer_top);
+        device.freeDescriptorSets(descriptor_pool, 1, &framebuffer_bottom);
+        device.freeDescriptorSets(descriptor_pool, 1, &block_light);
+        device.freeDescriptorSets(descriptor_pool, 1, &per_model_descriptors);
     }
 
     std::shared_ptr<shader_resource_manager> shader_resource_manager::get_instance() {

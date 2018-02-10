@@ -148,3 +148,5 @@ bin_linux/
 **.cbp
 
 .vs
+
+3rdparty/Vulkan-LoaderAndValidationLayers/**

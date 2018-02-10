@@ -17,6 +17,7 @@
 #include "../input/InputHandler.h"
 #include "objects/renderpasses/renderpass_manager.h"
 #include "vulkan/render_context.h"
+#include "objects/shaders/shader_resource_manager.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -90,8 +91,9 @@ namespace nova {
         device.destroySemaphore(swapchain_image_acquire_semaphore);
         device.destroySemaphore(render_finished_semaphore);
 
-        render_context::instance.vk_instance.destroy();
         game_window.reset();
+
+        shader_resource_manager::get_instance().reset();
 
         mtr_shutdown();
     }
@@ -151,6 +153,7 @@ namespace nova {
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
         vk::Semaphore signal_semaphores[] = {render_finished_semaphore};
 
+        // TODO: Use the semiphores in render_context
         vk::SubmitInfo submit_info = vk::SubmitInfo()
                 .setCommandBufferCount(1)
                 .setPCommandBuffers(&main_command_buffer.buffer)

@@ -128,6 +128,7 @@ namespace nova {
     void texture2D::destroy() {
         auto& context = render_context::instance;
         vmaDestroyImage(context.allocator, (VkImage)image, allocation);
+        context.device.destroyImageView(image_view);
     }
 
     void transfer_image_format(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout) {
