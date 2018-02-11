@@ -8,6 +8,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include "../renderpasses/materials.h"
+#include "../../vulkan/render_context.h"
 
 namespace nova {
     /*!
@@ -15,17 +16,13 @@ namespace nova {
      */
     class shader_resource_manager {
     public:
-        shader_resource_manager();
+        shader_resource_manager(std::shared_ptr<render_context> context);
 
         ~shader_resource_manager();
-
-        static std::shared_ptr<shader_resource_manager> get_instance();
 
         vk::PipelineLayout get_layout_for_pass(pass_enum pass);
 
     private:
-        static std::shared_ptr<shader_resource_manager> instance;
-
         vk::Device device;
 
         vk::DescriptorSetLayout block_textures_dsl;
@@ -98,6 +95,7 @@ namespace nova {
         void create_aniso_filter();
 
 
+        std::shared_ptr<render_context> context;
     };
 }
 

@@ -44,8 +44,6 @@ namespace nova {
      */
     class render_context {
     public:
-        static render_context instance;
-
         vk::Instance vk_instance = nullptr;
         vk::SurfaceKHR surface;
 
@@ -110,11 +108,14 @@ namespace nova {
 
         void select_physical_device();
 
-        vk::Format
-    choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
+        vk::Format choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 
 
         void move_swapchain_images_into_correct_format(std::vector<vk::Image> images);
+
+        PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback;
+        PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallback;
+        VkDebugReportCallbackEXT debug_report_callback;
     };
 }
 

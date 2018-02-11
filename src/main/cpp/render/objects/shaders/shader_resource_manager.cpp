@@ -6,12 +6,10 @@
 #include <easylogging++.h>
 #include "shader_resource_manager.h"
 #include "../../vulkan/render_context.h"
+#include "../../nova_renderer.h"
 
 namespace nova {
-
-    std::shared_ptr<shader_resource_manager> shader_resource_manager::instance;
-
-    shader_resource_manager::shader_resource_manager() : device(render_context::instance.device) {
+    shader_resource_manager::shader_resource_manager(std::shared_ptr<render_context> context) : device(context->device), context(context) {
         create_block_textures_dsl();
         create_custom_textures_dsl();
         create_shadow_textures_dsl();
@@ -158,7 +156,7 @@ namespace nova {
 
 
     void shader_resource_manager::create_pipeline_layouts() {
-        auto max_bound_descriptor_sets = render_context::instance.gpu.props.limits.maxBoundDescriptorSets;
+        auto max_bound_descriptor_sets = context->gpu.props.limits.maxBoundDescriptorSets;
         if(max_bound_descriptor_sets < 7) {
             LOG(FATAL) << "We need 7 descriptor sets at a time, but your system only supports " << max_bound_descriptor_sets;
         }
@@ -292,14 +290,33 @@ namespace nova {
 
     shader_resource_manager::~shader_resource_manager() {
         device.destroyDescriptorPool(descriptor_pool);
-    }
 
-    std::shared_ptr<shader_resource_manager> shader_resource_manager::get_instance() {
-        if(!instance) {
-            instance = std::make_shared<shader_resource_manager>();
+        for(auto stuff : layouts) {
+            device.destroyPipelineLayout(stuff.second);
         }
 
-        return instance;
+        device.destroyDescriptorSetLayout(block_textures_dsl);
+        device.destroyDescriptorSetLayout(custom_textures_dsl);
+        device.destroyDescriptorSetLayout(shadow_textures_dsl);
+        device.destroyDescriptorSetLayout(depth_textures_dsl);
+        device.destroyDescriptorSetLayout(common_dsl);
+        device.destroyDescriptorSetLayout(framebuffer_top_dsl);
+        device.destroyDescriptorSetLayout(framebuffer_bottom_dsl);
+        device.destroyDescriptorSetLayout(block_light_dsl);
+        device.destroyDescriptorSetLayout(per_model_dsl);
+
+        // Highly ineffecient but it's destruction code so idc
+        device.freeDescriptorSets(descriptor_pool, 1, &block_textures);
+        device.freeDescriptorSets(descriptor_pool, 1, &custom_textures);
+        device.freeDescriptorSets(descriptor_pool, 1, &shadow_textures);
+        device.freeDescriptorSets(descriptor_pool, 1, &depth_textures);
+        device.freeDescriptorSets(descriptor_pool, 1, &common_descriptors);
+        device.freeDescriptorSets(descriptor_pool, 1, &framebuffer_top);
+        device.freeDescriptorSets(descriptor_pool, 1, &framebuffer_bottom);
+        device.freeDescriptorSets(descriptor_pool, 1, &block_light);
+        device.freeDescriptorSets(descriptor_pool, 1, &per_model_descriptors);
+
+        LOG(TRACE) << "Destroyed a descriptor pool and a bunch of layouts";
     }
 
     vk::PipelineLayout shader_resource_manager::get_layout_for_pass(pass_enum pass) {

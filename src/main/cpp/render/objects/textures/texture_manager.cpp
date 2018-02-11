@@ -8,9 +8,10 @@
 #include "texture_manager.h"
 #include "../../vulkan/render_context.h"
 #include "../../../mc_interface/mc_objects.h"
+#include "../../nova_renderer.h"
 
 namespace nova {
-    texture_manager::texture_manager() {
+    texture_manager::texture_manager(std::shared_ptr<render_context> context) : context(context) {
         LOG(INFO) << "Creating the Texture Manager";
         reset();
         LOG(INFO) << "Texture manager created";
@@ -36,7 +37,7 @@ namespace nova {
         atlases.clear();
         locations.clear();
 
-        atlases["lightmap"] = texture2D();
+        atlases["lightmap"] = texture2D(context);
     }
 
     void texture_manager::update_texture(std::string texture_name, void* data, glm::ivec2 &size, vk::Format format) {
@@ -48,7 +49,7 @@ namespace nova {
         LOG(DEBUG) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
         std::string texture_name = new_texture.name;
         LOG(TRACE) << "Saved texture name";
-        texture2D texture;
+        texture2D texture(context);
         LOG(TRACE) << "Created texture object";
         texture.set_name(texture_name);
 
@@ -96,7 +97,7 @@ namespace nova {
 
     int texture_manager::get_max_texture_size() {
         if(max_texture_size < 0) {
-            max_texture_size = render_context::instance.gpu.props.limits.maxImageDimension2D;
+            max_texture_size = nova_renderer::instance->get_render_context()->gpu.props.limits.maxImageDimension2D;
 
 			LOG(DEBUG) << "max texturesize reported by gpu: " << max_texture_size;
         }

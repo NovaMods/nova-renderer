@@ -9,21 +9,21 @@
 #include <utility>
 #include "shaderpack.h"
 #include "../../vulkan/render_context.h"
+#include "../../nova_renderer.h"
 
 #include <easylogging++.h>
 
 namespace nova {
-    shaderpack::shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass) :
-            name(name), device(render_context::instance.device) {
-
-        create_pipeline_cache();
+    shaderpack::shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass, std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources) :
+            name(name), device(context->device) {
+        auto pipeline_cache = context->pipeline_cache;
 
         for(auto& shader : shaders) {
             auto shader_def = shader.second;
             if(!shader_def.vertex_source.empty() && !shader_def.fragment_source.empty()) {
                 LOG(TRACE) << "Adding shader " << shader.second.name;
                 try {
-                    loaded_shaders.emplace(shader.second.name, vk_shader_program(shader.second, shader.first, our_renderpass, pipeline_cache));
+                    loaded_shaders.emplace(shader.second.name, vk_shader_program(shader.second, shader.first, our_renderpass, pipeline_cache, device, shader_resources));
                 } catch (std::exception &e) {
                     LOG(ERROR) << "Could not load shader " << shader.second.name << " because " << e.what();
                 }
@@ -55,14 +55,5 @@ namespace nova {
 
     vk_shader_program &shaderpack::get_shader(std::string key) {
         return loaded_shaders[key];
-    }
-
-    void shaderpack::create_pipeline_cache() {
-        vk::PipelineCacheCreateInfo cache_create_info = {};
-
-        // TODO: Store a pipeline for each shaderpack on disk, only creating a new cache when the shaderpack has changed
-        // But for now I won't do that cause I really wanna see stuff again
-
-        pipeline_cache = device.createPipelineCache(cache_create_info);
     }
 }
