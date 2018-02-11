@@ -27,6 +27,8 @@ namespace nova {
      */
     class mesh_store {
     public:
+        explicit mesh_store(std::shared_ptr<render_context> context);
+
         void add_gui_buffers(mc_gui_geometry* command);
 
         /*!
@@ -64,6 +66,8 @@ namespace nova {
         void remove_render_objects_with_parent(long parent_id);
 
     private:
+        std::shared_ptr<render_context> context;
+
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
 
         std::mutex chunk_parts_to_upload_lock;

@@ -15,11 +15,14 @@
 #include "vk_mesh.h"
 
 namespace nova {
+    mesh_store::mesh_store(std::shared_ptr<render_context> context) : context(context) {}
+
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
         return renderables_grouped_by_shader[shader_name];
     }
 
     void mesh_store::add_gui_buffers(mc_gui_geometry* command) {
+        LOG(TRACE) << "Adding GUI geometry " << command->texture_name;
         std::string texture_name(command->texture_name);
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
@@ -50,7 +53,7 @@ namespace nova {
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
         render_object gui = {};
-        gui.geometry = std::make_unique<vk_mesh>(cur_screen_buffer);
+        gui.geometry = std::make_unique<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
         gui.name = "gui";
         gui.color_texture = command->atlas_name;
@@ -78,7 +81,7 @@ namespace nova {
             const auto& def = std::get<1>(entry);
 
             render_object obj = {};
-            obj.geometry = std::make_unique<vk_mesh>(def);
+            obj.geometry = std::make_unique<vk_mesh>(def, context);
             obj.type = geometry_type::block;
             obj.name = "chunk";
             obj.parent_id = def.id;

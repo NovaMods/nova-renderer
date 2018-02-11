@@ -62,7 +62,7 @@ namespace nova {
 
         ubo_manager = std::make_shared<uniform_buffer_store>();
         textures = std::make_shared<texture_manager>(context);
-        meshes = std::make_shared<mesh_store>();
+        meshes = std::make_shared<mesh_store>(context);
         inputs = std::make_shared<input_handler>();
 
 		render_settings->register_change_listener(ubo_manager.get());

@@ -14,7 +14,7 @@ namespace nova {
     vk_mesh::vk_mesh(std::shared_ptr<render_context> context) : num_indices(0), context(context) {
     }
 
-    vk_mesh::vk_mesh(const mesh_definition &definition) {
+    vk_mesh::vk_mesh(const mesh_definition &definition, std::shared_ptr<render_context> context) : context(context) {
         set_data(definition.vertex_data, definition.indices);
     }
 

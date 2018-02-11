@@ -210,11 +210,7 @@ task initSubmodules(dependsOn: cleanupMcp) << {
     }
 }
 
-task createSymlinkForVulkanSnowflake(dependsOn: initSubmodules) << {
-    Files.createSymbolicLink(FileSystems.getDefault().getPath("src", "main", "cpp", "3rdparty", "glalang", "External", "spirv-tools"), FileSystems.getDefault().getPath("src", "main", "cpp", "3rdparty", "spirv-tools"))
-}
-
-task setup(dependsOn: createSymlinkForVulkanSnowflake) << {
+task setup(dependsOn: initSubmodulesgit add) << {
     logger.info('Nova setup succesfully')
 }
 

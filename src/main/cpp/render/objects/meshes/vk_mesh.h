@@ -22,9 +22,9 @@ namespace nova {
      */
     class vk_mesh {
     public:
-        vk_mesh(std::shared_ptr<render_context> context);
+        explicit vk_mesh(std::shared_ptr<render_context> context);
 
-        explicit vk_mesh(const mesh_definition &definition);
+        vk_mesh(const mesh_definition &definition, std::shared_ptr<render_context> context);
 
         ~vk_mesh();
 
