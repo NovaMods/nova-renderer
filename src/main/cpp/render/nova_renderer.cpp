@@ -155,10 +155,8 @@ namespace nova {
 
         main_command_buffer.buffer.end();
 
-        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain,
-                                                                                        std::numeric_limits<uint32_t>::max(),
-                                                                                        swapchain_image_acquire_semaphore,
-                                                                                        vk::Fence()).value;
+        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint32_t>::max(),
+                                                                        swapchain_image_acquire_semaphore, vk::Fence()).value;
 
         vk::Semaphore wait_semaphores[] = {swapchain_image_acquire_semaphore};
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
@@ -415,11 +413,6 @@ namespace nova {
 
     void nova_renderer::begin_frame() {
         LOG(TRACE) << "Beginning frame";
-
-        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain,
-                                                                                        std::numeric_limits<uint32_t>::max(),
-                                                                                        swapchain_image_acquire_semaphore,
-                                                                                        vk::Fence()).value;
     }
 
     std::shared_ptr<render_context> nova_renderer::get_render_context() {

@@ -45,7 +45,12 @@ add_subdirectory(${3RD_PARTY_DIR}/json)
 add_subdirectory(${3RD_PARTY_DIR}/glm)
 add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
+add_subdirectory(${3RD_PARTY_DIR}/googletest)
 add_subdirectory(${3RD_PARTY_DIR}/optional)
+add_subdirectory(${3RD_PARTY_DIR}/spirv-headers)
+add_subdirectory(${3RD_PARTY_DIR}/spirv-tools)
+add_subdirectory(${3RD_PARTY_DIR}/glslang)
+add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 
 include_directories(SYSTEM
         ${Vulkan_INCLUDE_DIRS}

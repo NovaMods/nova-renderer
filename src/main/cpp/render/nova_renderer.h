@@ -129,7 +129,7 @@ namespace nova {
 
         std::shared_ptr<shader_resource_manager> shader_resources;
 
-        uint32_t cur_swapchain_image_index;
+        uint32_t cur_swapchain_image_index = 0;
 
         vk::Semaphore swapchain_image_acquire_semaphore;
 
