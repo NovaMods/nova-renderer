@@ -56,7 +56,7 @@ namespace nova {
 
         bool should_close();
 
-        void create_surface();
+        void create_surface(std::shared_ptr<render_context> context);
 
         bool is_active();
 

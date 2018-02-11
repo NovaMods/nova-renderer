@@ -44,8 +44,6 @@ namespace nova {
      */
     class render_context {
     public:
-        static render_context instance;
-
         vk::Instance vk_instance = nullptr;
         vk::SurfaceKHR surface;
 

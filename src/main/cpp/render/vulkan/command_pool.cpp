@@ -6,6 +6,7 @@
 #include <easylogging++.h>
 #include "command_pool.h"
 #include "render_context.h"
+#include "../nova_renderer.h"
 
 namespace nova {
     command_pool::command_pool(vk::Device device, uint32_t queue_family_index, uint32_t num_threads) {
@@ -49,6 +50,12 @@ namespace nova {
         device.freeCommandBuffers(command_pools[buf.pool_idx], 1, &buf.buffer);
     }
 
+    command_pool::~command_pool() {
+        for(auto& cp : command_pools) {
+            device.destroyCommandPool(cp);
+        }
+    }
+
     void command_buffer::begin_as_single_commend() {
         vk::CommandBufferBeginInfo begin_info = {};
         begin_info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
@@ -57,16 +64,18 @@ namespace nova {
     }
 
     void command_buffer::end_as_single_command() {
+        auto context = nova_renderer::instance->get_render_context();
+
         buffer.end();
 
         vk::SubmitInfo submit_info = {};
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &buffer;
 
-        auto& graphics_queue = render_context::instance.graphics_queue;
+        auto& graphics_queue = context->graphics_queue;
         graphics_queue.submit(1, &submit_info, vk::Fence());
         graphics_queue.waitIdle();  // This is probably a bad idea but I'm loading resources from disk so the IO is slow anyways
 
-        render_context::instance.command_buffer_pool->free(*this);
+        context->command_buffer_pool->free(*this);
     }
-};
+}

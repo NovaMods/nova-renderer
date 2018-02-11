@@ -8,9 +8,10 @@
 #include "vk_mesh.h"
 #include "../../windowing/glfw_vk_window.h"
 #include "../../vulkan/render_context.h"
+#include "../../nova_renderer.h"
 
 namespace nova {
-    vk_mesh::vk_mesh() : num_indices(0) {
+    vk_mesh::vk_mesh(std::shared_ptr<render_context> context) : num_indices(0), context(context) {
     }
 
     vk_mesh::vk_mesh(const mesh_definition &definition) {
@@ -22,21 +23,21 @@ namespace nova {
     }
 
     void vk_mesh::destroy() {
+        auto allocator = context->allocator;
         if((VkBuffer)vertex_buffer != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(render_context::instance.allocator, (VkBuffer)vertex_buffer, vertex_alloc);
+            vmaDestroyBuffer(allocator, (VkBuffer)vertex_buffer, vertex_alloc);
         }
 
         if((VkBuffer)indices != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(render_context::instance.allocator, (VkBuffer)indices, indices_alloc);
+            vmaDestroyBuffer(allocator, (VkBuffer)indices, indices_alloc);
         }
     }
 
     void vk_mesh::set_data(const std::vector<int>& vertex_data, const std::vector<int>& index_data) {
-        auto& context = render_context::instance;
         this->data_format = data_format;
 
-        upload_vertex_data(vertex_data, context);
-        upload_index_data(index_data, context);
+        upload_vertex_data(vertex_data);
+        upload_index_data(index_data);
     }
 
     format vk_mesh::get_format() {
@@ -47,46 +48,46 @@ namespace nova {
         return num_indices > 0;
     }
 
-    void vk_mesh::upload_vertex_data(const std::vector<int> &vertex_data, const render_context &context) {
+    void vk_mesh::upload_vertex_data(const std::vector<int> &vertex_data) {
         vk::BufferCreateInfo vertex_buffer_create = {};
         vertex_buffer_create.size = vertex_data.size() * sizeof(int);
         vertex_buffer_create.usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer;
         vertex_buffer_create.sharingMode = vk::SharingMode::eExclusive;
         vertex_buffer_create.queueFamilyIndexCount = 1;
-        vertex_buffer_create.pQueueFamilyIndices = &context.graphics_family_idx;
+        vertex_buffer_create.pQueueFamilyIndices = &context->graphics_family_idx;
 
         VmaAllocationCreateInfo vertex_buffer_alloc_create_info = {};
         vertex_buffer_alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        vmaCreateBuffer(context.allocator,
+        vmaCreateBuffer(context->allocator,
                         reinterpret_cast<VkBufferCreateInfo*>(&vertex_buffer_create), &vertex_buffer_alloc_create_info,
                         reinterpret_cast<VkBuffer*>(&vertex_buffer), &vertex_alloc, nullptr);
 
         void* mapped_vbo;
-        vmaMapMemory(context.allocator, vertex_alloc, &mapped_vbo);
+        vmaMapMemory(context->allocator, vertex_alloc, &mapped_vbo);
         memcpy(mapped_vbo, vertex_data.data(), vertex_buffer_create.size);
-        vmaUnmapMemory(context.allocator, vertex_alloc);
+        vmaUnmapMemory(context->allocator, vertex_alloc);
     }
 
-    void vk_mesh::upload_index_data(const std::vector<int>& index_data, const render_context &context) {
+    void vk_mesh::upload_index_data(const std::vector<int>& index_data) {
         vk::BufferCreateInfo index_buffer_create = {};
         index_buffer_create.size = index_data.size() * sizeof(int);
         index_buffer_create.usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer;
         index_buffer_create.sharingMode = vk::SharingMode::eExclusive;
         index_buffer_create.queueFamilyIndexCount = 1;
-        index_buffer_create.pQueueFamilyIndices = &context.graphics_family_idx;
+        index_buffer_create.pQueueFamilyIndices = &context->graphics_family_idx;
 
         VmaAllocationCreateInfo index_buffer_alloc_create_info = {};
         index_buffer_alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        vmaCreateBuffer(context.allocator,
+        vmaCreateBuffer(context->allocator,
                         reinterpret_cast<VkBufferCreateInfo*>(&index_buffer_create), &index_buffer_alloc_create_info,
                         reinterpret_cast<VkBuffer*>(&indices), &indices_alloc, nullptr);
 
         void* mapped_vbo;
-        vmaMapMemory(context.allocator, indices_alloc, &mapped_vbo);
+        vmaMapMemory(context->allocator, indices_alloc, &mapped_vbo);
         memcpy(mapped_vbo, index_data.data(), index_buffer_create.size);
-        vmaUnmapMemory(context.allocator, indices_alloc);
+        vmaUnmapMemory(context->allocator, indices_alloc);
 
         num_indices = static_cast<uint32_t>(index_data.size());
     }

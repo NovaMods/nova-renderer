@@ -22,7 +22,7 @@ namespace nova {
      */
     class vk_mesh {
     public:
-        vk_mesh();
+        vk_mesh(std::shared_ptr<render_context> context);
 
         explicit vk_mesh(const mesh_definition &definition);
 
@@ -52,15 +52,17 @@ namespace nova {
 
         uint32_t num_indices;
     private:
+        std::shared_ptr<render_context> context;
+
         format data_format;
 
         VmaAllocation vertex_alloc;
 
         VmaAllocation indices_alloc;
 
-        void upload_vertex_data(const std::vector<int> &vertex_data, const nova::render_context &context);
+        void upload_vertex_data(const std::vector<int> &vertex_data);
 
-        void upload_index_data(const std::vector<int>& index_data, const render_context &context);
+        void upload_index_data(const std::vector<int>& index_data);
     };
 }
 

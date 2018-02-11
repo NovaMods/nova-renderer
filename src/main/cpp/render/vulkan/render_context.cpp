@@ -13,8 +13,6 @@
 #include "command_pool.h"
 
 namespace nova {
-    render_context render_context::instance;
-
     bool layers_are_supported(std::vector<const char*>& validation_layers);
 
     std::vector<const char *> get_required_extensions(glfw_vk_window &window);
@@ -257,7 +255,7 @@ namespace nova {
         auto extent = choose_surface_extent(gpu.surface_capabilities, window_dimensions);
 
         vk::SwapchainCreateInfoKHR info = {};
-        info.surface = render_context::instance.surface;
+        info.surface = surface;
 
         info.minImageCount = NUM_FRAME_DATA;
 
@@ -418,7 +416,13 @@ namespace nova {
 
         device.destroyPipelineCache(pipeline_cache);
 
+        for(auto& iv : swapchain_images) {
+            device.destroyImageView(iv);
+        }
+
         vk_instance.destroy();
+
+        LOG(TRACE) << "Destroyed the render context";
     }
 
     void render_context::move_swapchain_images_into_correct_format(std::vector<vk::Image> images) {

@@ -9,13 +9,17 @@
 #include "../../../utils/utils.h"
 #include "../../vulkan/render_context.h"
 #include "../../vulkan/command_pool.h"
+#include "../../nova_renderer.h"
 
 namespace nova {
+    texture2D::texture2D() {}
+
+    texture2D::texture2D(std::shared_ptr<render_context> context) : context(context) {}
+
     void texture2D::set_data(void* pixel_data, vk::Extent2D &dimensions, vk::Format format) {
         this->format = format;
         size = dimensions;
 
-        auto& context = render_context::instance;
         vk::ImageCreateInfo image_create_info = {};
         image_create_info.samples = vk::SampleCountFlagBits::e1;
         image_create_info.imageType = vk::ImageType::e2D;
@@ -26,13 +30,13 @@ namespace nova {
         image_create_info.format = format;
         image_create_info.usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
         image_create_info.queueFamilyIndexCount = 1;
-        image_create_info.pQueueFamilyIndices = &context.graphics_family_idx;
+        image_create_info.pQueueFamilyIndices = &context->graphics_family_idx;
         image_create_info.initialLayout = vk::ImageLayout::eUndefined;
 
         VmaAllocationCreateInfo alloc_create_info = {};
         alloc_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        vmaCreateImage(context.allocator, reinterpret_cast<VkImageCreateInfo*>(&image_create_info), &alloc_create_info,
+        vmaCreateImage(context->allocator, reinterpret_cast<VkImageCreateInfo*>(&image_create_info), &alloc_create_info,
                        reinterpret_cast<VkImage*>(&image), &allocation, nullptr);
 
         if((VkImage)image == VK_NULL_HANDLE) {
@@ -52,13 +56,13 @@ namespace nova {
         img_view_create_info.format = format;
         img_view_create_info.subresourceRange = subresource_range;
 
-        image_view = context.device.createImageView(img_view_create_info);
+        image_view = context->device.createImageView(img_view_create_info);
         layout = image_create_info.initialLayout;
 
         LOG(DEBUG) << "Created new image";
 
         // Create a staging buffer and use that to upload the data
-        upload_data_with_staging_buffer(context, pixel_data, image_create_info.extent);
+        upload_data_with_staging_buffer(pixel_data, image_create_info.extent);
     }
 
     void texture2D::bind(unsigned int binding) {
@@ -92,14 +96,14 @@ namespace nova {
         return name;
     }
 
-    void texture2D::upload_data_with_staging_buffer(render_context &context, void *data, vk::Extent3D image_size) {
+    void texture2D::upload_data_with_staging_buffer(void *data, vk::Extent3D image_size) {
         vk::Buffer staging_buffer;
         VmaAllocation staging_buffer_allocation;
         auto buffer_size = image_size.width * image_size.height * image_size.depth * 4;
 
         vk::BufferCreateInfo buffer_create_info = {};
         buffer_create_info.queueFamilyIndexCount = 1;
-        buffer_create_info.pQueueFamilyIndices = &context.graphics_family_idx;
+        buffer_create_info.pQueueFamilyIndices = &context->graphics_family_idx;
         buffer_create_info.usage = vk::BufferUsageFlagBits::eTransferSrc;
 
         // A standard image from disk is 32 bpp in Nova. I'm going to hate myself when Joey wants something else
@@ -109,31 +113,29 @@ namespace nova {
         staging_buffer_allocation_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
         staging_buffer_allocation_info.flags = 0;
 
-        vmaCreateBuffer(context.allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
+        vmaCreateBuffer(context->allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
                         reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
 
         void* mapped_data;
-        vmaMapMemory(context.allocator, staging_buffer_allocation, &mapped_data);
+        vmaMapMemory(context->allocator, staging_buffer_allocation, &mapped_data);
         std::memcpy(mapped_data, data, buffer_size);
-        vmaUnmapMemory(context.allocator, staging_buffer_allocation);
+        vmaUnmapMemory(context->allocator, staging_buffer_allocation);
 
-        transfer_image_format(image, format, layout, vk::ImageLayout::eTransferDstOptimal);
-        copy_buffer_to_image(staging_buffer, image, size.width, size.height);
-        transfer_image_format(image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+        transfer_image_format(image, format, layout, vk::ImageLayout::eTransferDstOptimal, context);
+        copy_buffer_to_image(staging_buffer, image, size.width, size.height, context);
+        transfer_image_format(image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, context);
         layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
-        vmaDestroyBuffer(context.allocator, (VkBuffer)staging_buffer, staging_buffer_allocation);
+        vmaDestroyBuffer(context->allocator, (VkBuffer)staging_buffer, staging_buffer_allocation);
     }
 
     void texture2D::destroy() {
-        auto& context = render_context::instance;
-        vmaDestroyImage(context.allocator, (VkImage)image, allocation);
-        context.device.destroyImageView(image_view);
+        vmaDestroyImage(context->allocator, (VkImage)image, allocation);
+        context->device.destroyImageView(image_view);
     }
 
-    void transfer_image_format(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout) {
-        auto& context = render_context::instance;
-        auto command_buffer = context.command_buffer_pool->get_command_buffer(0);
+    void transfer_image_format(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, std::shared_ptr<render_context> context) {
+        auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
 
         command_buffer.begin_as_single_commend();
 
@@ -179,9 +181,8 @@ namespace nova {
         command_buffer.end_as_single_command();
     }
 
-    void copy_buffer_to_image(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height) {
-        auto& context = render_context::instance;
-        auto command_buffer = context.command_buffer_pool->get_command_buffer(0);
+    void copy_buffer_to_image(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, std::shared_ptr<render_context> context) {
+        auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
 
         command_buffer.begin_as_single_commend();
 
