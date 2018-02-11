@@ -16,6 +16,7 @@
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
 #include "../renderpasses/materials.h"
+#include "shader_resource_manager.h"
 
 
 namespace nova {
@@ -39,7 +40,7 @@ namespace nova {
         /*!
          * \brief Constructs a gl_shader_program
          */
-        vk_shader_program(const shader_definition &source, const material_state& material, vk::RenderPass renderpass, vk::PipelineCache pipeline_cache);
+        vk_shader_program(const shader_definition &source, const material_state& material, vk::RenderPass renderpass, vk::PipelineCache pipeline_cache, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources);
 
         /*!
          * \brief Default copy constructor
@@ -91,6 +92,8 @@ namespace nova {
         void create_shader_module(const std::vector<uint32_t> &shader_source, vk::ShaderStageFlags flags);
 
         void create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache);
+
+        std::shared_ptr<shader_resource_manager> shader_resources;
     };
 }
 

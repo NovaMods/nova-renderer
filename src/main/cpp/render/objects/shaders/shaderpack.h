@@ -32,7 +32,7 @@ namespace nova {
          * \brief Constructs a new shaderpack from the provided shader definitions
          * \param shaderpack_name The name of the shaderpcack to load
          */
-        shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass);
+        shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass, std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources);
 
         vk_shader_program &operator[](std::string key);
 
@@ -63,10 +63,7 @@ namespace nova {
          * \brief The options that the shaders in this shaderpack set
          */
         nlohmann::json options;
-        vk::PipelineCache pipeline_cache;
         vk::Device device;
-
-        void create_pipeline_cache();
     };
 }
 

@@ -35,6 +35,8 @@ namespace nova {
          */
         command_pool(vk::Device device, uint32_t queue_family_index, uint32_t num_threads);
 
+        ~command_pool();
+
         /*!
          * \brief Retrieves a new command buffer
          * \param thread_idx the index of the thread that wants a command buffer

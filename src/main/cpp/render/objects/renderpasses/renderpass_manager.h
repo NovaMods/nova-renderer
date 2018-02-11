@@ -7,6 +7,7 @@
 #define RENDERER_RENDER_PASS_MANAGER_H
 
 #include <glm/glm.hpp>
+#include "../../vulkan/render_context.h"
 
 namespace nova {
     class shaderpack;
@@ -30,7 +31,9 @@ namespace nova {
      */
     class renderpass_manager {
     public:
-        renderpass_manager(const vk::Extent2D& main_shadow_size, const vk::Extent2D& light_shadow_size, const vk::Extent2D& window_size);
+        renderpass_manager(const vk::Extent2D& main_shadow_size, const vk::Extent2D& light_shadow_size, const vk::Extent2D& window_size, std::shared_ptr<render_context> context);
+
+        ~renderpass_manager();
 
         /*!
          * \brief Rebuilds the entire renderpasses
@@ -60,6 +63,8 @@ namespace nova {
         void create_main_renderpass(const vk::Extent2D& window_size);
 
         void create_final_framebuffers(const vk::Extent2D &window_size);
+
+        std::shared_ptr<render_context> context;
     };
 }
 

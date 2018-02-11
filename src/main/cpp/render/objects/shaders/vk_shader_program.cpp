@@ -10,10 +10,10 @@
 #include "vk_shader_program.h"
 #include "../../vulkan/render_context.h"
 #include "shader_resource_manager.h"
+#include "../../nova_renderer.h"
 
 namespace nova {
-    vk_shader_program::vk_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache) : name(source.name) {
-        device = render_context::instance.device;
+    vk_shader_program::vk_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources) : name(source.name), device(device), shader_resources(shader_resources) {
         LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
         filter = source.filter_expression;
         LOG(TRACE) << "Created filter expression " << filter;
@@ -228,7 +228,6 @@ namespace nova {
          * Descriptor sets
          */
 
-        auto shader_resources = shader_resource_manager::get_instance();
         pipeline_create_info.layout = shader_resources->get_layout_for_pass(material.pass.value_or(pass_enum::Gbuffer));
 
         // TODO: Handle dynamic state
@@ -253,6 +252,10 @@ namespace nova {
         }
         if(tessellation_control_module) {
             device.destroyShaderModule(*tessellation_control_module);
+        }
+
+        if(pipeline) {
+            device.destroyPipeline(pipeline);
         }
     }
 

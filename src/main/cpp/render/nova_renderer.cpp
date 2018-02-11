@@ -17,6 +17,7 @@
 #include "../input/InputHandler.h"
 #include "objects/renderpasses/renderpass_manager.h"
 #include "vulkan/render_context.h"
+#include "objects/shaders/shader_resource_manager.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,30 +34,34 @@ namespace nova {
     std::shared_ptr<settings> nova_renderer::render_settings;
 
     nova_renderer::nova_renderer() {
+        context = std::make_shared<render_context>();
+
         game_window = std::make_shared<glfw_vk_window>();
         LOG(TRACE) << "Window initialized";
 
-        render_context::instance.create_instance(*game_window);
+        context->create_instance(*game_window);
         LOG(TRACE) << "Instance created";
-        render_context::instance.setup_debug_callback();
+        context->setup_debug_callback();
         LOG(TRACE) << "Debug callback set up";
-        game_window->create_surface();
+        game_window->create_surface(context);
         LOG(TRACE) << "Created surface";
-        render_context::instance.find_device_and_queues();
+        context->find_device_and_queues();
         LOG(TRACE) << "Found device and queue";
-        render_context::instance.create_semaphores();
+        context->create_semaphores();
         LOG(TRACE) << "Created semaphores";
-        render_context::instance.create_command_pool_and_command_buffers();
+        context->create_command_pool_and_command_buffers();
         LOG(TRACE) << "Created command pool";
-        render_context::instance.create_swapchain(game_window->get_size());
+        context->create_swapchain(game_window->get_size());
         LOG(TRACE) << "Created swapchain";
-        render_context::instance.create_pipeline_cache();
+        context->create_pipeline_cache();
         LOG(TRACE) << "Pipeline cache created";
+
+        shader_resources = std::make_shared<shader_resource_manager>(context);
 
         LOG(INFO) << "Vulkan code initialized";
 
         ubo_manager = std::make_shared<uniform_buffer_store>();
-        textures = std::make_shared<texture_manager>();
+        textures = std::make_shared<texture_manager>(context);
         meshes = std::make_shared<mesh_store>();
         inputs = std::make_shared<input_handler>();
 
@@ -67,31 +72,39 @@ namespace nova {
         render_settings->update_config_loaded();
 		render_settings->update_config_changed();
 
-        LOG(INFO) << "Finished sending out initial config";
+        LOG(DEBUG) << "Finished sending out initial config";
 
         vk::SemaphoreCreateInfo create_info = {};
-        swapchain_image_acquire_semaphore = render_context::instance.device.createSemaphore(create_info);
-        render_finished_semaphore = render_context::instance.device.createSemaphore(create_info);
-
-        context = &render_context::instance;
+        swapchain_image_acquire_semaphore = context->device.createSemaphore(create_info);
+        render_finished_semaphore = context->device.createSemaphore(create_info);
+        LOG(TRACE) << "Created semaphores";
     }
 
     nova_renderer::~nova_renderer() {
         // Ensure everything is done before we exit
         context->graphics_queue.waitIdle();
+        LOG(TRACE) << "Waited for the GPU to be done";
 
         inputs.reset();
+        LOG(TRACE) << "Released the inputs";
         meshes.reset();
+        LOG(TRACE) << "Reset the meshes";
         textures.reset();
+        LOG(TRACE) << "Reset the textures";
         ubo_manager.reset();
+        LOG(TRACE) << "Reset the UBOs";
 
-        auto& device = render_context::instance.device;
+        auto& device = context->device;
 
         device.destroySemaphore(swapchain_image_acquire_semaphore);
         device.destroySemaphore(render_finished_semaphore);
+        LOG(TRACE) << "Destroyed the semaphores";
 
-        render_context::instance.vk_instance.destroy();
         game_window.reset();
+        LOG(TRACE) << "Reset the game window";
+
+        shader_resources.reset();
+        LOG(TRACE) << "Reset the shader resource manager";
 
         mtr_shutdown();
     }
@@ -142,7 +155,7 @@ namespace nova {
 
         main_command_buffer.buffer.end();
 
-        cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
+        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain,
                                                                                         std::numeric_limits<uint32_t>::max(),
                                                                                         swapchain_image_acquire_semaphore,
                                                                                         vk::Fence()).value;
@@ -151,6 +164,7 @@ namespace nova {
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
         vk::Semaphore signal_semaphores[] = {render_finished_semaphore};
 
+        // TODO: Use the semiphores in render_context
         vk::SubmitInfo submit_info = vk::SubmitInfo()
                 .setCommandBufferCount(1)
                 .setPCommandBuffers(&main_command_buffer.buffer)
@@ -287,9 +301,9 @@ namespace nova {
 
         vk::Extent2D im_lazy;
 
-        renderpasses = std::make_shared<renderpass_manager>(im_lazy, im_lazy, context->swapchain_extent);
+        renderpasses = std::make_shared<renderpass_manager>(im_lazy, im_lazy, context->swapchain_extent, context);
 
-        loaded_shaderpack = std::make_shared<shaderpack>(new_shaderpack_name, shader_definitions, renderpasses->get_final_renderpass());
+        loaded_shaderpack = std::make_shared<shaderpack>(new_shaderpack_name, shader_definitions, renderpasses->get_final_renderpass(), context, shader_resources);
 
         LOG(INFO) << "Loading complete";
 		
@@ -389,23 +403,31 @@ namespace nova {
 
         vk::PresentInfoKHR present_info = {};
         present_info.swapchainCount = 1;
-        present_info.pSwapchains = &render_context::instance.swapchain;
+        present_info.pSwapchains = &context->swapchain;
         present_info.pImageIndices = &cur_swapchain_image_index;
         present_info.pResults = &swapchain_result;
 
         // Ensure everything is done before we submit
         context->graphics_queue.waitIdle();
 
-        render_context::instance.present_queue.presentKHR(present_info);
+        context->present_queue.presentKHR(present_info);
     }
 
     void nova_renderer::begin_frame() {
         LOG(TRACE) << "Beginning frame";
 
-        cur_swapchain_image_index = render_context::instance.device.acquireNextImageKHR(render_context::instance.swapchain,
+        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain,
                                                                                         std::numeric_limits<uint32_t>::max(),
                                                                                         swapchain_image_acquire_semaphore,
                                                                                         vk::Fence()).value;
+    }
+
+    std::shared_ptr<render_context> nova_renderer::get_render_context() {
+        return context;
+    }
+
+    std::shared_ptr<shader_resource_manager> nova_renderer::get_shader_resources() {
+        return shader_resources;
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {

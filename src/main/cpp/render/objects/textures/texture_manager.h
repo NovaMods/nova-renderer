@@ -59,7 +59,7 @@ namespace nova {
          *
          * Note to self: Don't put any GL calls in the constructor. It's called before an OpenGL context is available
          */
-        texture_manager();
+        texture_manager(std::shared_ptr<render_context> context);
 
         /*!
          * \brief De-allocates everything ths texture_manager uses
@@ -131,6 +131,8 @@ namespace nova {
         int get_max_texture_size();
 
     private:
+        std::shared_ptr<render_context> context;
+
         std::unordered_map<std::string, texture2D> atlases;
 
         /*!

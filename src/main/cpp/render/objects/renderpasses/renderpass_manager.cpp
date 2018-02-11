@@ -6,14 +6,15 @@
 #include <vulkan/vulkan.hpp>
 #include "renderpass_manager.h"
 #include "../../vulkan/render_context.h"
+#include "../../nova_renderer.h"
 #include <easylogging++.h>
 
 namespace nova {
-    renderpass_manager::renderpass_manager(const vk::Extent2D& main_shadow_size, const vk::Extent2D& light_shadow_size, const vk::Extent2D& window_size) {
+    renderpass_manager::renderpass_manager(const vk::Extent2D& main_shadow_size, const vk::Extent2D& light_shadow_size, const vk::Extent2D& window_size, std::shared_ptr<render_context> context) : context(context) {
         // TODO: Inspect each shader, figure out which ones draw to which target, and build renderpasses based on that info
         // For now I'll just create the swapchain renderpass to make sure I hae the code
 
-        auto& framebuffer_size = render_context::instance.swapchain_extent;
+        auto& framebuffer_size = context->swapchain_extent;
 
         rebuild_all(main_shadow_size, light_shadow_size, framebuffer_size);
     }
@@ -25,7 +26,7 @@ namespace nova {
 
         // Just one color buffer in the final pass
         vk::AttachmentDescription color_attachment = {};
-        color_attachment.format = render_context::instance.swapchain_format;
+        color_attachment.format = context->swapchain_format;
         color_attachment.samples = vk::SampleCountFlagBits::e1;
         color_attachment.loadOp = vk::AttachmentLoadOp::eDontCare;
         color_attachment.initialLayout = vk::ImageLayout::eUndefined;
@@ -50,7 +51,7 @@ namespace nova {
         render_pass_create_info.pSubpasses = &subpass;
         render_pass_create_info.dependencyCount = 0;
 
-        final_pass = render_context::instance.device.createRenderPass(render_pass_create_info);
+        final_pass = context->device.createRenderPass(render_pass_create_info);
 
         LOG(TRACE) << "Created final renderpass";
     }
@@ -80,12 +81,11 @@ namespace nova {
     }
 
     void renderpass_manager::create_final_framebuffers(const vk::Extent2D &window_size) {
-        auto& ctx = render_context::instance;
-        final_framebuffers.reserve(ctx.swapchain_images.size());
+        final_framebuffers.reserve(context->swapchain_images.size());
 
-        for(size_t i = 0; i < ctx.swapchain_images.size(); i++) {
+        for(size_t i = 0; i < context->swapchain_images.size(); i++) {
             vk::ImageView attachments[] = {
-                    ctx.swapchain_images[i]
+                    context->swapchain_images[i]
             };
 
             vk::FramebufferCreateInfo framebuffer_create_info = {};
@@ -96,11 +96,24 @@ namespace nova {
             framebuffer_create_info.height = window_size.height;
             framebuffer_create_info.layers = 1;
 
-            final_framebuffers[i] = ctx.device.createFramebuffer(framebuffer_create_info);
+            final_framebuffers[i] = context->device.createFramebuffer(framebuffer_create_info);
         }
     }
 
     const vk::Framebuffer renderpass_manager::get_framebuffer(uint32_t framebuffer_idx) const {
         return final_framebuffers[framebuffer_idx];
+    }
+
+    renderpass_manager::~renderpass_manager() {
+        auto device = context->device;
+
+        device.destroyRenderPass(main_shadow_pass);
+        device.destroyRenderPass(light_shadow_pass);
+        device.destroyRenderPass(main_pass);
+        device.destroyRenderPass(final_pass);
+
+        for(auto& fb : final_framebuffers) {
+            device.destroyFramebuffer(fb);
+        }
     }
 }
