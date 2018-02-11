@@ -62,10 +62,6 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
         ${3RD_PARTY_DIR}/minitrace
-<<<<<<< HEAD
-        ${3RD_PARTY_DIR}/Vulkan-LoaderAndValidationLayers/include
-=======
->>>>>>> 83fb6d10a96e83bdf7e1193e8690c0f72ee55d1f
         )
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} shaderc stdc++fs)

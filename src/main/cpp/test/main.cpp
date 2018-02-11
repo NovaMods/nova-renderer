@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     nova::nova_renderer::init();
     LOG(INFO) << "Inited Nova in the test program";
 
-    //nova::nova_renderer::instance->render_frame();
+    nova::nova_renderer::instance->render_frame();
 
     nova::nova_renderer::deinit();
 }
