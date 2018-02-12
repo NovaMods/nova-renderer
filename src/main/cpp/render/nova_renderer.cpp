@@ -187,8 +187,8 @@ namespace nova {
         // TODO: Get shaders with gbuffers prefix, draw transparents last, etc
         auto& terrain_shader = loaded_shaderpack->get_shader("gbuffers_terrain");
         render_shader(buffer, terrain_shader);
-        auto& water_shader = loaded_shaderpack->get_shader("gbuffers_water");
-        render_shader(buffer, water_shader);
+        //auto& water_shader = loaded_shaderpack->get_shader("gbuffers_water");
+        //render_shader(buffer, water_shader);
     }
 
     void nova_renderer::render_composite_passes() {
@@ -202,29 +202,42 @@ namespace nova {
     }
 
     void nova_renderer::render_gui(vk::CommandBuffer command) {
-        LOG(TRACE) << "Rendering GUI";
+        LOG(INFO) << "Rendering GUI";
 
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
+
+        LOG(INFO) << "About to bind pipeline " << gui_shader.get_pipeline() << " for the gui shader";
+        command.bindPipeline(vk::PipelineBindPoint::eGraphics, gui_shader.get_pipeline());
 
         upload_gui_model_matrix(gui_shader);
 
         // Render GUI objects
         std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
+        LOG(INFO) << "Rendering " << gui_geometry.size() << " GUI things";
         for(const auto& geom : gui_geometry) {
             // TODO: Bind the descriptor sets
             if (!geom.color_texture.empty()) {
+                LOG(INFO) << "A color texture was specified";
                 auto color_texture = textures->get_texture(geom.color_texture);
+                LOG(INFO) << "Retrieved the color texture";
                 color_texture.bind(0);
+                LOG(INFO) << "Bound the color texture (but not really)";
             }
 
             // Bind the mesh
             vk::DeviceSize offset = 0;
             command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
+            LOG(INFO) << "Bound the vertex buffer";
             command.bindIndexBuffer(geom.geometry->indices, offset, vk::IndexType::eUint32);
+            LOG(INFO) << "Bound the index buffer";
 
+            LOG(INFO) << "Drawing " << geom.geometry->num_indices << " verts";
             command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
+            LOG(INFO) << "Issued drawcall";
         }
+
+        LOG(INFO) << std::endl;
     }
 
     bool nova_renderer::should_end() {
@@ -257,13 +270,13 @@ namespace nova {
             return;
         }
 
-        /*bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
+        bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
         if(shaderpack_in_settings_is_new) {
             LOG(DEBUG) << "Shaderpack " << shaderpack_name << " is about to replace shaderpack " << loaded_shaderpack->get_name();
             load_new_shaderpack(shaderpack_name);
         }
 
-        LOG(DEBUG) << "Finished dealing with possible new shaderpack";*/
+        LOG(DEBUG) << "Finished dealing with possible new shaderpack";
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
@@ -314,12 +327,13 @@ namespace nova {
     }
 
     void nova_renderer::render_shader(vk::CommandBuffer command, vk_shader_program &shader) {
-        LOG(TRACE) << "Rendering everything for shader " << shader.get_name();
+        LOG(INFO) << "Rendering everything for shader " << shader.get_name() << " with pipeline " << (VkPipeline)shader.get_pipeline();
 
         MTR_SCOPE("RenderLoop", "render_shader");
+        command.bindPipeline(vk::PipelineBindPoint::eGraphics, shader.get_pipeline());
 
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
-        LOG(TRACE) << "Rendering " << geometry.size() << " things";
+        LOG(INFO) << "Rendering " << geometry.size() << " things";
 
         MTR_BEGIN("RenderLoop", "process_all");
         for(auto& geom : geometry) {
@@ -351,8 +365,10 @@ namespace nova {
 
                 command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
             } else {
-                LOG(TRACE) << "Skipping some geometry since it has no data";
+                LOG(INFO) << "Skipping some geometry since it has no data";
             }
+
+            LOG(INFO) << std::endl;
         }
         MTR_END("RenderLoop", "process_all")
     }

@@ -45,16 +45,10 @@ namespace nova {
         /*!
          * \brief Default copy constructor
          *
-         * \param other The thing to copygit add -A :/
+         * \param other The thing to copy
          */
 		vk_shader_program(const vk_shader_program &other) = default;
 
-        /**
-         * \brief Move constructor
-         *
-         * I expect that this constructor will only be called when returning a fully linked shader from a builder
-         * function. If this is not the case, this will throw an error. Be watchful.
-         */
         vk_shader_program(vk_shader_program &&other) noexcept;
 
         vk_shader_program() = default;
@@ -67,6 +61,8 @@ namespace nova {
         std::string& get_filter() noexcept;
 
         std::string& get_name() noexcept;
+
+        vk::Pipeline get_pipeline() noexcept;
 
     private:
         std::string name;

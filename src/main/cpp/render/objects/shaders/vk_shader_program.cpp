@@ -13,10 +13,10 @@
 #include "../../nova_renderer.h"
 
 namespace nova {
-    vk_shader_program::vk_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources) : name(source.name), device(device), shader_resources(shader_resources) {
+    vk_shader_program::vk_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources)
+            : name(source.name), device(device), filter(source.filter_expression), shader_resources(shader_resources) {
+
         LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
-        filter = source.filter_expression;
-        LOG(TRACE) << "Created filter expression " << filter;
         create_shader_module(source.vertex_source, vk::ShaderStageFlagBits::eVertex);
         LOG(TRACE) << "Created vertex shader";
         create_shader_module(source.fragment_source, vk::ShaderStageFlagBits::eFragment);
@@ -27,7 +27,25 @@ namespace nova {
     }
 
     vk_shader_program::vk_shader_program(vk_shader_program &&other) noexcept :
-            name(std::move(other.name)), filter(std::move(other.filter)) {
+            name(std::move(other.name)),
+            pipeline(other.pipeline),
+            vertex_module(other.vertex_module), fragment_module(other.fragment_module),
+            geometry_module(std::move(other.geometry_module)),
+            tessellation_evaluation_module(std::move(other.tessellation_evaluation_module)),
+            tessellation_control_module(std::move(other.tessellation_control_module)),
+            filter(std::move(other.filter)),
+            shader_resources(other.shader_resources) {
+
+        LOG(WARNING) << "Moving shader " << name;
+
+        other.name = "";
+        other.filter = "";
+        other.pipeline = vk::Pipeline{};
+        other.vertex_module = vk::ShaderModule{};
+        other.fragment_module = vk::ShaderModule{};
+        other.geometry_module = std::experimental::optional<vk::ShaderModule>{};
+        other.tessellation_control_module = std::experimental::optional<vk::ShaderModule>{};
+        other.tessellation_evaluation_module = std::experimental::optional<vk::ShaderModule>{};
     }
 
     void vk_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
@@ -233,6 +251,7 @@ namespace nova {
         // TODO: Handle dynamic state
 
         pipeline = device.createGraphicsPipeline(cache, pipeline_create_info);
+        LOG(INFO) << "Created pipeline " << (VkPipeline)pipeline << " for shader " << name;
     }
 
     vk_shader_program::~vk_shader_program() {
@@ -279,6 +298,10 @@ namespace nova {
 
     std::string &vk_shader_program::get_name() noexcept {
         return name;
+    }
+
+    vk::Pipeline vk_shader_program::get_pipeline() noexcept {
+        return pipeline;
     }
 
 }
