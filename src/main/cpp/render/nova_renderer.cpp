@@ -202,39 +202,30 @@ namespace nova {
     }
 
     void nova_renderer::render_gui(vk::CommandBuffer command) {
-        LOG(INFO) << "Rendering GUI";
+        LOG(TRACE) << "Rendering GUI";
 
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
 
-        LOG(INFO) << "About to bind pipeline " << gui_shader.get_pipeline() << " for the gui shader";
         command.bindPipeline(vk::PipelineBindPoint::eGraphics, gui_shader.get_pipeline());
 
         upload_gui_model_matrix(gui_shader);
 
         // Render GUI objects
         std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
-        LOG(INFO) << "Rendering " << gui_geometry.size() << " GUI things";
         for(const auto& geom : gui_geometry) {
             // TODO: Bind the descriptor sets
             if (!geom.color_texture.empty()) {
-                LOG(INFO) << "A color texture was specified";
                 auto color_texture = textures->get_texture(geom.color_texture);
-                LOG(INFO) << "Retrieved the color texture";
                 color_texture.bind(0);
-                LOG(INFO) << "Bound the color texture (but not really)";
             }
 
             // Bind the mesh
             vk::DeviceSize offset = 0;
             command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
-            LOG(INFO) << "Bound the vertex buffer";
             command.bindIndexBuffer(geom.geometry->indices, offset, vk::IndexType::eUint32);
-            LOG(INFO) << "Bound the index buffer";
 
-            LOG(INFO) << "Drawing " << geom.geometry->num_indices << " verts";
             command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
-            LOG(INFO) << "Issued drawcall";
         }
 
         LOG(INFO) << std::endl;
@@ -327,13 +318,12 @@ namespace nova {
     }
 
     void nova_renderer::render_shader(vk::CommandBuffer command, vk_shader_program &shader) {
-        LOG(INFO) << "Rendering everything for shader " << shader.get_name() << " with pipeline " << (VkPipeline)shader.get_pipeline();
+        LOG(TRACE) << "Rendering everything for shader " << shader.get_name() << " with pipeline " << (VkPipeline)shader.get_pipeline();
 
         MTR_SCOPE("RenderLoop", "render_shader");
         command.bindPipeline(vk::PipelineBindPoint::eGraphics, shader.get_pipeline());
 
         auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
-        LOG(INFO) << "Rendering " << geometry.size() << " things";
 
         MTR_BEGIN("RenderLoop", "process_all");
         for(auto& geom : geometry) {
@@ -365,10 +355,9 @@ namespace nova {
 
                 command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
             } else {
-                LOG(INFO) << "Skipping some geometry since it has no data";
+                LOG(WARNING) << "Skipping some geometry since it has no data";
             }
 
-            LOG(INFO) << std::endl;
         }
         MTR_END("RenderLoop", "process_all")
     }

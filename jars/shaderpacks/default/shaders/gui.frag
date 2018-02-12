@@ -1,8 +1,8 @@
 #version 450
 
-layout(binding = 0) uniform sampler2D colortex;
+layout(set = 2, binding = 0) uniform sampler2D colortex;
 
-layout(std140) uniform per_frame_uniforms {
+layout(set = 0, binding = 1) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
     mat4 gbufferPreviousModelView;

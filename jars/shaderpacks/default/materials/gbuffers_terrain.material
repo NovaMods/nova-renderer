@@ -129,9 +129,10 @@
         ],
         
         "filters": "geometry_type::block AND not_transparent",
-        "fallback": "gbuffers_textures_lit",
-        "pass": "Gbuffer",
-        "passIndex": 4,
+        "fallback": "gbuffers_textured_lit",
+        "dependencies": [
+            "gbuffers_terrain"
+        ],
         "hasTransparency": false,
         "hasCutout": false,
 
