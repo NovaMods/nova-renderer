@@ -10,6 +10,15 @@
 
 namespace nova {
     shader_resource_manager::shader_resource_manager(std::shared_ptr<render_context> context) : device(context->device), context(context) {
+        auto per_model_buffer_create_info = vk::BufferCreateInfo()
+                .setSize(5000 * sizeof(glm::vec4))
+                .setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+                .setSharingMode(vk::SharingMode::eExclusive)
+                .setQueueFamilyIndexCount(1)
+                .setPQueueFamilyIndices(&context->graphics_family_idx);
+
+        per_model_rezources_buffer = auto_buffer(context, per_model_buffer_create_info);
+
         create_block_textures_dsl();
         create_custom_textures_dsl();
         create_shadow_textures_dsl();
@@ -248,7 +257,7 @@ namespace nova {
         // TODO: Tune these values for actual usage needs
         vk::DescriptorPoolSize sizes[] = {
                 vk::DescriptorPoolSize().setType(vk::DescriptorType::eCombinedImageSampler).setDescriptorCount(25),
-                vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(3),
+                vk::DescriptorPoolSize().setType(vk::DescriptorType::eUniformBuffer).setDescriptorCount(5000),
         };
 
         pool_create_info.pPoolSizes = sizes;
@@ -266,12 +275,11 @@ namespace nova {
             framebuffer_top_dsl,
             framebuffer_bottom_dsl,
             block_light_dsl,
-            per_model_dsl,
         };
 
         auto alloc_info = vk::DescriptorSetAllocateInfo()
                 .setDescriptorPool(descriptor_pool)
-                .setDescriptorSetCount(9)
+                .setDescriptorSetCount(8)
                 .setPSetLayouts(layouts);
 
         auto descriptor_sets = device.allocateDescriptorSets(alloc_info);
@@ -284,7 +292,6 @@ namespace nova {
         framebuffer_top         = descriptor_sets[5];
         framebuffer_bottom      = descriptor_sets[6];
         block_light             = descriptor_sets[7];
-        per_model_descriptors   = descriptor_sets[8];
     }
 
 
@@ -305,22 +312,41 @@ namespace nova {
         device.destroyDescriptorSetLayout(block_light_dsl);
         device.destroyDescriptorSetLayout(per_model_dsl);
 
-        // Highly ineffecient but it's destruction code so idc
-        device.freeDescriptorSets(descriptor_pool, 1, &block_textures);
-        device.freeDescriptorSets(descriptor_pool, 1, &custom_textures);
-        device.freeDescriptorSets(descriptor_pool, 1, &shadow_textures);
-        device.freeDescriptorSets(descriptor_pool, 1, &depth_textures);
-        device.freeDescriptorSets(descriptor_pool, 1, &common_descriptors);
-        device.freeDescriptorSets(descriptor_pool, 1, &framebuffer_top);
-        device.freeDescriptorSets(descriptor_pool, 1, &framebuffer_bottom);
-        device.freeDescriptorSets(descriptor_pool, 1, &block_light);
-        device.freeDescriptorSets(descriptor_pool, 1, &per_model_descriptors);
+        vk::DescriptorSet sets[] = {
+                block_textures,
+                custom_textures,
+                shadow_textures,
+                depth_textures,
+                common_descriptors,
+                framebuffer_top,
+                framebuffer_bottom,
+                block_light
+        };
+
+        device.freeDescriptorSets(descriptor_pool, 8, sets);
 
         LOG(TRACE) << "Destroyed a descriptor pool and a bunch of layouts";
     }
 
     vk::PipelineLayout shader_resource_manager::get_layout_for_pass(pass_enum pass) {
         return layouts[pass];
+    }
+
+    vk::DescriptorSet shader_resource_manager::allocate_per_model_set() {
+        auto alloc_info = vk::DescriptorSetAllocateInfo()
+                .setDescriptorPool(descriptor_pool)
+                .setDescriptorSetCount(8)
+                .setPSetLayouts(&per_model_dsl);
+
+        return device.allocateDescriptorSets(alloc_info)[0];
+    }
+
+    void shader_resource_manager::free_set(vk::DescriptorSet set) {
+        device.freeDescriptorSets(descriptor_pool, 1, &set);
+    }
+
+    auto_buffer &shader_resource_manager::get_per_model_buffer() {
+        return per_model_rezources_buffer;
     }
 }
 

@@ -82,6 +82,9 @@ namespace nova {
 
         aabb bounding_box;
 
+        vk::DescriptorSet per_model_set;
+        vk::DescriptorBufferInfo per_model_buffer_range;
+
         render_object() = default;
         render_object(render_object&& other) noexcept;
         render_object(const render_object&) = default;

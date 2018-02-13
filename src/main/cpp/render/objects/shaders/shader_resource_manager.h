@@ -9,6 +9,7 @@
 #include <vulkan/vulkan.hpp>
 #include "../renderpasses/materials.h"
 #include "../../vulkan/render_context.h"
+#include "auto_allocated_buffer.h"
 
 namespace nova {
     /*!
@@ -16,11 +17,26 @@ namespace nova {
      */
     class shader_resource_manager {
     public:
-        shader_resource_manager(std::shared_ptr<render_context> context);
+        // public for easier access
+        vk::DescriptorSet block_textures;
+        vk::DescriptorSet custom_textures;
+        vk::DescriptorSet shadow_textures;
+        vk::DescriptorSet depth_textures;
+        vk::DescriptorSet common_descriptors;
+        vk::DescriptorSet framebuffer_top;
+        vk::DescriptorSet framebuffer_bottom;
+        vk::DescriptorSet block_light;
+
+        explicit shader_resource_manager(std::shared_ptr<render_context> context);
 
         ~shader_resource_manager();
 
         vk::PipelineLayout get_layout_for_pass(pass_enum pass);
+
+        vk::DescriptorSet allocate_per_model_set();
+        void free_set(vk::DescriptorSet set);
+
+        auto_buffer& get_per_model_buffer();
 
     private:
         vk::Device device;
@@ -39,15 +55,7 @@ namespace nova {
 
         vk::DescriptorPool descriptor_pool;
 
-        vk::DescriptorSet block_textures;
-        vk::DescriptorSet custom_textures;
-        vk::DescriptorSet shadow_textures;
-        vk::DescriptorSet depth_textures;
-        vk::DescriptorSet common_descriptors;
-        vk::DescriptorSet framebuffer_top;
-        vk::DescriptorSet framebuffer_bottom;
-        vk::DescriptorSet block_light;
-        vk::DescriptorSet per_model_descriptors;
+        auto_buffer per_model_rezources_buffer;
 
         /*
          * DESCRIPTOR SET LAYOUTS

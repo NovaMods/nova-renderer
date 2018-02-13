@@ -11,11 +11,11 @@
 #include <iomanip>
 #include "mesh_store.h"
 #include "../../nova_renderer.h"
-#include "mesh_definition.h"
 #include "vk_mesh.h"
 
 namespace nova {
-    mesh_store::mesh_store(std::shared_ptr<render_context> context) : context(context) {}
+    mesh_store::mesh_store(std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources)
+            : context(context), shader_resources(shader_resources) {}
 
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
         return renderables_grouped_by_shader[shader_name];
@@ -57,6 +57,10 @@ namespace nova {
         gui.type = geometry_type::gui;
         gui.name = "gui";
         gui.color_texture = command->atlas_name;
+
+        // The GUI just has a model matrix
+        gui.per_model_set = shader_resources->allocate_per_model_set();
+        gui.per_model_buffer_range = shader_resources->get_per_model_buffer().allocate_space(sizeof(glm::mat4));
 
         // TODO: Something more intelligent
         renderables_grouped_by_shader["gui"].push_back(std::move(gui));

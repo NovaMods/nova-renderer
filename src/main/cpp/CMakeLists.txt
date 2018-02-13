@@ -118,6 +118,8 @@ set(NOVA_HEADERS
         render/objects/renderpasses/renderpass_manager.h
         render/vulkan/render_context.h
         render/vulkan/command_pool.h
+        render/objects/shaders/auto_allocated_buffer.h
+        render/objects/renderpasses/materials.h
         )
 
 set(NOVA_SOURCE
@@ -162,11 +164,11 @@ set(NOVA_SOURCE
         render/objects/render_object.cpp
         render/vulkan/command_pool.cpp
         render/objects/renderpasses/renderpass_manager.cpp
-        render/objects/renderpasses/materials.h
         render/objects/renderpasses/materials.cpp
 
         render/vulkan/render_context.cpp
         render/objects/shaders/shader_resource_manager.cpp
+        render/objects/shaders/auto_allocated_buffer.cpp
         )
 
 if (WIN32)

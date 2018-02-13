@@ -27,7 +27,7 @@ namespace nova {
      */
     class mesh_store {
     public:
-        explicit mesh_store(std::shared_ptr<render_context> context);
+        mesh_store(std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources);
 
         void add_gui_buffers(mc_gui_geometry* command);
 
@@ -67,6 +67,7 @@ namespace nova {
 
     private:
         std::shared_ptr<render_context> context;
+        std::shared_ptr<shader_resource_manager> shader_resources;
 
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
 

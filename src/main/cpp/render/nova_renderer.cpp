@@ -362,13 +362,8 @@ namespace nova {
         MTR_END("RenderLoop", "process_all")
     }
 
-    inline void nova_renderer::upload_model_matrix(render_object &geom, vk_shader_program &program) const {
-        glm::mat4 model_matrix = glm::translate(glm::mat4(1), geom.position);
-
-        //glUniformMatrix4fv(model_matrix_location, 1, GL_FALSE, &model_matrix[0][0]);
-    }
-
-    void nova_renderer::upload_gui_model_matrix(vk_shader_program &program) {
+    void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj) {
+        // I technically don't need to do this every frame and
         auto config = render_settings->get_options()["settings"];
         float view_width = config["viewWidth"];
         float view_height = config["viewHeight"];

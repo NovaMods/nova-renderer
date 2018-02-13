@@ -137,6 +137,8 @@ namespace nova {
 
         camera player_camera;
 
+
+
         /*!
          * \brief Renders the GUI of Minecraft
          */
@@ -160,8 +162,6 @@ namespace nova {
         void render_shader(vk::CommandBuffer shader, vk_shader_program &program);
 
         inline void upload_gui_model_matrix(vk_shader_program &program);
-
-        void upload_model_matrix(render_object &geom, vk_shader_program &program) const;
 
         void update_gbuffer_ubos();
 
