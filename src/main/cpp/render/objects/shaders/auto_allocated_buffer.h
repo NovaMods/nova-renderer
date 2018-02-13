@@ -62,6 +62,8 @@ namespace nova {
          * \param to_free The allocation to free
          */
         void free_allocation(const vk::DescriptorBufferInfo& to_free);
+
+        VmaAllocation& get_allocation();
     private:
         std::shared_ptr<render_context> context;
 

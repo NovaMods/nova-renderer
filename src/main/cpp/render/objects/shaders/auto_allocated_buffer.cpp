@@ -16,7 +16,7 @@ namespace nova {
                         reinterpret_cast<const VkBufferCreateInfo *>(&create_info), &alloc_create,
                         reinterpret_cast<VkBuffer *>(&buffer), &allocation, nullptr);
 
-        chunks.emplace_back(0, create_info.size);
+        chunks.emplace_back(auto_buffer_chunk{vk::DeviceSize(0), create_info.size});
     }
 
     auto_buffer::~auto_buffer() {
@@ -48,7 +48,7 @@ namespace nova {
         if(chunk_to_allocate_from.range == size) {
             // Easy: unallocate the chunk, return the chunks
 
-            auto ret_val = {buffer, chunk_to_allocate_from.offset, chunk_to_allocate_from.range};
+            auto ret_val = vk::DescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, chunk_to_allocate_from.range};
             chunks.erase(chunks.begin() + index_to_allocate_from);
             return ret_val;
         }
@@ -56,7 +56,7 @@ namespace nova {
         // The chunk is bigger than we need. Allocate at the beginning of it so our iteration algorithm finds the next
         // free chunk nice and early, then shrink it
 
-        auto ret_val = {buffer, chunk_to_allocate_from.offset, size};
+        auto ret_val = vk::DescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, size};
 
         chunk_to_allocate_from.offset += size;
         chunk_to_allocate_from.range -= size;
@@ -70,11 +70,11 @@ namespace nova {
         // it... but that's marginally harder (maybe I'll do it) so let's just try to find the first slot it will fit
 
         if(chunks.empty()) {
-            chunks.emplace_back(to_free.offset, to_free.range);
+            chunks.emplace_back(auto_buffer_chunk{to_free.offset, to_free.range});
             return;
         }
 
-        auto& to_free_end = to_free.offset + to_free.range;
+        auto to_free_end = to_free.offset + to_free.range;
 
         auto& first_chunk = chunks[0];
         auto& last_chunk = chunks[chunks.size() - 1];
@@ -85,7 +85,7 @@ namespace nova {
         }
 
         if(last_chunk.offset + last_chunk.range < to_free.offset) {
-            chunks.emplace_back(to_free.offset, to_free.range);
+            chunks.emplace_back(auto_buffer_chunk{to_free.offset, to_free.range});
             return;
         }
 
@@ -96,7 +96,7 @@ namespace nova {
         }
 
         if(to_free_end < first_chunk.offset) {
-            chunks.emplace(chunks.begin(), to_free.offset, to_free.range);
+            chunks.emplace(chunks.begin(), auto_buffer_chunk{to_free.offset, to_free.range});
             return;
         }
 
@@ -128,7 +128,7 @@ namespace nova {
                     return;
                 }
 
-                chunks.emplace(chunks.begin() + i, to_free.offset, to_free.range);
+                chunks.emplace(chunks.begin() + i, auto_buffer_chunk{to_free.offset, to_free.range});
                 return;
             }
         }
@@ -136,6 +136,10 @@ namespace nova {
         // We got here... without returning our allocation to the pool. Uhm... Did we double-allocate something? This is
         // a bug in my allocator and not something that should happen during Nova so let's just crash
         LOG(FATAL) << "Could not return allocation {offset=" << to_free.offset << " range=" << to_free.range << "} which should not happen. There's probably a bug in the allocator and you need to debug it";
+    }
+
+    VmaAllocation &auto_buffer::get_allocation() {
+        return allocation;
     }
 
     vk::DeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last) {

@@ -62,7 +62,7 @@ namespace nova {
 
         ubo_manager = std::make_shared<uniform_buffer_store>();
         textures = std::make_shared<texture_manager>(context);
-        meshes = std::make_shared<mesh_store>(context);
+        meshes = std::make_shared<mesh_store>(context, shader_resources);
         inputs = std::make_shared<input_handler>();
 
 		render_settings->register_change_listener(ubo_manager.get());
@@ -209,16 +209,15 @@ namespace nova {
 
         command.bindPipeline(vk::PipelineBindPoint::eGraphics, gui_shader.get_pipeline());
 
-        upload_gui_model_matrix(gui_shader);
-
         // Render GUI objects
         std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
         for(const auto& geom : gui_geometry) {
-            // TODO: Bind the descriptor sets
             if (!geom.color_texture.empty()) {
                 auto color_texture = textures->get_texture(geom.color_texture);
                 color_texture.bind(0);
             }
+
+            command.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, shader_resources->get_layout_for_pass(pass_enum::Gbuffer), 1, 1, &geom.per_model_set, 0, nullptr);
 
             // Bind the mesh
             vk::DeviceSize offset = 0;
@@ -268,6 +267,8 @@ namespace nova {
         }
 
         LOG(DEBUG) << "Finished dealing with possible new shaderpack";
+
+        update_gui_model_matrices();
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
@@ -346,7 +347,7 @@ namespace nova {
                     textures->get_texture(*geom.data_texture).bind(2);
                 }
 
-                upload_model_matrix(geom, shader);
+                // upload_model_matrix(geom, shader);
 
                 // Bind the mesh
                 vk::DeviceSize offset = 0;
@@ -362,18 +363,25 @@ namespace nova {
         MTR_END("RenderLoop", "process_all")
     }
 
-    void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj) {
-        // I technically don't need to do this every frame and
-        auto config = render_settings->get_options()["settings"];
-        float view_width = config["viewWidth"];
-        float view_height = config["viewHeight"];
-        float scalefactor = config["scalefactor"];
-        // The GUI matrix is super simple, just a viewport transformation
-        glm::mat4 gui_model(1.0f);
-        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
-        gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
-        gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
-        gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
+    void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
+        // Send the model matrix to the buffer
+        // TODO: Cache the mapped value in the render_object
+        void* mapped_per_model_data;
+        auto allocation = shader_resources->get_per_model_buffer().get_allocation();
+        vmaMapMemory(context->allocator, allocation, &mapped_per_model_data);
+        mempcpy(mapped_per_model_data + gui_obj.per_model_buffer_range.offset, &model_matrix, sizeof(glm::mat4));
+        vmaUnmapMemory(context->allocator, allocation);
+
+        // Copy the memory to the descriptor set
+        auto write_ds = vk::WriteDescriptorSet()
+            .setDstSet(gui_obj.per_model_set)
+            .setDstBinding(0)
+            .setDstArrayElement(0)
+            .setDescriptorCount(1)
+            .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+            .setPBufferInfo((&gui_obj.per_model_buffer_range));
+
+        context->device.updateDescriptorSets(1, &write_ds, 0, nullptr);
     }
 
     void nova_renderer::update_gbuffer_ubos() {
@@ -421,6 +429,26 @@ namespace nova {
 
     std::shared_ptr<shader_resource_manager> nova_renderer::get_shader_resources() {
         return shader_resources;
+    }
+
+    void nova_renderer::update_gui_model_matrices() {
+        auto config = render_settings->get_options()["settings"];
+        float view_width = config["viewWidth"];
+        float view_height = config["viewHeight"];
+        float scalefactor = config["scalefactor"];
+        // The GUI matrix is super simple, just a viewport transformation
+        glm::mat4 gui_model(1.0f);
+        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
+        gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
+        gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
+        gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
+
+        LOG(DEBUG) << "Calculated GUI model matrix for viewWidth=" << view_width << " and viewHeight=" << view_height;
+
+        std::vector<render_object>& gui_objects = meshes->get_meshes_for_shader("gui");
+        for(const auto& gui_obj : gui_objects) {
+            upload_gui_model_matrix(gui_obj, gui_model);
+        }
     }
 
     void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {
