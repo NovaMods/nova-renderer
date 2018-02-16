@@ -42,35 +42,15 @@ namespace nova {
      * This provides a number of values that you can filter things by.
      */
     struct render_object {
+
+        /**********************************************************************************
+         * THIS STRUCT HAS MOVE OPERATORS! BE SURE TO UPDATE THEM WHEN YOU ADD NEW THINGS *
+         **********************************************************************************/
+
+
         int parent_id;  //!< The ID of the thing that owns us. Could be the ID of a chunk, entity, whatever
 
         geometry_type type;
-
-        /*!
-         * \brief The name of this render object
-         *
-         * Can have the following values:
-         * - <The name of a block>
-         * - <The name of an entity>
-         * - gui
-         * - cloud
-         * - selection_box
-         * - <The name of a particle system>
-         * - world_border
-         * - sky
-         * - horizon
-         * - stars
-         * - void
-         * - sun
-         * - moon
-         * - glint
-         * - eyes
-         * - hand
-         * - rain
-         * - snow
-         * - fullscreen_quad
-         */
-        std::string name;
 
         std::unique_ptr<vk_mesh> geometry;
 

@@ -143,7 +143,6 @@ namespace nova {
     }
 
     void glfw_vk_window::on_config_change(nlohmann::json &new_config) {
-        LOG(INFO) << "gl_glfw_window received the updated config";
     }
 
     void glfw_vk_window::on_config_loaded(nlohmann::json &config) {

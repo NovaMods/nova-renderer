@@ -15,10 +15,16 @@
 
 namespace nova {
     mesh_store::mesh_store(std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources)
-            : context(context), shader_resources(shader_resources) {}
+            : context(context), shader_resources(shader_resources) {
+        LOG(INFO) << "Does the mesh store have shader resources? " << (bool)shader_resources;
+    }
 
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
-        return renderables_grouped_by_shader[shader_name];
+        if(renderables_grouped_by_shader.find(shader_name) != renderables_grouped_by_shader.end()) {
+            return renderables_grouped_by_shader[shader_name];
+        } else {
+            return default_vector;
+        }
     }
 
     void mesh_store::add_gui_buffers(mc_gui_geometry* command) {
@@ -55,7 +61,6 @@ namespace nova {
         render_object gui = {};
         gui.geometry = std::make_unique<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
-        gui.name = "gui";
         gui.color_texture = command->atlas_name;
 
         // The GUI just has a model matrix
@@ -71,8 +76,18 @@ namespace nova {
     }
 
     void mesh_store::remove_render_objects(std::function<bool(render_object&)> filter) {
+        auto& per_model_buffer = shader_resources->get_per_model_buffer();
         for(auto& group : renderables_grouped_by_shader) {
             auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), filter);
+
+            if(removed_elements != group.second.end()) {
+                // Free the allocations of each render object
+                for(auto it = removed_elements; it != group.second.end(); ++it) {
+                    per_model_buffer.free_allocation((*it).per_model_buffer_range);
+                    shader_resources->free_set((*it).per_model_set);
+                }
+            }
+
             group.second.erase(removed_elements, group.second.end());
         }
     }
@@ -87,7 +102,6 @@ namespace nova {
             render_object obj = {};
             obj.geometry = std::make_unique<vk_mesh>(def, context);
             obj.type = geometry_type::block;
-            obj.name = "chunk";
             obj.parent_id = def.id;
             obj.color_texture = "block_color";
             obj.position = def.position;

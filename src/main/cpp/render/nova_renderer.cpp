@@ -217,7 +217,8 @@ namespace nova {
                 color_texture.bind(0);
             }
 
-            command.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, shader_resources->get_layout_for_pass(pass_enum::Gbuffer), 1, 1, &geom.per_model_set, 0, nullptr);
+            auto gbuffer_layout = shader_resources->get_layout_for_pass(pass_enum::Gbuffer);
+            command.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, gbuffer_layout, 1, 1, &geom.per_model_set, 0, nullptr);
 
             // Bind the mesh
             vk::DeviceSize offset = 0;
@@ -226,8 +227,6 @@ namespace nova {
 
             command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
         }
-
-        LOG(INFO) << std::endl;
     }
 
     bool nova_renderer::should_end() {
@@ -252,23 +251,23 @@ namespace nova {
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
 		auto& shaderpack_name = new_config["loadedShaderpack"];
-        LOG(INFO) << "Shaderpack in settings: " << shaderpack_name;
+        //LOG(TRACE) << "Shaderpack in settings: " << shaderpack_name;
 
         if(!loaded_shaderpack) {
-            LOG(DEBUG) << "There's currently no shaderpack, so we're loading a new one";
+            //LOG(TRACE) << "There's currently no shaderpack, so we're loading a new one";
             load_new_shaderpack(shaderpack_name);
             return;
         }
 
         bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
         if(shaderpack_in_settings_is_new) {
-            LOG(DEBUG) << "Shaderpack " << shaderpack_name << " is about to replace shaderpack " << loaded_shaderpack->get_name();
+            //LOG(INFO) << "Shaderpack " << shaderpack_name << " is about to replace shaderpack " << loaded_shaderpack->get_name();
             load_new_shaderpack(shaderpack_name);
         }
 
-        LOG(DEBUG) << "Finished dealing with possible new shaderpack";
+        //LOG(DEBUG) << "Finished dealing with possible new shaderpack";
 
-        update_gui_model_matrices();
+        update_gui_model_matrices(new_config);
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
@@ -408,15 +407,18 @@ namespace nova {
         vk::Result swapchain_result = {};
 
         vk::PresentInfoKHR present_info = {};
+        present_info.waitSemaphoreCount = 1;
+        present_info.pWaitSemaphores = &render_finished_semaphore;
         present_info.swapchainCount = 1;
         present_info.pSwapchains = &context->swapchain;
+        LOG(INFO) << "Assigned swapchain";
         present_info.pImageIndices = &cur_swapchain_image_index;
+        LOG(INFO) << "Assigned image index output";
         present_info.pResults = &swapchain_result;
-
-        // Ensure everything is done before we submit
-        context->graphics_queue.waitIdle();
+        LOG(INFO) << "About to submit presenting";
 
         context->present_queue.presentKHR(present_info);
+        LOG(INFO) << "Presented";
     }
 
     void nova_renderer::begin_frame() {
@@ -431,23 +433,32 @@ namespace nova {
         return shader_resources;
     }
 
-    void nova_renderer::update_gui_model_matrices() {
-        auto config = render_settings->get_options()["settings"];
+    void nova_renderer::update_gui_model_matrices(nlohmann::json &config) {
         float view_width = config["viewWidth"];
         float view_height = config["viewHeight"];
         float scalefactor = config["scalefactor"];
         // The GUI matrix is super simple, just a viewport transformation
-        glm::mat4 gui_model(1.0f);
+        gui_model = glm::mat4(1.0f);
         gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
         gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
         gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
         gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
 
-        LOG(DEBUG) << "Calculated GUI model matrix for viewWidth=" << view_width << " and viewHeight=" << view_height;
+        LOG(INFO) << "Calculated GUI model matrix for viewWidth=" << view_width << " and viewHeight=" << view_height;
 
-        std::vector<render_object>& gui_objects = meshes->get_meshes_for_shader("gui");
-        for(const auto& gui_obj : gui_objects) {
-            upload_gui_model_matrix(gui_obj, gui_model);
+        try {
+            if(!meshes) {
+                LOG(ERROR) << "Mesh store not initialized! oh no";
+                return;
+            }
+
+            std::vector<render_object> &gui_objects = meshes->get_meshes_for_shader("gui");
+            for(const auto &gui_obj : gui_objects) {
+                LOG(INFO) << "Setting the model matrix for a GUI thing";
+                upload_gui_model_matrix(gui_obj, gui_model);
+            }
+        } catch(std::exception& e) {
+            LOG(WARNING) << "Load some GUIs you fool";
         }
     }
 

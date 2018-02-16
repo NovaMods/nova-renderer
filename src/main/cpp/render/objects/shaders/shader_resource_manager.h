@@ -55,7 +55,7 @@ namespace nova {
 
         vk::DescriptorPool descriptor_pool;
 
-        auto_buffer per_model_rezources_buffer;
+        auto_buffer per_model_resources_buffer;
 
         /*
          * DESCRIPTOR SET LAYOUTS

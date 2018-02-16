@@ -17,7 +17,7 @@ namespace nova {
                 .setQueueFamilyIndexCount(1)
                 .setPQueueFamilyIndices(&context->graphics_family_idx);
 
-        per_model_rezources_buffer = auto_buffer(context, per_model_buffer_create_info);
+        per_model_resources_buffer = auto_buffer(context, per_model_buffer_create_info);
 
         create_block_textures_dsl();
         create_custom_textures_dsl();
@@ -335,7 +335,7 @@ namespace nova {
     vk::DescriptorSet shader_resource_manager::allocate_per_model_set() {
         auto alloc_info = vk::DescriptorSetAllocateInfo()
                 .setDescriptorPool(descriptor_pool)
-                .setDescriptorSetCount(8)
+                .setDescriptorSetCount(1)
                 .setPSetLayouts(&per_model_dsl);
 
         return device.allocateDescriptorSets(alloc_info)[0];
@@ -346,7 +346,7 @@ namespace nova {
     }
 
     auto_buffer &shader_resource_manager::get_per_model_buffer() {
-        return per_model_rezources_buffer;
+        return per_model_resources_buffer;
     }
 }
 

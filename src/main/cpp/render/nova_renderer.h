@@ -169,7 +169,9 @@ namespace nova {
 
         void begin_frame();
 
-        void update_gui_model_matrices();
+        void update_gui_model_matrices(nlohmann::json &json);
+
+        glm::mat4x4 gui_model;
     };
 
     void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos);

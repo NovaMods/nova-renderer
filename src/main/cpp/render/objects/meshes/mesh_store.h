@@ -70,6 +70,7 @@ namespace nova {
         std::shared_ptr<shader_resource_manager> shader_resources;
 
         std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
+        std::vector<render_object> default_vector;
 
         std::mutex chunk_parts_to_upload_lock;
         /*!

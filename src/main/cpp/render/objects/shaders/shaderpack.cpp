@@ -43,12 +43,6 @@ namespace nova {
         return loaded_shaders;
     }
 
-    shaderpack& shaderpack::operator=(const shaderpack &other) {
-        loaded_shaders = other.loaded_shaders;
-
-        return *this;
-    }
-
     std::string &shaderpack::get_name() {
         return name;
     }

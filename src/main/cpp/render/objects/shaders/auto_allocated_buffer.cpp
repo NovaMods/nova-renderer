@@ -27,10 +27,12 @@ namespace nova {
 
     vk::DescriptorBufferInfo auto_buffer::allocate_space(uint32_t size) {
         int32_t index_to_allocate_from = -1;
-        // Iterate backwards so that inserting or deleting has a minimal cost
-        for(auto i = static_cast<int32_t>(chunks.size() - 1); i >= 0; i++) {
-            if(chunks[i].range <= size) {
-                index_to_allocate_from = i;
+        if(!chunks.empty()) {
+            // Iterate backwards so that inserting or deleting has a minimal cost
+            for(auto i = static_cast<int32_t>(chunks.size() - 1); i >= 0; --i) {
+                if(chunks[i].range >= size) {
+                    index_to_allocate_from = i;
+                }
             }
         }
 
@@ -39,7 +41,7 @@ namespace nova {
             auto ss = std::stringstream{};
             ss << "No big enough slots in the buffer. There's " << chunks.size() << " slots. If there's a lot then you got some fragmentation";
 
-            LOG(ERROR) << ss.str();
+            LOG(ERROR) << "No big enough slots in the buffer. There's " << chunks.size() << " slots. If there's a lot then you got some fragmentation";
             // Halt execution like a boss
             throw std::runtime_error(ss.str());
         }

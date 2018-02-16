@@ -40,8 +40,6 @@ namespace nova {
 
 		std::unordered_map<std::string, vk_shader_program> &get_loaded_shaders();
 
-        shaderpack& operator=(const shaderpack& other);
-
         std::string& get_name();
 
     private:

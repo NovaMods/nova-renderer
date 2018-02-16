@@ -20,8 +20,6 @@ namespace nova {
     }
 
     void uniform_buffer_store::on_config_change(nlohmann::json &new_config) {
-        LOG(DEBUG) << "UBO store received updated config";
-
         // We'll probably also want to update the per frame uniforms so that we have the correct aspect ratio and
         // whatnot
         update_per_frame_uniforms(new_config);
