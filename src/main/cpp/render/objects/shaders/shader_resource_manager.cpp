@@ -11,13 +11,13 @@
 namespace nova {
     shader_resource_manager::shader_resource_manager(std::shared_ptr<render_context> context) : device(context->device), context(context) {
         auto per_model_buffer_create_info = vk::BufferCreateInfo()
-                .setSize(5000 * sizeof(glm::vec4))
-                .setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+                .setSize(5000 * sizeof(glm::mat4))
+                .setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer)
                 .setSharingMode(vk::SharingMode::eExclusive)
                 .setQueueFamilyIndexCount(1)
                 .setPQueueFamilyIndices(&context->graphics_family_idx);
 
-        per_model_resources_buffer = auto_buffer(context, per_model_buffer_create_info);
+        per_model_resources_buffer = auto_buffer(context, per_model_buffer_create_info, true);
 
         create_block_textures_dsl();
         create_custom_textures_dsl();

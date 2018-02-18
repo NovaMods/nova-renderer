@@ -362,14 +362,20 @@ namespace nova {
         MTR_END("RenderLoop", "process_all")
     }
 
+    void nova_memcpy(uint8_t* dst, const uint8_t* src, size_t size) {
+        // I'm no C wizard so deal with it
+        for(auto i = 0; i < size; i++) {
+            LOG(INFO) << "Copying " << (uint32_t)*src << " into memory location " << std::hex << &src[i] << ". That's byte " << i << " out of " << size;
+            dst[i] = src[i];
+        }
+    }
+
     void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
         // Send the model matrix to the buffer
-        // TODO: Cache the mapped value in the render_object
-        void* mapped_per_model_data;
-        auto allocation = shader_resources->get_per_model_buffer().get_allocation();
-        vmaMapMemory(context->allocator, allocation, &mapped_per_model_data);
-        mempcpy(mapped_per_model_data + gui_obj.per_model_buffer_range.offset, &model_matrix, sizeof(glm::mat4));
-        vmaUnmapMemory(context->allocator, allocation);
+        // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
+        auto& allocation = shader_resources->get_per_model_buffer().get_allocation_info();
+        memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, sizeof(glm::mat4));
+        LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
 
         // Copy the memory to the descriptor set
         auto write_ds = vk::WriteDescriptorSet()
@@ -381,6 +387,7 @@ namespace nova {
             .setPBufferInfo((&gui_obj.per_model_buffer_range));
 
         context->device.updateDescriptorSets(1, &write_ds, 0, nullptr);
+        LOG(INFO) << "Updated the descriptor set";
     }
 
     void nova_renderer::update_gbuffer_ubos() {

@@ -8,13 +8,17 @@
 #include "auto_allocated_buffer.h"
 
 namespace nova {
-    auto_buffer::auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info) : context(context) {
+    auto_buffer::auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, bool mapped = false) : context(context) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
+        if(mapped) {
+            alloc_create.flags |= VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        }
+
         vmaCreateBuffer(context->allocator,
                         reinterpret_cast<const VkBufferCreateInfo *>(&create_info), &alloc_create,
-                        reinterpret_cast<VkBuffer *>(&buffer), &allocation, nullptr);
+                        reinterpret_cast<VkBuffer *>(&buffer), &allocation, &allocation_info);
 
         chunks.emplace_back(auto_buffer_chunk{vk::DeviceSize(0), create_info.size});
     }
@@ -142,6 +146,10 @@ namespace nova {
 
     VmaAllocation &auto_buffer::get_allocation() {
         return allocation;
+    }
+
+    VmaAllocationInfo &auto_buffer::get_allocation_info() {
+        return allocation_info;
     }
 
     vk::DeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last) {

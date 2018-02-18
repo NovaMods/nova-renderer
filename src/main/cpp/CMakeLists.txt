@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(renderer)
+project(nova-renderer)
 
 # Functions
 function(nova_set_all_target_outputs target output_dir)

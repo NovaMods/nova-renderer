@@ -32,8 +32,9 @@ namespace nova {
          * \brief Creates a new auto-allocating buffer of the given size on the provided device
          * \param total_size The size of the buffer
          * \param device The device to create the buffer on
+         * \param mapped If true, make this buffer always mapped
          */
-        auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info);
+        auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, bool mapped);
 
         /*!
          * \brief Destroys the buffer on the device
@@ -64,6 +65,7 @@ namespace nova {
         void free_allocation(const vk::DescriptorBufferInfo& to_free);
 
         VmaAllocation& get_allocation();
+        VmaAllocationInfo& get_allocation_info();
     private:
         std::shared_ptr<render_context> context;
 
@@ -72,6 +74,7 @@ namespace nova {
         VmaAllocation allocation;
 
         std::vector<auto_buffer_chunk> chunks;
+        VmaAllocationInfo allocation_info;
     };
 
     vk::DeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last);
