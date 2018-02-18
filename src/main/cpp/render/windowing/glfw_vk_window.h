@@ -10,7 +10,7 @@
 #include <json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../data_loading/settings.h"
-#if __win32__
+#if __WIN32__
 #include <RenderDocManager.h>
 #endif
 #include <glm/glm.hpp>
@@ -78,7 +78,7 @@ namespace nova {
         static bool active;
         GLFWwindow *window;
         glm::ivec2 window_dimensions;
-#if __win32__
+#if __WIN32__
         std::unique_ptr<RenderDocManager> renderdoc_manager;
 #endif
         struct window_parameters windowed_window_parameters;

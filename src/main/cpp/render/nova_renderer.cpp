@@ -418,14 +418,15 @@ namespace nova {
         present_info.pWaitSemaphores = &render_finished_semaphore;
         present_info.swapchainCount = 1;
         present_info.pSwapchains = &context->swapchain;
-        LOG(INFO) << "Assigned swapchain";
         present_info.pImageIndices = &cur_swapchain_image_index;
-        LOG(INFO) << "Assigned image index output";
         present_info.pResults = &swapchain_result;
-        LOG(INFO) << "About to submit presenting";
+
+        LOG(INFO) << "ABout to wait for the queue to be idle";
+        context->graphics_queue.waitIdle();
 
         context->present_queue.presentKHR(present_info);
-        LOG(INFO) << "Presented";
+
+        //game_window->end_frame();
     }
 
     void nova_renderer::begin_frame() {

@@ -42,7 +42,7 @@ namespace nova {
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TODO: Deal with this later
-        window = glfwCreateWindow((int)view_width, (int)view_height, "Minecraft Nova Renderer", NULL, NULL);
+        window = glfwCreateWindow((int)view_width, (int)view_height, "Minecraft Nova Renderer", nullptr, nullptr);
         if(window == nullptr) {
             LOG(FATAL) << "Could not initialize window :(";
         }
@@ -50,9 +50,9 @@ namespace nova {
 
         glfwGetWindowSize(window, &window_dimensions.x, &window_dimensions.y);
 
-#if __win32__
-        renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
-        LOG(INFO) << "Hooked into RenderDoc";
+#if __WIN32__
+        //renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
+        //LOG(INFO) << "Hooked into RenderDoc";
 #endif
 
         glfwSetKeyCallback(window, key_callback);
@@ -121,8 +121,7 @@ namespace nova {
     }
 
     void glfw_vk_window::end_frame() {
-        // We're in thread 29
-        glfwSwapBuffers(window);
+        //glfwSwapBuffers(window);
         glfwPollEvents();
 
         glm::ivec2 new_window_size;
