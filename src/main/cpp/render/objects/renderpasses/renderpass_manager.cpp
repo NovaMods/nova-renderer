@@ -101,6 +101,7 @@ namespace nova {
     }
 
     const vk::Framebuffer renderpass_manager::get_framebuffer(uint32_t framebuffer_idx) const {
+        LOG(INFO) << "Getting framebuffer " << framebuffer_idx << ", which is " << final_framebuffers[framebuffer_idx];
         return final_framebuffers[framebuffer_idx];
     }
 

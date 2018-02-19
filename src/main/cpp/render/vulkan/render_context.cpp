@@ -50,6 +50,7 @@ namespace nova {
         create_info.ppEnabledExtensionNames = extensions.data();
         create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 
+#define NDEBUG
 #ifdef NDEBUG
         create_info.enabledLayerCount = 0;
 #else
@@ -60,6 +61,7 @@ namespace nova {
         create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
         create_info.ppEnabledLayerNames = validation_layers.data();
 #endif
+#undef NDEBUG
 
         vk_instance = vk::createInstance(create_info, nullptr);
     }

@@ -362,14 +362,6 @@ namespace nova {
         MTR_END("RenderLoop", "process_all")
     }
 
-    void nova_memcpy(uint8_t* dst, const uint8_t* src, size_t size) {
-        // I'm no C wizard so deal with it
-        for(auto i = 0; i < size; i++) {
-            LOG(INFO) << "Copying " << (uint32_t)*src << " into memory location " << std::hex << &src[i] << ". That's byte " << i << " out of " << size;
-            dst[i] = src[i];
-        }
-    }
-
     void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
         // Send the model matrix to the buffer
         // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
@@ -421,12 +413,9 @@ namespace nova {
         present_info.pImageIndices = &cur_swapchain_image_index;
         present_info.pResults = &swapchain_result;
 
-        LOG(INFO) << "ABout to wait for the queue to be idle";
-        context->graphics_queue.waitIdle();
-
         context->present_queue.presentKHR(present_info);
 
-        //game_window->end_frame();
+        game_window->end_frame();
     }
 
     void nova_renderer::begin_frame() {

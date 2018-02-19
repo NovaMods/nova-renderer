@@ -124,12 +124,12 @@ namespace nova {
         //glfwSwapBuffers(window);
         glfwPollEvents();
 
-        glm::ivec2 new_window_size;
+        /*glm::ivec2 new_window_size;
         glfwGetFramebufferSize(window, &new_window_size.x, &new_window_size.y);
 		
         if(new_window_size != window_dimensions) {
             set_framebuffer_size(new_window_size);
-        }
+        }*/
     }
 
     void glfw_vk_window::set_framebuffer_size(glm::ivec2 new_framebuffer_size) {
