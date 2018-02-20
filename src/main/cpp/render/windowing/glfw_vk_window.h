@@ -52,7 +52,7 @@ namespace nova {
 
         void set_fullscreen(bool fullscreen);
 
-        glm::ivec2 get_size();
+        glm::ivec2& get_size();
 
         bool should_close();
 

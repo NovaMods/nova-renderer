@@ -14,7 +14,7 @@
 #include <easylogging++.h>
 
 namespace nova {
-    shaderpack::shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass, std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources) :
+    shaderpack::shaderpack(const std::string &name, std::vector<std::pair<material_state, shader_definition>>& shaders, const vk::RenderPass our_renderpass, std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources, glm::ivec2& window_size) :
             name(name), device(context->device) {
         auto pipeline_cache = context->pipeline_cache;
 
@@ -23,7 +23,7 @@ namespace nova {
             if(!shader_def.vertex_source.empty() && !shader_def.fragment_source.empty()) {
                 LOG(TRACE) << "Adding shader " << shader.second.name;
                 try {
-                    loaded_shaders.emplace(shader.second.name, vk_shader_program(shader.second, shader.first, our_renderpass, pipeline_cache, device, shader_resources));
+                    loaded_shaders.emplace(shader.second.name, vk_shader_program(shader.second, shader.first, our_renderpass, pipeline_cache, device, shader_resources, window_size));
                 } catch (std::exception &e) {
                     LOG(ERROR) << "Could not load shader " << shader.second.name << " because " << e.what();
                 }

@@ -65,7 +65,8 @@ namespace nova {
         vk::PresentModeKHR present_mode;
         vk::Format swapchain_format;
         vk::Format depth_format;
-        std::vector<vk::ImageView> swapchain_images;
+        std::vector<vk::ImageView> swapchain_image_views;
+        std::vector<vk::Image> swapchain_images;
 
         std::vector<gpu_info> gpus;
 

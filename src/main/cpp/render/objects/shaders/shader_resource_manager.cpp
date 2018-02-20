@@ -17,7 +17,8 @@ namespace nova {
                 .setQueueFamilyIndexCount(1)
                 .setPQueueFamilyIndices(&context->graphics_family_idx);
 
-        per_model_resources_buffer = auto_buffer(context, per_model_buffer_create_info, true);
+        auto uniform_buffer_offset_alignment = context->gpu.props.limits.minUniformBufferOffsetAlignment;
+        per_model_resources_buffer = auto_buffer(context, per_model_buffer_create_info, uniform_buffer_offset_alignment, true);
 
         create_block_textures_dsl();
         create_custom_textures_dsl();

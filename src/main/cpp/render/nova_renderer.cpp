@@ -123,7 +123,6 @@ namespace nova {
         // Make geometry for any new chunks
         meshes->upload_new_geometry();
 
-
         // upload shadow UBO things
 
         render_shadow_pass();
@@ -154,9 +153,6 @@ namespace nova {
         main_command_buffer.buffer.endRenderPass();
 
         main_command_buffer.buffer.end();
-
-        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint32_t>::max(),
-                                                                        swapchain_image_acquire_semaphore, vk::Fence()).value;
 
         vk::Semaphore wait_semaphores[] = {swapchain_image_acquire_semaphore};
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
@@ -222,8 +218,13 @@ namespace nova {
 
             // Bind the mesh
             vk::DeviceSize offset = 0;
-            command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
             command.bindIndexBuffer(geom.geometry->indices, offset, vk::IndexType::eUint32);
+
+            command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
+            offset = 12;
+            command.bindVertexBuffers(1, 1, &geom.geometry->vertex_buffer, &offset);
+            offset = 20;
+            command.bindVertexBuffers(2, 1, &geom.geometry->vertex_buffer, &offset);
 
             command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
         }
@@ -305,7 +306,7 @@ namespace nova {
 
         renderpasses = std::make_shared<renderpass_manager>(im_lazy, im_lazy, context->swapchain_extent, context);
 
-        loaded_shaderpack = std::make_shared<shaderpack>(new_shaderpack_name, shader_definitions, renderpasses->get_final_renderpass(), context, shader_resources);
+        loaded_shaderpack = std::make_shared<shaderpack>(new_shaderpack_name, shader_definitions, renderpasses->get_final_renderpass(), context, shader_resources, game_window->get_size());
 
         LOG(INFO) << "Loading complete";
 		
@@ -366,7 +367,7 @@ namespace nova {
         // Send the model matrix to the buffer
         // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
         auto& allocation = shader_resources->get_per_model_buffer().get_allocation_info();
-        memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, sizeof(glm::mat4));
+        memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
         LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
 
         // Copy the memory to the descriptor set
@@ -403,6 +404,9 @@ namespace nova {
     }
 
     void nova_renderer::end_frame() {
+        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint32_t>::max(),
+                                                                        swapchain_image_acquire_semaphore, vk::Fence()).value;
+
         vk::Result swapchain_result = {};
 
         vk::PresentInfoKHR present_info = {};

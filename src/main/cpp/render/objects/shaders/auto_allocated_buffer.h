@@ -34,7 +34,7 @@ namespace nova {
          * \param device The device to create the buffer on
          * \param mapped If true, make this buffer always mapped
          */
-        auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, bool mapped);
+        auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
 
         /*!
          * \brief Destroys the buffer on the device
@@ -55,7 +55,7 @@ namespace nova {
          * \param size The size, in bytes, of the space that you need
          * \return A representation of the allocation that's ready for use in a descriptor set
          */
-        vk::DescriptorBufferInfo allocate_space(uint32_t size);
+        vk::DescriptorBufferInfo allocate_space(uint64_t size);
 
         /*!
          * \brief Frees the provided allocation
@@ -75,6 +75,7 @@ namespace nova {
 
         std::vector<auto_buffer_chunk> chunks;
         VmaAllocationInfo allocation_info;
+        uint64_t min_alloc_size;
     };
 
     vk::DeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last);

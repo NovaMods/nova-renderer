@@ -11,9 +11,10 @@
 #include "../../vulkan/render_context.h"
 #include "shader_resource_manager.h"
 #include "../../nova_renderer.h"
+#include "../../windowing/glfw_vk_window.h"
 
 namespace nova {
-    vk_shader_program::vk_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources)
+    vk_shader_program::vk_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources, glm::ivec2& window_size)
             : name(source.name), device(device), filter(source.filter_expression), shader_resources(shader_resources) {
 
         LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
@@ -22,7 +23,7 @@ namespace nova {
         create_shader_module(source.fragment_source, vk::ShaderStageFlagBits::eFragment);
         LOG(TRACE) << "Created fragment shader";
 
-        create_pipeline(renderpass, material, pipeline_cache);
+        create_pipeline(renderpass, material, pipeline_cache, window_size);
         LOG(TRACE) << "Created pipeline";
     }
 
@@ -48,7 +49,7 @@ namespace nova {
         other.tessellation_evaluation_module = std::experimental::optional<vk::ShaderModule>{};
     }
 
-    void vk_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache) {
+    void vk_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache, glm::ivec2& window_size) {
         // TODO: vkResetFences seems to happen from here?
         // Creates a pipeline out of compiled shaders
         auto states_vec = material.states.value_or(std::vector<state_enum>{});
@@ -93,20 +94,24 @@ namespace nova {
         std::vector<vk::VertexInputAttributeDescription> attribute_descriptions;
 
         // Location in shader, buffer binding, data format, offset in buffer
-        attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
+        attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);
+        attribute_descriptions.emplace_back(1, 0, vk::Format::eR32G32Sfloat,    12);
+        attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32B32A32Sfloat, 20);
+
+        /*attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
         attribute_descriptions.emplace_back(1, 0, vk::Format::eR8G8B8A8Unorm,   12);    // Color
         attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32Sfloat,    16);    // UV
         attribute_descriptions.emplace_back(3, 0, vk::Format::eR16G16Unorm,     24);    // Lightmap UV
         attribute_descriptions.emplace_back(4, 0, vk::Format::eR32G32B32Sfloat, 32);    // Normal
-        attribute_descriptions.emplace_back(5, 0, vk::Format::eR32G32B32Sfloat, 48);    // Tangent
+        attribute_descriptions.emplace_back(5, 0, vk::Format::eR32G32B32Sfloat, 48);    // Tangent*/
 
         // Binding, stride, input rate
-        binding_descriptions.emplace_back(0, 56, vk::VertexInputRate::eVertex);         // Position
-        binding_descriptions.emplace_back(1, 56, vk::VertexInputRate::eVertex);         // Color
-        binding_descriptions.emplace_back(2, 56, vk::VertexInputRate::eVertex);         // UV
-        binding_descriptions.emplace_back(3, 56, vk::VertexInputRate::eVertex);         // Lightmap
-        binding_descriptions.emplace_back(4, 56, vk::VertexInputRate::eVertex);         // Normal
-        binding_descriptions.emplace_back(5, 56, vk::VertexInputRate::eVertex);         // Tangent
+        binding_descriptions.emplace_back(0, 36, vk::VertexInputRate::eVertex);         // Position
+        binding_descriptions.emplace_back(1, 36, vk::VertexInputRate::eVertex);         // Color
+        binding_descriptions.emplace_back(2, 36, vk::VertexInputRate::eVertex);         // UV
+        //binding_descriptions.emplace_back(3, 56, vk::VertexInputRate::eVertex);         // Lightmap
+        //binding_descriptions.emplace_back(4, 56, vk::VertexInputRate::eVertex);         // Normal
+        //binding_descriptions.emplace_back(5, 56, vk::VertexInputRate::eVertex);         // Tangent
 
         vertex_input_state_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
         vertex_input_state_create_info.pVertexAttributeDescriptions = attribute_descriptions.data();
@@ -139,8 +144,8 @@ namespace nova {
         vk::Viewport viewport = {};
         viewport.x = 0;
         viewport.y = 0;
-        viewport.width = 1;
-        viewport.height = 1;
+        viewport.width = window_size.x;
+        viewport.height = window_size.y;
         viewport.minDepth = 0;
         viewport.maxDepth = 1;
 

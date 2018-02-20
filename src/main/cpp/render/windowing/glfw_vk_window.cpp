@@ -116,7 +116,7 @@ namespace nova {
         return (bool) glfwWindowShouldClose(window);
     }
 
-    glm::ivec2 glfw_vk_window::get_size() {
+    glm::ivec2& glfw_vk_window::get_size() {
         return window_dimensions;
     }
 
@@ -137,7 +137,6 @@ namespace nova {
         settings["settings"]["viewWidth"] = new_framebuffer_size.x;
         settings["settings"]["viewHeight"] = new_framebuffer_size.y;
         window_dimensions = new_framebuffer_size;
-        //glViewport(0, 0, window_dimensions.x, window_dimensions.y);
         nova_renderer::instance->get_render_settings().update_config_changed();
     }
 

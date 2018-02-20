@@ -50,7 +50,7 @@ namespace nova {
         create_info.ppEnabledExtensionNames = extensions.data();
         create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 
-#define NDEBUG
+//#define NDEBUG
 #ifdef NDEBUG
         create_info.enabledLayerCount = 0;
 #else
@@ -61,7 +61,7 @@ namespace nova {
         create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
         create_info.ppEnabledLayerNames = validation_layers.data();
 #endif
-#undef NDEBUG
+//#undef NDEBUG
 
         vk_instance = vk::createInstance(create_info, nullptr);
     }
@@ -294,7 +294,7 @@ namespace nova {
         this->present_mode = present_mode;
         swapchain_extent = extent;
 
-        std::vector<vk::Image> swapchain_images = device.getSwapchainImagesKHR(swapchain);
+        swapchain_images = device.getSwapchainImagesKHR(swapchain);
         if(swapchain_images.empty()) {
             LOG(FATAL) << "The swapchain returned zero images";
         }
@@ -320,7 +320,7 @@ namespace nova {
 
             vk::ImageView image_view = device.createImageView(image_view_create_info);
 
-            this->swapchain_images.push_back(image_view);
+            this->swapchain_image_views.push_back(image_view);
         }
 
         // This block just kinda checks that thhe depth bufer we want is available
@@ -418,7 +418,7 @@ namespace nova {
 
         device.destroyPipelineCache(pipeline_cache);
 
-        for(auto& iv : swapchain_images) {
+        for(auto& iv : swapchain_image_views) {
             device.destroyImageView(iv);
         }
 

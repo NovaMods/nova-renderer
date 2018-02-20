@@ -8,12 +8,13 @@
 #include "auto_allocated_buffer.h"
 
 namespace nova {
-    auto_buffer::auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, bool mapped = false) : context(context) {
+    auto_buffer::auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped = false) :
+            context(context), min_alloc_size(min_alloc_size) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
         if(mapped) {
-            alloc_create.flags |= VMA_ALLOCATION_CREATE_MAPPED_BIT;
+            alloc_create.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
         }
 
         vmaCreateBuffer(context->allocator,
@@ -29,7 +30,8 @@ namespace nova {
         }
     }
 
-    vk::DescriptorBufferInfo auto_buffer::allocate_space(uint32_t size) {
+    vk::DescriptorBufferInfo auto_buffer::allocate_space(uint64_t size) {
+        size = size > min_alloc_size ? size : min_alloc_size;
         int32_t index_to_allocate_from = -1;
         if(!chunks.empty()) {
             // Iterate backwards so that inserting or deleting has a minimal cost

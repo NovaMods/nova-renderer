@@ -81,11 +81,11 @@ namespace nova {
     }
 
     void renderpass_manager::create_final_framebuffers(const vk::Extent2D &window_size) {
-        final_framebuffers.reserve(context->swapchain_images.size());
+        final_framebuffers.reserve(context->swapchain_image_views.size());
 
-        for(size_t i = 0; i < context->swapchain_images.size(); i++) {
+        for(size_t i = 0; i < context->swapchain_image_views.size(); i++) {
             vk::ImageView attachments[] = {
-                    context->swapchain_images[i]
+                    context->swapchain_image_views[i]
             };
 
             vk::FramebufferCreateInfo framebuffer_create_info = {};
@@ -101,7 +101,6 @@ namespace nova {
     }
 
     const vk::Framebuffer renderpass_manager::get_framebuffer(uint32_t framebuffer_idx) const {
-        LOG(INFO) << "Getting framebuffer " << framebuffer_idx << ", which is " << final_framebuffers[framebuffer_idx];
         return final_framebuffers[framebuffer_idx];
     }
 
