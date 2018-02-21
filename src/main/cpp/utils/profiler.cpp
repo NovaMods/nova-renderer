@@ -34,6 +34,6 @@ namespace nova {
             ss << "Profiled section " << item.first << " has taken an total of " << double(std::chrono::duration_cast<std::chrono::nanoseconds>(cur_profiler_data.total_duration).count()) / 1000000.0f << "ms to execute since the game began\n";
         }
 
-        LOG_EVERY_N(100, DEBUG) << ss.str();
+        //LOG_EVERY_N(100, DEBUG) << ss.str();
     }
 }

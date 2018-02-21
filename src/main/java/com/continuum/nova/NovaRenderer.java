@@ -413,6 +413,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         String filters = NovaNative.INSTANCE.get_shaders_and_filters();
         Profiler.end("load_shaderpack");
 
+        LOG.info("Received filters `{}`", filters);
+
         Profiler.start("build_filters");
         String[] filtersSplit = filters.split("\n");
 

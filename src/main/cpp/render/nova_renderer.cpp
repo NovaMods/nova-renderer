@@ -351,6 +351,8 @@ namespace nova {
                     textures->get_texture(*geom.data_texture).bind(2);
                 }
 
+                textures->get_texture("lightmap").bind(3);
+
                 upload_model_matrix(geom, shader);
 
                 profiler::start("drawcall");
