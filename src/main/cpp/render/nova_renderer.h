@@ -169,7 +169,7 @@ namespace nova {
 
         void begin_frame();
 
-        void update_gui_model_matrices(nlohmann::json &json);
+        void update_gui_model_matrices();
 
         glm::mat4x4 gui_model;
     };

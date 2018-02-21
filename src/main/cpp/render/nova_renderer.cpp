@@ -170,7 +170,22 @@ namespace nova {
 
         context->graphics_queue.submit(1, &submit_info, vk::Fence());
 
-        end_frame();
+        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint32_t>::max(),
+                                                                        swapchain_image_acquire_semaphore, vk::Fence()).value;
+
+        vk::Result swapchain_result = {};
+
+        vk::PresentInfoKHR present_info = {};
+        present_info.waitSemaphoreCount = 1;
+        present_info.pWaitSemaphores = &render_finished_semaphore;
+        present_info.swapchainCount = 1;
+        present_info.pSwapchains = &context->swapchain;
+        present_info.pImageIndices = &cur_swapchain_image_index;
+        present_info.pResults = &swapchain_result;
+
+        context->present_queue.presentKHR(present_info);
+
+        game_window->end_frame();
     }
 
     void nova_renderer::render_shadow_pass() {
@@ -199,6 +214,8 @@ namespace nova {
 
     void nova_renderer::render_gui(vk::CommandBuffer command) {
         LOG(TRACE) << "Rendering GUI";
+
+        update_gui_model_matrices();
 
         // Bind all the GUI data
         auto &gui_shader = loaded_shaderpack->get_shader("gui");
@@ -252,23 +269,16 @@ namespace nova {
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
 		auto& shaderpack_name = new_config["loadedShaderpack"];
-        //LOG(TRACE) << "Shaderpack in settings: " << shaderpack_name;
 
         if(!loaded_shaderpack) {
-            //LOG(TRACE) << "There's currently no shaderpack, so we're loading a new one";
             load_new_shaderpack(shaderpack_name);
             return;
         }
 
         bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
         if(shaderpack_in_settings_is_new) {
-            //LOG(INFO) << "Shaderpack " << shaderpack_name << " is about to replace shaderpack " << loaded_shaderpack->get_name();
             load_new_shaderpack(shaderpack_name);
         }
-
-        //LOG(DEBUG) << "Finished dealing with possible new shaderpack";
-
-        update_gui_model_matrices(new_config);
     }
 
     void nova_renderer::on_config_loaded(nlohmann::json &config) {
@@ -404,22 +414,7 @@ namespace nova {
     }
 
     void nova_renderer::end_frame() {
-        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint32_t>::max(),
-                                                                        swapchain_image_acquire_semaphore, vk::Fence()).value;
 
-        vk::Result swapchain_result = {};
-
-        vk::PresentInfoKHR present_info = {};
-        present_info.waitSemaphoreCount = 1;
-        present_info.pWaitSemaphores = &render_finished_semaphore;
-        present_info.swapchainCount = 1;
-        present_info.pSwapchains = &context->swapchain;
-        present_info.pImageIndices = &cur_swapchain_image_index;
-        present_info.pResults = &swapchain_result;
-
-        context->present_queue.presentKHR(present_info);
-
-        game_window->end_frame();
     }
 
     void nova_renderer::begin_frame() {
@@ -434,7 +429,8 @@ namespace nova {
         return shader_resources;
     }
 
-    void nova_renderer::update_gui_model_matrices(nlohmann::json &config) {
+    void nova_renderer::update_gui_model_matrices() {
+        auto& config = render_settings->get_options()["settings"];
         float view_width = config["viewWidth"];
         float view_height = config["viewHeight"];
         float scalefactor = config["scalefactor"];
