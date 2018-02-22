@@ -178,7 +178,7 @@ updatenames.sh
 conf/
 jars/
 !jars/config/
-!jars/shaderpacks/default/
+!jars/shaderpacks/
 docs/
 runtime/
 temp/
