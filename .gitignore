@@ -262,3 +262,6 @@ updateids*
 updatemcp*
 updatemd5*
 updatenames*
+
+**.cbp
+**.vs
