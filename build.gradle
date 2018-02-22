@@ -28,7 +28,7 @@ jar {
         attributes 'Implementation-Title': 'Nova Renderer',
                    'Implementation-Version': version,
                    'Main-Class': 'Start'
-    }	
+    }
 }
 
 task invokeCMake(type: Exec) {
@@ -59,7 +59,7 @@ task buildDll(type: Exec, dependsOn: invokeCMake) {
         if(Os.isFamily(Os.FAMILY_WINDOWS)) {
             commandLine 'mingw32-make', '-f', 'Makefile', 'nova-renderer'
         } else {
-            commandLine 'make', '-F', 'Makefile', 'nova-renderer'
+            commandLine 'make', '-f', 'Makefile', 'nova-renderer'
         }
     } else if(hasMSVC()) {
         commandLine 'msbuild', '/t:Build', '/m', 'nova-renderer.vcxproj'
@@ -83,6 +83,12 @@ task runNova(type: JavaExec, dependsOn: ['buildDll', 'build']) {
     workingDir = "jars"
 }
 
+task reRunNova(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'Start'
+    jvmArgs = ["-Djava.library.path=versions/1.10/1.10-natives"]
+    workingDir = "jars"
+}
 // Set the source directory
 sourceSets {
     main {
@@ -108,7 +114,7 @@ dependencies {
 
     // JNA, for calling the C++ code
     // compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
-    
+
     compile group: 'io.github.java-graphics', name: 'glm', version: '1.0.1'
 
     if (org.gradle.internal.os.OperatingSystem.current().isLinux()) {
