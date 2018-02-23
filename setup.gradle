@@ -215,8 +215,8 @@ task makePatch() << {
     new ByteArrayOutputStream().withStream { os ->
         try {
             def result = exec {
-                commandLine 'git', 'diff', '-U0', 'origin/minecraft-1.10-mcp'
-                workingDir 'src/main/java/net'
+                commandLine 'git', 'diff', '-U0','--color=never','--no-index', 'mcp/src/minecraft/net','src/main/java/net',"> patches/nova.patch"
+                workingDir './'
 
                 standardOutput = os
                 errorOutput = os
@@ -227,7 +227,7 @@ task makePatch() << {
         def outputAsString = os.toString()
         println "${outputAsString}"
 
-        new File("patches/nova.patch").withWriter { out -> out.println outputAsString }
+        //new File("patches/nova.patch").withWriter { out -> out.println outputAsString }
     }
 }
 
