@@ -165,10 +165,10 @@ task applyPatch(dependsOn: copyMcPack) {
             try {
                 def result = exec {
                     if (OperatingSystem.current().isWindows()) {
-                        commandLine "git","apply","--reject","--unidiff-zero","-v","--whitespace=fix","--no-index","--directory","src/main/java/net", "${project.projectDir}/patches/nova.patch"
+                        commandLine "git","apply","--reject","--unidiff-zero","-v","--whitespace=fix","--ignore-whitespace","--no-index","--directory","src/main/java/net", "${project.projectDir}/patches/nova.patch"
                         workingDir './'
                     } else {
-                        commandLine "git","apply","--reject","--unidiff-zero","-v","--whitespace=fix","--no-index","--directory","src/main/java/net", "${project.projectDir}/patches/nova.patch"
+                        commandLine "git","apply","--reject","--unidiff-zero","-v","--whitespace=fix","--ignore-whitespace","--no-index","--directory","src/main/java/net", "${project.projectDir}/patches/nova.patch"
                         workingDir './'
                     }
 
