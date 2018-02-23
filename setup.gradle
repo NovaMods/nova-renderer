@@ -85,16 +85,16 @@ task decompileMcp(dependsOn: downloadMcp) {
                 if (OperatingSystem.current().isWindows()) {
                     if(System.properties.contains("MCP_LOC")) {
                         println 'Using MCP location ' + System.getProperty('MCP_LOC')
-                        commandLine "${project.projectDir}/mcp/runtime/bin/python/python_mcp", "${project.projectDir}/mcp/runtime/decompile.py", "--client","--noreformat", '-m', System.properties.getProperty("MCP_LOC")
+                        commandLine "${project.projectDir}/mcp/runtime/bin/python/python_mcp", "${project.projectDir}/mcp/runtime/decompile.py", "--client", '-m', System.properties.getProperty("MCP_LOC")
                     } else {
-                        commandLine "${project.projectDir}/mcp/runtime/bin/python/python_mcp", "${project.projectDir}/mcp/runtime/decompile.py", "--client","--noreformat"
+                        commandLine "${project.projectDir}/mcp/runtime/bin/python/python_mcp", "${project.projectDir}/mcp/runtime/decompile.py", "--client"
                     }
                     workingDir './mcp'
                 } else {
                     if(System.properties.contains("MCP_LOC")) {
-                        commandLine 'python2.7', "${project.projectDir}/mcp/runtime/decompile.py", "--client","--noreformat", '-m', System.properties.getProperty("MCP_LOC")
+                        commandLine 'python2.7', "${project.projectDir}/mcp/runtime/decompile.py", "--client", '-m', System.properties.getProperty("MCP_LOC")
                     } else {
-                        commandLine 'python2.7', "${project.projectDir}/mcp/runtime/decompile.py", "--client","--noreformat"
+                        commandLine 'python2.7', "${project.projectDir}/mcp/runtime/decompile.py", "--client"
                     }
                     workingDir 'mcp'
                 }
