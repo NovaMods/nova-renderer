@@ -44,9 +44,19 @@ public class ChunkUpdateListener implements IWorldEventListener {
         this.chunksToUpdate = chunksToUpdate;
     }
 
+
     @Override
-    public void notifyBlockUpdate(World worldIn, BlockPos pos, IBlockState oldState, IBlockState newState, int flags) {
+    public void notifyBlockUpdate(World worldIn, BlockPos pos, IBlockState oldState, IBlockState newState, int flags)
+    {
         LOG.trace("Update block at " + pos);
+        LOG.debug("Update block at " + pos);
+        LOG.info("Marking blocks in range 2 ({}, {}, {}) for render update",pos.getX(), pos.getY(), pos.getZ());
+        chunksToUpdate.add(new BlockUpdateRange(new Vec3i(pos.getX(), pos.getY(), pos.getZ()), new Vec3i(pos.getX(), pos.getY(), pos.getZ())));
+   
+        int i = pos.getX();
+        int j = pos.getY();
+        int k = pos.getZ();
+        this.markBlockRangeForRenderUpdate(i - 1, j - 1, k - 1, i + 1, j + 1, k + 1);//, (flags & 8) != 0);
     }
 
     @Override
@@ -97,6 +107,6 @@ public class ChunkUpdateListener implements IWorldEventListener {
 
     @Override
     public void sendBlockBreakProgress(int breakerId, BlockPos pos, int progress) {
-
+        LOG.debug("Update block at " + pos+","+progress);
     }
 }
