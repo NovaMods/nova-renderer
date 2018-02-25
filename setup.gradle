@@ -210,7 +210,7 @@ task initSubmodules(dependsOn: cleanupMcp) << {
 task setup(dependsOn: initSubmodules) << {
     logger.info('Nova setup succesfully')
 }
-
+/*
 task makePatch() << {
     new ByteArrayOutputStream().withStream { os ->
         try {
@@ -228,6 +228,26 @@ task makePatch() << {
         println "${outputAsString}"
 
         //new File("patches/nova.patch").withWriter { out -> out.println outputAsString }
+    }
+}
+*/
+task makePatch() << {
+    new ByteArrayOutputStream().withStream { os ->
+        try {
+            def result = exec {
+                commandLine 'git', 'diff', '-U0', 'origin/minecraft-1.10-mcp'
+                workingDir 'src/main/java/net'
+
+                standardOutput = os
+                errorOutput = os
+            }
+        } catch(Exception e) {
+            throw new GradleScriptException(os.toString(), e)
+        }
+        def outputAsString = os.toString()
+        println "${outputAsString}"
+
+        new File("patches/nova.patch").withWriter { out -> out.println outputAsString }
     }
 }
 
