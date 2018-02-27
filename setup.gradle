@@ -235,7 +235,7 @@ task makePatch() << {
     new ByteArrayOutputStream().withStream { os ->
         try {
             def result = exec {
-                commandLine 'git', 'diff', '-U0', 'origin/better-chunk-integration'
+                commandLine 'git', 'diff', '-U0', '-R','origin/better-chunk-integration'
                 workingDir 'src/main/java/net'
 
                 standardOutput = os
