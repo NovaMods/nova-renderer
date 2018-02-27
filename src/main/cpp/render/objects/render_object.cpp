@@ -12,6 +12,7 @@ namespace nova {
         color_texture = std::move(other.color_texture);
         normalmap = std::move(other.normalmap);
         data_texture = std::move(other.data_texture);
+        bounding_box = std::move(other.bounding_box);
         position = other.position;
 
         other.parent_id = 0;
@@ -28,6 +29,7 @@ namespace nova {
         color_texture = std::move(other.color_texture);
         normalmap = std::move(other.normalmap);
         data_texture = std::move(other.data_texture);
+        bounding_box = std::move(other.bounding_box);
         position = other.position;
 
         other.parent_id = 0;

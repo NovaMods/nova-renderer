@@ -93,6 +93,33 @@ namespace nova {
         chunk_parts_to_upload_lock.unlock();
     }
 
+    void mesh_store::remove_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
+        mesh_definition def = {};
+        
+        def.position = {chunk.x, chunk.y, chunk.z};
+        def.id = chunk.id;
+
+        chunk_parts_to_upload_lock.lock();
+        for(auto& group : renderables_grouped_by_shader) {
+            if(group.first=="gbuffers_terrain"){
+                for(int i=0;i<group.second.size();i++){
+
+                    bool t=(static_cast<int>(group.second[i].position.x) == static_cast<int>(def.position.x))&&(static_cast<int>(group.second[i].position.y) == static_cast<int>(def.position.y) )&& (static_cast<int>(group.second[i].position.z) == static_cast<int>(def.position.z));
+                    if(t){
+                        
+                        
+                        LOG(ERROR)<<"REMOVING CHUNK";
+                        group.second.erase( group.second.begin()+i);
+                        break;
+                    }
+                }
+           
+            
+            }
+        }
+        //chunk_parts_to_upload.emplace(filter_name, def);
+        chunk_parts_to_upload_lock.unlock();
+    }
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
         mesh_definition def = {};
         auto& vertex_data = def.vertex_data;
@@ -118,7 +145,7 @@ namespace nova {
         def.vertex_format = format::all_values()[chunk.format];
         def.position = {chunk.x, chunk.y, chunk.z};
         def.id = chunk.id;
-
+        remove_chunk_render_object(filter_name,chunk);
         chunk_parts_to_upload_lock.lock();
         chunk_parts_to_upload.emplace(filter_name, def);
         chunk_parts_to_upload_lock.unlock();

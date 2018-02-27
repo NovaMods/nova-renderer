@@ -34,7 +34,8 @@ namespace nova {
          * \param chunk The chunk to add or update
          */
         void add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk);
-
+        void remove_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk);
+        
         /*!
          * \brief Retrieves the list of meshes that the shader with the provided name should render
          *
