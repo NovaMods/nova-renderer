@@ -95,28 +95,32 @@ namespace nova {
 
     void mesh_store::remove_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
         mesh_definition def = {};
-        
+
         def.position = {chunk.x, chunk.y, chunk.z};
         def.id = chunk.id;
 
         chunk_parts_to_upload_lock.lock();
+        try{
         for(auto& group : renderables_grouped_by_shader) {
             if(group.first=="gbuffers_terrain"){
                 for(int i=0;i<group.second.size();i++){
 
                     bool t=(static_cast<int>(group.second[i].position.x) == static_cast<int>(def.position.x))&&(static_cast<int>(group.second[i].position.y) == static_cast<int>(def.position.y) )&& (static_cast<int>(group.second[i].position.z) == static_cast<int>(def.position.z));
                     if(t){
-                        
-                        
+
+
                         LOG(ERROR)<<"REMOVING CHUNK";
                         group.second.erase( group.second.begin()+i);
                         break;
                     }
                 }
-           
-            
+
+
             }
         }
+      }catch(...){
+        LOG(ERROR)<<"REMOVING CHUNK ERROR";
+      }
         //chunk_parts_to_upload.emplace(filter_name, def);
         chunk_parts_to_upload_lock.unlock();
     }
