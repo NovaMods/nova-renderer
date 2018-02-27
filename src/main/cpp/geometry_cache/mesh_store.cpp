@@ -99,7 +99,7 @@ namespace nova {
         def.position = {chunk.x, chunk.y, chunk.z};
         def.id = chunk.id;
 
-        chunk_parts_to_upload_lock.lock();
+      //  chunk_parts_to_upload_lock.lock();
         try{
         for(auto& group : renderables_grouped_by_shader) {
             if(group.first=="gbuffers_terrain"){
@@ -109,9 +109,10 @@ namespace nova {
                     if(t){
 
 
-                        LOG(ERROR)<<"REMOVING CHUNK";
-                        group.second.erase( group.second.begin()+i);
-                        break;
+                        //LOG(ERROR)<<"REMOVING CHUNK";
+                        //group.second.erase( group.second.begin()+i);
+                        group.second[i].geometry=std::make_unique<gl_mesh>();
+                        //break;
                     }
                 }
 
@@ -122,7 +123,7 @@ namespace nova {
         LOG(ERROR)<<"REMOVING CHUNK ERROR";
       }
         //chunk_parts_to_upload.emplace(filter_name, def);
-        chunk_parts_to_upload_lock.unlock();
+    //    chunk_parts_to_upload_lock.unlock();
     }
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
         mesh_definition def = {};
