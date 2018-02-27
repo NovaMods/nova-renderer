@@ -84,7 +84,7 @@ namespace nova {
             obj.bounding_box.center = {def.position.x+8,def.position.y+8,def.position.z+8};
             //obj.bounding_box.center.y = 128;
             obj.bounding_box.extents = {16, 16, 16};   // TODO: Make these values come from Minecraft
-
+            obj.needs_deletion=false;
             const std::string& shader_name = std::get<0>(entry);
             renderables_grouped_by_shader[shader_name].push_back(std::move(obj));
 
@@ -111,7 +111,7 @@ namespace nova {
 
                         //LOG(ERROR)<<"REMOVING CHUNK";
                         //group.second.erase( group.second.begin()+i);
-                        group.second[i].geometry=std::make_unique<gl_mesh>();
+                        group.second[i].needs_deletion=true;//=std::make_unique<gl_mesh>();
                         //break;
                     }
                 }
