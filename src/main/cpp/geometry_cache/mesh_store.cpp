@@ -81,10 +81,10 @@ namespace nova {
             obj.parent_id = def.id;
             obj.color_texture = "block_color";
             obj.position = def.position;
-            obj.bounding_box.center = def.position;
-            obj.bounding_box.center.y = 128;
-            obj.bounding_box.extents = {16, 128, 16};   // TODO: Make these values come from Minecraft
-
+            obj.bounding_box.center = {def.position.x+8,def.position.y+8,def.position.z+8};
+            //obj.bounding_box.center.y = 128;
+            obj.bounding_box.extents = {16, 16, 16};   // TODO: Make these values come from Minecraft
+            obj.needs_deletion=false;
             const std::string& shader_name = std::get<0>(entry);
             renderables_grouped_by_shader[shader_name].push_back(std::move(obj));
 
@@ -93,6 +93,38 @@ namespace nova {
         chunk_parts_to_upload_lock.unlock();
     }
 
+    void mesh_store::remove_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
+        mesh_definition def = {};
+
+        def.position = {chunk.x, chunk.y, chunk.z};
+        def.id = chunk.id;
+
+      //  chunk_parts_to_upload_lock.lock();
+        try{
+        for(auto& group : renderables_grouped_by_shader) {
+            if(group.first==filter_name){
+                for(int i=0;i<group.second.size();i++){
+
+                    bool t=(static_cast<int>(group.second[i].position.x) == static_cast<int>(def.position.x))&&(static_cast<int>(group.second[i].position.y) == static_cast<int>(def.position.y) )&& (static_cast<int>(group.second[i].position.z) == static_cast<int>(def.position.z));
+                    if(t){
+
+
+                        //LOG(ERROR)<<"REMOVING CHUNK";
+                        //group.second.erase( group.second.begin()+i);
+                        group.second[i].needs_deletion=true;//=std::make_unique<gl_mesh>();
+                        //break;
+                    }
+                }
+
+
+            }
+        }
+      }catch(...){
+        LOG(ERROR)<<"REMOVING CHUNK ERROR";
+      }
+        //chunk_parts_to_upload.emplace(filter_name, def);
+    //    chunk_parts_to_upload_lock.unlock();
+    }
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
         mesh_definition def = {};
         auto& vertex_data = def.vertex_data;
@@ -118,7 +150,7 @@ namespace nova {
         def.vertex_format = format::all_values()[chunk.format];
         def.position = {chunk.x, chunk.y, chunk.z};
         def.id = chunk.id;
-
+        remove_chunk_render_object(filter_name,chunk);
         chunk_parts_to_upload_lock.lock();
         chunk_parts_to_upload.emplace(filter_name, def);
         chunk_parts_to_upload_lock.unlock();

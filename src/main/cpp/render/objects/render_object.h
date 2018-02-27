@@ -80,6 +80,8 @@ namespace nova {
 
         aabb bounding_box;
 
+        bool needs_deletion;
+
         render_object() = default;
         render_object(render_object&& other) noexcept;
         render_object(const render_object&) = default;
