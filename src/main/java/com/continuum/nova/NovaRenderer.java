@@ -72,7 +72,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private IResourceManager resourceManager;
 
-    private ChunkUpdateListener chunkUpdateListener;
+    public ChunkUpdateListener chunkUpdateListener;
 
     private PriorityQueue<ChunkUpdateListener.BlockUpdateRange> chunksToUpdate;
     private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
