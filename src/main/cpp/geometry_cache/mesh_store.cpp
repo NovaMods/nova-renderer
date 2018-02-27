@@ -102,7 +102,7 @@ namespace nova {
       //  chunk_parts_to_upload_lock.lock();
         try{
         for(auto& group : renderables_grouped_by_shader) {
-            if(group.first=="gbuffers_terrain"||group.first=="gbuffers_water"){
+            if(group.first==filter_name){
                 for(int i=0;i<group.second.size();i++){
 
                     bool t=(static_cast<int>(group.second[i].position.x) == static_cast<int>(def.position.x))&&(static_cast<int>(group.second[i].position.y) == static_cast<int>(def.position.y) )&& (static_cast<int>(group.second[i].position.z) == static_cast<int>(def.position.z));
