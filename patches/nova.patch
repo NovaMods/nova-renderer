@@ -119,7 +119,7 @@ index 82af80c..d6c5a7e 100644
 -                this.mc.getTextureManager().bindTexture(Gui.OPTIONS_BACKGROUND);
 +                this.mc.getRenderEngine().bindTexture(Gui.OPTIONS_BACKGROUND);
 diff --git b/minecraft/client/Minecraft.java a/minecraft/client/Minecraft.java
-index ad84c84..dc1780f 100644
+index ad84c84..663de0e 100644
 --- b/minecraft/client/Minecraft.java
 +++ a/minecraft/client/Minecraft.java
 @@ -2,0 +3,2 @@ package net.minecraft.client;
@@ -220,95 +220,100 @@ index ad84c84..dc1780f 100644
 -            this.entityRenderer.updateCameraAndRender(this.timer.renderPartialTicks, i);
 +            this.entityRenderer.updateCamera(timer.renderPartialTicks, i);
 +            if(this.theWorld != null){
-+            this.entityRenderer.renderWorld(timer.renderPartialTicks, i); 
++            this.entityRenderer.renderWorld(timer.renderPartialTicks, i);
 +            }
 +            nova.updateCameraAndRender(timer.renderPartialTicks, i, this);
-@@ -1181 +1196,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1160,0 +1177,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
++        if(this.theWorld != null){
++        
++      this.ingameGUI.renderGameOverlay(timer.renderPartialTicks);
++    }
+@@ -1181 +1200,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.unbindFramebuffer();
-@@ -1184 +1198,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1184 +1202,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.framebufferMc.framebufferRender(this.displayWidth, this.displayHeight);
-@@ -1187 +1200,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1187 +1204,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.entityRenderer.renderStreamIndicator(this.timer.renderPartialTicks);
-@@ -1227 +1240 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1227 +1244 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        Display.update();
 +        //Display.update();
-@@ -1234 +1247 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1234 +1251 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (!this.fullscreen && Display.wasResized())
 +        if (nova.wasResized())
-@@ -1236,11 +1249,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1236,4 +1253,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            int i = this.displayWidth;
 -            int j = this.displayHeight;
 -            this.displayWidth = Display.getWidth();
 -            this.displayHeight = Display.getHeight();
--
++            this.displayWidth = nova.getWidth();
++            this.displayHeight = nova.getHeight();
+@@ -1241,11 +1255,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -            if (this.displayWidth != i || this.displayHeight != j)
 -            {
 -                if (this.displayWidth <= 0)
 -                {
 -                    this.displayWidth = 1;
 -                }
-+            this.displayWidth = nova.getWidth();
-+            this.displayHeight = nova.getHeight();
-@@ -1248,4 +1251,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+-
 -                if (this.displayHeight <= 0)
 -                {
 -                    this.displayHeight = 1;
 -                }
-@@ -1252,0 +1253 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1252,0 +1257 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +           LOGGER.info("Window was resized to: " + displayWidth +"x" +displayHeight);
-@@ -1255 +1256 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1255 +1260 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        }
 +
-@@ -1260 +1261 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1260 +1265 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        return this.theWorld == null && this.currentScreen != null ? 30 : this.gameSettings.limitFramerate;
 +        return this.gameSettings.limitFramerate;
-@@ -1463 +1464,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1463 +1468,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        if (Display.isActive())
 +        boolean windowActive = NovaNative.INSTANCE.display_is_active();
 +        if (windowActive)
-@@ -1669,0 +1672,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1669,0 +1676,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
 +                /*
-@@ -1682,0 +1687 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1682,0 +1691 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +                */
-@@ -1685,0 +1691,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1685,0 +1695,3 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +                NovaNative.INSTANCE.set_fullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
 +
 +                /*
-@@ -1698,0 +1707 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1698,0 +1711 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +                */
-@@ -1700,0 +1710 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1700,0 +1714 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +            /*
-@@ -1711,0 +1722 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1711,0 +1726 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +            */
-@@ -1734,2 +1745,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1734,2 +1749,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -        this.loadingScreen = new LoadingScreenRenderer(this);
 -        this.updateFramebufferSize();
 +       /*
 +       this.loadingScreen = new LoadingScreenRenderer(this);
 +       this.updateFramebufferSize();
 +       */
-@@ -1779,0 +1793,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -1779,0 +1797,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +            long k = System.nanoTime();
 +            //LOGGER.error("CHUNKS");
 +            //this.entityRenderer.renderWorldPass(2, partialTicks, finishTimeNano);
 +            this.renderGlobal.updateChunks(k);
-@@ -2508,0 +2526,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2508,0 +2530,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        nova.setWorld(worldClientIn);
 +
-@@ -2982,0 +3002 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -2982,0 +3006 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        /*
-@@ -3087,0 +3108 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3087,0 +3112 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        */
-@@ -3100,0 +3122 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3100,0 +3126 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        /*
-@@ -3112,0 +3135,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3112,0 +3139,2 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +         */
 +        return NovaNative.INSTANCE.get_max_texture_size();
-@@ -3221 +3245 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3221 +3249 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 -    public TextureManager getTextureManager()
 +    public TextureManager getRenderEngine()
-@@ -3416,0 +3441,12 @@ public class Minecraft implements IThreadListener, ISnooperInfo
+@@ -3416,0 +3445,12 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +
 +    public NovaRenderer getNovaRenderer() {
 +        return nova;
@@ -749,18 +754,30 @@ index 6439aa9..c7bfcbb 100644
 -        return i >= 0 && i < this.colorCode.length ? this.colorCode[i] : -1;
 +        return i >= 0 && i < this.colorCodes.length ? this.colorCodes[i] : -1;
 diff --git b/minecraft/client/gui/Gui.java a/minecraft/client/gui/Gui.java
-index 58e6a77..0fcfa0b 100644
+index 58e6a77..3e2dec5 100644
 --- b/minecraft/client/gui/Gui.java
 +++ a/minecraft/client/gui/Gui.java
-@@ -13,2 +13,2 @@ public class Gui
--    public static final ResourceLocation STAT_ICONS = new ResourceLocation("textures/gui/container/stats_icons.png");
--    public static final ResourceLocation ICONS = new ResourceLocation("textures/gui/icons.png");
-+    public static final ResourceLocation STAT_ICONS = new ResourceLocation("gui/container/stats_icons");
-+    public static final ResourceLocation ICONS = new ResourceLocation("gui/icons");
-@@ -140,2 +139,0 @@ public class Gui
+@@ -8,0 +9,4 @@ import net.minecraft.util.ResourceLocation;
++import com.continuum.nova.gui.NovaDraw;
++import java.awt.*;
++import java.awt.geom.Rectangle2D;
++import net.minecraft.client.Minecraft;
+@@ -83,0 +88,11 @@ public class Gui
++        NovaDraw.drawRectangle(
++                              Minecraft.getMinecraft().getRenderEngine().currentBindedTexture,
++                      new Rectangle2D.Float((float)left,(float)bottom,  (float)(right-left),(float)(top-bottom)),
++                      new Rectangle2D.Float(
++                              (float)(left)* 0.00390625F,
++                              (float)(bottom)* 0.00390625F,
++
++                              (float)(right-left)* 0.00390625F,
++                              (float)(top-bottom)* 0.00390625F)
++              );
++
+@@ -140,2 +154,0 @@ public class Gui
 -        float f = 0.00390625F;
 -        float f1 = 0.00390625F;
-@@ -145,4 +143,4 @@ public class Gui
+@@ -145,4 +158,4 @@ public class Gui
 -        vertexbuffer.pos((double)(x + 0), (double)(y + height), (double)this.zLevel).tex((double)((float)(textureX + 0) * 0.00390625F), (double)((float)(textureY + height) * 0.00390625F)).endVertex();
 -        vertexbuffer.pos((double)(x + width), (double)(y + height), (double)this.zLevel).tex((double)((float)(textureX + width) * 0.00390625F), (double)((float)(textureY + height) * 0.00390625F)).endVertex();
 -        vertexbuffer.pos((double)(x + width), (double)(y + 0), (double)this.zLevel).tex((double)((float)(textureX + width) * 0.00390625F), (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
@@ -769,7 +786,29 @@ index 58e6a77..0fcfa0b 100644
 +        vertexbuffer.pos((double)(x + width),   (double)(y + height),   (double)this.zLevel).tex((double)((float)(textureX + width) * 0.00390625F), (double)((float)(textureY + height) * 0.00390625F)).endVertex();
 +        vertexbuffer.pos((double)(x + width),   (double)(y + 0),        (double)this.zLevel).tex((double)((float)(textureX + width) * 0.00390625F), (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
 +        vertexbuffer.pos((double)(x + 0),       (double)(y + 0),        (double)this.zLevel).tex((double)((float)(textureX + 0) * 0.00390625F),     (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
-@@ -216,0 +215 @@ public class Gui
+@@ -149,0 +163,10 @@ public class Gui
++        NovaDraw.drawRectangle(
++                              Minecraft.getMinecraft().getRenderEngine().currentBindedTexture,
++                      new Rectangle2D.Float((float)x,(float)y, (float)width, (float)height),
++                      new Rectangle2D.Float(
++                              (float)(textureX)* 0.00390625F,
++                              (float)(textureY)* 0.00390625F,
++
++                              (float)(width)* 0.00390625F,
++                              (float)(height)* 0.00390625F)
++              );
+@@ -166,0 +190,10 @@ public class Gui
++        NovaDraw.drawRectangle(
++                              Minecraft.getMinecraft().getRenderEngine().currentBindedTexture,
++                      new Rectangle2D.Float((float)xCoord,(float)yCoord, (float)maxU, (float)maxV),
++                      new Rectangle2D.Float(
++                              (float)(minU)* 0.00390625F,
++                              (float)(maxU)* 0.00390625F,
++
++                              (float)(minV)* 0.00390625F,
++                              (float)(maxV)* 0.00390625F)
++              );
+@@ -216,0 +250 @@ public class Gui
 +
 diff --git b/minecraft/client/gui/GuiBossOverlay.java a/minecraft/client/gui/GuiBossOverlay.java
 index 3a22338..db25fb1 100644
@@ -779,15 +818,15 @@ index 3a22338..db25fb1 100644
 -                this.client.getTextureManager().bindTexture(GUI_BARS_TEXTURES);
 +                this.client.getRenderEngine().bindTexture(GUI_BARS_TEXTURES);
 diff --git b/minecraft/client/gui/GuiButton.java a/minecraft/client/gui/GuiButton.java
-index 93eccc5..55bd5ca 100644
+index 93eccc5..1ccc5e0 100644
 --- b/minecraft/client/gui/GuiButton.java
 +++ a/minecraft/client/gui/GuiButton.java
 @@ -2,0 +3 @@ package net.minecraft.client.gui;
++
+@@ -8,0 +10,3 @@ import net.minecraft.util.ResourceLocation;
 +import com.continuum.nova.gui.NovaDraw;
-@@ -9,0 +11,3 @@ import net.minecraft.util.ResourceLocation;
 +import java.awt.*;
 +import java.awt.geom.Rectangle2D;
-+
 @@ -12 +16 @@ public class GuiButton extends Gui
 -    protected static final ResourceLocation BUTTON_TEXTURES = new ResourceLocation("textures/gui/widgets.png");
 +    protected static final ResourceLocation BUTTON_TEXTURES = new ResourceLocation("gui/widgets");
@@ -824,7 +863,7 @@ index 93eccc5..55bd5ca 100644
 +            int drawState = getHoverState(hovered);
 +            offsetY =(float) drawState * 0.078125f;
 +            NovaDraw.incrementZ();
-+			  
++
 +			NovaDraw.drawRectangle(
 +                    BUTTON_TEXTURES,
 +                    new Rectangle2D.Float(xPosition, yPosition, width / 2, height),
@@ -862,7 +901,7 @@ index 93eccc5..55bd5ca 100644
 +    public void mouseReleased(int mouseX, int mouseY) {    }
 @@ -157,0 +173,2 @@ public class GuiButton extends Gui
 +
-+    
++
 diff --git b/minecraft/client/gui/GuiButtonLanguage.java a/minecraft/client/gui/GuiButtonLanguage.java
 index e0dd308..269163c 100644
 --- b/minecraft/client/gui/GuiButtonLanguage.java
@@ -1051,37 +1090,96 @@ index 86eeb22..b967bb5 100644
 -        this.mc.getTextureManager().bindTexture(HOPPER_GUI_TEXTURE);
 +        this.mc.getRenderEngine().bindTexture(HOPPER_GUI_TEXTURE);
 diff --git b/minecraft/client/gui/GuiIngame.java a/minecraft/client/gui/GuiIngame.java
-index a623c57..7997b66 100644
+index a623c57..4f0a550 100644
 --- b/minecraft/client/gui/GuiIngame.java
 +++ a/minecraft/client/gui/GuiIngame.java
-@@ -183 +183 @@ public class GuiIngame extends Gui
+@@ -50,0 +51,3 @@ import net.minecraft.world.border.WorldBorder;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++import com.continuum.nova.gui.NovaDraw;
+@@ -53,0 +57 @@ public class GuiIngame extends Gui
++  private static final Logger LOGGER = LogManager.getLogger();
+@@ -54,0 +59 @@ public class GuiIngame extends Gui
++    private static final ResourceLocation SOME_TEX_PATH = new ResourceLocation("textures/blocks/stone.png");
+@@ -139 +144,2 @@ public class GuiIngame extends Gui
+-        ScaledResolution scaledresolution = new ScaledResolution(this.mc);
++      ScaledResolution scaledresolution = new ScaledResolution(this.mc);
++        /*
+@@ -183 +189 @@ public class GuiIngame extends Gui
 -        this.mc.getTextureManager().bindTexture(ICONS);
-+        this.mc.getRenderEngine().bindTexture(ICONS);
-@@ -191 +191 @@ public class GuiIngame extends Gui
++        this.mc.getRenderEngine().bindTexture(Gui.ICONS);
+@@ -191 +197 @@ public class GuiIngame extends Gui
 -        this.mc.getTextureManager().bindTexture(ICONS);
-+        this.mc.getRenderEngine().bindTexture(ICONS);
-@@ -442 +442 @@ public class GuiIngame extends Gui
++        this.mc.getRenderEngine().bindTexture(Gui.ICONS);
+@@ -373 +379,2 @@ public class GuiIngame extends Gui
+-        GlStateManager.enableAlpha();
++        GlStateManager.enableAlpha();*/
++        this.renderHotbar(scaledresolution, partialTicks);
+@@ -442 +449 @@ public class GuiIngame extends Gui
 -            this.mc.getTextureManager().bindTexture(GuiContainer.INVENTORY_BACKGROUND);
 +            this.mc.getRenderEngine().bindTexture(GuiContainer.INVENTORY_BACKGROUND);
-@@ -499 +499 @@ public class GuiIngame extends Gui
+@@ -496 +503 @@ public class GuiIngame extends Gui
+-        if (this.mc.getRenderViewEntity() instanceof EntityPlayer)
++        if (this.mc.getRenderViewEntity() instanceof EntityPlayer )
+@@ -497,0 +505 @@ public class GuiIngame extends Gui
++        //  LOGGER.error("render bar");
+@@ -499 +507 @@ public class GuiIngame extends Gui
 -            this.mc.getTextureManager().bindTexture(WIDGETS_TEX_PATH);
 +            this.mc.getRenderEngine().bindTexture(WIDGETS_TEX_PATH);
-@@ -564 +564 @@ public class GuiIngame extends Gui
+@@ -504 +512 @@ public class GuiIngame extends Gui
+-            float f = this.zLevel;
++          //  float f = this.zLevel;
+@@ -507,4 +515,19 @@ public class GuiIngame extends Gui
+-            this.zLevel = -90.0F;
+-            this.drawTexturedModalRect(i - 91, sr.getScaledHeight() - 22, 0, 0, 182, 22);
+-            this.drawTexturedModalRect(i - 91 - 1 + entityplayer.inventory.currentItem * 20, sr.getScaledHeight() - 22 - 1, 0, 22, 24, 22);
+-
++          //  this.zLevel = -90.0F;
++
++            //NovaDraw.incrementZ();
++                //        NovaDraw.incrementZ();
++            //this.drawTexturedModalRect(i - 91, sr.getScaledHeight() - 22, 0, 0, 182, 22);
++
++            this.mc.getRenderEngine().bindTexture(SOME_TEX_PATH);
++            int i2 = sr.getScaledWidth() / 2-91;
++            int j2 = sr.getScaledHeight()/2;
++            NovaDraw.incrementZ();
++            this.drawRect(i - 91, sr.getScaledHeight() - 22, i - 91+182, sr.getScaledHeight(),0xFF00FF88);
++            this.drawRect(10, 10, 20, 20,0xFF00FF88);
++            this.drawRect(10, 20, 20, 10,0xFFFF0088);
++            this.drawRect(20, 10, 30, 20,0xFF00FFFF);
++            this.drawRect(30, 20, 40, 10,0xFFFF00FF);
++            this.drawTexturedModalRect(i2, j2, 0, 0, 182,22);
++
++          //  this.drawTexturedModalRect(i - 91 - 1 + entityplayer.inventory.currentItem * 20, sr.getScaledHeight() - 22 - 1, 0, 22, 24, 22);
++/*
+@@ -514,0 +538,2 @@ public class GuiIngame extends Gui
++                              NovaDraw.incrementZ();
++                                          NovaDraw.incrementZ();
+@@ -518,0 +544,2 @@ public class GuiIngame extends Gui
++                              NovaDraw.incrementZ();
++                                          NovaDraw.incrementZ();
+@@ -564 +591 @@ public class GuiIngame extends Gui
 -                    this.mc.getTextureManager().bindTexture(Gui.ICONS);
 +                    this.mc.getRenderEngine().bindTexture(Gui.ICONS);
-@@ -581 +581 @@ public class GuiIngame extends Gui
+@@ -574 +601 @@ public class GuiIngame extends Gui
+-            GlStateManager.disableBlend();
++            GlStateManager.disableBlend();*/
+@@ -575,0 +603 @@ public class GuiIngame extends Gui
++
+@@ -581 +609 @@ public class GuiIngame extends Gui
 -        this.mc.getTextureManager().bindTexture(Gui.ICONS);
 +        this.mc.getRenderEngine().bindTexture(Gui.ICONS);
-@@ -599 +599 @@ public class GuiIngame extends Gui
+@@ -599 +627 @@ public class GuiIngame extends Gui
 -        this.mc.getTextureManager().bindTexture(Gui.ICONS);
 +        this.mc.getRenderEngine().bindTexture(Gui.ICONS);
-@@ -1035 +1035 @@ public class GuiIngame extends Gui
+@@ -1035 +1063 @@ public class GuiIngame extends Gui
 -        this.mc.getTextureManager().bindTexture(PUMPKIN_BLUR_TEX_PATH);
 +        this.mc.getRenderEngine().bindTexture(PUMPKIN_BLUR_TEX_PATH);
-@@ -1085 +1085 @@ public class GuiIngame extends Gui
+@@ -1085 +1113 @@ public class GuiIngame extends Gui
 -        this.mc.getTextureManager().bindTexture(VIGNETTE_TEX_PATH);
 +        this.mc.getRenderEngine().bindTexture(VIGNETTE_TEX_PATH);
-@@ -1114 +1114 @@ public class GuiIngame extends Gui
+@@ -1114 +1142 @@ public class GuiIngame extends Gui
 -        this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 +        this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 diff --git b/minecraft/client/gui/GuiIngameMenu.java a/minecraft/client/gui/GuiIngameMenu.java
@@ -1887,7 +1985,7 @@ index 9c77f9b..8824a8f 100644
 -    protected void drawListHeader(int insideLeft, int insideTop, Tessellator tessellatorIn)
 +    protected void drawListHeader(int insideLeft, int insideTop)
 diff --git b/minecraft/client/gui/GuiScreen.java a/minecraft/client/gui/GuiScreen.java
-index f10ce2e..f869a43 100644
+index f10ce2e..8866df6 100644
 --- b/minecraft/client/gui/GuiScreen.java
 +++ a/minecraft/client/gui/GuiScreen.java
 @@ -2,0 +3 @@ package net.minecraft.client.gui;
@@ -1923,7 +2021,7 @@ index f10ce2e..f869a43 100644
 -            ((GuiLabel)this.labelList.get(j)).drawLabel(this.mc, mouseX, mouseY);
 -        }
 @@ -97,0 +95,2 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
-+    
++
 +
 @@ -115,4 +114,3 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
 -    protected <T extends GuiButton> T func_189646_b(T p_189646_1_)
@@ -2064,9 +2162,6 @@ index f10ce2e..f869a43 100644
 +    public List<GuiButton> getButtonList() {
 +        return buttonList;
 +    }
-+
-+
-@@ -777,0 +745,2 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
 +
 +
 diff --git b/minecraft/client/gui/GuiScreenAddServer.java a/minecraft/client/gui/GuiScreenAddServer.java
@@ -3024,12 +3119,29 @@ index 804574f..8094119 100644
 -        this.mc.getTextureManager().bindTexture(FURNACE_GUI_TEXTURES);
 +        this.mc.getRenderEngine().bindTexture(FURNACE_GUI_TEXTURES);
 diff --git b/minecraft/client/gui/inventory/GuiInventory.java a/minecraft/client/gui/inventory/GuiInventory.java
-index cd9f9a9..b31d79b 100644
+index cd9f9a9..20e37c1 100644
 --- b/minecraft/client/gui/inventory/GuiInventory.java
 +++ a/minecraft/client/gui/inventory/GuiInventory.java
-@@ -84 +84 @@ public class GuiInventory extends InventoryEffectRenderer
+@@ -15,0 +16,3 @@ import net.minecraft.entity.player.EntityPlayer;
++import com.continuum.nova.gui.NovaDraw;
++import java.awt.*;
++import java.awt.geom.Rectangle2D;
+@@ -64,0 +68 @@ public class GuiInventory extends InventoryEffectRenderer
++      NovaDraw.incrementZ();
+@@ -84 +88 @@ public class GuiInventory extends InventoryEffectRenderer
 -        this.mc.getTextureManager().bindTexture(INVENTORY_BACKGROUND);
 +        this.mc.getRenderEngine().bindTexture(INVENTORY_BACKGROUND);
+@@ -86,0 +91 @@ public class GuiInventory extends InventoryEffectRenderer
++        NovaDraw.incrementZ();
+@@ -87,0 +93,8 @@ public class GuiInventory extends InventoryEffectRenderer
++
++        /*NovaDraw.drawRectangle(
++                      INVENTORY_BACKGROUND,
++                      new Rectangle2D.Float((float)i,(float)j, (float)this.xSize, (float)this.ySize),
++                      new Rectangle2D.Float(
++                              0F,
++                              0F,(float)this.xSize* 0.00390625F, (float)this.ySize* 0.00390625F)
++              );*/
 diff --git b/minecraft/client/gui/inventory/GuiScreenHorseInventory.java a/minecraft/client/gui/inventory/GuiScreenHorseInventory.java
 index 7916898..66ad5b8 100644
 --- b/minecraft/client/gui/inventory/GuiScreenHorseInventory.java
@@ -3684,7 +3796,7 @@ index 8febef5..a0cb230 100644
 +        return fluidRenderer;
 +    }
 diff --git b/minecraft/client/renderer/EntityRenderer.java a/minecraft/client/renderer/EntityRenderer.java
-index 25e1fb8..377ac0d 100644
+index 25e1fb8..0b0da65 100644
 --- b/minecraft/client/renderer/EntityRenderer.java
 +++ a/minecraft/client/renderer/EntityRenderer.java
 @@ -2,0 +3 @@ package net.minecraft.client.renderer;
@@ -3785,7 +3897,18 @@ index 25e1fb8..377ac0d 100644
 -        }
 -
 +        boolean flag = NovaNative.INSTANCE.display_is_active();
-@@ -1104,105 +1093,0 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1069,0 +1060,8 @@ public class EntityRenderer implements IResourceManagerReloadListener
++        Entity entity = this.mc.getRenderViewEntity();
++      /*  boolean flag2 = entity instanceof EntityPlayer && !this.mc.gameSettings.hideGUI;
++        if(flag2){
++        if (!this.mc.gameSettings.hideGUI )
++                        {
++                            GlStateManager.alphaFunc(516, 0.1F);
++                            this.mc.ingameGUI.renderGameOverlay(partialTicks);
++                        }
+@@ -1070,0 +1069 @@ public class EntityRenderer implements IResourceManagerReloadListener
++}*/
+@@ -1104,105 +1102,0 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -
 -        if (!this.mc.skipRenderWorld)
 -        {
@@ -3891,76 +4014,88 @@ index 25e1fb8..377ac0d 100644
 -                }
 -            }
 -        }
-@@ -1288 +1173 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1288 +1182 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.updateLightmap(partialTicks);
 +        //this.updateLightmap(partialTicks);
-@@ -1295 +1180 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1295 +1189 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.getMouseOver(partialTicks);
 +        //this.getMouseOver(partialTicks);
-@@ -1327 +1212 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1316,0 +1211,11 @@ public class EntityRenderer implements IResourceManagerReloadListener
++        Entity entity = this.mc.getRenderViewEntity();
++        boolean flag2 = entity instanceof EntityPlayer && !this.mc.gameSettings.hideGUI;
++        if(flag2){
++        if (!this.mc.gameSettings.hideGUI )
++                        {
++//LOGGER.error("bar");
++                            //GlStateManager.alphaFunc(516, 0.1F);
++                            this.mc.ingameGUI.renderGameOverlay(partialTicks);
++                        }
++
++}
+@@ -1327 +1232 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.updateFogColor(partialTicks);
 +        //this.updateFogColor(partialTicks);
-@@ -1330,2 +1215,2 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1330,2 +1235,2 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.setupCameraTransform(partialTicks, pass);
 -        ActiveRenderInfo.updateRenderInfo(this.mc.thePlayer, this.mc.gameSettings.thirdPersonView == 2);
 +        //this.setupCameraTransform(partialTicks, pass);
 +        //ActiveRenderInfo.updateRenderInfo(this.mc.thePlayer, this.mc.gameSettings.thirdPersonView == 2);
-@@ -1336,0 +1222 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1336,0 +1242 @@ public class EntityRenderer implements IResourceManagerReloadListener
 +        //LOGGER.error("POS: {},{},{},{}",entity.lastTickPosX,entity.posX ,entity.lastTickPosX,(double)partialTicks);
-@@ -1342 +1228 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1342 +1248 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        if (this.mc.gameSettings.renderDistanceChunks >= 4)
 +        /*if (this.mc.gameSettings.renderDistanceChunks >= 4)
-@@ -1355 +1241 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1355 +1261 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        }
 +        }*/
-@@ -1357 +1243 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1357 +1263 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.setupFog(0, partialTicks);
 +      //  this.setupFog(0, partialTicks);
-@@ -1362 +1248 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1362 +1268 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -            this.renderCloudsCheck(renderglobal, partialTicks, pass);
 +            //this.renderCloudsCheck(renderglobal, partialTicks, pass);
-@@ -1366,2 +1252,2 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1366,2 +1272,2 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.setupFog(0, partialTicks);
 -        this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 +       // this.setupFog(0, partialTicks);
 +        this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-@@ -1385 +1271 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1385 +1291 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
 +        this.mc.getRenderEngine().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
-@@ -1387 +1273 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1387 +1293 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
 +        this.mc.getRenderEngine().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
-@@ -1423 +1309 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1423 +1329 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
 +        this.mc.getRenderEngine().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
-@@ -1425 +1311 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1425 +1331 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.mc.getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
 +        this.mc.getRenderEngine().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
-@@ -1434 +1320 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1434 +1340 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -            this.setupFog(0, partialTicks);
 +            //this.setupFog(0, partialTicks);
-@@ -1450 +1336 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1450 +1356 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.setupFog(0, partialTicks);
 +        //this.setupFog(0, partialTicks);
-@@ -1453 +1339 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1453 +1359 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -        this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 +        this.mc.getRenderEngine().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-@@ -1466 +1352 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1466 +1372 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -            this.renderCloudsCheck(renderglobal, partialTicks, pass);
 +            //this.renderCloudsCheck(renderglobal, partialTicks, pass);
-@@ -1474 +1360 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1474 +1380 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -            this.renderHand(partialTicks, pass);
 +           // this.renderHand(partialTicks, pass);
-@@ -1488 +1374 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1488 +1394 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -            this.setupFog(0, partialTicks);
 +            //this.setupFog(0, partialTicks);
-@@ -1670 +1556 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1670 +1576 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -                                    this.mc.getTextureManager().bindTexture(RAIN_TEXTURES);
 +                                    this.mc.getRenderEngine().bindTexture(RAIN_TEXTURES);
-@@ -1698 +1584 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -1698 +1604 @@ public class EntityRenderer implements IResourceManagerReloadListener
 -                                    this.mc.getTextureManager().bindTexture(SNOW_TEXTURES);
 +                                    this.mc.getRenderEngine().bindTexture(SNOW_TEXTURES);
-@@ -2087,0 +1974,20 @@ public class EntityRenderer implements IResourceManagerReloadListener
+@@ -2087,0 +1994,20 @@ public class EntityRenderer implements IResourceManagerReloadListener
 +
 +    public float getFogColorRed() {
 +        return fogColorRed;
@@ -5120,7 +5255,7 @@ index 13f21f3..34444f3 100644
 -            ModelResourceLocation modelresourcelocation = (ModelResourceLocation)p_equals_1_;
 +            ModelResourceLocation modelresourcelocation = (ModelResourceLocation) other;
 diff --git b/minecraft/client/renderer/chunk/ChunkRenderDispatcher.java a/minecraft/client/renderer/chunk/ChunkRenderDispatcher.java
-index 605adc6..0fa79f1 100644
+index 605adc6..c9ab685 100644
 --- b/minecraft/client/renderer/chunk/ChunkRenderDispatcher.java
 +++ a/minecraft/client/renderer/chunk/ChunkRenderDispatcher.java
 @@ -25,0 +26 @@ import org.apache.logging.log4j.Logger;
@@ -5131,7 +5266,7 @@ index 605adc6..0fa79f1 100644
 +      //  LOGGER.error("GONNAUPDATE");
 +        AxisAlignedBB bb=chunkRenderer.boundingBox;
 +        Minecraft.getMinecraft().nova.chunkUpdateListener.markChunkForUpdate((int) bb.minX,(int) bb.minY,(int) bb.minZ,(int) bb.maxX,(int) bb.maxY,(int) bb.maxZ);
-+        
++
 @@ -152,0 +159,3 @@ public class ChunkRenderDispatcher
 +        //LOGGER.error("GONNAUPDATENOW");
 +        AxisAlignedBB bb=chunkRenderer.boundingBox;
@@ -5758,10 +5893,14 @@ index 4b545cb..dcd99f0 100644
 -    {
 +    public String toString() {
 diff --git b/minecraft/client/renderer/texture/TextureManager.java a/minecraft/client/renderer/texture/TextureManager.java
-index e05a522..26ad475 100644
+index e05a522..30a4b9d 100644
 --- b/minecraft/client/renderer/texture/TextureManager.java
 +++ a/minecraft/client/renderer/texture/TextureManager.java
-@@ -62,7 +62,4 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
+@@ -25,0 +26 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
++    public ResourceLocation currentBindedTexture;
+@@ -33,0 +35 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
++      this.currentBindedTexture=resource;
+@@ -62,7 +64,4 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 -        try
 -        {
 -            ((ITextureObject)textureObj).loadTexture(this.theResourceManager);
@@ -5773,12 +5912,12 @@ index e05a522..26ad475 100644
 +            textureObj.loadTexture(this.theResourceManager);
 +        } catch (IOException ioexception) {
 +            LOGGER.warn("Failed to load texture: {}", textureLocation, ioexception);
-@@ -72,3 +69 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
+@@ -72,3 +71 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 -        }
 -        catch (Throwable throwable)
 -        {
 +        } catch (Throwable throwable) {
-@@ -79,7 +74 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
+@@ -79,7 +76 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 -            crashreportcategory.func_189529_a("Texture object class", new ICrashReportDetail<String>()
 -            {
 -                public String call() throws Exception
@@ -5787,16 +5926,16 @@ index e05a522..26ad475 100644
 -                }
 -            });
 +            crashreportcategory.func_189529_a("Texture object class", () -> textureObjf.getClass().getName());
-@@ -95 +84 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
+@@ -95 +86 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 -        return (ITextureObject)this.mapTextureObjects.get(textureLocation);
 +        return this.mapTextureObjects.get(textureLocation);
-@@ -100 +89 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
+@@ -100 +91 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 -        Integer integer = (Integer)this.mapTextureCounters.get(name);
 +        Integer integer = this.mapTextureCounters.get(name);
-@@ -104 +93 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
+@@ -104 +95 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 -            integer = Integer.valueOf(1);
 +            integer = 1;
-@@ -108 +97 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
+@@ -108 +99 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 -            integer = Integer.valueOf(integer.intValue() + 1);
 +            integer = integer + 1;
 diff --git b/minecraft/client/renderer/texture/TextureMap.java a/minecraft/client/renderer/texture/TextureMap.java
