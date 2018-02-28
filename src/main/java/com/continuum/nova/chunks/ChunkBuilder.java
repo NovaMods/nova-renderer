@@ -1,6 +1,7 @@
 package com.continuum.nova.chunks;
 
 import com.continuum.nova.NovaNative;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockFluidRenderer;
@@ -14,7 +15,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import net.minecraft.client.renderer.VertexBuffer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -79,7 +80,7 @@ public class ChunkBuilder {
      */
     private void filterBlockAtPos(Map<String, List<BlockPos>> blocksForFilter, BlockPos pos) {
         IBlockState blockState = world.getBlockState(pos);
-        
+
 
         for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
             if(blockState.getRenderType().equals(EnumBlockRenderType.INVISIBLE)) {
@@ -93,7 +94,7 @@ public class ChunkBuilder {
                             newList.add(i);
                         }else{
                             LOG.info("REMOVE BLOCK?");
-                        
+
                         }
                     }
                     blocksForFilter.put(entry.getKey(),newList);
@@ -116,13 +117,20 @@ public class ChunkBuilder {
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
         CapturingVertexBuffer capturingVertexBuffer = new CapturingVertexBuffer(chunkPos);
         BlockFluidRenderer fluidRenderer = blockRendererDispatcher.getFluidRenderer();
+        BlockRendererDispatcher blockrendererdispatcherm = Minecraft.getMinecraft().getBlockRendererDispatcher();
 
         int blockIndexCounter = 0;
         for(BlockPos blockPos : positions) {
             IBlockState blockState = world.getBlockState(blockPos);
+            blockState = blockState.getActualState(world, blockPos);
+            Block block = blockState.getBlock();
 
             if(blockState.getRenderType() == EnumBlockRenderType.MODEL) {
-                IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
+
+                IBakedModel blockModel = blockrendererdispatcherm.getModelForState(blockState);
+              //  IBakedModel ibakedmodel = blockRendererDispatcherm.getModelForState(blockState);//this.blockModelShapes.getModelForState(state);
+              //  IBakedModel ibakedmodel1 = (new SimpleBakedModel.Builder(blockState, ibakedmodel, texture, BlockPos)).makeBakedModel();
+
                 int colorMultiplier = blockColors.colorMultiplier(blockState, null, null, 0);
 
                 List<EnumFacing> actuallyAllValuesOfEnumFacing = new ArrayList<>();
@@ -152,7 +160,7 @@ public class ChunkBuilder {
                         } else {
                             lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(facing));
                         }
-                        
+
                         for(BakedQuad quad : quads) {
                             if(quad.hasTintIndex()) {
                                 colorMultiplier = blockColors.colorMultiplier(blockState, world, blockPos, quad.getTintIndex());
