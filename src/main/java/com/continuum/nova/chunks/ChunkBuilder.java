@@ -67,7 +67,7 @@ public class ChunkBuilder {
                 obj.z = range.min.z;
 
                 LOG.info("Adding render geometry for chunk {}", range);
-                NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
+              //  NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
             });
         }
     }

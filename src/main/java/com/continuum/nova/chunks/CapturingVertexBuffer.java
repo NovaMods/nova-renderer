@@ -69,7 +69,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
     }
 
     private List<Vertex> data = new ArrayList<>();
-    private final BlockPos chunkPosition;
+    private BlockPos chunkPosition;
 
     private Vertex curVertex = new Vertex();
 
@@ -77,7 +77,10 @@ public class CapturingVertexBuffer extends VertexBuffer {
         super(0);
         this.chunkPosition = chunkPosition;
     }
-
+    public void setChunkPos(BlockPos chunkPosition){
+      this.chunkPosition = chunkPosition;
+    }
+/*
     @Override
     public VertexBuffer pos(double x, double y, double z) {
         curVertex.x = (float)x - chunkPosition.getX();
@@ -137,13 +140,16 @@ public class CapturingVertexBuffer extends VertexBuffer {
         }
 
         curVertex = new Vertex();
-    }
+    }*/
 
     public List<Integer> getData() {
+      this.rawIntBuffer.position(0);
         List<Integer> finalData = new ArrayList<>();
 
-        for(Vertex v : data) {
-            finalData.addAll(v.toInts());
+        int[] arr = new int[this.rawIntBuffer.limit()];
+    this.rawIntBuffer.get(arr);
+        for(int i:arr) {
+            finalData.add(new Integer(i));
         }
 
         return finalData;

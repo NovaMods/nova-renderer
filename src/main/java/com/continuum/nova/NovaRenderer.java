@@ -91,6 +91,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Utils.initFreeTextures(FREE_TEXTURES);
     }
 
+    public HashMap<String, IGeometryFilter> getFilterMap(){
+      return this.filterMap;
+    }
+
     @Override
     public void onResourceManagerReload(@Nonnull IResourceManager resourceManager) {
         this.resourceManager = resourceManager;
@@ -434,5 +438,3 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.end("new_chunk_builder");
     }
 }
-
-
