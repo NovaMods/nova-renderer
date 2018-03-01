@@ -83,7 +83,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
     public void setChunkPos(BlockPos chunkPosition){
       this.chunkPosition = chunkPosition;
     }
-/*
+
     @Override
     public VertexBuffer pos(double x, double y, double z) {
         curVertex.x = (float)x - chunkPosition.getX();
@@ -143,11 +143,14 @@ public class CapturingVertexBuffer extends VertexBuffer {
         }
 
         curVertex = new Vertex();
-    }*/
+    }
 
     public List<Integer> getData() {
       this.rawIntBuffer.position(0);
         List<Integer> finalData = new ArrayList<>();
+        for(Vertex v : data) {
+            finalData.addAll(v.toInts());
+        }
 
         int[] arr = new int[this.rawIntBuffer.limit()];
     this.rawIntBuffer.get(arr);
