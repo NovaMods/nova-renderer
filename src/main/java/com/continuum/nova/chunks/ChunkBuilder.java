@@ -45,7 +45,7 @@ public class ChunkBuilder {
     }
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
-        blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
+        /*blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
         Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
 
         for(int x = range.min.x; x <= range.max.x; x++) {
@@ -69,7 +69,7 @@ public class ChunkBuilder {
                 LOG.info("Adding render geometry for chunk {}", range);
               //  NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
             });
-        }
+        }*/
     }
 
     /**
