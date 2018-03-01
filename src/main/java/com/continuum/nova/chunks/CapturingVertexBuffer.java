@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 /**
  * @author ddubois
@@ -76,6 +77,8 @@ public class CapturingVertexBuffer extends VertexBuffer {
     public CapturingVertexBuffer(BlockPos chunkPosition) {
         super(0);
         this.chunkPosition = chunkPosition;
+        this.vertexFormat=DefaultVertexFormats.BLOCK;
+        //this.begin(7, DefaultVertexFormats.BLOCK);
     }
     public void setChunkPos(BlockPos chunkPosition){
       this.chunkPosition = chunkPosition;
