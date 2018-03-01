@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 import java.util.stream.Collectors;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import java.nio.IntBuffer;
 
 /**
  * @author ddubois
@@ -148,14 +149,13 @@ public class CapturingVertexBuffer extends VertexBuffer {
     }
 
     public List<Integer> getData() {
-      this.rawIntBuffer.position(0);
         List<Integer> finalData = new ArrayList<>();
         for(Vertex v : data) {
             finalData.addAll(v.toInts());
         }
 
         int[] arr = new int[this.rawIntBuffer.limit()];
-    this.rawIntBuffer.get(arr);
+    ((IntBuffer) this.rawIntBuffer.position(0)).get(arr);
         for(int i:arr) {
             finalData.add(new Integer(i));
         }
