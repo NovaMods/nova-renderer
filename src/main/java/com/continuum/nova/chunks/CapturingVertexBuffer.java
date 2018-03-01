@@ -77,7 +77,9 @@ public class CapturingVertexBuffer extends VertexBuffer {
     public CapturingVertexBuffer(BlockPos chunkPosition) {
         super(0);
         this.chunkPosition = chunkPosition;
+                this.reset();
         this.vertexFormat=DefaultVertexFormats.BLOCK;
+        this.vertexFormatElement = format.getElement(this.vertexFormatIndex);
         //this.begin(7, DefaultVertexFormats.BLOCK);
     }
     public void setChunkPos(BlockPos chunkPosition){
