@@ -210,32 +210,11 @@ task initSubmodules(dependsOn: cleanupMcp) << {
 task setup(dependsOn: initSubmodules) << {
     logger.info('Nova setup succesfully')
 }
-/*
 task makePatch() << {
     new ByteArrayOutputStream().withStream { os ->
         try {
             def result = exec {
-                commandLine 'git', 'diff', '-U0','--color=never','--no-index', 'mcp/src/minecraft/net','src/main/java/net',"> patches/nova.patch"
-                workingDir './'
-
-                standardOutput = os
-                errorOutput = os
-            }
-        } catch(Exception e) {
-            throw new GradleScriptException(os.toString(), e)
-        }
-        def outputAsString = os.toString()
-        println "${outputAsString}"
-
-        //new File("patches/nova.patch").withWriter { out -> out.println outputAsString }
-    }
-}
-*/
-task makePatch() << {
-    new ByteArrayOutputStream().withStream { os ->
-        try {
-            def result = exec {
-                commandLine 'git', 'diff', '-U0', '-R','origin/better-chunk-integration'
+                commandLine 'git', 'diff', '-U0', '-R','origin/master'
                 workingDir 'src/main/java/net'
 
                 standardOutput = os
