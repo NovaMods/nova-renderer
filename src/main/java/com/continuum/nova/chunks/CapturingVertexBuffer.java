@@ -72,7 +72,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
     private List<Vertex> data = new ArrayList<>();
     private BlockPos chunkPosition;
-
+    private ArrayList<Integer> intDataStore= new ArrayList<Integer>();
     private Vertex curVertex = new Vertex();
 
     public CapturingVertexBuffer(BlockPos chunkPosition) {
@@ -128,7 +128,14 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
         return this;
     }
-
+    public void addVertexData(int[] vertexData)
+    {
+      intDataStore.addAll(Arrays.asList(vertexData));
+      /*  this.growBuffer(vertexData.length * 4);
+        this.rawIntBuffer.position(this.getBufferSize());
+        this.rawIntBuffer.put(vertexData);
+        this.vertexCount += vertexData.length / this.vertexFormat.getIntegerSize();*/
+    }
     @Override
     public void endVertex() {
       //  ++this.vertexCount;
@@ -145,7 +152,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
             data.add(curVertex);
         }*/
 
-        List<Integer> intsList=curVertex.toInts();
+    /*    List<Integer> intsList=curVertex.toInts();
         int[] intArr =new int[intsList.size()];
         int x=0;
         for( Integer i : intsList){
@@ -153,13 +160,14 @@ public class CapturingVertexBuffer extends VertexBuffer {
           x++;
         }
 
-        this.addVertexData(intArr);
+        this.addVertexData(intArr);*/
+          intDataStore.addAll(curVertex.toInts());
 
         curVertex = new Vertex();
     }
 
     public List<Integer> getData() {
-        List<Integer> finalData = new ArrayList<>();
+      /*  List<Integer> finalData = new ArrayList<>();
         for(Vertex v : data) {
             finalData.addAll(v.toInts());
         }
@@ -170,8 +178,8 @@ public class CapturingVertexBuffer extends VertexBuffer {
     this.rawIntBuffer.position(oldPos);
         for(int i:arr) {
             finalData.add(new Integer(i));
-        }
+        }*/
 
-        return finalData;
+        return intDataStore;//finalData;
     }
 }
