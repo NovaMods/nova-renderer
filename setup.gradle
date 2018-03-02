@@ -214,7 +214,7 @@ task makePatch() << {
     new ByteArrayOutputStream().withStream { os ->
         try {
             def result = exec {
-                commandLine 'git', 'diff', '-U0', '-R','origin/master'
+                commandLine 'git', 'diff', '-U0', '-R','origin/model-magic'
                 workingDir 'src/main/java/net'
 
                 standardOutput = os

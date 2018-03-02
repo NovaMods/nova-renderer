@@ -131,9 +131,9 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
     @Override
     public void endVertex() {
-        ++this.vertexCount;
+      //  ++this.vertexCount;
 
-        boolean shouldAdd = true;
+      /*  boolean shouldAdd = true;
         for(Vertex v : data) {
             if(v.equals(data)) {
                 shouldAdd = false;
@@ -143,7 +143,17 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
         if(shouldAdd) {
             data.add(curVertex);
+        }*/
+
+        List<Integer> intsList=curVertex.toInts();
+        int[] intArr =new int[intsList.size()];
+        int x=0;
+        for( Integer i : intsList){
+          intArr[x]=i.intValue();
+          x++;
         }
+
+        this.addVertexData(intArr);
 
         curVertex = new Vertex();
     }
@@ -155,7 +165,9 @@ public class CapturingVertexBuffer extends VertexBuffer {
         }
 
         int[] arr = new int[this.rawIntBuffer.limit()];
+        int oldPos=this.rawIntBuffer.position();
     ((IntBuffer) this.rawIntBuffer.position(0)).get(arr);
+    this.rawIntBuffer.position(oldPos);
         for(int i:arr) {
             finalData.add(new Integer(i));
         }
