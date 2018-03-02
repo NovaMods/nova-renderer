@@ -61,13 +61,13 @@ public class ChunkBuilder {
 
         for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
             if(blockState.getRenderType().equals(EnumBlockRenderType.LIQUID)) {
-            if(entry.getValue().matches(blockState)) {
-                if(!blocksForFilter.containsKey(entry.getKey())) {
-                    blocksForFilter.put(entry.getKey(), new ArrayList<>());
+                if(entry.getValue().matches(blockState)) {
+                    if(!blocksForFilter.containsKey(entry.getKey())) {
+                        blocksForFilter.put(entry.getKey(), new ArrayList<>());
+                    }
+                    blocksForFilter.get(entry.getKey()).add(pos);
                 }
-                blocksForFilter.get(entry.getKey()).add(pos);
             }
-        }
         }
     }
 
@@ -89,7 +89,7 @@ public class ChunkBuilder {
             if(blockState.getRenderType() == EnumBlockRenderType.MODEL) {
 
                 IBakedModel blockModel = blockrendererdispatcherm.getModelForState(blockState);
-                
+
                 int colorMultiplier = blockColors.colorMultiplier(blockState, null, null, 0);
 
                 List<EnumFacing> actuallyAllValuesOfEnumFacing = new ArrayList<>();
