@@ -265,3 +265,6 @@ updatenames*
 
 **.cbp
 **.vs
+/.settings\org.eclipse.buildship.core.prefs
+/.project
+/.classpath
