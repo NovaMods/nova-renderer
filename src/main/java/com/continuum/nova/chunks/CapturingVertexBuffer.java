@@ -215,7 +215,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
     }*/
     @Override
     public void endVertex() {
-       ++this.vertexCount;
+      // ++this.vertexCount;
 
       /*  boolean shouldAdd = true;
         for(Vertex v : data) {
