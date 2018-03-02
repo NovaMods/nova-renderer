@@ -119,7 +119,7 @@ index 82af80c..d6c5a7e 100644
 -                this.mc.getTextureManager().bindTexture(Gui.OPTIONS_BACKGROUND);
 +                this.mc.getRenderEngine().bindTexture(Gui.OPTIONS_BACKGROUND);
 diff --git b/minecraft/client/Minecraft.java a/minecraft/client/Minecraft.java
-index ad84c84..663de0e 100644
+index ad84c84..a6bcfa3 100644
 --- b/minecraft/client/Minecraft.java
 +++ a/minecraft/client/Minecraft.java
 @@ -2,0 +3,2 @@ package net.minecraft.client;
@@ -225,7 +225,7 @@ index ad84c84..663de0e 100644
 +            nova.updateCameraAndRender(timer.renderPartialTicks, i, this);
 @@ -1160,0 +1177,4 @@ public class Minecraft implements IThreadListener, ISnooperInfo
 +        if(this.theWorld != null){
-+        
++
 +      this.ingameGUI.renderGameOverlay(timer.renderPartialTicks);
 +    }
 @@ -1181 +1200,0 @@ public class Minecraft implements IThreadListener, ISnooperInfo
@@ -5114,6 +5114,13 @@ index 7e4283f..dff7b99 100644
 +    @Override
 @@ -2513,0 +2528 @@ public class RenderGlobal implements IWorldEventListener, IResourceManagerReload
 +    @Override
+diff --git b/minecraft/client/renderer/RenderItem.java a/minecraft/client/renderer/RenderItem.java
+index 0ed8384..e8b3b3b 100644
+--- b/minecraft/client/renderer/RenderItem.java
++++ a/minecraft/client/renderer/RenderItem.java
+@@ -122 +122 @@ public class RenderItem implements IResourceManagerReloadListener
+-    }
++    } 
 diff --git b/minecraft/client/renderer/Tessellator.java a/minecraft/client/renderer/Tessellator.java
 index fe6b417..d33ff61 100644
 --- b/minecraft/client/renderer/Tessellator.java
@@ -5153,12 +5160,20 @@ index c140fee..e183401 100644
 -                vertexbuffer.drawArrays(7);
 +                buffer.drawArrays(7);
 diff --git b/minecraft/client/renderer/VertexBuffer.java a/minecraft/client/renderer/VertexBuffer.java
-index 2b645c1..caa3701 100644
+index 2b645c1..f801c95 100644
 --- b/minecraft/client/renderer/VertexBuffer.java
 +++ a/minecraft/client/renderer/VertexBuffer.java
-@@ -25 +25 @@ public class VertexBuffer
+@@ -22 +22 @@ public class VertexBuffer
+-    private IntBuffer rawIntBuffer;
++    public IntBuffer rawIntBuffer;
+@@ -25,2 +25,2 @@ public class VertexBuffer
 -    private int vertexCount;
+-    private VertexFormatElement vertexFormatElement;
 +    protected int vertexCount;
++    public VertexFormatElement vertexFormatElement;
+@@ -35 +35 @@ public class VertexBuffer
+-    private VertexFormat vertexFormat;
++    public VertexFormat vertexFormat;
 @@ -264 +264 @@ public class VertexBuffer
 -    public void putBrightness4(int p_178962_1_, int p_178962_2_, int p_178962_3_, int p_178962_4_)
 +    public void putBrightness4(int brightness1, int brightness2, int brightness3, int brightness4)
@@ -5272,99 +5287,192 @@ index 605adc6..c9ab685 100644
 +        AxisAlignedBB bb=chunkRenderer.boundingBox;
 +        Minecraft.getMinecraft().nova.chunkUpdateListener.markChunkForUpdate((int) bb.minX,(int) bb.minY,(int) bb.minZ,(int) bb.maxX,(int) bb.maxY,(int) bb.maxZ);
 diff --git b/minecraft/client/renderer/chunk/RenderChunk.java a/minecraft/client/renderer/chunk/RenderChunk.java
-index ddb2ec5..860a856 100644
+index ddb2ec5..37259e8 100644
 --- b/minecraft/client/renderer/chunk/RenderChunk.java
 +++ a/minecraft/client/renderer/chunk/RenderChunk.java
-@@ -51 +51 @@ public class RenderChunk
+@@ -30,0 +31,5 @@ import net.minecraft.world.World;
++import com.continuum.nova.NovaNative;
++import java.util.*;
++import com.continuum.nova.chunks.IGeometryFilter;
++import com.continuum.nova.chunks.CapturingVertexBuffer;
++import com.continuum.nova.chunks.IndexList;
+@@ -44 +49 @@ public class RenderChunk
+-    private final VertexBuffer[] vertexBuffers = new VertexBuffer[BlockRenderLayer.values().length];
++    private VertexBuffer[] vertexBuffers;
+@@ -51 +56,3 @@ public class RenderChunk
 -    private IBlockAccess field_189564_r;
 +    private IBlockAccess blockAccess;
-@@ -53 +53 @@ public class RenderChunk
++    private Map<String, IGeometryFilter> filters;
++    private Map<String, CapturingVertexBuffer> blockLayers= new HashMap<>();
+@@ -53 +60 @@ public class RenderChunk
 -    public RenderChunk(World p_i47120_1_, RenderGlobal p_i47120_2_, int p_i47120_3_)
 +    public RenderChunk(World world, RenderGlobal renderGlobal, int p_i47120_3_)
-@@ -60,2 +60,2 @@ public class RenderChunk
+@@ -54,0 +62,2 @@ public class RenderChunk
++      this.filters=Minecraft.getMinecraft().nova.getFilterMap();
++      vertexBuffers = new VertexBuffer[BlockRenderLayer.values().length];
+@@ -60,2 +69,2 @@ public class RenderChunk
 -        this.world = p_i47120_1_;
 -        this.renderGlobal = p_i47120_2_;
 +        this.world = world;
 +        this.renderGlobal = renderGlobal;
-@@ -91 +91 @@ public class RenderChunk
+@@ -64,3 +73,3 @@ public class RenderChunk
+-        if (OpenGlHelper.useVbo())
+-        {
+-            for (int j = 0; j < BlockRenderLayer.values().length; ++j)
++      //  if (OpenGlHelper.useVbo())
++      //  {
++            for (int j = 0; j < vertexBuffers.length; ++j)
+@@ -70 +79,4 @@ public class RenderChunk
+-        }
++            for(String layer:filters.keySet()){
++              blockLayers.put(layer,new CapturingVertexBuffer(new BlockPos(0,0,0)));
++            }
++      //  }
+@@ -91 +103 @@ public class RenderChunk
 -    public void func_189562_a(int p_189562_1_, int p_189562_2_, int p_189562_3_)
 +    public void setPosition(int x, int y, int z)
-@@ -93 +93 @@ public class RenderChunk
+@@ -93 +105 @@ public class RenderChunk
 -        if (p_189562_1_ != this.position.getX() || p_189562_2_ != this.position.getY() || p_189562_3_ != this.position.getZ())
 +        if (x != this.position.getX() || y != this.position.getY() || z != this.position.getZ())
-@@ -96,2 +96,2 @@ public class RenderChunk
+@@ -96,2 +108,2 @@ public class RenderChunk
 -            this.position.set(p_189562_1_, p_189562_2_, p_189562_3_);
 -            this.boundingBox = new AxisAlignedBB((double)p_189562_1_, (double)p_189562_2_, (double)p_189562_3_, (double)(p_189562_1_ + 16), (double)(p_189562_2_ + 16), (double)(p_189562_3_ + 16));
 +            this.position.set(x, y, z);
 +            this.boundingBox = new AxisAlignedBB((double)x, (double)y, (double)z, (double)(x + 16), (double)(y + 16), (double)(z + 16));
-@@ -124,2 +124,2 @@ public class RenderChunk
+@@ -118,0 +131,24 @@ public class RenderChunk
++    private Optional<NovaNative.mc_chunk_render_object> makeMeshForBuffer(CapturingVertexBuffer capturingVertexBuffer) {
++        List<Integer> vertexData = new ArrayList<>();
++        IndexList indices = new IndexList();
++        NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
++
++        vertexData.addAll(capturingVertexBuffer.getData());
++
++        int offset = indices.size();
++        for(int i = 0; i < vertexData.size()/7 / 4; i++) {
++            indices.addIndicesForFace(offset, 0);
++
++            offset += 4;
++        }
++
++        if(vertexData.isEmpty()) {
++            return Optional.empty();
++        }
++
++        chunk_render_object.setVertex_data(vertexData);
++        chunk_render_object.setIndices(indices);
++        chunk_render_object.format = NovaNative.NovaVertexFormat.POS_UV_LIGHTMAPUV_NORMAL_TANGENT.ordinal();
++
++        return Optional.of(chunk_render_object);
++    }
+@@ -124,2 +160,2 @@ public class RenderChunk
 -        BlockPos blockpos = this.position;
 -        BlockPos blockpos1 = blockpos.add(15, 15, 15);
 +        BlockPos minPos = this.position;
 +        BlockPos maxPos = minPos.add(15, 15, 15);
-@@ -142,2 +142,2 @@ public class RenderChunk
+@@ -142,2 +178,7 @@ public class RenderChunk
 -        VisGraph lvt_9_1_ = new VisGraph();
 -        HashSet lvt_10_1_ = Sets.newHashSet();
 +        VisGraph visGraph = new VisGraph();
 +        HashSet hashSet = Sets.newHashSet();
-@@ -145 +145 @@ public class RenderChunk
++        for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
++            if(this.blockLayers.containsKey(entry.getKey())){
++                this.blockLayers.put(entry.getKey(),new CapturingVertexBuffer(minPos));
++                this.preRenderBlocks(this.blockLayers.get(entry.getKey()), minPos);
++            }
+@@ -145 +186,2 @@ public class RenderChunk
 -        if (!this.field_189564_r.extendedLevelsInChunkCache())
++        }
 +        if (!this.blockAccess.extendedLevelsInChunkCache())
-@@ -151 +151 @@ public class RenderChunk
+@@ -151 +193 @@ public class RenderChunk
 -            for (BlockPos.MutableBlockPos blockpos$mutableblockpos : BlockPos.getAllInBoxMutable(blockpos, blockpos1))
 +            for (BlockPos.MutableBlockPos mutablePos : BlockPos.getAllInBoxMutable(minPos, maxPos))
-@@ -153 +153 @@ public class RenderChunk
+@@ -153 +195 @@ public class RenderChunk
 -                IBlockState iblockstate = this.field_189564_r.getBlockState(blockpos$mutableblockpos);
 +                IBlockState iblockstate = this.blockAccess.getBlockState(mutablePos);
-@@ -158 +158 @@ public class RenderChunk
+@@ -158 +200 @@ public class RenderChunk
 -                    lvt_9_1_.setOpaqueCube(blockpos$mutableblockpos);
 +                    visGraph.setOpaqueCube(mutablePos);
-@@ -163 +163 @@ public class RenderChunk
+@@ -163 +205 @@ public class RenderChunk
 -                    TileEntity tileentity = this.field_189564_r.getTileEntity(new BlockPos(blockpos$mutableblockpos));
 +                    TileEntity tileEntity = this.blockAccess.getTileEntity(new BlockPos(mutablePos));
-@@ -165 +165 @@ public class RenderChunk
+@@ -165 +207 @@ public class RenderChunk
 -                    if (tileentity != null)
 +                    if (tileEntity != null)
-@@ -167 +167 @@ public class RenderChunk
+@@ -167 +209 @@ public class RenderChunk
 -                        TileEntitySpecialRenderer<TileEntity> tileentityspecialrenderer = TileEntityRendererDispatcher.instance.<TileEntity>getSpecialRenderer(tileentity);
 +                        TileEntitySpecialRenderer<TileEntity> tileEntityRenderer = TileEntityRendererDispatcher.instance.<TileEntity>getSpecialRenderer(tileEntity);
-@@ -169 +169 @@ public class RenderChunk
+@@ -169 +211 @@ public class RenderChunk
 -                        if (tileentityspecialrenderer != null)
 +                        if (tileEntityRenderer != null)
-@@ -171 +171 @@ public class RenderChunk
+@@ -171 +213 @@ public class RenderChunk
 -                            compiledchunk.addTileEntity(tileentity);
 +                            compiledchunk.addTileEntity(tileEntity);
-@@ -173 +173 @@ public class RenderChunk
+@@ -173 +215 @@ public class RenderChunk
 -                            if (tileentityspecialrenderer.isGlobalRenderer(tileentity))
 +                            if (tileEntityRenderer.isGlobalRenderer(tileEntity))
-@@ -175 +175 @@ public class RenderChunk
+@@ -175 +217 @@ public class RenderChunk
 -                                lvt_10_1_.add(tileentity);
 +                                hashSet.add(tileEntity);
-@@ -191 +191 @@ public class RenderChunk
+@@ -185,0 +228,5 @@ public class RenderChunk
++                    for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
++                        if(entry.getValue().matches(block.getDefaultState())) {
++                            blockrendererdispatcher.renderBlock(iblockstate, mutablePos, this.blockAccess, this.blockLayers.get(entry.getKey()));
++                        }
++                    }
+@@ -188 +235 @@ public class RenderChunk
+-                    if (!compiledchunk.isLayerStarted(blockrenderlayer1))
++                    /*if (!compiledchunk.isLayerStarted(blockrenderlayer1))
+@@ -191,2 +238,2 @@ public class RenderChunk
 -                        this.preRenderBlocks(vertexbuffer, blockpos);
+-                    }
 +                        this.preRenderBlocks(vertexbuffer, minPos);
-@@ -194 +194 @@ public class RenderChunk
++                    }*/
+@@ -194 +241 @@ public class RenderChunk
 -                    aboolean[j] |= blockrendererdispatcher.renderBlock(iblockstate, blockpos$mutableblockpos, this.field_189564_r, vertexbuffer);
-+                    aboolean[j] |= blockrendererdispatcher.renderBlock(iblockstate, mutablePos, this.blockAccess, vertexbuffer);
-@@ -212 +212 @@ public class RenderChunk
++                    //aboolean[j] |= blockrendererdispatcher.renderBlock(iblockstate, mutablePos, this.blockAccess, vertexbuffer);
+@@ -196,0 +244,18 @@ public class RenderChunk
++            for(Map.Entry<String, CapturingVertexBuffer> entry : blockLayers.entrySet()) {
++              //entry.getValue().finishDrawing();
++              CapturingVertexBuffer b=entry.getValue();
++              //this.blockLayers.put(entry.getKey(),new CapturingVertexBuffer(minPos));
++              Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBuffer(b);
++
++              renderObj.ifPresent(obj -> {
++                  obj.id = index;
++                  obj.x =minPos.getX();
++                  obj.y = minPos.getY();
++                  obj.z = minPos.getZ();
++
++                //  LOG.info("Adding render geometry for chunk {}", range);
++                  NovaNative.INSTANCE.add_chunk_geometry_for_filter(entry.getKey(), obj);
++
++              });
++
++                  }
+@@ -198 +263 @@ public class RenderChunk
+-            for (BlockRenderLayer blockrenderlayer : BlockRenderLayer.values())
++          /*  for (BlockRenderLayer blockrenderlayer : BlockRenderLayer.values())
+@@ -209,0 +275 @@ public class RenderChunk
++            */
+@@ -212 +278 @@ public class RenderChunk
 -        compiledchunk.setVisibility(lvt_9_1_.computeVisibility());
 +        compiledchunk.setVisibility(visGraph.computeVisibility());
-@@ -217 +217 @@ public class RenderChunk
+@@ -217 +283 @@ public class RenderChunk
 -            Set<TileEntity> set = Sets.newHashSet(lvt_10_1_);
 +            Set<TileEntity> set = Sets.newHashSet(hashSet);
-@@ -220 +220 @@ public class RenderChunk
+@@ -220 +286 @@ public class RenderChunk
 -            set1.removeAll(lvt_10_1_);
 +            set1.removeAll(hashSet);
-@@ -222 +222 @@ public class RenderChunk
+@@ -222 +288 @@ public class RenderChunk
 -            this.setTileEntities.addAll(lvt_10_1_);
 +            this.setTileEntities.addAll(hashSet);
-@@ -263 +263 @@ public class RenderChunk
+@@ -263 +329 @@ public class RenderChunk
 -            this.func_189563_q();
 +            this.initBlockAccess();
-@@ -274 +274 @@ public class RenderChunk
+@@ -274 +340 @@ public class RenderChunk
 -    private void func_189563_q()
 +    private void initBlockAccess()
-@@ -277 +277 @@ public class RenderChunk
+@@ -277 +343 @@ public class RenderChunk
 -        this.field_189564_r = new ChunkCache(this.world, this.position.add(-1, -1, -1), this.position.add(16, 16, 16), 1);
 +        this.blockAccess = new ChunkCache(this.world, this.position.add(-1, -1, -1), this.position.add(16, 16, 16), 1);
 diff --git b/minecraft/client/renderer/chunk/VboChunkFactory.java a/minecraft/client/renderer/chunk/VboChunkFactory.java

@@ -16,6 +16,7 @@ import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,7 +46,7 @@ public class ChunkBuilder {
     }
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
-        blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
+      /*  blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
         Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
 
         for(int x = range.min.x; x <= range.max.x; x++) {
@@ -67,9 +68,9 @@ public class ChunkBuilder {
                 obj.z = range.min.z;
 
                 LOG.info("Adding render geometry for chunk {}", range);
-                NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
+              NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
             });
-        }
+        }*/
     }
 
     /**
@@ -83,24 +84,7 @@ public class ChunkBuilder {
 
 
         for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
-            if(blockState.getRenderType().equals(EnumBlockRenderType.INVISIBLE)) {
-                if(!entry.getValue().matches(blockState)) {
-                    if(!blocksForFilter.containsKey(entry.getKey())) {
-                        blocksForFilter.put(entry.getKey(), new ArrayList<>());
-                    }
-                    ArrayList<BlockPos> newList=new ArrayList<BlockPos>();
-                    for(BlockPos i:blocksForFilter.get(entry.getKey())){
-                        if(i.getX()!=pos.getX()||i.getY()!=pos.getY()||i.getZ()!=pos.getZ()){
-                            newList.add(i);
-                        }else{
-                            LOG.info("REMOVE BLOCK?");
-
-                        }
-                    }
-                    blocksForFilter.put(entry.getKey(),newList);
-                    //blocksForFilter.get(entry.getKey()).add(pos);
-                }
-            }else{
+            if(blockState.getRenderType().equals(EnumBlockRenderType.LIQUID)) {
             if(entry.getValue().matches(blockState)) {
                 if(!blocksForFilter.containsKey(entry.getKey())) {
                     blocksForFilter.put(entry.getKey(), new ArrayList<>());
@@ -116,6 +100,7 @@ public class ChunkBuilder {
         IndexList indices = new IndexList();
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
         CapturingVertexBuffer capturingVertexBuffer = new CapturingVertexBuffer(chunkPos);
+        capturingVertexBuffer.begin(7, DefaultVertexFormats.BLOCK);
         BlockFluidRenderer fluidRenderer = blockRendererDispatcher.getFluidRenderer();
         BlockRendererDispatcher blockrendererdispatcherm = Minecraft.getMinecraft().getBlockRendererDispatcher();
 
