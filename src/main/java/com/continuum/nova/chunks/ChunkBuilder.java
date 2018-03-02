@@ -46,31 +46,7 @@ public class ChunkBuilder {
     }
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
-      /*  blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
-        Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
 
-        for(int x = range.min.x; x <= range.max.x; x++) {
-            for(int y = range.min.y; y < range.max.y; y++) {
-                for(int z = range.min.z; z <= range.max.z; z++) {
-                    filterBlockAtPos(blocksForFilter, new BlockPos(x, y, z));
-                }
-            }
-        }
-
-        final int chunkHashCode = 31 * range.min.x + range.min.z;
-
-        for(String filterName : blocksForFilter.keySet()) {
-            Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world, new BlockPos(range.min.x, range.min.y, range.min.z));
-            renderObj.ifPresent(obj -> {
-                obj.id = chunkHashCode;
-                obj.x = range.min.x;
-                obj.y = range.min.y;
-                obj.z = range.min.z;
-
-                LOG.info("Adding render geometry for chunk {}", range);
-              NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
-            });
-        }*/
     }
 
     /**
@@ -113,9 +89,7 @@ public class ChunkBuilder {
             if(blockState.getRenderType() == EnumBlockRenderType.MODEL) {
 
                 IBakedModel blockModel = blockrendererdispatcherm.getModelForState(blockState);
-              //  IBakedModel ibakedmodel = blockRendererDispatcherm.getModelForState(blockState);//this.blockModelShapes.getModelForState(state);
-              //  IBakedModel ibakedmodel1 = (new SimpleBakedModel.Builder(blockState, ibakedmodel, texture, BlockPos)).makeBakedModel();
-
+                
                 int colorMultiplier = blockColors.colorMultiplier(blockState, null, null, 0);
 
                 List<EnumFacing> actuallyAllValuesOfEnumFacing = new ArrayList<>();

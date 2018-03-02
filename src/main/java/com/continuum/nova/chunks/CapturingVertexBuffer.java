@@ -78,35 +78,14 @@ public class CapturingVertexBuffer extends VertexBuffer {
     public CapturingVertexBuffer(BlockPos chunkPosition) {
         super(0);
         this.chunkPosition = chunkPosition;
-                this.reset();
+        this.reset();
         this.vertexFormat=DefaultVertexFormats.BLOCK;
         this.vertexFormatElement = this.vertexFormat.getElement(0);
-        //this.begin(7, DefaultVertexFormats.BLOCK);
     }
     public void setChunkPos(BlockPos chunkPosition){
       this.chunkPosition = chunkPosition;
     }
 
-  /*  private void growBuffer(int p_181670_1_)
-      {
-          if (MathHelper.roundUp(p_181670_1_, 4) / 4 > this.rawIntBuffer.remaining() || this.vertexCount * this.vertexFormat.getNextOffset() + p_181670_1_ > this.byteBuffer.capacity())
-          {
-              int i = this.byteBuffer.capacity();
-              int j = i + MathHelper.roundUp(p_181670_1_, 2097152);
-              LOGGER.debug("Needed to grow BufferBuilder buffer: Old size {} bytes, new size {} bytes.", new Object[] {Integer.valueOf(i), Integer.valueOf(j)});
-              int k = this.rawIntBuffer.position();
-              ByteBuffer bytebuffer = GLAllocation.createDirectByteBuffer(j);
-              this.byteBuffer.position(0);
-              bytebuffer.put(this.byteBuffer);
-              bytebuffer.rewind();
-              this.byteBuffer = bytebuffer;
-              this.rawFloatBuffer = this.byteBuffer.asFloatBuffer().asReadOnlyBuffer();
-              this.rawIntBuffer = this.byteBuffer.asIntBuffer();
-              this.rawIntBuffer.position(k);
-              this.rawShortBuffer = this.byteBuffer.asShortBuffer();
-              this.rawShortBuffer.position(k << 1);
-          }
-      }*/
     @Override
     public VertexBuffer pos(double x, double y, double z) {
         curVertex.x = (float)x - chunkPosition.getX();
@@ -115,15 +94,12 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
         return this;
     }
-  //  @Override
-//    public void putPosition(double x, double y, double z)
-//  {
-  //  pos(x,y,z);
-  //}
-  private int getBufferSize()
-      {
-          return this.vertexCount * this.vertexFormat.getIntegerSize();
-      }
+
+    private int getBufferSize()
+    {
+        return this.vertexCount * this.vertexFormat.getIntegerSize();
+    }
+
     @Override
     public VertexBuffer color(float red, float green, float blue, float alpha) {
         return color((int)red * 255, (int)green * 255, (int)blue * 255, (int)alpha * 255);
@@ -150,85 +126,15 @@ public class CapturingVertexBuffer extends VertexBuffer {
         return this;
     }
 
-    //temporarly disable this feature
-  //  @Override
-  //  public void putBrightness4(int brightness1, int brightness2, int brightness3, int brightness4)
-  //  {
-      //  int i = (this.vertexCount - 4) * this.vertexFormat.getIntegerSize() + this.vertexFormat.getUvOffsetById(1) / 4;
-      //  int j = this.vertexFormat.getNextOffset() >> 2;
-        /*this.rawIntBuffer.put(i, brightness1);
-        this.rawIntBuffer.put(i + j, brightness2);
-        this.rawIntBuffer.put(i + j * 2, brightness3);
-        this.rawIntBuffer.put(i + j * 3, brightness4);*/
-  //  }
-
-
-    //temporarly disable this feature
-  //  @Override
-    //public void putColorMultiplier(float red, float green, float blue, int alpha)
-  //  {
-    //  color((int)red * 255, (int)green * 255, (int)blue * 255, (int)alpha );
-      /*  int colorIndex = this.getColorIndex(p_178978_4_);
-        int color = -1;
-
-        if (!this.noColor)
-        {
-            color = this.rawIntBuffer.get(colorIndex);
-
-            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN)
-            {
-                int packedRed = (int)((float)(color & 255) * red);
-                int packedGreen = (int)((float)(color >> 8 & 255) * green);
-                int packedBlue = (int)((float)(color >> 16 & 255) * blue);
-                color = color & -16777216;
-                color = color | packedBlue << 16 | packedGreen << 8 | packedRed;
-            }
-            else
-            {
-                int packedRed = (int)((float)(color >> 24 & 255) * red);
-                int packedGreen = (int)((float)(color >> 16 & 255) * green);
-                int packedBlue = (int)((float)(color >> 8 & 255) * blue);
-                color = color & 255;    // Don't forget the alpha! I never leave home without it
-                color = color | packedRed << 24 | packedGreen << 16 | packedBlue << 8;
-            }
-        }
-
-        this.rawIntBuffer.put(colorIndex, color);*/
-  //  }
-
     @Override
     public VertexBuffer lightmap(int u, int v) {
         curVertex.lmCoord = (u << 16) + v;
 
         return this;
     }
-  /*  public void addVertexData(int[] vertexData)
-    {
-      //ArrayList<Integer> ar=new ArrayList<Integer>;
-      for(int i :vertexData){
-      intDataStore.add(i);
-    }
-    //   this.growBuffer(vertexData.length * 4);
-       this.rawIntBuffer.position(this.getBufferSize());
-        this.rawIntBuffer.put(vertexData);
-        this.vertexCount += vertexData.length / this.vertexFormat.getIntegerSize();
-    }*/
+
     @Override
     public void endVertex() {
-      // ++this.vertexCount;
-
-      /*  boolean shouldAdd = true;
-        for(Vertex v : data) {
-            if(v.equals(data)) {
-                shouldAdd = false;
-                break;
-            }
-        }
-
-        if(shouldAdd) {
-            data.add(curVertex);
-        }*/
-
         List<Integer> intsList=curVertex.toInts();
         int[] intArr =new int[intsList.size()];
         int x=0;
@@ -236,27 +142,19 @@ public class CapturingVertexBuffer extends VertexBuffer {
           intArr[x]=i.intValue();
           x++;
         }
-
         this.addVertexData(intArr);
-          //intDataStore.addAll(curVertex.toInts());
-
         curVertex = new Vertex();
     }
 
     public List<Integer> getData() {
-      List<Integer> finalData = new ArrayList<>();
-      //  for(Vertex v : data) {
-          //  finalData.addAll(v.toInts());
-      //  }
-
+        List<Integer> finalData = new ArrayList<>();
         int[] arr = new int[this.rawIntBuffer.limit()];
         int oldPos=this.rawIntBuffer.position();
-    ((IntBuffer) this.rawIntBuffer.position(0)).get(arr);
-    this.rawIntBuffer.position(oldPos);
+        ((IntBuffer) this.rawIntBuffer.position(0)).get(arr);
+        this.rawIntBuffer.position(oldPos);
         for(int i:arr) {
             finalData.add(new Integer(i));
         }
-
         return finalData;
     }
 }
