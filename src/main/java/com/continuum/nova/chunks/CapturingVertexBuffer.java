@@ -1,12 +1,15 @@
 package com.continuum.nova.chunks;
 
 import net.minecraft.client.renderer.VertexBuffer;
+
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import java.nio.IntBuffer;
 
 /**
  * @author ddubois
@@ -32,10 +35,8 @@ public class CapturingVertexBuffer extends VertexBuffer {
             if(Float.compare(vertex.x, x) != 0) return false;
             if(Float.compare(vertex.y, y) != 0) return false;
             if(Float.compare(vertex.z, z) != 0) return false;
-            // if(color != vertex.color) return false;
             if(Float.compare(vertex.u, u) != 0) return false;
             return Float.compare(vertex.v, v) != 0;
-            // return lmCoord == vertex.lmCoord;
         }
 
         @Override
@@ -69,13 +70,19 @@ public class CapturingVertexBuffer extends VertexBuffer {
     }
 
     private List<Vertex> data = new ArrayList<>();
-    private final BlockPos chunkPosition;
-
+    private BlockPos chunkPosition;
+    private ArrayList<Integer> intDataStore= new ArrayList<Integer>();
     private Vertex curVertex = new Vertex();
 
     public CapturingVertexBuffer(BlockPos chunkPosition) {
         super(0);
         this.chunkPosition = chunkPosition;
+        this.reset();
+        this.vertexFormat=DefaultVertexFormats.BLOCK;
+        this.vertexFormatElement = this.vertexFormat.getElement(0);
+    }
+    public void setChunkPos(BlockPos chunkPosition){
+      this.chunkPosition = chunkPosition;
     }
 
     @Override
@@ -85,6 +92,11 @@ public class CapturingVertexBuffer extends VertexBuffer {
         curVertex.z = (float)z - chunkPosition.getZ();
 
         return this;
+    }
+
+    private int getBufferSize()
+    {
+        return this.vertexCount * this.vertexFormat.getIntegerSize();
     }
 
     @Override
@@ -122,30 +134,34 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
     @Override
     public void endVertex() {
-        ++this.vertexCount;
-
-        boolean shouldAdd = true;
-        for(Vertex v : data) {
-            if(v.equals(data)) {
-                shouldAdd = false;
-                break;
-            }
+        List<Integer> intsList=curVertex.toInts();
+        int[] intArr =new int[intsList.size()];
+        int x=0;
+        for( Integer i : intsList){
+          intArr[x]=i.intValue();
+          x++;
         }
-
-        if(shouldAdd) {
-            data.add(curVertex);
-        }
-
+        this.addVertexData(intArr);
         curVertex = new Vertex();
     }
 
     public List<Integer> getData() {
         List<Integer> finalData = new ArrayList<>();
-
-        for(Vertex v : data) {
-            finalData.addAll(v.toInts());
+        int[] arr = new int[this.rawIntBuffer.limit()];
+        int oldPos=this.rawIntBuffer.position();
+        ((IntBuffer) this.rawIntBuffer.position(0)).get(arr);
+        this.rawIntBuffer.position(oldPos);
+        for(int i:arr) {
+            finalData.add(new Integer(i));
         }
-
         return finalData;
+    }
+
+    public IntBuffer getRawData() {
+        return this.rawIntBuffer;
+    }
+
+    public boolean isEmpty(){
+      return this.vertexCount<1;
     }
 }

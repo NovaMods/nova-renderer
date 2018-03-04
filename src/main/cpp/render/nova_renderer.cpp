@@ -364,6 +364,12 @@ namespace nova {
             }
             profiler::end("process_renderable");
         }
+        for(int i=0;i<geometry.size();i++){
+            if(geometry[i].needs_deletion){
+                geometry.erase( geometry.begin()+i);
+                i--;
+            }
+        }
         profiler::end("process_all");
 
         profiler::end(shader.get_name());

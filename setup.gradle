@@ -165,10 +165,10 @@ task applyPatch(dependsOn: copyMcPack) {
             try {
                 def result = exec {
                     if (OperatingSystem.current().isWindows()) {
-                        commandLine "git","apply","--reject","--unidiff-zero","-v","--whitespace=fix","--no-index","--directory","src/main/java/net", "${project.projectDir}/patches/nova.patch"
+                        commandLine "git","apply","--reject","--unidiff-zero","-v","--whitespace=fix","--ignore-whitespace","--no-index","--directory","src/main/java/net", "${project.projectDir}/patches/nova.patch"
                         workingDir './'
                     } else {
-                        commandLine "git","apply","--reject","--unidiff-zero","-v","--whitespace=fix","--no-index","--directory","src/main/java/net", "${project.projectDir}/patches/nova.patch"
+                        commandLine "git","apply","--reject","--unidiff-zero","-v","--whitespace=fix","--ignore-whitespace","--no-index","--directory","src/main/java/net", "${project.projectDir}/patches/nova.patch"
                         workingDir './'
                     }
 
@@ -210,12 +210,11 @@ task initSubmodules(dependsOn: cleanupMcp) << {
 task setup(dependsOn: initSubmodules) << {
     logger.info('Nova setup succesfully')
 }
-
 task makePatch() << {
     new ByteArrayOutputStream().withStream { os ->
         try {
             def result = exec {
-                commandLine 'git', 'diff', '-U0', 'origin/minecraft-1.10-mcp'
+                commandLine 'git', 'diff', '-U0', '-R','origin/model-magic'
                 workingDir 'src/main/java/net'
 
                 standardOutput = os

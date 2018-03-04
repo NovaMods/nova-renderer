@@ -72,7 +72,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private IResourceManager resourceManager;
 
-    private ChunkUpdateListener chunkUpdateListener;
+    public ChunkUpdateListener chunkUpdateListener;
 
     private PriorityQueue<ChunkUpdateListener.BlockUpdateRange> chunksToUpdate;
     private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
@@ -89,6 +89,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Utils.initGuiTextureLocations(GUI_COLOR_TEXTURES_LOCATIONS);
         Utils.initFontTextureLocations(FONT_COLOR_TEXTURES_LOCATIONS);
         Utils.initFreeTextures(FREE_TEXTURES);
+    }
+
+    public HashMap<String, IGeometryFilter> getFilterMap(){
+      return this.filterMap;
     }
 
     @Override
@@ -434,5 +438,3 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.end("new_chunk_builder");
     }
 }
-
-
