@@ -6,6 +6,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.List;
+import java.nio.IntBuffer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public interface NovaNative extends Library {
     NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
@@ -100,14 +103,24 @@ public interface NovaNative extends Library {
         public int vertex_buffer_size;
         public int index_buffer_size;
 
-        public void setVertex_data(List<Integer> vertexData) {
-            vertex_data = new Memory(vertexData.size() * Native.getNativeSize(Integer.class));
-            for(int i = 0; i < vertexData.size(); i++) {
-                Integer data = vertexData.get(i);
-                vertex_data.setInt(i * Native.getNativeSize(Integer.TYPE), data);
-            }
+        public void setVertex_data(IntBuffer vertexData) {
+            int s=vertexData.limit();
+            Memory vertex_datam = new Memory(s * Native.getNativeSize(Integer.class));
+            ByteBuffer bbuf = vertex_datam.getByteBuffer(0,s * Native.getNativeSize(Integer.class));
+              ByteBuffer bbuf2 = ByteBuffer.allocate(s * Native.getNativeSize(Integer.class));
+//bbuf.order(ByteOrder.nativeOrder()); // little endian
+bbuf.position(0);
+vertexData.position(0);
+bbuf.asIntBuffer().put(vertexData);
+bbuf.position(0);
+//LOG.error(bbuf2.getInt(0));
+//bbuf.put(bbuf2);
+//bbuf.position(0);
+vertex_data=vertex_datam;
+//LOG.error(vertex_data.getInt(0)+","+vertexData2.get(0));
 
-            vertex_buffer_size = vertexData.size();
+
+            vertex_buffer_size = s;
         }
 
         public void setIndices(List<Integer> indices) {
