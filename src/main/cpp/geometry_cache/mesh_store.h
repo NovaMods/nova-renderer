@@ -34,6 +34,13 @@ namespace nova {
          * \param chunk The chunk to add or update
          */
         void add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk);
+
+        /*!
+         * \brief Removes a chunk's geometry for the specified filter
+         *
+         * \param filter_name The name of the filter to remove the chunk geometry from
+         * \param chunk The chunk to remove
+         */
         void remove_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk);
         
         /*!

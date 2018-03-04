@@ -104,21 +104,15 @@ public interface NovaNative extends Library {
         public int index_buffer_size;
 
         public void setVertex_data(IntBuffer vertexData) {
-            int s=vertexData.limit();
+            int s = vertexData.limit();
             Memory vertex_datam = new Memory(s * Native.getNativeSize(Integer.class));
-            ByteBuffer bbuf = vertex_datam.getByteBuffer(0,s * Native.getNativeSize(Integer.class));
-              ByteBuffer bbuf2 = ByteBuffer.allocate(s * Native.getNativeSize(Integer.class));
-//bbuf.order(ByteOrder.nativeOrder()); // little endian
-bbuf.position(0);
-vertexData.position(0);
-bbuf.asIntBuffer().put(vertexData);
-bbuf.position(0);
-//LOG.error(bbuf2.getInt(0));
-//bbuf.put(bbuf2);
-//bbuf.position(0);
-vertex_data=vertex_datam;
-//LOG.error(vertex_data.getInt(0)+","+vertexData2.get(0));
-
+            ByteBuffer bbuf = vertex_datam.getByteBuffer(0, s * Native.getNativeSize(Integer.class));
+            ByteBuffer bbuf2 = ByteBuffer.allocate(s * Native.getNativeSize(Integer.class));
+            bbuf.position(0);
+            vertexData.position(0);
+            bbuf.asIntBuffer().put(vertexData);
+            bbuf.position(0);
+            vertex_data = vertex_datam;
 
             vertex_buffer_size = s;
         }

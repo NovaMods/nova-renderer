@@ -367,7 +367,7 @@ namespace nova {
         for(int i=0;i<geometry.size();i++){
             if(geometry[i].needs_deletion){
                 geometry.erase( geometry.begin()+i);
-            i--;
+                i--;
             }
         }
         profiler::end("process_all");

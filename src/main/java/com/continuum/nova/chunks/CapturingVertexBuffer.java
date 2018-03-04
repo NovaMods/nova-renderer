@@ -35,10 +35,8 @@ public class CapturingVertexBuffer extends VertexBuffer {
             if(Float.compare(vertex.x, x) != 0) return false;
             if(Float.compare(vertex.y, y) != 0) return false;
             if(Float.compare(vertex.z, z) != 0) return false;
-            // if(color != vertex.color) return false;
             if(Float.compare(vertex.u, u) != 0) return false;
             return Float.compare(vertex.v, v) != 0;
-            // return lmCoord == vertex.lmCoord;
         }
 
         @Override
@@ -158,22 +156,11 @@ public class CapturingVertexBuffer extends VertexBuffer {
         }
         return finalData;
     }
+
     public IntBuffer getRawData() {
-    //  List<Integer> finalData = new ArrayList<>();
-      //  for(Vertex v : data) {
-          //  finalData.addAll(v.toInts());
-      //  }
-
-        /*int[] arr = new int[this.rawIntBuffer.limit()];
-        int oldPos=this.rawIntBuffer.position();
-    ((IntBuffer) this.rawIntBuffer.position(0)).get(arr);
-    this.rawIntBuffer.position(oldPos);
-        for(int i:arr) {
-            finalData.add(new Integer(i));
-        }*/
-
-        return this.rawIntBuffer;//finalData;
+        return this.rawIntBuffer;
     }
+
     public boolean isEmpty(){
       return this.vertexCount<1;
     }

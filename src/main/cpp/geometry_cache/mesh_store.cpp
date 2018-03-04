@@ -82,7 +82,6 @@ namespace nova {
             obj.color_texture = "block_color";
             obj.position = def.position;
             obj.bounding_box.center = {def.position.x+8,def.position.y+8,def.position.z+8};
-            //obj.bounding_box.center.y = 128;
             obj.bounding_box.extents = {16, 16, 16};   // TODO: Make these values come from Minecraft
             obj.needs_deletion=false;
             const std::string& shader_name = std::get<0>(entry);
@@ -99,32 +98,23 @@ namespace nova {
         def.position = {chunk.x, chunk.y, chunk.z};
         def.id = chunk.id;
 
-      //  chunk_parts_to_upload_lock.lock();
-        try{
-        for(auto& group : renderables_grouped_by_shader) {
-            if(group.first==filter_name){
-                for(int i=0;i<group.second.size();i++){
-
-                    bool t=(static_cast<int>(group.second[i].position.x) == static_cast<int>(def.position.x))&&(static_cast<int>(group.second[i].position.y) == static_cast<int>(def.position.y) )&& (static_cast<int>(group.second[i].position.z) == static_cast<int>(def.position.z));
+        try {
+            if(renderables_grouped_by_shader.find(filter_name) != renderables_grouped_by_shader.end()) {
+                auto& group = renderables_grouped_by_shader.at(filter_name);
+                for(int i=0;i<group.size();i++) {
+                    bool t=(static_cast<int>(group[i].position.x) == static_cast<int>(def.position.x)) &&
+                           (static_cast<int>(group[i].position.y) == static_cast<int>(def.position.y)) &&
+                           (static_cast<int>(group[i].position.z) == static_cast<int>(def.position.z));
                     if(t){
-
-
-                        //LOG(ERROR)<<"REMOVING CHUNK";
-                        //group.second.erase( group.second.begin()+i);
-                        group.second[i].needs_deletion=true;//=std::make_unique<gl_mesh>();
-                        //break;
+                        group[i].needs_deletion=true;
                     }
                 }
-
-
             }
+        } catch(std::exception& e) {
+            LOG(ERROR)<<"REMOVING CHUNK ERROR: " << e.what();
         }
-      }catch(...){
-        LOG(ERROR)<<"REMOVING CHUNK ERROR";
-      }
-        //chunk_parts_to_upload.emplace(filter_name, def);
-    //    chunk_parts_to_upload_lock.unlock();
     }
+
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
         mesh_definition def = {};
         auto& vertex_data = def.vertex_data;
