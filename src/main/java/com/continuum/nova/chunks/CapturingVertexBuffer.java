@@ -1,6 +1,7 @@
 package com.continuum.nova.chunks;
 
 import net.minecraft.client.renderer.VertexBuffer;
+
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -258,5 +259,24 @@ public class CapturingVertexBuffer extends VertexBuffer {
         }
 
         return finalData;
+    }
+    public IntBuffer getRawData() {
+    //  List<Integer> finalData = new ArrayList<>();
+      //  for(Vertex v : data) {
+          //  finalData.addAll(v.toInts());
+      //  }
+
+        /*int[] arr = new int[this.rawIntBuffer.limit()];
+        int oldPos=this.rawIntBuffer.position();
+    ((IntBuffer) this.rawIntBuffer.position(0)).get(arr);
+    this.rawIntBuffer.position(oldPos);
+        for(int i:arr) {
+            finalData.add(new Integer(i));
+        }*/
+
+        return this.rawIntBuffer;//finalData;
+    }
+    public boolean isEmpty(){
+      return this.vertexCount<1;
     }
 }

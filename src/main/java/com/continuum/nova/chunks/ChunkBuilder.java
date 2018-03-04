@@ -95,7 +95,7 @@ public class ChunkBuilder {
         }
     }
 
-    private Optional<NovaNative.mc_chunk_render_object> makeMeshForBlocks(List<BlockPos> positions, World world, BlockPos chunkPos) {
+    /*private Optional<NovaNative.mc_chunk_render_object> makeMeshForBlocks(List<BlockPos> positions, World world, BlockPos chunkPos) {
         List<Integer> vertexData = new ArrayList<>();
         IndexList indices = new IndexList();
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
@@ -190,7 +190,7 @@ public class ChunkBuilder {
         chunk_render_object.format = NovaNative.NovaVertexFormat.POS_UV_LIGHTMAPUV_NORMAL_TANGENT.ordinal();
 
         return Optional.of(chunk_render_object);
-    }
+    }*/
 
     private void setLightmapCoord(int[] quadVertexData, int lmCoords) {
         for(int i = 0; i < 4; i++) {
