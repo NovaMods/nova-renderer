@@ -77,6 +77,12 @@ NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_re
     PROFILER::end("add_chunk_geometry_for_filter");
 }
 
+NOVA_API void remove_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk) {
+    PROFILER::start("remove_chunk_geometry_for_filter");
+    MESH_STORE.remove_chunk_render_object(std::string(filter_name), *chunk);
+    PROFILER::end("remove_chunk_geometry_for_filter");
+}
+
 NOVA_API void execute_frame() {
     PROFILER::start("execute_frame");
     NOVA_RENDERER->render_frame();
