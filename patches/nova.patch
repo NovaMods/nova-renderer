@@ -3183,6 +3183,22 @@ index 90b0343..a1d9c33 100644
 @@ -137 +137 @@ public class TeleportToTeam implements ISpectatorMenuView, ISpectatorMenuObject
 -            Minecraft.getMinecraft().getTextureManager().bindTexture(this.location);
 +            Minecraft.getMinecraft().getRenderEngine().bindTexture(this.location);
+diff --git b/minecraft/client/multiplayer/ChunkProviderClient.java a/minecraft/client/multiplayer/ChunkProviderClient.java
+index 5da5aad..767351a 100644
+--- b/minecraft/client/multiplayer/ChunkProviderClient.java
++++ a/minecraft/client/multiplayer/ChunkProviderClient.java
+@@ -13,0 +14,3 @@ import org.apache.logging.log4j.Logger;
++import com.continuum.nova.NovaNative;
++import net.minecraft.client.Minecraft;
++import com.continuum.nova.chunks.IGeometryFilter;
+@@ -55,0 +59,7 @@ public class ChunkProviderClient implements IChunkProvider
++        for( String layer:Minecraft.getMinecraft().nova.getFilterMap().keySet()){
++        NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
++      //  LOGGER.error("CHUNK:"+x);
++        chunk_render_object.x=(float) x*16.0f;
++        chunk_render_object.z=(float) z*16.0f;
++          NovaNative.INSTANCE.add_chunk_geometry_for_filter(layer, chunk_render_object);
++      }
 diff --git b/minecraft/client/network/NetHandlerPlayClient.java a/minecraft/client/network/NetHandlerPlayClient.java
 index c484866..4646d90 100644
 --- b/minecraft/client/network/NetHandlerPlayClient.java
