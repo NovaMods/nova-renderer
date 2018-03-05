@@ -276,6 +276,8 @@ public interface NovaNative extends Library {
 
     void add_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
 
+    void remove_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
+
     boolean should_close();
 
     void add_gui_geometry(mc_gui_buffer buffer);
