@@ -8,10 +8,10 @@
 ### Development status
 The Nova Renderer is currently early in development, so early that I don't think there's anything worth releasing. Yes, you can download the code and try running it yourself, but you have to make some changes to the Minecraft source code to add in hooks for Nova.
 
-If you want to see what we have planned, or what has already been done, check out [our Trello board](https://trello.com/b/tf517UY2/nova-renderer).
+If you want to see what we have planned, or what has already been done, check out [our Projects](https://github.com/NovaMods/nova-renderer/projects).
  
 # End Goal
-Everything from here on out describes what the Nova Renderer will look like during version 1.0. This doesn't necessarily reflect the current status of the project. Check [our Trello board](https://trello.com/b/tf517UY2/nova-renderer) to see the current status of the Nova Renderer.
+Everything from here on out describes what the Nova Renderer will look like during version 1.0. This doesn't necessarily reflect the current status of the project. Check [our Projects](https://github.com/NovaMods/nova-renderer/projects). to see the current status of the Nova Renderer.
 
 The Nova Renderer is a complete replacement for Minecraft's default renderer. Minecraft's renderer is nice and all, but it's written in Java (ugh) using the ancient OpenGL 2.1 API. Additionally, the Minecraft Shaders Mod does a number of things in strange ways, and, while incredible, isn't the best-designed code. This mod seeks to fix those problems.
 
