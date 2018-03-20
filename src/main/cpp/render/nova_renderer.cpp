@@ -245,6 +245,7 @@ namespace nova {
 
             command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
         }
+        LOG(INFO) << "GUI rendering done" << std::endl;
     }
 
     bool nova_renderer::should_end() {
@@ -389,8 +390,13 @@ namespace nova {
             .setDescriptorType(vk::DescriptorType::eUniformBuffer)
             .setPBufferInfo((&gui_obj.per_model_buffer_range));
 
+        LOG(INFO) << "Descriptor set: {dstSet=" << write_ds.dstSet << ", dstBinding=" << write_ds.dstBinding
+                  << ", dstArrayElement=" << write_ds.dstArrayElement << ", descriptorCount=" << write_ds.descriptorCount
+                  << ", descriptorType=" << (int)write_ds.descriptorType << ", pImageInfo=" << write_ds.pImageInfo
+                  << ", pBufferInfo=" << write_ds.pBufferInfo << ", pTexelBufferView=" << write_ds.pTexelBufferView
+                  << "}";
         context->device.updateDescriptorSets(1, &write_ds, 0, nullptr);
-        LOG(INFO) << "Updated the descriptor set";
+        LOG(INFO) << "Updated the descriptor set" << std::endl;
     }
 
     void nova_renderer::update_gbuffer_ubos() {
@@ -456,6 +462,7 @@ namespace nova {
             }
         } catch(std::exception& e) {
             LOG(WARNING) << "Load some GUIs you fool";
+            LOG(WARNING) << e.what() << std::endl;
         }
     }
 

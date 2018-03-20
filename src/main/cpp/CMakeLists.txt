@@ -54,7 +54,7 @@ add_subdirectory(${3RD_PARTY_DIR}/glslang)
 add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 
 include_directories(SYSTEM
-        ${Vulkan_INCLUDE_DIRS}
+        $ENV{VULKAN_SDK}/include
         ${JNI_INCLUDE_DIRS}
         ${3RD_PARTY_DIR}/glfw/include
         ${3RD_PARTY_DIR}/easyloggingpp/src
