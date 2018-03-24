@@ -270,6 +270,7 @@ namespace nova {
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
 		auto& shaderpack_name = new_config["loadedShaderpack"];
+		LOG(INFO) << "Shaderpack name: " << shaderpack_name;
 
         if(!loaded_shaderpack) {
             load_new_shaderpack(shaderpack_name);

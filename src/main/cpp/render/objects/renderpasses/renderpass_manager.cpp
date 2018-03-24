@@ -96,7 +96,7 @@ namespace nova {
             framebuffer_create_info.height = window_size.height;
             framebuffer_create_info.layers = 1;
 
-            final_framebuffers[i] = context->device.createFramebuffer(framebuffer_create_info);
+            final_framebuffers.push_back(context->device.createFramebuffer(framebuffer_create_info));
         }
     }
 

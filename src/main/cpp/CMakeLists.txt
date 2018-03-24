@@ -21,7 +21,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-# set(CMAKE_BUILD_TYPE RELEASE)
+set(CMAKE_BUILD_TYPE DEBUG)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 
@@ -53,6 +53,8 @@ add_subdirectory(${3RD_PARTY_DIR}/spirv-tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
 add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -DRENDERDOC_PLATFORM_WIN32)
+
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
         ${JNI_INCLUDE_DIRS}
@@ -70,7 +72,11 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/minitrace
         )
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} shaderc stdc++fs)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} shaderc)
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    # Update if necessary
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs)
+endif()
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
