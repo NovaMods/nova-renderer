@@ -262,6 +262,7 @@ namespace nova {
         };
 
         pool_create_info.pPoolSizes = sizes;
+        pool_create_info.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
 
         descriptor_pool = device.createDescriptorPool(pool_create_info);
     }
@@ -297,8 +298,6 @@ namespace nova {
 
 
     shader_resource_manager::~shader_resource_manager() {
-        device.destroyDescriptorPool(descriptor_pool);
-
         for(auto stuff : layouts) {
             device.destroyPipelineLayout(stuff.second);
         }
@@ -325,6 +324,7 @@ namespace nova {
         };
 
         device.freeDescriptorSets(descriptor_pool, 8, sets);
+        device.destroyDescriptorPool(descriptor_pool);
 
         LOG(TRACE) << "Destroyed a descriptor pool and a bunch of layouts";
     }

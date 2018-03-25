@@ -76,19 +76,27 @@ namespace nova {
     }
 
     void mesh_store::remove_render_objects(std::function<bool(render_object&)> filter) {
-        auto per_model_buffer = shader_resources->get_per_model_buffer();
-        for(auto& group : renderables_grouped_by_shader) {
-            auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), filter);
+        geometry_to_remove.push(filter);
+    }
 
-            if(removed_elements != group.second.end()) {
-                // Free the allocations of each render object
-                for(auto it = removed_elements; it != group.second.end(); ++it) {
-                    per_model_buffer->free_allocation((*it).per_model_buffer_range);
-                    shader_resources->free_set((*it).per_model_set);
+    void mesh_store::remove_old_geometry() {
+        while(!geometry_to_remove.empty()) {
+            auto &filter = geometry_to_remove.front();
+
+            auto per_model_buffer = shader_resources->get_per_model_buffer();
+            for (auto &group : renderables_grouped_by_shader) {
+                auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), filter);
+
+                if (removed_elements != group.second.end()) {
+                    // Free the allocations of each render object
+                    for (auto it = removed_elements; it != group.second.end(); ++it) {
+                        per_model_buffer->free_allocation((*it).per_model_buffer_range);
+                        shader_resources->free_set((*it).per_model_set);
+                    }
                 }
-            }
 
-            group.second.erase(removed_elements, group.second.end());
+                group.second.erase(removed_elements, group.second.end());
+            }
         }
     }
 
