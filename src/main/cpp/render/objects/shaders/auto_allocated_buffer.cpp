@@ -24,7 +24,7 @@ namespace nova {
         if(buffer_create_result != VK_SUCCESS) {
             LOG(ERROR) << "Could not allocate a an autobuffer because " << buffer_create_result;
         } else {
-            LOG(INFO) << "Auto buffer allocation success! Buffer ID: " << (long long)(VkBuffer)buffer;
+            LOG(TRACE) << "Auto buffer allocation success! Buffer ID: " << (long long)(VkBuffer)buffer;
         }
 
         chunks.emplace_back(auto_buffer_chunk{vk::DeviceSize(0), create_info.size});
@@ -32,7 +32,7 @@ namespace nova {
 
     auto_buffer::~auto_buffer() {
         if(buffer != vk::Buffer()) {
-            LOG(INFO) << "autobuffer: About to destroy buffer " << (long long)(VkBuffer)buffer;
+            LOG(TRACE) << "autobuffer: About to destroy buffer " << (long long)(VkBuffer)buffer;
             vmaDestroyBuffer(context->allocator, buffer, allocation);
         }
     }

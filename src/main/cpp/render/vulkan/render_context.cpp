@@ -498,28 +498,28 @@ namespace nova {
 
         if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
         {
-            LOG(ERROR) << "ERROR: API: " << layer_prefix << msg;
+            LOG(ERROR) << "ERROR: API: " << layer_prefix << " " << msg;
         }
         // Warnings may hint at unexpected / non-spec API usage
         if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
         {
-            LOG(ERROR) << "WARNING: API: " << layer_prefix << msg;
+            LOG(ERROR) << "WARNING: API: " << layer_prefix << " " << msg;
         }
         // May indicate sub-optimal usage of the API
         if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
         {
-            LOG(ERROR) << "PERFORMANCE WARNING: API: " << layer_prefix << msg;
+            LOG(ERROR) << "PERFORMANCE WARNING: API: " << layer_prefix << " " << msg;
         }
         // Informal messages that may become handy during debugging
         if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
         {
-            LOG(ERROR) << "INFORMATION: API: " << layer_prefix << msg;
+            LOG(ERROR) << "INFORMATION: API: " << layer_prefix << " " << msg;
         }
         // Diagnostic info from the Vulkan loader and layers
         // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
         if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
         {
-            LOG(ERROR) << "DEBUG: API: " << layer_prefix << msg;
+            LOG(ERROR) << "DEBUG: API: " << layer_prefix << " " << msg;
         }
 
         return VK_FALSE;
