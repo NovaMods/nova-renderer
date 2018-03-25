@@ -50,7 +50,7 @@ namespace nova {
         create_info.ppEnabledExtensionNames = extensions.data();
         create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 
-#define NDEBUG
+#undef NDEBUG
 #ifdef NDEBUG
         create_info.enabledLayerCount = 0;
 #else
@@ -79,7 +79,6 @@ namespace nova {
             LOG(FATAL) << "Could not set up debug callback";
         }
 #endif
-        #undef NDEBUG
     }
 
     void render_context::find_device_and_queues() {

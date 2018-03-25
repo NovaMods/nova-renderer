@@ -18,7 +18,7 @@ namespace nova {
                 .setPQueueFamilyIndices(&context->graphics_family_idx);
 
         auto uniform_buffer_offset_alignment = context->gpu.props.limits.minUniformBufferOffsetAlignment;
-        per_model_resources_buffer = auto_buffer(context, per_model_buffer_create_info, uniform_buffer_offset_alignment, true);
+        per_model_resources_buffer = std::make_shared<auto_buffer>(context, per_model_buffer_create_info, uniform_buffer_offset_alignment, true);
 
         create_block_textures_dsl();
         create_custom_textures_dsl();
@@ -346,7 +346,7 @@ namespace nova {
         device.freeDescriptorSets(descriptor_pool, 1, &set);
     }
 
-    auto_buffer &shader_resource_manager::get_per_model_buffer() {
+    std::shared_ptr<auto_buffer> shader_resource_manager::get_per_model_buffer() {
         return per_model_resources_buffer;
     }
 }
