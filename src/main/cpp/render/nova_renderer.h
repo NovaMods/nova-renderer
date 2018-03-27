@@ -137,6 +137,9 @@ namespace nova {
 
         camera player_camera;
 
+        // Will be replaced when I merge in the render graph, for now this is kinda a hack to let me validate the rest
+        // of the Nova Vulkan code
+        vk::Fence render_done_fence;
 
 
         /*!

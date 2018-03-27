@@ -2,6 +2,8 @@
 // Created by David on 25-Dec-15.
 //
 
+#define ELPP_FRESH_LOG_FILE
+
 #include "nova_renderer.h"
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
@@ -78,6 +80,10 @@ namespace nova {
         swapchain_image_acquire_semaphore = context->device.createSemaphore(create_info);
         render_finished_semaphore = context->device.createSemaphore(create_info);
         LOG(TRACE) << "Created semaphores";
+
+        vk::FenceCreateInfo fence_create_info = vk::FenceCreateInfo()
+            .setFlags(vk::FenceCreateFlagBits::eSignaled);
+        render_done_fence = context->device.createFence(fence_create_info);
     }
 
     nova_renderer::~nova_renderer() {
@@ -120,8 +126,18 @@ namespace nova {
 
         player_camera.recalculate_frustum();
 
-        // Make geometry for any new chunks
-        meshes->upload_new_geometry();
+        LOG(INFO) << "Waiting for GUI done fence";
+        auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, 0);
+        if(fence_wait_result == vk::Result::eSuccess) {
+            // Process geometry updates
+            meshes->remove_old_geometry();
+            meshes->upload_new_geometry();
+
+        } else {
+            LOG(WARNING) << "Could not wait for gui done fence, " << fence_wait_result;
+        }
+
+        context->device.resetFences({render_done_fence});
 
         // upload shadow UBO things
 
@@ -168,7 +184,7 @@ namespace nova {
                 .setSignalSemaphoreCount(1)
                 .setPSignalSemaphores(signal_semaphores);
 
-        context->graphics_queue.submit(1, &submit_info, vk::Fence());
+        context->graphics_queue.submit(1, &submit_info, render_done_fence);
 
         vk::ResultValue<uint32_t> result = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint64_t>::max(),
                                                                                swapchain_image_acquire_semaphore, vk::Fence());

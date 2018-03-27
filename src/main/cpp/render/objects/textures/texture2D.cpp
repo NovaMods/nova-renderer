@@ -36,12 +36,14 @@ namespace nova {
         VmaAllocationCreateInfo alloc_create_info = {};
         alloc_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        vmaCreateImage(context->allocator, reinterpret_cast<VkImageCreateInfo*>(&image_create_info), &alloc_create_info,
+        auto result = vmaCreateImage(context->allocator, reinterpret_cast<VkImageCreateInfo*>(&image_create_info), &alloc_create_info,
                        reinterpret_cast<VkImage*>(&image), &allocation, nullptr);
 
-        if((VkImage)image == VK_NULL_HANDLE) {
+        if(result != (VkResult)vk::Result::eSuccess) {
             LOG(FATAL) << "Could not create image";
         }
+
+        LOG(INFO) << "Created image " << (VkImage)image;
 
         vk::ImageSubresourceRange subresource_range = {};
         subresource_range.layerCount = 1;
@@ -57,6 +59,7 @@ namespace nova {
         img_view_create_info.subresourceRange = subresource_range;
 
         image_view = context->device.createImageView(img_view_create_info);
+        LOG(INFO) << "Created image view";
         layout = image_create_info.initialLayout;
 
         LOG(DEBUG) << "Created new image";
@@ -115,18 +118,31 @@ namespace nova {
 
         vmaCreateBuffer(context->allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
                         reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
+        LOG(INFO) << "Allocated staging buffer";
 
         void* mapped_data;
         vmaMapMemory(context->allocator, staging_buffer_allocation, &mapped_data);
         std::memcpy(mapped_data, data, buffer_size);
         vmaUnmapMemory(context->allocator, staging_buffer_allocation);
+        LOG(INFO) << "Copied data to staging buffer";
 
-        transfer_image_format(image, format, layout, vk::ImageLayout::eTransferDstOptimal, context);
-        copy_buffer_to_image(staging_buffer, image, size.width, size.height, context);
-        transfer_image_format(image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, context);
+        auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
+        command_buffer.begin_as_single_commend();
+        LOG(INFO) << "Began command buffer";
+
+        transfer_image_format(command_buffer.buffer, image, format, layout, vk::ImageLayout::eTransferDstOptimal, context);
+        LOG(INFO) << "Transferred image to transfer source optimal";
+        copy_buffer_to_image(command_buffer.buffer, staging_buffer, image, size.width, size.height, context);
+        LOG(INFO) << "Transferred buffer to image";
+        transfer_image_format(command_buffer.buffer, image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, context);
+        LOG(INFO) << "Transferred image to shader read optimal";
         layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
+        command_buffer.end_as_single_command();
+        LOG(INFO) << "Ended command buffer";
+
         vmaDestroyBuffer(context->allocator, (VkBuffer)staging_buffer, staging_buffer_allocation);
+        LOG(INFO) << "Destroyed staging buffer";
     }
 
     void texture2D::destroy() {
@@ -134,11 +150,7 @@ namespace nova {
         context->device.destroyImageView(image_view);
     }
 
-    void transfer_image_format(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, std::shared_ptr<render_context> context) {
-        auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
-
-        command_buffer.begin_as_single_commend();
-
+    void transfer_image_format(vk::CommandBuffer command_buffer, vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, std::shared_ptr<render_context> context) {
         vk::ImageMemoryBarrier barrier = {};
         barrier.oldLayout = old_layout;
         barrier.newLayout = new_layout;
@@ -160,31 +172,36 @@ namespace nova {
 
             source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
             destination_stage = vk::PipelineStageFlagBits::eTransfer;
+
         } else if (old_layout == vk::ImageLayout::eTransferDstOptimal && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal) {
             barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
             barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
 
             source_stage = vk::PipelineStageFlagBits::eTransfer;
             destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
+
+        } else if (old_layout == vk::ImageLayout::ePreinitialized && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal) {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+            source_stage = vk::PipelineStageFlagBits::eTransfer;
+            destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
+
         } else {
-            throw std::invalid_argument("unsupported layout transition!");
+            auto ss = std::stringstream{};
+            ss << "Unsupported layout transition! Can't transition from " << (VkImageLayout)old_layout << " to " << (VkImageLayout)new_layout;
+            throw std::invalid_argument(ss.str());
         }
 
-
-        command_buffer.buffer.pipelineBarrier(
+        command_buffer.pipelineBarrier(
                 source_stage, destination_stage,
                 vk::DependencyFlags(),
                 0, nullptr,
                 0, nullptr,
                 1, &barrier);
-
-        command_buffer.end_as_single_command();
     }
 
-    void copy_buffer_to_image(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, std::shared_ptr<render_context> context) {
-        auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
-
-        command_buffer.begin_as_single_commend();
+    void copy_buffer_to_image(vk::CommandBuffer command_buffer, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, std::shared_ptr<render_context> context) {
 
         vk::BufferImageCopy region = {};
         region.bufferOffset = 0;
@@ -199,8 +216,6 @@ namespace nova {
         region.imageOffset = vk::Offset3D{0, 0, 0};
         region.imageExtent = vk::Extent3D{width, height, 1};
 
-        command_buffer.buffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
-
-        command_buffer.end_as_single_command();
+        command_buffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
     }
 }
