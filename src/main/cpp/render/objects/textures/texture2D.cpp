@@ -118,7 +118,7 @@ namespace nova {
 
         vmaCreateBuffer(context->allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
                         reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
-        LOG(INFO) << "Allocated staging buffer";
+        LOG(INFO) << "Allocated staging buffer " << (VkBuffer)staging_buffer;
 
         void* mapped_data;
         vmaMapMemory(context->allocator, staging_buffer_allocation, &mapped_data);
