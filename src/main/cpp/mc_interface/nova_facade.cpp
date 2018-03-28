@@ -37,9 +37,9 @@ NOVA_API void initialize() {
     nova_renderer::init();
 }
 
-NOVA_API void add_texture(mc_atlas_texture & texture) {
+NOVA_API void add_texture(mc_atlas_texture* texture) {
     MTR_SCOPE("AddTexture", "add_texture");
-    TEXTURE_MANAGER.add_texture(texture);
+    TEXTURE_MANAGER.add_texture(*texture);
 }
 
 NOVA_API void reset_texture_manager() {
@@ -54,9 +54,9 @@ NOVA_API void send_lightmap_texture(int* data, int count, int width, int height)
     lightmap.bind(4);
 }
 
-NOVA_API void add_texture_location(mc_texture_atlas_location location) {
+NOVA_API void add_texture_location(mc_texture_atlas_location* location) {
     MTR_SCOPE("Texture", "add_texture_location");
-    TEXTURE_MANAGER.add_texture_location(location);
+    TEXTURE_MANAGER.add_texture_location(*location);
 }
 
 NOVA_API int get_max_texture_size() {

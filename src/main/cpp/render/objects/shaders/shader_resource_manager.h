@@ -36,7 +36,7 @@ namespace nova {
         vk::DescriptorSet allocate_per_model_set();
         void free_set(vk::DescriptorSet set);
 
-        auto_buffer& get_per_model_buffer();
+        std::shared_ptr<auto_buffer> get_per_model_buffer();
 
     private:
         vk::Device device;
@@ -55,7 +55,7 @@ namespace nova {
 
         vk::DescriptorPool descriptor_pool;
 
-        auto_buffer per_model_resources_buffer;
+        std::shared_ptr<auto_buffer> per_model_resources_buffer;
 
         /*
          * DESCRIPTOR SET LAYOUTS

@@ -121,9 +121,9 @@ namespace nova {
      * \param old_layout The current layout of the image
      * \param new_layout The desired layout of the image
      */
-    void transfer_image_format(vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, std::shared_ptr<render_context> context);
+    void transfer_image_format(vk::CommandBuffer command_buffer, vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, std::shared_ptr<render_context> context);
 
-    void copy_buffer_to_image(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, std::shared_ptr<render_context> context);
+    void copy_buffer_to_image(vk::CommandBuffer command_buffer, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, std::shared_ptr<render_context> context);
 }
 
 #endif //RENDERER_TEXTURE_H

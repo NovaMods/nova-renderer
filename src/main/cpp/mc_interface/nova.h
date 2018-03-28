@@ -48,7 +48,7 @@ NOVA_API void send_lightmap_texture(int* data, int count, int width, int height)
  *
  * \param texture The texture to add to the renderer
  */
-NOVA_API void add_texture(mc_atlas_texture & texture);
+NOVA_API void add_texture(mc_atlas_texture* texture);
 
 /*!
  * \brief Adds the given location to the list of texture locations
@@ -58,7 +58,7 @@ NOVA_API void add_texture(mc_atlas_texture & texture);
  *
  * \param location The location of the texture
  */
-NOVA_API void add_texture_location(mc_texture_atlas_location location);
+NOVA_API void add_texture_location(mc_texture_atlas_location* location);
 
 /*!
  * \brief Queries OpenGL and returns the maximum texture size that OpenGL allows

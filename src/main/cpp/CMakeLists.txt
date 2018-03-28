@@ -33,8 +33,6 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-find_package(JNI)
-
 set(BUILD_DEMOS OFF)
 set(BUILD_ICD OFF)
 
@@ -182,9 +180,8 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fsanitize=address -fno-omit-frame-pointer")
-    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
-    set(COMMON_LINK_LIBS "-lasan ${COMMON_LINK_LIBS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fno-omit-frame-pointer")
+    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer")
 endif (UNIX)
 
 if(MSVC)

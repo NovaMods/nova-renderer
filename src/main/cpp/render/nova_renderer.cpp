@@ -2,6 +2,8 @@
 // Created by David on 25-Dec-15.
 //
 
+#define ELPP_FRESH_LOG_FILE
+
 #include "nova_renderer.h"
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
@@ -78,6 +80,10 @@ namespace nova {
         swapchain_image_acquire_semaphore = context->device.createSemaphore(create_info);
         render_finished_semaphore = context->device.createSemaphore(create_info);
         LOG(TRACE) << "Created semaphores";
+
+        vk::FenceCreateInfo fence_create_info = vk::FenceCreateInfo()
+            .setFlags(vk::FenceCreateFlagBits::eSignaled);
+        render_done_fence = context->device.createFence(fence_create_info);
     }
 
     nova_renderer::~nova_renderer() {
@@ -120,8 +126,18 @@ namespace nova {
 
         player_camera.recalculate_frustum();
 
-        // Make geometry for any new chunks
-        meshes->upload_new_geometry();
+        LOG(INFO) << "Waiting for GUI done fence";
+        auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, 0);
+        if(fence_wait_result == vk::Result::eSuccess) {
+            // Process geometry updates
+            meshes->remove_old_geometry();
+            meshes->upload_new_geometry();
+
+        } else {
+            LOG(WARNING) << "Could not wait for gui done fence, " << fence_wait_result;
+        }
+
+        context->device.resetFences({render_done_fence});
 
         // upload shadow UBO things
 
@@ -168,10 +184,15 @@ namespace nova {
                 .setSignalSemaphoreCount(1)
                 .setPSignalSemaphores(signal_semaphores);
 
-        context->graphics_queue.submit(1, &submit_info, vk::Fence());
+        context->graphics_queue.submit(1, &submit_info, render_done_fence);
 
-        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint32_t>::max(),
-                                                                        swapchain_image_acquire_semaphore, vk::Fence()).value;
+        vk::ResultValue<uint32_t> result = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint64_t>::max(),
+                                                                               swapchain_image_acquire_semaphore, vk::Fence());
+        if(result.result != vk::Result::eSuccess) {
+            LOG(ERROR) << "Could not acquire swapchain image! vkResult: " << result.result;
+        }
+        cur_swapchain_image_index = result.value;
+        LOG(INFO) << "Acquired swapchain image with index " << cur_swapchain_image_index;
 
         vk::Result swapchain_result = {};
 
@@ -378,7 +399,7 @@ namespace nova {
     void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
         // Send the model matrix to the buffer
         // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
-        auto& allocation = shader_resources->get_per_model_buffer().get_allocation_info();
+        auto& allocation = shader_resources->get_per_model_buffer()->get_allocation_info();
         memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
         LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
 
@@ -446,13 +467,12 @@ namespace nova {
         gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
         gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
         gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
-        gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
 
         LOG(INFO) << "Calculated GUI model matrix for viewWidth=" << view_width << " and viewHeight=" << view_height;
 
         try {
             if(!meshes) {
-                LOG(ERROR) << "Mesh store not initialized! oh no";
+                LOG(ERROR) << "oh no the mesh store is not initialized";
                 return;
             }
 
