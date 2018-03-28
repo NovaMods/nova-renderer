@@ -168,6 +168,7 @@ namespace nova {
         }
 
         LOG(FATAL) << "Invalid comparison function '" << comparison_func << "'";
+        return vk::CompareOp::eAlways;
     }
 
     vk::StencilOp decode_stencil_op_enum(const std::string &op) {
@@ -198,6 +199,7 @@ namespace nova {
         }
 
         LOG(FATAL) << "Invalid stencil or depth operation '" << op << "'";
+        return vk::StencilOp::eKeep;
     }
 
     stencil_op_state decode_stencil_buffer_state(const nlohmann::json &json) {
@@ -224,6 +226,7 @@ namespace nova {
         }
 
         LOG(FATAL) << "Invalid primitive mode: '" << primitive_mode_str << "'";
+        return vk::PrimitiveTopology::eTriangleList;
     }
 
     vk::BlendFactor decode_blend_source_enum(const std::string& blend_source_str) {
@@ -254,6 +257,7 @@ namespace nova {
         }
 
         LOG(FATAL) << "Invalid blend source '" << blend_source_str << "'";
+            return vk::BlendFactor::eOneMinusSrcAlpha;
     }
 
     texture decode_texture(const nlohmann::json& texture_json) {

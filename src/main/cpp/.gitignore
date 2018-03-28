@@ -150,4 +150,8 @@ bin_linux/
 .vs
 
 build/**
-3rdparty/Vulkan-LoaderAndValidationLayers/**
+3rdparty/Vulkan-LoaderAndValidationLayers/**\
+
+**.lik
+**.pdb
+CMakeSettings.json

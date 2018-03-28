@@ -33,8 +33,6 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-find_package(JNI)
-
 set(BUILD_DEMOS OFF)
 set(BUILD_ICD OFF)
 
@@ -70,7 +68,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/minitrace
         )
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} ${JNI_LIBRARIES} shaderc stdc++fs)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs)
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
@@ -176,10 +174,11 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fsanitize=address -fno-omit-frame-pointer")
-    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
-    set(COMMON_LINK_LIBS "-lasan ${COMMON_LINK_LIBS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fno-omit-frame-pointer")
+    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer")
 endif (UNIX)
+
+
 
 if(MSVC)
     # Force to always compile with W4
@@ -236,7 +235,7 @@ target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 if (WIN32)
     add_custom_command(TARGET nova-renderer
             POST_BUILD
-            COMMAND copy /Y "nova-renderer.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives")
+            COMMAND copy /Y "nova-renderer.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives\\")
 endif (WIN32)
 if (UNIX)
     add_custom_command(TARGET nova-renderer

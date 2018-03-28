@@ -17,15 +17,22 @@ namespace nova {
             alloc_create.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
         }
 
-        vmaCreateBuffer(context->allocator,
+        auto buffer_create_result = vmaCreateBuffer(context->allocator,
                         reinterpret_cast<const VkBufferCreateInfo *>(&create_info), &alloc_create,
                         reinterpret_cast<VkBuffer *>(&buffer), &allocation, &allocation_info);
+
+        if(buffer_create_result != VK_SUCCESS) {
+            LOG(ERROR) << "Could not allocate a an autobuffer because " << buffer_create_result;
+        } else {
+            LOG(TRACE) << "Auto buffer allocation success! Buffer ID: " << (long long)(VkBuffer)buffer;
+        }
 
         chunks.emplace_back(auto_buffer_chunk{vk::DeviceSize(0), create_info.size});
     }
 
     auto_buffer::~auto_buffer() {
         if(buffer != vk::Buffer()) {
+            LOG(TRACE) << "autobuffer: About to destroy buffer " << (long long)(VkBuffer)buffer;
             vmaDestroyBuffer(context->allocator, buffer, allocation);
         }
     }

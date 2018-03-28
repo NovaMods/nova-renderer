@@ -158,10 +158,15 @@ namespace nova {
             // I do like using temporary variables for everything...
             std::stringstream ss;
             ss << item.path();
-            auto stringpath = ss.str().substr(1);
-            // std::path's stream insertino operator adds double quotes. yay. I'm so glad the std authors made
+			auto stringpath = ss.str();
+
+#if __GNUC__
+            // std::path's stream insertion operator adds double quotes. yay. I'm so glad the std authors made
             // filesystem so straightforward to use
+
+			stringpath = stringpath.substr(1);
             stringpath = stringpath.substr(0, stringpath.size() - 1);
+#endif
 
             if(!std::experimental::filesystem::is_regular_file(item.path())) {
                 LOG(INFO) << "Skipping non-regular file " << stringpath;

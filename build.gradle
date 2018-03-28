@@ -32,21 +32,21 @@ jar {
 }
 
 task invokeCMake(type: Exec) {
-    if(hasGCC()) {
-        if(Os.isFamily(Os.FAMILY_WINDOWS)) {
-            println 'Configuring for MinGW'
-            commandLine 'cmake', '-G', 'MinGW Makefiles','-DCMAKE_BUILD_TYPE=RELEASE'
-        } else {
-            println 'Configuring for GCC'
-            commandLine 'cmake', '-G', 'Unix Makefiles','-DCMAKE_BUILD_TYPE=RELEASE'
-        }
-    } else if(hasMSVC()) {
+    if(hasMSVC()) {
         if(System.properties['sun.arch.data.model'].toString().contains("64")) {
             println 'Configuring for MSVC 64-bit'
             commandLine 'cmake', '-G', 'Visual Studio 15 2017 Win64','-DCMAKE_BUILD_TYPE=RELEASE'
         } else {
             println 'Configuring for MSVC 32-bit'
             commandLine 'cmake', '-G', 'Visual Studio 15','-DCMAKE_BUILD_TYPE=RELEASE'
+        }
+    } else if(hasGCC()) {
+        if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+            println 'Configuring for MinGW'
+            commandLine 'cmake', '-G', 'MinGW Makefiles','-DCMAKE_BUILD_TYPE=RELEASE'
+        } else {
+            println 'Configuring for GCC'
+            commandLine 'cmake', '-G', 'Unix Makefiles','-DCMAKE_BUILD_TYPE=RELEASE'
         }
     } else {
         println 'No suitable compiler found'
@@ -55,14 +55,14 @@ task invokeCMake(type: Exec) {
 }
 
 task buildDll(type: Exec, dependsOn: invokeCMake) {
-    if(hasGCC()) {
+    if(hasMSVC()) {
+        commandLine 'msbuild', 'nova-renderer.vcxproj', '/t:Build', '/m', '/p:Configuration=Debug'
+    } else if(hasGCC()) {
         if(Os.isFamily(Os.FAMILY_WINDOWS)) {
             commandLine 'mingw32-make', '-f', 'Makefile', 'nova-renderer'
         } else {
             commandLine 'make', '-f', 'Makefile', 'nova-renderer'
         }
-    } else if(hasMSVC()) {
-        commandLine 'msbuild', '/t:Build', '/m', 'nova-renderer.vcxproj'
     } else {
         println 'No suitable compiler found'
     }
@@ -77,6 +77,13 @@ task printProps << {
 
 task runNova(type: JavaExec, dependsOn: ['buildDll', 'build']) {
     dependsOn buildDll
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'Start'
+    jvmArgs = ["-Djava.library.path=versions/1.10/1.10-natives"]
+    workingDir = "jars"
+}
+
+task reRunNova(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'Start'
     jvmArgs = ["-Djava.library.path=versions/1.10/1.10-natives"]

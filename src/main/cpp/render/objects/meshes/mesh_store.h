@@ -52,6 +52,11 @@ namespace nova {
         void upload_new_geometry();
 
         /*!
+         * \brief Removes geometry that has been scheduled for removal since last frame
+         */
+        void remove_old_geometry();
+
+        /*!
         * \brief Removes all gui render objects and thereby deletes all the buffers
         */
         void remove_gui_render_objects();
@@ -78,6 +83,14 @@ namespace nova {
          */
         std::queue<std::tuple<std::string, mesh_definition>> chunk_parts_to_upload;
 
+        /*!
+         * \brief Filters describing the bits of geometry to remove next frame
+         *
+         * We need to be careful with removing geometry so that we don't try to delete a descriptor set while it's in
+         * use
+         */
+        std::queue<std::function<bool(render_object&)>> geometry_to_remove;
+
         float seconds_spent_updating_chunks = 0;
         long total_chunks_updated = 0;
 
@@ -90,6 +103,8 @@ namespace nova {
          * \param filter The function to use to decide which (if any) objects to remove
          */
         void remove_render_objects(std::function<bool(render_object&)> fitler);
+
+
     };
 
 }

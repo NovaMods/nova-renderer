@@ -2,6 +2,8 @@
 // Created by David on 25-Dec-15.
 //
 
+#define ELPP_FRESH_LOG_FILE
+
 #include "nova_renderer.h"
 #include "../utils/utils.h"
 #include "../data_loading/loaders/loaders.h"
@@ -78,6 +80,10 @@ namespace nova {
         swapchain_image_acquire_semaphore = context->device.createSemaphore(create_info);
         render_finished_semaphore = context->device.createSemaphore(create_info);
         LOG(TRACE) << "Created semaphores";
+
+        vk::FenceCreateInfo fence_create_info = vk::FenceCreateInfo()
+            .setFlags(vk::FenceCreateFlagBits::eSignaled);
+        render_done_fence = context->device.createFence(fence_create_info);
     }
 
     nova_renderer::~nova_renderer() {
@@ -113,15 +119,24 @@ namespace nova {
         begin_frame();
 
         auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
+        main_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits());
 
         vk::CommandBufferBeginInfo cmd_buf_begin_info = {};
         main_command_buffer.buffer.begin(cmd_buf_begin_info);
-        LOG(TRACE) << "Began command buffer";
 
         player_camera.recalculate_frustum();
 
-        // Make geometry for any new chunks
-        meshes->upload_new_geometry();
+        auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, 0);
+        if(fence_wait_result == vk::Result::eSuccess) {
+            // Process geometry updates
+            meshes->remove_old_geometry();
+            meshes->upload_new_geometry();
+
+        } else {
+            LOG(WARNING) << "Could not wait for gui done fence, " << fence_wait_result;
+        }
+
+        context->device.resetFences({render_done_fence});
 
         // upload shadow UBO things
 
@@ -168,10 +183,14 @@ namespace nova {
                 .setSignalSemaphoreCount(1)
                 .setPSignalSemaphores(signal_semaphores);
 
-        context->graphics_queue.submit(1, &submit_info, vk::Fence());
+        context->graphics_queue.submit(1, &submit_info, render_done_fence);
 
-        cur_swapchain_image_index = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint32_t>::max(),
-                                                                        swapchain_image_acquire_semaphore, vk::Fence()).value;
+        vk::ResultValue<uint32_t> result = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint64_t>::max(),
+                                                                               swapchain_image_acquire_semaphore, vk::Fence());
+        if(result.result != vk::Result::eSuccess) {
+            LOG(ERROR) << "Could not acquire swapchain image! vkResult: " << result.result;
+        }
+        cur_swapchain_image_index = result.value;
 
         vk::Result swapchain_result = {};
 
@@ -245,7 +264,6 @@ namespace nova {
 
             command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
         }
-        LOG(INFO) << "GUI rendering done" << std::endl;
     }
 
     bool nova_renderer::should_end() {
@@ -270,6 +288,7 @@ namespace nova {
 
     void nova_renderer::on_config_change(nlohmann::json &new_config) {
 		auto& shaderpack_name = new_config["loadedShaderpack"];
+		LOG(INFO) << "Shaderpack name: " << shaderpack_name;
 
         if(!loaded_shaderpack) {
             load_new_shaderpack(shaderpack_name);
@@ -377,9 +396,8 @@ namespace nova {
     void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
         // Send the model matrix to the buffer
         // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
-        auto& allocation = shader_resources->get_per_model_buffer().get_allocation_info();
+        auto& allocation = shader_resources->get_per_model_buffer()->get_allocation_info();
         memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
-        LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
 
         // Copy the memory to the descriptor set
         auto write_ds = vk::WriteDescriptorSet()
@@ -390,13 +408,7 @@ namespace nova {
             .setDescriptorType(vk::DescriptorType::eUniformBuffer)
             .setPBufferInfo((&gui_obj.per_model_buffer_range));
 
-        LOG(INFO) << "Descriptor set: {dstSet=" << write_ds.dstSet << ", dstBinding=" << write_ds.dstBinding
-                  << ", dstArrayElement=" << write_ds.dstArrayElement << ", descriptorCount=" << write_ds.descriptorCount
-                  << ", descriptorType=" << (int)write_ds.descriptorType << ", pImageInfo=" << write_ds.pImageInfo
-                  << ", pBufferInfo=" << write_ds.pBufferInfo << ", pTexelBufferView=" << write_ds.pTexelBufferView
-                  << "}";
         context->device.updateDescriptorSets(1, &write_ds, 0, nullptr);
-        LOG(INFO) << "Updated the descriptor set" << std::endl;
     }
 
     void nova_renderer::update_gbuffer_ubos() {
@@ -445,19 +457,15 @@ namespace nova {
         gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
         gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
         gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
-        gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
-
-        LOG(INFO) << "Calculated GUI model matrix for viewWidth=" << view_width << " and viewHeight=" << view_height;
 
         try {
             if(!meshes) {
-                LOG(ERROR) << "Mesh store not initialized! oh no";
+                LOG(ERROR) << "oh no the mesh store is not initialized";
                 return;
             }
 
             std::vector<render_object> &gui_objects = meshes->get_meshes_for_shader("gui");
             for(const auto &gui_obj : gui_objects) {
-                LOG(INFO) << "Setting the model matrix for a GUI thing";
                 upload_gui_model_matrix(gui_obj, gui_model);
             }
         } catch(std::exception& e) {
