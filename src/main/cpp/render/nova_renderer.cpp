@@ -119,14 +119,13 @@ namespace nova {
         begin_frame();
 
         auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
+        main_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits());
 
         vk::CommandBufferBeginInfo cmd_buf_begin_info = {};
         main_command_buffer.buffer.begin(cmd_buf_begin_info);
-        LOG(TRACE) << "Began command buffer";
 
         player_camera.recalculate_frustum();
 
-        LOG(INFO) << "Waiting for GUI done fence";
         auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, 0);
         if(fence_wait_result == vk::Result::eSuccess) {
             // Process geometry updates
@@ -192,7 +191,6 @@ namespace nova {
             LOG(ERROR) << "Could not acquire swapchain image! vkResult: " << result.result;
         }
         cur_swapchain_image_index = result.value;
-        LOG(INFO) << "Acquired swapchain image with index " << cur_swapchain_image_index;
 
         vk::Result swapchain_result = {};
 
@@ -266,7 +264,6 @@ namespace nova {
 
             command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
         }
-        LOG(INFO) << "GUI rendering done" << std::endl;
     }
 
     bool nova_renderer::should_end() {
@@ -401,7 +398,6 @@ namespace nova {
         // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
         auto& allocation = shader_resources->get_per_model_buffer()->get_allocation_info();
         memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
-        LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
 
         // Copy the memory to the descriptor set
         auto write_ds = vk::WriteDescriptorSet()
@@ -412,13 +408,7 @@ namespace nova {
             .setDescriptorType(vk::DescriptorType::eUniformBuffer)
             .setPBufferInfo((&gui_obj.per_model_buffer_range));
 
-        LOG(INFO) << "Descriptor set: {dstSet=" << write_ds.dstSet << ", dstBinding=" << write_ds.dstBinding
-                  << ", dstArrayElement=" << write_ds.dstArrayElement << ", descriptorCount=" << write_ds.descriptorCount
-                  << ", descriptorType=" << (int)write_ds.descriptorType << ", pImageInfo=" << write_ds.pImageInfo
-                  << ", pBufferInfo=" << write_ds.pBufferInfo << ", pTexelBufferView=" << write_ds.pTexelBufferView
-                  << "}";
         context->device.updateDescriptorSets(1, &write_ds, 0, nullptr);
-        LOG(INFO) << "Updated the descriptor set" << std::endl;
     }
 
     void nova_renderer::update_gbuffer_ubos() {
@@ -468,8 +458,6 @@ namespace nova {
         gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
         gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
 
-        LOG(INFO) << "Calculated GUI model matrix for viewWidth=" << view_width << " and viewHeight=" << view_height;
-
         try {
             if(!meshes) {
                 LOG(ERROR) << "oh no the mesh store is not initialized";
@@ -478,7 +466,6 @@ namespace nova {
 
             std::vector<render_object> &gui_objects = meshes->get_meshes_for_shader("gui");
             for(const auto &gui_obj : gui_objects) {
-                LOG(INFO) << "Setting the model matrix for a GUI thing";
                 upload_gui_model_matrix(gui_obj, gui_model);
             }
         } catch(std::exception& e) {

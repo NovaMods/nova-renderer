@@ -81,7 +81,6 @@ namespace nova {
 
     void mesh_store::remove_old_geometry() {
         while(!geometry_to_remove.empty()) {
-            LOG(INFO) << "Removing some geometry";
             auto &filter = geometry_to_remove.front();
 
             auto per_model_buffer = shader_resources->get_per_model_buffer();

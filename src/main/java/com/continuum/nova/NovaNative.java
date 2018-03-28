@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public interface NovaNative extends Library {
-    NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-rendererd", NovaNative.class);
+    NovaNative INSTANCE = (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
 
     Logger LOG = LogManager.getLogger(NovaNative.class);
 

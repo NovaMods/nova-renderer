@@ -127,19 +127,15 @@ namespace nova {
         LOG(INFO) << "Copied data to staging buffer";
 
         auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
+        command_buffer.buffer.reset(vk::CommandBufferResetFlagBits());
         command_buffer.begin_as_single_commend();
-        LOG(INFO) << "Began command buffer";
 
         transfer_image_format(command_buffer.buffer, image, format, layout, vk::ImageLayout::eTransferDstOptimal, context);
-        LOG(INFO) << "Transferred image to transfer source optimal";
         copy_buffer_to_image(command_buffer.buffer, staging_buffer, image, size.width, size.height, context);
-        LOG(INFO) << "Transferred buffer to image";
         transfer_image_format(command_buffer.buffer, image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, context);
-        LOG(INFO) << "Transferred image to shader read optimal";
         layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
         command_buffer.end_as_single_command();
-        LOG(INFO) << "Ended command buffer";
 
         vmaDestroyBuffer(context->allocator, (VkBuffer)staging_buffer, staging_buffer_allocation);
         LOG(INFO) << "Destroyed staging buffer";
