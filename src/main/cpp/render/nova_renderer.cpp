@@ -118,6 +118,8 @@ namespace nova {
     void nova_renderer::render_frame() {
         begin_frame();
 
+        context->device.resetFences({render_done_fence});
+
         auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
         main_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits());
 
@@ -125,18 +127,6 @@ namespace nova {
         main_command_buffer.buffer.begin(cmd_buf_begin_info);
 
         player_camera.recalculate_frustum();
-
-        auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, 0);
-        if(fence_wait_result == vk::Result::eSuccess) {
-            // Process geometry updates
-            meshes->remove_old_geometry();
-            meshes->upload_new_geometry();
-
-        } else {
-            LOG(WARNING) << "Could not wait for gui done fence, " << fence_wait_result;
-        }
-
-        context->device.resetFences({render_done_fence});
 
         // upload shadow UBO things
 
@@ -205,6 +195,16 @@ namespace nova {
         context->present_queue.presentKHR(present_info);
 
         game_window->end_frame();
+
+        auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, std::numeric_limits<uint64_t>::max());
+        if(fence_wait_result == vk::Result::eSuccess) {
+            // Process geometry updates
+            meshes->remove_old_geometry();
+            meshes->upload_new_geometry();
+
+        } else {
+            LOG(WARNING) << "Could not wait for gui done fence, " << fence_wait_result;
+        }
     }
 
     void nova_renderer::render_shadow_pass() {
@@ -454,7 +454,7 @@ namespace nova {
         float scalefactor = config["scalefactor"];
         // The GUI matrix is super simple, just a viewport transformation
         gui_model = glm::mat4(1.0f);
-        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
+        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, -1.0f, 0.0f));
         gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
         gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
 

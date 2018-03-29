@@ -21,7 +21,7 @@ namespace nova {
 
     std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
         if(renderables_grouped_by_shader.find(shader_name) != renderables_grouped_by_shader.end()) {
-            return renderables_grouped_by_shader[shader_name];
+            return renderables_grouped_by_shader.at(shader_name);
         } else {
             return default_vector;
         }
@@ -68,7 +68,10 @@ namespace nova {
         gui.per_model_buffer_range = shader_resources->get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
 
         // TODO: Something more intelligent
-        renderables_grouped_by_shader["gui"].push_back(std::move(gui));
+        if(renderables_grouped_by_shader.find("gui") == renderables_grouped_by_shader.end()) {
+            renderables_grouped_by_shader["gui"] = std::vector<render_object>{};
+        }
+        renderables_grouped_by_shader.at("gui").push_back(std::move(gui));
     }
 
     void mesh_store::remove_gui_render_objects() {
@@ -120,7 +123,11 @@ namespace nova {
             obj.bounding_box.extents = {16, 128, 16};   // TODO: Make these values come from Minecraft
 
             const std::string& shader_name = std::get<0>(entry);
-            renderables_grouped_by_shader[shader_name].push_back(std::move(obj));
+            if(renderables_grouped_by_shader.find(shader_name) == renderables_grouped_by_shader.end()) {
+                LOG(INFO) << "Adding a new list of " << shader_name << " objects";
+                renderables_grouped_by_shader[shader_name] = std::vector<render_object>{};
+            }
+            renderables_grouped_by_shader.at(shader_name).push_back(std::move(obj));
 
             chunk_parts_to_upload.pop();
         }

@@ -51,8 +51,8 @@ namespace nova {
         glfwGetWindowSize(window, &window_dimensions.x, &window_dimensions.y);
 
 #if __WIN32__
-        renderdoc_manager = std::make_unique<RenderDocManager>(window, "C:\\Program Files\\RenderDoc\\renderdoc.dll", "capture");
-        LOG(INFO) << "Hooked into RenderDoc";
+        //renderdoc_manager = std::make_unique<RenderDocManager>(window, R"(C:\Program Files\RenderDoc\renderdoc.dll)", "captures/nova");
+        //LOG(INFO) << "Hooked into RenderDoc";
 #endif
 
         glfwSetKeyCallback(window, key_callback);
@@ -121,7 +121,6 @@ namespace nova {
     }
 
     void glfw_vk_window::end_frame() {
-        //glfwSwapBuffers(window);
         glfwPollEvents();
 
         /*glm::ivec2 new_window_size;
