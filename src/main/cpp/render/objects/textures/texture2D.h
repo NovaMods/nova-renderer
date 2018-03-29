@@ -39,27 +39,7 @@ namespace nova {
     public:
         texture2D();
 
-        texture2D(std::shared_ptr<render_context> context);
-
-        /*!
-         * \copydoc itexture::bind(unsigned int)
-         *
-         * For best performance, call this function once, do ABSOLUTELY EVERYTHING you need to do to this texture, then
-         * unbind it
-         *
-         * It's worth noting that, if you give me the location that this texture is already bound to, this function
-         * won't make any GL calls. For that reason, it is ABSOLUTELY IMPERATIVE that you call unbind. Always. Forever.
-         * When this texture is no longer active, call unbind. Do it. You're going to forget, and you'll be really sad
-         * you can't find the problem, then you're going to find the bit of code that doesn't bind the texture if it's
-         * already bound and you'll see this comment and you'll understand what you did wrong.
-         *
-         * \param binding The location to bind this texture to
-         *
-         * \throws texture_bind_exception if the texture can't be bound
-         */
-        void bind(unsigned int binding);
-
-        void unbind();
+        explicit texture2D(std::shared_ptr<render_context> context);
 
         /*!
          * \brief Sets this texture's data to the given parameters
@@ -94,6 +74,10 @@ namespace nova {
          * \brief Destroys the Vulkan resources associated with this texture
          */
         void destroy();
+
+        vk::ImageView get_image_view();
+
+        vk::ImageLayout get_layout();
 
     private:
         std::shared_ptr<render_context> context;

@@ -68,17 +68,6 @@ namespace nova {
         upload_data_with_staging_buffer(pixel_data, image_create_info.extent);
     }
 
-    void texture2D::bind(unsigned int binding) {
-        //glBindTextureUnit(binding, gl_name);
-        //current_location = binding;
-    }
-
-    void texture2D::unbind() {
-        //glActiveTexture((GLenum) current_location);
-        //glBindTexture(GL_TEXTURE_2D, 0);
-        //current_location = -1;
-    }
-
     vk::Extent2D& texture2D::get_size() {
         return size;
     }
@@ -144,6 +133,14 @@ namespace nova {
     void texture2D::destroy() {
         vmaDestroyImage(context->allocator, (VkImage)image, allocation);
         context->device.destroyImageView(image_view);
+    }
+
+    vk::ImageView texture2D::get_image_view() {
+        return image_view;
+    }
+
+    vk::ImageLayout texture2D::get_layout() {
+        return layout;
     }
 
     void transfer_image_format(vk::CommandBuffer command_buffer, vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, std::shared_ptr<render_context> context) {
