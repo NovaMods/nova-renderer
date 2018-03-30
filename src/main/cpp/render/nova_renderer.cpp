@@ -327,7 +327,7 @@ namespace nova {
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
 		LOG(INFO) << "Loading a new shaderpack named " << new_shaderpack_name;
 
-        auto shader_definitions = load_shaderpack(new_shaderpack_name);
+        auto shaderpack_data = load_shaderpack(new_shaderpack_name);
 
         LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
 
@@ -335,12 +335,7 @@ namespace nova {
 
         renderpasses = std::make_shared<renderpass_manager>(im_lazy, im_lazy, context->swapchain_extent, context);
 
-        loaded_shaderpack = std::make_shared<shaderpack>(new_shaderpack_name, shader_definitions, renderpasses->get_final_renderpass(), context, shader_resources, game_window->get_size());
-
         LOG(INFO) << "Loading complete";
-		
-        link_up_uniform_buffers(loaded_shaderpack->get_loaded_shaders(), ubo_manager);
-        LOG(DEBUG) << "Linked up UBOs";
     }
 
     void nova_renderer::deinit() {

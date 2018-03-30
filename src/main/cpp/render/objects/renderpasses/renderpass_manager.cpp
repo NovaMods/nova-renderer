@@ -10,7 +10,7 @@
 #include <easylogging++.h>
 
 namespace nova {
-    renderpass_manager::renderpass_manager(const vk::Extent2D& main_shadow_size, const vk::Extent2D& light_shadow_size, const vk::Extent2D& window_size, std::shared_ptr<render_context> context) : context(context) {
+    renderpass_manager::renderpass_manager(const shaderpack_data& data, std::shared_ptr<render_context> context) : context(context) {
         // TODO: Inspect each shader, figure out which ones draw to which target, and build renderpasses based on that info
         // For now I'll just create the swapchain renderpass to make sure I hae the code
 
