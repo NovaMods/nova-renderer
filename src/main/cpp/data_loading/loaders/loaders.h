@@ -13,6 +13,7 @@
 #include <string>
 #include <unordered_map>
 #include "../../render/objects/shaders/shaderpack.h"
+#include "shader_loading.h"
 
 namespace nova {
     /*!
@@ -26,7 +27,7 @@ namespace nova {
      * \param shaderpack_name The name of the shaderpack to load
      * \return The loaded shaderpack
      */
-    std::vector<std::pair<material_state, shader_definition>> load_shaderpack(const std::string &shaderpack_name);
+    shaderpack_data load_shaderpack(const std::string &shaderpack_name);
 }
 
 #endif //RENDERER_LOADERS_H

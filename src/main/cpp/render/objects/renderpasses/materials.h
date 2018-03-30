@@ -14,6 +14,7 @@
 #include <vulkan/vulkan.hpp>
 #include <unordered_map>
 #include "../../../utils/smart_enum.h"
+#include "../../../data_loading/loaders/shader_source_structs.h"
 
 using namespace std::experimental;
 
@@ -74,14 +75,14 @@ namespace nova {
     )
 
     SMART_ENUM(texture_filter_enum,
-        TexelAA,
-        Bilinear,
-        Point
+               TexelAA,
+               Bilinear,
+               Point
     )
 
     SMART_ENUM(wrap_mode_enum,
-        Repeat,
-        Clamp
+               Repeat,
+               Clamp
     )
 
     /*!
@@ -114,88 +115,88 @@ namespace nova {
      * \brief The kind of data in a vertex attribute
      */
     SMART_ENUM(vertex_field_enum,
-        /*!
-         * \brief The vertex position
-         *
-         * 12 bytes
-         */
-        Position,
+    /*!
+     * \brief The vertex position
+     *
+     * 12 bytes
+     */
+               Position,
 
-        /*!
-         * \brief The vertex color
-         *
-         * 4 bytes
-         */
-        Color,
+    /*!
+     * \brief The vertex color
+     *
+     * 4 bytes
+     */
+               Color,
 
-        /*!
-         * \brief The UV coordinate of this object
-         *
-         * Except not really, because Nova's virtual textures means that the UVs for a block or entity or whatever
-         * could change on the fly, so this is kinda more of a preprocessor define that replaces the UV with a lookup
-         * in the UV table
-         *
-         * 8 bytes (might try 4)
-         */
-        UV0,
+    /*!
+     * \brief The UV coordinate of this object
+     *
+     * Except not really, because Nova's virtual textures means that the UVs for a block or entity or whatever
+     * could change on the fly, so this is kinda more of a preprocessor define that replaces the UV with a lookup
+     * in the UV table
+     *
+     * 8 bytes (might try 4)
+     */
+               UV0,
 
-        /*!
-         * \brief The UV coordinate in the lightmap texture
-         *
-         * This is a real UV and it doesn't change for no good reason
-         *
-         * 2 bytes
-         */
-        UV1,
+    /*!
+     * \brief The UV coordinate in the lightmap texture
+     *
+     * This is a real UV and it doesn't change for no good reason
+     *
+     * 2 bytes
+     */
+               UV1,
 
-        /*!
-         * \brief Vertex normal
-         *
-         * 12 bytes
-         */
-        Normal,
+    /*!
+     * \brief Vertex normal
+     *
+     * 12 bytes
+     */
+               Normal,
 
-        /*!
-         * \brief Vertex tangents
-         *
-         * 12 bytes
-         */
-        Tangent,
+    /*!
+     * \brief Vertex tangents
+     *
+     * 12 bytes
+     */
+               Tangent,
 
-        /*!
-         * \brief The texture coordinate of the middle of the quad
-         *
-         * 8 bytes
-         */
-        MidTexCoord,
+    /*!
+     * \brief The texture coordinate of the middle of the quad
+     *
+     * 8 bytes
+     */
+               MidTexCoord,
 
-        /*!
-         * \brief A uint32_t that's a unique identifier for the texture that this vertex uses
-         *
-         * This is generated at runtime by Nova, so it may change a lot depending on what resourcepacks are loaded and
-         * if they use CTM or random detail textures or whatever
-         *
-         * 4 bytes
-         */
-        VirtualTextureId,
+    /*!
+     * \brief A uint32_t that's a unique identifier for the texture that this vertex uses
+     *
+     * This is generated at runtime by Nova, so it may change a lot depending on what resourcepacks are loaded and
+     * if they use CTM or random detail textures or whatever
+     *
+     * 4 bytes
+     */
+               VirtualTextureId,
 
-        /*!
-         * \brief Some information about the current block/entity/whatever
-         *
-         * 12 bytes
-         */
-        McEntityId,
+    /*!
+     * \brief Some information about the current block/entity/whatever
+     *
+     * 12 bytes
+     */
+               McEntityId,
 
-        /*!
-         * \brief Useful if you want to skip a vertex attribute
-         */
-        Empty,
+    /*!
+     * \brief Useful if you want to skip a vertex attribute
+     */
+               Empty,
     )
 
     SMART_ENUM(texture_location_enum,
-        Dynamic,
-        InUserPackage,
-        InAppPackage
+               Dynamic,
+               InUserPackage,
+               InAppPackage
     )
 
     /*!
@@ -244,55 +245,121 @@ namespace nova {
     };
 
     SMART_ENUM(msaa_support_enum,
-        MSAA,
-        Both,
-        None
+               MSAA,
+               Both,
+               None
     )
 
-    struct output_info {
-        uint8_t index;
-        bool blending;
-    };
+    SMART_ENUM(stencil_op_enum,
+               Keep,
+               Zero,
+               Replace,
+               Incr,
+               IncrWrap,
+               Decr,
+               DecrWrap,
+               Invert
+    )
+
+    SMART_ENUM(compare_op,
+               Never,
+               Less,
+               LessEqual,
+               Greater,
+               GreaterEqual,
+               Equal,
+               NotEqual,
+               Always
+    )
 
     struct stencil_op_state {
-        optional<vk::StencilOp> fail_op;
-        optional<vk::StencilOp> pass_op;
-        optional<vk::StencilOp> depth_fail_op;
-        optional<vk::CompareOp> compare_op;
+        optional<stencil_op_enum> fail_op;
+        optional<stencil_op_enum> pass_op;
+        optional<stencil_op_enum> depth_fail_op;
+        optional<compare_op> compare_op;
         optional<uint32_t> compare_mask;
         optional<uint32_t> write_mask;
-
-        vk::StencilOpState to_vk_stencil_op_state() const;
     };
 
     SMART_ENUM(pass_enum,
-        Shadow,
-        Gbuffer,
-        Transparent,
-        DeferredLight,
-        Fullscreen
+               Shadow,
+               Gbuffer,
+               Transparent,
+               DeferredLight,
+               Fullscreen
     )
 
-    /*!
-     * \brief Represents the configuration for a single pipeline
-     */
-    struct material_state {
+    SMART_ENUM(primitive_topology_enum,
+               Triangles,
+               Lines
+    )
+
+    SMART_ENUM(blend_factor_enum,
+               One,
+               Zero,
+               SrcColor,
+               DstColor,
+               OneMinusSrcColor,
+               OneMinusDstColor,
+               SrcAlpha,
+               DstAlpha,
+               OneMinusSrcAlpha,
+               OneMinusDstAlpha
+    )
+
+    SMART_ENUM(render_queue_enum,
+               Transparent,
+               Opaque,
+               Cutout
+    )
+
+    struct bound_resource {
         /*!
-         * \brief The name of this material_state
+         * \brief The name of the resource
          */
         std::string name;
 
         /*!
-         * \brief The material_state that this material_state inherits from
+         * \brief Where to bind the resource
          *
-         * I may or may not make this a pointer to another material_state. Depends on how the code ends up being
+         * For input textures, this is the texture binding unit to use
+         * For input buffers, the is the uniform location of the buffer
+         *
+         * For output textures, this is the framebuffer attachment slot to use
+         */
+        uint32_t binding;
+    };
+
+    /*!
+     * \brief A pipeline that can render certain groups of geometry
+     *
+     * A pipeline has a few things:
+     * - A geometry_filter that determines what this pass renders
+     * - Rasterizer state, like how to perform the depth and stencil test
+     * - Blending state
+     * - What shaders to use
+     *
+     * When a pipeline has its values filled in from a parent, each field that is not present in the child pipeline is
+     * taken straight from the parent, and each field that is present in the child is not changed. That is to say,
+     * vectors are NOT combined between the child and parent
+     */
+    struct pipeline {
+        /*!
+         * \brief The name of this pipeline
+         */
+        std::string name;
+
+        /*!
+         * \brief The pipeline that this pipeline inherits from
+         *
+         * I may or may not make this a pointer to another pipeline. Depends on how the code ends up being
          */
         optional<std::string> parent_name;
 
         /*!
-         * \brief The actual parent material
+         * \brief The name of the pass that this pipeline belongs to
          */
-        optional<material_state*> parent;
+        optional<std::string> pass;
 
         /*!
          * \brief All of the symbols in the shader that are defined by this state
@@ -300,7 +367,7 @@ namespace nova {
         optional<std::vector<std::string>> defines;
 
         /*!
-         * \brief Defines the rasterizer state that's active for this material state
+         * \brief Defines the rasterizer state that's active for this pipeline
          */
         optional<std::vector<state_enum>> states;
 
@@ -345,7 +412,7 @@ namespace nova {
         optional<std::string> tessellation_control_shader;
 
         /*!
-         * \brief Sets up the vertex fields that Nova will bind to this shader
+         * \brief Sets up the vertex fields that Nova will bind to this pipeline
          *
          * The index in the array is the attribute index that the vertex field is bound to
          */
@@ -362,65 +429,29 @@ namespace nova {
         optional<stencil_op_state> back_face;
 
         /*!
-         * \brief All the sampler states that are defined for this material_state. Still not sure how they work though
+         * \brief All the textures that this material reads from
          */
-        optional<std::vector<sampler_state>> sampler_states;
+        optional<std::vector<bound_resource>> input_textures;
 
         /*!
-         * \brief All the textures that this material state uses
+         * \brief All the textures that this material writes to
          */
-        optional<std::vector<texture>> textures;
+        optional<std::vector<bound_resource>> output_textures;
 
         /*!
-         * \brief The filter string used to get data for this material_state
+         * \brief The depth texture to use for this material
+         */
+        optional<bound_resource> depth_texture;
+
+        /*!
+         * \brief The filter string used to get data for this material
          */
         optional<std::string> filters;
 
         /*!
-         * \brief The material_state to use if this one's shaders can't be found
+         * \brief The material to use if this one's shaders can't be found
          */
         optional<std::string> fallback;
-
-        /*!
-         * \brief The pass this material is part of
-         */
-        optional<pass_enum> pass;
-
-        /*!
-         * \brief When this material state will be drawn
-         *
-         * Lower pass indices are drawn earlier, and larger pass indices are drawn later. If multiple material states
-         * have the same pass index then Nova makes no guarantees about when they will be drawn relative to each other.
-         * Pass indices to not have to be continuous
-         */
-        optional<uint32_t> pass_index;
-
-        /*!
-         * \brief The framebuffer attachments that this material pass outputs to
-         *
-         * The index in this array is the location of the output in the shader, and the index member of the
-         * frameuffer_output struct is the index in the framebuffer. For example, a framebuffer_output at index 2 in
-         * this array with an index member of 4 tells Nova that when the shader associated with this material state
-         * outputs to location 2, that data should be written to colortex4. Alteriately, you can think of it as telling
-         * Nova to bind colortex4 to shader output 2
-         */
-        optional<std::vector<output_info>> outputs;
-
-        /*!
-         * \brief The width of the output texture we're rendering to
-         *
-         * If this is not set by the .material file, then its value comes from the framebuffer that it renders to. I
-         * mostly put this member in this struct as a convenient way to pass it into a shader creation
-         */
-        optional<uint32_t> output_width;
-
-        /*!
-         * \brief The height of the output texture we're rendering to
-         *
-         * If this is not set by the .material file, then its value comes from the framebuffer that it renders to. I
-         * mostly put this member in this struct as a convenient way to pass it into a shader creation
-         */
-        optional<uint32_t> output_height;
 
         /*!
          * \brief A bias to apply to the depth
@@ -433,7 +464,7 @@ namespace nova {
         optional<float> slope_scaled_depth_bias;
 
         /*!
-         * \brief A reference to a stencil somehow?
+         * \brief The reference value to use for the stencil test
          */
         optional<uint32_t> stencil_ref;
 
@@ -455,45 +486,59 @@ namespace nova {
         /*!
          * \brief
          */
-        optional<vk::PrimitiveTopology> primitive_mode;
+        optional<primitive_topology_enum> primitive_mode;
 
         /*!
          * \brief Where to get the blending factor for the soource
          */
-        optional<vk::BlendFactor> source_blend_factor;
+        optional<blend_factor_enum> source_blend_factor;
 
         /*!
          * \brief Where to get the blending factor for the destination
          */
-        optional<vk::BlendFactor> destination_blend_factor;
+        optional<blend_factor_enum> destination_blend_factor;
 
         /*!
          * \brief How to get the source alpha in a blend
          */
-        optional<vk::BlendFactor> alpha_src;
+        optional<blend_factor_enum> alpha_src;
 
         /*!
          * \brief How to get the destination alpha in a blend
          */
-        optional<vk::BlendFactor> alpha_dst;
+        optional<blend_factor_enum> alpha_dst;
 
         /*!
          * \brief The function to use for the depth test
          */
-        optional<vk::CompareOp> depth_func;
+        optional<compare_op> depth_func;
 
         /*!
-         * \brief Tells Nova if this state handles transparent objects
+         * \brief The render queue that this pass belongs to
+         *
+         * This may or may not be removed depending on what is actually needed by Nova
          */
-        optional<bool> has_transparency;
+        optional<render_queue_enum> render_queue;
 
         /*!
-         * \brief Tells Nova is this state handles cutout objects
+         * \brief The source of each shader, read from disk
          */
-        optional<bool> has_cutout;
+        shader_definition shader_sources;
+
+        /*!
+         * \brief Constructs a new pipeline from the provided JSON
+         *
+         * This constructor simply reads in the data from the JSON object that represents it. It won't fill in any
+         * fields that are missing from the JSON - that happens at a later time
+         *
+         * \param pass_name The name of this pipeline
+         * \param parent_pass_name The name of the pipeline that this pipeline inherits from
+         * \param pass_json The JSON that this pipeline will be created from
+         */
+        pipeline(const std::string& pass_name, const optional<std::string>& parent_pass_name, const nlohmann::json& pass_json);
+
+        pipeline() = default;
     };
-
-    material_state create_material_from_json(const std::string& material_state_name, const optional<std::string>& parent_state_name, const nlohmann::json& material_json);
 
     /*!
      * \brief Translates a JSON object into a sampler_state object
@@ -502,20 +547,11 @@ namespace nova {
      */
     sampler_state decode_sampler_state(const nlohmann::json& json);
 
-    vk::CompareOp decode_comparison_func_enum(const std::string& comparison_func);
-
-    vk::StencilOp decode_stencil_op_enum(const std::string &op);
-
     stencil_op_state decode_stencil_buffer_state(const nlohmann::json &json);
-
-    vk::PrimitiveTopology decode_primitive_mode_enum(const std::string& primitive_mode_str);
-
-    vk::BlendFactor decode_blend_source_enum(const std::string& blend_source_str);
 
     texture decode_texture(const nlohmann::json& texture_json);
 
-    output_info decode_outputs(const nlohmann::json& output_info_json);
-
+    bound_resource decode_bound_texture(const nlohmann::json& json);
 }
 
 #endif //RENDERER_MATERIALS_H

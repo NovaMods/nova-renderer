@@ -167,7 +167,7 @@ set(NOVA_SOURCE
         render/vulkan/render_context.cpp
         render/objects/shaders/shader_resource_manager.cpp
         render/objects/shaders/auto_allocated_buffer.cpp
-        )
+        render/objects/renderpasses/render_passes.cpp render/objects/renderpasses/render_passes.h render/render_graph.cpp render/render_graph.h data_loading/loaders/shader_file_loading.cpp)
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)

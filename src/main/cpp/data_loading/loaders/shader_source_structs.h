@@ -11,17 +11,26 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <experimental/filesystem>
 
 #include <optional.hpp>
 #include <json.hpp>
 
 #include <easylogging++.h>
-#include "../../render/objects/renderpasses/materials.h"
 
 // While I usually don't like to do this, I'm tires of typing so much
 using namespace std::experimental;
 
+namespace fs = std::experimental::filesystem;
+
 namespace nova {
+    enum class shader_langauge_enum {
+        SPIRV,
+        GLSL,
+        GLSLES,
+        HLSL,
+    };
+
     /*!
      * \brief Holds a line number and file name
      *
@@ -30,40 +39,35 @@ namespace nova {
      */
     struct shader_line {
         int line_num;               //!< The line number in the original source file
-        std::string shader_name;    //!< The name of the original source file
+        fs::path shader_name;    //!< The name of the original source file
         std::string line;           //!< The actual line
+    };
+
+    struct shader_file {
+        std::vector<shader_line> lines;
+        shader_langauge_enum language;
     };
 
     /*!
      * \brief Represents a shader before it goes to the GPU
      */
     struct shader_definition {
-        std::string name;
-        std::string filter_expression;
         optional<std::string> fallback_name;
 
         optional<std::shared_ptr<shader_definition>> fallback_def;
 
-        std::vector<uint32_t> vertex_source;
-        std::vector<uint32_t> fragment_source;
-        // TODO: Figure out how to handle geometry and tessellation shaders
-
-        /*!
-         * \brief The framebuffer attachments that this shader writes to
-         */
-        std::vector<unsigned int> drawbuffers;
-
-        explicit shader_definition(const nova::material_state &material);
-    };
-
-    struct shaderpack_definition {
-        std::vector<shader_definition> shaders;
-        nlohmann::json shaders_json;
+        shader_file vertex_source;
+        shader_file fragment_source;
+        shader_file geometry_source;
+        shader_file tessellation_control_source;
+        shader_file tessellation_evaluation_source;
     };
 
     el::base::Writer& operator<<(el::base::Writer& out, const std::vector<shader_line>& lines);
 
     el::base::Writer& operator<<(el::base::Writer& out, const shader_line& line);
+
+    shader_langauge_enum language_from_extension(const std::string& extension);
 }
 
 #endif //RENDERER_SHADER_SOURCE_STRUCTS_H

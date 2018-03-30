@@ -246,21 +246,6 @@ namespace nova {
         for(const auto& geom : gui_geometry) {
             if (!geom.color_texture.empty()) {
                 auto color_texture = textures->get_texture(geom.color_texture);
-
-                auto texture_ds = shader_resources->block_textures;
-
-                auto image_info = vk::DescriptorImageInfo()
-                    .setImageLayout(color_texture.get_layout())
-                    .setImageView(color_texture.get_image_view());
-
-                auto write_ds = vk::WriteDescriptorSet()
-                        .setDstSet(texture_ds)
-                        .setDstBinding(0)
-                        .setDstArrayElement(0)
-                        .setDescriptorCount(1)
-                        .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-                        .setPImageInfo(&image_info);
-                context->device.updateDescriptorSets(1, &write_ds, 0, nullptr);
             }
 
             auto gbuffer_layout = shader_resources->get_layout_for_pass(pass_enum::Gbuffer);
@@ -378,18 +363,6 @@ namespace nova {
             // }
 
             if(geom.geometry->has_data()) {
-                if(!geom.color_texture.empty()) {
-                    auto color_texture = textures->get_texture(geom.color_texture);
-                    color_texture.bind(0);
-                }
-
-                if(geom.normalmap) {
-                    textures->get_texture(*geom.normalmap).bind(1);
-                }
-
-                if(geom.data_texture) {
-                    textures->get_texture(*geom.data_texture).bind(2);
-                }
 
                 // upload_model_matrix(geom, shader);
 

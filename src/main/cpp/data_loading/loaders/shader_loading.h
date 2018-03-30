@@ -8,14 +8,52 @@
 #ifndef RENDERER_SHADER_LOADING_H_H
 #define RENDERER_SHADER_LOADING_H_H
 
+#include <experimental/filesystem>
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <shaderc/shaderc.h>
 
 #include "shader_source_structs.h"
+#include "../../render/objects/renderpasses/materials.h"
+#include "../../render/objects/renderpasses/render_passes.h"
+
+namespace fs = std::experimental::filesystem;
 
 namespace nova {
+    /*!
+     * \brief A shaderpack loaded from disk
+     *
+     * A shaderpack has
+     * - A list of render passes. Render passes have:
+     *      - The dynamic resources that this pass needs as an input
+     *      - The dynamic resources that this pass writes to
+     * - A list of pipelines. A pipeline has
+     *      - A fragment shader and vertex shader, and optionally a geometry shader and tessellation shader
+     *      - All sorts of renderer state like depth test, stencil test, etc
+     *      - The textures and UBOs the shader uses, and what location to bind them to
+     *      - The textures in the framebuffer that this shader writes to, and where to bind them
+     *      - The name of the pass that should render this pipeline
+     *      - A filter that selects geometry that this shader renders
+     * - A list of dynamic resources. A dynamic resource is a texture or buffer that is written to by a shader. Nova 1
+     *  only supports textures (unless that changes). A dynamic texture has:
+     *      - A name
+     *      - A resolution (relative to the screen, or in absolute pixels)
+     *      - A format
+     */
+    struct shaderpack_data {
+        std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
+        std::unordered_map<std::string, render_pass> passes;
+        std::unordered_map<std::string, texture_resource> dynamic_textures;
+    };
+
+    /*!
+     * \brief Loads all the passes that are present in the shaderpack with the given zip file name
+     *
+     * \param shaderpack_name The name of the shaderpack file to load things from
+     * \return A map from pass name to pass of all the passes found in that zip
+     */
+    std::unordered_map<std::string, pipeline> load_passes_from_zip(const std::string& shaderpack_name);
+
     /*!
      * \brief Loads the source file of all the shaders with the provided names
      *
@@ -26,7 +64,46 @@ namespace nova {
      * \param shader_names The list of names of shaders to load
      * \return A map from shader name to shader source
      */
-    std::vector<std::pair<material_state, shader_definition>> load_sources_from_zip_file(const std::string &shaderpack_name, std::vector<std::string> shader_names);
+    std::unordered_map<std::string, shader_definition> load_sources_from_zip_file(const std::string &shaderpack_name, const std::vector<std::string> &shader_names);
+
+    /*!
+     * \brief Loads all the pipelines that are present in the shaderpack with the given folder name
+     *
+     * \param shaderpack_path The name of the shaderpack folder to load things from
+     * \return A map from pipeline name to list of all the pipelines found in that folder
+     */
+    std::unordered_map<std::string, std::vector<pipeline>> load_pipelines_from_folder(const fs::path &shaderpack_path);
+
+    /*!
+     * \brief Loads all the passes that were defined in a given shaderpack's folder
+     *
+     * \param shaderpack_path The path to the shaderpack's folder
+     * \return A map from the name of the pass to that pass
+     */
+    std::unordered_map<std::string, render_pass> load_passes_from_folder(const fs::path& shaderpack_path);
+
+    std::unordered_map<std::string, texture_resource> load_texture_definitions_from_folder(const fs::path& shaderpack_path);
+
+    std::unordered_map<std::string, render_pass> parse_passes_from_json(const nlohmann::json& json);
+
+    std::vector<pipeline> read_pipeline_files(const fs::path& shaderpack_path);
+
+    std::vector<pipeline> parse_pipelines_from_json(const nlohmann::json &pipelines_json);
+
+    /*!
+     * \brief Parses a list of texture resource definitions from the provided JSON array
+     * \param json A JSON array of texture_resoruce objects
+     * \return A map from the name of the texture resource to the texture resoruce itself
+     */
+    std::unordered_map<std::string, texture_resource> parse_textures_from_json(nlohmann::json& json);
+
+    /*!
+     * \brief Gets a list of all the files in the given folder
+     *
+     * \param shaderpack_name The name of the shaderpack to get the names of the shaders in
+     * \return The names of all the shaders in
+     */
+    std::vector<fs::path> get_shader_names_in_folder(const fs::path& shaderpack_path);
 
     /*!
      * \brief Loads the source file of all the shaders with the provided names
@@ -34,65 +111,11 @@ namespace nova {
      * This will only work if the shaderpack is a folder. If the shaderpack is a zip folder, this will probably fail
      * in a way I didn't explicitly anticipate
      *
-     * \param shaderpack_name The name of the shaderpack to load the shaders from
-     * \param shader_names The list of names of shaders to load
-     * \return A map from shader name to shader source
+     * \param shaders_path The name of the shaderpack to load the shaders from
+     * \param pipelines The list of names of shaders to load
+     * \return The loaded shaderpack
      */
-    std::vector<std::pair<material_state, shader_definition>> load_sources_from_folder(const std::string &shaderpack_name, std::vector<std::string>& shader_names);
-
-    /*!
-     * \brief Tries to load a single shader file from a folder
-     *
-     * Tries appending each string in extensions to the shader path. If one of the extensions is a real extension
-     * of the file, returns the full text of the file. If the file cannot be found with any of the provided
-     * extensions, then a not_found is thrown
-     *
-     * This function also compiled the shader to SPIR-V if needed and hopefully throw reasonable errors
-     *
-     * \param shader_path The path to the shader
-     * \param extensions A list of extensions to try
-     * \return The SPIR-V of the shader file
-     */
-    std::vector<shader_line> load_shader_file(std::string& shader_path, std::vector<std::string>& extensions);
-
-    /*!
-     * \brief Translates GLSL code to SPIR-V
-     *
-     * \param shader_lines The source lines of the code to translate
-     * \param shader_stage The shader stage to compile for
-     * \return The SPIR-V code
-     */
-    std::vector<uint32_t> translate_glsl_to_spirv(std::vector<shader_line>& shader_lines, shaderc_shader_kind shader_stage);
-
-    /*!
-     * \brief Loads the shader file from the provided istream
-     *
-     * \param stream The istream to load the shader file from
-     * \param shader_path The path to the shader file (useful mostly for includes)
-     * \return A list of shader_line objects
-     */
-    std::vector<shader_line> read_shader_stream(std::istream &stream, const std::string &shader_path);
-
-    /*!
-     * \brief Loads a file that was requested through a #include statement
-     *
-     * This function will recursively include files. There's nothing to check for an infinite include loop, so try to
-     * not have any
-     *
-     * \param shader_path The path to the shader that includes the file
-     * \param line The line in the shader that contains the #include statement
-     * \return The full source of the included file
-     */
-    std::vector<shader_line> load_included_file(const std::string &shader_path, const std::string &line);
-
-    /*!
-     * \brief Determines the full file path of an included file
-     *
-     * \param shader_path The path to the current shader
-     * \param included_file_name The name of the file to include
-     * \return The path to the included file
-     */
-    auto get_included_file_path(const std::string &shader_path, const std::string &included_file_name);
+    std::unordered_map<std::string, shader_definition> load_sources_from_folder(const fs::path &shaders_path, const std::vector<pipeline> &pipelines);
 
     /*!
      * \brief Extracts the filename from the #include line
@@ -106,32 +129,21 @@ namespace nova {
      * \param include_line The line with the #include statement on it
      * \return The filename that is being included
      */
-    std::string get_filename_from_include(std::string& include_line);
+    std::string get_filename_from_include(const std::string& include_line);
 
     /*!
-     * \brief Figures out the names of the shaders to load into this shaderpack based on the given json structure
+     * \brief Loads the JSON for the default Bedrock pipeline files
      *
-     * \param shaders_json The JSON structure with the names of all the shaders to load
-     * \return A list of all the shader_definition objects described by the given JSON
+     * \return The JSON for the default Bedrock pipeline files
      */
-    std::vector<material_state> get_material_definitions(const nlohmann::json &shaders_json);
+    nlohmann::json& get_default_bedrock_passes();
 
     /*!
-     * \brief Prints our a warning for every shader described in the shaders.json file which does not specify a
-     * fallback shader
+     * \brief Loads the JSON for the default Optifine passes
      *
-     * \param shaders The list of shader definitions from the shaders.json file
+     * \return The JSON for the default Optifine passes
      */
-    void warn_for_missing_fallbacks(std::vector<shader_definition>& shaders);
-
-    /*!
-     * \brief Loads the default shaders.json file from disk
-     *
-     * This function caches the shaders.json file, so it should only load once
-     *
-     * \return The default shader.json file, as a json data structure
-     */
-    nlohmann::json& get_default_shaders_json();
+    nlohmann::json& get_default_optifine_passes();
 }
 
 #endif //RENDERER_SHADER_LOADING_H_H
