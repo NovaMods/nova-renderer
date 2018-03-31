@@ -22,6 +22,7 @@ namespace nova {
             }
             return vec;
         });
+        depth_input = get_json_value<std::string>(pass_json, "depthInput");
         texture_outputs = get_json_value<std::vector<std::string>>(pass_json, "textureOutputs", [&](const nlohmann::json& texture_outputs_json) {
             auto vec = std::vector<std::string>{};
             for(const auto& val : texture_outputs_json) {
@@ -29,6 +30,7 @@ namespace nova {
             }
             return vec;
         });
+        depth_output = get_json_value<std::string>(pass_json, "depthOutput");
     }
 
     texture_resource::texture_resource(const nlohmann::json &json) {

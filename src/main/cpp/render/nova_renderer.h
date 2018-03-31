@@ -12,6 +12,7 @@
 #include "objects/camera.h"
 #include "../data_loading/settings.h"
 #include "objects/shaders/shader_resource_manager.h"
+#include "objects/renderpasses/render_passes.h"
 
 namespace nova {
     class vk_shader_program;
@@ -109,13 +110,15 @@ namespace nova {
 
     private:
 
+        /*
+         * Singletons
+         */
+
 		static std::shared_ptr<settings> render_settings;
 
         std::shared_ptr<render_context> context;
 
         std::shared_ptr<glfw_vk_window> game_window;
-
-        std::shared_ptr<shaderpack> loaded_shaderpack;
 
         std::shared_ptr<texture_manager> textures;
 
@@ -129,18 +132,42 @@ namespace nova {
 
         std::shared_ptr<shader_resource_manager> shader_resources;
 
+        /*
+         * Swapchain bs
+         */
+
         uint32_t cur_swapchain_image_index = 0;
 
         vk::Semaphore swapchain_image_acquire_semaphore;
 
-        vk::Semaphore render_finished_semaphore;
+        /*
+         * Shaderpack data
+         */
 
-        camera player_camera;
+        std::string loaded_shaderpack_name;
+
+        std::vector<render_pass> passes_list;
+        std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
+
+        /*
+         * Housekeeping
+         */
+
+        vk::Semaphore render_finished_semaphore;
 
         // Will be replaced when I merge in the render graph, for now this is kinda a hack to let me validate the rest
         // of the Nova Vulkan code
         vk::Fence render_done_fence;
 
+        /*
+         * Internal variables
+         */
+
+        camera player_camera;
+
+        /*
+         * Private functions
+         */
 
         /*!
          * \brief Renders the GUI of Minecraft
@@ -177,7 +204,7 @@ namespace nova {
         glm::mat4x4 gui_model;
     };
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos);
+    std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes);
 }
 
 #endif //RENDERER_VULKAN_MOD_H

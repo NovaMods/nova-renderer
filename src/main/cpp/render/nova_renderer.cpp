@@ -20,6 +20,7 @@
 #include "objects/renderpasses/renderpass_manager.h"
 #include "vulkan/render_context.h"
 #include "objects/shaders/shader_resource_manager.h"
+#include "render_graph.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -289,12 +290,7 @@ namespace nova {
 		auto& shaderpack_name = new_config["loadedShaderpack"];
 		LOG(INFO) << "Shaderpack name: " << shaderpack_name;
 
-        if(!loaded_shaderpack) {
-            load_new_shaderpack(shaderpack_name);
-            return;
-        }
-
-        bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack->get_name();
+        bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack_name);
         if(shaderpack_in_settings_is_new) {
             load_new_shaderpack(shaderpack_name);
         }
@@ -327,13 +323,34 @@ namespace nova {
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
 		LOG(INFO) << "Loading a new shaderpack named " << new_shaderpack_name;
 
-        auto shaderpack_data = load_shaderpack(new_shaderpack_name);
+        auto shaderpack = load_shaderpack(new_shaderpack_name);
 
-        LOG(DEBUG) << "Shaderpack loaded, wiring everything together";
+        pipelines_by_pass = shaderpack.pipelines_by_pass;
 
-        vk::Extent2D im_lazy;
+        LOG(INFO) << "Compiling passes...";
+        try {
+            passes_list = compile_into_list(shaderpack.passes);
+        } catch(render_graph_validation_error& e) {
+            LOG(ERROR) << "Could not load shaderpack " << new_shaderpack_name << ": " << e.what();
 
-        renderpasses = std::make_shared<renderpass_manager>(im_lazy, im_lazy, context->swapchain_extent, context);
+            // TODO: Find a good way to propagate the error
+            return;
+        }
+
+        LOG(INFO) << "Initializing framebuffer attachments...";
+        textures->create_dynamic_textures(shaderpack.dynamic_textures, passes_list);
+
+        renderpasses = std::make_shared<renderpass_manager>();
+
+        LOG(INFO) << "Building framebuffers...";
+        create_framebuffers_from_shaderpack(shaderpack, textures, context);
+
+
+        LOG(INFO) << "Loaded shaderpack " << new_shaderpack_name;
+
+        // Reorder the passes and make physical textures
+
+        renderpasses = std::make_shared<renderpass_manager>(shaderpack_data, context);
 
         LOG(INFO) << "Loading complete";
     }
@@ -456,10 +473,15 @@ namespace nova {
         }
     }
 
-    void link_up_uniform_buffers(std::unordered_map<std::string, vk_shader_program> &shaders, std::shared_ptr<uniform_buffer_store> ubos) {
-        for(auto& shader : shaders) {
-            ubos->register_all_buffers_with_shader(shader.second);
+    std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes) {
+        auto passes_dependency_order = order_passes(passes);
+        auto ordered_passes = std::vector<render_pass>{};
+
+        for(const auto& pass_name : passes_dependency_order) {
+            ordered_passes.push_back(passes[pass_name]);
         }
+
+        return ordered_passes;
     }
 }
 

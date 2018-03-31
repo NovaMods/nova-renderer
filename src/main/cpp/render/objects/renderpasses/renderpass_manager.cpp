@@ -10,14 +10,70 @@
 #include <easylogging++.h>
 
 namespace nova {
-    renderpass_manager::renderpass_manager(const shaderpack_data& data, std::shared_ptr<render_context> context) : context(context) {
-        // TODO: Inspect each shader, figure out which ones draw to which target, and build renderpasses based on that info
-        // For now I'll just create the swapchain renderpass to make sure I hae the code
+    vk::RenderPass make_render_pass(const render_pass& pass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context);
 
-        auto& framebuffer_size = context->swapchain_extent;
+    std::unordered_map<std::string, vk::RenderPass> make_passes(const shaderpack_data& data, std::shared_ptr<texture_manager> textures,
+                                                                std::shared_ptr<render_context> context) {
+        std::unordered_map<std::string, vk::RenderPass> renderpasses;
 
-        rebuild_all(main_shadow_size, light_shadow_size, framebuffer_size);
+        for(const auto& named_pass : data.passes) {
+            renderpasses[named_pass.first] = make_render_pass(named_pass.second, textures, context);
+        }
+
+        return renderpasses;
     }
+
+    vk::RenderPass make_render_pass(const render_pass& pass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context) {
+
+        std::vector<vk::AttachmentDescription> attachments;
+
+        std::vector<vk::AttachmentReference> color_refs;
+
+        if(pass.texture_outputs) {
+            auto num_supported_attachments = context->gpu.props.limits.maxColorAttachments;
+            const auto& texture_outputs_vec = pass.texture_outputs.value();
+            if(texture_outputs_vec.size() > num_supported_attachments) {
+                LOG(ERROR) << "You're trying to use " << texture_outputs_vec.size() << " color attachments with pass "
+                           << pass.name << ", but your GPU only supports " << num_supported_attachments;
+
+            } else {
+                for(const auto &color_attachment_name : texture_outputs_vec) {
+                    const auto &texture = textures->get_texture(color_attachment_name);
+
+                    vk::AttachmentDescription color_attachment = {};
+                    color_attachment.format = texture.get_format();
+                    color_attachment.samples = vk::SampleCountFlagBits::e1;
+                    color_attachment.loadOp = vk::AttachmentLoadOp::eLoad;
+                    color_attachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+                    color_attachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+
+                    attachments.push_back(color_attachment);
+                }
+            }
+        }
+
+        if(pass.texture_inputs) {
+            vk::AttachmentReference ref = {};
+            ref.attachment = static_cast<uint32_t>(attachments.size() - 1);
+            ref.layout = vk::ImageLayout::eColorAttachmentOptimal;
+            color_refs.push_back(ref);
+        }
+
+        vk::SubpassDescription subpass = {};
+        subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+        subpass.colorAttachmentCount = static_cast<uint32_t>(color_refs.size());
+        subpass.pColorAttachments = color_refs.data();
+
+        vk::RenderPassCreateInfo render_pass_create_info = {};
+        render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+        render_pass_create_info.pAttachments = attachments.data();
+        render_pass_create_info.subpassCount = 1;
+        render_pass_create_info.pSubpasses = &subpass;
+        render_pass_create_info.dependencyCount = 0;
+
+        final_pass = context->device.createRenderPass(render_pass_create_info);
+    }
+
 
     void renderpass_manager::create_final_renderpass(const vk::Extent2D& window_size) {
         std::vector<vk::AttachmentDescription> attachments;

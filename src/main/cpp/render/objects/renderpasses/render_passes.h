@@ -129,16 +129,24 @@ namespace nova {
         /*!
          * \brief The materials that MUST execute before this one
          */
-        optional <std::vector<std::string>> dependencies;
+        optional<std::vector<std::string>> dependencies;
 
         /*!
          * \brief The textures that this pass will read from
          */
-        optional <std::vector<std::string>> texture_inputs;
+        optional<std::vector<std::string>> texture_inputs;
+        /*!
+         * \brief The depth texture that this pass reads from
+         */
+        optional<std::string> depth_input;
         /*!
          * \brief The textures that this pass will write to
          */
-        optional <std::vector<std::string>> texture_outputs;
+        optional<std::vector<std::string>> texture_outputs;
+        /*!
+         * \brief The depth texture this pass will write to
+         */
+        optional<std::string> depth_output;
 
         /*!
          * \brief Parses the provided JSON into a render pass

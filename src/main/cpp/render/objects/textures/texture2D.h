@@ -16,30 +16,13 @@ namespace nova {
     class render_context;
 
     /*!
-     * \brief Encapsulates the parameters for texture filtering
-     */
-    class texture_filtering_params {
-    public:
-        enum filter {
-            POINT,
-            BILINEAR,
-            TRILINEAR,
-        };
-
-        filter texture_upsample_filter;
-        filter texture_downsample_filter;
-
-        int anisotropic_level;
-    };
-
-    /*!
      * \brief Represents a two-dimensional OpenGL texture
      */
     class texture2D {
     public:
-        texture2D();
+        texture2D() = default;
 
-        explicit texture2D(std::shared_ptr<render_context> context);
+        texture2D(vk::Extent2D dimensions, vk::Format format, std::shared_ptr<render_context> context);
 
         /*!
          * \brief Sets this texture's data to the given parameters
@@ -49,23 +32,22 @@ namespace nova {
          *
          * \param pixel_data The raw pixel_data
          * \param dimensions The dimensions of this texture
-         * \param format The format of the texture data
          */
-        void set_data(void* pixel_data, vk::Extent2D &dimensions, vk::Format format);
+        void set_data(void* pixel_data, vk::Extent2D dimensions);
 
-        vk::Extent2D& get_size();
+        vk::Extent2D& get_size() const;
 
         /*!
          * \brief Returns the format of this texture, as assigned in the constructor
          *
          * \return The format of this texture
          */
-        vk::Format& get_format();
+        vk::Format & get_format() const;
 
         /*!
          * \brief Returns the Vulkan identifier used to identify this texture
          */
-        const vk::Image& get_vk_image();
+        const vk::Image& get_vk_image() const;
 
         void set_name(std::string name);
         const std::string& get_name() const;
@@ -75,9 +57,9 @@ namespace nova {
          */
         void destroy();
 
-        vk::ImageView get_image_view();
+        vk::ImageView get_image_view() const;
 
-        vk::ImageLayout get_layout();
+        vk::ImageLayout get_layout() const;
 
     private:
         std::shared_ptr<render_context> context;
@@ -105,9 +87,9 @@ namespace nova {
      * \param old_layout The current layout of the image
      * \param new_layout The desired layout of the image
      */
-    void transfer_image_format(vk::CommandBuffer command_buffer, vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, std::shared_ptr<render_context> context);
+    void transfer_image_format(vk::CommandBuffer command_buffer, vk::Image image, vk::ImageLayout old_layout, vk::ImageLayout new_layout);
 
-    void copy_buffer_to_image(vk::CommandBuffer command_buffer, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, std::shared_ptr<render_context> context);
+    void copy_buffer_to_image(vk::CommandBuffer command_buffer, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height);
 }
 
 #endif //RENDERER_TEXTURE_H

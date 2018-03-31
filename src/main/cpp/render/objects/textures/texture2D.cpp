@@ -12,11 +12,7 @@
 #include "../../nova_renderer.h"
 
 namespace nova {
-    texture2D::texture2D() {}
-
-    texture2D::texture2D(std::shared_ptr<render_context> context) : context(context) {}
-
-    void texture2D::set_data(void* pixel_data, vk::Extent2D &dimensions, vk::Format format) {
+    texture2D::texture2D(vk::Extent2D dimensions, vk::Format format, std::shared_ptr<render_context> context) : context(context) {
         this->format = format;
         size = dimensions;
 
@@ -37,7 +33,7 @@ namespace nova {
         alloc_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
         auto result = vmaCreateImage(context->allocator, reinterpret_cast<VkImageCreateInfo*>(&image_create_info), &alloc_create_info,
-                       reinterpret_cast<VkImage*>(&image), &allocation, nullptr);
+                                     reinterpret_cast<VkImage*>(&image), &allocation, nullptr);
 
         if(result != (VkResult)vk::Result::eSuccess) {
             LOG(FATAL) << "Could not create image";
@@ -63,20 +59,22 @@ namespace nova {
         layout = image_create_info.initialLayout;
 
         LOG(DEBUG) << "Created new image";
-
-        // Create a staging buffer and use that to upload the data
-        upload_data_with_staging_buffer(pixel_data, image_create_info.extent);
     }
 
-    vk::Extent2D& texture2D::get_size() {
+    void texture2D::set_data(void* pixel_data, vk::Extent2D dimensions) {
+        // Create a staging buffer and use that to upload the data
+        upload_data_with_staging_buffer(pixel_data, vk::Extent3D{dimensions.width, dimensions.height, 1});
+    }
+
+    vk::Extent2D& texture2D::get_size() const {
         return size;
     }
 
-    vk::Format& texture2D::get_format() {
+    vk::Format & texture2D::get_format() const {
         return format;
     }
 
-    const vk::Image& texture2D::get_vk_image() {
+    const vk::Image& texture2D::get_vk_image() const {
         return image;
     }
 
@@ -119,9 +117,9 @@ namespace nova {
         command_buffer.buffer.reset(vk::CommandBufferResetFlagBits());
         command_buffer.begin_as_single_commend();
 
-        transfer_image_format(command_buffer.buffer, image, format, layout, vk::ImageLayout::eTransferDstOptimal, context);
-        copy_buffer_to_image(command_buffer.buffer, staging_buffer, image, size.width, size.height, context);
-        transfer_image_format(command_buffer.buffer, image, format, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, context);
+        transfer_image_format(command_buffer.buffer, image, layout, vk::ImageLayout::eTransferDstOptimal);
+        copy_buffer_to_image(command_buffer.buffer, staging_buffer, image, size.width, size.height);
+        transfer_image_format(command_buffer.buffer, image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
         layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
         command_buffer.end_as_single_command();
@@ -135,15 +133,15 @@ namespace nova {
         context->device.destroyImageView(image_view);
     }
 
-    vk::ImageView texture2D::get_image_view() {
+    vk::ImageView texture2D::get_image_view() const {
         return image_view;
     }
 
-    vk::ImageLayout texture2D::get_layout() {
+    vk::ImageLayout texture2D::get_layout() const {
         return layout;
     }
 
-    void transfer_image_format(vk::CommandBuffer command_buffer, vk::Image image, vk::Format format, vk::ImageLayout old_layout, vk::ImageLayout new_layout, std::shared_ptr<render_context> context) {
+    void transfer_image_format(vk::CommandBuffer command_buffer, vk::Image image, vk::ImageLayout old_layout, vk::ImageLayout new_layout) {
         vk::ImageMemoryBarrier barrier = {};
         barrier.oldLayout = old_layout;
         barrier.newLayout = new_layout;
@@ -194,7 +192,7 @@ namespace nova {
                 1, &barrier);
     }
 
-    void copy_buffer_to_image(vk::CommandBuffer command_buffer, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, std::shared_ptr<render_context> context) {
+    void copy_buffer_to_image(vk::CommandBuffer command_buffer, vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height) {
 
         vk::BufferImageCopy region = {};
         region.bufferOffset = 0;

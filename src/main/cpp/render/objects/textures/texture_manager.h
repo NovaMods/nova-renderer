@@ -12,6 +12,8 @@
 #include "texture2D.h"
 #include "../../../utils/smart_enum.h"
 #include "../../../mc_interface/mc_objects.h"
+#include "../renderpasses/render_passes.h"
+#include "../../vulkan/render_context.h"
 
 namespace nova {
     /*!
@@ -59,7 +61,7 @@ namespace nova {
          *
          * Note to self: Don't put any GL calls in the constructor. It's called before an OpenGL context is available
          */
-        texture_manager(std::shared_ptr<render_context> context);
+        explicit texture_manager(std::shared_ptr<render_context> context);
 
         /*!
          * \brief De-allocates everything ths texture_manager uses
@@ -74,18 +76,17 @@ namespace nova {
          */
         void reset();
 
+        void create_dynamic_textures(const std::unordered_map<std::string, texture_resource>& textures,
+                                     const std::vector<render_pass>& passes);
+
         /*!
          * \brief Updates the texture with the given name with the given data
-         *
-         * This method is essentially a wrapper around glTexImage2D so the docs for that will give you a lot of good info
          *
          * \param texture_name The name of the texture to update
          * \param data The data to set as the texture
          * \param size The size of the new texture data
-         * \param format The format of the texture data
-         * \param internal_format The internal format of the texture data
          */
-        void update_texture(std::string texture_name, void* data, glm::ivec2 &size, vk::Format format);
+        void update_texture(std::string texture_name, void* data, glm::ivec2 &size);
 
         /*!
          * \brief Adds a texture to this resource manager
@@ -142,7 +143,21 @@ namespace nova {
         std::unordered_map<std::string, texture_location> locations;
 
         int max_texture_size = -1;
+
+        /*!
+         * \brief All the dynamic textures that are active for the current shaderpack
+         */
+        std::vector<texture2D> dynamic_textures;
+
+        /*!
+         * \brief A map from texture name to index in the dynamic textures vector
+         */
+        std::unordered_map<std::string, std::size_t> dynamic_tex_name_to_idx;
+
+        void clear_dynamic_textures();
     };
+
+    vk::Format get_vk_format_from_pixel_format(pixel_format_enum format);
 }
 
 #endif //RENDERER_TEXTURE_RECEIVER_H

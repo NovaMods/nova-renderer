@@ -9,9 +9,11 @@
 #include <glm/glm.hpp>
 #include "../../vulkan/render_context.h"
 #include "../../../data_loading/loaders/shader_loading.h"
+#include "../textures/texture_manager.h"
 
 namespace nova {
-    class shaderpack;
+    std::unordered_map<std::string, vk::RenderPass> make_passes(const shaderpack_data& data, std::shared_ptr<texture_manager> textures,
+                                                                std::shared_ptr<render_context> context);
 
     /*!
      * \brief Holds all the render passes that we made from the loaded shaderpack
@@ -32,7 +34,7 @@ namespace nova {
      */
     class renderpass_manager {
     public:
-        renderpass_manager(const shaderpack_data& data, std::shared_ptr<render_context> context);
+        renderpass_manager(const shaderpack_data& data, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context);
 
         ~renderpass_manager();
 
