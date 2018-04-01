@@ -552,8 +552,6 @@ namespace nova {
     texture decode_texture(const nlohmann::json& texture_json);
 
     bound_resource decode_bound_texture(const nlohmann::json& json);
-
-    vk::PrimitiveTopology to_vk_topology(primitive_topology_enum tolopogy);
 }
 
 #endif //RENDERER_MATERIALS_H

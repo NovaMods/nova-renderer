@@ -16,7 +16,7 @@
 #include <mutex>
 #include <optional.hpp>
 
-#include "vk_shader_program.h"
+#include "shader_program.h"
 
 namespace nova {
     class shader_definition;

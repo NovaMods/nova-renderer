@@ -80,7 +80,7 @@ set(NOVA_HEADERS
         render/objects/textures/texture_manager.h
         utils/types.h
 
-        render/objects/shaders/vk_shader_program.h
+        render/objects/shaders/shader_program.h
         render/objects/uniform_buffers/gl_uniform_buffer.h
         render/objects/meshes/vk_mesh.h
         render/objects/textures/texture2D.h
@@ -113,11 +113,15 @@ set(NOVA_HEADERS
         mc_interface/nova_jni.h
         render/objects/render_object.h
         utils/stb_image_write.h
-        render/objects/renderpasses/renderpass_manager.h
+        render/objects/renderpasses/renderpass_builder.h
         render/vulkan/render_context.h
         render/vulkan/command_pool.h
         render/objects/shaders/auto_allocated_buffer.h
         render/objects/renderpasses/materials.h
+
+        render/objects/renderpasses/render_passes.h
+        render/render_graph.cpp render/render_graph.h
+        render/objects/meshes/vertex_attributes.h
         )
 
 set(NOVA_SOURCE
@@ -136,7 +140,7 @@ set(NOVA_SOURCE
 
         input/InputHandler.cpp
 
-        render/objects/shaders/vk_shader_program.cpp
+        render/objects/shaders/shader_program.cpp
         render/objects/meshes/vk_mesh.cpp
         render/objects/textures/texture2D.cpp
 
@@ -161,13 +165,15 @@ set(NOVA_SOURCE
         data_loading/direct_buffers.cpp
         render/objects/render_object.cpp
         render/vulkan/command_pool.cpp
-        render/objects/renderpasses/renderpass_manager.cpp
+        render/objects/renderpasses/renderpass_builder.cpp
         render/objects/renderpasses/materials.cpp
 
         render/vulkan/render_context.cpp
         render/objects/shaders/shader_resource_manager.cpp
         render/objects/shaders/auto_allocated_buffer.cpp
-        render/objects/renderpasses/render_passes.cpp render/objects/renderpasses/render_passes.h render/render_graph.cpp render/render_graph.h data_loading/loaders/shader_file_loading.cpp)
+        render/objects/renderpasses/render_passes.cpp
+        data_loading/loaders/shader_file_loading.cpp
+        )
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)

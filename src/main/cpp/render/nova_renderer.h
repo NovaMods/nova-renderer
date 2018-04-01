@@ -22,7 +22,6 @@ namespace nova {
     class texture_manager;
     class input_handler;
     class render_context;
-    class renderpass_manager;
     class shaderpack;
     class render_object;
 
@@ -128,8 +127,6 @@ namespace nova {
 
         std::shared_ptr<uniform_buffer_store> ubo_manager;
 
-        std::shared_ptr<renderpass_manager> renderpasses;
-
         std::shared_ptr<shader_resource_manager> shader_resources;
 
         /*
@@ -148,6 +145,8 @@ namespace nova {
 
         std::vector<render_pass> passes_list;
         std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
+        pass_vulkan_information renderpasses_by_pass;
+        std::unordered_map<std::string, std::vector<vk::Pipeline>> pipelines_by_renderpass;
 
         /*
          * Housekeeping

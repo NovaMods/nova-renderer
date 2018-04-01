@@ -4,7 +4,7 @@
  */
 
 #include <vulkan/vulkan.hpp>
-#include "renderpass_manager.h"
+#include "renderpass_builder.h"
 #include "../../vulkan/render_context.h"
 #include "../../nova_renderer.h"
 #include <easylogging++.h>
@@ -14,9 +14,9 @@ namespace nova {
 
     vk::Framebuffer make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context);
 
-    std::unordered_map<std::string, std::pair<vk::RenderPass, vk::Framebuffer>> make_passes(const shaderpack_data& data, std::shared_ptr<texture_manager> textures,
+    std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, std::shared_ptr<texture_manager> textures,
                                                                                             std::shared_ptr<render_context> context) {
-        std::unordered_map<std::string, std::pair<vk::RenderPass, vk::Framebuffer>> renderpasses;
+        std::unordered_map<std::string, pass_vulkan_information> renderpasses;
 
         for(const auto& named_pass : data.passes) {
             const auto renderpass = make_render_pass(named_pass.second, textures, context);

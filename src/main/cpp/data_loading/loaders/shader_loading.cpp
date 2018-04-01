@@ -56,6 +56,7 @@ namespace nova {
             pack.passes = load_passes_from_folder(shaderpack_directory);
             LOG(INFO) << "Loading dynamic textures";
             pack.dynamic_textures = load_texture_definitions_from_folder(shaderpack_directory);
+
             // TODO: Load materials
         }
 

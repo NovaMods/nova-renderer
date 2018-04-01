@@ -17,7 +17,7 @@
 #include "objects/uniform_buffers/uniform_buffer_definitions.h"
 #include "objects/uniform_buffers/uniform_buffer_store.h"
 #include "../input/InputHandler.h"
-#include "objects/renderpasses/renderpass_manager.h"
+#include "objects/renderpasses/renderpass_builder.h"
 #include "vulkan/render_context.h"
 #include "objects/shaders/shader_resource_manager.h"
 #include "render_graph.h"
@@ -321,13 +321,13 @@ namespace nova {
     }
 
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
-		LOG(INFO) << "Loading a new shaderpack named " << new_shaderpack_name;
+		LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
 
         auto shaderpack = load_shaderpack(new_shaderpack_name);
 
         pipelines_by_pass = shaderpack.pipelines_by_pass;
 
-        LOG(INFO) << "Compiling passes...";
+        LOG(INFO) << "Flattening frame graph...";
         try {
             passes_list = compile_into_list(shaderpack.passes);
         } catch(render_graph_validation_error& e) {
@@ -340,17 +340,11 @@ namespace nova {
         LOG(INFO) << "Initializing framebuffer attachments...";
         textures->create_dynamic_textures(shaderpack.dynamic_textures, passes_list);
 
-        renderpasses = std::make_shared<renderpass_manager>();
+        LOG(INFO) << "Building renderpasses and framebuffers...";
+        renderpasses_by_pass = make_passes(shaderpack, textures, context);
 
-        LOG(INFO) << "Building framebuffers...";
-        create_framebuffers_from_shaderpack(shaderpack, textures, context);
-
-
-        LOG(INFO) << "Loaded shaderpack " << new_shaderpack_name;
-
-        // Reorder the passes and make physical textures
-
-        renderpasses = std::make_shared<renderpass_manager>(shaderpack_data, context);
+        LOG(INFO) << "Building pipelines and compiling shaders...";
+        pipelines_by_renderpass = make_pipelines(shaderpack, renderpasses_by_pass, context);
 
         LOG(INFO) << "Loading complete";
     }

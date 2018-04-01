@@ -171,4 +171,16 @@ namespace nova {
 
         return res;
     }
+
+    vk::PrimitiveTopology to_vk_topology(primitive_topology_enum tolopogy) {
+        switch(tolopogy) {
+            case primitive_topology_enum::Triangles:
+                return vk::PrimitiveTopology::eTriangleList;
+            case primitive_topology_enum::Lines:
+                return vk::PrimitiveTopology::eLineList;
+            default:
+                LOG(ERROR) << "Could not determin topology for " << primitive_topology_enum::to_string(tolopogy);
+                return vk::PrimitiveTopology::eTriangleList;
+        }
+    }
 }

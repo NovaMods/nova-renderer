@@ -17,6 +17,7 @@
 #include "../../../data_loading/loaders/shader_source_structs.h"
 #include "../renderpasses/materials.h"
 #include "shader_resource_manager.h"
+#include "../../../data_loading/loaders/shader_loading.h"
 
 
 namespace nova {
@@ -91,6 +92,10 @@ namespace nova {
 
         std::shared_ptr<shader_resource_manager> shader_resources;
     };
+
+    std::unordered_map<std::string, std::vector<vk::Pipeline>> make_pipelines(const shaderpack_data& shaderpack,
+                                                                              const std::unordered_map<std::string, std::pair<vk::RenderPass, vk::Framebuffer>>& renderpasses_by_pass,
+                                                                              std::shared_ptr<render_context> context);
 }
 
 #endif //RENDERER_GL_SHADER_H

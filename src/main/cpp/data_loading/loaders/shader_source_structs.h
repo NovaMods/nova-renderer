@@ -58,9 +58,9 @@ namespace nova {
 
         shader_file vertex_source;
         shader_file fragment_source;
-        shader_file geometry_source;
-        shader_file tessellation_control_source;
-        shader_file tessellation_evaluation_source;
+        optional<shader_file> geometry_source;
+        optional<shader_file> tessellation_control_source;
+        optional<shader_file> tessellation_evaluation_source;
     };
 
     el::base::Writer& operator<<(el::base::Writer& out, const std::vector<shader_line>& lines);
