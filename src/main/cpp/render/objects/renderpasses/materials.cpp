@@ -116,7 +116,7 @@ namespace nova {
 
         alpha_src = get_json_value<blend_factor_enum>(pass_json, "alphaSrc", blend_factor_enum::from_string);
         alpha_dst = get_json_value<blend_factor_enum>(pass_json, "alphaDst", blend_factor_enum::from_string);
-        depth_func = get_json_value<compare_op>(pass_json, "depthFunc", compare_op::from_string);
+        depth_func = get_json_value<compare_op_enum>(pass_json, "depthFunc", compare_op_enum::from_string);
 
         filters = get_json_value<std::string>(pass_json, "filters");
         fallback = get_json_value<std::string>(pass_json, "fallback");
@@ -136,7 +136,7 @@ namespace nova {
     stencil_op_state decode_stencil_buffer_state(const nlohmann::json &json) {
         auto ret_val = stencil_op_state{};
 
-        ret_val.compare_op = get_json_value<compare_op>(json, "stencilFunc", compare_op::from_string);
+        ret_val.compare_op = get_json_value<compare_op_enum>(json, "stencilFunc", compare_op_enum::from_string);
 
         ret_val.fail_op = get_json_value<stencil_op_enum>(json, "stencilFailOp", stencil_op_enum::from_string);
 
@@ -181,6 +181,102 @@ namespace nova {
             default:
                 LOG(ERROR) << "Could not determin topology for " << primitive_topology_enum::to_string(tolopogy);
                 return vk::PrimitiveTopology::eTriangleList;
+        }
+    }
+
+    vk::CompareOp to_vk_compare_op(compare_op_enum op) {
+        switch(op) {
+            case compare_op_enum::Never:
+                return vk::CompareOp::eNever;
+            case compare_op_enum::Less:
+                return vk::CompareOp::eLess;
+            case compare_op_enum::LessEqual:
+                return vk::CompareOp::eLessOrEqual;
+            case compare_op_enum::Greater:
+                return vk::CompareOp::eGreater;
+            case compare_op_enum::GreaterEqual:
+                return vk::CompareOp::eGreaterOrEqual;
+            case compare_op_enum::Equal:
+                return vk::CompareOp::eEqual;
+            case compare_op_enum::NotEqual:
+                return vk::CompareOp::eNotEqual;
+            case compare_op_enum::Always:
+                return vk::CompareOp::eAlways;
+            default:
+                LOG(ERROR) << "Cannot convert compare op " << compare_op_enum::to_string(op) << " to a Vulkan equivalent";
+                return vk::CompareOp::eLess;
+        }
+    }
+
+    vk::StencilOp to_vk_stencil_op(stencil_op_enum op) {
+        switch(op) {
+            case stencil_op_enum::Keep:
+                return vk::StencilOp::eKeep;
+            case stencil_op_enum::Zero:
+                return vk::StencilOp::eZero;
+            case stencil_op_enum::Replace:
+                return vk::StencilOp::eReplace;
+            case stencil_op_enum::Incr:
+                return vk::StencilOp::eIncrementAndClamp;
+            case stencil_op_enum::IncrWrap:
+                return vk::StencilOp::eIncrementAndWrap;
+            case stencil_op_enum::Decr:
+                return vk::StencilOp::eDecrementAndClamp;
+            case stencil_op_enum::DecrWrap:
+                return vk::StencilOp::eDecrementAndWrap;
+            case stencil_op_enum::Invert:
+                return vk::StencilOp::eInvert;
+            default:
+                LOG(ERROR) << "Could not convert stencil op " << stencil_op_enum::to_string(op) << " to a Vulkan equivalent";
+                return vk::StencilOp::eKeep;
+        }
+    }
+
+    vk::StencilOpState stencil_op_state::to_vk_stencil_op_state() {
+        vk::StencilOpState op_state;
+
+        auto compare_mask_val = compare_mask.value_or(0);
+        auto compare_op_val =  compare_op.value_or(compare_op_enum::Always);
+        auto depth_fail_op_val = depth_fail_op.value_or(stencil_op_enum::Keep);
+        auto fail_op_val = fail_op.value_or(stencil_op_enum::Keep);
+        auto pass_op_val = pass_op.value_or(stencil_op_enum::Replace);
+        auto write_mask_val = write_mask.value_or(0xFFFFFFFF);
+
+        op_state.compareMask = compare_mask_val;
+        op_state.compareOp = to_vk_compare_op(compare_op_val);
+        op_state.depthFailOp = to_vk_stencil_op(depth_fail_op_val);
+        op_state.failOp = to_vk_stencil_op(fail_op_val);
+        op_state.passOp = to_vk_stencil_op(pass_op_val);
+        op_state.writeMask = write_mask_val;
+
+        return op_state;
+    }
+
+    vk::BlendFactor to_vk_blend_factor(blend_factor_enum fac) {
+        switch(fac) {
+            case blend_factor_enum::One:
+                return vk::BlendFactor::eOne;
+            case blend_factor_enum::Zero:
+                return vk::BlendFactor::eZero;
+            case blend_factor_enum::SrcColor:
+                return vk::BlendFactor::eSrcColor;
+            case blend_factor_enum::DstColor:
+                return vk::BlendFactor::eDstColor;
+            case blend_factor_enum::OneMinusSrcColor:
+                return vk::BlendFactor::eOneMinusSrcColor;
+            case blend_factor_enum::OneMinusDstColor:
+                return vk::BlendFactor::eOneMinusDstColor;
+            case blend_factor_enum::SrcAlpha:
+                return vk::BlendFactor::eSrcAlpha;
+            case blend_factor_enum::DstAlpha:
+                return vk::BlendFactor::eDstAlpha;
+            case blend_factor_enum::OneMinusSrcAlpha:
+                return vk::BlendFactor::eOneMinusSrcAlpha;
+            case blend_factor_enum::OneMinusDstAlpha:
+                return vk::BlendFactor::eOneMinusDstAlpha;
+            default:
+                LOG(ERROR) << "Could not convert blend factor " << blend_factor_enum::to_string(fac) << " to a Vulkan equivalent";
+                return vk::BlendFactor::eSrcAlpha;
         }
     }
 }

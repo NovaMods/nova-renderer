@@ -261,7 +261,7 @@ namespace nova {
                Invert
     )
 
-    SMART_ENUM(compare_op,
+    SMART_ENUM(compare_op_enum,
                Never,
                Less,
                LessEqual,
@@ -276,9 +276,11 @@ namespace nova {
         optional<stencil_op_enum> fail_op;
         optional<stencil_op_enum> pass_op;
         optional<stencil_op_enum> depth_fail_op;
-        optional<compare_op> compare_op;
+        optional<compare_op_enum> compare_op;
         optional<uint32_t> compare_mask;
         optional<uint32_t> write_mask;
+
+        vk::StencilOpState to_vk_stencil_op_state();
     };
 
     SMART_ENUM(pass_enum,
@@ -511,7 +513,7 @@ namespace nova {
         /*!
          * \brief The function to use for the depth test
          */
-        optional<compare_op> depth_func;
+        optional<compare_op_enum> depth_func;
 
         /*!
          * \brief The render queue that this pass belongs to
@@ -552,6 +554,12 @@ namespace nova {
     texture decode_texture(const nlohmann::json& texture_json);
 
     bound_resource decode_bound_texture(const nlohmann::json& json);
+
+    vk::PrimitiveTopology to_vk_topology(primitive_topology_enum tolopogy);
+
+    vk::CompareOp to_vk_compare_op(compare_op_enum op);
+
+    vk::StencilOp to_vk_stencil_op(stencil_op_enum op);
 }
 
 #endif //RENDERER_MATERIALS_H

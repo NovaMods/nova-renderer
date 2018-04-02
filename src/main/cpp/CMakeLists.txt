@@ -175,6 +175,20 @@ set(NOVA_SOURCE
         data_loading/loaders/shader_file_loading.cpp
         )
 
+# SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
+# instructions are like "yeah just copy over whatever files you want cause that's totally the way modern woftware is
+# built -_-
+# So here we are,
+set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
+set(SPIRV_CROSS_SOURCE
+        ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
+        ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp
+        )
+
+set(SPIRV_CROSS_HEADERS
+        ${SPIRV_CROSS_ROOT}/spirv_cross.hpp
+        )
+
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
 endif (WIN32)
@@ -202,7 +216,7 @@ endif()
 # because there are several sub groups that would be extremely small
 source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
-add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE})
+add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 set_target_properties(nova-renderer-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)

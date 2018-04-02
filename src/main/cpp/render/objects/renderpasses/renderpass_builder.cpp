@@ -12,16 +12,23 @@
 namespace nova {
     vk::RenderPass make_render_pass(const render_pass& pass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context);
 
-    vk::Framebuffer make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context);
+    std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context);
 
     std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, std::shared_ptr<texture_manager> textures,
                                                                                             std::shared_ptr<render_context> context) {
         std::unordered_map<std::string, pass_vulkan_information> renderpasses;
 
         for(const auto& named_pass : data.passes) {
+            auto& pass_vk_info = renderpasses[named_pass.first];
+
             const auto renderpass = make_render_pass(named_pass.second, textures, context);
-            renderpasses[named_pass.first].first = renderpass;
-            renderpasses[named_pass.first].second = make_framebuffer(named_pass.second, renderpass, textures, context);
+            pass_vk_info.pass = renderpass;
+
+            auto[framebuffer, size] = make_framebuffer(named_pass.second, renderpass, textures, context);
+            pass_vk_info.frameBuffer = framebuffer;
+            pass_vk_info.framebuffer_size = size;
+
+            pass_vk_info.num_attachments = named_pass.second.texture_outputs.value_or({}).size();
         }
 
         return renderpasses;
@@ -120,7 +127,7 @@ namespace nova {
     }
 
 
-    vk::Framebuffer make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, std::shared_ptr<texture_manager> textures,
+    std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, std::shared_ptr<texture_manager> textures,
                                      std::shared_ptr<render_context> context) {
         std::vector<vk::ImageView> attachments;
         vk::Extent2D framebuffer_size;
@@ -149,11 +156,11 @@ namespace nova {
                     .setHeight(framebuffer_size.height)
                     .setLayers(1);
 
-            return context->device.createFramebuffer(framebuffer_create_info);
+            return {context->device.createFramebuffer(framebuffer_create_info), framebuffer_size};
         }
 
         LOG(ERROR) << "No framebuffer attachments for pass " << pass.name << ". This is an error and you should fix it";
 
-        return vk::Framebuffer();
+        return {vk::Framebuffer(), {}};
     }
 }

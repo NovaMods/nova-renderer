@@ -18,6 +18,8 @@
 #include "../renderpasses/materials.h"
 #include "shader_resource_manager.h"
 #include "../../../data_loading/loaders/shader_loading.h"
+#include "../renderpasses/renderpass_builder.h"
+#include "shader_resource_manager.h"
 
 
 namespace nova {
@@ -93,9 +95,26 @@ namespace nova {
         std::shared_ptr<shader_resource_manager> shader_resources;
     };
 
+    struct pipeline_layout_info {
+        vk::PipelineLayout pipeline_layout;
+        std::unordered_map<std::string, std::pair<uint32_t, uint32_t>> resource_name_to_set_and_binding;
+    };
+
+    struct shader_module {
+        vk::ShaderModule module;
+    };
+
     std::unordered_map<std::string, std::vector<vk::Pipeline>> make_pipelines(const shaderpack_data& shaderpack,
-                                                                              const std::unordered_map<std::string, std::pair<vk::RenderPass, vk::Framebuffer>>& renderpasses_by_pass,
-                                                                              std::shared_ptr<render_context> context);
+                                                                              std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass,
+                                                                              std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources);
+
+    shader_module create_shader_module(const shader_file& source, const vk::ShaderStageFlags& stages,  const vk::Device& device, std::shared_ptr<shader_resource_manager> shader_resources);
+
+    vk::Pipeline make_pipeline(const pipeline& pipeline_info, const pass_vulkan_information& renderpass_info, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources);
+
+    std::vector<uint32_t> glsl_to_spirv(const std::vector<shader_line>& shader_lines, shaderc_shader_kind stages);
+
+    pipeline_layout_info get_interface_of_spirv(const std::vector<uint32_t>& spirv_source, const vk::ShaderStageFlags& stages, vk::Device device);
 }
 
 #endif //RENDERER_GL_SHADER_H

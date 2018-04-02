@@ -13,6 +13,7 @@
 #include "../data_loading/settings.h"
 #include "objects/shaders/shader_resource_manager.h"
 #include "objects/renderpasses/render_passes.h"
+#include "objects/renderpasses/renderpass_builder.h"
 
 namespace nova {
     class vk_shader_program;
@@ -145,7 +146,7 @@ namespace nova {
 
         std::vector<render_pass> passes_list;
         std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
-        pass_vulkan_information renderpasses_by_pass;
+        std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass;
         std::unordered_map<std::string, std::vector<vk::Pipeline>> pipelines_by_renderpass;
 
         /*
