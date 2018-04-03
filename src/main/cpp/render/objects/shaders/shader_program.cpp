@@ -18,303 +18,6 @@
 #include "../../../3rdparty/SPIRV-Cross/spirv_glsl.hpp"
 
 namespace nova {
-    vk_shader_program::vk_shader_program(const shader_definition &source, const material_state& material, const vk::RenderPass renderpass, vk::PipelineCache pipeline_cache, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources, glm::ivec2& window_size)
-            : name(source.name), device(device), filter(source.filter_expression), shader_resources(shader_resources) {
-
-        LOG(TRACE) << "Creating shader with filter expression " << source.filter_expression;
-        create_shader_module(source.vertex_source, vk::ShaderStageFlagBits::eVertex);
-        LOG(TRACE) << "Created vertex shader";
-        create_shader_module(source.fragment_source, vk::ShaderStageFlagBits::eFragment);
-        LOG(TRACE) << "Created fragment shader";
-
-        create_pipeline(renderpass, material, pipeline_cache, window_size);
-        LOG(TRACE) << "Created pipeline";
-    }
-
-    vk_shader_program::vk_shader_program(vk_shader_program &&other) noexcept :
-            name(std::move(other.name)),
-            pipeline(other.pipeline),
-            vertex_module(other.vertex_module), fragment_module(other.fragment_module),
-            geometry_module(std::move(other.geometry_module)),
-            tessellation_evaluation_module(std::move(other.tessellation_evaluation_module)),
-            tessellation_control_module(std::move(other.tessellation_control_module)),
-            filter(std::move(other.filter)),
-            shader_resources(other.shader_resources) {
-
-        LOG(WARNING) << "Moving shader " << name;
-
-        other.name = "";
-        other.filter = "";
-        other.pipeline = vk::Pipeline{};
-        other.vertex_module = vk::ShaderModule{};
-        other.fragment_module = vk::ShaderModule{};
-        other.geometry_module = std::experimental::optional<vk::ShaderModule>{};
-        other.tessellation_control_module = std::experimental::optional<vk::ShaderModule>{};
-        other.tessellation_evaluation_module = std::experimental::optional<vk::ShaderModule>{};
-    }
-
-    void vk_shader_program::create_pipeline(vk::RenderPass pass, const material_state &material, vk::PipelineCache cache, glm::ivec2& window_size) {
-        // Creates a pipeline out of compiled shaders
-        auto states_vec = material.states.value_or(std::vector<state_enum>{});
-        const auto& states_end = states_vec.end();
-
-        vk::GraphicsPipelineCreateInfo pipeline_create_info = {};
-
-        /**
-         * Shader stages
-         */
-
-        std::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos;
-
-        vk::PipelineShaderStageCreateInfo vertex_create_info = {};
-        vertex_create_info.stage = vk::ShaderStageFlagBits::eVertex;
-        vertex_create_info.module = vertex_module;
-        vertex_create_info.pName = "main";
-        stage_create_infos.push_back(vertex_create_info);
-
-        vk::PipelineShaderStageCreateInfo fragment_create_info = {};
-        fragment_create_info.stage = vk::ShaderStageFlagBits::eFragment;
-        fragment_create_info.module = fragment_module;
-        fragment_create_info.pName = "main";
-        stage_create_infos.push_back(fragment_create_info);
-
-        pipeline_create_info.stageCount = static_cast<uint32_t>(stage_create_infos.size());
-        pipeline_create_info.pStages = stage_create_infos.data();
-
-        /**
-         * Vertex input state
-         */
-
-        // TOOD: Read this from the material
-
-        // The vertex data is known by Nova. It just is. Each shader has inputs for all the vertex data because honestly
-        // doing it differently is super hard. This will waste some VRAM but the number of vertices per chunk and
-        // number of chunks will present a much easier win, especially since chunks are the big stuff and they will
-        // always have all the vertex attributes
-        vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info = {};
-
-        std::vector<vk::VertexInputBindingDescription> binding_descriptions;
-        std::vector<vk::VertexInputAttributeDescription> attribute_descriptions;
-
-        // Location in shader, buffer binding, data format, offset in buffer
-        attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);
-        attribute_descriptions.emplace_back(1, 0, vk::Format::eR32G32Sfloat,    12);
-        attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32B32A32Sfloat, 20);
-
-        /*attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32B32Sfloat, 0);     // Position
-        attribute_descriptions.emplace_back(1, 0, vk::Format::eR8G8B8A8Unorm,   12);    // Color
-        attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32Sfloat,    16);    // UV
-        attribute_descriptions.emplace_back(3, 0, vk::Format::eR16G16Unorm,     24);    // Lightmap UV
-        attribute_descriptions.emplace_back(4, 0, vk::Format::eR32G32B32Sfloat, 32);    // Normal
-        attribute_descriptions.emplace_back(5, 0, vk::Format::eR32G32B32Sfloat, 48);    // Tangent*/
-
-        // Binding, stride, input rate
-        binding_descriptions.emplace_back(0, 36, vk::VertexInputRate::eVertex);         // Position
-        binding_descriptions.emplace_back(1, 36, vk::VertexInputRate::eVertex);         // Color
-        binding_descriptions.emplace_back(2, 36, vk::VertexInputRate::eVertex);         // UV
-        //binding_descriptions.emplace_back(3, 56, vk::VertexInputRate::eVertex);         // Lightmap
-        //binding_descriptions.emplace_back(4, 56, vk::VertexInputRate::eVertex);         // Normal
-        //binding_descriptions.emplace_back(5, 56, vk::VertexInputRate::eVertex);         // Tangent
-
-        vertex_input_state_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
-        vertex_input_state_create_info.pVertexAttributeDescriptions = attribute_descriptions.data();
-
-        vertex_input_state_create_info.vertexBindingDescriptionCount = static_cast<uint32_t>(binding_descriptions.size());
-        vertex_input_state_create_info.pVertexBindingDescriptions = binding_descriptions.data();
-
-        pipeline_create_info.pVertexInputState = &vertex_input_state_create_info;
-
-        /**
-         * Pipeline input assembly
-         */
-
-        vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info = {};
-
-        input_assembly_create_info.topology = material.primitive_mode.value_or(vk::PrimitiveTopology::eTriangleList);
-
-        pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
-
-        /**
-         * Tessellation state
-         */
-
-        pipeline_create_info.pTessellationState = nullptr;
-
-        /**
-         * \brief Viewport state
-         */
-
-        vk::Viewport viewport = {};
-        viewport.x = 0;
-        viewport.y = 0;
-        viewport.width = window_size.x;
-        viewport.height = window_size.y;
-        viewport.minDepth = 0;
-        viewport.maxDepth = 1;
-
-        vk::Rect2D scissor = {};
-        scissor.offset = vk::Offset2D{0, 0};
-        scissor.extent = vk::Extent2D{material.output_width.value_or(640), material.output_height.value_or(480)};
-
-        vk::PipelineViewportStateCreateInfo viewport_create_info = {};
-        viewport_create_info.scissorCount = 1;
-        viewport_create_info.pScissors = &scissor;
-        viewport_create_info.viewportCount = 1;
-        viewport_create_info.pViewports = &viewport;
-
-        pipeline_create_info.pViewportState = &viewport_create_info;
-
-        /**
-         * Renderpass
-         */
-
-        pipeline_create_info.renderPass = pass;
-
-        /**
-         * Rasterization state
-         */
-
-        vk::PipelineRasterizationStateCreateInfo raster_create_info = {};
-        raster_create_info.polygonMode = vk::PolygonMode::eFill;
-        raster_create_info.cullMode == vk::CullModeFlagBits::eBack;
-        raster_create_info.frontFace = vk::FrontFace::eCounterClockwise;
-        raster_create_info.lineWidth = 1;
-
-        if(material.depth_bias) {
-            raster_create_info.depthBiasEnable = static_cast<vk::Bool32>(true);
-            raster_create_info.depthBiasConstantFactor = *material.depth_bias;
-
-            if(material.slope_scaled_depth_bias) {
-                raster_create_info.depthBiasSlopeFactor = *material.slope_scaled_depth_bias;
-            }
-        }
-
-        pipeline_create_info.pRasterizationState = &raster_create_info;
-
-        /**
-         * Multisample state
-         *
-         * While Nova supports MSAA, it won't be useful on shaderpacks that implement deferred rendering and is thus
-         * off by default
-         */
-
-        vk::PipelineMultisampleStateCreateInfo multisample_create_info = {};
-
-        pipeline_create_info.pMultisampleState = &multisample_create_info;
-
-        /**
-         * Depth and stencil state
-         */
-
-        vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
-        depth_stencil_create_info.depthTestEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::DisableDepthTest) == states_end));
-        depth_stencil_create_info.depthWriteEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::DisableDepthWrite) == states_end));
-        depth_stencil_create_info.depthCompareOp = material.depth_func.value_or(vk::CompareOp::eLess);
-
-        depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states_vec.begin(), states_vec.end(), state_enum::EnableStencilTest) != states_end);
-        if(material.back_face) {
-            depth_stencil_create_info.back = material.back_face.value().to_vk_stencil_op_state();
-        }
-        if(material.front_face) {
-            depth_stencil_create_info.front = material.front_face.value().to_vk_stencil_op_state();
-        }
-        depth_stencil_create_info.minDepthBounds = 0;
-        depth_stencil_create_info.maxDepthBounds = 1;
-
-        pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
-
-        /**
-         * Color blend state
-         */
-
-        vk::PipelineColorBlendStateCreateInfo blend_create_info = {};
-        blend_create_info.logicOpEnable = static_cast<vk::Bool32>(false);   // Not 100% how to use this so imma just disable it
-
-        auto attachmentBlendStates = std::vector<vk::PipelineColorBlendAttachmentState>{};
-        attachmentBlendStates.resize(material.outputs.value_or(std::vector<output_info>{}).size());
-        for(const auto& output : *material.outputs) {
-            attachmentBlendStates[output.index].blendEnable = static_cast<vk::Bool32>(output.blending);
-            attachmentBlendStates[output.index].srcColorBlendFactor = material.source_blend_factor.value_or(vk::BlendFactor::eSrcAlpha);
-            attachmentBlendStates[output.index].dstColorBlendFactor = material.destination_blend_factor.value_or(vk::BlendFactor::eOneMinusSrcAlpha);
-            attachmentBlendStates[output.index].colorBlendOp = vk::BlendOp::eAdd;
-            attachmentBlendStates[output.index].srcAlphaBlendFactor = material.source_blend_factor.value_or(vk::BlendFactor::eSrcAlpha);
-            attachmentBlendStates[output.index].dstAlphaBlendFactor = material.destination_blend_factor.value_or(vk::BlendFactor::eOneMinusSrcAlpha);
-            attachmentBlendStates[output.index].alphaBlendOp = vk::BlendOp::eAdd;
-            attachmentBlendStates[output.index].colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-        }
-        blend_create_info.attachmentCount = static_cast<uint32_t>(attachmentBlendStates.size());
-        blend_create_info.pAttachments = attachmentBlendStates.data();
-
-        // Ignoring blend constants here as well - they probably won't be used and I don't want to make the Nova
-        // material struct too huge
-
-        pipeline_create_info.pColorBlendState = &blend_create_info;
-
-        /**
-         * Descriptor sets
-         */
-
-        pipeline_create_info.layout = shader_resources->get_layout_for_pass(material.pass.value_or(pass_enum::Gbuffer));
-
-        // TODO: Handle dynamic state
-
-        pipeline = device.createGraphicsPipeline(cache, pipeline_create_info);
-        LOG(INFO) << "Created pipeline " << (VkPipeline)pipeline << " for shader " << name;
-    }
-
-    vk_shader_program::~vk_shader_program() {
-        if(vertex_module) {
-            device.destroyShaderModule(vertex_module);
-        }
-
-        if(fragment_module) {
-            device.destroyShaderModule(fragment_module);
-        }
-
-        if(geometry_module) {
-            device.destroyShaderModule(*geometry_module);
-        }
-        if(tessellation_evaluation_module) {
-            device.destroyShaderModule(*tessellation_evaluation_module);
-        }
-        if(tessellation_control_module) {
-            device.destroyShaderModule(*tessellation_control_module);
-        }
-
-        if(pipeline) {
-            device.destroyPipeline(pipeline);
-        }
-    }
-
-    void vk_shader_program::create_shader_module(const std::vector<uint32_t> &shader_source, vk::ShaderStageFlags flags) {
-        vk::ShaderModuleCreateInfo create_info = {};
-        create_info.codeSize = shader_source.size() * sizeof(uint32_t);
-        create_info.pCode = shader_source.data();
-
-        auto module = device.createShaderModule(create_info);
-
-        if(flags == vk::ShaderStageFlagBits::eVertex) {
-            vertex_module = module;
-        } else if(flags == vk::ShaderStageFlagBits::eFragment) {
-            fragment_module = module;
-        }
-    }
-
-    std::string & vk_shader_program::get_filter() noexcept {
-        return filter;
-    }
-
-    std::string &vk_shader_program::get_name() noexcept {
-        return name;
-    }
-
-    vk::Pipeline vk_shader_program::get_pipeline() noexcept {
-        return pipeline;
-    }
-
-
-
-
     std::unordered_map<std::string, std::vector<vk::Pipeline>> make_pipelines(const shaderpack_data& shaderpack,
                                                                               std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass,
                                                                               std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources) {
@@ -342,59 +45,112 @@ namespace nova {
         vk::GraphicsPipelineCreateInfo graphics_pipeline_create_info = {};
 
         /**
-         * Shader stages
+         * Shader stages and Descriptor Sets
          */
+
+        // We got an interface from each module.. now we have to combine them, somehow
+        // If a descriptor with the same name exists in multiple shader modules, it MUST have the same set and binding
+        // or this whole thing falls apart
+        // so let's go through all the modules' interfaces, adding the descriptors from them to one big list. We'll
+        // make sure that no one put a descriptor at one location in one file and a different location in another
+
+        auto pipeline_data = pipeline_info{};
 
         std::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos;
 
-        auto vertex_module = create_shader_module(pipeline_info.shader_sources.vertex_source, vk::ShaderStageFlagBits::eVertex, device, shader_resources);
+        {
+            auto vertex_module = create_shader_module(pipeline_info.shader_sources.vertex_source, vk::ShaderStageFlagBits::eVertex, device);
 
-        vk::PipelineShaderStageCreateInfo vertex_create_info = {};
-        vertex_create_info.stage = vk::ShaderStageFlagBits::eVertex;
-        vertex_create_info.module = vertex_module;
-        vertex_create_info.pName = "main";
-        stage_create_infos.push_back(vertex_create_info);
+            vk::PipelineShaderStageCreateInfo vertex_create_info = {};
+            vertex_create_info.stage = vk::ShaderStageFlagBits::eVertex;
+            vertex_create_info.module = vertex_module.module;
+            vertex_create_info.pName = "main";
+            stage_create_infos.push_back(vertex_create_info);
 
-        auto fragment_module = create_shader_module(pipeline_info.shader_sources.fragment_source, vk::ShaderStageFlagBits::eFragment, device, shader_resources);
+            add_bindings_from_shader(pipeline_data, vertex_module, "vertex");
+        }
 
-        vk::PipelineShaderStageCreateInfo fragment_create_info = {};
-        fragment_create_info.stage = vk::ShaderStageFlagBits::eFragment;
-        fragment_create_info.module = fragment_module;
-        fragment_create_info.pName = "main";
-        stage_create_infos.push_back(fragment_create_info);
+        {
+            auto fragment_module = create_shader_module(pipeline_info.shader_sources.fragment_source, vk::ShaderStageFlagBits::eFragment, device);
+
+            vk::PipelineShaderStageCreateInfo fragment_create_info = {};
+            fragment_create_info.stage = vk::ShaderStageFlagBits::eFragment;
+            fragment_create_info.module = fragment_module.module;
+            fragment_create_info.pName = "main";
+            stage_create_infos.push_back(fragment_create_info);
+
+            add_bindings_from_shader(pipeline_data, fragment_module, "fragment");
+        }
 
         if(pipeline_info.shader_sources.geometry_source) {
-            auto geometry_module = create_shader_module(pipeline_info.shader_sources.geometry_source.value(), vk::ShaderStageFlagBits::eGeometry, device, shader_resources);
+            auto geometry_module = create_shader_module(pipeline_info.shader_sources.geometry_source.value(), vk::ShaderStageFlagBits::eGeometry, device);
 
             vk::PipelineShaderStageCreateInfo geometry_create_info = {};
             geometry_create_info.stage = vk::ShaderStageFlagBits::eGeometry;
             geometry_create_info.module = geometry_module.module;
             geometry_create_info.pName = "main";
             stage_create_infos.push_back(geometry_create_info);
+
+            add_bindings_from_shader(pipeline_data, geometry_module, "geometry");
         }
 
         if(pipeline_info.shader_sources.tessellation_control_source) {
-            auto tesc_module = create_shader_module(pipeline_info.shader_sources.tessellation_control_source.value(), vk::ShaderStageFlagBits::eTessellationControl, device, shader_resources);
+            auto tesc_module = create_shader_module(pipeline_info.shader_sources.tessellation_control_source.value(), vk::ShaderStageFlagBits::eTessellationControl, device);
 
             vk::PipelineShaderStageCreateInfo tesc_create_info = {};
             tesc_create_info.stage = vk::ShaderStageFlagBits::eTessellationControl;
-            tesc_create_info.module = tesc_module;
+            tesc_create_info.module = tesc_module.module;
             tesc_create_info.pName = "main";
             stage_create_infos.push_back(tesc_create_info);
+
+            add_bindings_from_shader(pipeline_data, tesc_module, "tessellation control");
         }
 
         if(pipeline_info.shader_sources.tessellation_evaluation_source) {
-            auto tese_module = create_shader_module(pipeline_info.shader_sources.tessellation_evaluation_source.value(), vk::ShaderStageFlagBits::eTessellationEvaluation, device, shader_resources);
+            auto tese_module = create_shader_module(pipeline_info.shader_sources.tessellation_evaluation_source.value(), vk::ShaderStageFlagBits::eTessellationEvaluation, device);
 
             vk::PipelineShaderStageCreateInfo tese_create_info = {};
             tese_create_info.stage = vk::ShaderStageFlagBits::eTessellationEvaluation;
-            tese_create_info.module = tese_module;
+            tese_create_info.module = tese_module.module;
             tese_create_info.pName = "main";
             stage_create_infos.push_back(tese_create_info);
+
+            add_bindings_from_shader(pipeline_data, tese_module, "tessellation evaluation");
         }
 
         graphics_pipeline_create_info.stageCount = static_cast<uint32_t>(stage_create_infos.size());
         graphics_pipeline_create_info.pStages = stage_create_infos.data();
+
+
+        for(const auto& layouts_for_set : pipeline_data.layout_bindings) {
+            const auto& layouts = layouts_for_set.second;
+
+            auto dsl_create_info = vk::DescriptorSetLayoutCreateInfo()
+                .setBindingCount(layouts.size())
+                .setPBindings(layouts.data());
+
+            pipeline_data.layouts[layouts_for_set.first] = device.createDescriptorSetLayout(dsl_create_info);
+        }
+
+        // Order all the descriptor set layouts by set, checking for discontinuities
+
+        const auto& layouts = pipeline_data.layouts;
+        auto ordered_layouts = std::vector<vk::DescriptorSetLayout>{};
+        for(auto i = 0; i < layouts.size(); i++) {
+            if(layouts.find(i) == layouts.end()) {
+                LOG(WARNING) << "Discontinuity detected! You're skipping descriptor set " << i << " and this isn't supported because honestly I don't know how to deal with it. Nova won't load pipeline " << pipeline_info.name;
+                return vk::Pipeline();
+            }
+
+            ordered_layouts.push_back(layouts.at(i));
+        }
+
+        auto pipeline_layout_create_info = vk::PipelineLayoutCreateInfo()
+            .setSetLayoutCount(ordered_layouts.size())
+            .setPSetLayouts(ordered_layouts.data());
+
+        auto pipeline_layout = device.createPipelineLayout(pipeline_layout_create_info);
+        graphics_pipeline_create_info.layout = pipeline_layout;
 
         /**
          * Vertex input state
@@ -578,12 +334,6 @@ namespace nova {
 
         graphics_pipeline_create_info.pColorBlendState = &blend_create_info;
 
-        /**
-         * Descriptor sets
-         */
-
-        graphics_pipeline_create_info.layout = shader_resources->get_layout_for_pass(pipeline_info.pass.value_or(pass_enum::Gbuffer));
-
         // TODO: Handle dynamic state
 
         auto pipeline = device.createGraphicsPipeline(cache, pipeline_info);
@@ -592,7 +342,48 @@ namespace nova {
         return pipeline;
     }
 
-    shader_module create_shader_module(const shader_file& source, const vk::ShaderStageFlags& stages, const vk::Device& device, std::shared_ptr<shader_resource_manager> shader_resources) {
+    void add_bindings_from_shader(const pipeline_info& pipeline_data, const shader_module &shader_module, const std::string shader_stage_name) {
+        auto& all_bindings = pipeline_data.resource_bindings;
+        auto& all_layouts = pipeline_data.layout_bindings;
+
+        for(const auto &new_named_binding : shader_module.bindings) {
+            const resource_binding& new_binding = new_named_binding.second;
+
+            if(all_bindings.find(new_named_binding.first) != all_bindings.end()) {
+                // We already know about this descriptor. Validate it
+                const auto &existing_binding = all_bindings.at(new_named_binding.first);
+                if(existing_binding != new_binding) {
+                    LOG(ERROR) << shader_stage_name << " shader module redeclares descriptor " << new_named_binding.first
+                               << " from location (set=" << existing_binding.set << ", binding=" << existing_binding.binding
+                               << ") to location (set=" << new_binding.set << ", binding=" << new_binding.binding << ") ";
+
+                } else {
+                    // We have a binding, now we need to merge the new binding into the existing binding
+                    all_bindings[new_named_binding.first].stageFlags |= new_binding.stageFlags;
+
+                    auto& layouts_for_set = all_layouts[new_binding.set];
+                    auto old_layout = std::find_if(layouts_for_set.begin(), layouts_for_set.end(), [&](const auto& layout){return layout.binding == new_binding.binding;});
+                    if(old_layout->descriptorType != new_binding.descriptorType) {
+                        LOG(ERROR) << "You've used the same name for resources of different types. This won't work - Nova will ignore those bindings and things will act weird";
+                    } else {
+                        old_layout->stageFlags |= new_binding.stageFlags;
+                    }
+                }
+
+            } else {
+                // New binding! Let's add it in
+                all_bindings[new_named_binding.first] = new_named_binding.second;
+
+                all_layouts[new_binding.set].push_back(vk::DescriptorSetLayoutBinding()
+                        .setDescriptorType(new_binding.descriptorType)
+                        .setDescriptorCount(new_binding.descriptorCount)
+                        .setBinding(new_binding.binding)
+                        .setStageFlags(new_binding.stageFlags));
+            }
+        }
+    }
+
+    shader_module create_shader_module(const shader_file& source, const vk::ShaderStageFlags& stages, const vk::Device& device) {
         std::vector<uint32_t> spirv_source;
         switch(source.language) {
             case shader_langauge_enum::GLSL:
@@ -606,11 +397,12 @@ namespace nova {
         create_info.codeSize = spirv_source.size() * sizeof(uint32_t);
         create_info.pCode = spirv_source.data();
 
-        auto module = device.createShaderModule(create_info);
+        auto module = shader_module{};
+        module.module = device.createShaderModule(create_info);
 
-        auto pipeline_layout = get_interface_of_spirv(spirv_source, stages, device);
+        module.bindings = get_interface_of_spirv(spirv_source, stages);
 
-        return {module};
+        return module;
     }
 
     std::vector<uint32_t> glsl_to_spirv(const std::vector<shader_line>& shader_lines, shaderc_shader_kind stages) {
@@ -638,60 +430,42 @@ namespace nova {
         return {result.cbegin(), result.cend()};
     }
 
-    pipeline_layout_info get_interface_of_spirv(const std::vector<uint32_t>& spirv_source, const vk::ShaderStageFlags& stages, const vk::Device device) {
+    bindings_list get_interface_of_spirv(const std::vector<uint32_t>& spirv_source, const vk::ShaderStageFlags& stages) {
+
+        bindings_list bindings;
+
         spirv_cross::CompilerGLSL glsl(spirv_source);
 
         auto resources = glsl.get_shader_resources();
-
-        // Some arrays to keep track of what resoruces are in what bindings, and what bindings are in what sets
-        std::unordered_map<std::string, std::pair<uint32_t, uint32_t>> resource_name_to_set_and_binding;
-        std::vector<std::vector<vk::DescriptorSetLayoutBinding>> all_bindings;
-        all_bindings.reserve(20);
 
         for(const auto& resource : resources.sampled_images) {
             auto set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
             auto binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
 
-            auto descriptor_set_layout_binding = vk::DescriptorSetLayoutBinding()
-                .setBinding(binding)
-                .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-                .setStageFlags(stages)
-                .setDescriptorCount(1);
+            auto descriptor_set_layout_binding = resource_binding{};
+            descriptor_set_layout_binding.set = set;
+            descriptor_set_layout_binding.setBinding(binding);
+            descriptor_set_layout_binding.setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
+            descriptor_set_layout_binding.setStageFlags(stages);
+            descriptor_set_layout_binding.setDescriptorCount(1);
 
-            all_bindings[set].push_back(descriptor_set_layout_binding);
+            bindings[resource.name] = descriptor_set_layout_binding;
         }
 
         for(const auto& resource : resources.uniform_buffers) {
             auto set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
             auto binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
 
-            auto descriptor_set_layout_binding = vk::DescriptorSetLayoutBinding()
-                    .setBinding(binding)
-                    .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                    .setStageFlags(stages)
-                    .setDescriptorCount(1);
+            auto descriptor_set_layout_binding = resource_binding();
+            descriptor_set_layout_binding.set = set;
+            descriptor_set_layout_binding.setBinding(binding);
+            descriptor_set_layout_binding.setDescriptorType(vk::DescriptorType::eUniformBuffer);
+            descriptor_set_layout_binding.setStageFlags(stages);
+            descriptor_set_layout_binding.setDescriptorCount(1);
 
-            all_bindings[set].push_back(descriptor_set_layout_binding);
+            bindings[resource.name] = descriptor_set_layout_binding;
         }
 
-        std::vector<vk::DescriptorSetLayout> layouts;
-
-        layouts.reserve(all_bindings.size());
-        for(const auto& set_bindings : all_bindings) {
-            auto create_info = vk::DescriptorSetLayoutCreateInfo()
-                .setBindingCount(static_cast<uint32_t>(set_bindings.size()))
-                .setPBindings(set_bindings.data());
-
-            auto layout = device.createDescriptorSetLayout(create_info);
-
-            layouts.push_back(layout);
-        }
-
-        auto pipeline_layout_create_info = vk::PipelineLayoutCreateInfo()
-            .setSetLayoutCount(static_cast<uint32_t>(layouts.size()))
-            .setPSetLayouts(layouts.data());
-
-        auto pipeline_layout = device.createPipelineLayout(pipeline_layout_create_info);
-
+        return bindings;
     }
 }
