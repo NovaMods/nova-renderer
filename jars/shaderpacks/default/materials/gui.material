@@ -13,67 +13,11 @@
             {"field": "UV0"},
             {"field": "VirtualTextureId"}
         ],
-
-        "samplerStates": [
-            {
-                "samplerIndex": 0,
-                "textureFilter": "Point"
-            }
-        ],
-
-        "textures": [
-            {
-                "textureIndex": 0,
-                "textureLocation": "InUserPackage",
-                "textureName": "atlas.gui",
-                "mipmap": "false"
-            },
-            
-            {
-                "textureIndex": 7,
-                "textureLocation": "InUserPackage",
-                "textureName": "custom.gaux1",
-                "mipmap": "false"
-            },
-            {
-                "textureIndex": 8,
-                "textureLocation": "InUserPackage",
-                "textureName": "custom.gaux2",
-                "mipmap": "false"
-            },
-            {
-                "textureIndex": 9,
-                "textureLocation": "Dynamic",
-                "textureName": "custom.gaux3",
-                "mipmap": "false"
-            },
-            {
-                "textureIndex": 10,
-                "textureLocation": "Dynamic",
-                "textureName": "custom.gaux4",
-                "mipmap": "false"
-            },
-
-            {
-                "textureIndex": 15,
-                "textureLocation": "Dynamic",
-                "textureName": "noisetex",
-                "mipmap": "false"
-            }
-        ],
         
-        "filters": "geometry_type::block AND not_transparent",
         "fallback": "gbuffers_textured",
         "pass": "Gbuffer",
         "passIndex": 4,
         "hasTransparency": false,
         "hasCutout": false,
-
-        "outputs": [
-            { 
-                "index": 0,
-                "blending": true
-            }
-        ]
     }
 }
