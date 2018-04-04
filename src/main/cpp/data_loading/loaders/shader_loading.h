@@ -44,6 +44,7 @@ namespace nova {
         std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
         std::unordered_map<std::string, render_pass> passes;
         std::unordered_map<std::string, texture_resource> dynamic_textures;
+        std::unordered_map<std::string, std::vector<material>> materials;
     };
 
     /*!
@@ -83,6 +84,8 @@ namespace nova {
     std::unordered_map<std::string, render_pass> load_passes_from_folder(const fs::path& shaderpack_path);
 
     std::unordered_map<std::string, texture_resource> load_texture_definitions_from_folder(const fs::path& shaderpack_path);
+
+    std::unordered_map<std::string, std::vector<material>> load_materials_from_folder(const fs::path& shaderpack_path);
 
     std::unordered_map<std::string, render_pass> parse_passes_from_json(const nlohmann::json& json);
 

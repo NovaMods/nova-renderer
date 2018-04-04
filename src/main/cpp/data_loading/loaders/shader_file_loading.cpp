@@ -443,4 +443,12 @@ namespace nova {
 
         return parse_textures_from_json(resoruces_json["textures"]);
     }
+
+    std::unordered_map<std::string, std::vector<material>> load_materials_from_folder(const fs::path& shaderpack_path) {
+        fs::path materials_path = shaderpack_path / "materials";
+        if(!fs::exists) {
+            LOG(WARNING) << "No materials found";
+        }
+
+    };
 }

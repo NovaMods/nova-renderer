@@ -542,6 +542,16 @@ namespace nova {
         pipeline() = default;
     };
 
+    struct material_pass {
+        std::string pipeline;
+        std::unordered_map<std::string, std::string> bindings;
+    };
+
+    struct material {
+        std::vector<material_pass> passes;
+        std::string geometry_filter;
+    };
+
     /*!
      * \brief Translates a JSON object into a sampler_state object
      * \param json The JSON object to translate
