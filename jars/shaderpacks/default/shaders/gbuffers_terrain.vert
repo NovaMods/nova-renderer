@@ -6,7 +6,7 @@ layout(location = 2) in vec2 lightmap_uv_in;
 layout(location = 3) in vec3 normal_in;
 layout(location = 5) in vec4 color_in;
 
-layout(set = 0, binding = 1) uniform per_frame_uniforms {
+layout(set = 0, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
     mat4 gbufferPreviousModelView;
