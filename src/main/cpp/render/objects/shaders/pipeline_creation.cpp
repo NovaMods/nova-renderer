@@ -8,7 +8,7 @@
 
 #include <easylogging++.h>
 #include <shaderc/shaderc.hpp>
-#include "shader_program.h"
+#include "pipeline_creation.h"
 #include "../../vulkan/render_context.h"
 #include "shader_resource_manager.h"
 #include "../../nova_renderer.h"
@@ -18,17 +18,17 @@
 #include "../../../3rdparty/SPIRV-Cross/spirv_glsl.hpp"
 
 namespace nova {
-    std::unordered_map<std::string, std::vector<vk::Pipeline>> make_pipelines(const shaderpack_data& shaderpack,
+    std::unordered_map<std::string, std::vector<pipeline_info>> make_pipelines(const shaderpack_data& shaderpack,
                                                                               std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass,
-                                                                              std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources) {
-        auto ret_val = std::unordered_map<std::string, std::vector<vk::Pipeline>>{};
+                                                                              std::shared_ptr<render_context> context) {
+        auto ret_val = std::unordered_map<std::string, std::vector<pipeline_info>>{};
 
         for(const auto& pipelines : shaderpack.pipelines_by_pass) {
             const auto& renderpass = renderpasses_by_pass[pipelines.first];
-            auto cur_list = std::vector<vk::Pipeline>{};
+            auto cur_list = std::vector<pipeline_info>{};
 
             for(const auto& pipeline_create_info : pipelines.second) {
-                cur_list.push_back(make_pipeline(pipeline_create_info, renderpass, context->device, shader_resources));
+                cur_list.push_back(make_pipeline(pipeline_create_info, renderpass, context->device,));
             }
 
             ret_val[pipelines.first] = cur_list;
@@ -37,7 +37,7 @@ namespace nova {
         return ret_val;
     }
 
-    vk::Pipeline make_pipeline(const pipeline& pipeline_info, const pass_vulkan_information& renderpass_info, const vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources) {
+    pipeline_info make_pipeline(const pipeline& pipeline_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
         // Creates a pipeline out of compiled shaders
         auto states_vec = pipeline_info.states.value_or(std::vector<state_enum>{});
         const auto& states_end = states_vec.end();
@@ -170,7 +170,7 @@ namespace nova {
         if(!pipeline_info.vertex_fields) {
             LOG(ERROR) << "Pipeline " << pipeline_info.name << " doesn't declare any vertex fields. This is an error and I won't stand for it!";
 
-            return vk::Pipeline();
+            return {};
         }
 
         uint32_t total_vertex_size = get_total_vertex_size();
@@ -336,10 +336,10 @@ namespace nova {
 
         // TODO: Handle dynamic state
 
-        auto pipeline = device.createGraphicsPipeline(cache, pipeline_info);
-        LOG(INFO) << "Created pipeline " << pipeline_info.name << " (VkPipeline " << (VkPipeline)pipeline << ")";
+        pipeline_data.pipeline = device.createGraphicsPipeline(vk::PipelineCache(), graphics_pipeline_create_info);
+        LOG(INFO) << "Created pipeline " << pipeline_info.name << " (VkPipeline " << (VkPipeline)pipeline_data.pipeline << ")";
 
-        return pipeline;
+        return pipeline_data;
     }
 
     void add_bindings_from_shader(const pipeline_info& pipeline_data, const shader_module &shader_module, const std::string shader_stage_name) {

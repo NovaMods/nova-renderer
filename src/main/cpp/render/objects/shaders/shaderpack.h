@@ -16,7 +16,7 @@
 #include <mutex>
 #include <optional.hpp>
 
-#include "shader_program.h"
+#include "pipeline_creation.h"
 
 namespace nova {
     class shader_definition;
