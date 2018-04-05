@@ -15,6 +15,7 @@
 #include "objects/renderpasses/render_passes.h"
 #include "objects/renderpasses/renderpass_builder.h"
 #include "objects/shaders/pipeline_creation.h"
+#include "vulkan/command_pool.h"
 
 namespace nova {
     class vk_shader_program;
@@ -203,6 +204,10 @@ namespace nova {
         void update_gui_model_matrices();
 
         glm::mat4x4 gui_model;
+
+        void execute_pass(const render_pass &pass, nova::command_buffer buffer);
+
+        void render_pipeline(const pipeline_info &pipeline_data);
     };
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes);

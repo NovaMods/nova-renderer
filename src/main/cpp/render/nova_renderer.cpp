@@ -129,34 +129,11 @@ namespace nova {
 
         player_camera.recalculate_frustum();
 
-        // upload shadow UBO things
+        // upload UBO things
 
-        render_shadow_pass();
-
-        update_gbuffer_ubos();
-
-        render_gbuffers(main_command_buffer.buffer);
-
-        render_composite_passes();
-
-        auto window_size = game_window->get_size();
-
-        vk::RenderPassBeginInfo begin_final_pass = vk::RenderPassBeginInfo()
-                .setRenderPass(renderpasses->get_final_renderpass())
-                .setFramebuffer(renderpasses->get_framebuffer(cur_swapchain_image_index))
-                .setRenderArea({{0, 0}, {static_cast<uint32_t>(window_size.x), static_cast<uint32_t>(window_size.y)}});
-
-        main_command_buffer.buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
-
-        render_final_pass();
-
-        // We want to draw the GUI on top of the other things, so we'll render it last
-        // Additionally, I could use the stencil buffer to not draw MC underneath the GUI. Could be a fun
-        // optimization - I'd have to watch out for when the user hides the GUI, though. I can just re-render the
-        // stencil buffer when the GUI screen changes
-        render_gui(main_command_buffer.buffer);
-
-        main_command_buffer.buffer.endRenderPass();
+        for(const auto& pass : passes_list) {
+            execute_pass(pass, main_command_buffer);
+        }
 
         main_command_buffer.buffer.end();
 
@@ -206,6 +183,35 @@ namespace nova {
         } else {
             LOG(WARNING) << "Could not wait for gui done fence, " << fence_wait_result;
         }
+    }
+
+    void nova_renderer::execute_pass(const render_pass &pass, command_buffer buffer) {
+        if(renderpasses_by_pass.find(pass.name) == renderpasses_by_pass.end()) {
+            LOG(ERROR) << "No renderpass defined for pass " << pass.name << ". Skipping this pass";
+            return;
+        }
+
+        if(pipelines_by_pass.find(pass) == pipelines_by_pass.end()) {
+            LOG(WARNING) << "No pipelines attached to pass " << pass.name << ". Skipping this pass";
+            return;
+        }
+
+        const auto& renderpass_for_pass = renderpasses_by_pass.at(pass.name);
+
+        vk::RenderPassBeginInfo begin_final_pass = vk::RenderPassBeginInfo()
+                .setRenderPass(renderpass_for_pass.renderpass)
+                .setFramebuffer(renderpass_for_pass.frameBuffer)
+                .setRenderArea({{0, 0}, renderpass_for_pass.framebuffer_size});
+
+        buffer.buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
+
+        const auto& pipeline_for_pass = pipelines_by_renderpass.at(pass.name);
+
+        for(const auto& nova_pipeline : pipeline_for_pass) {
+            render_pipeline(nova_pipeline);
+        }
+
+        buffer.buffer.endRenderPass();
     }
 
     void nova_renderer::render_shadow_pass() {
@@ -465,6 +471,10 @@ namespace nova {
             LOG(WARNING) << "Load some GUIs you fool";
             LOG(WARNING) << e.what() << std::endl;
         }
+    }
+
+    void nova_renderer::render_pipeline(const pipeline_info &pipeline_data) {
+
     }
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes) {
