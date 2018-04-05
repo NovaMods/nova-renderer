@@ -44,7 +44,7 @@ namespace nova {
         std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
         std::unordered_map<std::string, render_pass> passes;
         std::unordered_map<std::string, texture_resource> dynamic_textures;
-        std::unordered_map<std::string, std::vector<material>> materials;
+        std::vector<material> materials;
     };
 
     /*!
@@ -85,7 +85,7 @@ namespace nova {
 
     std::unordered_map<std::string, texture_resource> load_texture_definitions_from_folder(const fs::path& shaderpack_path);
 
-    std::unordered_map<std::string, std::vector<material>> load_materials_from_folder(const fs::path& shaderpack_path);
+    std::vector<material> load_materials_from_folder(const fs::path& shaderpack_path);
 
     std::unordered_map<std::string, render_pass> parse_passes_from_json(const nlohmann::json& json);
 
@@ -99,6 +99,8 @@ namespace nova {
      * \return A map from the name of the texture resource to the texture resoruce itself
      */
     std::unordered_map<std::string, texture_resource> parse_textures_from_json(nlohmann::json& json);
+
+    material parse_material_from_json(const nlohmann::json& json);
 
     /*!
      * \brief Gets a list of all the files in the given folder

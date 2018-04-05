@@ -208,34 +208,21 @@ namespace nova {
         const auto& pipeline_for_pass = pipelines_by_renderpass.at(pass.name);
 
         for(const auto& nova_pipeline : pipeline_for_pass) {
-            render_pipeline(nova_pipeline);
+            render_pipeline(nova_pipeline, buffer);
         }
 
         buffer.buffer.endRenderPass();
     }
 
-    void nova_renderer::render_shadow_pass() {
-        LOG(TRACE) << "Rendering shadow pass";
-    }
+    void nova_renderer::render_pipeline(const pipeline_info &pipeline_data, command_buffer buffer) {
+        if(material_passes_by_pipeline.find(pipeline_data.name) != material_passes_by_pipeline.end()) {
+            LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name() << ". Skipping this pipeline";
+        }
 
-    void nova_renderer::render_gbuffers(vk::CommandBuffer buffer) {
-        LOG(TRACE) << "Rendering gbuffer pass";
+        buffer.buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data.pipeline);
 
-        // TODO: Get shaders with gbuffers prefix, draw transparents last, etc
-        auto& terrain_shader = loaded_shaderpack->get_shader("gbuffers_terrain");
-        render_shader(buffer, terrain_shader);
-        //auto& water_shader = loaded_shaderpack->get_shader("gbuffers_water");
-        //render_shader(buffer, water_shader);
-    }
-
-    void nova_renderer::render_composite_passes() {
-        LOG(TRACE) << "Rendering composite passes";
-    }
-
-    void nova_renderer::render_final_pass() {
-        LOG(TRACE) << "Rendering final pass";
-        //meshes->get_fullscreen_quad->set_active();
-        //meshes->get_fullscreen_quad->draw();
+        for(const auto mat : materials) {
+        }
     }
 
     void nova_renderer::render_gui(vk::CommandBuffer command) {
@@ -332,6 +319,7 @@ namespace nova {
         auto shaderpack = load_shaderpack(new_shaderpack_name);
 
         pipelines_by_pass = shaderpack.pipelines_by_pass;
+        materials = shaderpack.materials;
 
         LOG(INFO) << "Flattening frame graph...";
         try {
@@ -471,10 +459,6 @@ namespace nova {
             LOG(WARNING) << "Load some GUIs you fool";
             LOG(WARNING) << e.what() << std::endl;
         }
-    }
-
-    void nova_renderer::render_pipeline(const pipeline_info &pipeline_data) {
-
     }
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes) {

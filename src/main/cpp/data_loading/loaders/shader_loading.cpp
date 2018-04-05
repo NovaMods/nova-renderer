@@ -58,9 +58,6 @@ namespace nova {
             pack.dynamic_textures = load_texture_definitions_from_folder(shaderpack_directory);
             LOG(INFO) << "Loading materials";
             pack.materials = load_materials_from_folder(shaderpack_directory);
-
-
-            // TODO: Load materials
         }
 
         LOG(INFO) << "All data for shaderpack " << shaderpack_name << " read from disk";

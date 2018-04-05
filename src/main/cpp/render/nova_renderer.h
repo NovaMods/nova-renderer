@@ -150,6 +150,7 @@ namespace nova {
         std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
         std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass;
         std::unordered_map<std::string, std::vector<pipeline_info>> pipelines_by_renderpass;
+        std::vector<material> materials;
 
         /*
          * Housekeeping
@@ -167,6 +168,8 @@ namespace nova {
 
         camera player_camera;
 
+        glm::mat4x4 gui_model;
+
         /*
          * Private functions
          */
@@ -175,14 +178,6 @@ namespace nova {
          * \brief Renders the GUI of Minecraft
          */
         void render_gui(vk::CommandBuffer command);
-
-        void render_shadow_pass();
-
-        void render_gbuffers(vk::CommandBuffer buffer);
-
-        void render_composite_passes();
-
-        void render_final_pass();
 
         void load_new_shaderpack(const std::string &new_shaderpack_name);
 
@@ -203,11 +198,9 @@ namespace nova {
 
         void update_gui_model_matrices();
 
-        glm::mat4x4 gui_model;
-
         void execute_pass(const render_pass &pass, nova::command_buffer buffer);
 
-        void render_pipeline(const pipeline_info &pipeline_data);
+        void render_pipeline(const pipeline_info &pipeline_data, command_buffer buffer);
     };
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes);

@@ -123,6 +123,25 @@ namespace nova {
         render_queue = get_json_value<render_queue_enum>(pass_json, "renderQueue", render_queue_enum::from_string);
     }
 
+    material::material(const nlohmann::json& json) {
+        geometry_filter = get_json_value<std::string>(json, "filter").value();
+
+        passes = get_json_value<std::vector<material_pass>>(json, "passes", [&](const nlohmann::json& passes_json) {
+            auto vec = std::vector<material_pass>{};
+
+            for(const auto& pass_json : passes_json) {
+                vec.push_back(material_pass{pass_json});
+            }
+
+            return vec;
+        }).value();
+    }
+
+    material_pass::material_pass(const nlohmann::json &json) {
+        pipeline = get_json_value<std::string>(json, "pipeline").value();
+        bindings = get_json_value<std::unordered_map<std::string, std::string>>(json, "bindings").value();
+    }
+
     sampler_state decode_sampler_state(const nlohmann::json& json) {
         sampler_state new_sampler_state = {};
 

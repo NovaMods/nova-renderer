@@ -545,9 +545,13 @@ namespace nova {
     struct material_pass {
         std::string pipeline;
         std::unordered_map<std::string, std::string> bindings;
+
+        explicit material_pass(const nlohmann::json& json);
     };
 
     struct material {
+        explicit material(const nlohmann::json& json);
+
         std::vector<material_pass> passes;
         std::string geometry_filter;
     };

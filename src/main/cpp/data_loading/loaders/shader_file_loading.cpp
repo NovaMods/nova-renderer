@@ -444,11 +444,37 @@ namespace nova {
         return parse_textures_from_json(resoruces_json["textures"]);
     }
 
-    std::unordered_map<std::string, std::vector<material>> load_materials_from_folder(const fs::path& shaderpack_path) {
+    std::vector<material> load_materials_from_folder(const fs::path& shaderpack_path) {
         fs::path materials_path = shaderpack_path / "materials";
         if(!fs::exists) {
             LOG(WARNING) << "No materials found";
         }
 
+        auto materials = std::vector<material>{};
+        auto materials_iter = fs::directory_iterator(materials_path);
+
+        for(const auto &item : materials_iter) {
+            LOG(TRACE) << "Examing file " << item.path();
+            if(item.path().extension() != ".mat") {
+                LOG(DEBUG) << "Skipping non-material file " << item.path();
+                continue;
+            }
+            // I do like using temporary variables for everything...
+            std::stringstream ss;
+            ss << item.path();
+            // std::path's stream insertion operator adds double quotes. yay. I'm so glad the std authors made
+            // filesystem so straightforward to use
+            auto stringpath = ss.str().substr(1);
+            stringpath = stringpath.substr(0, stringpath.size() - 1);
+
+            auto stream = std::ifstream(stringpath);
+            auto material_json = load_json_from_stream(stream);
+
+            auto parsed_material = material(material_json);
+
+            materials.push_back(parsed_material);
+        }
+
+        return materials;
     };
 }
