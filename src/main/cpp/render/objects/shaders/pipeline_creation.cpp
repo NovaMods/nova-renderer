@@ -28,7 +28,7 @@ namespace nova {
             auto cur_list = std::vector<pipeline_info>{};
 
             for(const auto& pipeline_create_info : pipelines.second) {
-                cur_list.push_back(make_pipeline(pipeline_create_info, renderpass, context->device,));
+                cur_list.push_back(make_pipeline(pipeline_create_info, renderpass, context->device));
             }
 
             ret_val[pipelines.first] = cur_list;
@@ -55,6 +55,7 @@ namespace nova {
         // make sure that no one put a descriptor at one location in one file and a different location in another
 
         auto pipeline_data = pipeline_info{};
+        pipeline_data.name = pipeline_info.name;
 
         std::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos;
 

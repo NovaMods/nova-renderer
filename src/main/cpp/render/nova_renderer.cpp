@@ -130,6 +130,7 @@ namespace nova {
         player_camera.recalculate_frustum();
 
         // upload UBO things
+        update_gbuffer_ubos();
 
         for(const auto& pass : passes_list) {
             execute_pass(pass, main_command_buffer);
@@ -185,7 +186,7 @@ namespace nova {
         }
     }
 
-    void nova_renderer::execute_pass(const render_pass &pass, command_buffer buffer) {
+    void nova_renderer::execute_pass(const render_pass &pass, command_buffer& buffer) {
         if(renderpasses_by_pass.find(pass.name) == renderpasses_by_pass.end()) {
             LOG(ERROR) << "No renderpass defined for pass " << pass.name << ". Skipping this pass";
             return;
@@ -214,49 +215,39 @@ namespace nova {
         buffer.buffer.endRenderPass();
     }
 
-    void nova_renderer::render_pipeline(const pipeline_info &pipeline_data, command_buffer buffer) {
+    void nova_renderer::render_pipeline(const pipeline_info &pipeline_data, command_buffer& buffer) {
         if(material_passes_by_pipeline.find(pipeline_data.name) != material_passes_by_pipeline.end()) {
-            LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name() << ". Skipping this pipeline";
+            LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name << ". Skipping this pipeline";
+            return;
         }
 
         buffer.buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data.pipeline);
 
-        for(const auto mat : materials) {
+        const auto& material_passes = material_passes_by_pipeline.at(pipeline_data.name);
+        for(const auto mat : material_passes) {
+            render_all_for_material_pass(mat, buffer);
         }
     }
 
-    void nova_renderer::render_gui(vk::CommandBuffer command) {
-        LOG(TRACE) << "Rendering GUI";
-
-        update_gui_model_matrices();
-
-        // Bind all the GUI data
-        auto &gui_shader = loaded_shaderpack->get_shader("gui");
-
-        command.bindPipeline(vk::PipelineBindPoint::eGraphics, gui_shader.get_pipeline());
-
-        // Render GUI objects
-        std::vector<render_object>& gui_geometry = meshes->get_meshes_for_shader("gui");
-        for(const auto& geom : gui_geometry) {
-            if (!geom.color_texture.empty()) {
-                auto color_texture = textures->get_texture(geom.color_texture);
-            }
-
-            auto gbuffer_layout = shader_resources->get_layout_for_pass(pass_enum::Gbuffer);
-            command.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, gbuffer_layout, 1, 1, &geom.per_model_set, 0, nullptr);
-
-            // Bind the mesh
-            vk::DeviceSize offset = 0;
-            command.bindIndexBuffer(geom.geometry->indices, offset, vk::IndexType::eUint32);
-
-            command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
-            offset = 12;
-            command.bindVertexBuffers(1, 1, &geom.geometry->vertex_buffer, &offset);
-            offset = 20;
-            command.bindVertexBuffers(2, 1, &geom.geometry->vertex_buffer, &offset);
-
-            command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
+    void nova_renderer::render_all_for_material_pass(const material_pass pass, command_buffer& buffer) {
+        const auto& meshes_for_mat = meshes->get_meshes_for_shader(pass.material_name);
+        if(meshes_for_mat.empty()) {
+            LOG(TRACE) << "No meshes available for material " << pass.material_name;
+            return;
         }
+
+        // Bind the descriptor sets for this material
+        // TODO
+
+        for(const auto& mesh : meshes_for_mat) {
+            render_mesh(mesh, buffer);
+        }
+    }
+
+    void nova_renderer::render_mesh(const render_object &mesh, command_buffer &buffer) {
+        buffer.buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
+        buffer.buffer.bindVertexBuffers(0, 1, &mesh.geometry->vertex_buffer, {0});
+        buffer.buffer.drawIndexed(mesh.geometry->num_indices, 1, 0, 0, 0);
     }
 
     bool nova_renderer::should_end() {
@@ -340,44 +331,14 @@ namespace nova {
         LOG(INFO) << "Building pipelines and compiling shaders...";
         pipelines_by_renderpass = make_pipelines(shaderpack, renderpasses_by_pass, context);
 
+        LOG(INFO) << "Sorting materials...";
+        material_passes_by_pipeline = extract_material_passes(shaderpack.materials);
+
         LOG(INFO) << "Loading complete";
     }
 
     void nova_renderer::deinit() {
         instance.release();
-    }
-
-    void nova_renderer::render_shader(vk::CommandBuffer command, vk_shader_program &shader) {
-        LOG(TRACE) << "Rendering everything for shader " << shader.get_name() << " with pipeline " << (VkPipeline)shader.get_pipeline();
-
-        MTR_SCOPE("RenderLoop", "render_shader");
-        command.bindPipeline(vk::PipelineBindPoint::eGraphics, shader.get_pipeline());
-
-        auto& geometry = meshes->get_meshes_for_shader(shader.get_name());
-
-        MTR_BEGIN("RenderLoop", "process_all");
-        for(auto& geom : geometry) {
-
-            // if(!player_camera.has_object_in_frustum(geom.bounding_box)) {
-            //     continue;
-            // }
-
-            if(geom.geometry->has_data()) {
-
-                // upload_model_matrix(geom, shader);
-
-                // Bind the mesh
-                vk::DeviceSize offset = 0;
-                command.bindVertexBuffers(0, 1, &geom.geometry->vertex_buffer, &offset);
-                command.bindIndexBuffer(geom.geometry->indices, offset, vk::IndexType::eUint32);
-
-                command.drawIndexed(geom.geometry->num_indices, 1, 0, 0, 0);
-            } else {
-                LOG(WARNING) << "Skipping some geometry since it has no data";
-            }
-
-        }
-        MTR_END("RenderLoop", "process_all")
     }
 
     void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
@@ -470,6 +431,18 @@ namespace nova {
         }
 
         return ordered_passes;
+    }
+
+    std::unordered_map<std::string, std::vector<material_pass>> nova_renderer::extract_material_passes(const std::vector<material>& materials) {
+        auto ordered_material_passes = std::unordered_map<std::string, std::vector<material_pass>>{};
+
+        for(const auto& mat : materials) {
+            for(const auto& mat_pass : mat.passes) {
+                ordered_material_passes[mat_pass.pipeline].push_back(mat_pass);
+            }
+        }
+
+        return ordered_material_passes;
     }
 }
 

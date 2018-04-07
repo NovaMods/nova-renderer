@@ -151,6 +151,7 @@ namespace nova {
         std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass;
         std::unordered_map<std::string, std::vector<pipeline_info>> pipelines_by_renderpass;
         std::vector<material> materials;
+        std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
 
         /*
          * Housekeeping
@@ -198,9 +199,15 @@ namespace nova {
 
         void update_gui_model_matrices();
 
-        void execute_pass(const render_pass &pass, nova::command_buffer buffer);
+        void execute_pass(const render_pass &pass, nova::command_buffer& buffer);
 
-        void render_pipeline(const pipeline_info &pipeline_data, command_buffer buffer);
+        void render_pipeline(const pipeline_info &pipeline_data, command_buffer& buffer);
+
+        void render_all_for_material_pass(const material_pass pass, command_buffer& buffer);
+
+        void render_mesh(const render_object& mesh, command_buffer& buffer);
+
+        std::unordered_map<std::string, std::vector<material_pass>> extract_material_passes(const std::vector<material>& materials);
     };
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes);

@@ -471,6 +471,11 @@ namespace nova {
             auto material_json = load_json_from_stream(stream);
 
             auto parsed_material = material(material_json);
+            parsed_material.name = item.path().filename().string();
+
+            for(auto& mat_pass : parsed_material.passes) {
+                mat_pass.material_name = parsed_material.name;
+            }
 
             materials.push_back(parsed_material);
         }

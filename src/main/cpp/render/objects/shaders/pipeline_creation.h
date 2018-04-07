@@ -35,6 +35,7 @@ namespace nova {
     };
 
     struct pipeline_info {
+        std::string name;
         vk::Pipeline pipeline;
         bindings_list resource_bindings;
 
