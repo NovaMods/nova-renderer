@@ -208,13 +208,26 @@ namespace nova {
 
         LOG(INFO) << "Reading shaders from disk";
         auto sources = load_sources_from_folder(shaderpack_path, pipelines);
+        LOG(INFO) << "Read all shader sources";
 
         auto pipelines_by_pass = std::unordered_map<std::string, std::vector<pipeline>>{};
 
         for(auto& pipeline : pipelines) {
-            pipeline.shader_sources = sources[pipeline.name];
+            LOG(INFO) << "Trying to get sources for pipeline " << pipeline.name;
+            if(sources.find(pipeline.name) == sources.end()) {
+                LOG(WARNING) << "Could not find shader sources for pipeline " << pipeline.name;
+                continue;
+            }
+            pipeline.shader_sources = sources.at(pipeline.name);
+
+            if(!pipeline.pass) {
+                LOG(ERROR) << "Pipeline " << pipeline.name << " doesn't declare the render pass that it should be part of";
+                continue;
+            }
+
             pipelines_by_pass[pipeline.pass.value()].push_back(pipeline);
         }
+        LOG(INFO) << "Sorted all sources";
 
         return pipelines_by_pass;
     }
@@ -271,6 +284,7 @@ namespace nova {
         std::unordered_map<std::string, shader_definition> sources;
 
         for(const auto& pipeline : pipelines) {
+            LOG(INFO) << "Loading shader sources for pipeline " << pipeline.name;
             auto shader_lines = shader_definition{};
 
             // The pass data is filled from parent passes, so we should have the fragment shader and vertex shader at
