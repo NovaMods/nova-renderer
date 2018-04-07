@@ -13,6 +13,7 @@
 #include <vector>
 
 #include <vulkan/vulkan.hpp>
+#include <shaderc/shaderc.hpp>
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
 #include "../renderpasses/materials.h"
@@ -41,6 +42,7 @@ namespace nova {
 
         std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> layout_bindings;
         std::unordered_map<uint32_t, vk::DescriptorSetLayout> layouts;
+        std::vector<vertex_field_enum> attributes;
     };
 
     std::unordered_map<std::string, std::vector<pipeline_info>> make_pipelines(const shaderpack_data& shaderpack,
@@ -49,13 +51,13 @@ namespace nova {
 
     shader_module create_shader_module(const shader_file& source, const vk::ShaderStageFlags& stages,  const vk::Device& device);
 
-    pipeline_info make_pipeline(const pipeline& pipeline_info, const pass_vulkan_information& renderpass_info, vk::Device device);
+    pipeline_info make_pipeline(const pipeline& pipeline_create_info, const pass_vulkan_information& renderpass_info, vk::Device device);
 
     std::vector<uint32_t> glsl_to_spirv(const std::vector<shader_line>& shader_lines, shaderc_shader_kind stages);
 
     bindings_list get_interface_of_spirv(const std::vector<uint32_t>& spirv_source, const vk::ShaderStageFlags& stages);
 
-    void add_bindings_from_shader(const pipeline_info& pipeline_data, const shader_module &shader_module, std::string shader_stage_name);
+    void add_bindings_from_shader(pipeline_info& pipeline_data, const shader_module &shader_module, std::string shader_stage_name);
 }
 
 #endif //RENDERER_GL_SHADER_H

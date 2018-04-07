@@ -280,7 +280,7 @@ namespace nova {
         optional<uint32_t> compare_mask;
         optional<uint32_t> write_mask;
 
-        vk::StencilOpState to_vk_stencil_op_state();
+        vk::StencilOpState to_vk_stencil_op_state() const;
     };
 
     SMART_ENUM(pass_enum,

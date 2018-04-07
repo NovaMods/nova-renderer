@@ -29,10 +29,10 @@ namespace nova {
     };
 
     inline uint32_t get_total_vertex_size() {
-        uint32_t tital_size = 0;
+        uint32_t total_size = 0;
         for(const auto& attribute : all_vertex_attributes) {
-            auto size;
-            switch(attribute.format) {
+            uint32_t size;
+            switch(attribute.second.format) {
                 case (vk::Format::eR32Uint):
                     size = 4;
                     break;
@@ -46,10 +46,13 @@ namespace nova {
                     size = 32;
                     break;
                 default:
-                    LOG(ERROR) << "Unknown format " << vk::to_string(attribute.format);
+                    LOG(ERROR) << "Unknown format " << vk::to_string(attribute.second.format);
                     throw std::runtime_error("Unknown format");
             }
+            total_size += size;
         }
+
+        return total_size;
     }
 }
 

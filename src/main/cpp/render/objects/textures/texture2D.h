@@ -35,19 +35,19 @@ namespace nova {
          */
         void set_data(void* pixel_data, vk::Extent2D dimensions);
 
-        vk::Extent2D& get_size() const;
+        vk::Extent2D get_size() const;
 
         /*!
          * \brief Returns the format of this texture, as assigned in the constructor
          *
          * \return The format of this texture
          */
-        vk::Format & get_format() const;
+        vk::Format get_format() const;
 
         /*!
          * \brief Returns the Vulkan identifier used to identify this texture
          */
-        const vk::Image& get_vk_image() const;
+        const vk::Image get_vk_image() const;
 
         void set_name(std::string name);
         const std::string& get_name() const;

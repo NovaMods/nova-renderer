@@ -152,7 +152,6 @@ set(NOVA_SOURCE
         data_loading/loaders/shader_loading.cpp
         data_loading/loaders/loader_utils.cpp
 
-        render/objects/shaders/shaderpack.cpp
         render/objects/meshes/mesh_store.cpp
         physics/aabb.cpp
         render/objects/meshes/mesh_definition.cpp

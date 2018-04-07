@@ -100,7 +100,7 @@ namespace nova {
 
         std::shared_ptr<render_context> get_render_context();
 
-        std::shared_ptr<shaderpack> get_shaders();
+        std::vector<material>& get_materials();
 
         std::shared_ptr<shader_resource_manager> get_shader_resources();
 
@@ -191,9 +191,10 @@ namespace nova {
 
         void render_pipeline(const pipeline_info &pipeline_data, vk::CommandBuffer& buffer);
 
-        void render_all_for_material_pass(const material_pass pass, vk::CommandBuffer& buffer);
+        void
+        render_all_for_material_pass(const material_pass pass, vk::CommandBuffer &buffer, const pipeline_info &info);
 
-        void render_mesh(const render_object& mesh, vk::CommandBuffer &buffer);
+        void render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_info &info);
 
         std::unordered_map<std::string, std::vector<material_pass>> extract_material_passes(const std::vector<material>& materials);
     };

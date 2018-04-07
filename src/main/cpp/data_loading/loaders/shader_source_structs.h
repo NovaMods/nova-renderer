@@ -17,6 +17,7 @@
 #include <json.hpp>
 
 #include <easylogging++.h>
+#include "../../utils/smart_enum.h"
 
 // While I usually don't like to do this, I'm tires of typing so much
 using namespace std::experimental;
@@ -24,12 +25,12 @@ using namespace std::experimental;
 namespace fs = std::experimental::filesystem;
 
 namespace nova {
-    enum class shader_langauge_enum {
+    SMART_ENUM(shader_langauge_enum,
         SPIRV,
         GLSL,
         GLSLES,
         HLSL,
-    };
+    )
 
     /*!
      * \brief Holds a line number and file name

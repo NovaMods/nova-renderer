@@ -21,6 +21,7 @@
 #include "vulkan/render_context.h"
 #include "objects/shaders/shader_resource_manager.h"
 #include "render_graph.h"
+#include "objects/meshes/vertex_attributes.h"
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -133,7 +134,7 @@ namespace nova {
         update_gbuffer_ubos();
 
         for(const auto& pass : passes_list) {
-            execute_pass(pass, main_command_buffer);
+            execute_pass(pass, main_command_buffer.buffer);
         }
 
         main_command_buffer.buffer.end();
@@ -192,7 +193,7 @@ namespace nova {
             return;
         }
 
-        if(pipelines_by_pass.find(pass) == pipelines_by_pass.end()) {
+        if(pipelines_by_pass.find(pass.name) == pipelines_by_pass.end()) {
             LOG(WARNING) << "No pipelines attached to pass " << pass.name << ". Skipping this pass";
             return;
         }
@@ -225,11 +226,11 @@ namespace nova {
 
         const auto& material_passes = material_passes_by_pipeline.at(pipeline_data.name);
         for(const auto mat : material_passes) {
-            render_all_for_material_pass(mat, buffer);
+            render_all_for_material_pass(mat, buffer, pipeline_data);
         }
     }
 
-    void nova_renderer::render_all_for_material_pass(const material_pass pass, vk::CommandBuffer& buffer) {
+    void nova_renderer::render_all_for_material_pass(const material_pass pass, vk::CommandBuffer &buffer, const pipeline_info &pipeline_data) {
         const auto& meshes_for_mat = meshes->get_meshes_for_shader(pass.material_name);
         if(meshes_for_mat.empty()) {
             LOG(TRACE) << "No meshes available for material " << pass.material_name;
@@ -240,13 +241,19 @@ namespace nova {
         // TODO
 
         for(const auto& mesh : meshes_for_mat) {
-            render_mesh(mesh, buffer);
+            render_mesh(mesh, buffer, pipeline_data);
         }
     }
 
-    void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer) {
+    void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_info &pipeline_data) {
         buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
-        buffer.bindVertexBuffers(0, 1, &mesh.geometry->vertex_buffer, {0});
+
+        for(uint32_t i = 0; i < pipeline_data.attributes.size(); i++) {
+            auto attribute = pipeline_data.attributes[i];
+            auto offset = all_vertex_attributes[attribute.to_string()].offset;
+            buffer.bindVertexBuffers(i, {mesh.geometry->vertex_buffer}, {offset});
+        }
+
         buffer.drawIndexed(mesh.geometry->num_indices, 1, 0, 0, 0);
     }
 
@@ -274,7 +281,7 @@ namespace nova {
 		auto& shaderpack_name = new_config["loadedShaderpack"];
 		LOG(INFO) << "Shaderpack name: " << shaderpack_name;
 
-        bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack_name);
+        bool shaderpack_in_settings_is_new = shaderpack_name != loaded_shaderpack_name;
         if(shaderpack_in_settings_is_new) {
             load_new_shaderpack(shaderpack_name);
         }
@@ -375,8 +382,8 @@ namespace nova {
         return player_camera;
     }
 
-    std::shared_ptr<shaderpack> nova_renderer::get_shaders() {
-        return loaded_shaderpack;
+    std::vector<material>& nova_renderer::get_materials() {
+        return materials;
     }
 
     void nova_renderer::end_frame() {

@@ -34,8 +34,6 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -404,7 +402,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.start("load_shaderpack");
         NovaNative.INSTANCE.set_string_setting("loadedShaderpack", shaderpackName);
 
-        String filters = NovaNative.INSTANCE.get_shaders_and_filters();
+        String filters = NovaNative.INSTANCE.get_materials_and_filters();
         String[] filtersSplit = filters.split("\n");
         Profiler.end("load_shaderpack");
 

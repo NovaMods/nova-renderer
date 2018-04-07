@@ -14,10 +14,10 @@
 #include <unordered_map>
 #include <queue>
 #include "../render_object.h"
-#include "../shaders/shaderpack.h"
 #include "../../../mc_interface/mc_gui_objects.h"
 #include "../../../mc_interface/mc_objects.h"
 #include "mesh_definition.h"
+#include "../shaders/shader_resource_manager.h"
 
 namespace nova {
     /*!

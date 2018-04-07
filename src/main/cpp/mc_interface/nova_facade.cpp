@@ -49,7 +49,7 @@ NOVA_API void reset_texture_manager() {
 
 NOVA_API void send_lightmap_texture(int* data, int count, int width, int height) {
     auto size = glm::ivec2{width, height};
-    TEXTURE_MANAGER.update_texture("lightmap", data, size, vk::Format::eB8G8R8A8Snorm);
+    TEXTURE_MANAGER.update_texture("lightmap", data, size);
     auto& lightmap = TEXTURE_MANAGER.get_texture("lightmap");
 }
 
@@ -153,34 +153,30 @@ NOVA_API void set_mouse_grabbed(int grabbed) {
     NOVA_RENDERER->get_game_window().set_mouse_grabbed(grabbed != 0);
 }
 
-NOVA_API int get_num_loaded_shaders() {
-    return static_cast<int>(NOVA_RENDERER->get_shaders()->get_loaded_shaders().size());
-}
-
-NOVA_API char* get_shaders_and_filters() {
-    MTR_SCOPE("Shaders", "get_shaders_and_filters");
-    auto& shaders = NOVA_RENDERER->get_shaders()->get_loaded_shaders();
+NOVA_API char* get_materials_and_filters() {
+    MTR_SCOPE("Shaders", "get_materials_and_filters");
+    auto& materials = NOVA_RENDERER->get_materials();
 
     int num_chars = 0;
-    for(auto& s : shaders) {
-        num_chars += s.first.size();
-        num_chars += s.second.get_filter().size();
+    for(auto& mat : materials) {
+        num_chars += mat.name.size();
+        num_chars += mat.geometry_filter.size();
         num_chars += 2;
     }
 
-    LOG(DEBUG) << "There are a total of " << shaders.size() << " shaders, which have a total of " << num_chars << " needed for their filters and names";
+    LOG(DEBUG) << "There are a total of " << materials.size() << " shaders, which have a total of " << num_chars << " needed for their filters and names";
 
     auto* filters = new char[num_chars];
     int write_pos = 0;
-    for(auto& entry : shaders) {
-        std::strcpy(&filters[write_pos], entry.first.data());
-        write_pos += entry.first.size();
+    for(auto& m : materials) {
+        std::strcpy(&filters[write_pos], m.name.data());
+        write_pos += m.name.size();
 
         filters[write_pos] = '\n';
         write_pos++;
 
-        std::strcpy(&filters[write_pos], entry.second.get_filter().data());
-        write_pos += entry.second.get_filter().size();
+        std::strcpy(&filters[write_pos], m.geometry_filter.data());
+        write_pos += m.geometry_filter.size();
 
         filters[write_pos] = '\n';
         write_pos++;

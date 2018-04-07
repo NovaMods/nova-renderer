@@ -66,15 +66,15 @@ namespace nova {
         upload_data_with_staging_buffer(pixel_data, vk::Extent3D{dimensions.width, dimensions.height, 1});
     }
 
-    vk::Extent2D& texture2D::get_size() const {
+    vk::Extent2D texture2D::get_size() const {
         return size;
     }
 
-    vk::Format & texture2D::get_format() const {
+    vk::Format  texture2D::get_format() const {
         return format;
     }
 
-    const vk::Image& texture2D::get_vk_image() const {
+    const vk::Image texture2D::get_vk_image() const {
         return image;
     }
 

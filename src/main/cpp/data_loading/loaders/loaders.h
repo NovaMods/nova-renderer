@@ -12,7 +12,6 @@
 
 #include <string>
 #include <unordered_map>
-#include "../../render/objects/shaders/shaderpack.h"
 #include "shader_loading.h"
 
 namespace nova {

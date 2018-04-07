@@ -173,7 +173,7 @@ namespace nova {
      * \param line The line in the shader that contains the #include statement
      * \return The full source of the included file
      */
-    std::vector<shader_line> load_included_file(const fs::path &shader_path, const std::string &line);
+    shader_file load_included_file(const fs::path &shader_path, const std::string &line);
 
     /*!
      * \brief Determines the full file path of an included file
@@ -340,7 +340,7 @@ namespace nova {
         while(std::getline(stream, line, '\n')) {
             if(line.compare("#include") == 0) {
                 auto included_file = load_included_file(shader_path, line);
-                file_source.insert(file_source.end(), std::begin(included_file), std::end(included_file));
+                file_source.insert(file_source.end(), std::begin(included_file.lines), std::end(included_file.lines));
 
             } else {
                 file_source.push_back({line_counter, shader_path, line});
@@ -352,7 +352,7 @@ namespace nova {
         return file_source;
     }
 
-    std::vector<shader_line> load_included_file(const fs::path &shader_path, const std::string &line) {
+    shader_file load_included_file(const fs::path &shader_path, const std::string &line) {
         auto included_file_name = get_filename_from_include(line);
         auto file_to_include = get_included_file_path(shader_path, included_file_name);
         LOG(TRACE) << "Dealing with included file " << file_to_include;
@@ -446,8 +446,9 @@ namespace nova {
 
     std::vector<material> load_materials_from_folder(const fs::path& shaderpack_path) {
         fs::path materials_path = shaderpack_path / "materials";
-        if(!fs::exists) {
+        if(!fs::exists(materials_path)) {
             LOG(WARNING) << "No materials found";
+            return {};
         }
 
         auto materials = std::vector<material>{};

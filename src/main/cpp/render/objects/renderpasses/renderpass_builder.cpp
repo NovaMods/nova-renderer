@@ -18,17 +18,17 @@ namespace nova {
                                                                                             std::shared_ptr<render_context> context) {
         std::unordered_map<std::string, pass_vulkan_information> renderpasses;
 
-        for(const auto& named_pass : data.passes) {
-            auto& pass_vk_info = renderpasses[named_pass.first];
+        for(const std::pair<std::string, render_pass>& named_pass : data.passes) {
+            pass_vulkan_information& pass_vk_info = renderpasses[named_pass.first];
 
             const auto renderpass = make_render_pass(named_pass.second, textures, context);
-            pass_vk_info.pass = renderpass;
+            pass_vk_info.renderpass = renderpass;
 
             auto[framebuffer, size] = make_framebuffer(named_pass.second, renderpass, textures, context);
             pass_vk_info.frameBuffer = framebuffer;
             pass_vk_info.framebuffer_size = size;
 
-            pass_vk_info.num_attachments = named_pass.second.texture_outputs.value_or({}).size();
+            pass_vk_info.num_attachments = static_cast<uint32_t>(named_pass.second.texture_outputs.value_or(std::vector<std::string>{}).size());
         }
 
         return renderpasses;

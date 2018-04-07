@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include <easylogging++.h>
-#include <shaderc/shaderc.hpp>
 #include "pipeline_creation.h"
 #include "../../vulkan/render_context.h"
 #include "shader_resource_manager.h"
@@ -37,9 +36,9 @@ namespace nova {
         return ret_val;
     }
 
-    pipeline_info make_pipeline(const pipeline& pipeline_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
+    pipeline_info make_pipeline(const pipeline& pipeline_create_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
         // Creates a pipeline out of compiled shaders
-        auto states_vec = pipeline_info.states.value_or(std::vector<state_enum>{});
+        auto states_vec = pipeline_create_info.states.value_or(std::vector<state_enum>{});
         const auto& states_end = states_vec.end();
 
         vk::GraphicsPipelineCreateInfo graphics_pipeline_create_info = {};
@@ -55,12 +54,12 @@ namespace nova {
         // make sure that no one put a descriptor at one location in one file and a different location in another
 
         auto pipeline_data = pipeline_info{};
-        pipeline_data.name = pipeline_info.name;
+        pipeline_data.name = pipeline_create_info.name;
 
         std::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos;
 
         {
-            auto vertex_module = create_shader_module(pipeline_info.shader_sources.vertex_source, vk::ShaderStageFlagBits::eVertex, device);
+            auto vertex_module = create_shader_module(pipeline_create_info.shader_sources.vertex_source, vk::ShaderStageFlagBits::eVertex, device);
 
             vk::PipelineShaderStageCreateInfo vertex_create_info = {};
             vertex_create_info.stage = vk::ShaderStageFlagBits::eVertex;
@@ -72,7 +71,7 @@ namespace nova {
         }
 
         {
-            auto fragment_module = create_shader_module(pipeline_info.shader_sources.fragment_source, vk::ShaderStageFlagBits::eFragment, device);
+            auto fragment_module = create_shader_module(pipeline_create_info.shader_sources.fragment_source, vk::ShaderStageFlagBits::eFragment, device);
 
             vk::PipelineShaderStageCreateInfo fragment_create_info = {};
             fragment_create_info.stage = vk::ShaderStageFlagBits::eFragment;
@@ -83,8 +82,8 @@ namespace nova {
             add_bindings_from_shader(pipeline_data, fragment_module, "fragment");
         }
 
-        if(pipeline_info.shader_sources.geometry_source) {
-            auto geometry_module = create_shader_module(pipeline_info.shader_sources.geometry_source.value(), vk::ShaderStageFlagBits::eGeometry, device);
+        if(pipeline_create_info.shader_sources.geometry_source) {
+            auto geometry_module = create_shader_module(pipeline_create_info.shader_sources.geometry_source.value(), vk::ShaderStageFlagBits::eGeometry, device);
 
             vk::PipelineShaderStageCreateInfo geometry_create_info = {};
             geometry_create_info.stage = vk::ShaderStageFlagBits::eGeometry;
@@ -95,8 +94,8 @@ namespace nova {
             add_bindings_from_shader(pipeline_data, geometry_module, "geometry");
         }
 
-        if(pipeline_info.shader_sources.tessellation_control_source) {
-            auto tesc_module = create_shader_module(pipeline_info.shader_sources.tessellation_control_source.value(), vk::ShaderStageFlagBits::eTessellationControl, device);
+        if(pipeline_create_info.shader_sources.tessellation_control_source) {
+            auto tesc_module = create_shader_module(pipeline_create_info.shader_sources.tessellation_control_source.value(), vk::ShaderStageFlagBits::eTessellationControl, device);
 
             vk::PipelineShaderStageCreateInfo tesc_create_info = {};
             tesc_create_info.stage = vk::ShaderStageFlagBits::eTessellationControl;
@@ -107,8 +106,8 @@ namespace nova {
             add_bindings_from_shader(pipeline_data, tesc_module, "tessellation control");
         }
 
-        if(pipeline_info.shader_sources.tessellation_evaluation_source) {
-            auto tese_module = create_shader_module(pipeline_info.shader_sources.tessellation_evaluation_source.value(), vk::ShaderStageFlagBits::eTessellationEvaluation, device);
+        if(pipeline_create_info.shader_sources.tessellation_evaluation_source) {
+            auto tese_module = create_shader_module(pipeline_create_info.shader_sources.tessellation_evaluation_source.value(), vk::ShaderStageFlagBits::eTessellationEvaluation, device);
 
             vk::PipelineShaderStageCreateInfo tese_create_info = {};
             tese_create_info.stage = vk::ShaderStageFlagBits::eTessellationEvaluation;
@@ -139,8 +138,8 @@ namespace nova {
         auto ordered_layouts = std::vector<vk::DescriptorSetLayout>{};
         for(auto i = 0; i < layouts.size(); i++) {
             if(layouts.find(i) == layouts.end()) {
-                LOG(WARNING) << "Discontinuity detected! You're skipping descriptor set " << i << " and this isn't supported because honestly I don't know how to deal with it. Nova won't load pipeline " << pipeline_info.name;
-                return vk::Pipeline();
+                LOG(WARNING) << "Discontinuity detected! You're skipping descriptor set " << i << " and this isn't supported because honestly I don't know how to deal with it. Nova won't load pipeline " << pipeline_create_info.name;
+                return {};
             }
 
             ordered_layouts.push_back(layouts.at(i));
@@ -168,23 +167,25 @@ namespace nova {
         std::vector<vk::VertexInputBindingDescription> binding_descriptions;
         std::vector<vk::VertexInputAttributeDescription> attribute_descriptions;
 
-        if(!pipeline_info.vertex_fields) {
-            LOG(ERROR) << "Pipeline " << pipeline_info.name << " doesn't declare any vertex fields. This is an error and I won't stand for it!";
+        if(!pipeline_create_info.vertex_fields) {
+            LOG(ERROR) << "Pipeline " << pipeline_create_info.name << " doesn't declare any vertex fields. This is an error and I won't stand for it!";
 
             return {};
         }
 
         uint32_t total_vertex_size = get_total_vertex_size();
         int32_t cur_binding = -1;
-        for(const auto& vertex_field : pipeline_info.vertex_fields.value()) {
+        for(const auto& vertex_field : pipeline_create_info.vertex_fields.value()) {
             cur_binding++;
             if(vertex_field == vertex_field_enum::Empty) {
                 continue;
             }
             const auto& attribute = all_vertex_attributes[vertex_field.to_string()];
-            attribute_descriptions.emplace_back(cur_binding, attribute.format, attribute.offset);
+            attribute_descriptions.emplace_back(static_cast<uint32_t>(cur_binding), static_cast<uint32_t>(cur_binding), attribute.format, attribute.offset);
             binding_descriptions.emplace_back(cur_binding, total_vertex_size, vk::VertexInputRate::eVertex);
         }
+
+        pipeline_data.attributes = pipeline_create_info.vertex_fields.value();
 
         vertex_input_state_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
         vertex_input_state_create_info.pVertexAttributeDescriptions = attribute_descriptions.data();
@@ -200,7 +201,7 @@ namespace nova {
 
         vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info = {};
 
-        const auto topology = pipeline_info.primitive_mode.value_or(primitive_topology_enum::Triangles);
+        const auto topology = pipeline_create_info.primitive_mode.value_or(primitive_topology_enum::Triangles);
 
         input_assembly_create_info.topology = to_vk_topology(topology);
 
@@ -252,12 +253,12 @@ namespace nova {
         raster_create_info.frontFace = vk::FrontFace::eCounterClockwise;
         raster_create_info.lineWidth = 1;
 
-        if(pipeline_info.depth_bias) {
+        if(pipeline_create_info.depth_bias) {
             raster_create_info.depthBiasEnable = static_cast<vk::Bool32>(true);
-            raster_create_info.depthBiasConstantFactor = *pipeline_info.depth_bias;
+            raster_create_info.depthBiasConstantFactor = *pipeline_create_info.depth_bias;
 
-            if(pipeline_info.slope_scaled_depth_bias) {
-                raster_create_info.depthBiasSlopeFactor = *pipeline_info.slope_scaled_depth_bias;
+            if(pipeline_create_info.slope_scaled_depth_bias) {
+                raster_create_info.depthBiasSlopeFactor = *pipeline_create_info.slope_scaled_depth_bias;
             }
         }
 
@@ -281,15 +282,15 @@ namespace nova {
         vk::PipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
         depth_stencil_create_info.depthTestEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::DisableDepthTest) == states_end));
         depth_stencil_create_info.depthWriteEnable = static_cast<vk::Bool32>((std::find(states_vec.begin(), states_vec.end(), state_enum::DisableDepthWrite) == states_end));
-        auto depth_op = pipeline_info.depth_func.value_or(compare_op_enum::Less);
+        auto depth_op = pipeline_create_info.depth_func.value_or(compare_op_enum::Less);
         depth_stencil_create_info.depthCompareOp = to_vk_compare_op(depth_op);
 
         depth_stencil_create_info.stencilTestEnable = static_cast<vk::Bool32>(std::find(states_vec.begin(), states_vec.end(), state_enum::EnableStencilTest) != states_end);
-        if(pipeline_info.back_face) {
-            depth_stencil_create_info.back = pipeline_info.back_face.value().to_vk_stencil_op_state();
+        if(pipeline_create_info.back_face) {
+            depth_stencil_create_info.back = pipeline_create_info.back_face.value().to_vk_stencil_op_state();
         }
-        if(pipeline_info.front_face) {
-            depth_stencil_create_info.front = pipeline_info.front_face.value().to_vk_stencil_op_state();
+        if(pipeline_create_info.front_face) {
+            depth_stencil_create_info.front = pipeline_create_info.front_face.value().to_vk_stencil_op_state();
         }
         depth_stencil_create_info.minDepthBounds = 0;
         depth_stencil_create_info.maxDepthBounds = 1;
@@ -305,9 +306,9 @@ namespace nova {
 
         auto attachmentBlendStates = std::vector<vk::PipelineColorBlendAttachmentState>{};
 
-        if(pipeline_info.states) {
+        if(pipeline_create_info.states) {
             bool enable_blending = false;
-            const auto& states_val = pipeline_info.states.value();
+            const auto& states_val = pipeline_create_info.states.value();
             if(std::find(states_val.begin(), states_val.end(), state_enum::Blending) != states_val.end()) {
                 enable_blending = true;
             }
@@ -315,13 +316,13 @@ namespace nova {
             attachmentBlendStates.resize(renderpass_info.num_attachments);
             for(auto &blend_state : attachmentBlendStates) {
                 blend_state.blendEnable = static_cast<vk::Bool32>(enable_blending);
-                auto src_color_blend_factor = to_vk_blend_factor(pipeline_info.source_blend_factor.value_or(blend_factor_enum::SrcAlpha));
+                auto src_color_blend_factor = to_vk_blend_factor(pipeline_create_info.source_blend_factor.value_or(blend_factor_enum::SrcAlpha));
 
-                blend_state.srcColorBlendFactor = to_vk_blend_factor(pipeline_info.source_blend_factor.value_or(blend_factor_enum::SrcAlpha));
-                blend_state.dstColorBlendFactor = to_vk_blend_factor(pipeline_info.destination_blend_factor.value_or(blend_factor_enum::OneMinusSrcAlpha));
+                blend_state.srcColorBlendFactor = to_vk_blend_factor(pipeline_create_info.source_blend_factor.value_or(blend_factor_enum::SrcAlpha));
+                blend_state.dstColorBlendFactor = to_vk_blend_factor(pipeline_create_info.destination_blend_factor.value_or(blend_factor_enum::OneMinusSrcAlpha));
                 blend_state.colorBlendOp = vk::BlendOp::eAdd;
-                blend_state.srcAlphaBlendFactor = to_vk_blend_factor(pipeline_info.source_blend_factor.value_or(blend_factor_enum::SrcAlpha));
-                blend_state.dstAlphaBlendFactor = to_vk_blend_factor(pipeline_info.destination_blend_factor.value_or(blend_factor_enum::OneMinusSrcAlpha));
+                blend_state.srcAlphaBlendFactor = to_vk_blend_factor(pipeline_create_info.source_blend_factor.value_or(blend_factor_enum::SrcAlpha));
+                blend_state.dstAlphaBlendFactor = to_vk_blend_factor(pipeline_create_info.destination_blend_factor.value_or(blend_factor_enum::OneMinusSrcAlpha));
                 blend_state.alphaBlendOp = vk::BlendOp::eAdd;
                 blend_state.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
                                              vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
@@ -338,12 +339,12 @@ namespace nova {
         // TODO: Handle dynamic state
 
         pipeline_data.pipeline = device.createGraphicsPipeline(vk::PipelineCache(), graphics_pipeline_create_info);
-        LOG(INFO) << "Created pipeline " << pipeline_info.name << " (VkPipeline " << (VkPipeline)pipeline_data.pipeline << ")";
+        LOG(INFO) << "Created pipeline " << pipeline_create_info.name << " (VkPipeline " << (VkPipeline)pipeline_data.pipeline << ")";
 
         return pipeline_data;
     }
 
-    void add_bindings_from_shader(const pipeline_info& pipeline_data, const shader_module &shader_module, const std::string shader_stage_name) {
+    void add_bindings_from_shader(pipeline_info& pipeline_data, const shader_module &shader_module, const std::string shader_stage_name) {
         auto& all_bindings = pipeline_data.resource_bindings;
         auto& all_layouts = pipeline_data.layout_bindings;
 
@@ -391,7 +392,7 @@ namespace nova {
                 spirv_source = glsl_to_spirv(source.lines, shaderc_vertex_shader);
                 break;
             default:
-                LOG(ERROR) << "Shader language " << source.language << " is not implemented yet";
+                LOG(ERROR) << "Shader language " << source.language.to_string() << " is not implemented yet";
         }
 
         vk::ShaderModuleCreateInfo create_info = {};

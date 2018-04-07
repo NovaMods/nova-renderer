@@ -139,7 +139,14 @@ namespace nova {
 
     material_pass::material_pass(const nlohmann::json &json) {
         pipeline = get_json_value<std::string>(json, "pipeline").value();
-        bindings = get_json_value<std::unordered_map<std::string, std::string>>(json, "bindings").value();
+
+        const auto& itr = json.find("bindings");
+        if(itr != json.end()) {
+            auto& json_node = json.at("bindings");
+            for(const auto& key_val : nlohmann::json::iterator_wrapper(json_node)) {
+                bindings[key_val.key()] = key_val.value().get<std::string>();
+            }
+        }
     }
 
     sampler_state decode_sampler_state(const nlohmann::json& json) {
@@ -251,7 +258,7 @@ namespace nova {
         }
     }
 
-    vk::StencilOpState stencil_op_state::to_vk_stencil_op_state() {
+    vk::StencilOpState stencil_op_state::to_vk_stencil_op_state() const {
         vk::StencilOpState op_state;
 
         auto compare_mask_val = compare_mask.value_or(0);
