@@ -180,7 +180,7 @@ namespace nova {
             if(vertex_field == vertex_field_enum::Empty) {
                 continue;
             }
-            const auto& attribute = all_vertex_attributes[vertex_field.to_string()];
+            const auto& attribute = get_all_vertex_attributes()[vertex_field.to_string()];
             attribute_descriptions.emplace_back(static_cast<uint32_t>(cur_binding), static_cast<uint32_t>(cur_binding), attribute.format, attribute.offset);
             binding_descriptions.emplace_back(cur_binding, total_vertex_size, vk::VertexInputRate::eVertex);
         }

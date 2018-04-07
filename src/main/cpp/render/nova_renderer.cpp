@@ -250,7 +250,7 @@ namespace nova {
 
         for(uint32_t i = 0; i < pipeline_data.attributes.size(); i++) {
             auto attribute = pipeline_data.attributes[i];
-            auto offset = all_vertex_attributes[attribute.to_string()].offset;
+            auto offset = get_all_vertex_attributes()[attribute.to_string()].offset;
             buffer.bindVertexBuffers(i, {mesh.geometry->vertex_buffer}, {offset});
         }
 

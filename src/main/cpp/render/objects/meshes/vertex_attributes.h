@@ -16,7 +16,8 @@ namespace nova {
         uint32_t offset;
     };
 
-    std::unordered_map<std::string, vertex_attribute> all_vertex_attributes = {
+    inline std::unordered_map<std::string, vertex_attribute> get_all_vertex_attributes() {
+        return {
             { "Position",           {vk::Format::eR32G32B32Sfloat,       0} },
             { "UV0",                {vk::Format::eR32G32Sfloat,         12} },
             { "MidTexCoord",        {vk::Format::eR32G32Sfloat,         20} },
@@ -26,11 +27,12 @@ namespace nova {
             { "Normal",             {vk::Format::eR32G32B32Sfloat,      56} },
             { "Tangent",            {vk::Format::eR32G32B32Sfloat,      68} },
             { "McEntityId",         {vk::Format::eR32G32B32A32Sfloat,   80} }
-    };
+        };
+    }
 
     inline uint32_t get_total_vertex_size() {
         uint32_t total_size = 0;
-        for(const auto& attribute : all_vertex_attributes) {
+        for(const auto& attribute : get_all_vertex_attributes()) {
             uint32_t size;
             switch(attribute.second.format) {
                 case (vk::Format::eR32Uint):
