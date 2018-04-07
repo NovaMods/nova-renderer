@@ -207,7 +207,7 @@ namespace nova {
         }
 
         LOG(INFO) << "Reading shaders from disk";
-        auto sources = load_sources_from_folder(shaderpack_path / "shaders", pipelines);
+        auto sources = load_sources_from_folder(shaderpack_path, pipelines);
 
         auto pipelines_by_pass = std::unordered_map<std::string, std::vector<pipeline>>{};
 
