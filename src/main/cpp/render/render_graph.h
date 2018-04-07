@@ -11,17 +11,6 @@
 
 namespace nova {
     /*!
-     * \brief Thrown by `order_passes` when it encounters a fatal error in the render graph
-     */
-    class render_graph_validation_error : public std::exception {
-    public:
-        explicit render_graph_validation_error(std::string msg);
-        const char* what() const noexcept override;
-    private:
-        std::string msg;
-    };
-
-    /*!
      * \brief Orders the provided render passes to satisfy both their implicit and explicit dependencies
      *
      * The provided submission order may not be valid for all sets of passes. It is pretty un-optimized, preferring to

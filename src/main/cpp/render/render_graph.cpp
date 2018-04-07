@@ -56,7 +56,7 @@ namespace nova {
         // The passes, in simple dependency order
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
             LOG(ERROR) << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
-            throw render_graph_validation_error("no backbuffer");
+            throw std::runtime_error("no backbuffer");
 
         } else {    // While the throw should make it clear that this is a separate branch, I forgot so here's an else
             auto backbuffer_writes = resource_to_write_pass["Backbuffer"];
@@ -104,7 +104,7 @@ namespace nova {
                               const uint32_t depth) {
         if(depth > passes.size()) {
             LOG(ERROR) << "Circular render graph detected! Please fix your render graph to not have circular dependencies";
-            throw render_graph_validation_error("circular graph");
+            throw std::runtime_error("circular graph");
         }
 
         const auto& pass = passes.at(pass_name);

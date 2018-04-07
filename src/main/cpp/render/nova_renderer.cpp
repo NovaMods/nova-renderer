@@ -322,7 +322,7 @@ namespace nova {
         LOG(INFO) << "Flattening frame graph...";
         try {
             passes_list = compile_into_list(shaderpack.passes);
-        } catch(render_graph_validation_error& e) {
+        } catch(std::runtime_error& e) {
             LOG(ERROR) << "Could not load shaderpack " << new_shaderpack_name << ": " << e.what();
 
             // TODO: Find a good way to propagate the error
