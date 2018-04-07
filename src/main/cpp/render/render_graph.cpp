@@ -31,12 +31,14 @@ namespace nova {
                               uint32_t depth);
 
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass> &passes) {
+        LOG(INFO) << "Ordering passes";
         auto ordered_passes = std::vector<std::string>{};
 
         /*
          * Build some accelleration structures
          */
 
+        LOG(INFO) << "Collecting passes that write to each resource...";
         // Maps from resource name to pass that writes to that resource, then from resource name to pass that reads from
         // that resource
         auto resource_to_write_pass = std::unordered_map<std::string, std::vector<std::string>>{};
@@ -53,6 +55,7 @@ namespace nova {
          * Initial ordering of passes
          */
 
+        LOG(INFO) << "First pass at ordering passes...";
         // The passes, in simple dependency order
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
             LOG(ERROR) << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
@@ -133,11 +136,5 @@ namespace nova {
                 }
             }
         }
-    }
-
-    render_graph_validation_error::render_graph_validation_error(std::string msg) : msg(msg) {}
-
-    const char *render_graph_validation_error::what() const noexcept {
-        return msg.c_str();
     }
 }

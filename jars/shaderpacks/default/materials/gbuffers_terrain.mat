@@ -1,0 +1,13 @@
+{
+    "filter": "geometry_type::block AND not_transparent",
+    "passes": [
+        {
+            "pipeline": "gbuffers_terrain",
+            "bindings": {
+                "per_frame_uniforms": "NovePerFrameUBO",
+                "per_model_uniforms": "NovaPerModelUBO",
+                "colortex": "NovaColorAtlas"
+            }
+        }
+    ]
+}

@@ -120,7 +120,7 @@ set(NOVA_HEADERS
         render/objects/renderpasses/materials.h
 
         render/objects/renderpasses/render_passes.h
-        render/render_graph.cpp render/render_graph.h
+        render/render_graph.h
         render/objects/meshes/vertex_attributes.h
         )
 
@@ -172,6 +172,7 @@ set(NOVA_SOURCE
         render/objects/shaders/auto_allocated_buffer.cpp
         render/objects/renderpasses/render_passes.cpp
         data_loading/loaders/shader_file_loading.cpp
+        render/render_graph.cpp
         )
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The

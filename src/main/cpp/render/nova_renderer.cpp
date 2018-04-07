@@ -430,6 +430,7 @@ namespace nova {
     }
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes) {
+        LOG(INFO) << "compile_into_list BEGIN";
         auto passes_dependency_order = order_passes(passes);
         auto ordered_passes = std::vector<render_pass>{};
 

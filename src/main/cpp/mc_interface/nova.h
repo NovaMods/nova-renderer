@@ -173,7 +173,7 @@ NOVA_API struct key_char_event  get_next_key_char_event();
 
 NOVA_API int get_num_loaded_shaders();
 
-NOVA_API char* get_shaders_and_filters();
+NOVA_API char* get_materials_and_filters();
 
 }   // End extern C
     // I don't like doing this, but I just saw this closing curly brace and freaked out a little bit.
