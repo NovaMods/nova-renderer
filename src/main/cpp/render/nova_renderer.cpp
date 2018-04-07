@@ -186,7 +186,7 @@ namespace nova {
         }
     }
 
-    void nova_renderer::execute_pass(const render_pass &pass, command_buffer& buffer) {
+    void nova_renderer::execute_pass(const render_pass &pass, vk::CommandBuffer& buffer) {
         if(renderpasses_by_pass.find(pass.name) == renderpasses_by_pass.end()) {
             LOG(ERROR) << "No renderpass defined for pass " << pass.name << ". Skipping this pass";
             return;
@@ -204,7 +204,7 @@ namespace nova {
                 .setFramebuffer(renderpass_for_pass.frameBuffer)
                 .setRenderArea({{0, 0}, renderpass_for_pass.framebuffer_size});
 
-        buffer.buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
+        buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
 
         const auto& pipeline_for_pass = pipelines_by_renderpass.at(pass.name);
 
@@ -212,16 +212,16 @@ namespace nova {
             render_pipeline(nova_pipeline, buffer);
         }
 
-        buffer.buffer.endRenderPass();
+        buffer.endRenderPass();
     }
 
-    void nova_renderer::render_pipeline(const pipeline_info &pipeline_data, command_buffer& buffer) {
+    void nova_renderer::render_pipeline(const pipeline_info &pipeline_data, vk::CommandBuffer& buffer) {
         if(material_passes_by_pipeline.find(pipeline_data.name) != material_passes_by_pipeline.end()) {
             LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name << ". Skipping this pipeline";
             return;
         }
 
-        buffer.buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data.pipeline);
+        buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data.pipeline);
 
         const auto& material_passes = material_passes_by_pipeline.at(pipeline_data.name);
         for(const auto mat : material_passes) {
@@ -229,7 +229,7 @@ namespace nova {
         }
     }
 
-    void nova_renderer::render_all_for_material_pass(const material_pass pass, command_buffer& buffer) {
+    void nova_renderer::render_all_for_material_pass(const material_pass pass, vk::CommandBuffer& buffer) {
         const auto& meshes_for_mat = meshes->get_meshes_for_shader(pass.material_name);
         if(meshes_for_mat.empty()) {
             LOG(TRACE) << "No meshes available for material " << pass.material_name;
@@ -244,10 +244,10 @@ namespace nova {
         }
     }
 
-    void nova_renderer::render_mesh(const render_object &mesh, command_buffer &buffer) {
-        buffer.buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
-        buffer.buffer.bindVertexBuffers(0, 1, &mesh.geometry->vertex_buffer, {0});
-        buffer.buffer.drawIndexed(mesh.geometry->num_indices, 1, 0, 0, 0);
+    void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer) {
+        buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
+        buffer.bindVertexBuffers(0, 1, &mesh.geometry->vertex_buffer, {0});
+        buffer.drawIndexed(mesh.geometry->num_indices, 1, 0, 0, 0);
     }
 
     bool nova_renderer::should_end() {

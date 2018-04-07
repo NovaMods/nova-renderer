@@ -175,19 +175,7 @@ namespace nova {
          * Private functions
          */
 
-        /*!
-         * \brief Renders the GUI of Minecraft
-         */
-        void render_gui(vk::CommandBuffer command);
-
         void load_new_shaderpack(const std::string &new_shaderpack_name);
-
-        /*!
-         * \brief Renders all the geometry that uses the specified shader, setting up textures and whatnot
-         *
-         * \param shader The shader to render things with
-         */
-        void render_shader(vk::CommandBuffer shader, vk_shader_program &program);
 
         inline void upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix);
 
@@ -199,13 +187,13 @@ namespace nova {
 
         void update_gui_model_matrices();
 
-        void execute_pass(const render_pass &pass, nova::command_buffer& buffer);
+        void execute_pass(const render_pass &pass, vk::CommandBuffer& buffer);
 
-        void render_pipeline(const pipeline_info &pipeline_data, command_buffer& buffer);
+        void render_pipeline(const pipeline_info &pipeline_data, vk::CommandBuffer& buffer);
 
-        void render_all_for_material_pass(const material_pass pass, command_buffer& buffer);
+        void render_all_for_material_pass(const material_pass pass, vk::CommandBuffer& buffer);
 
-        void render_mesh(const render_object& mesh, command_buffer& buffer);
+        void render_mesh(const render_object& mesh, vk::CommandBuffer &buffer);
 
         std::unordered_map<std::string, std::vector<material_pass>> extract_material_passes(const std::vector<material>& materials);
     };
