@@ -114,7 +114,7 @@ namespace nova {
         LOG(INFO) << "Copied data to staging buffer";
 
         auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
-        command_buffer.buffer.reset(vk::CommandBufferResetFlagBits());
+        command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
         command_buffer.begin_as_single_commend();
 
         transfer_image_format(command_buffer.buffer, image, layout, vk::ImageLayout::eTransferDstOptimal);

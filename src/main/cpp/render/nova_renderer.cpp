@@ -123,7 +123,7 @@ namespace nova {
         context->device.resetFences({render_done_fence});
 
         auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
-        main_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits());
+        main_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
         vk::CommandBufferBeginInfo cmd_buf_begin_info = {};
         main_command_buffer.buffer.begin(cmd_buf_begin_info);
@@ -217,7 +217,7 @@ namespace nova {
     }
 
     void nova_renderer::render_pipeline(const pipeline_info &pipeline_data, vk::CommandBuffer& buffer) {
-        if(material_passes_by_pipeline.find(pipeline_data.name) != material_passes_by_pipeline.end()) {
+        if(material_passes_by_pipeline.find(pipeline_data.name) == material_passes_by_pipeline.end()) {
             LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name << ". Skipping this pipeline";
             return;
         }
@@ -445,7 +445,14 @@ namespace nova {
 
         for(const auto& mat : materials) {
             for(const auto& mat_pass : mat.passes) {
-                ordered_material_passes[mat_pass.pipeline].push_back(mat_pass);
+                LOG(INFO) << "Material pass for material " << mat.name << " uses pipeline " << mat_pass.pipeline;
+                if(ordered_material_passes.find(mat_pass.pipeline) == ordered_material_passes.end()) {
+                    ordered_material_passes[mat_pass.pipeline] = std::vector<material_pass>{};
+                }
+
+                auto& vec = ordered_material_passes.at(mat_pass.pipeline);
+                vec.push_back(mat_pass);
+                ordered_material_passes[mat_pass.pipeline] = vec;
             }
         }
 
