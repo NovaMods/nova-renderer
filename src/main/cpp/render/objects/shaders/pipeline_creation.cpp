@@ -405,7 +405,39 @@ namespace nova {
 
         module.bindings = get_interface_of_spirv(spirv_source, stages);
 
+        output_compiled_shader(source, spirv_source, stages);
+
         return module;
+    }
+
+    void output_compiled_shader(const shader_file &original_shader_file, const std::vector<uint32_t>& spirv, const vk::ShaderStageFlags &stages) {
+        std::stringstream filename;
+        filename << original_shader_file.lines[0].shader_name.string();
+        filename << original_shader_file.language.to_string();
+        if(stages & vk::ShaderStageFlagBits::eVertex) {
+            filename << "Vert";
+        }
+        if(stages & vk::ShaderStageFlagBits::eGeometry) {
+            filename << "Geom";
+        }
+        if(stages & vk::ShaderStageFlagBits::eTessellationControl) {
+            filename << "Tesc";
+        }
+        if(stages & vk::ShaderStageFlagBits::eTessellationEvaluation) {
+            filename << "Tese";
+        }
+        if(stages & vk::ShaderStageFlagBits::eFragment) {
+            filename << "Frag";
+        }
+        if(stages & vk::ShaderStageFlagBits::eCompute) {
+            filename << "Comp";
+        }
+        filename << ".spirv";
+
+        std::ofstream spirv_output{filename.str(), std::ios::binary};
+        spirv_output.write((char*)spirv.data(), spirv.size() * 4);
+
+        spirv_output.close();
     }
 
     std::vector<uint32_t> glsl_to_spirv(const std::vector<shader_line>& shader_lines, shaderc_shader_kind stages) {

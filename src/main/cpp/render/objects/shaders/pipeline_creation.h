@@ -56,6 +56,8 @@ namespace nova {
 
     pipeline_info make_pipeline(const pipeline& pipeline_create_info, const pass_vulkan_information& renderpass_info, vk::Device device);
 
+    void output_compiled_shader(const shader_file &original_shader_file, const std::vector<uint32_t>& spirv, const vk::ShaderStageFlags &stages);
+
     std::vector<uint32_t> glsl_to_spirv(const std::vector<shader_line>& shader_lines, shaderc_shader_kind stages);
 
     bindings_list get_interface_of_spirv(const std::vector<uint32_t>& spirv_source, const vk::ShaderStageFlags& stages);
