@@ -52,11 +52,11 @@ namespace nova {
                                                                               std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass,
                                                                               std::shared_ptr<render_context> context);
 
-    shader_module create_shader_module(const shader_file& source, const vk::ShaderStageFlags& stages,  const vk::Device& device);
+    shader_module create_shader_module(const shader_file& source, const shaderc_shader_kind& stages,  const vk::Device& device);
 
     pipeline_info make_pipeline(const pipeline& pipeline_create_info, const pass_vulkan_information& renderpass_info, vk::Device device);
 
-    void output_compiled_shader(const shader_file &original_shader_file, const std::vector<uint32_t>& spirv, const vk::ShaderStageFlags &stages);
+    void output_compiled_shader(const shader_file &original_shader_file, const std::vector<uint32_t>& spirv);
 
     std::vector<uint32_t> glsl_to_spirv(const std::vector<shader_line>& shader_lines, shaderc_shader_kind stages);
 

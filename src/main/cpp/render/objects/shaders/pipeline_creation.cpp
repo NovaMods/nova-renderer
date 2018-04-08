@@ -60,32 +60,30 @@ namespace nova {
 
         std::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos;
 
-        {
-            auto vertex_module = create_shader_module(pipeline_create_info.shader_sources.vertex_source, vk::ShaderStageFlagBits::eVertex, device);
+        auto vertex_module = create_shader_module(pipeline_create_info.shader_sources.vertex_source, shaderc_vertex_shader, device);
 
-            vk::PipelineShaderStageCreateInfo vertex_create_info = {};
-            vertex_create_info.stage = vk::ShaderStageFlagBits::eVertex;
-            vertex_create_info.module = vertex_module.module;
-            vertex_create_info.pName = "main";
-            stage_create_infos.push_back(vertex_create_info);
+        vk::PipelineShaderStageCreateInfo vertex_create_info = {};
+        vertex_create_info.stage = vk::ShaderStageFlagBits::eVertex;
+        vertex_create_info.module = vertex_module.module;
+        vertex_create_info.pName = "main";
+        stage_create_infos.push_back(vertex_create_info);
+        LOG(INFO) << "Using shader module " << (VkShaderModule)vertex_create_info.module;
 
-            add_bindings_from_shader(pipeline_data, vertex_module, "vertex");
-        }
+        add_bindings_from_shader(pipeline_data, vertex_module, "vertex");
 
-        {
-            auto fragment_module = create_shader_module(pipeline_create_info.shader_sources.fragment_source, vk::ShaderStageFlagBits::eFragment, device);
+        auto fragment_module = create_shader_module(pipeline_create_info.shader_sources.fragment_source, shaderc_fragment_shader, device);
 
-            vk::PipelineShaderStageCreateInfo fragment_create_info = {};
-            fragment_create_info.stage = vk::ShaderStageFlagBits::eFragment;
-            fragment_create_info.module = fragment_module.module;
-            fragment_create_info.pName = "main";
-            stage_create_infos.push_back(fragment_create_info);
+        vk::PipelineShaderStageCreateInfo fragment_create_info = {};
+        fragment_create_info.stage = vk::ShaderStageFlagBits::eFragment;
+        fragment_create_info.module = fragment_module.module;
+        fragment_create_info.pName = "main";
+        stage_create_infos.push_back(fragment_create_info);
+        LOG(INFO) << "Using shader module " << (VkShaderModule)fragment_create_info.module;
 
-            add_bindings_from_shader(pipeline_data, fragment_module, "fragment");
-        }
+        add_bindings_from_shader(pipeline_data, fragment_module, "fragment");
 
         if(pipeline_create_info.shader_sources.geometry_source) {
-            auto geometry_module = create_shader_module(pipeline_create_info.shader_sources.geometry_source.value(), vk::ShaderStageFlagBits::eGeometry, device);
+            auto geometry_module = create_shader_module(pipeline_create_info.shader_sources.geometry_source.value(), shaderc_geometry_shader, device);
 
             vk::PipelineShaderStageCreateInfo geometry_create_info = {};
             geometry_create_info.stage = vk::ShaderStageFlagBits::eGeometry;
@@ -94,10 +92,11 @@ namespace nova {
             stage_create_infos.push_back(geometry_create_info);
 
             add_bindings_from_shader(pipeline_data, geometry_module, "geometry");
+            LOG(INFO) << "Using shader module " << (VkShaderModule)geometry_create_info.module;
         }
 
         if(pipeline_create_info.shader_sources.tessellation_control_source) {
-            auto tesc_module = create_shader_module(pipeline_create_info.shader_sources.tessellation_control_source.value(), vk::ShaderStageFlagBits::eTessellationControl, device);
+            auto tesc_module = create_shader_module(pipeline_create_info.shader_sources.tessellation_control_source.value(), shaderc_tess_control_shader, device);
 
             vk::PipelineShaderStageCreateInfo tesc_create_info = {};
             tesc_create_info.stage = vk::ShaderStageFlagBits::eTessellationControl;
@@ -106,10 +105,11 @@ namespace nova {
             stage_create_infos.push_back(tesc_create_info);
 
             add_bindings_from_shader(pipeline_data, tesc_module, "tessellation control");
+            LOG(INFO) << "Using shader module " << (VkShaderModule)tesc_create_info.module;
         }
 
         if(pipeline_create_info.shader_sources.tessellation_evaluation_source) {
-            auto tese_module = create_shader_module(pipeline_create_info.shader_sources.tessellation_evaluation_source.value(), vk::ShaderStageFlagBits::eTessellationEvaluation, device);
+            auto tese_module = create_shader_module(pipeline_create_info.shader_sources.tessellation_evaluation_source.value(), shaderc_tess_evaluation_shader, device);
 
             vk::PipelineShaderStageCreateInfo tese_create_info = {};
             tese_create_info.stage = vk::ShaderStageFlagBits::eTessellationEvaluation;
@@ -118,6 +118,7 @@ namespace nova {
             stage_create_infos.push_back(tese_create_info);
 
             add_bindings_from_shader(pipeline_data, tese_module, "tessellation evaluation");
+            LOG(INFO) << "Using shader module " << (VkShaderModule)tese_create_info.module;
         }
 
         graphics_pipeline_create_info.stageCount = static_cast<uint32_t>(stage_create_infos.size());
@@ -339,6 +340,9 @@ namespace nova {
 
         // TODO: Handle dynamic state
 
+
+        LOG(INFO) << "Creating pipeline with vertex module = " << (VkShaderModule)graphics_pipeline_create_info.pStages[0].module
+                  << " and fragment module = " << (VkShaderModule)graphics_pipeline_create_info.pStages[1].module;
         pipeline_data.pipeline = device.createGraphicsPipeline(vk::PipelineCache(), graphics_pipeline_create_info);
         LOG(INFO) << "Created pipeline " << pipeline_create_info.name << " (VkPipeline " << (VkPipeline)pipeline_data.pipeline << ")";
 
@@ -386,11 +390,13 @@ namespace nova {
         }
     }
 
-    shader_module create_shader_module(const shader_file& source, const vk::ShaderStageFlags& stages, const vk::Device& device) {
+    shader_module create_shader_module(const shader_file& source, const shaderc_shader_kind& stage, const vk::Device& device) {
+        LOG(INFO) << "Creating a shader module for file " << source.lines[0].shader_name;
         std::vector<uint32_t> spirv_source;
+
         switch(source.language) {
             case shader_langauge_enum::GLSL:
-                spirv_source = glsl_to_spirv(source.lines, shaderc_vertex_shader);
+                spirv_source = glsl_to_spirv(source.lines, stage);
                 break;
             default:
                 LOG(ERROR) << "Shader language " << source.language.to_string() << " is not implemented yet";
@@ -402,37 +408,41 @@ namespace nova {
 
         auto module = shader_module{};
         module.module = device.createShaderModule(create_info);
+        LOG(INFO) << "Created shader module " << (VkShaderModule)module.module;
+
+        vk::ShaderStageFlags stages;
+        switch(stage) {
+            case shaderc_vertex_shader:
+                stages = vk::ShaderStageFlagBits::eVertex;
+                break;
+            case shaderc_geometry_shader:
+                stages = vk::ShaderStageFlagBits::eGeometry;
+                break;
+            case shaderc_tess_control_shader:
+                stages = vk::ShaderStageFlagBits::eTessellationControl;
+                break;
+            case shaderc_tess_evaluation_shader:
+                stages = vk::ShaderStageFlagBits::eTessellationEvaluation;
+                break;
+            case shaderc_fragment_shader:
+                stages = vk::ShaderStageFlagBits::eFragment;
+                break;
+            case shaderc_compute_shader:
+                stages = vk::ShaderStageFlagBits::eCompute;
+                break;
+        }
 
         module.bindings = get_interface_of_spirv(spirv_source, stages);
 
-        output_compiled_shader(source, spirv_source, stages);
+        output_compiled_shader(source, spirv_source);
 
         return module;
     }
 
-    void output_compiled_shader(const shader_file &original_shader_file, const std::vector<uint32_t>& spirv, const vk::ShaderStageFlags &stages) {
+    void output_compiled_shader(const shader_file &original_shader_file, const std::vector<uint32_t>& spirv) {
         std::stringstream filename;
         filename << original_shader_file.lines[0].shader_name.string();
-        filename << original_shader_file.language.to_string();
-        if(stages & vk::ShaderStageFlagBits::eVertex) {
-            filename << "Vert";
-        }
-        if(stages & vk::ShaderStageFlagBits::eGeometry) {
-            filename << "Geom";
-        }
-        if(stages & vk::ShaderStageFlagBits::eTessellationControl) {
-            filename << "Tesc";
-        }
-        if(stages & vk::ShaderStageFlagBits::eTessellationEvaluation) {
-            filename << "Tese";
-        }
-        if(stages & vk::ShaderStageFlagBits::eFragment) {
-            filename << "Frag";
-        }
-        if(stages & vk::ShaderStageFlagBits::eCompute) {
-            filename << "Comp";
-        }
-        filename << ".spirv";
+        filename << ".debug.spirv";
 
         std::ofstream spirv_output{filename.str(), std::ios::binary};
         spirv_output.write((char*)spirv.data(), spirv.size() * 4);
@@ -441,6 +451,7 @@ namespace nova {
     }
 
     std::vector<uint32_t> glsl_to_spirv(const std::vector<shader_line>& shader_lines, shaderc_shader_kind stages) {
+        LOG(INFO) << "Compiling as shader type " << stages;
         std::stringstream ss;
         for(auto& line : shader_lines) {
             ss << line.line << "\n";
@@ -452,6 +463,7 @@ namespace nova {
         compile_options.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
         compile_options.SetSourceLanguage(shaderc_source_language_glsl);
         compile_options.SetWarningsAsErrors();  // TODO: Make this configurable from shaders.json or something
+        compile_options.SetGenerateDebugInfo();
         // TODO: Let users set optimization level too
 
         std::string source = ss.str();
