@@ -55,40 +55,80 @@ namespace nova {
                            << pass.name << ", but your GPU only supports " << num_supported_attachments;
 
             } else {
-                const auto& first_tex = textures->get_texture(texture_outputs_vec[0]);
-                last_texture_size = first_tex.get_size();
-                last_texture_name = first_tex.get_name();
+                if(texture_outputs_vec[0].find("Backbuffer") != std::string::npos) {
+                    last_texture_size = context->swapchain_extent;
+                    last_texture_name = "Backbuffer";
+
+                } else {
+                    LOG(TRACE) << "Getting initial texture '" << texture_outputs_vec[0] << "' from the texture store";
+                    const auto &first_tex = textures->get_texture(texture_outputs_vec[0]);
+                    last_texture_size = first_tex.get_size();
+                    last_texture_name = first_tex.get_name();
+                }
 
                 for(const auto &color_attachment_name : texture_outputs_vec) {
-                    const auto &texture = textures->get_texture(color_attachment_name);
+                    LOG(DEBUG) << "Adding color texture '" << color_attachment_name << "'";
+                    if (color_attachment_name.find("Backbuffer") != std::string::npos) {
+                        LOG(TRACE) << "Special snowflake backbuffer code path";
+                        // The backbuffer is a special snowflake
+                        if (context->swapchain_extent != last_texture_size) {
+                            LOG(ERROR) << "Backbuffer does not have the same size as texture "
+                                       << last_texture_name
+                                       << ". In order to use two textures in the same pass, they must have the same size";
+                        }
 
-                    if(texture.get_size() != last_texture_size) {
-                        LOG(ERROR) << "Texture " << texture.get_name() << " does not have the same size as texture "
-                                   << last_texture_name << ". In order to use two textures in the same pass, they must have the same size";
+                        last_texture_size = context->swapchain_extent;
+                        last_texture_name = "Backbuffer";
+
+                        auto attachment = vk::AttachmentDescription()
+                            .setFormat(context->swapchain_format)
+                            .setSamples(vk::SampleCountFlagBits::e1)
+                            .setLoadOp(vk::AttachmentLoadOp::eDontCare)
+                            .setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                            .setFinalLayout(vk::ImageLayout::ePresentSrcKHR)
+                            .setStoreOp(vk::AttachmentStoreOp::eStore);
+
+                        auto color_ref = vk::AttachmentReference()
+                                .setAttachment(static_cast<uint32_t>(attachments.size()))
+                                .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+                        color_refs.push_back(color_ref);
+                        attachments.push_back(attachment);
+
+                    } else {
+                        LOG(TRACE) << "Getting color attachment info '" << color_attachment_name << "' from the texture store";
+                        const auto &texture = textures->get_texture(color_attachment_name);
+
+                        if (texture.get_size() != last_texture_size) {
+                            LOG(ERROR) << "Texture " << texture.get_name() << " does not have the same size as texture "
+                                       << last_texture_name
+                                       << ". In order to use two textures in the same pass, they must have the same size";
+                        }
+
+                        last_texture_size = texture.get_size();
+                        last_texture_name = texture.get_name();
+
+                        vk::AttachmentDescription color_attachment = {};
+                        color_attachment.format = texture.get_format();
+                        color_attachment.samples = vk::SampleCountFlagBits::e1;
+                        color_attachment.loadOp = vk::AttachmentLoadOp::eLoad;
+                        color_attachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+                        color_attachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+                        color_attachment.storeOp = vk::AttachmentStoreOp::eStore;
+
+                        auto color_ref = vk::AttachmentReference()
+                                .setAttachment(static_cast<uint32_t>(attachments.size()))
+                                .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+                        color_refs.push_back(color_ref);
+                        attachments.push_back(color_attachment);
                     }
-
-                    last_texture_size = texture.get_size();
-                    last_texture_name = texture.get_name();
-
-                    vk::AttachmentDescription color_attachment = {};
-                    color_attachment.format = texture.get_format();
-                    color_attachment.samples = vk::SampleCountFlagBits::e1;
-                    color_attachment.loadOp = vk::AttachmentLoadOp::eLoad;
-                    color_attachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
-                    color_attachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
-                    color_attachment.storeOp = vk::AttachmentStoreOp::eStore;
-
-                    auto color_ref = vk::AttachmentReference()
-                        .setAttachment(static_cast<uint32_t>(attachments.size()))
-                        .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
-
-                    color_refs.push_back(color_ref);
-                    attachments.push_back(color_attachment);
                 }
             }
         }
 
         if(pass.depth_output) {
+            LOG(DEBUG) << "Adding depth texture " << pass.depth_output.value();
             const auto& depth_tex = textures->get_texture(pass.depth_output.value());
 
             auto depth_attachment = vk::AttachmentDescription()
@@ -135,9 +175,15 @@ namespace nova {
             const auto& outputs = pass.texture_outputs.value();
 
             for(const auto& output_name : outputs) {
-                const auto& tex = textures->get_texture(output_name);
-                attachments.push_back(tex.get_image_view());
-                framebuffer_size = tex.get_size();
+                if(output_name == "Backbuffer") {
+                    attachments.push_back(context->swapchain_image_views[0]);
+                    framebuffer_size = context->swapchain_extent;
+
+                } else {
+                    const auto &tex = textures->get_texture(output_name);
+                    attachments.push_back(tex.get_image_view());
+                    framebuffer_size = tex.get_size();
+                }
             }
         }
         if(pass.depth_output) {

@@ -26,6 +26,9 @@
 namespace nova {
     struct resource_binding : public vk::DescriptorSetLayoutBinding {
         uint32_t set;
+
+        bool operator==(const resource_binding& other) const;
+        bool operator!=(const resource_binding& other) const;
     };
 
     using bindings_list = std::unordered_map<std::string, resource_binding>;

@@ -45,6 +45,9 @@ namespace nova {
                     size = 16;
                     break;
                 case (vk::Format::eR32G32B32Sfloat):
+                    size = 24;
+                    break;
+                case (vk::Format::eR32G32B32A32Sfloat):
                     size = 32;
                     break;
                 default:

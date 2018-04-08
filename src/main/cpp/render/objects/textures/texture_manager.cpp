@@ -56,7 +56,7 @@ namespace nova {
         texture.set_name(texture_name);
 
         std::vector<float> pixel_data((std::size_t) (new_texture.width * new_texture.height * new_texture.num_components));
-        for(int i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
+        for(auto i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
             pixel_data[i] = float(new_texture.texture_data[i]) / 255.0f;
         }
 

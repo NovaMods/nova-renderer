@@ -316,7 +316,6 @@ namespace nova {
             attachmentBlendStates.resize(renderpass_info.num_attachments);
             for(auto &blend_state : attachmentBlendStates) {
                 blend_state.blendEnable = static_cast<vk::Bool32>(enable_blending);
-                auto src_color_blend_factor = to_vk_blend_factor(pipeline_create_info.source_blend_factor.value_or(blend_factor_enum::SrcAlpha));
 
                 blend_state.srcColorBlendFactor = to_vk_blend_factor(pipeline_create_info.source_blend_factor.value_or(blend_factor_enum::SrcAlpha));
                 blend_state.dstColorBlendFactor = to_vk_blend_factor(pipeline_create_info.destination_blend_factor.value_or(blend_factor_enum::OneMinusSrcAlpha));
@@ -469,5 +468,13 @@ namespace nova {
         }
 
         return bindings;
+    }
+
+    bool resource_binding::operator==(const resource_binding& other) const {
+        return other.set == set && other.binding == binding;
+    }
+
+    bool resource_binding::operator!=(const resource_binding& other) const {
+        return !(*this == other);
     }
 }

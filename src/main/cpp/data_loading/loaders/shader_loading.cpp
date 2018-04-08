@@ -58,6 +58,16 @@ namespace nova {
             pack.dynamic_textures = load_texture_definitions_from_folder(shaderpack_directory);
             LOG(INFO) << "Loading materials";
             pack.materials = load_materials_from_folder(shaderpack_directory);
+
+            if(pack.passes.empty()) {
+                LOG(ERROR) << "Shaderpack " << shaderpack_name << " doesn't define any passes, it can't render anything";
+            }
+            if(pack.pipelines_by_pass.empty()) {
+                LOG(ERROR) << "Shaderpack " << shaderpack_name << " doesn't define any pipelines, it can't render anything";
+            }
+            if(pack.materials.empty()) {
+                LOG(ERROR) << "Shaderpack " << shaderpack_name << " doesn't define any materials, it can't render anything";
+            }
         }
 
         LOG(INFO) << "All data for shaderpack " << shaderpack_name << " read from disk";
