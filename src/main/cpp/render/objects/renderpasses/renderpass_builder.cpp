@@ -19,7 +19,7 @@ namespace nova {
         std::unordered_map<std::string, pass_vulkan_information> renderpasses;
 
         for(const std::pair<std::string, render_pass>& named_pass : data.passes) {
-            pass_vulkan_information& pass_vk_info = renderpasses[named_pass.first];
+            auto pass_vk_info = pass_vulkan_information{};
 
             const auto renderpass = make_render_pass(named_pass.second, textures, context);
             pass_vk_info.renderpass = renderpass;
@@ -29,12 +29,15 @@ namespace nova {
             pass_vk_info.framebuffer_size = size;
 
             pass_vk_info.num_attachments = static_cast<uint32_t>(named_pass.second.texture_outputs.value_or(std::vector<std::string>{}).size());
+
+            renderpasses[named_pass.first] = pass_vk_info;
         }
 
         return renderpasses;
     }
 
     vk::RenderPass make_render_pass(const render_pass& pass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context) {
+        LOG(INFO) << "Making VkRenderPass for pass " << pass.name;
 
         std::vector<vk::AttachmentDescription> attachments;
 
@@ -163,12 +166,18 @@ namespace nova {
         render_pass_create_info.pSubpasses = &subpass;
         render_pass_create_info.dependencyCount = 0;
 
-        return context->device.createRenderPass(render_pass_create_info);
+        auto renderpass =  context->device.createRenderPass(render_pass_create_info);
+        if(renderpass == vk::RenderPass()) {
+            LOG(ERROR) << "Failed to create renderpass for pass " << pass.name;
+        }
+
+        return renderpass;
     }
 
 
     std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, std::shared_ptr<texture_manager> textures,
                                      std::shared_ptr<render_context> context) {
+        LOG(INFO) << "Making framebuffer for pass " << pass.name;
         std::vector<vk::ImageView> attachments;
         vk::Extent2D framebuffer_size;
         if(pass.texture_outputs) {

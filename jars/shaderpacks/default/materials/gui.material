@@ -1,5 +1,7 @@
 {
     "gui": {
+        "pass": "Forward",
+
         "states": [
             "DisableAlphaWrite"
         ],
@@ -12,12 +14,6 @@
             {"field": "Color"},
             {"field": "UV0"},
             {"field": "VirtualTextureId"}
-        ],
-        
-        "fallback": "gbuffers_textured",
-        "pass": "Gbuffer",
-        "passIndex": 4,
-        "hasTransparency": false,
-        "hasCutout": false
+        ]
     }
 }

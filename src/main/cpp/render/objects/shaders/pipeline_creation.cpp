@@ -37,6 +37,8 @@ namespace nova {
     }
 
     pipeline_info make_pipeline(const pipeline& pipeline_create_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
+        LOG(INFO) << "Making VkPipeline for pipeline " << pipeline_create_info.name;
+
         // Creates a pipeline out of compiled shaders
         auto states_vec = pipeline_create_info.states.value_or(std::vector<state_enum>{});
         const auto& states_end = states_vec.end();
