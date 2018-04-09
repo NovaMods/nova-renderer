@@ -67,6 +67,7 @@ namespace nova {
         vk::Format depth_format;
         std::vector<vk::ImageView> swapchain_image_views;
         std::vector<vk::Image> swapchain_images;
+        vk::ImageLayout swapchain_layout;
 
         std::vector<gpu_info> gpus;
 

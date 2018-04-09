@@ -59,6 +59,11 @@ namespace nova {
 
         vk::ImageView get_image_view() const;
 
+        /*!
+         * \brief Sets the internally tracked image layout - DOES NOT actually change image layout
+         * \param layout The new layout
+         */
+        void set_layout(vk::ImageLayout layout);
         vk::ImageLayout get_layout() const;
 
     private:

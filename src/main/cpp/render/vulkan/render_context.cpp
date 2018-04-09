@@ -295,6 +295,7 @@ namespace nova {
         swapchain_extent = extent;
 
         swapchain_images = device.getSwapchainImagesKHR(swapchain);
+        swapchain_layout = vk::ImageLayout::eUndefined;
         if(swapchain_images.empty()) {
             LOG(FATAL) << "The swapchain returned zero images";
         }

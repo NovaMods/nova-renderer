@@ -120,10 +120,20 @@ namespace nova {
     void nova_renderer::render_frame() {
         begin_frame();
 
+        vk::ResultValue<uint32_t> result = context->device.acquireNextImageKHR(context->swapchain,
+                                                                               std::numeric_limits<uint64_t>::max(),
+                                                                               swapchain_image_acquire_semaphore,
+                                                                               vk::Fence());
+        if (result.result != vk::Result::eSuccess) {
+            LOG(ERROR) << "Could not acquire swapchain image! vkResult: " << result.result;
+        }
+        cur_swapchain_image_index = result.value;
+
         context->device.resetFences({render_done_fence});
 
         auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
         main_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+        LOG(INFO) << "Rendering with command buffer " << (VkCommandBuffer) main_command_buffer.buffer;
 
         vk::CommandBufferBeginInfo cmd_buf_begin_info = {};
         main_command_buffer.buffer.begin(cmd_buf_begin_info);
@@ -133,11 +143,38 @@ namespace nova {
         // upload UBO things
         update_gbuffer_ubos();
 
-        for(const auto& pass : passes_list) {
+        for (const auto &pass : passes_list) {
             execute_pass(pass, main_command_buffer.buffer);
         }
 
         main_command_buffer.buffer.end();
+
+        vk::ImageMemoryBarrier barrier = {};
+        barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        // This block seems weirdly hardcoded and not scalable but idk
+        vk::PipelineStageFlags source_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        vk::PipelineStageFlags destination_stage = vk::PipelineStageFlagBits::eBottomOfPipe;
+        barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+        barrier.image = context->swapchain_images[cur_swapchain_image_index];
+        barrier.oldLayout = context->swapchain_layout;
+        context->swapchain_layout = vk::ImageLayout::ePresentSrcKHR;
+
+        main_command_buffer.buffer.pipelineBarrier(
+                source_stage, destination_stage,
+                vk::DependencyFlags(),
+                0, nullptr,
+                0, nullptr,
+                1, &barrier);
 
         vk::Semaphore wait_semaphores[] = {swapchain_image_acquire_semaphore};
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
@@ -155,13 +192,6 @@ namespace nova {
 
         context->graphics_queue.submit(1, &submit_info, render_done_fence);
 
-        vk::ResultValue<uint32_t> result = context->device.acquireNextImageKHR(context->swapchain, std::numeric_limits<uint64_t>::max(),
-                                                                               swapchain_image_acquire_semaphore, vk::Fence());
-        if(result.result != vk::Result::eSuccess) {
-            LOG(ERROR) << "Could not acquire swapchain image! vkResult: " << result.result;
-        }
-        cur_swapchain_image_index = result.value;
-
         vk::Result swapchain_result = {};
 
         vk::PresentInfoKHR present_info = {};
@@ -177,14 +207,18 @@ namespace nova {
         game_window->end_frame();
 
         auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, std::numeric_limits<uint64_t>::max());
-        if(fence_wait_result == vk::Result::eSuccess) {
+        if (fence_wait_result == vk::Result::eSuccess) {
             // Process geometry updates
             meshes->remove_old_geometry();
             meshes->upload_new_geometry();
 
+            context->command_buffer_pool->free(main_command_buffer);
+
         } else {
-            LOG(WARNING) << "Could not wait for gui done fence, " << fence_wait_result;
+            LOG(WARNING) << "Could not wait for gui done fence, " << vk::to_string(fence_wait_result);
         }
+
+        LOG(INFO) << "Frame done";
     }
 
     void nova_renderer::execute_pass(const render_pass &pass, vk::CommandBuffer& buffer) {
@@ -199,6 +233,55 @@ namespace nova {
         }
 
         const auto& renderpass_for_pass = renderpasses_by_pass.at(pass.name);
+
+        for(const auto& write_resource : renderpass_for_pass.texture_outputs) {
+            // Transition all written to resources to shader write optimal
+
+            vk::ImageMemoryBarrier barrier = {};
+            barrier.newLayout = vk::ImageLayout::eColorAttachmentOptimal;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+
+            // This block seems weirdly hardcoded and not scalable but idk
+            vk::PipelineStageFlags source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+            vk::PipelineStageFlags destination_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+            barrier.srcAccessMask = vk::AccessFlags();
+            barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+            if (write_resource == "Backbuffer") {
+                barrier.image = context->swapchain_images[cur_swapchain_image_index];
+                barrier.oldLayout = context->swapchain_layout;
+                context->swapchain_layout = vk::ImageLayout::eColorAttachmentOptimal;
+
+                continue;
+            }
+
+            try {
+                // heavy handed but I don't have any good debugging tools right now so suck it nerds
+                auto& tex = textures->get_texture(write_resource);
+
+                barrier.image = tex.get_vk_image();
+                barrier.oldLayout = tex.get_layout();
+
+                tex.set_layout(vk::ImageLayout::eColorAttachmentOptimal);
+
+            } catch (std::domain_error &) {
+                // Couldn't get the texture? All well. There'll be an error printed out already
+                continue;
+            }
+
+            buffer.pipelineBarrier(
+                    source_stage, destination_stage,
+                    vk::DependencyFlags(),
+                    0, nullptr,
+                    0, nullptr,
+                    1, &barrier);
+        }
 
         vk::RenderPassBeginInfo begin_final_pass = vk::RenderPassBeginInfo()
                 .setRenderPass(renderpass_for_pass.renderpass)
@@ -391,7 +474,7 @@ namespace nova {
     }
 
     void nova_renderer::begin_frame() {
-        LOG(TRACE) << "Beginning frame";
+        LOG(INFO) << "Beginning frame";
     }
 
     std::shared_ptr<render_context> nova_renderer::get_render_context() {

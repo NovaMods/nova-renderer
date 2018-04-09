@@ -30,6 +30,12 @@ namespace nova {
 
             pass_vk_info.num_attachments = static_cast<uint32_t>(named_pass.second.texture_outputs.value_or(std::vector<std::string>{}).size());
 
+            if(named_pass.second.texture_outputs) {
+                pass_vk_info.texture_outputs = named_pass.second.texture_outputs.value();
+            }
+
+            pass_vk_info.depth_output = named_pass.second.depth_output;
+
             renderpasses[named_pass.first] = pass_vk_info;
         }
 

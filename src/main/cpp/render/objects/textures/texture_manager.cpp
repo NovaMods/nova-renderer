@@ -37,6 +37,8 @@ namespace nova {
         locations.clear();
 
         atlases["lightmap"] = texture2D(vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, context);
+        atlases["lightmap"].set_name("lightmap");
+        LOG(INFO) << "Created lightmap";
 
         clear_dynamic_textures();
     }
@@ -47,7 +49,7 @@ namespace nova {
     }
 
     void texture_manager::add_texture(mc_atlas_texture &new_texture) {
-        LOG(DEBUG) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
+        LOG(INFO) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
         std::string texture_name = new_texture.name;
         LOG(TRACE) << "Saved texture name";
         auto dimensions = vk::Extent2D{new_texture.width, new_texture.height};

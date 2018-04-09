@@ -55,7 +55,7 @@ namespace nova {
         img_view_create_info.subresourceRange = subresource_range;
 
         image_view = context->device.createImageView(img_view_create_info);
-        LOG(INFO) << "Created image view";
+        LOG(TRACE) << "Created image view";
         layout = image_create_info.initialLayout;
 
         LOG(DEBUG) << "Created new image";
@@ -87,6 +87,7 @@ namespace nova {
     }
 
     void texture2D::upload_data_with_staging_buffer(void *data, vk::Extent3D image_size) {
+        LOG(INFO) << "Setting data for texture " << name;
         vk::Buffer staging_buffer;
         VmaAllocation staging_buffer_allocation;
         auto buffer_size = image_size.width * image_size.height * image_size.depth * 4;
@@ -141,6 +142,10 @@ namespace nova {
         return layout;
     }
 
+    void texture2D::set_layout(vk::ImageLayout layout) {
+        this->layout = layout;
+    }
+
     void transfer_image_format(vk::CommandBuffer command_buffer, vk::Image image, vk::ImageLayout old_layout, vk::ImageLayout new_layout) {
         vk::ImageMemoryBarrier barrier = {};
         barrier.oldLayout = old_layout;
@@ -171,16 +176,16 @@ namespace nova {
             source_stage = vk::PipelineStageFlagBits::eTransfer;
             destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
 
-        } else if (old_layout == vk::ImageLayout::ePreinitialized && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal) {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+        } else if (old_layout == vk::ImageLayout::eGeneral && new_layout == vk::ImageLayout::eTransferDstOptimal) {
+            barrier.srcAccessMask = vk::AccessFlags();
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
 
-            source_stage = vk::PipelineStageFlagBits::eTransfer;
-            destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
+            source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destination_stage = vk::PipelineStageFlagBits::eTransfer;
 
         } else {
             auto ss = std::stringstream{};
-            ss << "Unsupported layout transition! Can't transition from " << (VkImageLayout)old_layout << " to " << (VkImageLayout)new_layout;
+            ss << "Unsupported layout transition! Can't transition from " << vk::to_string(old_layout) << " to " << vk::to_string(new_layout);
             throw std::invalid_argument(ss.str());
         }
 
@@ -208,5 +213,7 @@ namespace nova {
         region.imageExtent = vk::Extent3D{width, height, 1};
 
         command_buffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
+
+        LOG(INFO) << "Recorded command into command buffer " << (VkCommandBuffer)command_buffer << " to copy data to image " << (VkImage)image;
     }
 }

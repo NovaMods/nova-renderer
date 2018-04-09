@@ -48,6 +48,8 @@ namespace nova {
 
     void command_pool::free(command_buffer &buf) {
         device.freeCommandBuffers(command_pools[buf.pool_idx], 1, &buf.buffer);
+        device.destroyFence(buf.fences[0]);
+        device.destroyFence(buf.fences[1]);
     }
 
     command_pool::~command_pool() {
