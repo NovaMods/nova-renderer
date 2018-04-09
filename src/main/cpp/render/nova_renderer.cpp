@@ -147,8 +147,6 @@ namespace nova {
             execute_pass(pass, main_command_buffer.buffer);
         }
 
-        main_command_buffer.buffer.end();
-
         vk::ImageMemoryBarrier barrier = {};
         barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -175,6 +173,8 @@ namespace nova {
                 0, nullptr,
                 0, nullptr,
                 1, &barrier);
+
+        main_command_buffer.buffer.end();
 
         vk::Semaphore wait_semaphores[] = {swapchain_image_acquire_semaphore};
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};

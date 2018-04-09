@@ -430,6 +430,8 @@ namespace nova {
             case shaderc_compute_shader:
                 stages = vk::ShaderStageFlagBits::eCompute;
                 break;
+            default:
+                LOG(ERROR) << "Shader kind " << stage << " not handled. Soz.";
         }
 
         module.bindings = get_interface_of_spirv(spirv_source, stages);
