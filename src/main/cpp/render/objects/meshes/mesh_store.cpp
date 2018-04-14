@@ -19,16 +19,16 @@ namespace nova {
         LOG(INFO) << "Does the mesh store have shader resources? " << (bool)shader_resources;
     }
 
-    std::vector<render_object>& mesh_store::get_meshes_for_shader(std::string shader_name) {
-        if(renderables_grouped_by_shader.find(shader_name) != renderables_grouped_by_shader.end()) {
-            return renderables_grouped_by_shader.at(shader_name);
+    std::vector<render_object>& mesh_store::get_meshes_for_material(std::string material_name) {
+        if(renderables_grouped_by_material.find(material_name) != renderables_grouped_by_material.end()) {
+            return renderables_grouped_by_material.at(material_name);
         } else {
             return default_vector;
         }
     }
 
     void mesh_store::add_gui_buffers(mc_gui_geometry* command) {
-        LOG(TRACE) << "Adding GUI geometry " << command->texture_name;
+        LOG(INFO) << "Adding GUI geometry " << command->texture_name;
         std::string texture_name(command->texture_name);
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
@@ -68,10 +68,10 @@ namespace nova {
         gui.per_model_buffer_range = shader_resources->get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
 
         // TODO: Something more intelligent
-        if(renderables_grouped_by_shader.find("gui") == renderables_grouped_by_shader.end()) {
-            renderables_grouped_by_shader["gui"] = std::vector<render_object>{};
+        if(renderables_grouped_by_material.find("gui") == renderables_grouped_by_material.end()) {
+            renderables_grouped_by_material["gui"] = std::vector<render_object>{};
         }
-        renderables_grouped_by_shader.at("gui").push_back(std::move(gui));
+        renderables_grouped_by_material.at("gui").push_back(std::move(gui));
     }
 
     void mesh_store::remove_gui_render_objects() {
@@ -87,7 +87,7 @@ namespace nova {
             auto &filter = geometry_to_remove.front();
 
             auto per_model_buffer = shader_resources->get_per_model_buffer();
-            for (auto &group : renderables_grouped_by_shader) {
+            for (auto &group : renderables_grouped_by_material) {
                 auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), filter);
 
                 if (removed_elements != group.second.end()) {
@@ -123,11 +123,11 @@ namespace nova {
             obj.bounding_box.extents = {16, 128, 16};   // TODO: Make these values come from Minecraft
 
             const std::string& shader_name = std::get<0>(entry);
-            if(renderables_grouped_by_shader.find(shader_name) == renderables_grouped_by_shader.end()) {
+            if(renderables_grouped_by_material.find(shader_name) == renderables_grouped_by_material.end()) {
                 LOG(INFO) << "Adding a new list of " << shader_name << " objects";
-                renderables_grouped_by_shader[shader_name] = std::vector<render_object>{};
+                renderables_grouped_by_material[shader_name] = std::vector<render_object>{};
             }
-            renderables_grouped_by_shader.at(shader_name).push_back(std::move(obj));
+            renderables_grouped_by_material.at(shader_name).push_back(std::move(obj));
 
             chunk_parts_to_upload.pop();
         }

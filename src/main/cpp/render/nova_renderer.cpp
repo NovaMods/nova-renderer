@@ -143,6 +143,7 @@ namespace nova {
         // upload UBO things
         update_gbuffer_ubos();
 
+        LOG(INFO) << "We have " << passes_list.size() << " passes to render";
         for (const auto &pass : passes_list) {
             execute_pass(pass, main_command_buffer.buffer);
         }
@@ -232,6 +233,8 @@ namespace nova {
             return;
         }
 
+        LOG(INFO) << "Beginning pass " << pass.name;
+
         const auto& renderpass_for_pass = renderpasses_by_pass.at(pass.name);
 
         for(const auto& write_resource : renderpass_for_pass.texture_outputs) {
@@ -290,9 +293,10 @@ namespace nova {
 
         buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
 
-        const auto& pipeline_for_pass = pipelines_by_renderpass.at(pass.name);
+        const auto& pipelines_for_pass = pipelines_by_renderpass.at(pass.name);
+        LOG(INFO) << "Processing data in " << pipelines_for_pass.size() << " pipelines";
 
-        for(const auto& nova_pipeline : pipeline_for_pass) {
+        for(const auto& nova_pipeline : pipelines_for_pass) {
             render_pipeline(nova_pipeline, buffer);
         }
 
@@ -304,25 +308,30 @@ namespace nova {
             LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name << ". Skipping this pipeline";
             return;
         }
+        LOG(INFO) << "Rendering pipeline " << pipeline_data.name;
 
         buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data.pipeline);
 
         const auto& material_passes = material_passes_by_pipeline.at(pipeline_data.name);
+        LOG(INFO) << "There are " << material_passes.size() << " material passes";
         for(const auto mat : material_passes) {
             render_all_for_material_pass(mat, buffer, pipeline_data);
         }
     }
 
     void nova_renderer::render_all_for_material_pass(const material_pass pass, vk::CommandBuffer &buffer, const pipeline_info &pipeline_data) {
-        const auto& meshes_for_mat = meshes->get_meshes_for_shader(pass.material_name);
+        const auto& meshes_for_mat = meshes->get_meshes_for_material(pass.material_name);
         if(meshes_for_mat.empty()) {
-            LOG(TRACE) << "No meshes available for material " << pass.material_name;
+            LOG(INFO) << "No meshes available for material " << pass.material_name;
             return;
         }
+
+        LOG(INFO) << "Beginning material " << pass.material_name;
 
         // Bind the descriptor sets for this material
         // TODO
 
+        LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
         for(const auto& mesh : meshes_for_mat) {
             render_mesh(mesh, buffer, pipeline_data);
         }
@@ -502,7 +511,7 @@ namespace nova {
                 return;
             }
 
-            std::vector<render_object> &gui_objects = meshes->get_meshes_for_shader("gui");
+            std::vector<render_object> &gui_objects = meshes->get_meshes_for_material("gui");
             for(const auto &gui_obj : gui_objects) {
                 upload_gui_model_matrix(gui_obj, gui_model);
             }

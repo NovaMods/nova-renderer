@@ -486,7 +486,7 @@ namespace nova {
             auto material_json = load_json_from_stream(stream);
 
             auto parsed_material = material(material_json);
-            parsed_material.name = item.path().filename().string();
+            parsed_material.name = item.path().stem().string();
 
             for(auto& mat_pass : parsed_material.passes) {
                 mat_pass.material_name = parsed_material.name;
@@ -496,5 +496,5 @@ namespace nova {
         }
 
         return materials;
-    };
+    }
 }

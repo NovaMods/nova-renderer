@@ -181,6 +181,8 @@ set(NOVA_SOURCE
 # So here we are,
 set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
 set(SPIRV_CROSS_SOURCE
+        ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
+        ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
         ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
         ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp
         )

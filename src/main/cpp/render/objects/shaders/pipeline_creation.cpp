@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <easylogging++.h>
+#include <cstdint>
 #include "pipeline_creation.h"
 #include "../../vulkan/render_context.h"
 #include "shader_resource_manager.h"
@@ -469,7 +470,7 @@ namespace nova {
         // TODO: Let users set optimization level too
 
         std::string source = ss.str();
-        auto result = compiler.CompileGlslToSpv(source, stages, shader_lines[0].shader_name.c_str(), compile_options);
+        auto result = compiler.CompileGlslToSpv(source, stages, shader_lines[0].shader_name.string().c_str(), compile_options);
 
         if(result.GetCompilationStatus() != shaderc_compilation_status_success) {
             LOG(ERROR) << result.GetErrorMessage();

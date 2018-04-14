@@ -41,10 +41,10 @@ namespace nova {
         /*!
          * \brief Retrieves the list of meshes that the shader with the provided name should render
          *
-         * \param shader_name The name of the shader to get meshes for
+         * \param material_name The name of the shader to get meshes for
          * \return All the meshes that should be rendered with the given name
          */
-        std::vector<render_object>& get_meshes_for_shader(std::string shader_name);
+        std::vector<render_object>& get_meshes_for_material(std::string material_name);
 
         /*!
          * \brief Takes geometry that's been added in the last frame and sends it to the GPU
@@ -74,7 +74,7 @@ namespace nova {
         std::shared_ptr<render_context> context;
         std::shared_ptr<shader_resource_manager> shader_resources;
 
-        std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_shader;
+        std::unordered_map<std::string, std::vector<render_object>> renderables_grouped_by_material;
         std::vector<render_object> default_vector;
 
         std::mutex chunk_parts_to_upload_lock;
