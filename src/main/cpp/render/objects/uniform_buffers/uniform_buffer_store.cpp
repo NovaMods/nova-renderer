@@ -54,7 +54,7 @@ namespace nova {
         LOG(DEBUG) << "Updated Per-Frame UBO";
     }
 
-    gl_uniform_buffer<per_frame_uniforms>& uniform_buffer_store::get_per_frame_uniforms() {
+    uniform_buffer<per_frame_uniforms>& uniform_buffer_store::get_per_frame_uniforms() {
         return per_frame_uniforms_buffer;
     }
 }

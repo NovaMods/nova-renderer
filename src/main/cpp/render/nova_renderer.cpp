@@ -303,7 +303,7 @@ namespace nova {
         buffer.endRenderPass();
     }
 
-    void nova_renderer::render_pipeline(const pipeline_info &pipeline_data, vk::CommandBuffer& buffer) {
+    void nova_renderer::render_pipeline(const pipeline_object &pipeline_data, vk::CommandBuffer& buffer) {
         if(material_passes_by_pipeline.find(pipeline_data.name) == material_passes_by_pipeline.end()) {
             LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name << ". Skipping this pipeline";
             return;
@@ -319,7 +319,7 @@ namespace nova {
         }
     }
 
-    void nova_renderer::render_all_for_material_pass(const material_pass pass, vk::CommandBuffer &buffer, const pipeline_info &pipeline_data) {
+    void nova_renderer::render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, const pipeline_object &pipeline_data) {
         const auto& meshes_for_mat = meshes->get_meshes_for_material(pass.material_name);
         if(meshes_for_mat.empty()) {
             LOG(INFO) << "No meshes available for material " << pass.material_name;
@@ -329,7 +329,20 @@ namespace nova {
         LOG(INFO) << "Beginning material " << pass.material_name;
 
         // Bind the descriptor sets for this material
-        // TODO
+        for(const auto& binding : pass.bindings) {
+            const auto& descriptor_name = binding.first;
+            const auto& resource_name = binding.second;
+
+            if(textures->is_texture_known(resource_name)) {
+                // Bind as a texture
+
+            // } else if(buffers->has_buffer(resource_name)) {
+                // bind as a buffer
+
+            } else {
+                LOG(ERROR) << "Material " << pass.material_name << " wants to use resource " << resource_name << " for pipeline " << pass.pipeline << " but that resource doesn't exist! Check your spelling";
+            }
+        }
 
         LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
         for(const auto& mesh : meshes_for_mat) {
@@ -337,7 +350,7 @@ namespace nova {
         }
     }
 
-    void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_info &pipeline_data) {
+    void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_object &pipeline_data) {
         buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
 
         for(uint32_t i = 0; i < pipeline_data.attributes.size(); i++) {
@@ -387,7 +400,7 @@ namespace nova {
         return *render_settings;
     }
 
-    texture_manager &nova_renderer::get_texture_manager() {
+    texture_manager &nova_renderer::get_resource_manager() {
         return *textures;
     }
 
@@ -432,6 +445,8 @@ namespace nova {
 
         LOG(INFO) << "Sorting materials...";
         material_passes_by_pipeline = extract_material_passes(shaderpack.materials);
+
+        create_descriptor_sets();
 
         LOG(INFO) << "Loading complete";
     }
@@ -549,6 +564,38 @@ namespace nova {
         }
 
         return ordered_material_passes;
+    }
+
+    void nova_renderer::create_descriptor_sets() {
+        uint32_t num_sets = 0, num_textures = 0, num_buffers = 0;
+
+        for(const auto& sorted_pipeline : pipelines_by_renderpass) {
+            const pipeline_object& pipeline = sorted_pipeline.second;
+
+            num_sets += pipeline.layouts.size();
+
+            for(const auto& named_binding : pipeline.resource_bindings) {
+                const resource_binding& binding = named_binding.second;
+
+                if(binding.descriptorType == vk::DescriptorType::eUniformBuffer) {
+                    num_buffers++;
+
+                } else if(binding.descriptorType == vk::DescriptorType::eCombinedImageSampler) {
+                    num_textures++;
+
+                } else {
+                    LOG(EARNING) << "Descriptor type " << vk::to_string(binding.descriptorType) << " is not supported yet";
+                }
+            }
+        }
+
+        shader_resources->create_descriptor_pool(num_sets, num_buffers, num_textures);
+
+        for(auto& sorted_pipeline : pipelines_by_renderpass) {
+            pipeline_object& pipeline = sorted_pipeline.second;
+
+            shader_resources->create_descriptor_sets_for_pipeline(pipeline);
+        }
     }
 }
 

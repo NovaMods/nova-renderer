@@ -14,15 +14,15 @@
 #include "objects/shaders/shader_resource_manager.h"
 #include "objects/renderpasses/render_passes.h"
 #include "objects/renderpasses/renderpass_builder.h"
-#include "objects/shaders/pipeline_creation.h"
+#include "objects/shaders/pipeline.h"
 #include "vulkan/command_pool.h"
+#include "objects/resources/texture_manager.h"
 
 namespace nova {
     class vk_shader_program;
     class uniform_buffer_store;
     class glfw_vk_window;
     class mesh_store;
-    class texture_manager;
     class input_handler;
     class render_context;
     class shaderpack;
@@ -88,7 +88,7 @@ namespace nova {
 
         static settings& get_render_settings();
 
-        texture_manager& get_texture_manager();
+        texture_manager& get_resource_manager();
 
         input_handler& get_input_handler();
 
@@ -149,7 +149,7 @@ namespace nova {
         std::vector<render_pass> passes_list;
         std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
         std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass;
-        std::unordered_map<std::string, std::vector<pipeline_info>> pipelines_by_renderpass;
+        std::unordered_map<std::string, std::vector<pipeline_object>> pipelines_by_renderpass;
         std::vector<material> materials;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
 
@@ -189,14 +189,16 @@ namespace nova {
 
         void execute_pass(const render_pass &pass, vk::CommandBuffer& buffer);
 
-        void render_pipeline(const pipeline_info &pipeline_data, vk::CommandBuffer& buffer);
+        void render_pipeline(const pipeline_object &pipeline_data, vk::CommandBuffer& buffer);
 
         void
-        render_all_for_material_pass(const material_pass pass, vk::CommandBuffer &buffer, const pipeline_info &info);
+        render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, const pipeline_object &info);
 
-        void render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_info &info);
+        void render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_object &info);
 
         std::unordered_map<std::string, std::vector<material_pass>> extract_material_passes(const std::vector<material>& materials);
+
+        void create_descriptor_sets();
     };
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes);

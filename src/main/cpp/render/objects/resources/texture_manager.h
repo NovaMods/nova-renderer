@@ -115,6 +115,14 @@ namespace nova {
         const texture_location get_texture_location(const std::string &texture_name);
 
         /*!
+         * \brief Checks if there's a texture with this name
+         *
+         * \param texture_name The name of the texture to check for existance of
+         * \return True if the texture exists, false if it does not
+         */
+        bool is_texture_known(const std::string& texture_name) const;
+
+        /*!
          * \brief Returns a pointer to the specified atlas
          *
          * \param texture_name The name of the texture to get

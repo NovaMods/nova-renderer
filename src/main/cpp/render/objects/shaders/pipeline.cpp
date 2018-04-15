@@ -8,7 +8,7 @@
 
 #include <easylogging++.h>
 #include <cstdint>
-#include "pipeline_creation.h"
+#include "pipeline.h"
 #include "../../vulkan/render_context.h"
 #include "shader_resource_manager.h"
 #include "../../nova_renderer.h"
@@ -18,14 +18,14 @@
 #include "../../../3rdparty/SPIRV-Cross/spirv_glsl.hpp"
 
 namespace nova {
-    std::unordered_map<std::string, std::vector<pipeline_info>> make_pipelines(const shaderpack_data& shaderpack,
+    std::unordered_map<std::string, std::vector<pipeline_object>> make_pipelines(const shaderpack_data& shaderpack,
                                                                               std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass,
                                                                               std::shared_ptr<render_context> context) {
-        auto ret_val = std::unordered_map<std::string, std::vector<pipeline_info>>{};
+        auto ret_val = std::unordered_map<std::string, std::vector<pipeline_object>>{};
 
         for(const auto& pipelines : shaderpack.pipelines_by_pass) {
             const auto& renderpass = renderpasses_by_pass[pipelines.first];
-            auto cur_list = std::vector<pipeline_info>{};
+            auto cur_list = std::vector<pipeline_object>{};
 
             for(const auto& pipeline_create_info : pipelines.second) {
                 cur_list.push_back(make_pipeline(pipeline_create_info, renderpass, context->device));
@@ -37,7 +37,7 @@ namespace nova {
         return ret_val;
     }
 
-    pipeline_info make_pipeline(const pipeline& pipeline_create_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
+    pipeline_object make_pipeline(const pipeline& pipeline_create_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
         LOG(INFO) << "Making VkPipeline for pipeline " << pipeline_create_info.name;
 
         // Creates a pipeline out of compiled shaders
@@ -56,7 +56,7 @@ namespace nova {
         // so let's go through all the modules' interfaces, adding the descriptors from them to one big list. We'll
         // make sure that no one put a descriptor at one location in one file and a different location in another
 
-        auto pipeline_data = pipeline_info{};
+        auto pipeline_data = pipeline_object{};
         pipeline_data.name = pipeline_create_info.name;
 
         std::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos;
@@ -126,12 +126,18 @@ namespace nova {
         graphics_pipeline_create_info.pStages = stage_create_infos.data();
 
 
-        for(const auto& layouts_for_set : pipeline_data.layout_bindings) {
-            const auto& layouts = layouts_for_set.second;
+        std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> bindings_for_set;
+        for(const auto& layouts_for_set : pipeline_data.resource_bindings) {
+            const auto& layout = layouts_for_set.second;
 
+            bindings_for_set[layout.set].push_back(layout.to_vk_binding);
+        }
+
+        for(const auto& layouts_for_set : bindings_for_set) {
+            const auto &layouts = layouts_for_set.second;
             auto dsl_create_info = vk::DescriptorSetLayoutCreateInfo()
-                .setBindingCount(layouts.size())
-                .setPBindings(layouts.data());
+                    .setBindingCount(layouts.size())
+                    .setPBindings(layouts.data());
 
             pipeline_data.layouts[layouts_for_set.first] = device.createDescriptorSetLayout(dsl_create_info);
         }
@@ -350,7 +356,7 @@ namespace nova {
         return pipeline_data;
     }
 
-    void add_bindings_from_shader(pipeline_info& pipeline_data, const shader_module &shader_module, const std::string shader_stage_name) {
+    void add_bindings_from_shader(pipeline_object& pipeline_data, const shader_module &shader_module, const std::string shader_stage_name) {
         auto& all_bindings = pipeline_data.resource_bindings;
         auto& all_layouts = pipeline_data.layout_bindings;
 
@@ -480,9 +486,9 @@ namespace nova {
         return {result.cbegin(), result.cend()};
     }
 
-    bindings_list get_interface_of_spirv(const std::vector<uint32_t>& spirv_source, const vk::ShaderStageFlags& stages) {
+    std::unordered_map<std::string, resource_binding> get_interface_of_spirv(const std::vector<uint32_t>& spirv_source, const vk::ShaderStageFlags& stages) {
 
-        bindings_list bindings;
+        std::unordered_map<std::string, resource_binding> bindings;
 
         spirv_cross::CompilerGLSL glsl(spirv_source);
 
@@ -525,5 +531,14 @@ namespace nova {
 
     bool resource_binding::operator!=(const resource_binding& other) const {
         return !(*this == other);
+    }
+
+    vk::DescriptorSetLayoutBinding resource_binding::to_vk_binding() {
+        return vk::DescriptorSetLayoutBinding()
+            .setDescriptorType(descriptorType)
+            .setDescriptorCount(descriptorCount)
+            .setStageFlags(stageFlags)
+            .setBinding(binding)
+            .setPImmutableSamplers(pImmutableSamplers);
     }
 }

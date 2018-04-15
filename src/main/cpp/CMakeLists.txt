@@ -77,13 +77,13 @@ set(NOVA_HEADERS
 
         mc_interface/nova.h
         render/nova_renderer.h
-        render/objects/textures/texture_manager.h
+        render/objects/resources/texture_manager.h
         utils/types.h
 
-        render/objects/shaders/pipeline_creation.h
-        render/objects/uniform_buffers/gl_uniform_buffer.h
+        render/objects/shaders/pipeline.h
+        render/objects/uniform_buffers/uniform_buffer.h
         render/objects/meshes/vk_mesh.h
-        render/objects/textures/texture2D.h
+        render/objects/resources/texture2D.h
 
         render/windowing/glfw_vk_window.h
 
@@ -101,7 +101,7 @@ set(NOVA_HEADERS
         render/objects/render_object.h
         render/objects/uniform_buffers/uniform_buffer_store.h
         render/objects/uniform_buffers/uniform_buffer_definitions.h
-        render/objects/uniform_buffers/gl_uniform_buffer.h
+        render/objects/uniform_buffers/uniform_buffer.h
 
         physics/aabb.h
         data_loading/loaders/shader_source_structs.h
@@ -135,14 +135,14 @@ set(NOVA_SOURCE
 
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
-        render/objects/textures/texture_manager.cpp
+        render/objects/resources/texture_manager.cpp
         render/objects/uniform_buffers/uniform_buffer_store.cpp
 
         input/InputHandler.cpp
 
-        render/objects/shaders/pipeline_creation.cpp
+        render/objects/shaders/pipeline.cpp
         render/objects/meshes/vk_mesh.cpp
-        render/objects/textures/texture2D.cpp
+        render/objects/resources/texture2D.cpp
 
         render/windowing/glfw_vk_window.cpp
 

@@ -303,6 +303,15 @@ namespace nova {
         dynamic_tex_name_to_idx.erase(dynamic_tex_name_to_idx.begin(), dynamic_tex_name_to_idx.end());
     }
 
+    bool texture_manager::is_texture_known(const std::string &texture_name) const {
+        if(atlases.find(texture_name) != atlases.end()) {
+            return true;
+        }
+
+        return dynamic_tex_name_to_idx.find(texture_name) != dynamic_tex_name_to_idx.end();
+
+    }
+
     vk::Format get_vk_format_from_pixel_format(pixel_format_enum format) {
         switch(format) {
             case pixel_format_enum::RGB8:

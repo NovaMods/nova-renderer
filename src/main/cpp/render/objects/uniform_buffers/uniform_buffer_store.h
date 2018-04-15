@@ -11,7 +11,7 @@
 #include <json.hpp>
 #include "../../../data_loading/settings.h"
 #include "uniform_buffer_definitions.h"
-#include "gl_uniform_buffer.h"
+#include "uniform_buffer.h"
 
 namespace nova {
     class vk_shader_program;
@@ -44,12 +44,12 @@ namespace nova {
 
         virtual void on_config_loaded(nlohmann::json &config);
 
-        gl_uniform_buffer<per_frame_uniforms>& get_per_frame_uniforms();
+        uniform_buffer<per_frame_uniforms>& get_per_frame_uniforms();
 
     private:
         per_frame_uniforms per_frame_uniform_variables;
 
-        gl_uniform_buffer<per_frame_uniforms> per_frame_uniforms_buffer;
+        uniform_buffer<per_frame_uniforms> per_frame_uniforms_buffer;
 
         void update_per_frame_uniforms(nlohmann::json &config);
     };

@@ -16,15 +16,15 @@ namespace nova {
      * \brief A nice interface for uniform buffer objects
      */
     template <typename T>
-    class gl_uniform_buffer {
+    class uniform_buffer {
     public:
-        gl_uniform_buffer(std::string name) : name(name) {
+        uniform_buffer(std::string name) : name(name) {
             //glCreateBuffers(1, &gl_name);
             LOG(TRACE) << "creating ubo " << name << " with size: " << sizeof(T);
             //glNamedBufferStorage(gl_name, sizeof(T), nullptr, GL_DYNAMIC_STORAGE_BIT);
         }
 
-        gl_uniform_buffer(gl_uniform_buffer &&old) noexcept {
+        uniform_buffer(uniform_buffer &&old) noexcept {
             gl_name = old.gl_name;
             name = old.name;
 
@@ -50,7 +50,7 @@ namespace nova {
         /*!
          * \brief Deallocates this uniform buffer
          */
-        ~gl_uniform_buffer() {
+        ~uniform_buffer() {
             if(glfwGetCurrentContext() != NULL) {
                 //glDeleteBuffers(1, &gl_name);
             }
