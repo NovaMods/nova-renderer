@@ -32,6 +32,8 @@ namespace nova {
 
         void create_descriptor_sets_for_pipeline(pipeline_object& pipeline_data);
 
+        vk::Sampler get_point_sampler();
+
     private:
         vk::Device device;
 
@@ -51,6 +53,7 @@ namespace nova {
 
 
         std::shared_ptr<render_context> context;
+        vk::Sampler point_sampler;
     };
 }
 

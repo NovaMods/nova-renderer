@@ -40,7 +40,7 @@ namespace nova {
     shader_resource_manager::~shader_resource_manager() {
         device.destroyDescriptorPool(descriptor_pool);
 
-        LOG(TRACE) << "Destroyed a descriptor pool and a bunch of layouts";
+        device.destroySampler(point_sampler);
     }
 
     std::shared_ptr<auto_buffer> shader_resource_manager::get_per_model_buffer() {
@@ -61,6 +61,29 @@ namespace nova {
             .setPSetLayouts(layouts.data());
 
         pipeline_data.descriptors = device.allocateDescriptorSets(alloc_info);
+    }
+
+    void shader_resource_manager::create_point_sampler() {
+        auto sampler_create = vk::SamplerCreateInfo()
+            .setMagFilter(vk::Filter::eNearest)
+            .setMinFilter(vk::Filter::eNearest)
+            .setMipmapMode(vk::SamplerMipmapMode::eLinear)
+            .setAddressModeU(vk::SamplerAddressMode::eClampToEdge)
+            .setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
+            .setAddressModeW(vk::SamplerAddressMode::eClampToEdge)
+            .setMipLodBias(0)
+            .setAnisotropyEnable(false)
+            .setCompareEnable(false)
+            .setMinLod(0)
+            .setMaxLod(32)
+            .setUnnormalizedCoordinates(false)
+            .setBorderColor(vk::BorderColor::eFloatTransparentBlack);
+
+        point_sampler = device.createSampler(sampler_create);
+    }
+
+    vk::Sampler shader_resource_manager::get_point_sampler() {
+        return point_sampler;
     }
 }
 

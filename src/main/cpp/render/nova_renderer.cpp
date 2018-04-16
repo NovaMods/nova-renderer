@@ -335,6 +335,9 @@ namespace nova {
 
             if(textures->is_texture_known(resource_name)) {
                 // Bind as a texture
+                const auto& tex = textures->get_texture(resource_name);
+
+                pipeline_data.bind_resource(descriptor_name, tex);
 
             // } else if(buffers->has_buffer(resource_name)) {
                 // bind as a buffer
@@ -343,6 +346,8 @@ namespace nova {
                 LOG(ERROR) << "Material " << pass.material_name << " wants to use resource " << resource_name << " for pipeline " << pass.pipeline << " but that resource doesn't exist! Check your spelling";
             }
         }
+
+        pipeline_data.commit_bindings(context->device, shader_resources);
 
         LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
         for(const auto& mesh : meshes_for_mat) {
