@@ -10,11 +10,11 @@
 #include <easylogging++.h>
 
 namespace nova {
-    vk::RenderPass make_render_pass(const render_pass& pass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context);
+    vk::RenderPass make_render_pass(const render_pass& pass, texture_manager& textures, std::shared_ptr<render_context> context);
 
-    std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context);
+    std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, texture_manager& textures, std::shared_ptr<render_context> context);
 
-    std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, std::shared_ptr<texture_manager> textures,
+    std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, texture_manager& textures,
                                                                                             std::shared_ptr<render_context> context) {
         std::unordered_map<std::string, pass_vulkan_information> renderpasses;
 
@@ -42,7 +42,7 @@ namespace nova {
         return renderpasses;
     }
 
-    vk::RenderPass make_render_pass(const render_pass& pass, std::shared_ptr<texture_manager> textures, std::shared_ptr<render_context> context) {
+    vk::RenderPass make_render_pass(const render_pass& pass, texture_manager& textures, std::shared_ptr<render_context> context) {
         LOG(INFO) << "Making VkRenderPass for pass " << pass.name;
 
         std::vector<vk::AttachmentDescription> attachments;
@@ -70,7 +70,7 @@ namespace nova {
 
                 } else {
                     LOG(TRACE) << "Getting initial texture '" << texture_outputs_vec[0] << "' from the texture store";
-                    const auto &first_tex = textures->get_texture(texture_outputs_vec[0]);
+                    const auto &first_tex = textures.get_texture(texture_outputs_vec[0]);
                     last_texture_size = first_tex.get_size();
                     last_texture_name = first_tex.get_name();
                 }
@@ -106,7 +106,7 @@ namespace nova {
 
                     } else {
                         LOG(TRACE) << "Getting color attachment info '" << color_attachment_name << "' from the texture store";
-                        const auto &texture = textures->get_texture(color_attachment_name);
+                        const auto &texture = textures.get_texture(color_attachment_name);
 
                         if (texture.get_size() != last_texture_size) {
                             LOG(ERROR) << "Texture " << texture.get_name() << " does not have the same size as texture "
@@ -138,7 +138,7 @@ namespace nova {
 
         if(pass.depth_output) {
             LOG(DEBUG) << "Adding depth texture " << pass.depth_output.value();
-            const auto& depth_tex = textures->get_texture(pass.depth_output.value());
+            const auto& depth_tex = textures.get_texture(pass.depth_output.value());
 
             auto depth_attachment = vk::AttachmentDescription()
                 .setFormat(depth_tex.get_format())
@@ -181,7 +181,7 @@ namespace nova {
     }
 
 
-    std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, std::shared_ptr<texture_manager> textures,
+    std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, texture_manager& textures,
                                      std::shared_ptr<render_context> context) {
         LOG(INFO) << "Making framebuffer for pass " << pass.name;
         std::vector<vk::ImageView> attachments;
@@ -195,7 +195,7 @@ namespace nova {
                     framebuffer_size = context->swapchain_extent;
 
                 } else {
-                    const auto &tex = textures->get_texture(output_name);
+                    const auto &tex = textures.get_texture(output_name);
                     attachments.push_back(tex.get_image_view());
                     framebuffer_size = tex.get_size();
                 }
@@ -203,7 +203,7 @@ namespace nova {
         }
         if(pass.depth_output) {
             const auto& depth_tex_name = pass.depth_output.value();
-            const auto& depth_tex = textures->get_texture(depth_tex_name);
+            const auto& depth_tex = textures.get_texture(depth_tex_name);
             attachments.push_back(depth_tex.get_image_view());
             framebuffer_size = depth_tex.get_size();
         }

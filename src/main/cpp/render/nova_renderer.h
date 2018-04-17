@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include "objects/camera.h"
 #include "../data_loading/settings.h"
-#include "objects/shaders/shader_resource_manager.h"
+#include "objects/resources/shader_resource_manager.h"
 #include "objects/renderpasses/render_passes.h"
 #include "objects/renderpasses/renderpass_builder.h"
 #include "objects/shaders/pipeline.h"
@@ -122,13 +122,9 @@ namespace nova {
 
         std::shared_ptr<glfw_vk_window> game_window;
 
-        std::shared_ptr<texture_manager> textures;
-
         std::shared_ptr<input_handler> inputs;
 
         std::shared_ptr<mesh_store> meshes;
-
-        std::shared_ptr<uniform_buffer_store> ubo_manager;
 
         std::shared_ptr<shader_resource_manager> shader_resources;
 
@@ -179,7 +175,7 @@ namespace nova {
 
         inline void upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix);
 
-        void update_gbuffer_ubos();
+        void update_all_ubos();
 
         void end_frame();
 
@@ -189,16 +185,17 @@ namespace nova {
 
         void execute_pass(const render_pass &pass, vk::CommandBuffer& buffer);
 
-        void render_pipeline(const pipeline_object &pipeline_data, vk::CommandBuffer& buffer);
+        void render_pipeline(pipeline_object &pipeline_data, vk::CommandBuffer& buffer);
 
-        void
-        render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, const pipeline_object &info);
+        void render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, pipeline_object &info);
 
         void render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_object &info);
 
         std::unordered_map<std::string, std::vector<material_pass>> extract_material_passes(const std::vector<material>& materials);
 
-        void create_descriptor_sets();
+        void update_gui_ubo();
+
+        void update_model_matrix(const render_object &renderable);
     };
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes);

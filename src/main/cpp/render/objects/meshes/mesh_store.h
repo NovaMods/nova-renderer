@@ -17,7 +17,7 @@
 #include "../../../mc_interface/mc_gui_objects.h"
 #include "../../../mc_interface/mc_objects.h"
 #include "mesh_definition.h"
-#include "../shaders/shader_resource_manager.h"
+#include "../resources/shader_resource_manager.h"
 
 namespace nova {
     /*!
@@ -102,9 +102,7 @@ namespace nova {
          *
          * \param filter The function to use to decide which (if any) objects to remove
          */
-        void remove_render_objects(std::function<bool(render_object&)> fitler);
-
-
+        void remove_render_objects(std::function<bool(render_object&)> filter);
     };
 
 }

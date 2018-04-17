@@ -17,10 +17,10 @@
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
 #include "../renderpasses/materials.h"
-#include "shader_resource_manager.h"
+#include "../resources/shader_resource_manager.h"
 #include "../../../data_loading/loaders/shader_loading.h"
 #include "../renderpasses/renderpass_builder.h"
-#include "shader_resource_manager.h"
+#include "../resources/shader_resource_manager.h"
 #include "../resources/texture2D.h"
 
 

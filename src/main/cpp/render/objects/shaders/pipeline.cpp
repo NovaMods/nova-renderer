@@ -10,7 +10,7 @@
 #include <cstdint>
 #include "pipeline.h"
 #include "../../vulkan/render_context.h"
-#include "shader_resource_manager.h"
+#include "../resources/shader_resource_manager.h"
 #include "../../nova_renderer.h"
 #include "../../windowing/glfw_vk_window.h"
 #include "../meshes/vertex_attributes.h"

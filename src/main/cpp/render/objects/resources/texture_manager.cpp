@@ -18,8 +18,7 @@ namespace nova {
     }
 
     texture_manager::~texture_manager() {
-        // gotta free up all the OpenGL textures
-        // The driver probably does that for me, but I ain't about to let no stinkin' driver boss me around!
+        // gotta free up all the Vulkan textures
         reset();
     }
 
@@ -41,11 +40,6 @@ namespace nova {
         LOG(INFO) << "Created lightmap";
 
         clear_dynamic_textures();
-    }
-
-    void texture_manager::update_texture(std::string texture_name, void* data, glm::ivec2 &size) {
-        auto &texture = atlases[texture_name];
-        texture.set_data(data, vk::Extent2D{static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)});
     }
 
     void texture_manager::add_texture(mc_atlas_texture &new_texture) {
@@ -96,13 +90,13 @@ namespace nova {
 
     texture2D &texture_manager::get_texture(std::string texture_name) {
         if(atlases.find(texture_name) != atlases.end()) {
-            return atlases[texture_name];
+            return atlases.at(texture_name);
         }
 
         if(dynamic_tex_name_to_idx.find(texture_name) != dynamic_tex_name_to_idx.end()) {
-            auto idx = dynamic_tex_name_to_idx[texture_name];
+            auto idx = dynamic_tex_name_to_idx.at(texture_name);
             if(dynamic_textures.size() > idx) {
-                return dynamic_textures[idx];
+                return dynamic_textures.at(idx);
             }
         }
 

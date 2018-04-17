@@ -15,7 +15,7 @@
 #include <minitrace.h>
 #include "nova.h"
 #include "../render/nova_renderer.h"
-#include "../render/objects/textures/texture_manager.h"
+#include "../render/objects/resources/texture_manager.h"
 #include "../input/InputHandler.h"
 #include "../render/windowing/glfw_vk_window.h"
 #include "../utils/utils.h"
@@ -26,7 +26,7 @@
 using namespace nova;
 
 #define NOVA_RENDERER nova_renderer::instance
-#define TEXTURE_MANAGER NOVA_RENDERER->get_texture_manager()
+#define TEXTURE_MANAGER NOVA_RENDERER->get_shader_resources()->get_texture_manager()
 #define INPUT_HANDLER NOVA_RENDERER->get_input_handler()
 #define MESH_STORE NOVA_RENDERER->get_mesh_store()
 
@@ -49,8 +49,8 @@ NOVA_API void reset_texture_manager() {
 
 NOVA_API void send_lightmap_texture(int* data, int count, int width, int height) {
     auto size = glm::ivec2{width, height};
-    TEXTURE_MANAGER.update_texture("lightmap", data, size);
     auto& lightmap = TEXTURE_MANAGER.get_texture("lightmap");
+    lightmap.set_data(data, {width, height});
 }
 
 NOVA_API void add_texture_location(mc_texture_atlas_location* location) {

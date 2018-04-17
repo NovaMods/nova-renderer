@@ -64,7 +64,7 @@ namespace nova {
         gui.color_texture = command->atlas_name;
 
         // The GUI just has a model matrix
-        gui.per_model_set = shader_resources->allocate_per_model_set();
+        gui.per_model_set = shader_resources->get_per_model_buffer()->allocate_per_model_set();
         gui.per_model_buffer_range = shader_resources->get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
 
         // TODO: Something more intelligent
@@ -94,7 +94,7 @@ namespace nova {
                     // Free the allocations of each render object
                     for (auto it = removed_elements; it != group.second.end(); ++it) {
                         per_model_buffer->free_allocation((*it).per_model_buffer_range);
-                        shader_resources->free_set((*it).per_model_set);
+                        shader_resources->get_per_model_buffer()->free_set((*it).per_model_set);
                     }
                 }
 

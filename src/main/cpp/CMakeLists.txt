@@ -73,7 +73,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES}
 # Setup the nova-core library.
 set(NOVA_HEADERS
 
-        render/objects/uniform_buffers/uniform_buffer_definitions.h
+        render/objects/resources/uniform_buffer_definitions.h
 
         mc_interface/nova.h
         render/nova_renderer.h
@@ -81,7 +81,7 @@ set(NOVA_HEADERS
         utils/types.h
 
         render/objects/shaders/pipeline.h
-        render/objects/uniform_buffers/uniform_buffer.h
+        render/objects/resources/uniform_buffer.h
         render/objects/meshes/vk_mesh.h
         render/objects/resources/texture2D.h
 
@@ -99,16 +99,16 @@ set(NOVA_HEADERS
         data_loading/loaders/loader_utils.h
         render/objects/meshes/mesh_store.h
         render/objects/render_object.h
-        render/objects/uniform_buffers/uniform_buffer_store.h
-        render/objects/uniform_buffers/uniform_buffer_definitions.h
-        render/objects/uniform_buffers/uniform_buffer.h
+        render/objects/resources/uniform_buffer_store.h
+        render/objects/resources/uniform_buffer_definitions.h
+        render/objects/resources/uniform_buffer.h
 
         physics/aabb.h
         data_loading/loaders/shader_source_structs.h
         render/objects/meshes/mesh_definition.h
         render/objects/camera.h
         utils/io.h
-        render/objects/shaders/shader_resource_manager.h
+        render/objects/resources/shader_resource_manager.h
         data_loading/direct_buffers.h
         mc_interface/nova_jni.h
         render/objects/render_object.h
@@ -136,7 +136,7 @@ set(NOVA_SOURCE
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
         render/objects/resources/texture_manager.cpp
-        render/objects/uniform_buffers/uniform_buffer_store.cpp
+        render/objects/resources/uniform_buffer_store.cpp
 
         input/InputHandler.cpp
 
@@ -156,7 +156,7 @@ set(NOVA_SOURCE
         physics/aabb.cpp
         render/objects/meshes/mesh_definition.cpp
 
-        render/objects/uniform_buffers/uniform_buffers_definitions.cpp
+        render/objects/resources/uniform_buffers_definitions.cpp
 
         mc_interface/mc_objects.cpp
         render/objects/camera.cpp
@@ -168,7 +168,7 @@ set(NOVA_SOURCE
         render/objects/renderpasses/materials.cpp
 
         render/vulkan/render_context.cpp
-        render/objects/shaders/shader_resource_manager.cpp
+        render/objects/resources/shader_resource_manager.cpp
         render/objects/shaders/auto_allocated_buffer.cpp
         render/objects/renderpasses/render_passes.cpp
         data_loading/loaders/shader_file_loading.cpp

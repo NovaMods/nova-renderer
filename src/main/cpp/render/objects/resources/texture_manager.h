@@ -80,15 +80,6 @@ namespace nova {
                                      const std::vector<render_pass>& passes);
 
         /*!
-         * \brief Updates the texture with the given name with the given data
-         *
-         * \param texture_name The name of the texture to update
-         * \param data The data to set as the texture
-         * \param size The size of the new texture data
-         */
-        void update_texture(std::string texture_name, void* data, glm::ivec2 &size);
-
-        /*!
          * \brief Adds a texture to this resource manager
          *
          * The texture is not put into an atlas immediately. Rather, it is held in a staging area until #finalize_textures

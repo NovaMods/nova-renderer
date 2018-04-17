@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include "../../vulkan/render_context.h"
 #include "../../../data_loading/loaders/shader_loading.h"
-#include "../textures/texture_manager.h"
+#include "../resources/texture_manager.h"
 
 namespace nova {
     struct pass_vulkan_information {
@@ -21,7 +21,7 @@ namespace nova {
         std::experimental::optional<std::string> depth_output;
     };
 
-    std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, std::shared_ptr<texture_manager> textures,
+    std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, texture_manager& textures,
                                                                          std::shared_ptr<render_context> context);
 }
 

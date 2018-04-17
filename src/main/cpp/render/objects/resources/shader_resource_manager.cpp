@@ -9,7 +9,7 @@
 #include "../../nova_renderer.h"
 
 namespace nova {
-    shader_resource_manager::shader_resource_manager(std::shared_ptr<render_context> context) : device(context->device), context(context) {
+    shader_resource_manager::shader_resource_manager(std::shared_ptr<render_context> context) : device(context->device), context(context), textures(context) {
         auto per_model_buffer_create_info = vk::BufferCreateInfo()
                 .setSize(5000 * sizeof(glm::mat4))
                 .setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer)
@@ -19,6 +19,8 @@ namespace nova {
 
         auto uniform_buffer_offset_alignment = context->gpu.props.limits.minUniformBufferOffsetAlignment;
         per_model_resources_buffer = std::make_shared<auto_buffer>(context, per_model_buffer_create_info, uniform_buffer_offset_alignment, true);
+
+        create_point_sampler();
     }
 
     void shader_resource_manager::create_descriptor_pool(uint32_t num_sets, uint32_t num_buffers, uint32_t num_textures) {
@@ -84,6 +86,47 @@ namespace nova {
 
     vk::Sampler shader_resource_manager::get_point_sampler() {
         return point_sampler;
+    }
+
+    texture_manager &shader_resource_manager::get_texture_manager() {
+        return textures;
+    }
+
+    uniform_buffer_store &shader_resource_manager::get_uniform_buffers() {
+        return ubo_manager;
+    }
+
+    void shader_resource_manager::create_descriptor_sets( std::unordered_map<std::string, std::vector<pipeline_object>> &pipelines) {
+        uint32_t num_sets = 0, num_textures = 0, num_buffers = 0;
+
+        for(const auto &sorted_pipeline : pipelines) {
+            const pipeline_object &pipeline = sorted_pipeline.second;
+
+            num_sets += pipeline.layouts.size();
+
+            for(const auto &named_binding : pipeline.resource_bindings) {
+                const resource_binding &binding = named_binding.second;
+
+                if(binding.descriptorType == vk::DescriptorType::eUniformBuffer) {
+                    num_buffers++;
+
+                } else if(binding.descriptorType == vk::DescriptorType::eCombinedImageSampler) {
+                    num_textures++;
+
+                } else {
+                    LOG(WARNING) << "Descriptor type " << vk::to_string(binding.descriptorType)
+                                 << " is not supported yet";
+                }
+            }
+        }
+
+        create_descriptor_pool(num_sets, num_buffers, num_textures);
+
+        for(auto &sorted_pipeline : pipelines) {
+            pipeline_object &pipeline = sorted_pipeline.second;
+
+            create_descriptor_sets_for_pipeline(pipeline);
+        }
     }
 }
 

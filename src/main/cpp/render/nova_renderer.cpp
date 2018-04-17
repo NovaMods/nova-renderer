@@ -14,12 +14,12 @@
 #include "objects/meshes/mesh_store.h"
 #include "objects/render_object.h"
 #include "objects/meshes/vk_mesh.h"
-#include "objects/uniform_buffers/uniform_buffer_definitions.h"
-#include "objects/uniform_buffers/uniform_buffer_store.h"
+#include "objects/resources/uniform_buffer_definitions.h"
+#include "objects/resources/uniform_buffer_store.h"
 #include "../input/InputHandler.h"
 #include "objects/renderpasses/renderpass_builder.h"
 #include "vulkan/render_context.h"
-#include "objects/shaders/shader_resource_manager.h"
+#include "objects/resources/shader_resource_manager.h"
 #include "render_graph.h"
 #include "objects/meshes/vertex_attributes.h"
 
@@ -64,12 +64,10 @@ namespace nova {
 
         LOG(INFO) << "Vulkan code initialized";
 
-        ubo_manager = std::make_shared<uniform_buffer_store>();
-        textures = std::make_shared<texture_manager>(context);
         meshes = std::make_shared<mesh_store>(context, shader_resources);
         inputs = std::make_shared<input_handler>();
 
-		render_settings->register_change_listener(ubo_manager.get());
+		render_settings->register_change_listener(&shader_resources->get_uniform_buffers());
 		render_settings->register_change_listener(game_window.get());
         render_settings->register_change_listener(this);
 
@@ -97,10 +95,6 @@ namespace nova {
         LOG(TRACE) << "Released the inputs";
         meshes.reset();
         LOG(TRACE) << "Reset the meshes";
-        textures.reset();
-        LOG(TRACE) << "Reset the textures";
-        ubo_manager.reset();
-        LOG(TRACE) << "Reset the UBOs";
 
         auto& device = context->device;
 
@@ -140,8 +134,7 @@ namespace nova {
 
         player_camera.recalculate_frustum();
 
-        // upload UBO things
-        update_gbuffer_ubos();
+        update_all_ubos();
 
         LOG(INFO) << "We have " << passes_list.size() << " passes to render";
         for (const auto &pass : passes_list) {
@@ -266,7 +259,7 @@ namespace nova {
 
             try {
                 // heavy handed but I don't have any good debugging tools right now so suck it nerds
-                auto& tex = textures->get_texture(write_resource);
+                auto& tex = shader_resources->get_texture_manager().get_texture(write_resource);
 
                 barrier.image = tex.get_vk_image();
                 barrier.oldLayout = tex.get_layout();
@@ -293,17 +286,17 @@ namespace nova {
 
         buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
 
-        const auto& pipelines_for_pass = pipelines_by_renderpass.at(pass.name);
+        auto& pipelines_for_pass = pipelines_by_renderpass.at(pass.name);
         LOG(INFO) << "Processing data in " << pipelines_for_pass.size() << " pipelines";
 
-        for(const auto& nova_pipeline : pipelines_for_pass) {
+        for(auto& nova_pipeline : pipelines_for_pass) {
             render_pipeline(nova_pipeline, buffer);
         }
 
         buffer.endRenderPass();
     }
 
-    void nova_renderer::render_pipeline(const pipeline_object &pipeline_data, vk::CommandBuffer& buffer) {
+    void nova_renderer::render_pipeline(pipeline_object &pipeline_data, vk::CommandBuffer& buffer) {
         if(material_passes_by_pipeline.find(pipeline_data.name) == material_passes_by_pipeline.end()) {
             LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name << ". Skipping this pipeline";
             return;
@@ -319,7 +312,7 @@ namespace nova {
         }
     }
 
-    void nova_renderer::render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, const pipeline_object &pipeline_data) {
+    void nova_renderer::render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, pipeline_object &pipeline_data) {
         const auto& meshes_for_mat = meshes->get_meshes_for_material(pass.material_name);
         if(meshes_for_mat.empty()) {
             LOG(INFO) << "No meshes available for material " << pass.material_name;
@@ -328,14 +321,16 @@ namespace nova {
 
         LOG(INFO) << "Beginning material " << pass.material_name;
 
+        auto& textures = shader_resources->get_texture_manager();
+
         // Bind the descriptor sets for this material
         for(const auto& binding : pass.bindings) {
             const auto& descriptor_name = binding.first;
             const auto& resource_name = binding.second;
 
-            if(textures->is_texture_known(resource_name)) {
+            if(textures.is_texture_known(resource_name)) {
                 // Bind as a texture
-                const auto& tex = textures->get_texture(resource_name);
+                const auto& tex = textures.get_texture(resource_name);
 
                 pipeline_data.bind_resource(descriptor_name, tex);
 
@@ -405,10 +400,6 @@ namespace nova {
         return *render_settings;
     }
 
-    texture_manager &nova_renderer::get_resource_manager() {
-        return *textures;
-    }
-
 	glfw_vk_window &nova_renderer::get_game_window() {
 		return *game_window;
 	}
@@ -439,8 +430,10 @@ namespace nova {
             return;
         }
 
+        auto& textures = shader_resources->get_texture_manager();
+
         LOG(INFO) << "Initializing framebuffer attachments...";
-        textures->create_dynamic_textures(shaderpack.dynamic_textures, passes_list);
+        textures.create_dynamic_textures(shaderpack.dynamic_textures, passes_list);
 
         LOG(INFO) << "Building renderpasses and framebuffers...";
         renderpasses_by_pass = make_passes(shaderpack, textures, context);
@@ -452,6 +445,7 @@ namespace nova {
         material_passes_by_pipeline = extract_material_passes(shaderpack.materials);
 
         create_descriptor_sets();
+        shader_resources->create_descriptor_sets(pipelines_by_renderpass);
 
         LOG(INFO) << "Loading complete";
     }
@@ -460,34 +454,27 @@ namespace nova {
         instance.release();
     }
 
-    void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
-        // Send the model matrix to the buffer
-        // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
-        auto& allocation = shader_resources->get_per_model_buffer()->get_allocation_info();
-        memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
+    void nova_renderer::update_all_ubos() {
+        // For each renderable, update its model matrix
+        // Currently that means GUI things get the GUI scaling matrix and chunks get a translation
+        // Eventually entities will have a rotation too but that's not an immediate concern
 
-        // Copy the memory to the descriptor set
-        auto write_ds = vk::WriteDescriptorSet()
-            .setDstSet(gui_obj.per_model_set)
-            .setDstBinding(0)
-            .setDstArrayElement(0)
-            .setDescriptorCount(1)
-            .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-            .setPBufferInfo((&gui_obj.per_model_buffer_range));
+        // Basic strategy here: We have a large buffer with all the model matrices, and each renderable has a handle to
+        // its space in the buffer. The buffer is constantly mapped since it's updated super frequently. We make all our
+        // updates, then flush the buffer
 
-        context->device.updateDescriptorSets(1, &write_ds, 0, nullptr);
-    }
+        // When the job system is in, updating the UBO matrices will be handled by the job system. For now we'll do it
+        // here
 
-    void nova_renderer::update_gbuffer_ubos() {
-        // Big thing here is to update the camera's matrices
+        update_gui_ubo();
 
-        auto& per_frame_ubo = ubo_manager->get_per_frame_uniforms();
+        for(const auto& mat : materials) {
+            const auto& renderables_for_material = meshes->get_meshes_for_material(mat.name);
 
-        auto per_frame_uniform_data = per_frame_uniforms{};
-        per_frame_uniform_data.gbufferProjection = player_camera.get_projection_matrix();
-        per_frame_uniform_data.gbufferModelView = player_camera.get_view_matrix();
-
-        per_frame_ubo.send_data(per_frame_uniform_data);
+            for(const auto& renderable : renderables_for_material) {
+                update_model_matrix(renderable);
+            }
+        }
     }
 
     camera &nova_renderer::get_player_camera() {
@@ -571,36 +558,66 @@ namespace nova {
         return ordered_material_passes;
     }
 
-    void nova_renderer::create_descriptor_sets() {
-        uint32_t num_sets = 0, num_textures = 0, num_buffers = 0;
+    void nova_renderer::update_model_matrix(const render_object &renderable) {
+        // This is not an OOP design and the Java gods are mad at me
+        // Luckily I'm coding C++
+        switch(renderable.type) {
+            case geometry_type::gui:    // Updated separately
+            case geometry_type::block:  // These don't change at runtime and it's fine
+                break;
+            default:
+                LOG(WARNING) << "Model matrices are not supported for geometry type " << geometry_type::to_string(renderable.type);
+        }
+    }
 
-        for(const auto& sorted_pipeline : pipelines_by_renderpass) {
-            const pipeline_object& pipeline = sorted_pipeline.second;
+    void nova_renderer::update_gui_ubo() {
+        auto& config = render_settings->get_options()["settings"];
+        float view_width = config["viewWidth"];
+        float view_height = config["viewHeight"];
+        float scalefactor = config["scalefactor"];
+        // The GUI matrix is super simple, just a viewport transformation
+        gui_model = glm::mat4(1.0f);
+        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
+        gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
+        gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
+        gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
 
-            num_sets += pipeline.layouts.size();
+        LOG(INFO) << "Calculated GUI model matrix for viewWidth=" << view_width << " and viewHeight=" << view_height;
 
-            for(const auto& named_binding : pipeline.resource_bindings) {
-                const resource_binding& binding = named_binding.second;
-
-                if(binding.descriptorType == vk::DescriptorType::eUniformBuffer) {
-                    num_buffers++;
-
-                } else if(binding.descriptorType == vk::DescriptorType::eCombinedImageSampler) {
-                    num_textures++;
-
-                } else {
-                    LOG(EARNING) << "Descriptor type " << vk::to_string(binding.descriptorType) << " is not supported yet";
-                }
+        try {
+            if(!meshes) {
+                LOG(ERROR) << "Mesh store not initialized! oh no";
+                return;
             }
+
+            std::vector<render_object> &gui_objects = meshes->get_meshes_for_material("gui");
+            for(const auto &gui_obj : gui_objects) {
+                LOG(INFO) << "Setting the model matrix for a GUI thing";
+                upload_gui_model_matrix(gui_obj, gui_model);
+            }
+        } catch(std::exception& e) {
+            LOG(WARNING) << "Load some GUIs you fool";
         }
+    }
 
-        shader_resources->create_descriptor_pool(num_sets, num_buffers, num_textures);
+    void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
+        // Send the model matrix to the buffer
+        // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
+        auto& allocation = shader_resources->get_per_model_buffer()->get_allocation_info();
+        memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
+        LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
 
-        for(auto& sorted_pipeline : pipelines_by_renderpass) {
-            pipeline_object& pipeline = sorted_pipeline.second;
+        // Copy the memory to the descriptor set
+        auto write_ds = vk::WriteDescriptorSet()
+                .setDstSet(gui_obj.per_model_set)
+                .setDstBinding(0)
+                .setDstArrayElement(0)
+                .setDescriptorCount(1)
+                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                .setPBufferInfo((&gui_obj.per_model_buffer_range));
 
-            shader_resources->create_descriptor_sets_for_pipeline(pipeline);
-        }
+        context->device.updateDescriptorSets(1, &write_ds, 0, nullptr);
+        LOG(INFO) << "Updated the descriptor set";
     }
 }
 

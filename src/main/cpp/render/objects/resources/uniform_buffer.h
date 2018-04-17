@@ -6,8 +6,8 @@
 #ifndef RENDERER_GL_UNIFORM_BUFFER_H
 #define RENDERER_GL_UNIFORM_BUFFER_H
 
-#include <string>
-#include <GLFW/glfw3.h>
+#include "../../../../../../../../mingw-w64/x86_64-7.2.0-posix-seh-rt_v5-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/7.2.0/include/c++/string"
+#include "../../../3rdparty/glfw/include/GLFW/glfw3.h"
 
 namespace nova {
     class vk_shader_program;
