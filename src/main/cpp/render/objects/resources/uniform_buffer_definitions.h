@@ -12,11 +12,8 @@
 #ifndef RENDERER_UNIFORM_BUFFERS_H
 #define RENDERER_UNIFORM_BUFFERS_H
 
-#include "../../../3rdparty/glm/glm/glm.hpp"
-
-#include "../../../../../../../../mingw-w64/x86_64-7.2.0-posix-seh-rt_v5-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/7.2.0/include/c++/ostream"
-
-#include "../../../3rdparty/easyloggingpp/src/easylogging++.h"
+#include <glm/glm.hpp>
+#include <easylogging++.h>
 
 namespace nova {
     /*!

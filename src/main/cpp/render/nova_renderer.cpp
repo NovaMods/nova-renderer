@@ -322,6 +322,9 @@ namespace nova {
         LOG(INFO) << "Beginning material " << pass.material_name;
 
         auto& textures = shader_resources->get_texture_manager();
+        auto& buffers = shader_resources->get_uniform_buffers();
+
+        bool should_bind_per_model_buffer = false;
 
         // Bind the descriptor sets for this material
         for(const auto& binding : pass.bindings) {
@@ -334,8 +337,13 @@ namespace nova {
 
                 pipeline_data.bind_resource(descriptor_name, tex);
 
-            // } else if(buffers->has_buffer(resource_name)) {
+            } else if(buffers.is_buffer_known(resource_name)) {
                 // bind as a buffer
+
+                if(resource_name == "NoaePerModelUBO") {
+                    should_bind_per_model_buffer = true;
+                    continue;
+                }
 
             } else {
                 LOG(ERROR) << "Material " << pass.material_name << " wants to use resource " << resource_name << " for pipeline " << pass.pipeline << " but that resource doesn't exist! Check your spelling";
@@ -351,6 +359,8 @@ namespace nova {
     }
 
     void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_object &pipeline_data) {
+        // Bind per-model buffer (if requested)
+
         buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
 
         for(uint32_t i = 0; i < pipeline_data.attributes.size(); i++) {
@@ -572,7 +582,7 @@ namespace nova {
     void nova_renderer::update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
         // Send the model matrix to the buffer
         // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
-        auto& allocation = shader_resources->get_per_model_buffer()->get_allocation_info();
+        auto& allocation = shader_resources->get_uniform_buffers().get_per_model_buffer()->get_allocation_info();
         memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
         LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
     }

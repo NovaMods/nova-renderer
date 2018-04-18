@@ -8,33 +8,10 @@
 #include "auto_allocated_buffer.h"
 
 namespace nova {
-    auto_buffer::auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped = false) :
-            context(context), min_alloc_size(min_alloc_size) {
-        VmaAllocationCreateInfo alloc_create = {};
-        alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-        if(mapped) {
-            alloc_create.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
-        }
-
-        auto buffer_create_result = vmaCreateBuffer(context->allocator,
-                        reinterpret_cast<const VkBufferCreateInfo *>(&create_info), &alloc_create,
-                        reinterpret_cast<VkBuffer *>(&buffer), &allocation, &allocation_info);
-
-        if(buffer_create_result != VK_SUCCESS) {
-            LOG(ERROR) << "Could not allocate a an autobuffer because " << buffer_create_result;
-        } else {
-            LOG(TRACE) << "Auto buffer allocation success! Buffer ID: " << (long long)(VkBuffer)buffer;
-        }
+    auto_buffer::auto_buffer(std::string name, std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped = false) :
+            uniform_buffer(name, context, create_info, min_alloc_size, mapped) {
 
         chunks.emplace_back(auto_buffer_chunk{vk::DeviceSize(0), create_info.size});
-    }
-
-    auto_buffer::~auto_buffer() {
-        if(buffer != vk::Buffer()) {
-            LOG(TRACE) << "autobuffer: About to destroy buffer " << (long long)(VkBuffer)buffer;
-            vmaDestroyBuffer(context->allocator, buffer, allocation);
-        }
     }
 
     vk::DescriptorBufferInfo auto_buffer::allocate_space(uint64_t size) {
@@ -152,15 +129,7 @@ namespace nova {
         // a bug in my allocator and not something that should happen during Nova so let's just crash
         LOG(FATAL) << "Could not return allocation {offset=" << to_free.offset << " range=" << to_free.range << "} which should not happen. There's probably a bug in the allocator and you need to debug it";
     }
-
-    VmaAllocation &auto_buffer::get_allocation() {
-        return allocation;
-    }
-
-    VmaAllocationInfo &auto_buffer::get_allocation_info() {
-        return allocation_info;
-    }
-
+	
     vk::DeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last) {
         return last.offset - (first.offset + first.range);
     }

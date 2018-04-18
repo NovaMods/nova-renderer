@@ -1,8 +1,8 @@
 #ifndef RENDERER_AUTO_ALLOCATED_BUFFER_H
 #define RENDERER_AUTO_ALLOCATED_BUFFER_H
 
-#include <vulkan/vulkan.hpp>
 #include "../../vulkan/render_context.h"
+#include "uniform_buffer.h"
 
 namespace nova {
     /*!
@@ -24,7 +24,7 @@ namespace nova {
      * A buffer allocated through this class is set up to move data from the CPU to the GPU. If that isn't the case in
      * the future then future DethRaid will have some work to do
      */
-    class auto_buffer {
+    class auto_buffer : public uniform_buffer {
     public:
         auto_buffer() = default;
 
@@ -34,7 +34,7 @@ namespace nova {
          * \param device The device to create the buffer on
          * \param mapped If true, make this buffer always mapped
          */
-        auto_buffer(std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
+        auto_buffer(std::string name, std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
 
         /*!
          * \brief Destroys the buffer on the device
@@ -64,18 +64,8 @@ namespace nova {
          */
         void free_allocation(const vk::DescriptorBufferInfo& to_free);
 
-        VmaAllocation& get_allocation();
-        VmaAllocationInfo& get_allocation_info();
     private:
-        std::shared_ptr<render_context> context;
-
-        vk::Device device;
-        vk::Buffer buffer;
-        VmaAllocation allocation;
-
         std::vector<auto_buffer_chunk> chunks;
-        VmaAllocationInfo allocation_info;
-        uint64_t min_alloc_size;
     };
 
     vk::DeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last);

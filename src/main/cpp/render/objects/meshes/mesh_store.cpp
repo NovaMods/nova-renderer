@@ -33,7 +33,7 @@ namespace nova {
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
         texture_name = "minecraft:" + texture_name;
-        const texture_manager::texture_location tex_location = nova_renderer::instance->get_resource_manager().get_texture_location(texture_name);
+        const texture_manager::texture_location tex_location = nova_renderer::instance->get_shader_resources()->get_texture_manager().get_texture_location(texture_name);
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         mesh_definition cur_screen_buffer = {};
@@ -63,7 +63,7 @@ namespace nova {
         gui.type = geometry_type::gui;
 
         // The GUI just has a model matrix
-        gui.per_model_buffer_range = shader_resources->get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
+        gui.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
 
         // TODO: Something more intelligent
         if(renderables_grouped_by_material.find("gui") == renderables_grouped_by_material.end()) {
@@ -84,7 +84,7 @@ namespace nova {
         while(!geometry_to_remove.empty()) {
             auto &filter = geometry_to_remove.front();
 
-            auto per_model_buffer = shader_resources->get_per_model_buffer();
+            auto per_model_buffer = shader_resources->get_uniform_buffers().get_per_model_buffer();
             for (auto &group : renderables_grouped_by_material) {
                 auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), filter);
 
@@ -113,7 +113,6 @@ namespace nova {
             obj.geometry = std::make_unique<vk_mesh>(def, context);
             obj.type = geometry_type::block;
             obj.parent_id = def.id;
-            obj.color_texture = "block_color";
             obj.position = def.position;
             obj.bounding_box.center = def.position;
             obj.bounding_box.center.y = 128;

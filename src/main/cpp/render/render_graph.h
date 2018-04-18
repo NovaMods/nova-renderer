@@ -7,7 +7,7 @@
 #define RENDERER_RENDER_GRAPH_H
 
 #include "objects/renderpasses/render_passes.h"
-#include "objects/textures/texture_manager.h"
+#include "objects/resources/texture_manager.h"
 
 namespace nova {
     /*!

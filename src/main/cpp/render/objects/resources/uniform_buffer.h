@@ -6,59 +6,38 @@
 #ifndef RENDERER_GL_UNIFORM_BUFFER_H
 #define RENDERER_GL_UNIFORM_BUFFER_H
 
-#include "../../../../../../../../mingw-w64/x86_64-7.2.0-posix-seh-rt_v5-rev1/mingw64/lib/gcc/x86_64-w64-mingw32/7.2.0/include/c++/string"
-#include "../../../3rdparty/glfw/include/GLFW/glfw3.h"
+#include "../../vulkan/render_context.h"
 
 namespace nova {
-    class vk_shader_program;
-
     /*!
      * \brief A nice interface for uniform buffer objects
      */
-    template <typename T>
     class uniform_buffer {
     public:
-        uniform_buffer(std::string name) : name(name) {
-            //glCreateBuffers(1, &gl_name);
-            LOG(TRACE) << "creating ubo " << name << " with size: " << sizeof(T);
-            //glNamedBufferStorage(gl_name, sizeof(T), nullptr, GL_DYNAMIC_STORAGE_BIT);
-        }
+		uniform_buffer() = default;
 
-        uniform_buffer(uniform_buffer &&old) noexcept {
-            gl_name = old.gl_name;
-            name = old.name;
+        uniform_buffer(std::string name, std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
 
-            old.gl_name = 0;
-            old.name = "";
-        }
+        uniform_buffer(uniform_buffer &&old) noexcept;
 
-        void link_to_shader(const vk_shader_program &shader) {
-            //auto ubo_index = glGetUniformBlockIndex(shader.gl_name, name.c_str());
-            //glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
-            //glBindBufferBase(GL_UNIFORM_BUFFER, ubo_index, gl_name);
-        }
+        virtual ~uniform_buffer();
 
-        void send_data(T &data) {
-            LOG(TRACE) << "sending date with size: " << sizeof(T) << " to ubo " << name;
-            //glNamedBufferSubData(gl_name, 0, sizeof(T), &data);
-        }
+        VmaAllocation& get_allocation();
+        VmaAllocationInfo& get_allocation_info();
 
-        void bind() {
-            //glBindBuffer(GL_UNIFORM_BUFFER, gl_name);
-        }
+		const std::string& get_name() const;
 
-        /*!
-         * \brief Deallocates this uniform buffer
-         */
-        ~uniform_buffer() {
-            if(glfwGetCurrentContext() != NULL) {
-                //glDeleteBuffers(1, &gl_name);
-            }
-        }
+    protected:
+		std::string name;
+		uint64_t min_alloc_size;
 
-    private:
-        GLuint gl_name;
-        std::string name;
+		std::shared_ptr<render_context> context;
+
+		vk::Device device;
+		vk::Buffer buffer;
+
+		VmaAllocation allocation;
+		VmaAllocationInfo allocation_info;
     };
 }
 

@@ -161,6 +161,8 @@ namespace nova {
 
         /*
          * Internal variables
+         *
+         * This is the stuff that might be exposed to the scripting environment or the shader environment
          */
 
         camera player_camera;

@@ -17,21 +17,21 @@
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
 #include "../renderpasses/materials.h"
-#include "../resources/shader_resource_manager.h"
 #include "../../../data_loading/loaders/shader_loading.h"
 #include "../renderpasses/renderpass_builder.h"
-#include "../resources/shader_resource_manager.h"
 #include "../resources/texture2D.h"
 
 
 namespace nova {
+    class shader_resource_manager;
+
     struct resource_binding : public vk::DescriptorSetLayoutBinding {
         uint32_t set;
 
         bool operator==(const resource_binding& other) const;
         bool operator!=(const resource_binding& other) const;
 
-        vk::DescriptorSetLayoutBinding to_vk_binding();
+        vk::DescriptorSetLayoutBinding to_vk_binding() const;
     };
 
     struct shader_module {

@@ -9,17 +9,7 @@
 #include "../../nova_renderer.h"
 
 namespace nova {
-    shader_resource_manager::shader_resource_manager(std::shared_ptr<render_context> context) : device(context->device), context(context), textures(context) {
-        auto per_model_buffer_create_info = vk::BufferCreateInfo()
-                .setSize(5000 * sizeof(glm::mat4))
-                .setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer)
-                .setSharingMode(vk::SharingMode::eExclusive)
-                .setQueueFamilyIndexCount(1)
-                .setPQueueFamilyIndices(&context->graphics_family_idx);
-
-        auto uniform_buffer_offset_alignment = context->gpu.props.limits.minUniformBufferOffsetAlignment;
-        per_model_resources_buffer = std::make_shared<auto_buffer>(context, per_model_buffer_create_info, uniform_buffer_offset_alignment, true);
-
+    shader_resource_manager::shader_resource_manager(std::shared_ptr<render_context> context) : device(context->device), context(context), textures(context), buffers(context) {
         create_point_sampler();
     }
 
@@ -43,10 +33,6 @@ namespace nova {
         device.destroyDescriptorPool(descriptor_pool);
 
         device.destroySampler(point_sampler);
-    }
-
-    std::shared_ptr<auto_buffer> shader_resource_manager::get_per_model_buffer() {
-        return per_model_resources_buffer;
     }
 
     void shader_resource_manager::create_descriptor_sets_for_pipeline(pipeline_object &pipeline_data) {
@@ -93,7 +79,7 @@ namespace nova {
     }
 
     uniform_buffer_store &shader_resource_manager::get_uniform_buffers() {
-        return ubo_manager;
+        return buffers;
     }
 
     void shader_resource_manager::create_descriptor_sets( std::unordered_map<std::string, std::vector<pipeline_object>> &pipelines) {

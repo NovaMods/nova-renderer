@@ -116,7 +116,7 @@ set(NOVA_HEADERS
         render/objects/renderpasses/renderpass_builder.h
         render/vulkan/render_context.h
         render/vulkan/command_pool.h
-        render/objects/shaders/auto_allocated_buffer.h
+        render/objects/resources/auto_allocated_buffer.h
         render/objects/renderpasses/materials.h
 
         render/objects/renderpasses/render_passes.h
@@ -169,11 +169,13 @@ set(NOVA_SOURCE
 
         render/vulkan/render_context.cpp
         render/objects/resources/shader_resource_manager.cpp
-        render/objects/shaders/auto_allocated_buffer.cpp
+        render/objects/resources/auto_allocated_buffer.cpp
         render/objects/renderpasses/render_passes.cpp
         data_loading/loaders/shader_file_loading.cpp
         render/render_graph.cpp
+        render/objects/resources/uniform_buffer.cpp
         )
+
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern woftware is

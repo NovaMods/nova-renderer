@@ -1,5 +1,5 @@
 /*!
- * \brief Defines the functions defclared in uniform_buffer_definitions.h. This is mostly printing operators because
+ * \brief Defines the functions declared in uniform_buffer_definitions.h. This is mostly printing operators because
  * debugging is hard
  *
  * \author ddubois 

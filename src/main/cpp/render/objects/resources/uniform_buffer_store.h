@@ -14,8 +14,6 @@
 #include "uniform_buffer.h"
 
 namespace nova {
-    class vk_shader_program;
-
     /*!
      * \brief Holds all the uniform buffers that Nova needs to use
      *
@@ -28,30 +26,31 @@ namespace nova {
      */
     class uniform_buffer_store : public iconfig_listener {
     public:
-        /*!
-         * \brief Creates all the uniform buffers that we need, and loads the binding points from the config/data file
-         */
-        uniform_buffer_store();
+        uniform_buffer_store(std::shared_ptr<render_context> context);
 
-        void register_all_buffers_with_shader(const vk_shader_program &shader) noexcept;
+		/*
+		 * Buffer access
+		 */
 
-        void update();
+		std::shared_ptr<auto_buffer> get_per_model_buffer();
+
+		void add_buffer(uniform_buffer& new_buffer);
+
+		const bool is_buffer_known(std::string buffer_name) const;
+
+		uniform_buffer& get_buffer(std::string buffer_name);
 
         /*
          * Inherited from iconfig_listener
          */
-        virtual void on_config_change(nlohmann::json &new_config);
+        virtual void on_config_change(nlohmann::json &new_config) override;
 
-        virtual void on_config_loaded(nlohmann::json &config);
-
-        uniform_buffer<per_frame_uniforms>& get_per_frame_uniforms();
+        virtual void on_config_loaded(nlohmann::json &config) override;
 
     private:
-        per_frame_uniforms per_frame_uniform_variables;
+		std::unordered_map<std::string, uniform_buffer> buffers;
 
-        uniform_buffer<per_frame_uniforms> per_frame_uniforms_buffer;
-
-        void update_per_frame_uniforms(nlohmann::json &config);
+		std::shared_ptr<auto_buffer> per_model_resources_buffer;
     };
 }
 

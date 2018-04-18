@@ -3,7 +3,6 @@
  * \date 05-Jul-16.
  */
 
-#include <fstream>
 #include <easylogging++.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,51 +10,49 @@
 #include "uniform_buffer_store.h"
 
 namespace nova {
-    uniform_buffer_store::uniform_buffer_store() : per_frame_uniforms_buffer("per_frame_uniforms") {
-		LOG(INFO) << "Initialized uniform buffer store";
-    }
+    uniform_buffer_store::uniform_buffer_store(std::shared_ptr<render_context> context) {
+        auto per_model_buffer_create_info = vk::BufferCreateInfo()
+                .setSize(5000 * sizeof(glm::mat4))
+                .setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer)
+                .setSharingMode(vk::SharingMode::eExclusive)
+                .setQueueFamilyIndexCount(1)
+                .setPQueueFamilyIndices(&context->graphics_family_idx);
 
-    void uniform_buffer_store::update() {
-        update_per_frame_uniforms(nova_renderer::get_render_settings().get_options());
+        auto uniform_buffer_offset_alignment = context->gpu.props.limits.minUniformBufferOffsetAlignment;
+        per_model_resources_buffer = std::make_shared<auto_buffer>("NovaPerModelUBO", context, per_model_buffer_create_info, uniform_buffer_offset_alignment, true);
     }
 
     void uniform_buffer_store::on_config_change(nlohmann::json &new_config) {
         // We'll probably also want to update the per frame uniforms so that we have the correct aspect ratio and
         // whatnot
-        update_per_frame_uniforms(new_config);
     }
 
     void uniform_buffer_store::on_config_loaded(nlohmann::json &config) {}
+	
 
-    void uniform_buffer_store::register_all_buffers_with_shader(const vk_shader_program &shader) noexcept {
-        per_frame_uniforms_buffer.link_to_shader(shader);
-    }
+	std::shared_ptr<auto_buffer> uniform_buffer_store::get_per_model_buffer() {
+		return per_model_resources_buffer;
+	}
 
-    void uniform_buffer_store::update_per_frame_uniforms(nlohmann::json &config) {
-		float view_width = config["viewWidth"];
-		float view_height = config["viewHeight"];
-        float scalefactor = config["scalefactor"];
-        // The GUI matrix is super simple, just a viewport transformation
-        glm::mat4 gui_model_view(1.0f);
-        gui_model_view = glm::translate(gui_model_view, glm::vec3(-1.0f, 1.0f, 0.0f));
-        gui_model_view = glm::scale(gui_model_view, glm::vec3(scalefactor, scalefactor, 1.0f));
-        gui_model_view = glm::scale(gui_model_view, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
-        gui_model_view = glm::scale(gui_model_view, glm::vec3(1.0f, -1.0f, 1.0f));
+	void uniform_buffer_store::add_buffer(uniform_buffer & new_buffer) {
+        // CLion yells about this but it's fine
+		buffers.insert(std::make_pair(new_buffer.get_name(), std::move(new_buffer)));
+	}
 
-        per_frame_uniform_variables.gbufferModelView = glm::mat4(1);
-        per_frame_uniform_variables.gbufferProjection = glm::mat4(1);
-        per_frame_uniform_variables.aspectRatio = view_width / view_height;
-        per_frame_uniform_variables.viewHeight = view_height;
-        per_frame_uniform_variables.viewWidth = view_width;
-        per_frame_uniform_variables.frameTimeCounter = 0;
-        per_frame_uniform_variables.hideGUI = 0;
+	const bool uniform_buffer_store::is_buffer_known(std::string buffer_name) const {
+		if(buffer_name == "NovaPerFrameUBO") {
+			return true;
+		}
+		return buffers.find(buffer_name) != buffers.end();
+	}
 
-        per_frame_uniforms_buffer.send_data(per_frame_uniform_variables);
-        LOG(DEBUG) << "Updated Per-Frame UBO";
-    }
+	uniform_buffer & uniform_buffer_store::get_buffer(std::string buffer_name) {
+		if(!is_buffer_known(buffer_name)) {
+			LOG(ERROR) << "Buffer " << buffer_name << " is not known to Nova";
+			throw std::runtime_error("Buffer " + buffer_name + " is now known to Nova");
+		}
 
-    uniform_buffer<per_frame_uniforms>& uniform_buffer_store::get_per_frame_uniforms() {
-        return per_frame_uniforms_buffer;
-    }
+		return buffers.at(buffer_name);
+	}
 }
 

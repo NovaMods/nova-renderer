@@ -9,7 +9,7 @@
 #include <vulkan/vulkan.hpp>
 #include "../renderpasses/materials.h"
 #include "../../vulkan/render_context.h"
-#include "../shaders/auto_allocated_buffer.h"
+#include "auto_allocated_buffer.h"
 #include "../shaders/pipeline.h"
 #include "texture_manager.h"
 #include "uniform_buffer_store.h"
@@ -23,9 +23,7 @@ namespace nova {
         explicit shader_resource_manager(std::shared_ptr<render_context> context);
 
         ~shader_resource_manager();
-
-        std::shared_ptr<auto_buffer> get_per_model_buffer();
-
+		
         /*
          * DESCRIPTOR SETS
          */
@@ -50,12 +48,10 @@ namespace nova {
         vk::Device device;
 
         vk::DescriptorPool descriptor_pool;
-
-        std::shared_ptr<auto_buffer> per_model_resources_buffer;
-
+		
         texture_manager textures;
 
-        uniform_buffer_store ubo_manager;
+        uniform_buffer_store buffers;
 
         /*
          * SAMPLERS
