@@ -13,7 +13,7 @@
 #include <optional.hpp>
 
 #include "../../utils/smart_enum.h"
-#include "textures/texture_manager.h"
+#include "resources/texture_manager.h"
 #include "../../physics/aabb.h"
 
 
@@ -47,22 +47,16 @@ namespace nova {
          * THIS STRUCT HAS MOVE OPERATORS! BE SURE TO UPDATE THEM WHEN YOU ADD NEW THINGS *
          **********************************************************************************/
 
-
         int parent_id;  //!< The ID of the thing that owns us. Could be the ID of a chunk, entity, whatever
 
         geometry_type type;
 
         std::unique_ptr<vk_mesh> geometry;
 
-        std::string color_texture;
-        std::experimental::optional<std::string> normalmap;
-        std::experimental::optional<std::string> data_texture;
-
         glm::vec3 position;
 
         aabb bounding_box;
 
-        vk::DescriptorSet per_model_set;
         vk::DescriptorBufferInfo per_model_buffer_range;
 
         render_object() = default;

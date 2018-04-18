@@ -88,8 +88,6 @@ namespace nova {
 
         static settings& get_render_settings();
 
-        texture_manager& get_resource_manager();
-
         input_handler& get_input_handler();
 
         glfw_vk_window& get_game_window();
@@ -104,7 +102,9 @@ namespace nova {
 
         std::shared_ptr<shader_resource_manager> get_shader_resources();
 
-        // Overrides from iconfig_listener
+        /*
+         * Overrides from iconfig_listener
+         */
 
         void on_config_change(nlohmann::json& new_config) override;
 
@@ -167,21 +167,23 @@ namespace nova {
 
         glm::mat4x4 gui_model;
 
-        /*
+        /**
          * Private functions
+         */
+
+        /*
+         * Data loading
          */
 
         void load_new_shaderpack(const std::string &new_shaderpack_name);
 
-        inline void upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix);
+        std::unordered_map<std::string, std::vector<material_pass>> extract_material_passes(const std::vector<material>& materials);
 
-        void update_all_ubos();
-
-        void end_frame();
+        /*
+         * Render loop
+         */
 
         void begin_frame();
-
-        void update_gui_model_matrices();
 
         void execute_pass(const render_pass &pass, vk::CommandBuffer& buffer);
 
@@ -191,10 +193,43 @@ namespace nova {
 
         void render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_object &info);
 
-        std::unordered_map<std::string, std::vector<material_pass>> extract_material_passes(const std::vector<material>& materials);
+        void end_frame();
 
-        void update_gui_ubo();
+        /*
+         * Shader parameters
+         */
 
+        /*!
+         * \brief Updated all the UBOs that Nova knows how to update
+         *
+         * Updates the per-model buffer, the buffer of per-frame uniforms, and anything else I deem necessary and proper
+         * to the execution of a well-designed renderer
+         */
+        void update_nova_ubos();
+
+        /*!
+         * \brief Calculates the GUI model matrix for the current frame, then copies that to each GUI object's
+         * allocation in the per-model buffer
+         *
+         * It would be more performant to have each GUI object share an allocation in a buffer, but there's only a
+         * handful of GUI objects so I'm not super worried
+         */
+        void update_gui_model_matrices();
+
+        /*!
+         * \brief Sends the provided model matrix to the given render object's allocation in the per-model buffer
+         *
+         * \param gui_obj The render_object for the GUI object to set the model matrix of
+         * \param model_matrix The GUI model matrix
+         */
+        inline void update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix);
+
+        /*!
+         * \brief Calculates the object's model matrix from its position and eventually rotation, then uploads it to
+         * this model's allocation in the per-model buffer
+         *
+         * \param renderable The render_object to calculate and upload the model matrix for
+         */
         void update_model_matrix(const render_object &renderable);
     };
 

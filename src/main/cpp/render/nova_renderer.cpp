@@ -134,7 +134,7 @@ namespace nova {
 
         player_camera.recalculate_frustum();
 
-        update_all_ubos();
+        update_nova_ubos();
 
         LOG(INFO) << "We have " << passes_list.size() << " passes to render";
         for (const auto &pass : passes_list) {
@@ -444,7 +444,6 @@ namespace nova {
         LOG(INFO) << "Sorting materials...";
         material_passes_by_pipeline = extract_material_passes(shaderpack.materials);
 
-        create_descriptor_sets();
         shader_resources->create_descriptor_sets(pipelines_by_renderpass);
 
         LOG(INFO) << "Loading complete";
@@ -454,7 +453,7 @@ namespace nova {
         instance.release();
     }
 
-    void nova_renderer::update_all_ubos() {
+    void nova_renderer::update_nova_ubos() {
         // For each renderable, update its model matrix
         // Currently that means GUI things get the GUI scaling matrix and chunks get a translation
         // Eventually entities will have a rotation too but that's not an immediate concern
@@ -466,7 +465,7 @@ namespace nova {
         // When the job system is in, updating the UBO matrices will be handled by the job system. For now we'll do it
         // here
 
-        update_gui_ubo();
+        update_gui_model_matrices();
 
         for(const auto& mat : materials) {
             const auto& renderables_for_material = meshes->get_meshes_for_material(mat.name);
@@ -499,33 +498,6 @@ namespace nova {
 
     std::shared_ptr<shader_resource_manager> nova_renderer::get_shader_resources() {
         return shader_resources;
-    }
-
-    void nova_renderer::update_gui_model_matrices() {
-        auto& config = render_settings->get_options()["settings"];
-        float view_width = config["viewWidth"];
-        float view_height = config["viewHeight"];
-        float scalefactor = config["scalefactor"];
-        // The GUI matrix is super simple, just a viewport transformation
-        gui_model = glm::mat4(1.0f);
-        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, -1.0f, 0.0f));
-        gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
-        gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
-
-        try {
-            if(!meshes) {
-                LOG(ERROR) << "oh no the mesh store is not initialized";
-                return;
-            }
-
-            std::vector<render_object> &gui_objects = meshes->get_meshes_for_material("gui");
-            for(const auto &gui_obj : gui_objects) {
-                upload_gui_model_matrix(gui_obj, gui_model);
-            }
-        } catch(std::exception& e) {
-            LOG(WARNING) << "Load some GUIs you fool";
-            LOG(WARNING) << e.what() << std::endl;
-        }
     }
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes) {
@@ -570,54 +542,39 @@ namespace nova {
         }
     }
 
-    void nova_renderer::update_gui_ubo() {
+    void nova_renderer::update_gui_model_matrices() {
         auto& config = render_settings->get_options()["settings"];
         float view_width = config["viewWidth"];
         float view_height = config["viewHeight"];
         float scalefactor = config["scalefactor"];
         // The GUI matrix is super simple, just a viewport transformation
         gui_model = glm::mat4(1.0f);
-        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, 1.0f, 0.0f));
+        gui_model = glm::translate(gui_model, glm::vec3(-1.0f, -1.0f, 0.0f));
         gui_model = glm::scale(gui_model, glm::vec3(scalefactor, scalefactor, 1.0f));
         gui_model = glm::scale(gui_model, glm::vec3(1.0 / view_width, 1.0 / view_height, 1.0));
-        gui_model = glm::scale(gui_model, glm::vec3(1.0f, -1.0f, 1.0f));
-
-        LOG(INFO) << "Calculated GUI model matrix for viewWidth=" << view_width << " and viewHeight=" << view_height;
 
         try {
             if(!meshes) {
-                LOG(ERROR) << "Mesh store not initialized! oh no";
+                LOG(ERROR) << "oh no the mesh store is not initialized";
                 return;
             }
 
             std::vector<render_object> &gui_objects = meshes->get_meshes_for_material("gui");
             for(const auto &gui_obj : gui_objects) {
-                LOG(INFO) << "Setting the model matrix for a GUI thing";
-                upload_gui_model_matrix(gui_obj, gui_model);
+                update_gui_model_matrix(gui_obj, gui_model);
             }
         } catch(std::exception& e) {
             LOG(WARNING) << "Load some GUIs you fool";
+            LOG(WARNING) << e.what() << std::endl;
         }
     }
 
-    void nova_renderer::upload_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
+    void nova_renderer::update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
         // Send the model matrix to the buffer
         // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
         auto& allocation = shader_resources->get_per_model_buffer()->get_allocation_info();
         memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
         LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
-
-        // Copy the memory to the descriptor set
-        auto write_ds = vk::WriteDescriptorSet()
-                .setDstSet(gui_obj.per_model_set)
-                .setDstBinding(0)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1)
-                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-                .setPBufferInfo((&gui_obj.per_model_buffer_range));
-
-        context->device.updateDescriptorSets(1, &write_ds, 0, nullptr);
-        LOG(INFO) << "Updated the descriptor set";
     }
 }
 
