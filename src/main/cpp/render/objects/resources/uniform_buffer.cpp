@@ -1,10 +1,11 @@
 #include "uniform_buffer.h"
 #include "uniform_buffer.h"
 #include "uniform_buffer.h"
+#include <easylogging++.h>
 
 namespace nova {
 
-	uniform_buffer::uniform_buffer(std::string name, std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped) {
+	uniform_buffer::uniform_buffer(std::string name, std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped) : min_alloc_size(min_alloc_size) {
 		VmaAllocationCreateInfo alloc_create = {};
 		alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
@@ -26,8 +27,8 @@ namespace nova {
 	uniform_buffer::uniform_buffer(uniform_buffer && old) noexcept : name(old.name), min_alloc_size(old.min_alloc_size),
 		context(old.context), device(old.device), buffer(old.buffer), allocation(old.allocation), allocation_info(old.allocation_info) {
 
-		old.device = {};
-		old.buffer = {};
+		old.device = vk::Device{};
+		old.buffer = vk::Buffer{};
 		old.allocation = {};
 		old.allocation_info = {};
 	}

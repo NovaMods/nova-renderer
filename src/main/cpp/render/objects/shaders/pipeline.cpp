@@ -60,6 +60,7 @@ namespace nova {
         pipeline_data.name = pipeline_create_info.name;
 
         std::vector<vk::PipelineShaderStageCreateInfo> stage_create_infos;
+        auto all_layouts = std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>>{};
 
         auto vertex_module = create_shader_module(pipeline_create_info.shader_sources.vertex_source, shaderc_vertex_shader, device);
 
@@ -70,7 +71,7 @@ namespace nova {
         stage_create_infos.push_back(vertex_create_info);
         LOG(TRACE) << "Using shader module " << (VkShaderModule)vertex_create_info.module;
 
-        add_bindings_from_shader(pipeline_data, vertex_module, "vertex");
+        add_bindings_from_shader(pipeline_data, vertex_module, "vertex", all_layouts);
 
         auto fragment_module = create_shader_module(pipeline_create_info.shader_sources.fragment_source, shaderc_fragment_shader, device);
 
@@ -81,7 +82,7 @@ namespace nova {
         stage_create_infos.push_back(fragment_create_info);
         LOG(TRACE) << "Using shader module " << (VkShaderModule)fragment_create_info.module;
 
-        add_bindings_from_shader(pipeline_data, fragment_module, "fragment");
+        add_bindings_from_shader(pipeline_data, fragment_module, "fragment", all_layouts);
 
         if(pipeline_create_info.shader_sources.geometry_source) {
             auto geometry_module = create_shader_module(pipeline_create_info.shader_sources.geometry_source.value(), shaderc_geometry_shader, device);
@@ -92,7 +93,7 @@ namespace nova {
             geometry_create_info.pName = "main";
             stage_create_infos.push_back(geometry_create_info);
 
-            add_bindings_from_shader(pipeline_data, geometry_module, "geometry");
+            add_bindings_from_shader(pipeline_data, geometry_module, "geometry", all_layouts);
             LOG(TRACE) << "Using shader module " << (VkShaderModule)geometry_create_info.module;
         }
 
@@ -105,7 +106,7 @@ namespace nova {
             tesc_create_info.pName = "main";
             stage_create_infos.push_back(tesc_create_info);
 
-            add_bindings_from_shader(pipeline_data, tesc_module, "tessellation control");
+            add_bindings_from_shader(pipeline_data, tesc_module, "tessellation control", all_layouts);
             LOG(TRACE) << "Using shader module " << (VkShaderModule)tesc_create_info.module;
         }
 
@@ -118,7 +119,7 @@ namespace nova {
             tese_create_info.pName = "main";
             stage_create_infos.push_back(tese_create_info);
 
-            add_bindings_from_shader(pipeline_data, tese_module, "tessellation evaluation");
+            add_bindings_from_shader(pipeline_data, tese_module, "tessellation evaluation", all_layouts);
             LOG(TRACE) << "Using shader module " << (VkShaderModule)tese_create_info.module;
         }
 
@@ -356,9 +357,8 @@ namespace nova {
         return pipeline_data;
     }
 
-    void add_bindings_from_shader(pipeline_object& pipeline_data, const shader_module &shader_module, const std::string shader_stage_name) {
+    void add_bindings_from_shader(pipeline_object& pipeline_data, const shader_module &shader_module, const std::string& shader_stage_name, std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>>& all_layouts) {
         auto& all_bindings = pipeline_data.resource_bindings;
-        auto& all_layouts = pipeline_data.layouts;
 
         // TODO: Actually look at your TODOs
         // Look, I get it. you're tired and just want this to compier. But `all_layouts` needs to be a map from string
@@ -575,11 +575,11 @@ namespace nova {
                 .setDescriptorCount(1);
 
             if(texture_should_be_bound) {
-                const auto& tex = bound_textures.at(name);
+                const auto tex = bound_textures.at(name);
 
                 const auto& image_info = vk::DescriptorImageInfo()
-                    .setImageLayout(tex.get_layout())
-                    .setImageView(tex.get_image_view())
+                    .setImageLayout(tex->get_layout())
+                    .setImageView(tex->get_image_view())
                     .setSampler(shader_resources->get_point_sampler());
 
                 write_ds_cmd.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)

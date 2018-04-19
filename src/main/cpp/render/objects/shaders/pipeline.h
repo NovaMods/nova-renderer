@@ -75,7 +75,7 @@ namespace nova {
 
     std::unordered_map<std::string, resource_binding> get_interface_of_spirv(const std::vector<uint32_t>& spirv_source, const vk::ShaderStageFlags& stages);
 
-    void add_bindings_from_shader(pipeline_object& pipeline_data, const shader_module &shader_module, std::string shader_stage_name);
+    void add_bindings_from_shader(pipeline_object& pipeline_data, const shader_module &shader_module, const std::string& shader_stage_name, std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>>& all_layouts);
 }
 
 #endif //RENDERER_GL_SHADER_H

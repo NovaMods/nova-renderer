@@ -48,9 +48,8 @@ NOVA_API void reset_texture_manager() {
 }
 
 NOVA_API void send_lightmap_texture(int* data, int count, int width, int height) {
-    auto size = glm::ivec2{width, height};
     auto& lightmap = TEXTURE_MANAGER.get_texture("lightmap");
-    lightmap.set_data(data, {width, height});
+    lightmap.set_data(data, {static_cast<uint32_t>(width), static_cast<uint32_t>(height)});
 }
 
 NOVA_API void add_texture_location(mc_texture_atlas_location* location) {
