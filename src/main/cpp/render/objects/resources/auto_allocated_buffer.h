@@ -37,14 +37,6 @@ namespace nova {
         auto_buffer(std::string name, std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
 
         /*!
-         * \brief Destroys the buffer on the device
-         *
-         * This will invalidate all the allocations from this buffer but I don't do anything to tell abont about that.
-         * Hope you're careful!
-         */
-        ~auto_buffer();
-
-        /*!
          * \brief Allocates a chunk of the underlying buffer for your personal user
          *
          * This method will give you thr first free chunk it has, nothing else. If that leads to lots of fragmentation

@@ -18,7 +18,7 @@ namespace nova {
         command_pool_create_info.queueFamilyIndex = queue_family_index;
 
         command_pools.resize(num_threads);
-        for(auto i = 0; i < num_threads; i++) {
+        for(uint32_t i = 0; i < num_threads; i++) {
             command_pools[i] = device.createCommandPool(command_pool_create_info);
         }
     }

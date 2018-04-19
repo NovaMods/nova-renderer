@@ -60,7 +60,7 @@ namespace nova {
         std::shared_ptr<render_context> context;
         vk::Sampler point_sampler;
         vk::DescriptorSetLayout model_matrix_layout;
-        vk::DescriptorSetAllocateInfo &model_matrix_descriptor_allocate_info;
+        vk::DescriptorSetAllocateInfo model_matrix_descriptor_allocate_info;
 
         /*
          * SAMPLERS

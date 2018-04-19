@@ -326,8 +326,6 @@ namespace nova {
 
         auto per_model_buffer_binding = std::string{};
 
-        bool should_bind_per_model_buffer = false;
-
         // Bind the descriptor sets for this material
         for(const auto& binding : pass.bindings) {
             const auto& descriptor_name = binding.first;
@@ -342,12 +340,8 @@ namespace nova {
             } else if(buffers.is_buffer_known(resource_name)) {
                 // bind as a buffer
 
-                if(resource_name == "NovaPerModelUBO") {
-                    std::for_each(meshes_for_mat.begin(), meshes_for_mat.end(), [&](const auto& mesh){
-                        upload_model_matrix(mesh, pipeline_data.resource_bindings.at(descriptor_name));
-                    });
-
-                    continue;
+                if(resource_name != "NovaPerModelUBO") {
+                    // Bind dis
                 }
 
             } else {
