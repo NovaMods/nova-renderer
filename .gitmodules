@@ -46,3 +46,6 @@
 [submodule "src/main/cpp/3rdparty/SPIRV-Cross"]
 	path = src/main/cpp/3rdparty/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "src/main/cpp/3rdparty/renderdocapi"]
+	path = src/main/cpp/3rdparty/renderdocapi
+	url = https://github.com/NovaMods/RenderDoc-Manager.git
