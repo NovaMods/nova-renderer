@@ -383,7 +383,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         NovaNative.mc_texture_atlas_location loc = new NovaNative.mc_texture_atlas_location(location.toString(), 0, 0, 1, 1);
         NovaNative.INSTANCE.add_texture_location(loc);
     }
-
+git log
     public static String atlasTextureOfSprite(ResourceLocation texture) {
         ResourceLocation strippedLocation = new ResourceLocation(texture.getResourceDomain(), texture.getResourcePath().replace(".png", "").replace("textures/", ""));
 
