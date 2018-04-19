@@ -27,6 +27,22 @@ namespace nova {
         pool_create_info.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
 
         descriptor_pool = device.createDescriptorPool(pool_create_info);
+
+        auto model_matrix_descriptor_binding = vk::DescriptorSetLayoutBinding()
+            .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+            .setDescriptorCount(1)
+            .setStageFlags(vk::ShaderStageFlagBits::eAll);
+
+        auto model_matrix_descriptor_create_info = vk::DescriptorSetLayoutCreateInfo()
+            .setBindingCount(1)
+            .setPBindings(&model_matrix_descriptor_binding);
+
+        model_matrix_layout = device.createDescriptorSetLayout({model_matrix_descriptor_create_info});
+
+        model_matrix_descriptor_allocate_info = vk::DescriptorSetAllocateInfo()
+                    .setDescriptorPool(descriptor_pool)
+                    .setDescriptorSetCount(1)
+                    .setPSetLayouts(&model_matrix_layout);
     }
 
     shader_resource_manager::~shader_resource_manager() {
@@ -115,5 +131,14 @@ namespace nova {
             }
         }
     }
+
+    vk::DescriptorSet shader_resource_manager::create_model_matrix_descriptor() {
+        return device.allocateDescriptorSets(model_matrix_descriptor_allocate_info)[0];
+    }
+
+    void shader_resource_manager::free_descriptor(vk::DescriptorSet to_free) {
+        device.freeDescriptorSets(descriptor_pool, {to_free});
+    }
+
 }
 

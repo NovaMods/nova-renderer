@@ -34,6 +34,10 @@ namespace nova {
 
         void create_descriptor_sets_for_pipeline(pipeline_object& pipeline_data);
 
+        vk::DescriptorSet create_model_matrix_descriptor();
+
+        void free_descriptor(vk::DescriptorSet to_free);
+
         /*
          * GETTERS
          */
@@ -53,6 +57,11 @@ namespace nova {
 
         uniform_buffer_store buffers;
 
+        std::shared_ptr<render_context> context;
+        vk::Sampler point_sampler;
+        vk::DescriptorSetLayout model_matrix_layout;
+        vk::DescriptorSetAllocateInfo &model_matrix_descriptor_allocate_info;
+
         /*
          * SAMPLERS
          */
@@ -62,10 +71,6 @@ namespace nova {
         void create_bilinear_sampler();
 
         void create_aniso_filter();
-
-
-        std::shared_ptr<render_context> context;
-        vk::Sampler point_sampler;
     };
 }
 

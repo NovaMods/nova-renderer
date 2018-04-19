@@ -57,6 +57,7 @@ namespace nova {
 
         aabb bounding_box;
 
+        vk::DescriptorSet model_matrix_descriptor;
         vk::DescriptorBufferInfo per_model_buffer_range;
 
         render_object() = default;
@@ -64,6 +65,8 @@ namespace nova {
         render_object(const render_object&) = default;
 
         render_object& operator=(render_object&& other) noexcept;
+
+        void upload_model_matrix(const vk::Device& device) const;
     };
 }
 

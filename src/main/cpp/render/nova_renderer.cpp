@@ -324,6 +324,8 @@ namespace nova {
         auto& textures = shader_resources->get_texture_manager();
         auto& buffers = shader_resources->get_uniform_buffers();
 
+        auto per_model_buffer_binding = std::string{};
+
         bool should_bind_per_model_buffer = false;
 
         // Bind the descriptor sets for this material
@@ -340,8 +342,11 @@ namespace nova {
             } else if(buffers.is_buffer_known(resource_name)) {
                 // bind as a buffer
 
-                if(resource_name == "NoaePerModelUBO") {
-                    should_bind_per_model_buffer = true;
+                if(resource_name == "NovaPerModelUBO") {
+                    std::for_each(meshes_for_mat.begin(), meshes_for_mat.end(), [&](const auto& mesh){
+                        upload_model_matrix(mesh, pipeline_data.resource_bindings.at(descriptor_name));
+                    });
+
                     continue;
                 }
 
@@ -568,10 +573,11 @@ namespace nova {
                 LOG(ERROR) << "oh no the mesh store is not initialized";
                 return;
             }
+            const auto& device = context->device;
 
             std::vector<render_object> &gui_objects = meshes->get_meshes_for_material("gui");
             for(const auto &gui_obj : gui_objects) {
-                update_gui_model_matrix(gui_obj, gui_model);
+                update_gui_model_matrix(gui_obj, gui_model, device);
             }
         } catch(std::exception& e) {
             LOG(WARNING) << "Load some GUIs you fool";
@@ -579,7 +585,7 @@ namespace nova {
         }
     }
 
-    void nova_renderer::update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix) {
+    void nova_renderer::update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix, const vk::Device& device) {
         // Send the model matrix to the buffer
         // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
         auto& allocation = shader_resources->get_uniform_buffers().get_per_model_buffer()->get_allocation_info();

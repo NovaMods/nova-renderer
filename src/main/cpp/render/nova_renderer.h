@@ -224,7 +224,7 @@ namespace nova {
          * \param gui_obj The render_object for the GUI object to set the model matrix of
          * \param model_matrix The GUI model matrix
          */
-        inline void update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix);
+        inline void update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix, const vk::Device& device);
 
         /*!
          * \brief Calculates the object's model matrix from its position and eventually rotation, then uploads it to

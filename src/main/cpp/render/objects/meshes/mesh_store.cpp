@@ -59,6 +59,8 @@ namespace nova {
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
         render_object gui = {};
+        gui.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
+        gui.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
         gui.geometry = std::make_unique<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
 
@@ -110,6 +112,9 @@ namespace nova {
             const auto& def = std::get<1>(entry);
 
             render_object obj = {};
+            obj.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
+            obj.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
+            obj.upload_model_matrix(context->device);
             obj.geometry = std::make_unique<vk_mesh>(def, context);
             obj.type = geometry_type::block;
             obj.parent_id = def.id;
