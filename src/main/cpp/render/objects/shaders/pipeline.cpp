@@ -360,11 +360,6 @@ namespace nova {
     void add_bindings_from_shader(pipeline_object& pipeline_data, const shader_module &shader_module, const std::string& shader_stage_name, std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>>& all_layouts) {
         auto& all_bindings = pipeline_data.resource_bindings;
 
-        // TODO: Actually look at your TODOs
-        // Look, I get it. you're tired and just want this to compier. But `all_layouts` needs to be a map from string
-        // to list of descriptor set bindings. You wanted to generate that and store it internaally, not leak it, but
-        // you forgot to actually generate. You're going to get here again and this commant is what you ahve to do
-
         for(const auto &new_named_binding : shader_module.bindings) {
             const resource_binding& new_binding = new_named_binding.second;
 
