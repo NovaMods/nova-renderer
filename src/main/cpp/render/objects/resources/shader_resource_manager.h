@@ -62,6 +62,8 @@ namespace nova {
         vk::DescriptorSetLayout model_matrix_layout;
         vk::DescriptorSetAllocateInfo model_matrix_descriptor_allocate_info;
 
+        int per_model_descriptor_count = 0;
+
         /*
          * SAMPLERS
          */

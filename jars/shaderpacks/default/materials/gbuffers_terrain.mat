@@ -4,7 +4,7 @@
         {
             "pipeline": "gbuffers_terrain",
             "bindings": {
-                "per_frame_uniforms": "NovePerFrameUBO",
+                "per_frame_uniforms": "NovaPerFrameUBO",
                 "per_model_uniforms": "NovaPerModelUBO",
                 "colortex": "NovaColorAtlas"
             }

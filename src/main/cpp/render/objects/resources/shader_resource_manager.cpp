@@ -52,6 +52,10 @@ namespace nova {
     }
 
     void shader_resource_manager::create_descriptor_sets_for_pipeline(pipeline_object &pipeline_data) {
+        if(pipeline_data.layouts.empty()) {
+            return;
+        }
+
         auto layouts = std::vector<vk::DescriptorSetLayout>{};
         layouts.reserve(pipeline_data.layouts.size());
 
@@ -123,7 +127,7 @@ namespace nova {
             }
         }
 
-        create_descriptor_pool(num_sets, num_buffers, num_textures);
+        create_descriptor_pool(num_sets, 10000 + num_buffers, num_textures);
 
         for(auto &named_pipeline : pipelines) {
             for(auto& pipeline : named_pipeline.second) {
@@ -133,6 +137,7 @@ namespace nova {
     }
 
     vk::DescriptorSet shader_resource_manager::create_model_matrix_descriptor() {
+        LOG(INFO) << "Creating per-model descriptor " << ++per_model_descriptor_count;
         return device.allocateDescriptorSets(model_matrix_descriptor_allocate_info)[0];
     }
 

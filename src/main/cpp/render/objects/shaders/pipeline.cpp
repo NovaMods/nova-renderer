@@ -162,6 +162,7 @@ namespace nova {
 
         auto pipeline_layout = device.createPipelineLayout(pipeline_layout_create_info);
         graphics_pipeline_create_info.layout = pipeline_layout;
+        pipeline_data.layout = pipeline_layout;
 
         /**
          * Vertex input state

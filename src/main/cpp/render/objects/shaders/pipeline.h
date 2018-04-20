@@ -42,6 +42,7 @@ namespace nova {
     struct pipeline_object {
         std::string name;
         vk::Pipeline pipeline;
+        vk::PipelineLayout layout;
         std::unordered_map<std::string, resource_binding> resource_bindings;
 
         std::unordered_map<uint32_t, vk::DescriptorSetLayout> layouts;

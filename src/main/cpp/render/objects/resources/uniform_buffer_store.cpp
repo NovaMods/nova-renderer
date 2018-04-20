@@ -42,6 +42,9 @@ namespace nova {
 	const bool uniform_buffer_store::is_buffer_known(std::string buffer_name) const {
 		if(buffer_name == "NovaPerFrameUBO") {
 			return true;
+
+		} else if(buffer_name == "NovaPerModelUBO") {
+			return true;
 		}
 		return buffers.find(buffer_name) != buffers.end();
 	}
@@ -50,6 +53,11 @@ namespace nova {
 		if(!is_buffer_known(buffer_name)) {
 			LOG(ERROR) << "Buffer " << buffer_name << " is not known to Nova";
 			throw std::runtime_error("Buffer " + buffer_name + " is now known to Nova");
+		}
+
+		if(buffer_name == "NovaPerModelUBO") {
+		    // Special case ew
+            return *per_model_resources_buffer.get();
 		}
 
 		return buffers.at(buffer_name);

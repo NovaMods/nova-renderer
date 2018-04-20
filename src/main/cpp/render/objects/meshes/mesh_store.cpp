@@ -94,6 +94,7 @@ namespace nova {
                     // Free the allocations of each render object
                     for (auto it = removed_elements; it != group.second.end(); ++it) {
                         per_model_buffer->free_allocation((*it).per_model_buffer_range);
+                        shader_resources->free_descriptor((*it).model_matrix_descriptor);
                     }
                 }
 

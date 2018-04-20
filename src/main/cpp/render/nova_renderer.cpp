@@ -307,7 +307,7 @@ namespace nova {
 
         const auto& material_passes = material_passes_by_pipeline.at(pipeline_data.name);
         LOG(INFO) << "There are " << material_passes.size() << " material passes";
-        for(const auto mat : material_passes) {
+        for(const auto& mat : material_passes) {
             render_all_for_material_pass(mat, buffer, pipeline_data);
         }
     }
@@ -358,7 +358,8 @@ namespace nova {
     }
 
     void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_object &pipeline_data) {
-        // Bind per-model buffer (if requested)
+        LOG(INFO) << "Binding model matrix descriptor " << (VkDescriptorSet)(mesh.model_matrix_descriptor);
+        buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data.layout, 0, 1, &mesh.model_matrix_descriptor, 0, nullptr);
 
         buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
 
