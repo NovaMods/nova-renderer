@@ -64,6 +64,8 @@ namespace nova {
 
         int per_model_descriptor_count = 0;
 
+        int total_allocated_descriptor_sets = 0;
+
         /*
          * SAMPLERS
          */

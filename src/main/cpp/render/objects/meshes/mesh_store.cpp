@@ -61,6 +61,7 @@ namespace nova {
         render_object gui = {};
         gui.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
         gui.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
+        gui.upload_model_matrix(context->device);
         gui.geometry = std::make_shared<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
 

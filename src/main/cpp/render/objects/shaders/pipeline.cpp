@@ -147,7 +147,7 @@ namespace nova {
 
         const auto& layouts = pipeline_data.layouts;
         auto ordered_layouts = std::vector<vk::DescriptorSetLayout>{};
-        for(auto i = 0; i < layouts.size(); i++) {
+        for(size_t i = 0; i < layouts.size(); i++) {
             if(layouts.find(i) == layouts.end()) {
                 LOG(WARNING) << "Discontinuity detected! You're skipping descriptor set " << i << " and this isn't supported because honestly I don't know how to deal with it. Nova won't load pipeline " << pipeline_create_info.name;
                 return {};
@@ -561,7 +561,6 @@ namespace nova {
 
     void pipeline_object::commit_bindings(const vk::Device& device, std::shared_ptr<shader_resource_manager> shader_resources) const {
         // The descriptors that have nothing bound to them
-        std::vector<std::string> unassigned_descriptors;
         std::vector<vk::WriteDescriptorSet> writes;
 
         for(const auto& named_binding : resource_bindings) {
@@ -569,7 +568,7 @@ namespace nova {
 
             const auto texture_should_be_bound = bound_textures.find(name) != bound_textures.end();
             if(!texture_should_be_bound) {
-                LOG(WARNING) << "You don't have anything bound to descriptor " << name << " in pipeline " << name;
+                LOG(WARNING) << "You don't have anything bound to descriptor " << name << " in pipeline " << this->name;
                 continue;
             }
 

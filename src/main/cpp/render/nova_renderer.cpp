@@ -127,7 +127,7 @@ namespace nova {
 
         auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
         main_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
-        LOG(INFO) << "Rendering with command buffer " << (VkCommandBuffer) main_command_buffer.buffer;
+        LOG(TRACE) << "Rendering with command buffer " << (VkCommandBuffer) main_command_buffer.buffer;
 
         vk::CommandBufferBeginInfo cmd_buf_begin_info = {};
         main_command_buffer.buffer.begin(cmd_buf_begin_info);
