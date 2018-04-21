@@ -26,7 +26,7 @@ namespace nova {
      */
     class uniform_buffer_store : public iconfig_listener {
     public:
-        uniform_buffer_store(std::shared_ptr<render_context> context);
+        explicit uniform_buffer_store(std::shared_ptr<render_context> context);
 
 		/*
 		 * Buffer access

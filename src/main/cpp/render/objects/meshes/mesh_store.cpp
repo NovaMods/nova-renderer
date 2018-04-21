@@ -61,7 +61,7 @@ namespace nova {
         render_object gui = {};
         gui.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
         gui.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
-        gui.geometry = std::make_unique<vk_mesh>(cur_screen_buffer, context);
+        gui.geometry = std::make_shared<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
 
         // The GUI just has a model matrix
@@ -71,7 +71,7 @@ namespace nova {
         if(renderables_grouped_by_material.find("gui") == renderables_grouped_by_material.end()) {
             renderables_grouped_by_material["gui"] = std::vector<render_object>{};
         }
-        renderables_grouped_by_material.at("gui").push_back(std::move(gui));
+        renderables_grouped_by_material.at("gui").push_back(gui);
     }
 
     void mesh_store::remove_gui_render_objects() {
@@ -93,6 +93,7 @@ namespace nova {
                 if (removed_elements != group.second.end()) {
                     // Free the allocations of each render object
                     for (auto it = removed_elements; it != group.second.end(); ++it) {
+                        LOG(INFO) << "Removing render object " << (*it).id;
                         per_model_buffer->free_allocation((*it).per_model_buffer_range);
                         shader_resources->free_descriptor((*it).model_matrix_descriptor);
                     }
@@ -116,7 +117,7 @@ namespace nova {
             obj.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
             obj.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
             obj.upload_model_matrix(context->device);
-            obj.geometry = std::make_unique<vk_mesh>(def, context);
+            obj.geometry = std::make_shared<vk_mesh>(def, context);
             obj.type = geometry_type::block;
             obj.parent_id = def.id;
             obj.position = def.position;
@@ -129,7 +130,7 @@ namespace nova {
                 LOG(INFO) << "Adding a new list of " << shader_name << " objects";
                 renderables_grouped_by_material[shader_name] = std::vector<render_object>{};
             }
-            renderables_grouped_by_material.at(shader_name).push_back(std::move(obj));
+            renderables_grouped_by_material.at(shader_name).push_back(obj);
 
             chunk_parts_to_upload.pop();
         }

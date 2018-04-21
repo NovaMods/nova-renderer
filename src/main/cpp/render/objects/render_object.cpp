@@ -2,34 +2,16 @@
 // Created by ddubois on 8/8/17.
 //
 
+#include <easylogging++.h>
 #include "render_object.h"
 #include "meshes/vk_mesh.h"
 
 namespace nova {
-    render_object::render_object(render_object &&other) noexcept :
-            parent_id(other.parent_id), type(other.type), geometry(std::move(other.geometry)),
-            per_model_buffer_range(other.per_model_buffer_range)
-    {
+    int render_object::ID;
 
-        other.parent_id = 0;
-        other.geometry.reset();
-        other.position = {0, 0, 0};
-        other.per_model_buffer_range = vk::DescriptorBufferInfo{};
-    }
-
-    render_object &render_object::operator=(render_object && other) noexcept {
-        parent_id = other.parent_id;
-        type = other.type;
-        geometry = std::move(other.geometry);
-        position = other.position;
-        per_model_buffer_range = other.per_model_buffer_range;
-
-        other.parent_id = 0;
-        other.geometry.reset();
-        other.position = {0, 0, 0};
-        other.per_model_buffer_range = vk::DescriptorBufferInfo{};
-
-        return *this;
+    render_object::render_object() {
+        id = ID;
+        ID++;
     }
 
     void render_object::upload_model_matrix(const vk::Device &device) const {

@@ -342,6 +342,9 @@ namespace nova {
 
                 if(resource_name != "NovaPerModelUBO") {
                     // Bind dis
+                } else {
+                    // Bind dis later
+                    per_model_buffer_binding = descriptor_name;
                 }
 
             } else {
@@ -353,13 +356,14 @@ namespace nova {
 
         LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
         for(const auto& mesh : meshes_for_mat) {
-            render_mesh(mesh, buffer, pipeline_data);
+            render_mesh(mesh, buffer, pipeline_data, per_model_buffer_binding);
         }
     }
 
-    void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, const pipeline_object &pipeline_data) {
-        LOG(INFO) << "Binding model matrix descriptor " << (VkDescriptorSet)(mesh.model_matrix_descriptor);
-        buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data.layout, 0, 1, &mesh.model_matrix_descriptor, 0, nullptr);
+    void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &pipeline_data, std::string string) {
+        LOG(INFO) << "Binding model matrix descriptor " << (VkDescriptorSet)(mesh.model_matrix_descriptor) << " for render object " << mesh.id;
+        const auto& descriptor = pipeline_data.resource_bindings[string];
+        buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data.layout, descriptor.set, 1, &mesh.model_matrix_descriptor, 0, nullptr);
 
         buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
 

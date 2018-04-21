@@ -31,7 +31,7 @@ namespace nova {
         auto model_matrix_descriptor_binding = vk::DescriptorSetLayoutBinding()
             .setDescriptorType(vk::DescriptorType::eUniformBuffer)
             .setDescriptorCount(1)
-            .setStageFlags(vk::ShaderStageFlagBits::eAll);
+            .setStageFlags(vk::ShaderStageFlagBits::eAllGraphics);
 
         auto model_matrix_descriptor_create_info = vk::DescriptorSetLayoutCreateInfo()
             .setBindingCount(1)

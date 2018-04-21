@@ -51,7 +51,7 @@ namespace nova {
 
         geometry_type type;
 
-        std::unique_ptr<vk_mesh> geometry;
+        std::shared_ptr<vk_mesh> geometry;
 
         glm::vec3 position;
 
@@ -60,11 +60,10 @@ namespace nova {
         vk::DescriptorSet model_matrix_descriptor;
         vk::DescriptorBufferInfo per_model_buffer_range;
 
-        render_object() = default;
-        render_object(render_object&& other) noexcept;
-        render_object(const render_object&) = default;
+        static int ID;
+        int id;
 
-        render_object& operator=(render_object&& other) noexcept;
+        render_object();
 
         void upload_model_matrix(const vk::Device& device) const;
     };

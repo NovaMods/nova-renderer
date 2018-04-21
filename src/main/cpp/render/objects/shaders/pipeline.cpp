@@ -359,7 +359,7 @@ namespace nova {
     }
 
     void add_bindings_from_shader(pipeline_object& pipeline_data, const shader_module &shader_module, const std::string& shader_stage_name, std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>>& all_layouts) {
-        auto& all_bindings = pipeline_data.resource_bindings;
+        std::unordered_map<std::string, resource_binding>& all_bindings = pipeline_data.resource_bindings;
 
         for(const auto &new_named_binding : shader_module.bindings) {
             const resource_binding& new_binding = new_named_binding.second;
@@ -421,26 +421,34 @@ namespace nova {
         vk::ShaderStageFlags stages;
         switch(stage) {
             case shaderc_vertex_shader:
+                LOG(INFO) << "shader file " << source.lines[0].shader_name << " is vertex shader";
                 stages = vk::ShaderStageFlagBits::eVertex;
                 break;
             case shaderc_geometry_shader:
                 stages = vk::ShaderStageFlagBits::eGeometry;
+                LOG(INFO) << "shader file " << source.lines[0].shader_name << " is geometry shader";
                 break;
             case shaderc_tess_control_shader:
                 stages = vk::ShaderStageFlagBits::eTessellationControl;
+                LOG(INFO) << "shader file " << source.lines[0].shader_name << " is tesc shader";
                 break;
             case shaderc_tess_evaluation_shader:
                 stages = vk::ShaderStageFlagBits::eTessellationEvaluation;
+                LOG(INFO) << "shader file " << source.lines[0].shader_name << " is tese shader";
                 break;
             case shaderc_fragment_shader:
                 stages = vk::ShaderStageFlagBits::eFragment;
+                LOG(INFO) << "shader file " << source.lines[0].shader_name << " is fragment shader";
                 break;
             case shaderc_compute_shader:
                 stages = vk::ShaderStageFlagBits::eCompute;
+                LOG(INFO) << "shader file " << source.lines[0].shader_name << " is compute shader";
                 break;
             default:
                 LOG(ERROR) << "Shader kind " << stage << " not handled. Soz.";
         }
+
+        LOG(INFO) << "Converted to vk stage " << vk::to_string(stages);
 
         module.bindings = get_interface_of_spirv(spirv_source, stages);
 
@@ -507,6 +515,8 @@ namespace nova {
             descriptor_set_layout_binding.setDescriptorCount(1);
 
             bindings[resource.name] = descriptor_set_layout_binding;
+
+            LOG(INFO) << "Descriptor " << resource.name << " uses stages " << vk::to_string(stages);
         }
 
         for(const auto& resource : resources.uniform_buffers) {
@@ -521,6 +531,8 @@ namespace nova {
             descriptor_set_layout_binding.setDescriptorCount(1);
 
             bindings[resource.name] = descriptor_set_layout_binding;
+
+            LOG(INFO) << "Descriptor " << resource.name << " uses stages " << vk::to_string(stages);
         }
 
         return bindings;
