@@ -136,6 +136,31 @@ namespace nova {
 
         update_nova_ubos();
 
+        vk::ImageMemoryBarrier to_color_attachment_barrier = {};
+        to_color_attachment_barrier.newLayout = vk::ImageLayout::eColorAttachmentOptimal;
+        to_color_attachment_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        to_color_attachment_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        to_color_attachment_barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        to_color_attachment_barrier.subresourceRange.baseMipLevel = 0;
+        to_color_attachment_barrier.subresourceRange.levelCount = 1;
+        to_color_attachment_barrier.subresourceRange.baseArrayLayer = 0;
+        to_color_attachment_barrier.subresourceRange.layerCount = 1;
+
+        // This block seems weirdly hardcoded and not scalable but idk
+        to_color_attachment_barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        to_color_attachment_barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+        to_color_attachment_barrier.image = context->swapchain_images[cur_swapchain_image_index];
+        to_color_attachment_barrier.oldLayout = context->swapchain_layout;
+        context->swapchain_layout = vk::ImageLayout::eColorAttachmentOptimal;
+
+        main_command_buffer.buffer.pipelineBarrier(
+                vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                vk::DependencyFlags(),
+                0, nullptr,
+                0, nullptr,
+                1, &to_color_attachment_barrier);
+
         LOG(INFO) << "We have " << passes_list.size() << " passes to render";
         for (const auto &pass : passes_list) {
             execute_pass(pass, main_command_buffer.buffer);
@@ -152,8 +177,6 @@ namespace nova {
         barrier.subresourceRange.layerCount = 1;
 
         // This block seems weirdly hardcoded and not scalable but idk
-        vk::PipelineStageFlags source_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-        vk::PipelineStageFlags destination_stage = vk::PipelineStageFlagBits::eBottomOfPipe;
         barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
         barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 
@@ -162,7 +185,7 @@ namespace nova {
         context->swapchain_layout = vk::ImageLayout::ePresentSrcKHR;
 
         main_command_buffer.buffer.pipelineBarrier(
-                source_stage, destination_stage,
+                vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eColorAttachmentOutput,
                 vk::DependencyFlags(),
                 0, nullptr,
                 0, nullptr,

@@ -31,7 +31,7 @@ namespace nova {
         auto model_matrix_descriptor_binding = vk::DescriptorSetLayoutBinding()
             .setDescriptorType(vk::DescriptorType::eUniformBuffer)
             .setDescriptorCount(1)
-            .setStageFlags(vk::ShaderStageFlagBits::eAllGraphics);
+            .setStageFlags(vk::ShaderStageFlagBits::eVertex);
 
         auto model_matrix_descriptor_create_info = vk::DescriptorSetLayoutCreateInfo()
             .setBindingCount(1)
@@ -145,6 +145,8 @@ namespace nova {
     }
 
     void shader_resource_manager::free_descriptor(vk::DescriptorSet to_free) {
+        per_model_descriptor_count--;
+        total_allocated_descriptor_sets--;
         device.freeDescriptorSets(descriptor_pool, {to_free});
     }
 
