@@ -33,7 +33,7 @@ namespace nova {
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
         texture_name = "minecraft:" + texture_name;
-        const texture_manager::texture_location tex_location = nova_renderer::instance->get_shader_resources()->get_texture_manager().get_texture_location(texture_name);
+        const texture_manager::texture_location tex_location = shader_resources->get_texture_manager().get_texture_location(texture_name);
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         mesh_definition cur_screen_buffer = {};
@@ -64,9 +64,6 @@ namespace nova {
         gui.upload_model_matrix(context->device);
         gui.geometry = std::make_shared<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
-
-        // The GUI just has a model matrix
-        gui.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
 
         // TODO: Something more intelligent
         if(renderables_grouped_by_material.find("gui") == renderables_grouped_by_material.end()) {
