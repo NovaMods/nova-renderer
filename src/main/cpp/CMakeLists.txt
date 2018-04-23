@@ -176,7 +176,6 @@ set(NOVA_SOURCE
         render/objects/resources/uniform_buffer.cpp
         )
 
-
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern woftware is
 # built -_-

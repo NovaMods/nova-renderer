@@ -390,11 +390,7 @@ namespace nova {
 
         buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
 
-        for(uint32_t i = 0; i < pipeline_data.attributes.size(); i++) {
-            auto attribute = pipeline_data.attributes[i];
-            auto offset = get_all_vertex_attributes()[attribute.to_string()].offset;
-            buffer.bindVertexBuffers(i, {mesh.geometry->vertex_buffer}, {offset});
-        }
+        buffer.bindVertexBuffers(0, {mesh.geometry->vertex_buffer}, {0});
 
         buffer.drawIndexed(mesh.geometry->num_indices, 1, 0, 0, 0);
     }

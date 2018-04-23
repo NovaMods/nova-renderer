@@ -70,7 +70,7 @@ namespace nova {
         pipeline_data.descriptors = device.allocateDescriptorSets(alloc_info);
 
         total_allocated_descriptor_sets += layouts.size();
-        LOG(INFO) << "We've created " << total_allocated_descriptor_sets << " sets";
+        LOG(DEBUG) << "We've created " << total_allocated_descriptor_sets << " sets";
     }
 
     void shader_resource_manager::create_point_sampler() {
@@ -139,8 +139,8 @@ namespace nova {
     }
 
     vk::DescriptorSet shader_resource_manager::create_model_matrix_descriptor() {
-        LOG(INFO) << "Creating per-model descriptor " << ++per_model_descriptor_count;
-        LOG(INFO) << "We've allocated " << ++total_allocated_descriptor_sets << " in total";
+        LOG(DEBUG) << "Creating per-model descriptor " << ++per_model_descriptor_count;
+        LOG(DEBUG) << "We've allocated " << ++total_allocated_descriptor_sets << " in total";
         return device.allocateDescriptorSets(model_matrix_descriptor_allocate_info)[0];
     }
 

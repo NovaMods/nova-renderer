@@ -37,19 +37,51 @@ namespace nova {
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         mesh_definition cur_screen_buffer = {};
-        cur_screen_buffer.vertex_data.resize(static_cast<unsigned long>(command->vertex_buffer_size), 0);
+        cur_screen_buffer.vertex_data.resize(28 * static_cast<unsigned long>(command->vertex_buffer_size / 9), 0);
         for (int i = 0; i + 8 < command->vertex_buffer_size; i += 9) {
-            cur_screen_buffer.vertex_data[i]   = *reinterpret_cast<int*>(&command->vertex_buffer[i]);
-            cur_screen_buffer.vertex_data[i+1] = *reinterpret_cast<int*>(&command->vertex_buffer[i+1]);
-            cur_screen_buffer.vertex_data[i+2] = *reinterpret_cast<int*>(&command->vertex_buffer[i+2]);
+            // position
+            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i]));
+            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+1]));
+            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+2]));
+
+            // UV0
             float u = command->vertex_buffer[i+3] * tex_size.x + tex_location.min.x;
-            cur_screen_buffer.vertex_data[i+3] = *reinterpret_cast<int*>(&u);
+            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&u));
             float v = command->vertex_buffer[i+4] * tex_size.y + tex_location.min.y;
-            cur_screen_buffer.vertex_data[i+4] = *reinterpret_cast<int*>(&v);
-            cur_screen_buffer.vertex_data[i+5] = *reinterpret_cast<int*>(&command->vertex_buffer[i+5]);
-            cur_screen_buffer.vertex_data[i+6] = *reinterpret_cast<int*>(&command->vertex_buffer[i+6]);
-            cur_screen_buffer.vertex_data[i+7] = *reinterpret_cast<int*>(&command->vertex_buffer[i+7]);
-            cur_screen_buffer.vertex_data[i+8] = *reinterpret_cast<int*>(&command->vertex_buffer[i+8]);
+            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&v));
+
+            // MidTexCoord
+            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(0);
+
+            // VirtualTextureId
+            cur_screen_buffer.vertex_data.push_back(0);
+
+            // Color
+            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+5]));
+            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+6]));
+            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+7]));
+            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+8]));
+
+            // UV1
+            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(0);
+
+            // Normal
+            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(0);
+
+            // Tangent
+            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(0);
+
+            // McEntityId
+            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(0);
         }
         cur_screen_buffer.indices.resize(static_cast<unsigned long>(command->index_buffer_size), 0);
         for(int i = 0; i < command->index_buffer_size; i++) {

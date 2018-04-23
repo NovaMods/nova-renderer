@@ -16,6 +16,7 @@ namespace nova {
         uint32_t offset;
     };
 
+    // vec3 Position; vec2 UV0; vec2 MidTexCoord; int VirtualTextureId; vec4 Color; vec2 UV1; vec3 Normal; vec3 Tangent; vec4 McEntityId;
     inline std::unordered_map<std::string, vertex_attribute> get_all_vertex_attributes() {
         return {
             { "Position",           {vk::Format::eR32G32B32Sfloat,       0} },
@@ -39,16 +40,16 @@ namespace nova {
                     size = 4;
                     break;
                 case (vk::Format::eR32Sfloat):
-                    size = 8;
+                    size = 4;
                     break;
                 case (vk::Format::eR32G32Sfloat):
-                    size = 16;
+                    size = 8;
                     break;
                 case (vk::Format::eR32G32B32Sfloat):
-                    size = 24;
+                    size = 12;
                     break;
                 case (vk::Format::eR32G32B32A32Sfloat):
-                    size = 32;
+                    size = 16;
                     break;
                 default:
                     LOG(ERROR) << "Unknown format " << vk::to_string(attribute.second.format);

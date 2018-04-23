@@ -185,17 +185,18 @@ namespace nova {
             return {};
         }
 
-        uint32_t total_vertex_size = get_total_vertex_size();
-        int32_t cur_binding = -1;
+        uint32_t cur_binding = 0;
         for(const auto& vertex_field : pipeline_create_info.vertex_fields.value()) {
-            cur_binding++;
             if(vertex_field == vertex_field_enum::Empty) {
                 continue;
             }
-            const auto& attribute = get_all_vertex_attributes()[vertex_field.to_string()];
-            attribute_descriptions.emplace_back(static_cast<uint32_t>(cur_binding), static_cast<uint32_t>(cur_binding), attribute.format, attribute.offset);
-            binding_descriptions.emplace_back(cur_binding, total_vertex_size, vk::VertexInputRate::eVertex);
+            const vertex_attribute& attribute = get_all_vertex_attributes()[vertex_field.to_string()];
+            attribute_descriptions.emplace_back(cur_binding, 0, attribute.format, attribute.offset);
+            cur_binding++;
         }
+
+        uint32_t total_vertex_size = get_total_vertex_size();
+        binding_descriptions.emplace_back(0, total_vertex_size, vk::VertexInputRate::eVertex);
 
         pipeline_data.attributes = pipeline_create_info.vertex_fields.value();
 
