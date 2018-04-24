@@ -11,8 +11,8 @@
 
         "vertexFields": [
             {"field": "Position"},
-            {"field": "Color"},
             {"field": "UV0"},
+            {"field": "Color"},
             {"field": "VirtualTextureId"}
         ]
     }

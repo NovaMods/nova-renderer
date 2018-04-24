@@ -37,7 +37,7 @@ namespace nova {
         glm::vec2 tex_size = tex_location.max - tex_location.min;
 
         mesh_definition cur_screen_buffer = {};
-        cur_screen_buffer.vertex_data.resize(28 * static_cast<unsigned long>(command->vertex_buffer_size / 9), 0);
+        //cur_screen_buffer.vertex_data.resize(28 * static_cast<unsigned long>(command->vertex_buffer_size / 9), 0);
         for (int i = 0; i + 8 < command->vertex_buffer_size; i += 9) {
             // position
             cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i]));
