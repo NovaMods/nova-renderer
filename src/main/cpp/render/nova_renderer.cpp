@@ -372,7 +372,7 @@ namespace nova {
             }
         }
 
-        pipeline_data.commit_bindings(context->device, shader_resources);
+        pipeline_data.commit_bindings(buffer, context->device, shader_resources);
 
         LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
         for(const auto& mesh : meshes_for_mat) {

@@ -560,7 +560,7 @@ namespace nova {
         bound_textures[descriptor_name] = tex;
     }
 
-    void pipeline_object::commit_bindings(const vk::Device& device, std::shared_ptr<shader_resource_manager> shader_resources) const {
+    void pipeline_object::commit_bindings(vk::CommandBuffer &buffer, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources) const {
         // The descriptors that have nothing bound to them
         std::vector<vk::WriteDescriptorSet> writes;
 
@@ -597,5 +597,10 @@ namespace nova {
         }
 
         device.updateDescriptorSets(writes, {});
+
+        for(const auto named_binding : resource_bindings) {
+            const auto& binding = named_binding.second;
+            buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, binding.set, 1, &descriptors[binding.set], 0, nullptr);
+        }
     }
 }
