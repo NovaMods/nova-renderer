@@ -57,7 +57,7 @@ namespace nova {
          * \param descriptor_name
          * \param tex
          */
-        void bind_resource(const std::string& descriptor_name, const texture2D& tex);
+        void bind_resource(const std::string& descriptor_name, const texture2D* tex);
 
         void commit_bindings(const vk::Device& device, std::shared_ptr<shader_resource_manager> shader_resources) const;
     };

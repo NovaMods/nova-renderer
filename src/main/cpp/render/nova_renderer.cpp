@@ -161,7 +161,7 @@ namespace nova {
                 0, nullptr,
                 1, &to_color_attachment_barrier);
 
-        LOG(INFO) << "We have " << passes_list.size() << " passes to render";
+        LOG(DEBUG) << "We have " << passes_list.size() << " passes to render";
         for (const auto &pass : passes_list) {
             execute_pass(pass, main_command_buffer.buffer);
         }
@@ -355,10 +355,7 @@ namespace nova {
             const auto& resource_name = binding.second;
 
             if(textures.is_texture_known(resource_name)) {
-                // Bind as a texture
-                const auto& tex = textures.get_texture(resource_name);
-
-                pipeline_data.bind_resource(descriptor_name, tex);
+                pipeline_data.bind_resource(descriptor_name, &textures.get_texture(resource_name));
 
             } else if(buffers.is_buffer_known(resource_name)) {
                 // bind as a buffer

@@ -90,6 +90,7 @@ namespace nova {
             .setBorderColor(vk::BorderColor::eFloatTransparentBlack);
 
         point_sampler = device.createSampler(sampler_create);
+        LOG(INFO) << "Created point sampler " << (VkSampler)point_sampler;
     }
 
     vk::Sampler shader_resource_manager::get_point_sampler() {

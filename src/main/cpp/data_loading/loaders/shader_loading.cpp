@@ -111,7 +111,7 @@ namespace nova {
             auto json_node = itr.value();
             optional<std::string> parent_state_name = optional<std::string>{};
 
-            int colon_pos = pipeline_state_name.find(':');
+            auto colon_pos = pipeline_state_name.find(':');
             if(colon_pos != std::string::npos) {
                 auto parent_name = pipeline_state_name.substr(colon_pos + 1);
                 parent_state_name = parent_name;

@@ -24,6 +24,6 @@ namespace nova {
                 .setDescriptorType(vk::DescriptorType::eUniformBuffer)
                 .setPBufferInfo((&per_model_buffer_range));
 
-        device.updateDescriptorSets(1, &write_ds, 0, nullptr);
+        device.updateDescriptorSets({write_ds}, {});
     }
 }

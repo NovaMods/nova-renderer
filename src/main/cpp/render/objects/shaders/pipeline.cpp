@@ -556,8 +556,8 @@ namespace nova {
             .setPImmutableSamplers(pImmutableSamplers);
     }
 
-    void pipeline_object::bind_resource(const std::string &descriptor_name, const texture2D &tex) {
-        bound_textures[descriptor_name] = &tex;
+    void pipeline_object::bind_resource(const std::string &descriptor_name, const texture2D *tex) {
+        bound_textures[descriptor_name] = tex;
     }
 
     void pipeline_object::commit_bindings(const vk::Device& device, std::shared_ptr<shader_resource_manager> shader_resources) const {
@@ -565,36 +565,35 @@ namespace nova {
         std::vector<vk::WriteDescriptorSet> writes;
 
         for(const auto& named_binding : resource_bindings) {
-            const auto& name = named_binding.first;
+            const auto &name = named_binding.first;
 
-            const auto texture_should_be_bound = bound_textures.find(name) != bound_textures.end();
-            if(!texture_should_be_bound) {
+            const auto have_texture_to_bind = bound_textures.find(name) != bound_textures.end();
+            if(!have_texture_to_bind) {
                 LOG(WARNING) << "You don't have anything bound to descriptor " << name << " in pipeline " << this->name;
                 continue;
             }
 
-            const resource_binding& binding = named_binding.second;
-            const auto& set = descriptors[binding.set];
+            const resource_binding &binding = named_binding.second;
+            const auto &set = descriptors[binding.set];
 
             auto write_ds_cmd = vk::WriteDescriptorSet()
-                .setDstSet(set)
-                .setDstBinding(binding.binding)
-                .setDstArrayElement(0)
-                .setDescriptorCount(1);
+                    .setDstSet(set)
+                    .setDstBinding(binding.binding)
+                    .setDstArrayElement(0)
+                    .setDescriptorCount(1);
 
-            if(texture_should_be_bound) {
-                const auto tex = bound_textures.at(name);
+            const auto tex = bound_textures.at(name);
 
-                const auto& image_info = vk::DescriptorImageInfo()
+            const auto image_info = vk::DescriptorImageInfo()
                     .setImageLayout(tex->get_layout())
                     .setImageView(tex->get_image_view())
                     .setSampler(shader_resources->get_point_sampler());
 
-                write_ds_cmd.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-                        .setPImageInfo(&image_info);
+            write_ds_cmd
+                    .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+                    .setPImageInfo(&image_info);
 
-                writes.push_back(write_ds_cmd);
-            }
+            writes.push_back(write_ds_cmd);
         }
 
         device.updateDescriptorSets(writes, {});

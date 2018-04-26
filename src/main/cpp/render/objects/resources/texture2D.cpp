@@ -130,6 +130,8 @@ namespace nova {
     }
 
     void texture2D::destroy() {
+        LOG(INFO) << "Destroying image view " << (VkImageView)image_view;
+
         vmaDestroyImage(context->allocator, (VkImage)image, allocation);
         context->device.destroyImageView(image_view);
     }
