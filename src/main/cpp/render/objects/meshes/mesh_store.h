@@ -29,7 +29,7 @@ namespace nova {
     public:
         mesh_store(std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources);
 
-        void add_gui_buffers(mc_gui_geometry* command);
+        void add_gui_buffers(const char *geo_type, mc_gui_geometry *command);
 
         /*!
          * \brief Adds a chunk to the mesh store if the chunk doesn't exist, or replaces the chunks if it does exist

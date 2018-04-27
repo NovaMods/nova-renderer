@@ -28,7 +28,7 @@ namespace nova {
         }
     }
 
-    void mesh_store::add_gui_buffers(mc_gui_geometry* command) {
+    void mesh_store::add_gui_buffers(const char *geo_type, mc_gui_geometry *command) {
         LOG(INFO) << "Adding GUI geometry " << command->texture_name;
         std::string texture_name(command->texture_name);
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
@@ -96,7 +96,7 @@ namespace nova {
         gui.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
         gui.upload_model_matrix(context->device);
         gui.geometry = std::make_shared<vk_mesh>(cur_screen_buffer, context);
-        gui.type = geometry_type::gui;
+        gui.type = geometry_type::from_string(geo_type);
 
         // TODO: Something more intelligent
         if(renderables_grouped_by_material.find("gui") == renderables_grouped_by_material.end()) {

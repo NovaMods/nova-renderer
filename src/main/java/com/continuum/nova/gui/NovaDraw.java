@@ -197,7 +197,16 @@ public class NovaDraw {
             long timeWithAlloc = System.nanoTime();
             NovaNative.mc_gui_buffer guiGeometry = b.toNativeCommand(texture);
             long timePrev = System.nanoTime();
-            NovaNative.INSTANCE.add_gui_geometry(guiGeometry);
+
+            if(entry.getKey().getResourcePath().contains("font/ascii")) {
+                // Text!
+                NovaNative.INSTANCE.add_gui_geometry(NovaNative.GeometryType.TEXT.name().toLowerCase(), guiGeometry);
+
+            } else {
+                // Regular GUI boi
+                NovaNative.INSTANCE.add_gui_geometry(NovaNative.GeometryType.GUI.name().toLowerCase(), guiGeometry);
+            }
+
             long end = System.nanoTime();
             LOG.trace("time used to copy buffers to c++ : " + (end - timePrev) + "time used to alloc buffers and fill: "+((end - timeWithAlloc) - (end - timePrev)));
             Memory.purge();

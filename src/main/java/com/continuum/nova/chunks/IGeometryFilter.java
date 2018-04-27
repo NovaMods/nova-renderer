@@ -1,5 +1,6 @@
 package com.continuum.nova.chunks;
 
+import com.continuum.nova.NovaNative;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockRenderLayer;
 import org.apache.logging.log4j.LogManager;
@@ -11,23 +12,6 @@ import org.apache.logging.log4j.Logger;
  */
 public interface IGeometryFilter {
     boolean matches(IBlockState blockState);
-
-    enum GeometryType {
-        BLOCK,
-        ENTITY,
-        FALLING_BLOCK,
-        GUI,
-        CLOUD,
-        SKY_DECORATION,
-        SELECTION_BOX,
-        GLINT,
-        WEATHER,
-        HAND,
-        FULLSCREEN_QUAD,
-        PARTICLE,
-        LIT_PARTICLE,
-        EYES
-    }
 
     class AndGeometryFilter implements IGeometryFilter {
         private IGeometryFilter left;
@@ -106,15 +90,15 @@ public interface IGeometryFilter {
     }
 
     class GeometryTypeGeometryFilter implements IGeometryFilter {
-        private GeometryType type;
+        private NovaNative.GeometryType type;
 
-        public GeometryTypeGeometryFilter(GeometryType type) {
+        public GeometryTypeGeometryFilter(NovaNative.GeometryType type) {
             this.type = type;
         }
 
         @Override
         public boolean matches(IBlockState blockState) {
-            return type == GeometryType.BLOCK;
+            return type == NovaNative.GeometryType.BLOCK;
         }
 
         @Override
@@ -216,7 +200,7 @@ public interface IGeometryFilter {
     static IGeometryFilter makeFilterFromToken(final String token) {
         if(token.startsWith("geometry_type::")) {
             String typeName = token.substring(15);
-            GeometryType type = GeometryType.valueOf(typeName.toUpperCase());
+            NovaNative.GeometryType type = NovaNative.GeometryType.valueOf(typeName.toUpperCase());
             return new GeometryTypeGeometryFilter(type);
 
         } else if(token.startsWith("name::")) {

@@ -236,6 +236,7 @@ public interface NovaNative extends Library {
         ENTITY,
         FALLING_BLOCK,
         GUI,
+        TEXT,
         CLOUD,
         SKY_DECORATION,
         SELECTION_BOX,
@@ -271,7 +272,7 @@ public interface NovaNative extends Library {
 
     boolean should_close();
 
-    void add_gui_geometry(mc_gui_buffer buffer);
+    void add_gui_geometry(String type, mc_gui_buffer buffer);
 
     void clear_gui_buffers();
 

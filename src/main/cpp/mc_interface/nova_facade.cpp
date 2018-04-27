@@ -88,9 +88,9 @@ NOVA_API bool display_is_active() {
     return NOVA_RENDERER->get_game_window().is_active();
 }
 
-NOVA_API void add_gui_geometry(mc_gui_geometry * gui_geometry) {
+NOVA_API void add_gui_geometry(const char * geo_type, mc_gui_geometry * gui_geometry) {
     MTR_SCOPE("AddGeometry", "add_gui_geometry");
-    NOVA_RENDERER->get_mesh_store().add_gui_buffers(gui_geometry);
+    NOVA_RENDERER->get_mesh_store().add_gui_buffers(geo_type, gui_geometry);
 }
 
 NOVA_API struct window_size get_window_size()

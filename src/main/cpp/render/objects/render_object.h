@@ -25,6 +25,7 @@ namespace nova {
     entity, \
     falling_block, \
     gui, \
+    text, \
     cloud, \
     sky_decoration, \
     selection_box, \

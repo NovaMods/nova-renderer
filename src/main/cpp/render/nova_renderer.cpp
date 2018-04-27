@@ -226,6 +226,7 @@ namespace nova {
         auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, std::numeric_limits<uint64_t>::max());
         if (fence_wait_result == vk::Result::eSuccess) {
             // Process geometry updates
+            meshes->remove_gui_render_objects();
             meshes->remove_old_geometry();
             meshes->upload_new_geometry();
 
