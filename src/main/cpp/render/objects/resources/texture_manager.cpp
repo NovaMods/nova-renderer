@@ -4,6 +4,7 @@
  */
 
 #include <algorithm>
+#include <cmath>
 #include <easylogging++.h>
 #include "texture_manager.h"
 #include "../../vulkan/render_context.h"
@@ -50,9 +51,9 @@ namespace nova {
         LOG(TRACE) << "Created texture object";
         texture.set_name(texture_name);
 
-        std::vector<float> pixel_data((std::size_t) (new_texture.width * new_texture.height * new_texture.num_components));
+        std::vector<uint8_t> pixel_data((std::size_t) (new_texture.width * new_texture.height * new_texture.num_components));
         for(auto i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
-            pixel_data[i] = float(new_texture.texture_data[i]) / 255.0f;
+            pixel_data[i] = (uint8_t) new_texture.texture_data[i];
         }
 
         LOG(TRACE) << "Added pixel data to buffer";
