@@ -253,6 +253,7 @@ namespace nova {
         LOG(INFO) << "Beginning pass " << pass.name;
 
         const auto& renderpass_for_pass = renderpasses_by_pass.at(pass.name);
+        bool writes_to_backbuffer = false;
 
         for(const auto& write_resource : renderpass_for_pass.texture_outputs) {
             // Transition all written to resources to shader write optimal
@@ -277,6 +278,7 @@ namespace nova {
                 barrier.image = context->swapchain_images[cur_swapchain_image_index];
                 barrier.oldLayout = context->swapchain_layout;
                 context->swapchain_layout = vk::ImageLayout::eColorAttachmentOptimal;
+                writes_to_backbuffer = true;
 
                 continue;
             }
@@ -303,12 +305,18 @@ namespace nova {
                     1, &barrier);
         }
 
-        vk::RenderPassBeginInfo begin_final_pass = vk::RenderPassBeginInfo()
+        vk::RenderPassBeginInfo begin_pass = vk::RenderPassBeginInfo()
                 .setRenderPass(renderpass_for_pass.renderpass)
-                .setFramebuffer(renderpass_for_pass.frameBuffer)
                 .setRenderArea({{0, 0}, renderpass_for_pass.framebuffer_size});
 
-        buffer.beginRenderPass(&begin_final_pass, vk::SubpassContents::eInline);
+        if(writes_to_backbuffer) {
+            begin_pass.setFramebuffer(swapchain->get_current_image());
+
+        } else {
+            begin_pass.setFramebuffer(renderpass_for_pass.frameBuffer)
+        }
+
+        buffer.beginRenderPass(&begin_pass, vk::SubpassContents::eInline);
 
         auto& pipelines_for_pass = pipelines_by_renderpass.at(pass.name);
         LOG(INFO) << "Processing data in " << pipelines_for_pass.size() << " pipelines";
