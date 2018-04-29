@@ -16,7 +16,7 @@ namespace nova {
         vk::SwapchainCreateInfoKHR info = {};
         info.surface = context->surface;
 
-        info.minImageCount = NUM_FRAME_DATA;
+        info.minImageCount = num_swapchain_images;
 
         info.imageFormat = surface_format.format;
         info.imageColorSpace = surface_format.colorSpace;
@@ -61,7 +61,7 @@ namespace nova {
         }
 
         // More than 255 images in the swapchain? Good lord what are you doing? and will you please stop?
-        for(uint8_t i = 0; i < NUM_FRAME_DATA; i++) {
+        for(uint8_t i = 0; i < num_swapchain_images; i++) {
             vk::ImageViewCreateInfo image_view_create_info = {};
 
             image_view_create_info.image = swapchain_images[i];
@@ -135,7 +135,7 @@ namespace nova {
     vk::Extent2D swapchain_manager::choose_surface_extent(vk::SurfaceCapabilitiesKHR &caps, glm::ivec2& window_dimensions) {
         vk::Extent2D extent;
 
-        if(caps.currentExtent.width == -1) {
+        if(caps.currentExtent.width == 0xFFFFFFFF) {
             extent.width = static_cast<uint32_t>(window_dimensions.x);
             extent.height = static_cast<uint32_t>(window_dimensions.y);
 
@@ -177,6 +177,7 @@ namespace nova {
 
         // A fatal log causes a crash so not having a return here is fine
         LOG(FATAL) << "Failed to find a suitable depth buffer format";
+        return {};
     }
 
     void swapchain_manager::move_swapchain_images_into_correct_format(const std::vector<vk::Image> &images) {
@@ -204,6 +205,8 @@ namespace nova {
             LOG(ERROR) << "Could not acquire swapchain image! vkResult: " << result.result;
         }
         cur_swapchain_index = result.value;
+
+        LOG(INFO) << "Acquired swapchain image " << cur_swapchain_index;
     }
 
     void swapchain_manager::set_current_layout(vk::ImageLayout new_layout) {
@@ -211,6 +214,7 @@ namespace nova {
     }
 
     vk::Framebuffer swapchain_manager::get_current_framebuffer() {
+        LOG(INFO) << "Getting swapchain framebuffer " << cur_swapchain_index << " out of " << framebuffers.size();
         return framebuffers[cur_swapchain_index];
     }
 
@@ -220,5 +224,13 @@ namespace nova {
 
     vk::ImageLayout swapchain_manager::get_current_layout() {
         return swapchain_image_layouts[cur_swapchain_index];
+    }
+
+    vk::Extent2D swapchain_manager::get_swapchain_extent() {
+        return swapchain_extent;
+    }
+
+    vk::Format swapchain_manager::get_swapchain_format() {
+        return swapchain_format;
     }
 }

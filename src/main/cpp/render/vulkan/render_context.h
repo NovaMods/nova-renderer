@@ -3,8 +3,6 @@
  * \date 15-Oct-17.
  */
 
-#define NUM_FRAME_DATA 2    /* I guess? */
-
 #ifndef RENDERER_RENDER_DEVICE_H
 #define RENDERER_RENDER_DEVICE_H
 

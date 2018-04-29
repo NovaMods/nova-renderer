@@ -52,7 +52,7 @@ namespace nova {
         texture.set_name(texture_name);
 
         std::vector<uint8_t> pixel_data((std::size_t) (new_texture.width * new_texture.height * new_texture.num_components));
-        for(auto i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
+        for(uint32_t i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
             pixel_data[i] = (uint8_t) new_texture.texture_data[i];
         }
 
@@ -115,7 +115,7 @@ namespace nova {
 
     // Implementation based on RenderGraph::build_aliases from the Granite engine
     void texture_manager::create_dynamic_textures(const std::unordered_map<std::string, texture_resource> &textures,
-                                                  const std::vector<render_pass> &passes) {
+                                                  const std::vector<render_pass> &passes, std::shared_ptr<swapchain_manager> swapchain) {
         // For each texture in the passes, try to assign it to an existing resource
         // We'll basically create a list of which texture resources can be assigned to each physical resource
         // We want to alias textures. We can alias texture A and B if all reads from A finish before all writes to B AND
@@ -229,7 +229,7 @@ namespace nova {
         // Figure out which resources can be aliased
         std::unordered_map<std::string, std::string> aliases;
 
-        for(auto i = 0; i < resources_in_order.size(); i++) {
+        for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
             if(to_alias_name == "Backbuffer" || to_alias_name == "backbuffer") {
                 // Yay special cases!
@@ -250,7 +250,7 @@ namespace nova {
             }
         }
 
-        auto swapchain_dimensions = context->swapchain_extent;
+        auto swapchain_dimensions = swapchain->get_swapchain_extent();
 
         // For each texture:
         //  - If it isn't in the aliases map, create a new texture with its format and add it to the textures map

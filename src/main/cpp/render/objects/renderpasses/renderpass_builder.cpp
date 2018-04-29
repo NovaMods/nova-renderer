@@ -10,23 +10,28 @@
 #include <easylogging++.h>
 
 namespace nova {
-    vk::RenderPass make_render_pass(const render_pass& pass, texture_manager& textures, std::shared_ptr<render_context> context);
+    vk::RenderPass make_render_pass(const render_pass& pass, texture_manager& textures, std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain);
 
     std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, texture_manager& textures, std::shared_ptr<render_context> context);
 
     std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, texture_manager& textures,
-                                                                                            std::shared_ptr<render_context> context) {
+                                                                                            std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain) {
         std::unordered_map<std::string, pass_vulkan_information> renderpasses;
 
-        for(const std::pair<std::string, render_pass>& named_pass : data.passes) {
+        for(const auto& named_pass : data.passes) {
             auto pass_vk_info = pass_vulkan_information{};
 
-            const auto renderpass = make_render_pass(named_pass.second, textures, context);
+            const auto renderpass = make_render_pass(named_pass.second, textures, context, swapchain);
             pass_vk_info.renderpass = renderpass;
 
             auto[framebuffer, size] = make_framebuffer(named_pass.second, renderpass, textures, context);
             pass_vk_info.frameBuffer = framebuffer;
-            pass_vk_info.framebuffer_size = size;
+            if(size.width > 0 && size.height > 0) {
+                pass_vk_info.framebuffer_size = size;
+
+            } else {
+                pass_vk_info.framebuffer_size = swapchain->get_swapchain_extent();
+            }
 
             pass_vk_info.num_attachments = static_cast<uint32_t>(named_pass.second.texture_outputs.value_or(std::vector<std::string>{}).size());
 
@@ -42,7 +47,7 @@ namespace nova {
         return renderpasses;
     }
 
-    vk::RenderPass make_render_pass(const render_pass& pass, texture_manager& textures, std::shared_ptr<render_context> context) {
+    vk::RenderPass make_render_pass(const render_pass& pass, texture_manager& textures, std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain) {
         LOG(INFO) << "Making VkRenderPass for pass " << pass.name;
 
         std::vector<vk::AttachmentDescription> attachments;
@@ -65,7 +70,7 @@ namespace nova {
 
             } else {
                 if(texture_outputs_vec[0].find("Backbuffer") != std::string::npos) {
-                    last_texture_size = context->swapchain_extent;
+                    last_texture_size = swapchain->get_swapchain_extent();
                     last_texture_name = "Backbuffer";
 
                 } else {
@@ -80,17 +85,17 @@ namespace nova {
                     if (color_attachment_name.find("Backbuffer") != std::string::npos) {
                         LOG(TRACE) << "Special snowflake backbuffer code path";
                         // The backbuffer is a special snowflake
-                        if (context->swapchain_extent != last_texture_size) {
+                        if (swapchain->get_swapchain_extent() != last_texture_size) {
                             LOG(ERROR) << "Backbuffer does not have the same size as texture "
                                        << last_texture_name
                                        << ". In order to use two textures in the same pass, they must have the same size";
                         }
 
-                        last_texture_size = context->swapchain_extent;
+                        last_texture_size = swapchain->get_swapchain_extent();
                         last_texture_name = "Backbuffer";
 
                         auto attachment = vk::AttachmentDescription()
-                            .setFormat(context->swapchain_format)
+                            .setFormat(swapchain->get_swapchain_format())
                             .setSamples(vk::SampleCountFlagBits::e1)
                             .setLoadOp(vk::AttachmentLoadOp::eDontCare)
                             .setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
@@ -191,13 +196,15 @@ namespace nova {
 
             for(const auto& output_name : outputs) {
                 if(output_name != "Backbuffer") {
-                    attachments.push_back(context->swapchain_image_views[0]);
-                    framebuffer_size = context->swapchain_extent;
-
-                } else {
                     const auto &tex = textures.get_texture(output_name);
                     attachments.push_back(tex.get_image_view());
                     framebuffer_size = tex.get_size();
+
+                } else {
+                    if(outputs.size() > 1) {
+                        LOG(ERROR) << "You're writing to " << outputs.size() << " attachments, one of which is the backbuffer. If you're writing to the backbuffer, Nova doesn't allow you to write to any other textures";
+                        return {};
+                    }
                 }
             }
         }

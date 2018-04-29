@@ -14,6 +14,7 @@
 #include "../../../mc_interface/mc_objects.h"
 #include "../renderpasses/render_passes.h"
 #include "../../vulkan/render_context.h"
+#include "../../swapchain_manager.h"
 
 namespace nova {
     /*!
@@ -77,7 +78,7 @@ namespace nova {
         void reset();
 
         void create_dynamic_textures(const std::unordered_map<std::string, texture_resource>& textures,
-                                     const std::vector<render_pass>& passes);
+                                     const std::vector<render_pass>& passes, std::shared_ptr<swapchain_manager> swapchain);
 
         /*!
          * \brief Adds a texture to this resource manager

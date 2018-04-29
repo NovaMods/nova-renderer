@@ -242,12 +242,17 @@ namespace nova {
                 .setRenderPass(renderpass_for_pass.renderpass)
                 .setRenderArea({{0, 0}, renderpass_for_pass.framebuffer_size});
 
+        vk::Framebuffer framebuffer;
         if(writes_to_backbuffer) {
-            begin_pass.setFramebuffer(swapchain->get_current_framebuffer());
+            LOG(INFO) << "Writing to the swapchain";
+            framebuffer = swapchain->get_current_framebuffer();
 
         } else {
-            begin_pass.setFramebuffer(renderpass_for_pass.frameBuffer);
+            LOG(INFO) << "Writing to a random texture yolo";
+            framebuffer = renderpass_for_pass.frameBuffer;
         }
+        begin_pass.setFramebuffer(framebuffer);
+        LOG(INFO) << "Using framebuffer " << (VkFramebuffer)framebuffer;
 
         buffer.beginRenderPass(&begin_pass, vk::SubpassContents::eInline);
 
@@ -405,10 +410,10 @@ namespace nova {
         auto& textures = shader_resources->get_texture_manager();
 
         LOG(INFO) << "Initializing framebuffer attachments...";
-        textures.create_dynamic_textures(shaderpack.dynamic_textures, passes_list);
+        textures.create_dynamic_textures(shaderpack.dynamic_textures, passes_list, swapchain);
 
         LOG(INFO) << "Building renderpasses and framebuffers...";
-        renderpasses_by_pass = make_passes(shaderpack, textures, context);
+        renderpasses_by_pass = make_passes(shaderpack, textures, context, swapchain);
 
         LOG(INFO) << "Building pipelines and compiling shaders...";
         pipelines_by_renderpass = make_pipelines(shaderpack, renderpasses_by_pass, context);
@@ -507,6 +512,7 @@ namespace nova {
         // Luckily I'm coding C++
         switch(renderable.type) {
             case geometry_type::gui:    // Updated separately
+            case geometry_type::text:   // Updated separately
             case geometry_type::block:  // These don't change at runtime and it's fine
                 break;
             default:

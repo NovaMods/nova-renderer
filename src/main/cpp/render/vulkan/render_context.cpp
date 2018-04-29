@@ -51,7 +51,6 @@ namespace nova {
         create_info.ppEnabledExtensionNames = extensions.data();
         create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 
-#undef NDEBUG
 #ifdef NDEBUG
         create_info.enabledLayerCount = 0;
 #else

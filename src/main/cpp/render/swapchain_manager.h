@@ -32,12 +32,16 @@ namespace nova {
 
         vk::Image get_current_image();
         vk::ImageLayout get_current_layout();
+        vk::Extent2D get_swapchain_extent();
+        vk::Format get_swapchain_format();
 
 
         // I've had a lot of bugs with RAII so here's an explicit cleanup method
         void deinit();
 
     private:
+        std::shared_ptr<render_context> context;
+
         vk::SwapchainKHR swapchain;
         vk::Extent2D swapchain_extent;
         vk::PresentModeKHR present_mode;
@@ -48,8 +52,6 @@ namespace nova {
         std::vector<vk::ImageView> swapchain_image_views;
         std::vector<vk::Image> swapchain_images;
         std::vector<vk::ImageLayout> swapchain_image_layouts;
-
-        std::shared_ptr<render_context> context;
 
         uint32_t cur_swapchain_index = 0;
 
