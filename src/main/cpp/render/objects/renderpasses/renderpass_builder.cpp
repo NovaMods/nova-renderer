@@ -190,7 +190,7 @@ namespace nova {
             const auto& outputs = pass.texture_outputs.value();
 
             for(const auto& output_name : outputs) {
-                if(output_name == "Backbuffer") {
+                if(output_name != "Backbuffer") {
                     attachments.push_back(context->swapchain_image_views[0]);
                     framebuffer_size = context->swapchain_extent;
 

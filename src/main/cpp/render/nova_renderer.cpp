@@ -55,7 +55,7 @@ namespace nova {
         LOG(TRACE) << "Created semaphores";
         context->create_command_pool_and_command_buffers();
         LOG(TRACE) << "Created command pool";
-        context->create_swapchain(game_window->get_size());
+        swapchain = std::make_shared<swapchain_manager>(3, context, game_window->get_size());
         LOG(TRACE) << "Created swapchain";
         context->create_pipeline_cache();
         LOG(TRACE) << "Pipeline cache created";
@@ -114,14 +114,7 @@ namespace nova {
     void nova_renderer::render_frame() {
         begin_frame();
 
-        vk::ResultValue<uint32_t> result = context->device.acquireNextImageKHR(context->swapchain,
-                                                                               std::numeric_limits<uint64_t>::max(),
-                                                                               swapchain_image_acquire_semaphore,
-                                                                               vk::Fence());
-        if (result.result != vk::Result::eSuccess) {
-            LOG(ERROR) << "Could not acquire swapchain image! vkResult: " << result.result;
-        }
-        cur_swapchain_image_index = result.value;
+        swapchain->aqcuire_next_swapchain_image(swapchain_image_acquire_semaphore);
 
         context->device.resetFences({render_done_fence});
 
@@ -136,66 +129,16 @@ namespace nova {
 
         update_nova_ubos();
 
-        vk::ImageMemoryBarrier to_color_attachment_barrier = {};
-        to_color_attachment_barrier.newLayout = vk::ImageLayout::eColorAttachmentOptimal;
-        to_color_attachment_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        to_color_attachment_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        to_color_attachment_barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-        to_color_attachment_barrier.subresourceRange.baseMipLevel = 0;
-        to_color_attachment_barrier.subresourceRange.levelCount = 1;
-        to_color_attachment_barrier.subresourceRange.baseArrayLayer = 0;
-        to_color_attachment_barrier.subresourceRange.layerCount = 1;
-
-        // This block seems weirdly hardcoded and not scalable but idk
-        to_color_attachment_barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-        to_color_attachment_barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-
-        to_color_attachment_barrier.image = context->swapchain_images[cur_swapchain_image_index];
-        to_color_attachment_barrier.oldLayout = context->swapchain_layout;
-        context->swapchain_layout = vk::ImageLayout::eColorAttachmentOptimal;
-
-        main_command_buffer.buffer.pipelineBarrier(
-                vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                vk::DependencyFlags(),
-                0, nullptr,
-                0, nullptr,
-                1, &to_color_attachment_barrier);
-
         LOG(DEBUG) << "We have " << passes_list.size() << " passes to render";
         for (const auto &pass : passes_list) {
             execute_pass(pass, main_command_buffer.buffer);
         }
 
-        vk::ImageMemoryBarrier barrier = {};
-        barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-
-        // This block seems weirdly hardcoded and not scalable but idk
-        barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-        barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-
-        barrier.image = context->swapchain_images[cur_swapchain_image_index];
-        barrier.oldLayout = context->swapchain_layout;
-        context->swapchain_layout = vk::ImageLayout::ePresentSrcKHR;
-
-        main_command_buffer.buffer.pipelineBarrier(
-                vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                vk::DependencyFlags(),
-                0, nullptr,
-                0, nullptr,
-                1, &barrier);
-
         main_command_buffer.buffer.end();
 
         vk::Semaphore wait_semaphores[] = {swapchain_image_acquire_semaphore};
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-        vk::Semaphore signal_semaphores[] = {render_finished_semaphore};
+        std::vector<vk::Semaphore> signal_semaphores = {render_finished_semaphore};
 
         // TODO: Use the semiphores in render_context
         vk::SubmitInfo submit_info = vk::SubmitInfo()
@@ -204,22 +147,12 @@ namespace nova {
                 .setWaitSemaphoreCount(1)
                 .setPWaitSemaphores(wait_semaphores)
                 .setPWaitDstStageMask(wait_stages)
-                .setSignalSemaphoreCount(1)
-                .setPSignalSemaphores(signal_semaphores);
+                .setSignalSemaphoreCount(static_cast<uint32_t>(signal_semaphores.size()))
+                .setPSignalSemaphores(signal_semaphores.data());
 
         context->graphics_queue.submit(1, &submit_info, render_done_fence);
 
-        vk::Result swapchain_result = {};
-
-        vk::PresentInfoKHR present_info = {};
-        present_info.waitSemaphoreCount = 1;
-        present_info.pWaitSemaphores = &render_finished_semaphore;
-        present_info.swapchainCount = 1;
-        present_info.pSwapchains = &context->swapchain;
-        present_info.pImageIndices = &cur_swapchain_image_index;
-        present_info.pResults = &swapchain_result;
-
-        context->present_queue.presentKHR(present_info);
+        swapchain->present_current_image(signal_semaphores);
 
         game_window->end_frame();
 
@@ -275,9 +208,9 @@ namespace nova {
             barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 
             if (write_resource == "Backbuffer") {
-                barrier.image = context->swapchain_images[cur_swapchain_image_index];
-                barrier.oldLayout = context->swapchain_layout;
-                context->swapchain_layout = vk::ImageLayout::eColorAttachmentOptimal;
+                barrier.image = swapchain->get_current_image();
+                barrier.oldLayout = swapchain->get_current_layout();
+                swapchain->set_current_layout(vk::ImageLayout::eColorAttachmentOptimal);
                 writes_to_backbuffer = true;
 
                 continue;
@@ -310,10 +243,10 @@ namespace nova {
                 .setRenderArea({{0, 0}, renderpass_for_pass.framebuffer_size});
 
         if(writes_to_backbuffer) {
-            begin_pass.setFramebuffer(swapchain->get_current_image());
+            begin_pass.setFramebuffer(swapchain->get_current_framebuffer());
 
         } else {
-            begin_pass.setFramebuffer(renderpass_for_pass.frameBuffer)
+            begin_pass.setFramebuffer(renderpass_for_pass.frameBuffer);
         }
 
         buffer.beginRenderPass(&begin_pass, vk::SubpassContents::eInline);

@@ -60,15 +60,6 @@ namespace nova {
         vk::Queue present_queue;
         std::unique_ptr<command_pool> command_buffer_pool;
 
-        vk::SwapchainKHR swapchain;
-        vk::Extent2D swapchain_extent;
-        vk::PresentModeKHR present_mode;
-        vk::Format swapchain_format;
-        vk::Format depth_format;
-        std::vector<vk::ImageView> swapchain_image_views;
-        std::vector<vk::Image> swapchain_images;
-        vk::ImageLayout swapchain_layout;
-
         std::vector<gpu_info> gpus;
 
         std::vector<const char *> validation_layers;
@@ -93,27 +84,15 @@ namespace nova {
 
         void create_command_pool_and_command_buffers();
 
-        void create_swapchain(glm::ivec2 window_dimensions);
-
         void create_pipeline_cache();
 
     private:
-        vk::SurfaceFormatKHR choose_surface_format(std::vector<vk::SurfaceFormatKHR>& formats);
-
-        vk::PresentModeKHR choose_present_mode(std::vector<vk::PresentModeKHR>& modes);
-
-        vk::Extent2D choose_surface_extent(vk::SurfaceCapabilitiesKHR& caps, glm::ivec2& window_dimensions);
 
         void create_logical_device_and_queues();
 
         void enumerate_gpus();
 
         void select_physical_device();
-
-        vk::Format choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
-
-
-        void move_swapchain_images_into_correct_format(std::vector<vk::Image> images);
 
         PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback;
         PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallback;

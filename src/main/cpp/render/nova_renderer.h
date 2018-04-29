@@ -17,6 +17,7 @@
 #include "objects/shaders/pipeline.h"
 #include "vulkan/command_pool.h"
 #include "objects/resources/texture_manager.h"
+#include "swapchain_manager.h"
 
 namespace nova {
     class vk_shader_program;
@@ -127,6 +128,8 @@ namespace nova {
         std::shared_ptr<mesh_store> meshes;
 
         std::shared_ptr<shader_resource_manager> shader_resources;
+
+        std::shared_ptr<swapchain_manager> swapchain;
 
         /*
          * Swapchain bs
