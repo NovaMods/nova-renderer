@@ -186,7 +186,6 @@ namespace nova {
         LOG(INFO) << "Beginning pass " << pass.name;
 
         const auto& renderpass_for_pass = renderpasses_by_pass.at(pass.name);
-        bool writes_to_backbuffer = false;
 
         for(const auto& write_resource : renderpass_for_pass.texture_outputs) {
             // Transition all written to resources to shader write optimal
@@ -206,15 +205,6 @@ namespace nova {
             vk::PipelineStageFlags destination_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
             barrier.srcAccessMask = vk::AccessFlags();
             barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-
-            if (write_resource == "Backbuffer") {
-                barrier.image = swapchain->get_current_image();
-                barrier.oldLayout = swapchain->get_current_layout();
-                swapchain->set_current_layout(vk::ImageLayout::eColorAttachmentOptimal);
-                writes_to_backbuffer = true;
-
-                continue;
-            }
 
             try {
                 // heavy handed but I don't have any good debugging tools right now so suck it nerds
@@ -242,15 +232,7 @@ namespace nova {
                 .setRenderPass(renderpass_for_pass.renderpass)
                 .setRenderArea({{0, 0}, renderpass_for_pass.framebuffer_size});
 
-        vk::Framebuffer framebuffer;
-        if(writes_to_backbuffer) {
-            LOG(INFO) << "Writing to the swapchain";
-            framebuffer = swapchain->get_current_framebuffer();
-
-        } else {
-            LOG(INFO) << "Writing to a random texture yolo";
-            framebuffer = renderpass_for_pass.frameBuffer;
-        }
+        vk::Framebuffer = renderpass_for_pass.frameBuffer;
         begin_pass.setFramebuffer(framebuffer);
         LOG(INFO) << "Using framebuffer " << (VkFramebuffer)framebuffer;
 

@@ -84,7 +84,7 @@ namespace nova {
             swapchain_image_views.push_back(image_view);
         }
 
-        // This block just kinda checks that thhe depth bufer we want is available
+        // This block just kinda checks that the depth buffer we want is available
         {
             vk::Format formats[] = {
                     vk::Format::eD32SfloatS8Uint,

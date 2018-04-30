@@ -231,10 +231,6 @@ namespace nova {
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
-            if(to_alias_name == "Backbuffer" || to_alias_name == "backbuffer") {
-                // Yay special cases!
-                continue;
-            }
             const auto& to_alias_format = textures.at(to_alias_name).format;
 
             // Only try to alias with lower-indexed resources
