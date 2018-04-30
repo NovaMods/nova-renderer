@@ -176,7 +176,7 @@ set(NOVA_SOURCE
         render/swapchain_manager.cpp render/swapchain_manager.h)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
-# instructions are like "yeah just copy over whatever files you want cause that's totally the way modern woftware is
+# instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
 # built -_-
 # So here we are,
 set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
