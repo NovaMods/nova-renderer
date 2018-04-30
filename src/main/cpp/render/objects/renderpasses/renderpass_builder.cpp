@@ -179,7 +179,7 @@ namespace nova {
 
         if(!attachments.empty()) {
             auto framebuffer_create_info = vk::FramebufferCreateInfo()
-                    .setAttachmentCount(attachments.size())
+                    .setAttachmentCount(static_cast<uint32_t>(attachments.size()))
                     .setPAttachments(attachments.data())
                     .setRenderPass(renderpass)
                     .setWidth(framebuffer_size.width)

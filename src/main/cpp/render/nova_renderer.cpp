@@ -134,13 +134,33 @@ namespace nova {
             execute_pass(pass, main_command_buffer.buffer);
         }
 
+        // Copy the backbuffer to the swapchain
+        const auto& swapchain_extent = swapchain->get_swapchain_extent();
+
+        vk::ImageSubresourceLayers layers_to_copy = vk::ImageSubresourceLayers()
+            .setAspectMask(vk::ImageAspectFlagBits::eColor)
+            .setMipLevel(0)
+            .setBaseArrayLayer(0)
+            .setLayerCount(1);
+
+        vk::ImageCopy image_copy = vk::ImageCopy()
+            .setSrcSubresource(layers_to_copy)
+            .setSrcOffset({0, 0, 0})
+            .setDstSubresource(layers_to_copy)
+            .setDstOffset({0, 0, 0})
+            .setExtent({swapchain_extent.width, swapchain_extent.height, 1});
+
+        const auto& backbuffer = shader_resources->get_texture_manager().get_texture("Backbuffer");
+
+        main_command_buffer.buffer.copyImage(backbuffer.get_vk_image(), backbuffer.get_layout(), swapchain->get_current_image(), swapchain->get_current_layout(), {image_copy});
+
         main_command_buffer.buffer.end();
 
+        // Submit the command buffer
         vk::Semaphore wait_semaphores[] = {swapchain_image_acquire_semaphore};
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
         std::vector<vk::Semaphore> signal_semaphores = {render_finished_semaphore};
 
-        // TODO: Use the semiphores in render_context
         vk::SubmitInfo submit_info = vk::SubmitInfo()
                 .setCommandBufferCount(1)
                 .setPCommandBuffers(&main_command_buffer.buffer)
@@ -166,7 +186,7 @@ namespace nova {
             context->command_buffer_pool->free(main_command_buffer);
 
         } else {
-            LOG(WARNING) << "Could not wait for gui done fence, " << vk::to_string(fence_wait_result);
+            LOG(WARNING) << "Could not wait for render done fence, " << vk::to_string(fence_wait_result);
         }
 
         LOG(INFO) << "Frame done";
@@ -232,7 +252,7 @@ namespace nova {
                 .setRenderPass(renderpass_for_pass.renderpass)
                 .setRenderArea({{0, 0}, renderpass_for_pass.framebuffer_size});
 
-        vk::Framebuffer = renderpass_for_pass.frameBuffer;
+        vk::Framebuffer framebuffer = renderpass_for_pass.frameBuffer;
         begin_pass.setFramebuffer(framebuffer);
         LOG(INFO) << "Using framebuffer " << (VkFramebuffer)framebuffer;
 

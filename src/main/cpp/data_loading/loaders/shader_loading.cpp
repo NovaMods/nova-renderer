@@ -56,6 +56,7 @@ namespace nova {
             pack.passes = load_passes_from_folder(shaderpack_directory);
             LOG(INFO) << "Loading dynamic textures";
             pack.dynamic_textures = load_texture_definitions_from_folder(shaderpack_directory);
+            LOG(INFO) << "Loaded " << pack.dynamic_textures.size() << " textures";
             LOG(INFO) << "Loading materials";
             pack.materials = load_materials_from_folder(shaderpack_directory);
 
@@ -190,6 +191,7 @@ namespace nova {
         auto textures = std::unordered_map<std::string, texture_resource>{};
 
         for(const auto& texture_json : json) {
+            LOG(INFO) << "Parsing texture " << texture_json;
             auto texture = texture_resource(texture_json);
             textures[texture.name] = texture;
         }

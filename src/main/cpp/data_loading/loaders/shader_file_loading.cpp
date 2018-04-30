@@ -445,6 +445,7 @@ namespace nova {
         fs::path resources_path = shaderpack_path / "resources.json";
         if(!fs::exists(resources_path)) {
             // No resources - so let's just early out
+            LOG(ERROR) << "NO resources defined for this shaderpack. That's a problem";
             return {};
         }
 
@@ -452,10 +453,11 @@ namespace nova {
         ss << resources_path;
         auto stringpath = ss.str().substr(1);
         stringpath = stringpath.substr(0, stringpath.size() - 1);
-        auto resoruces_stream = std::ifstream{stringpath};
-        auto resoruces_json = load_json_from_stream(resoruces_stream);
+        auto resources_stream = std::ifstream{stringpath};
+        auto resources_json = load_json_from_stream(resources_stream);
+        LOG(INFO) << "Loaded resources file " << resources_json;
 
-        return parse_textures_from_json(resoruces_json["textures"]);
+        return parse_textures_from_json(resources_json["textures"]);
     }
 
     std::vector<material> load_materials_from_folder(const fs::path& shaderpack_path) {
