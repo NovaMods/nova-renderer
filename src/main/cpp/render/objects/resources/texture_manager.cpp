@@ -93,6 +93,7 @@ namespace nova {
             return atlases.at(texture_name);
         }
 
+        LOG(INFO) << "Checking if texture " << texture_name << " is in the dynamic textures. There's " << dynamic_tex_name_to_idx.size() << " dynamic textures, it should be one of them";
         if(dynamic_tex_name_to_idx.find(texture_name) != dynamic_tex_name_to_idx.end()) {
             auto idx = dynamic_tex_name_to_idx.at(texture_name);
             if(dynamic_textures.size() > idx) {
@@ -266,7 +267,7 @@ namespace nova {
             }
 
             // We've found the first texture in this alias chain - let's create an actual texture for it if needed
-            if(dynamic_tex_name_to_idx.find(texture_name) != dynamic_tex_name_to_idx.end()) {
+            if(dynamic_tex_name_to_idx.find(texture_name) == dynamic_tex_name_to_idx.end()) {
                 LOG(INFO) << "Need to create it";
                 // The texture we're all aliasing doesn't have a real texture yet. Let's fix that
                 const texture_format& format = textures.at(texture_name).format;
@@ -287,7 +288,11 @@ namespace nova {
                 auto new_tex_index = dynamic_textures.size();
                 dynamic_textures.push_back(tex);
                 dynamic_tex_name_to_idx[texture_name] = new_tex_index;
-                dynamic_tex_name_to_idx[named_texture.first] = new_tex_index;
+                //dynamic_tex_name_to_idx[named_texture.first] = new_tex_index;
+
+                LOG(INFO) << "Added texture " << tex.get_name() << " to the dynamic textures";
+                LOG(INFO) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
+                //LOG(INFO) << "dynamic_texture_to_idx[" << named_texture.first << "] = " << new_tex_index;
 
             } else {
                 LOG(INFO) << "The physical resource already exists, so we're just gonna use that";
@@ -298,6 +303,7 @@ namespace nova {
     }
 
     void texture_manager::clear_dynamic_textures() {
+        LOG(INFO) << "Cleared dynamic textures";
         dynamic_textures.resize(0);
         dynamic_tex_name_to_idx.erase(dynamic_tex_name_to_idx.begin(), dynamic_tex_name_to_idx.end());
     }
