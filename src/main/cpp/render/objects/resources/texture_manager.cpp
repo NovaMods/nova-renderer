@@ -314,7 +314,6 @@ namespace nova {
         }
 
         return dynamic_tex_name_to_idx.find(texture_name) != dynamic_tex_name_to_idx.end();
-
     }
 
     vk::Format get_vk_format_from_pixel_format(pixel_format_enum format) {
