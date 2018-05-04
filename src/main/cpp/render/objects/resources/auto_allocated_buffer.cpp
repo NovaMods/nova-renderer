@@ -20,9 +20,9 @@ namespace nova {
         if(!chunks.empty()) {
             // Iterate backwards so that inserting or deleting has a minimal cost
             for(auto i = static_cast<int32_t>(chunks.size() - 1); i >= 0; --i) {
-                LOG(INFO) << "Checking if chunk " << i << "'s range, " << chunks[i].range << " is greater than or equal to " << size;
+                LOG(TRACE) << "Checking if chunk " << i << "'s range, " << chunks[i].range << " is greater than or equal to " << size;
                 if(chunks[i].range >= size) {
-                    LOG(INFO) << "It is!";
+                    LOG(TRACE) << "It is!";
                     index_to_allocate_from = i;
                 }
             }

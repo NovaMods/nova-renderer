@@ -29,7 +29,7 @@ namespace nova {
     }
 
     void mesh_store::add_gui_buffers(const char *geo_type, mc_gui_geometry *command) {
-        LOG(INFO) << "Adding GUI geometry " << command->texture_name;
+        LOG(DEBUG) << "Adding GUI geometry " << command->texture_name << " for geometry type " << geo_type;
         std::string texture_name(command->texture_name);
         texture_name = std::regex_replace(texture_name, std::regex("^textures/"), "");
         texture_name = std::regex_replace(texture_name, std::regex(".png$"), "");
@@ -96,17 +96,16 @@ namespace nova {
         gui.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
         gui.upload_model_matrix(context->device);
         gui.geometry = std::make_shared<vk_mesh>(cur_screen_buffer, context);
-        gui.type = geometry_type::from_string(geo_type);
+        gui.type = geometry_type::gui;
 
-        // TODO: Something more intelligent
-        if(renderables_grouped_by_material.find("gui") == renderables_grouped_by_material.end()) {
-            renderables_grouped_by_material["gui"] = std::vector<render_object>{};
+        if(renderables_grouped_by_material.find(geo_type) == renderables_grouped_by_material.end()) {
+            renderables_grouped_by_material[geo_type] = std::vector<render_object>{};
         }
-        renderables_grouped_by_material.at("gui").push_back(gui);
+        renderables_grouped_by_material.at(geo_type).push_back(gui);
     }
 
     void mesh_store::remove_gui_render_objects() {
-        remove_render_objects([](auto& render_obj) {return render_obj.type == geometry_type::gui;});
+        remove_render_objects([](auto& render_obj) {return render_obj.type == geometry_type::gui || render_obj.type == geometry_type::text;});
     }
 
     void mesh_store::remove_render_objects(std::function<bool(render_object&)> filter) {
@@ -158,7 +157,6 @@ namespace nova {
 
             const std::string& shader_name = std::get<0>(entry);
             if(renderables_grouped_by_material.find(shader_name) == renderables_grouped_by_material.end()) {
-                LOG(INFO) << "Adding a new list of " << shader_name << " objects";
                 renderables_grouped_by_material[shader_name] = std::vector<render_object>{};
             }
             renderables_grouped_by_material.at(shader_name).push_back(obj);

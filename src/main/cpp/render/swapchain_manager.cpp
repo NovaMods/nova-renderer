@@ -159,7 +159,6 @@ namespace nova {
         present_info.pResults = &swapchain_result;
 
         context->present_queue.presentKHR(present_info);
-
     }
 
     vk::Format swapchain_manager::choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {

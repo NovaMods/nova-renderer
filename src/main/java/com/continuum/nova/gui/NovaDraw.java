@@ -2,6 +2,7 @@ package com.continuum.nova.gui;
 
 import com.continuum.nova.NovaNative;
 import com.continuum.nova.NovaRenderer;
+import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.input.Mouse;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -184,8 +185,10 @@ public class NovaDraw {
      * if any state changes occured to any GUI element (hovered, visibility, completely different screen).
      *
      * @param screen the gui screen
+     * @param filterMap A map from filter name to filter so that we can determine what things should be in what material
+     *                  pass
      */
-    public static void novaDrawScreen(GuiScreen screen, float renderPartialTicks) {
+    public static void novaDrawScreen(GuiScreen screen, float renderPartialTicks, HashMap<String, IGeometryFilter> filterMap) {
         computeCorrectMousePosition();
 
         clearBuffers();
@@ -198,13 +201,11 @@ public class NovaDraw {
             NovaNative.mc_gui_buffer guiGeometry = b.toNativeCommand(texture);
             long timePrev = System.nanoTime();
 
-            if(entry.getKey().getResourcePath().contains("font/ascii")) {
-                // Text!
-                NovaNative.INSTANCE.add_gui_geometry(NovaNative.GeometryType.TEXT.name().toLowerCase(), guiGeometry);
-
-            } else {
-                // Regular GUI boi
-                NovaNative.INSTANCE.add_gui_geometry(NovaNative.GeometryType.GUI.name().toLowerCase(), guiGeometry);
+            for(String filterName : filterMap.keySet()) {
+                if(filterMap.get(filterName).matches(guiGeometry)) {
+                    LOG.trace("Adding geometry for filter {}", filterName);
+                    NovaNative.INSTANCE.add_gui_geometry(filterName, guiGeometry);
+                }
             }
 
             long end = System.nanoTime();
@@ -251,7 +252,7 @@ public class NovaDraw {
      * <p>
      * It is only used internally in NovaDraw.
      */
-    static class Buffers {
+    public static class Buffers {
         public List<Integer> indexBuffer = new ArrayList<>();
         public List<Float> vertexBuffer = new ArrayList<>();
 

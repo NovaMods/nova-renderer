@@ -135,24 +135,88 @@ namespace nova {
         }
 
         // Copy the backbuffer to the swapchain
+
+        auto& backbuffer = shader_resources->get_texture_manager().get_texture("Backbuffer");
+
+        vk::ImageMemoryBarrier backbuffer_barrier = {};
+        backbuffer_barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
+        backbuffer_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        backbuffer_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        backbuffer_barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        backbuffer_barrier.subresourceRange.baseMipLevel = 0;
+        backbuffer_barrier.subresourceRange.levelCount = 1;
+        backbuffer_barrier.subresourceRange.baseArrayLayer = 0;
+        backbuffer_barrier.subresourceRange.layerCount = 1;
+        backbuffer_barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        backbuffer_barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        backbuffer_barrier.image = backbuffer.get_vk_image();
+        backbuffer_barrier.oldLayout = backbuffer.get_layout();
+        backbuffer.set_layout(vk::ImageLayout::eTransferSrcOptimal);
+
+        vk::ImageMemoryBarrier swapchain_barrier = {};
+        swapchain_barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
+        swapchain_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        swapchain_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        swapchain_barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        swapchain_barrier.subresourceRange.baseMipLevel = 0;
+        swapchain_barrier.subresourceRange.levelCount = 1;
+        swapchain_barrier.subresourceRange.baseArrayLayer = 0;
+        swapchain_barrier.subresourceRange.layerCount = 1;
+        swapchain_barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        swapchain_barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        swapchain_barrier.image = swapchain->get_current_image();
+        swapchain_barrier.oldLayout = swapchain->get_current_layout();
+
+        swapchain->set_current_layout(vk::ImageLayout::eTransferSrcOptimal);
+
+        vk::PipelineStageFlags source_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        vk::PipelineStageFlags destination_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        main_command_buffer.buffer.pipelineBarrier(
+                source_stage, destination_stage,
+                vk::DependencyFlags(),
+                {},
+                {},
+                {backbuffer_barrier, swapchain_barrier});
+
         const auto& swapchain_extent = swapchain->get_swapchain_extent();
 
         vk::ImageSubresourceLayers layers_to_copy = vk::ImageSubresourceLayers()
-            .setAspectMask(vk::ImageAspectFlagBits::eColor)
-            .setMipLevel(0)
-            .setBaseArrayLayer(0)
-            .setLayerCount(1);
+                .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                .setMipLevel(0)
+                .setBaseArrayLayer(0)
+                .setLayerCount(1);
 
         vk::ImageCopy image_copy = vk::ImageCopy()
-            .setSrcSubresource(layers_to_copy)
-            .setSrcOffset({0, 0, 0})
-            .setDstSubresource(layers_to_copy)
-            .setDstOffset({0, 0, 0})
-            .setExtent({swapchain_extent.width, swapchain_extent.height, 1});
-
-        const auto& backbuffer = shader_resources->get_texture_manager().get_texture("Backbuffer");
+                .setSrcSubresource(layers_to_copy)
+                .setSrcOffset({0, 0, 0})
+                .setDstSubresource(layers_to_copy)
+                .setDstOffset({0, 0, 0})
+                .setExtent({swapchain_extent.width, swapchain_extent.height, 1});
 
         main_command_buffer.buffer.copyImage(backbuffer.get_vk_image(), backbuffer.get_layout(), swapchain->get_current_image(), swapchain->get_current_layout(), {image_copy});
+
+        swapchain_barrier = vk::ImageMemoryBarrier{};
+        swapchain_barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+        swapchain_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        swapchain_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        swapchain_barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+        swapchain_barrier.subresourceRange.baseMipLevel = 0;
+        swapchain_barrier.subresourceRange.levelCount = 1;
+        swapchain_barrier.subresourceRange.baseArrayLayer = 0;
+        swapchain_barrier.subresourceRange.layerCount = 1;
+        swapchain_barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+        swapchain_barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+        swapchain_barrier.image = swapchain->get_current_image();
+        swapchain_barrier.oldLayout = swapchain->get_current_layout();
+
+        swapchain->set_current_layout(vk::ImageLayout::ePresentSrcKHR);
+
+        main_command_buffer.buffer.pipelineBarrier(
+                vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
+                vk::DependencyFlags(),
+                {},
+                {},
+                {swapchain_barrier});
 
         main_command_buffer.buffer.end();
 

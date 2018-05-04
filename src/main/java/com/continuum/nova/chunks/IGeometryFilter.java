@@ -13,6 +13,8 @@ import org.apache.logging.log4j.Logger;
 public interface IGeometryFilter {
     boolean matches(IBlockState blockState);
 
+    boolean matches(NovaNative.mc_gui_buffer guiBuffer);
+
     class AndGeometryFilter implements IGeometryFilter {
         private IGeometryFilter left;
         private IGeometryFilter right;
@@ -25,6 +27,11 @@ public interface IGeometryFilter {
         @Override
         public boolean matches(IBlockState blockState) {
             return left.matches(blockState) && right.matches(blockState);
+        }
+
+        @Override
+        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+            return left.matches(guiBuffer) && right.matches(guiBuffer);
         }
 
         @Override
@@ -48,6 +55,11 @@ public interface IGeometryFilter {
         }
 
         @Override
+        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+            return left.matches(guiBuffer) || right.matches(guiBuffer);
+        }
+
+        @Override
         public String toString() {
             return "(" + left.toString() + " OR " + right.toString() + ")";
         }
@@ -63,6 +75,12 @@ public interface IGeometryFilter {
         @Override
         public boolean matches(IBlockState blockState) {
             return blockState.getBlock().getUnlocalizedName().equals(name);
+        }
+
+        @Override
+        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+            // hardcoded but refactoring the system to unify GUI and regular meshes is hard
+            return name.equals("gui");
         }
 
         @Override
@@ -84,6 +102,11 @@ public interface IGeometryFilter {
         }
 
         @Override
+        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+            return "gui".contains(namePart);
+        }
+
+        @Override
         public String toString() {
             return "name_part::" + namePart;
         }
@@ -99,6 +122,18 @@ public interface IGeometryFilter {
         @Override
         public boolean matches(IBlockState blockState) {
             return type == NovaNative.GeometryType.BLOCK;
+        }
+
+        @Override
+        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+            switch(type) {
+                case GUI:
+                    return guiBuffer.texture_name.contains("gui/");
+                case TEXT:
+                    return guiBuffer.texture_name.contains("font/");
+                default:
+                    return false;
+            }
         }
 
         @Override
@@ -125,6 +160,12 @@ public interface IGeometryFilter {
         }
 
         @Override
+        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+            // GUI uses all sorts of transparent and semi-transparent textures
+            return true;
+        }
+
+        @Override
         public String toString() {
             if(shouldBeTransparent) {
                 return "transparent";
@@ -144,6 +185,12 @@ public interface IGeometryFilter {
         @Override
         public boolean matches(IBlockState blockState) {
             return blockState.getLightValue() > 0 == shouldBeEmissive;
+        }
+
+        @Override
+        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+            // No the GUI can't emit light shut up
+            return false;
         }
 
         @Override

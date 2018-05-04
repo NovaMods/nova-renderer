@@ -294,7 +294,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.start("render_gui");
         if (mc.currentScreen != null) {
 
-            NovaDraw.novaDrawScreen(mc.currentScreen, renderPartialTicks);
+            NovaDraw.novaDrawScreen(mc.currentScreen, renderPartialTicks, filterMap);
 
         }
         Profiler.end("render_gui");

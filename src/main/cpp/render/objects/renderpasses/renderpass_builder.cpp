@@ -96,7 +96,7 @@ namespace nova {
                     vk::AttachmentDescription color_attachment = {};
                     color_attachment.format = texture.get_format();
                     color_attachment.samples = vk::SampleCountFlagBits::e1;
-                    color_attachment.loadOp = vk::AttachmentLoadOp::eLoad;
+                    color_attachment.loadOp = vk::AttachmentLoadOp::eDontCare;
                     color_attachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
                     color_attachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
                     color_attachment.storeOp = vk::AttachmentStoreOp::eStore;

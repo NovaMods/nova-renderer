@@ -97,5 +97,7 @@ namespace nova {
             return shader_langauge_enum::HLSL;
 
         }
+
+        return shader_langauge_enum::SPIRV;
     }
 }
