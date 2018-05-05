@@ -258,11 +258,11 @@ if (WIN32)
     if (CMAKE_BUILD_TYPE STREQUAL "Release")
         add_custom_command(TARGET nova-renderer
             POST_BUILD
-            COMMAND copy /Y "nova-renderer.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives\\")
+            COMMAND copy /Y "nova-renderer.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives")
     else()
         add_custom_command(TARGET nova-renderer
             POST_BUILD
-            COMMAND copy /Y "nova-rendererd.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives\\")
+            COMMAND copy /Y "nova-rendererd.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives")
         add_custom_command(TARGET nova-renderer
             POST_BUILD
             COMMAND move /Y "..\\..\\..\\jars\\versions\\1.10\\1.10-natives\\nova-rendererd.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives\\nova-renderer.dll")
@@ -272,10 +272,13 @@ if (UNIX)
     if (CMAKE_BUILD_TYPE STREQUAL "Release")
         add_custom_command(TARGET nova-renderer
             POST_BUILD
-            COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-renderer.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-renderer.so")
+            COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-renderer.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/")
     else()
         add_custom_command(TARGET nova-renderer
             POST_BUILD
-            COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-rendererd.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-renderer.so")
+            COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-rendererd.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/")
+        add_custom_command(TARGET nova-renderer
+                POST_BUILD
+                COMMAND mv -f "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-renderer.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-renderer.so")
     endif()
 endif (UNIX)
