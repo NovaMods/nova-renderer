@@ -192,8 +192,12 @@ namespace nova {
 
         for(const auto& texture_json : json) {
             LOG(INFO) << "Parsing texture " << texture_json;
-            auto texture = texture_resource(texture_json);
-            textures[texture.name] = texture;
+            try {
+                auto texture = texture_resource(texture_json);
+                textures[texture.name] = texture;
+            } catch(std::exception& e) {
+                LOG(ERROR) << "Could not parse texture description. Reason: " << e.what();
+            }
         }
 
         return textures;

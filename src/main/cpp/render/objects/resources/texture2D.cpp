@@ -12,7 +12,7 @@
 #include "../../nova_renderer.h"
 
 namespace nova {
-    texture2D::texture2D(vk::Extent2D dimensions, vk::Format format, std::shared_ptr<render_context> context) : context(context) {
+    texture2D::texture2D(vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage, std::shared_ptr<render_context> context) : context(context) {
         this->format = format;
         size = dimensions;
 
@@ -24,7 +24,7 @@ namespace nova {
         image_create_info.extent = vk::Extent3D{dimensions.width, dimensions.height, 1};
         image_create_info.tiling = vk::ImageTiling::eOptimal;
         image_create_info.format = format;
-        image_create_info.usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eColorAttachment;
+        image_create_info.usage = usage;
         image_create_info.queueFamilyIndexCount = 1;
         image_create_info.pQueueFamilyIndices = &context->graphics_family_idx;
         image_create_info.initialLayout = vk::ImageLayout::eUndefined;

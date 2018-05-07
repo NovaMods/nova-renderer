@@ -60,6 +60,33 @@ namespace nova {
             LOG(FATAL) << "The swapchain returned zero images";
         }
 
+        // Create a dummy renderpass that writes to a single color attachmet - the swapchain
+        vk::AttachmentDescription color_attachment = {};
+        color_attachment.format = swapchain_format;
+        color_attachment.samples = vk::SampleCountFlagBits::e1;
+        color_attachment.loadOp = vk::AttachmentLoadOp::eDontCare;
+        color_attachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+        color_attachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+        color_attachment.storeOp = vk::AttachmentStoreOp::eStore;
+
+        auto color_ref = vk::AttachmentReference()
+                .setAttachment(0)
+                .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+        vk::SubpassDescription subpass = {};
+        subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+        subpass.colorAttachmentCount = static_cast<uint32_t>(1);
+        subpass.pColorAttachments = &color_ref;
+
+        vk::RenderPassCreateInfo render_pass_create_info = {};
+        render_pass_create_info.attachmentCount = 1;
+        render_pass_create_info.pAttachments = &color_attachment;
+        render_pass_create_info.subpassCount = 1;
+        render_pass_create_info.pSubpasses = &subpass;
+        render_pass_create_info.dependencyCount = 0;
+
+        auto renderpass =  context->device.createRenderPass(render_pass_create_info);
+
         // More than 255 images in the swapchain? Good lord what are you doing? and will you please stop?
         for(uint8_t i = 0; i < num_swapchain_images; i++) {
             vk::ImageViewCreateInfo image_view_create_info = {};
@@ -82,7 +109,20 @@ namespace nova {
             vk::ImageView image_view = context->device.createImageView(image_view_create_info);
 
             swapchain_image_views.push_back(image_view);
+
+            auto framebuffer_create_info = vk::FramebufferCreateInfo()
+                    .setAttachmentCount(1)
+                    .setPAttachments(&image_view)
+                    .setRenderPass(renderpass)
+                    .setWidth(swapchain_extent.width)
+                    .setHeight(swapchain_extent.height)
+                    .setLayers(1);
+
+            auto framebuffer = context->device.createFramebuffer(framebuffer_create_info);
+            framebuffers.push_back(framebuffer);
         }
+
+        context->device.destroyRenderPass(renderpass);
 
         // This block just kinda checks that the depth buffer we want is available
         {

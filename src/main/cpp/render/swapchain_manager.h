@@ -61,8 +61,7 @@ namespace nova {
 
         vk::Extent2D choose_surface_extent(vk::SurfaceCapabilitiesKHR &caps, glm::ivec2 &window_dimensions);
 
-        vk::Format
-    choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
+        vk::Format choose_supported_format(vk::Format *formats, int num_formats, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
 
         void move_swapchain_images_into_correct_format(const std::vector<vk::Image> &images);
     };

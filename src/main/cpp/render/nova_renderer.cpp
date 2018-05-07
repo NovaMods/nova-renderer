@@ -134,27 +134,8 @@ namespace nova {
             execute_pass(pass, main_command_buffer.buffer);
         }
 
-        // Copy the backbuffer to the swapchain
-
-        auto& backbuffer = shader_resources->get_texture_manager().get_texture("Backbuffer");
-
-        vk::ImageMemoryBarrier backbuffer_barrier = {};
-        backbuffer_barrier.newLayout = vk::ImageLayout::eTransferSrcOptimal;
-        backbuffer_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        backbuffer_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        backbuffer_barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-        backbuffer_barrier.subresourceRange.baseMipLevel = 0;
-        backbuffer_barrier.subresourceRange.levelCount = 1;
-        backbuffer_barrier.subresourceRange.baseArrayLayer = 0;
-        backbuffer_barrier.subresourceRange.layerCount = 1;
-        backbuffer_barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-        backbuffer_barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-        backbuffer_barrier.image = backbuffer.get_vk_image();
-        backbuffer_barrier.oldLayout = backbuffer.get_layout();
-        backbuffer.set_layout(vk::ImageLayout::eTransferSrcOptimal);
-
         vk::ImageMemoryBarrier swapchain_barrier = {};
-        swapchain_barrier.newLayout = vk::ImageLayout::eTransferDstOptimal;
+        swapchain_barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
         swapchain_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         swapchain_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         swapchain_barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
@@ -170,49 +151,9 @@ namespace nova {
         swapchain->set_current_layout(vk::ImageLayout::eTransferSrcOptimal);
 
         vk::PipelineStageFlags source_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-        vk::PipelineStageFlags destination_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        vk::PipelineStageFlags destination_stage = vk::PipelineStageFlagBits::eBottomOfPipe;
         main_command_buffer.buffer.pipelineBarrier(
                 source_stage, destination_stage,
-                vk::DependencyFlags(),
-                {},
-                {},
-                {backbuffer_barrier, swapchain_barrier});
-
-        const auto& swapchain_extent = swapchain->get_swapchain_extent();
-
-        vk::ImageSubresourceLayers layers_to_copy = vk::ImageSubresourceLayers()
-                .setAspectMask(vk::ImageAspectFlagBits::eColor)
-                .setMipLevel(0)
-                .setBaseArrayLayer(0)
-                .setLayerCount(1);
-
-        vk::ImageCopy image_copy = vk::ImageCopy()
-                .setSrcSubresource(layers_to_copy)
-                .setSrcOffset({0, 0, 0})
-                .setDstSubresource(layers_to_copy)
-                .setDstOffset({0, 0, 0})
-                .setExtent({swapchain_extent.width, swapchain_extent.height, 1});
-
-        main_command_buffer.buffer.copyImage(backbuffer.get_vk_image(), backbuffer.get_layout(), swapchain->get_current_image(), swapchain->get_current_layout(), {image_copy});
-
-        swapchain_barrier = vk::ImageMemoryBarrier{};
-        swapchain_barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
-        swapchain_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        swapchain_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        swapchain_barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-        swapchain_barrier.subresourceRange.baseMipLevel = 0;
-        swapchain_barrier.subresourceRange.levelCount = 1;
-        swapchain_barrier.subresourceRange.baseArrayLayer = 0;
-        swapchain_barrier.subresourceRange.layerCount = 1;
-        swapchain_barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-        swapchain_barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-        swapchain_barrier.image = swapchain->get_current_image();
-        swapchain_barrier.oldLayout = swapchain->get_current_layout();
-
-        swapchain->set_current_layout(vk::ImageLayout::ePresentSrcKHR);
-
-        main_command_buffer.buffer.pipelineBarrier(
-                vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eTransfer,
                 vk::DependencyFlags(),
                 {},
                 {},
@@ -271,6 +212,11 @@ namespace nova {
 
         const auto& renderpass_for_pass = renderpasses_by_pass.at(pass.name);
 
+        // This block seems weirdly hardcoded and not scalable but idk
+        vk::PipelineStageFlags source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+        vk::PipelineStageFlags destination_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        auto barriers = std::vector<vk::ImageMemoryBarrier>();
+
         for(const auto& write_resource : renderpass_for_pass.texture_outputs) {
             // Transition all written to resources to shader write optimal
 
@@ -283,10 +229,6 @@ namespace nova {
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = 1;
-
-            // This block seems weirdly hardcoded and not scalable but idk
-            vk::PipelineStageFlags source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
-            vk::PipelineStageFlags destination_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
             barrier.srcAccessMask = vk::AccessFlags();
             barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
 
@@ -304,19 +246,26 @@ namespace nova {
                 continue;
             }
 
-            buffer.pipelineBarrier(
-                    source_stage, destination_stage,
-                    vk::DependencyFlags(),
-                    0, nullptr,
-                    0, nullptr,
-                    1, &barrier);
+            barriers.push_back(barrier);
         }
+
+        buffer.pipelineBarrier(
+                source_stage, destination_stage,
+                vk::DependencyFlags(),
+                {}, {}, barriers);
 
         vk::RenderPassBeginInfo begin_pass = vk::RenderPassBeginInfo()
                 .setRenderPass(renderpass_for_pass.renderpass)
                 .setRenderArea({{0, 0}, renderpass_for_pass.framebuffer_size});
 
-        vk::Framebuffer framebuffer = renderpass_for_pass.frameBuffer;
+        vk::Framebuffer framebuffer;
+        if(renderpass_for_pass.texture_outputs[0] == "Backbuffer") {
+            framebuffer = swapchain->get_current_framebuffer();
+
+        } else {
+            framebuffer = renderpass_for_pass.frameBuffer;
+        }
+
         begin_pass.setFramebuffer(framebuffer);
         LOG(INFO) << "Using framebuffer " << (VkFramebuffer)framebuffer;
 

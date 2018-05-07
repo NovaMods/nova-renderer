@@ -22,7 +22,7 @@ namespace nova {
     public:
         texture2D() = default;
 
-        texture2D(vk::Extent2D dimensions, vk::Format format, std::shared_ptr<render_context> context);
+        texture2D(vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage, std::shared_ptr<render_context> context);
 
         /*!
          * \brief Sets this texture's data to the given parameters

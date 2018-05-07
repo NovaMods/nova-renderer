@@ -1,6 +1,12 @@
 [
     {
         "name": "Forward",
-        "textureOutputs": "Backbuffer"
+        "textureOutputs": ["LitWorld"],
+        "depthTexture": "DepthBuffer"
+    }, 
+    {
+        "name": "Final",
+        "textureInputs": ["LitWorld"],
+        "textureOutputs": ["Backbuffer"]
     }
 ]

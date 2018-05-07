@@ -34,7 +34,7 @@ namespace nova {
 	}
 
 	uniform_buffer::~uniform_buffer() {
-		if(buffer != vk::Buffer()) {
+		if(context && buffer != vk::Buffer()) {
 			LOG(TRACE) << "uniform_buffer: About to destroy buffer " << (long long)(VkBuffer)buffer;
 			vmaDestroyBuffer(context->allocator, buffer, allocation);
 		}

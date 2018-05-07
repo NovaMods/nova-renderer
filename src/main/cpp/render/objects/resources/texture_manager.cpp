@@ -34,8 +34,8 @@ namespace nova {
 
         atlases.clear();
         locations.clear();
-
-        atlases["lightmap"] = texture2D(vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, context);
+        auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+        atlases["lightmap"] = texture2D(vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, usage, context);
         atlases["lightmap"].set_name("lightmap");
         LOG(INFO) << "Created lightmap";
 
@@ -47,7 +47,8 @@ namespace nova {
         std::string texture_name = new_texture.name;
         LOG(TRACE) << "Saved texture name";
         auto dimensions = vk::Extent2D{new_texture.width, new_texture.height};
-        texture2D texture{dimensions, vk::Format::eR8G8B8A8Unorm, context};
+        auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+        texture2D texture{dimensions, vk::Format::eR8G8B8A8Unorm, usage, context};
         LOG(TRACE) << "Created texture object";
         texture.set_name(texture_name);
 
@@ -235,11 +236,16 @@ namespace nova {
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
             LOG(INFO) << "Determining if we can alias `" << to_alias_name << "`. Does it exist? " << (textures.find(to_alias_name) != textures.end());
+            if(to_alias_name == "Backbuffer" || to_alias_name == "backbuffer") {
+                // Yay special cases!
+                continue;
+            }
+
             const auto& to_alias_format = textures.at(to_alias_name).format;
 
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
-                LOG(INFO) << "Trying to alias it with rexource at index " << j << " out of " << resources_in_order.size();
+                LOG(INFO) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
                 const auto& try_alias_name = resources_in_order[j];
                 if(resource_used_range[to_alias_name].is_disjoint_with(resource_used_range[try_alias_name])) {
                     // They can be aliased if they have the same format
@@ -282,17 +288,23 @@ namespace nova {
                     dimensions.height *= format.height;
                 }
 
+                auto usage = vk::ImageUsageFlagBits::eInputAttachment | vk::ImageUsageFlagBits::eSampled;
+                if(format.pixel_format == pixel_format_enum::DepthStencil || format.pixel_format == pixel_format_enum::Depth) {
+                    usage |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+
+                } else {
+                    usage |= vk::ImageUsageFlagBits::eColorAttachment;
+                }
+
                 auto pixel_format = get_vk_format_from_pixel_format(format.pixel_format);
-                auto tex = texture2D{dimensions, pixel_format, context};
+                auto tex = texture2D(dimensions, pixel_format, usage, context);
 
                 auto new_tex_index = dynamic_textures.size();
                 dynamic_textures.push_back(tex);
                 dynamic_tex_name_to_idx[texture_name] = new_tex_index;
-                //dynamic_tex_name_to_idx[named_texture.first] = new_tex_index;
 
                 LOG(INFO) << "Added texture " << tex.get_name() << " to the dynamic textures";
                 LOG(INFO) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
-                //LOG(INFO) << "dynamic_texture_to_idx[" << named_texture.first << "] = " << new_tex_index;
 
             } else {
                 LOG(INFO) << "The physical resource already exists, so we're just gonna use that";
