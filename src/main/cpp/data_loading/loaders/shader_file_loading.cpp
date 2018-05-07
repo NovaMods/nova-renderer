@@ -244,7 +244,7 @@ namespace nova {
         auto pipelines_itr = fs::directory_iterator(pipelines_path);
 
         for(const auto &item : pipelines_itr) {
-            LOG(TRACE) << "Examing file " << item.path();
+            LOG(TRACE) << "Examaning file " << item.path();
             if(item.path().extension() != ".material") {
                 LOG(WARNING) << "Skipping non-pipeline file " << item.path();
                 continue;
@@ -471,7 +471,7 @@ namespace nova {
         auto materials_iter = fs::directory_iterator(materials_path);
 
         for(const auto &item : materials_iter) {
-            LOG(TRACE) << "Examing file " << item.path();
+            LOG(TRACE) << "Examaning file " << item.path();
             if(item.path().extension() != ".mat") {
                 LOG(DEBUG) << "Skipping non-material file " << item.path();
                 continue;

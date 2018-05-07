@@ -438,6 +438,9 @@ namespace nova {
 
         shader_resources->create_descriptor_sets(pipelines_by_renderpass);
 
+        // Look for any materials that use a fullscreen pass and insert renderables for them
+        insert_special_geometry(material_passes_by_pipeline);
+
         LOG(INFO) << "Loading complete";
     }
 
@@ -569,6 +572,18 @@ namespace nova {
         auto& allocation = shader_resources->get_uniform_buffers().get_per_model_buffer()->get_allocation_info();
         memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
         LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
+    }
+
+    void nova_renderer::insert_special_geometry(const std::unordered_map<std::string, std::vector<material_pass>> &material_passes_by_pipeline) {
+        // If the material pass has the fullscreen geometry in its filter, insert it into the mesh store
+        for(const auto& passes_for_pipeline : material_passes_by_pipeline) {
+            for(const material_pass& pass : passes_for_pipeline.second) {
+                const auto& mat = std::find_if(materials.begin(), materials.end(), [&](const material& mat) {return mat.name == pass.material_name;});
+                if((*mat).geometry_filter.find("geometry_type::fullscreen_pass") != std::string::npos) {
+                    meshes->add_fullscreen_quad_for_material((*mat).name);
+                }
+            }
+        }
     }
 }
 

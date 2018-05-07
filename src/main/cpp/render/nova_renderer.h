@@ -40,7 +40,7 @@ namespace nova {
     class nova_renderer : public iconfig_listener {
     public:
         /*!
-         * \brief A singleton for the nova_renderer instance
+         * \brief A singleton for the nova_renderer instanceA
          *
          * I want only one nova_renderer active at a time, and the C code needs a good way to reference the nova_renderer
          * instance. A singleton fulfils both those requirements.
@@ -237,6 +237,9 @@ namespace nova {
          * \param renderable The render_object to calculate and upload the model matrix for
          */
         void update_model_matrix(const render_object &renderable);
+
+        void
+    insert_special_geometry(const std::unordered_map<std::string, std::vector<material_pass>> &material_passes_by_pipeline);
     };
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes);

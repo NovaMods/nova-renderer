@@ -137,10 +137,10 @@ namespace nova {
     }
 
     void mesh_store::upload_new_geometry() {
-        LOG(TRACE) << "Uploading " << chunk_parts_to_upload.size() << " new objects";
-        chunk_parts_to_upload_lock.lock();
-        while(!chunk_parts_to_upload.empty()) {
-            const auto& entry = chunk_parts_to_upload.front();
+        LOG(TRACE) << "Uploading " << geometry_to_upload.size() << " new objects";
+        geometry_to_upload_lock.lock();
+        while(!geometry_to_upload.empty()) {
+            const auto& entry = geometry_to_upload.front();
             const auto& def = std::get<1>(entry);
 
             render_object obj = {};
@@ -161,9 +161,9 @@ namespace nova {
             }
             renderables_grouped_by_material.at(shader_name).push_back(obj);
 
-            chunk_parts_to_upload.pop();
+            geometry_to_upload.pop();
         }
-        chunk_parts_to_upload_lock.unlock();
+        geometry_to_upload_lock.unlock();
     }
 
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
@@ -192,12 +192,71 @@ namespace nova {
         def.position = {chunk.x, chunk.y, chunk.z};
         def.id = chunk.id;
 
-        chunk_parts_to_upload_lock.lock();
-        chunk_parts_to_upload.emplace(filter_name, def);
-        chunk_parts_to_upload_lock.unlock();
+        geometry_to_upload_lock.lock();
+        geometry_to_upload.emplace(filter_name, def);
+        geometry_to_upload_lock.unlock();
     }
 
     void mesh_store::remove_render_objects_with_parent(long parent_id) {
         remove_render_objects([&](render_object& obj) { return obj.parent_id == parent_id; });
+    }
+
+    void mesh_store::add_fullscreen_quad_for_material(const std::string &material_name) {
+        union f2i {
+            float f;
+            int i;
+
+            f2i(float fl) {
+                f = fl;
+            }
+
+            f2i(int in) {
+                i = in;
+            }
+        };
+
+        mesh_definition quad;
+        quad.vertex_data = {
+                f2i(0.0f).i, f2i(2.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(2.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i,
+                0,
+                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+
+
+                f2i(2.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(2.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i,
+                0,
+                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+
+
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i,
+                0,
+                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+        };
+
+        quad.indices = {0, 1, 2};
+        quad.vertex_format = format::POS_COLOR_UV_LIGHTMAPUV_NORMAL_TANGENT;
+        quad.position = glm::vec3(0);
+        quad.id = 0;
+
+        geometry_to_upload_lock.lock();
+        geometry_to_upload.emplace(material_name, quad);
+        geometry_to_upload_lock.unlock();
     }
 }
