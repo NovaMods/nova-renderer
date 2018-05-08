@@ -1,5 +1,5 @@
 {
-    "filters": "geometry_type::fullscreen_quad",
+    "filter": "geometry_type::fullscreen_quad",
     "passes": [
         {
             "pipeline": "Final",
