@@ -52,9 +52,12 @@ namespace nova {
     }
 
     void shader_resource_manager::create_descriptor_sets_for_pipeline(pipeline_object &pipeline_data) {
-        if(pipeline_data.layouts.empty()) {
+        if(pipeline_data.layouts.empty() || !pipeline_data.descriptors.empty()) {
+            // If this pipeline already has descriptors, it shouldn't have any more
             return;
         }
+
+        LOG(INFO) << "Creating descriptor sets for pipeline " << pipeline_data.name;
 
         auto layouts = std::vector<vk::DescriptorSetLayout>{};
         layouts.reserve(pipeline_data.layouts.size());
@@ -68,6 +71,9 @@ namespace nova {
             .setPSetLayouts(layouts.data());
 
         pipeline_data.descriptors = device.allocateDescriptorSets(alloc_info);
+        for(const auto& descriptor : pipeline_data.descriptors) {
+            LOG(INFO) << "Allocated descriptor set " << (VkDescriptorSet)descriptor;
+        }
 
         total_allocated_descriptor_sets += layouts.size();
         LOG(DEBUG) << "We've created " << total_allocated_descriptor_sets << " sets";
@@ -142,14 +148,16 @@ namespace nova {
     vk::DescriptorSet shader_resource_manager::create_model_matrix_descriptor() {
         LOG(DEBUG) << "Creating per-model descriptor " << ++per_model_descriptor_count;
         LOG(DEBUG) << "We've allocated " << ++total_allocated_descriptor_sets << " in total";
-        return device.allocateDescriptorSets(model_matrix_descriptor_allocate_info)[0];
+        auto descriptor = device.allocateDescriptorSets(model_matrix_descriptor_allocate_info)[0];
+        LOG(INFO) << "Allocated descriptor " << (VkDescriptorSet)descriptor;
+        return descriptor;
     }
 
     void shader_resource_manager::free_descriptor(vk::DescriptorSet to_free) {
+        LOG(INFO) << "Freeing descriptor " << (VkDescriptorSet)to_free;
         per_model_descriptor_count--;
         total_allocated_descriptor_sets--;
         device.freeDescriptorSets(descriptor_pool, {to_free});
     }
-
 }
 

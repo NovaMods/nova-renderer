@@ -91,12 +91,14 @@ namespace nova {
 
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
-        render_object gui = {};
+        render_object gui;
         gui.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
         gui.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
         gui.upload_model_matrix(context->device);
         gui.geometry = std::make_shared<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
+
+        LOG(INFO) << "Game render object " << gui.id << " model matrix descriptor " << (VkDescriptorSet)gui.model_matrix_descriptor;
 
         if(renderables_grouped_by_material.find(geo_type) == renderables_grouped_by_material.end()) {
             renderables_grouped_by_material[geo_type] = std::vector<render_object>{};
@@ -154,6 +156,8 @@ namespace nova {
             obj.bounding_box.center = def.position;
             obj.bounding_box.center.y = 128;
             obj.bounding_box.extents = {16, 128, 16};   // TODO: Make these values come from Minecraft
+
+            LOG(INFO) << "Game render object " << obj.id << " model matrix descriptor " << (VkDescriptorSet)obj.model_matrix_descriptor;
 
             const std::string& shader_name = std::get<0>(entry);
             if(renderables_grouped_by_material.find(shader_name) == renderables_grouped_by_material.end()) {
