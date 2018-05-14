@@ -190,6 +190,9 @@ namespace nova {
         LOG(INFO) << "Making framebuffer for pass " << pass.name;
         std::vector<vk::ImageView> attachments;
         vk::Extent2D framebuffer_size;
+
+        bool writes_to_backbuffer = false;
+
         if(pass.texture_outputs) {
             const auto& outputs = pass.texture_outputs.value();
 
@@ -198,6 +201,7 @@ namespace nova {
                     const auto &tex = textures.get_texture(output_name);
                     attachments.push_back(tex.get_image_view());
                     framebuffer_size = tex.get_size();
+                    writes_to_backbuffer = true;
 
                 } else {
                     if(outputs.size() > 1) {
@@ -209,10 +213,16 @@ namespace nova {
             }
         }
         if(pass.depth_texture) {
-            const auto& depth_tex_name = pass.depth_texture.value();
-            const auto& depth_tex = textures.get_texture(depth_tex_name);
-            attachments.push_back(depth_tex.get_image_view());
-            framebuffer_size = depth_tex.get_size();
+            if (writes_to_backbuffer) {
+                LOG(ERROR)
+                        << "Passes that write to the backbuffer are not allowed to write to a depth buffer. Ignoring depth buffer for pass "
+                        << pass.name;
+            } else {
+                const auto &depth_tex_name = pass.depth_texture.value();
+                const auto &depth_tex = textures.get_texture(depth_tex_name);
+                attachments.push_back(depth_tex.get_image_view());
+                framebuffer_size = depth_tex.get_size();
+            }
         }
 
         if(!attachments.empty()) {
@@ -227,8 +237,10 @@ namespace nova {
             return {context->device.createFramebuffer(framebuffer_create_info), framebuffer_size};
         }
 
-        LOG(ERROR) << "No framebuffer attachments for pass " << pass.name << ". This is an error and you should fix it";
+        if(!writes_to_backbuffer) {
+            LOG(ERROR) << "No framebuffer attachments for pass " << pass.name << ". This is an error and you should fix it";
+        }
 
-        return {vk::Framebuffer(), {}};
+        return {vk::Framebuffer(), framebuffer_size};
     }
 }

@@ -94,7 +94,7 @@ namespace nova {
             return atlases.at(texture_name);
         }
 
-        LOG(INFO) << "Checking if texture " << texture_name << " is in the dynamic textures. There's " << dynamic_tex_name_to_idx.size() << " dynamic textures, it should be one of them";
+        LOG(TRACE) << "Checking if texture " << texture_name << " is in the dynamic textures. There's " << dynamic_tex_name_to_idx.size() << " dynamic textures, it should be one of them";
         if(dynamic_tex_name_to_idx.find(texture_name) != dynamic_tex_name_to_idx.end()) {
             auto idx = dynamic_tex_name_to_idx.at(texture_name);
             if(dynamic_textures.size() > idx) {
