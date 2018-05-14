@@ -122,6 +122,7 @@ set(NOVA_HEADERS
         render/objects/renderpasses/render_passes.h
         render/render_graph.h
         render/objects/meshes/vertex_attributes.h
+        render/swapchain_manager.h
         )
 
 set(NOVA_SOURCE
@@ -174,7 +175,7 @@ set(NOVA_SOURCE
         data_loading/loaders/shader_file_loading.cpp
         render/render_graph.cpp
         render/objects/resources/uniform_buffer.cpp
-        render/swapchain_manager.cpp render/swapchain_manager.h)
+        render/swapchain_manager.cpp)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
@@ -279,6 +280,6 @@ if (UNIX)
             COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-rendererd.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/")
         add_custom_command(TARGET nova-renderer
                 POST_BUILD
-                COMMAND mv -f "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-renderer.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-renderer.so")
+                COMMAND mv -uf "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-rendererd.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-renderer.so")
     endif()
 endif (UNIX)

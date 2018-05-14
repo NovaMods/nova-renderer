@@ -110,9 +110,6 @@ repositories {
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    // JNA, for calling the C++ code
-    // compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
-    
     compile group: 'io.github.java-graphics', name: 'glm', version: '1.0.1'
 
     if (org.gradle.internal.os.OperatingSystem.current().isLinux()) {
