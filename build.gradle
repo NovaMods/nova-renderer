@@ -32,21 +32,25 @@ jar {
 }
 
 task invokeCMake(type: Exec) {
-    if(hasMSVC()) {
-        if(System.properties['sun.arch.data.model'].toString().contains("64")) {
+    outputs.upToDateWhen {
+        file("./src/main/cpp/CMakeCache.txt").exists()
+    }
+
+    if (hasMSVC()) {
+        if (System.properties['sun.arch.data.model'].toString().contains("64")) {
             println 'Configuring for MSVC 64-bit'
-            commandLine 'cmake', '-G', 'Visual Studio 15 2017 Win64','-DCMAKE_BUILD_TYPE=RELEASE'
+            commandLine 'cmake', '-G', 'Visual Studio 15 2017 Win64', '-DCMAKE_BUILD_TYPE=RELEASE'
         } else {
             println 'Configuring for MSVC 32-bit'
-            commandLine 'cmake', '-G', 'Visual Studio 15','-DCMAKE_BUILD_TYPE=RELEASE'
+            commandLine 'cmake', '-G', 'Visual Studio 15', '-DCMAKE_BUILD_TYPE=RELEASE'
         }
-    } else if(hasGCC()) {
-        if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+    } else if (hasGCC()) {
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
             println 'Configuring for MinGW'
-            commandLine 'cmake', '-G', 'MinGW Makefiles','-DCMAKE_BUILD_TYPE=RELEASE'
+            commandLine 'cmake', '-G', 'MinGW Makefiles', '-DCMAKE_BUILD_TYPE=RELEASE'
         } else {
             println 'Configuring for GCC'
-            commandLine 'cmake', '-G', 'Unix Makefiles','-DCMAKE_BUILD_TYPE=RELEASE'
+            commandLine 'cmake', '-G', 'Unix Makefiles', '-DCMAKE_BUILD_TYPE=RELEASE'
         }
     } else {
         println 'No suitable compiler found'

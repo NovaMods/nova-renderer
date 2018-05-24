@@ -600,8 +600,10 @@ namespace nova {
 
         for(const auto named_binding : resource_bindings) {
             const auto& binding = named_binding.second;
-            LOG(INFO) << "Binding descriptor " << (VkDescriptorSet)descriptors[binding.set] << " for pipeline " << name;
+            LOG(INFO) << "Binding resource " << named_binding.first << " to descriptor " << (VkDescriptorSet)descriptors[binding.set] << " for pipeline " << name;
             buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, binding.set, 1, &descriptors[binding.set], 0, nullptr);
         }
+
+        bound_textures.clear();
     }
 }

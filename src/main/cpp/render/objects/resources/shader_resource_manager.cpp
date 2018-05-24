@@ -71,8 +71,10 @@ namespace nova {
             .setPSetLayouts(layouts.data());
 
         pipeline_data.descriptors = device.allocateDescriptorSets(alloc_info);
-        for(const auto& descriptor : pipeline_data.descriptors) {
-            LOG(INFO) << "Allocated descriptor set " << (VkDescriptorSet)descriptor;
+        for(std::size_t i = 0; i < pipeline_data.descriptors.size(); i++) {
+            const auto& descriptor = pipeline_data.descriptors[i];
+            LOG(INFO) << "Allocated descriptor set " << (VkDescriptorSet)descriptor << " for descriptor "
+                      << (*std::find_if(pipeline_data.resource_bindings.begin(), pipeline_data.resource_bindings.end(), [&](const std::pair<std::string, resource_binding>& binding1){return binding1.second.set == i;})).first;
         }
 
         total_allocated_descriptor_sets += layouts.size();
