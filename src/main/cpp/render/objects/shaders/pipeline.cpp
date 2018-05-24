@@ -557,17 +557,17 @@ namespace nova {
     }
 
     void pipeline_object::bind_resource(const std::string &descriptor_name, const texture2D *tex) {
-        bound_textures[descriptor_name] = tex;
+        textures_to_bind[descriptor_name] = tex;
     }
 
-    void pipeline_object::commit_bindings(vk::CommandBuffer &buffer, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources) const {
+    void pipeline_object::commit_bindings(vk::CommandBuffer &buffer, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources) {
         // The descriptors that have nothing bound to them
         std::vector<vk::WriteDescriptorSet> writes;
 
         for(const auto& named_binding : resource_bindings) {
             const auto &name = named_binding.first;
 
-            const auto have_texture_to_bind = bound_textures.find(name) != bound_textures.end();
+            const auto have_texture_to_bind = textures_to_bind.find(name) != textures_to_bind.end();
             if(!have_texture_to_bind) {
                 LOG(WARNING) << "You don't have anything bound to descriptor " << name << " in pipeline " << this->name;
                 continue;
@@ -582,7 +582,7 @@ namespace nova {
                     .setDstArrayElement(0)
                     .setDescriptorCount(1);
 
-            const auto tex = bound_textures.at(name);
+            const auto tex = textures_to_bind.at(name);
 
             const auto image_info = vk::DescriptorImageInfo()
                     .setImageLayout(tex->get_layout())
@@ -604,6 +604,6 @@ namespace nova {
             buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, binding.set, 1, &descriptors[binding.set], 0, nullptr);
         }
 
-        bound_textures.clear();
+        textures_to_bind.clear();
     }
 }
