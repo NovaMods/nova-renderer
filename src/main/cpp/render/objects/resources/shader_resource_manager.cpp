@@ -162,4 +162,3 @@ namespace nova {
         device.freeDescriptorSets(descriptor_pool, {to_free});
     }
 }
-

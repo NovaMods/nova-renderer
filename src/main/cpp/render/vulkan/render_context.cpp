@@ -129,7 +129,13 @@ namespace nova {
 
     void render_context::select_physical_device() {
         // TODO: More complex logic to try and use a non-Intel GPU if possible (Vulkan book page 9)
-        for(auto &gpu : gpus) {
+        for(auto& gpu : gpus) {
+            if(gpu.props.vendorID == 0x8086 && gpus.size() > 1) {
+                // We found an Intel GPU, but there's other GPUs available on this system so we should skip the Intel
+                // one - other GPUs are all but garaunteed to be more powerful
+                continue;
+            }
+
             uint32_t graphics_idx = 0xFFFFFFFF;
             uint32_t present_idx = 0xFFFFFFFF;
 
