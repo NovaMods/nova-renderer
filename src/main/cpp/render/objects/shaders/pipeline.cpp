@@ -564,6 +564,8 @@ namespace nova {
         // The descriptors that have nothing bound to them
         std::vector<vk::WriteDescriptorSet> writes;
 
+        LOG(INFO) << "There are " << bound_textures.size() << " textures already bound, and " << textures_to_bind.size() << " textures that need to be bound";
+
         for(const auto& named_binding : resource_bindings) {
             const auto &name = named_binding.first;
 
@@ -571,6 +573,16 @@ namespace nova {
             if(!have_texture_to_bind) {
                 LOG(WARNING) << "You don't have anything bound to descriptor " << name << " in pipeline " << this->name;
                 continue;
+            }
+
+            const auto tex = textures_to_bind.at(name);
+            if(bound_textures.find(name) != bound_textures.end()) {
+                LOG(INFO) << "Texture " << bound_textures.at(name)->get_name() << " is bound to descriptor " << name;
+                if(bound_textures.at(name)->get_name() == tex->get_name()) {
+                    // Texture is bound, don't bind it again
+                    LOG(INFO) << "Texture " << tex->get_name() << " is already bound, not binding it again";
+                    continue;
+                }
             }
 
             const resource_binding &binding = named_binding.second;
@@ -582,8 +594,6 @@ namespace nova {
                     .setDstArrayElement(0)
                     .setDescriptorCount(1);
 
-            const auto tex = textures_to_bind.at(name);
-
             const auto image_info = vk::DescriptorImageInfo()
                     .setImageLayout(tex->get_layout())
                     .setImageView(tex->get_image_view())
@@ -594,11 +604,14 @@ namespace nova {
                     .setPImageInfo(&image_info);
 
             writes.push_back(write_ds_cmd);
+
+            bound_textures[named_binding.first] = tex;
+            LOG(INFO) << "bound_textures[" << named_binding.first << "] = " << bound_textures[named_binding.first]->get_name();
         }
 
         device.updateDescriptorSets(writes, {});
 
-        for(const auto named_binding : resource_bindings) {
+        for(const auto& named_binding : resource_bindings) {
             const auto& binding = named_binding.second;
             LOG(INFO) << "Binding resource " << named_binding.first << " to descriptor " << (VkDescriptorSet)descriptors[binding.set] << " for pipeline " << name;
             buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, binding.set, 1, &descriptors[binding.set], 0, nullptr);

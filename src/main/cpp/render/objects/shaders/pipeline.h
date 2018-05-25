@@ -51,6 +51,7 @@ namespace nova {
         std::vector<vk::DescriptorSet> descriptors;
 
         std::unordered_map<std::string, const texture2D*> textures_to_bind;
+        std::unordered_map<std::string, const texture2D*> bound_textures;
 
         /*!
          * \brief Marks
