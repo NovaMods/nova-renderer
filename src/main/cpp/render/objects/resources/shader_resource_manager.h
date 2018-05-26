@@ -32,7 +32,7 @@ namespace nova {
 
         void create_descriptor_sets(std::unordered_map<std::string, std::vector<pipeline_object>>& pipelines);
 
-        void create_descriptor_sets_for_pipeline(pipeline_object& pipeline_data);
+        std::vector<vk::DescriptorSetLayout> create_descriptor_sets_for_pipeline(pipeline_object& pipeline_data);
 
         vk::DescriptorSet create_model_matrix_descriptor();
 

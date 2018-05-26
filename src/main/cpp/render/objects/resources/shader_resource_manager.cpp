@@ -51,9 +51,9 @@ namespace nova {
         device.destroySampler(point_sampler);
     }
 
-    void shader_resource_manager::create_descriptor_sets_for_pipeline(pipeline_object &pipeline_data) {
-        if(pipeline_data.layouts.empty() || !pipeline_data.descriptors.empty()) {
-            // If this pipeline already has descriptors, it shouldn't have any more
+    std::vector<vk::DescriptorSetLayout> shader_resource_manager::create_descriptor_sets_for_pipeline(pipeline_object &pipeline_data) {
+        if(pipeline_data.layouts.empty()) {
+            // If there's no layouts, we're done
             return;
         }
 
@@ -62,23 +62,25 @@ namespace nova {
         auto layouts = std::vector<vk::DescriptorSetLayout>{};
         layouts.reserve(pipeline_data.layouts.size());
 
-        for(uint32_t i = 0; i < pipeline_data.layouts.size(); i++) {
-            layouts.push_back(pipeline_data.layouts.at(i));
+        for(auto layout : pipeline_data.layouts) {
+            layouts.push_back(layout);
         }
         auto alloc_info = vk::DescriptorSetAllocateInfo()
             .setDescriptorPool(descriptor_pool)
             .setDescriptorSetCount(static_cast<uint32_t>(layouts.size()))
             .setPSetLayouts(layouts.data());
 
-        pipeline_data.descriptors = device.allocateDescriptorSets(alloc_info);
-        for(std::size_t i = 0; i < pipeline_data.descriptors.size(); i++) {
-            const auto& descriptor = pipeline_data.descriptors[i];
+        std::vector<vk::DescriptorSet> descriptors = device.allocateDescriptorSets(alloc_info);
+        for(std::size_t i = 0; i < descriptors.size(); i++) {
+            const auto& descriptor = descriptors[i];
             LOG(INFO) << "Allocated descriptor set " << (VkDescriptorSet)descriptor << " for descriptor "
                       << (*std::find_if(pipeline_data.resource_bindings.begin(), pipeline_data.resource_bindings.end(), [&](const std::pair<std::string, resource_binding>& binding1){return binding1.second.set == i;})).first;
         }
 
         total_allocated_descriptor_sets += layouts.size();
         LOG(DEBUG) << "We've created " << total_allocated_descriptor_sets << " sets";
+
+        return descriptors;
     }
 
     void shader_resource_manager::create_point_sampler() {

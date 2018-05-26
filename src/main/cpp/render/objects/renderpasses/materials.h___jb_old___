@@ -15,7 +15,6 @@
 #include <unordered_map>
 #include "../../../utils/smart_enum.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
-#include "../shaders/pipeline.h"
 
 using namespace std::experimental;
 

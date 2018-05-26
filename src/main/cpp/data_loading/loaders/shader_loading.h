@@ -41,7 +41,7 @@ namespace nova {
      *      - A format
      */
     struct shaderpack_data {
-        std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
+        std::unordered_map<std::string, std::vector<pipeline_data>> pipelines_by_pass;
         std::unordered_map<std::string, render_pass> passes;
         std::unordered_map<std::string, texture_resource> dynamic_textures;
         std::vector<material> materials;
@@ -53,7 +53,7 @@ namespace nova {
      * \param shaderpack_name The name of the shaderpack file to load things from
      * \return A map from pass name to pass of all the passes found in that zip
      */
-    std::unordered_map<std::string, pipeline> load_passes_from_zip(const std::string& shaderpack_name);
+    std::unordered_map<std::string, pipeline_data> load_passes_from_zip(const std::string& shaderpack_name);
 
     /*!
      * \brief Loads the source file of all the shaders with the provided names
@@ -73,7 +73,7 @@ namespace nova {
      * \param shaderpack_path The name of the shaderpack folder to load things from
      * \return A map from pipeline name to list of all the pipelines found in that folder
      */
-    std::unordered_map<std::string, std::vector<pipeline>> load_pipelines_from_folder(const fs::path &shaderpack_path);
+    std::unordered_map<std::string, std::vector<pipeline_data>> load_pipelines_from_folder(const fs::path &shaderpack_path);
 
     /*!
      * \brief Loads all the passes that were defined in a given shaderpack's folder
@@ -89,9 +89,9 @@ namespace nova {
 
     std::unordered_map<std::string, render_pass> parse_passes_from_json(const nlohmann::json& json);
 
-    std::vector<pipeline> read_pipeline_files(const fs::path& shaderpack_path);
+    std::vector<pipeline_data> read_pipeline_files(const fs::path& shaderpack_path);
 
-    std::vector<pipeline> parse_pipelines_from_json(const nlohmann::json &pipelines_json);
+    std::vector<pipeline_data> parse_pipelines_from_json(const nlohmann::json &pipelines_json);
 
     /*!
      * \brief Parses a list of texture resource definitions from the provided JSON array
@@ -120,7 +120,7 @@ namespace nova {
      * \param pipelines The list of names of shaders to load
      * \return The loaded shaderpack
      */
-    std::unordered_map<std::string, shader_definition> load_sources_from_folder(const fs::path &shaders_path, const std::vector<pipeline> &pipelines);
+    std::unordered_map<std::string, shader_definition> load_sources_from_folder(const fs::path &shaders_path, const std::vector<pipeline_data> &pipelines);
 
     /*!
      * \brief Extracts the filename from the #include line

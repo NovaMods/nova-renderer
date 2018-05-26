@@ -146,7 +146,7 @@ namespace nova {
         std::string loaded_shaderpack_name;
 
         std::vector<render_pass> passes_list;
-        std::unordered_map<std::string, std::vector<pipeline>> pipelines_by_pass;
+        std::unordered_map<std::string, std::vector<pipeline_data>> pipelines_by_pass;
         std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass;
         std::unordered_map<std::string, std::vector<pipeline_object>> pipelines_by_renderpass;
         std::vector<material> materials;

@@ -16,7 +16,6 @@
 #include <shaderc/shaderc.hpp>
 #include "../../../utils/export.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
-#include "../renderpasses/materials.h"
 #include "../../../data_loading/loaders/shader_loading.h"
 #include "../renderpasses/renderpass_builder.h"
 #include "../resources/texture2D.h"
@@ -24,6 +23,17 @@
 
 namespace nova {
     class shader_resource_manager;
+
+    struct bindable_descriptor_set {
+        vk::WriteDescriptorSet write;
+        bool is_bound = false;
+        bool is_in_use = false;
+    };
+
+    struct descriptor_set_layout {
+        vk::DescriptorSetLayout layout;
+        uint32_t num_bindings;
+    };
 
     struct resource_binding : public vk::DescriptorSetLayoutBinding {
         uint32_t set;
@@ -45,10 +55,9 @@ namespace nova {
         vk::PipelineLayout layout;
         std::unordered_map<std::string, resource_binding> resource_bindings;
 
-        std::unordered_map<uint32_t, vk::DescriptorSetLayout> layouts;
+        std::unordered_map<uint32_t, descriptor_set_layout> layouts;
+        std::unordered_map<uint32_t, std::vector<bindable_descriptor_set>> bound_resources;
         std::vector<vertex_field_enum> attributes;
-
-        std::vector<vk::DescriptorSet> descriptors;
 
         std::unordered_map<std::string, const texture2D*> textures_to_bind;
         std::unordered_map<std::string, const texture2D*> bound_textures;
@@ -69,7 +78,7 @@ namespace nova {
 
     shader_module create_shader_module(const shader_file& source, const shaderc_shader_kind& stages,  const vk::Device& device);
 
-    pipeline_object make_pipeline(const pipeline& pipeline_create_info, const pass_vulkan_information& renderpass_info, vk::Device device);
+    pipeline_object make_pipeline(const pipeline_data& pipeline_create_info, const pass_vulkan_information& renderpass_info, vk::Device device);
 
     void output_compiled_shader(const shader_file &original_shader_file, const std::vector<uint32_t>& spirv);
 

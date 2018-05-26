@@ -6,9 +6,10 @@
 #include "materials.h"
 #include <easylogging++.h>
 #include "../../utils/utils.h"
+#include "../shaders/pipeline.h"
 
 namespace nova {
-    pipeline::pipeline(const std::string& pass_name, const optional<std::string>& parent_pass_name, const nlohmann::json& pass_json) :
+    pipeline_data::pipeline_data(const std::string& pass_name, const optional<std::string>& parent_pass_name, const nlohmann::json& pass_json) :
             name(pass_name), parent_name(parent_pass_name) {
 
         pass = get_json_value<std::string>(pass_json, "pass");
@@ -159,6 +160,13 @@ namespace nova {
             for(const auto& key_val : nlohmann::json::iterator_wrapper(json_node)) {
                 bindings[key_val.key()] = key_val.value().get<std::string>();
             }
+        }
+    }
+
+    void material_pass::create_descriptor_sets_from_pipeline(const pipeline_object &pipeline_to_create_from) {
+        // Allocate descriptor sets for each descriptor set layout
+        for(const auto& descriptor_set_layout :  pipeline_to_create_from.layouts) {
+
         }
     }
 

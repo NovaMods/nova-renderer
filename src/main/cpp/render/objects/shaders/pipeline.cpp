@@ -37,7 +37,7 @@ namespace nova {
         return ret_val;
     }
 
-    pipeline_object make_pipeline(const pipeline& pipeline_create_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
+    pipeline_object make_pipeline(const pipeline_data& pipeline_create_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
         LOG(INFO) << "Making VkPipeline for pipeline " << pipeline_create_info.name;
 
         // Creates a pipeline out of compiled shaders
@@ -586,7 +586,14 @@ namespace nova {
             }
 
             const resource_binding &binding = named_binding.second;
+
+            // Find the first decsriptor set nor in use
+
+
+
             const auto &set = descriptors[binding.set];
+
+
 
             auto write_ds_cmd = vk::WriteDescriptorSet()
                     .setDstSet(set)

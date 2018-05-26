@@ -184,8 +184,8 @@ namespace nova {
      */
     fs::path get_included_file_path(const fs::path &shader_path, const fs::path &included_file_name);
 
-    std::unordered_map<std::string, std::vector<pipeline>> load_pipelines_from_folder(const fs::path &shaderpack_path) {
-        std::vector<pipeline> pipelines = read_pipeline_files(shaderpack_path);
+    std::unordered_map<std::string, std::vector<pipeline_data>> load_pipelines_from_folder(const fs::path &shaderpack_path) {
+        std::vector<pipeline_data> pipelines = read_pipeline_files(shaderpack_path);
         if(pipelines.empty()) {
             LOG(WARNING) << "No pipelines defined by shaderpack. Attempting to guess the intended shaderpack format";
 
@@ -210,7 +210,7 @@ namespace nova {
         auto sources = load_sources_from_folder(shaderpack_path, pipelines);
         LOG(INFO) << "Read all shader sources";
 
-        auto pipelines_by_pass = std::unordered_map<std::string, std::vector<pipeline>>{};
+        auto pipelines_by_pass = std::unordered_map<std::string, std::vector<pipeline_data>>{};
 
         for(auto& pipeline : pipelines) {
             LOG(INFO) << "Trying to get sources for pipeline " << pipeline.name;
@@ -232,7 +232,7 @@ namespace nova {
         return pipelines_by_pass;
     }
 
-    std::vector<pipeline> read_pipeline_files(const fs::path& shaderpack_path) {
+    std::vector<pipeline_data> read_pipeline_files(const fs::path& shaderpack_path) {
         // Nova calls them pipelines, but Bedrock calls them materials. To maintain compatibility Nova loads pipelines
         // from the `materials` folder. Yeah it's kinda gross... but tough
         auto pipelines_path = shaderpack_path / "materials";
@@ -240,7 +240,7 @@ namespace nova {
             LOG(WARNING) << "No pipelines found at path " << pipelines_path << ", returning empty";
             return {};
         }
-        auto pipelines = std::vector<pipeline>{};
+        auto pipelines = std::vector<pipeline_data>{};
         auto pipelines_itr = fs::directory_iterator(pipelines_path);
 
         for(const auto &item : pipelines_itr) {
@@ -280,7 +280,7 @@ namespace nova {
         return filenames;
     }
 
-    std::unordered_map<std::string, shader_definition> load_sources_from_folder(const fs::path &shaders_path, const std::vector<pipeline> &pipelines) {
+    std::unordered_map<std::string, shader_definition> load_sources_from_folder(const fs::path &shaders_path, const std::vector<pipeline_data> &pipelines) {
         std::unordered_map<std::string, shader_definition> sources;
 
         for(const auto& pipeline : pipelines) {
