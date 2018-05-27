@@ -436,7 +436,7 @@ namespace nova {
         LOG(INFO) << "Sorting materials...";
         material_passes_by_pipeline = extract_material_passes(shaderpack.materials);
 
-        shader_resources->create_descriptor_sets(pipelines_by_renderpass);
+        shader_resources->create_descriptor_sets(pipelines_by_renderpass, material_passes_by_pipeline);
 
         // Look for any materials that use a fullscreen pass and insert renderables for them
         insert_special_geometry(material_passes_by_pipeline);

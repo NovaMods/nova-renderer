@@ -24,17 +24,6 @@
 namespace nova {
     class shader_resource_manager;
 
-    struct bindable_descriptor_set {
-        vk::WriteDescriptorSet write;
-        bool is_bound = false;
-        bool is_in_use = false;
-    };
-
-    struct descriptor_set_layout {
-        vk::DescriptorSetLayout layout;
-        uint32_t num_bindings;
-    };
-
     struct resource_binding : public vk::DescriptorSetLayoutBinding {
         uint32_t set;
 
@@ -55,8 +44,7 @@ namespace nova {
         vk::PipelineLayout layout;
         std::unordered_map<std::string, resource_binding> resource_bindings;
 
-        std::unordered_map<uint32_t, descriptor_set_layout> layouts;
-        std::unordered_map<uint32_t, std::vector<bindable_descriptor_set>> bound_resources;
+        std::unordered_map<uint32_t, vk::DescriptorSetLayout> layouts;
         std::vector<vertex_field_enum> attributes;
 
         std::unordered_map<std::string, const texture2D*> textures_to_bind;

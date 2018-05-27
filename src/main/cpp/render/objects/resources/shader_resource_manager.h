@@ -30,9 +30,10 @@ namespace nova {
 
         void create_descriptor_pool(uint32_t num_sets, uint32_t num_buffers, uint32_t num_textures);
 
-        void create_descriptor_sets(std::unordered_map<std::string, std::vector<pipeline_object>>& pipelines);
+        void create_descriptor_sets(const std::unordered_map<std::string, std::vector<pipeline_object>>& pipelines,
+                                            std::unordered_map<std::string, std::vector<material_pass>>& material_passes);
 
-        std::vector<vk::DescriptorSetLayout> create_descriptor_sets_for_pipeline(pipeline_object& pipeline_data);
+        std::vector<vk::DescriptorSet> create_descriptor_sets_for_pipeline(const pipeline_object& pipeline_data);
 
         vk::DescriptorSet create_model_matrix_descriptor();
 
@@ -47,6 +48,12 @@ namespace nova {
         texture_manager& get_texture_manager();
 
         uniform_buffer_store& get_uniform_buffers();
+
+        /*
+         * Something higher-level
+         */
+
+        void update_all_descriptor_sets(const std::unordered_map<std::string, resource_binding>& name_to_descriptor, material_pass& mat);
 
     private:
         vk::Device device;

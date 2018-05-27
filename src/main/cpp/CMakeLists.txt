@@ -204,6 +204,10 @@ endif (UNIX)
 
 
 if(MSVC)
+    if(CMAKE_CXX_FLAGS MATCHES "/Wextra")
+        string(REGEX REPLACE "/Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    endif()
+
     # Force to always compile with W4
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
         string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

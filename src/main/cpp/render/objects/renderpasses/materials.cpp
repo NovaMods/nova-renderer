@@ -163,13 +163,6 @@ namespace nova {
         }
     }
 
-    void material_pass::create_descriptor_sets_from_pipeline(const pipeline_object &pipeline_to_create_from) {
-        // Allocate descriptor sets for each descriptor set layout
-        for(const auto& descriptor_set_layout :  pipeline_to_create_from.layouts) {
-
-        }
-    }
-
     sampler_state decode_sampler_state(const nlohmann::json& json) {
         sampler_state new_sampler_state = {};
 

@@ -51,10 +51,10 @@ namespace nova {
         device.destroySampler(point_sampler);
     }
 
-    std::vector<vk::DescriptorSetLayout> shader_resource_manager::create_descriptor_sets_for_pipeline(pipeline_object &pipeline_data) {
+    std::vector<vk::DescriptorSet> shader_resource_manager::create_descriptor_sets_for_pipeline(const pipeline_object &pipeline_data) {
         if(pipeline_data.layouts.empty()) {
             // If there's no layouts, we're done
-            return;
+            return {};
         }
 
         LOG(INFO) << "Creating descriptor sets for pipeline " << pipeline_data.name;
@@ -71,11 +71,6 @@ namespace nova {
             .setPSetLayouts(layouts.data());
 
         std::vector<vk::DescriptorSet> descriptors = device.allocateDescriptorSets(alloc_info);
-        for(std::size_t i = 0; i < descriptors.size(); i++) {
-            const auto& descriptor = descriptors[i];
-            LOG(INFO) << "Allocated descriptor set " << (VkDescriptorSet)descriptor << " for descriptor "
-                      << (*std::find_if(pipeline_data.resource_bindings.begin(), pipeline_data.resource_bindings.end(), [&](const std::pair<std::string, resource_binding>& binding1){return binding1.second.set == i;})).first;
-        }
 
         total_allocated_descriptor_sets += layouts.size();
         LOG(DEBUG) << "We've created " << total_allocated_descriptor_sets << " sets";
@@ -115,7 +110,7 @@ namespace nova {
         return buffers;
     }
 
-    void shader_resource_manager::create_descriptor_sets(std::unordered_map<std::string, std::vector<pipeline_object>> &pipelines) {
+    void shader_resource_manager::create_descriptor_sets(const std::unordered_map<std::string, std::vector<pipeline_object>> &pipelines, std::unordered_map<std::string, std::vector<material_pass>>& material_passes) {
         uint32_t num_sets = 0, num_textures = 0, num_buffers = 0;
 
         for(const auto &named_pipeline : pipelines) {
@@ -142,9 +137,13 @@ namespace nova {
 
         create_descriptor_pool(10000 + num_sets, 10000 + num_buffers, num_textures);
 
-        for(auto &named_pipeline : pipelines) {
-            for(auto& pipeline : named_pipeline.second) {
-                create_descriptor_sets_for_pipeline(pipeline);
+        for(const auto &named_pipeline : pipelines) {
+            for(const auto& pipeline : named_pipeline.second) {
+                auto& mats = material_passes[pipeline.name];
+                for(auto& mat : mats) {
+                    mat.descriptor_sets = create_descriptor_sets_for_pipeline(pipeline);
+                    update_all_descriptor_sets(pipeline.resource_bindings, mat);
+                }
             }
         }
     }
@@ -162,5 +161,41 @@ namespace nova {
         per_model_descriptor_count--;
         total_allocated_descriptor_sets--;
         device.freeDescriptorSets(descriptor_pool, {to_free});
+    }
+
+    void shader_resource_manager::update_all_descriptor_sets(const std::unordered_map<std::string, resource_binding>& name_to_descriptor, material_pass& mat) {
+        // for each resource:
+        //  - Get its set and binding from the pipeline
+        //  - Update its descriptor set
+
+        std::vector<vk::WriteDescriptorSet> writes;
+
+        for(const auto& binding : mat.bindings) {
+            const auto& descriptor_info = name_to_descriptor[binding.first];
+            const auto& resource_name = binding.second;
+            const auto descriptor_set = mat.descriptor_sets[descriptor_info.set];
+
+            auto write = vk::WriteDescriptorSet()
+                    .setDstSet(descriptor_set)
+                    .setDstBinding(descriptor_info.binding)
+                    .setDescriptorCount(1)
+                    .setDstArrayElement(0);
+
+            if(textures.is_texture_known(resource_name)) {
+                auto& texture = textures.get_texture(resource_name);
+
+                auto image_info = vk::DescriptorImageInfo()
+                        .setImageView(texture.get_image_view())
+                        .setImageLayout(texture.get_layout())
+                        .setSampler(get_point_sampler());
+
+                write.setPImageInfo(&image_info)
+                     .setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
+            }
+
+            writes.push_back(write);
+        }
+
+        device.updateDescriptorSets(writes, {});
     }
 }

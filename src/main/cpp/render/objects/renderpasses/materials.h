@@ -548,11 +548,11 @@ namespace nova {
         std::string pipeline;
         std::unordered_map<std::string, std::string> bindings;
 
-        std::unordered_map<uint32_t, vk::WriteDescriptorSet> descriptor_sets;
+        std::vector<vk::DescriptorSet> descriptor_sets;
 
         explicit material_pass(const nlohmann::json& json);
 
-        void create_descriptor_sets_from_pipeline(const pipeline_object& pipeline_to_create_from);
+        void update_all_descriptor_sets(const std::unordered_map<std::string, resource_binding>& name_to_descriptor, std::shared_ptr<shader_resource_manager> resources);
     };
 
     struct material {
