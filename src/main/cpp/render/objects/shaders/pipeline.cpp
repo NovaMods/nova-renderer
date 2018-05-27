@@ -555,11 +555,6 @@ namespace nova {
             .setBinding(binding)
             .setPImmutableSamplers(pImmutableSamplers);
     }
-
-    void pipeline_object::bind_resource(const std::string &descriptor_name, const texture2D *tex) {
-        textures_to_bind[descriptor_name] = tex;
-    }
-
     void pipeline_object::commit_bindings(vk::CommandBuffer &buffer, vk::Device device, std::shared_ptr<shader_resource_manager> shader_resources) {
         // The descriptors that have nothing bound to them
         std::vector<vk::WriteDescriptorSet> writes;

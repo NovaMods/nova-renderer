@@ -49,15 +49,6 @@ namespace nova {
 
         std::unordered_map<std::string, const texture2D*> textures_to_bind;
         std::unordered_map<std::string, const texture2D*> bound_textures;
-
-        /*!
-         * \brief Marks
-         * \param descriptor_name
-         * \param tex
-         */
-        void bind_resource(const std::string& descriptor_name, const texture2D* tex);
-
-        void commit_bindings(vk::CommandBuffer &device, vk::Device shader_resources, std::shared_ptr<shader_resource_manager> ptr);
     };
 
     std::unordered_map<std::string, std::vector<pipeline_object>> make_pipelines(const shaderpack_data& shaderpack,

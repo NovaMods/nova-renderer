@@ -142,7 +142,7 @@ namespace nova {
                 auto& mats = material_passes[pipeline.name];
                 for(auto& mat : mats) {
                     mat.descriptor_sets = create_descriptor_sets_for_pipeline(pipeline);
-                    update_all_descriptor_sets(pipeline.resource_bindings, mat);
+                    update_all_descriptor_sets(mat, pipeline.resource_bindings);
                 }
             }
         }
@@ -163,7 +163,7 @@ namespace nova {
         device.freeDescriptorSets(descriptor_pool, {to_free});
     }
 
-    void shader_resource_manager::update_all_descriptor_sets(const std::unordered_map<std::string, resource_binding>& name_to_descriptor, material_pass& mat) {
+    void shader_resource_manager::update_all_descriptor_sets(const material_pass &mat, const std::unordered_map<std::string, resource_binding> &name_to_descriptor) {
         // for each resource:
         //  - Get its set and binding from the pipeline
         //  - Update its descriptor set

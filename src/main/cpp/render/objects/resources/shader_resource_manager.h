@@ -53,7 +53,14 @@ namespace nova {
          * Something higher-level
          */
 
-        void update_all_descriptor_sets(const std::unordered_map<std::string, resource_binding>& name_to_descriptor, material_pass& mat);
+        /*!
+         * \brief Updates all the descriptor sets belonging to the provided material
+         *
+         * The intended use case is updating a material's descriptor sets when the material is just loaded, but this
+         * method will work fine if you need to change what's bound to a material in the middle of a frame - which might
+         * happen, depending on what the scripting allows
+         */
+        void update_all_descriptor_sets(const material_pass &mat, const std::unordered_map<std::string, resource_binding> &name_to_descriptor);
 
     private:
         vk::Device device;
