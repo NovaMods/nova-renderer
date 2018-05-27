@@ -63,7 +63,7 @@ namespace nova {
         layouts.reserve(pipeline_data.layouts.size());
 
         for(auto layout : pipeline_data.layouts) {
-            layouts.push_back(layout);
+            layouts.push_back(layout.second);
         }
         auto alloc_info = vk::DescriptorSetAllocateInfo()
             .setDescriptorPool(descriptor_pool)
@@ -171,7 +171,7 @@ namespace nova {
         std::vector<vk::WriteDescriptorSet> writes;
 
         for(const auto& binding : mat.bindings) {
-            const auto& descriptor_info = name_to_descriptor[binding.first];
+            const auto& descriptor_info = name_to_descriptor.at(binding.first);
             const auto& resource_name = binding.second;
             const auto descriptor_set = mat.descriptor_sets[descriptor_info.set];
 

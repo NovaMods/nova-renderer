@@ -297,7 +297,7 @@ namespace nova {
         }
     }
 
-    void nova_renderer::render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, pipeline_object &pipeline_data) {
+    void nova_renderer::render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, pipeline_object &pipeline) {
         const auto& meshes_for_mat = meshes->get_meshes_for_material(pass.material_name);
         if(meshes_for_mat.empty()) {
             LOG(INFO) << "No meshes available for material " << pass.material_name;
@@ -306,39 +306,26 @@ namespace nova {
 
         LOG(INFO) << "Beginning material " << pass.material_name;
 
-        auto& textures = shader_resources->get_texture_manager();
-        auto& buffers = shader_resources->get_uniform_buffers();
-
         auto per_model_buffer_binding = std::string{};
 
-        // Bind the descriptor sets for this material
+        const auto& pipeline_layout = pipeline.layout;
+
+        // Find the per-model UBO
         for(const auto& binding : pass.bindings) {
-            const auto& descriptor_name = binding.first;
-            const auto& resource_name = binding.second;
-
-            if(textures.is_texture_known(resource_name)) {
-                pipeline_data.bind_resource(descriptor_name, &textures.get_texture(resource_name));
-
-            } else if(buffers.is_buffer_known(resource_name)) {
-                // bind as a buffer
-
-                if(resource_name != "NovaPerModelUBO") {
-                    // Bind dis
-                } else {
-                    // Bind dis later
-                    per_model_buffer_binding = descriptor_name;
-                }
-
-            } else {
-                LOG(ERROR) << "Material " << pass.material_name << " wants to use resource " << resource_name << " for pipeline " << pass.pipeline << " but that resource doesn't exist! Check your spelling";
+            const auto &descriptor_name = binding.first;
+            const auto &resource_name = binding.second;
+            if(resource_name == "NovaPerModelUBO") {
+                // Bind dis later
+                per_model_buffer_binding = descriptor_name;
+                break;
             }
         }
 
-        pipeline_data.commit_bindings(buffer, context->device, shader_resources);
+        buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, pass.descriptor_sets, {});
 
         LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
         for(const auto& mesh : meshes_for_mat) {
-            render_mesh(mesh, buffer, pipeline_data, per_model_buffer_binding);
+            render_mesh(mesh, buffer, pipeline, per_model_buffer_binding);
         }
     }
 

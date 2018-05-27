@@ -155,3 +155,5 @@ build/**
 **.lik
 **.pdb
 CMakeSettings.json
+
+**.h___jb_old___

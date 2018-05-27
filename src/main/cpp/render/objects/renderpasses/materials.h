@@ -15,7 +15,6 @@
 #include <unordered_map>
 #include "../../../utils/smart_enum.h"
 #include "../../../data_loading/loaders/shader_source_structs.h"
-#include "../shaders/pipeline.h"
 
 using namespace std::experimental;
 
@@ -551,8 +550,6 @@ namespace nova {
         std::vector<vk::DescriptorSet> descriptor_sets;
 
         explicit material_pass(const nlohmann::json& json);
-
-        void update_all_descriptor_sets(const std::unordered_map<std::string, resource_binding>& name_to_descriptor, std::shared_ptr<shader_resource_manager> resources);
     };
 
     struct material {
