@@ -63,7 +63,7 @@ namespace nova {
         layouts.reserve(pipeline_data.layouts.size());
 
         for(int32_t i = 0; i < pipeline_data.layouts.size(); i++) {
-            layouts.push_back(pipeline_data.layouts[i]);
+            layouts.push_back(pipeline_data.layouts.at(i));
         }
 
         auto alloc_info = vk::DescriptorSetAllocateInfo()
