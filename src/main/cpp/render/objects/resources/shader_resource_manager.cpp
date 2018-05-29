@@ -62,7 +62,7 @@ namespace nova {
         auto layouts = std::vector<vk::DescriptorSetLayout>{};
         layouts.reserve(pipeline_data.layouts.size());
 
-        for(int32_t i = 0; i < pipeline_data.layouts.size(); i++) {
+        for(uint32_t i = 0; i < pipeline_data.layouts.size(); i++) {
             layouts.push_back(pipeline_data.layouts.at(i));
         }
 
