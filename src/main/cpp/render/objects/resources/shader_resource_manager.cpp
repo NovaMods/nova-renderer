@@ -62,9 +62,10 @@ namespace nova {
         auto layouts = std::vector<vk::DescriptorSetLayout>{};
         layouts.reserve(pipeline_data.layouts.size());
 
-        for(auto layout : pipeline_data.layouts) {
-            layouts.push_back(layout.second);
+        for(int32_t i = 0; i < pipeline_data.layouts.size(); i++) {
+            layouts.push_back(pipeline_data.layouts[i]);
         }
+
         auto alloc_info = vk::DescriptorSetAllocateInfo()
             .setDescriptorPool(descriptor_pool)
             .setDescriptorSetCount(static_cast<uint32_t>(layouts.size()))
@@ -140,7 +141,7 @@ namespace nova {
         for(const auto &named_pipeline : pipelines) {
             for(const auto& pipeline : named_pipeline.second) {
                 auto& mats = material_passes[pipeline.name];
-                for(auto& mat : mats) {
+                for(material_pass& mat : mats) {
                     mat.descriptor_sets = create_descriptor_sets_for_pipeline(pipeline);
                     update_all_descriptor_sets(mat, pipeline.resource_bindings);
                 }
@@ -174,6 +175,7 @@ namespace nova {
             const auto& descriptor_info = name_to_descriptor.at(binding.first);
             const auto& resource_name = binding.second;
             const auto descriptor_set = mat.descriptor_sets[descriptor_info.set];
+            bool is_known = false;
 
             auto write = vk::WriteDescriptorSet()
                     .setDstSet(descriptor_set)
@@ -182,6 +184,8 @@ namespace nova {
                     .setDstArrayElement(0);
 
             if(textures.is_texture_known(resource_name)) {
+                is_known = true;
+
                 auto& texture = textures.get_texture(resource_name);
 
                 auto image_info = vk::DescriptorImageInfo()
@@ -191,9 +195,13 @@ namespace nova {
 
                 write.setPImageInfo(&image_info)
                      .setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
+
+                LOG(INFO) << "Binding texture " << texture.get_name() << " to descriptor (set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
             }
 
-            writes.push_back(write);
+            if(is_known) {
+                writes.push_back(write);
+            }
         }
 
         device.updateDescriptorSets(writes, {});

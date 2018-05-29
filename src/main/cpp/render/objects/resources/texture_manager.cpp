@@ -298,6 +298,7 @@ namespace nova {
 
                 auto pixel_format = get_vk_format_from_pixel_format(format.pixel_format);
                 auto tex = texture2D(dimensions, pixel_format, usage, context);
+                tex.set_name(texture_name);
 
                 auto new_tex_index = dynamic_textures.size();
                 dynamic_textures.push_back(tex);

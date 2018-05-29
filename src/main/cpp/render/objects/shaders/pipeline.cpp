@@ -126,13 +126,20 @@ namespace nova {
         graphics_pipeline_create_info.stageCount = static_cast<uint32_t>(stage_create_infos.size());
         graphics_pipeline_create_info.pStages = stage_create_infos.data();
 
+        std::stringstream ss;
+        ss << "Adding layouts\n";
 
         std::unordered_map<uint32_t, std::vector<vk::DescriptorSetLayoutBinding>> bindings_for_set;
         for(const auto& layouts_for_set : pipeline_data.resource_bindings) {
-            const auto& layout = layouts_for_set.second;
+            const resource_binding& layout = layouts_for_set.second;
 
             bindings_for_set[layout.set].push_back(layout.to_vk_binding());
+            ss << "\t(set=" << layout.set << " binding=" << layout.binding << " type=" << vk::to_string(layout.descriptorType) << ")\n";
         }
+
+        LOG(DEBUG) << ss.str();
+        ss.str("");
+        ss << "Creating descriptor set layouts\n";
 
         for(const auto& layouts_for_set : bindings_for_set) {
             const auto &layouts = layouts_for_set.second;
@@ -141,23 +148,31 @@ namespace nova {
                     .setPBindings(layouts.data());
 
             pipeline_data.layouts[layouts_for_set.first] = device.createDescriptorSetLayout(dsl_create_info);
+            ss << "\t" << (VkDescriptorSetLayout)pipeline_data.layouts[layouts_for_set.first] << " for set " << layouts_for_set.first << "\n";
         }
+
+        LOG(DEBUG) << ss.str();
+        ss.str("");
+        ss << "Adding descriptor set layouts\n";
 
         // Order all the descriptor set layouts by set, checking for discontinuities
 
         const auto& layouts = pipeline_data.layouts;
         auto ordered_layouts = std::vector<vk::DescriptorSetLayout>{};
-        for(size_t i = 0; i < layouts.size(); i++) {
+        for(uint32_t i = 0; i < layouts.size(); i++) {
             if(layouts.find(i) == layouts.end()) {
                 LOG(WARNING) << "Discontinuity detected! You're skipping descriptor set " << i << " and this isn't supported because honestly I don't know how to deal with it. Nova won't load pipeline " << pipeline_create_info.name;
                 return {};
             }
 
             ordered_layouts.push_back(layouts.at(i));
+            ss << "\t" << (VkDescriptorSetLayout)layouts.at(i) << " for set " << i << "\n";
         }
+        ss << "to pipeline layout";
+        LOG(DEBUG) << ss.str();
 
         auto pipeline_layout_create_info = vk::PipelineLayoutCreateInfo()
-            .setSetLayoutCount(ordered_layouts.size())
+            .setSetLayoutCount(static_cast<uint32_t>(ordered_layouts.size()))
             .setPSetLayouts(ordered_layouts.data());
 
         auto pipeline_layout = device.createPipelineLayout(pipeline_layout_create_info);
