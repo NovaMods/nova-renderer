@@ -35,8 +35,7 @@ namespace nova {
         atlases.clear();
         locations.clear();
         auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
-        atlases["lightmap"] = texture2D(vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, usage, context);
-        atlases["lightmap"].set_name("lightmap");
+        atlases["lightmap"] = texture2D("lightmap", vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, usage, context);
         LOG(INFO) << "Created lightmap";
 
         clear_dynamic_textures();
@@ -45,10 +44,9 @@ namespace nova {
     void texture_manager::add_texture(mc_atlas_texture &new_texture) {
         LOG(INFO) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
         std::string texture_name = new_texture.name;
-        LOG(TRACE) << "Saved texture name";
         auto dimensions = vk::Extent2D{new_texture.width, new_texture.height};
         auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
-        texture2D texture{dimensions, vk::Format::eR8G8B8A8Unorm, usage, context};
+        texture2D texture(texture_name, dimensions, vk::Format::eR8G8B8A8Unorm, usage, context);
         LOG(TRACE) << "Created texture object";
         texture.set_name(texture_name);
 
@@ -287,7 +285,7 @@ namespace nova {
                     dimensions.height *= format.height;
                 }
 
-                auto usage = vk::ImageUsageFlagBits::eInputAttachment | vk::ImageUsageFlagBits::eSampled;
+                auto usage = vk::ImageUsageFlagBits::eInputAttachment | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
                 if(format.pixel_format == pixel_format_enum::DepthStencil || format.pixel_format == pixel_format_enum::Depth) {
                     usage |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
 
@@ -296,7 +294,8 @@ namespace nova {
                 }
 
                 auto pixel_format = get_vk_format_from_pixel_format(format.pixel_format);
-                auto tex = texture2D(dimensions, pixel_format, usage, context);
+                LOG(DEBUG) << "Creating a texture with nova format " << pixel_format_enum::to_string(format.pixel_format) << " and Vulkan format " << vk::to_string(pixel_format);
+                auto tex = texture2D(std::to_string(dynamic_textures.size()), dimensions, pixel_format, usage, context);
                 tex.set_name(texture_name);
 
                 auto new_tex_index = dynamic_textures.size();

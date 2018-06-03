@@ -38,6 +38,8 @@ set(BUILD_ICD OFF)
 
 set(SHADERC_SKIP_TESTS TRUE)
 
+set(BUILD_SHARED_LIBS TRUE)
+
 # need to compile GLFW and JSON
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
 add_subdirectory(${3RD_PARTY_DIR}/json)

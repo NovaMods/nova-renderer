@@ -12,9 +12,10 @@
 #include "../../nova_renderer.h"
 
 namespace nova {
-    texture2D::texture2D(vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage, std::shared_ptr<render_context> context) : context(context) {
-        this->format = format;
+    texture2D::texture2D(const std::string name, vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage, std::shared_ptr<render_context> context) : context(context), name(name), format(format) {
         size = dimensions;
+
+        LOG(TRACE) << "Creating image " << name << " with usage " << vk::to_string(usage);
 
         vk::ImageCreateInfo image_create_info = {};
         image_create_info.samples = vk::SampleCountFlagBits::e1;
@@ -39,20 +40,28 @@ namespace nova {
             LOG(FATAL) << "Could not create image";
         }
 
-        LOG(INFO) << "Created image " << (VkImage)image;
+        LOG(DEBUG) << "Created image " << (VkImage)image;
 
         vk::ImageSubresourceRange subresource_range = {};
         subresource_range.layerCount = 1;
         subresource_range.baseArrayLayer = 0;
         subresource_range.levelCount = 1;
         subresource_range.baseMipLevel = 0;
-        if(usage | vk::ImageUsageFlagBits::eColorAttachment) {
-            subresource_range.aspectMask = vk::ImageAspectFlagBits::eColor;
+        subresource_range.aspectMask = vk::ImageAspectFlags();
+        if((usage & vk::ImageUsageFlagBits::eColorAttachment) != vk::ImageUsageFlagBits()) {
+            subresource_range.aspectMask |= vk::ImageAspectFlagBits::eColor;
+            LOG(TRACE) << "Using color aspect";
         }
 
-        if(usage | vk::ImageUsageFlagBits::eDepthStencilAttachment){
-            subresource_range.aspectMask = vk::ImageAspectFlagBits::eDepth;
+        if((usage & vk::ImageUsageFlagBits::eDepthStencilAttachment) != vk::ImageUsageFlagBits()) {
+            subresource_range.aspectMask |= vk::ImageAspectFlagBits::eDepth;
+            LOG(TRACE) << "Using depth aspect";
+
+        } else if((usage & vk::ImageUsageFlagBits::eSampled) != vk::ImageUsageFlagBits()) {
+            subresource_range.aspectMask |= vk::ImageAspectFlagBits::eColor;
+            LOG(TRACE) << "Using sampled color aspect";
         }
+
 
         vk::ImageViewCreateInfo img_view_create_info = {};
         img_view_create_info.image = image;

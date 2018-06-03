@@ -128,7 +128,7 @@ namespace nova {
                         num_buffers++;
 
                     } else if(binding.descriptorType == vk::DescriptorType::eCombinedImageSampler) {
-                        num_textures++;
+                        num_textures += material_passes.size();
 
                     } else {
                         LOG(WARNING) << "Descriptor type " << vk::to_string(binding.descriptorType)
