@@ -34,7 +34,7 @@ namespace nova {
 
         atlases.clear();
         locations.clear();
-        auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+        auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
         atlases["lightmap"] = texture2D("lightmap", vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, usage, context);
         LOG(INFO) << "Created lightmap";
 
@@ -45,7 +45,7 @@ namespace nova {
         LOG(INFO) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
         std::string texture_name = new_texture.name;
         auto dimensions = vk::Extent2D{new_texture.width, new_texture.height};
-        auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc;
+        auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
         texture2D texture(texture_name, dimensions, vk::Format::eR8G8B8A8Unorm, usage, context);
         LOG(TRACE) << "Created texture object";
         texture.set_name(texture_name);

@@ -20,7 +20,6 @@
 #include "swapchain_manager.h"
 
 namespace nova {
-    class vk_shader_program;
     class uniform_buffer_store;
     class glfw_vk_window;
     class mesh_store;

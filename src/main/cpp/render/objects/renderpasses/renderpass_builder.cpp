@@ -96,7 +96,7 @@ namespace nova {
                                 .setFormat(swapchain->get_swapchain_format())
                                 .setSamples(vk::SampleCountFlagBits::e1)
                                 .setLoadOp(vk::AttachmentLoadOp::eDontCare)
-                                .setInitialLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                                .setInitialLayout(vk::ImageLayout::eUndefined)
                                 .setFinalLayout(vk::ImageLayout::ePresentSrcKHR)
                                 .setStoreOp(vk::AttachmentStoreOp::eStore);
 
@@ -125,7 +125,7 @@ namespace nova {
                         color_attachment.format = texture.get_format();
                         color_attachment.samples = vk::SampleCountFlagBits::e1;
                         color_attachment.loadOp = vk::AttachmentLoadOp::eDontCare;
-                        color_attachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+                        color_attachment.initialLayout = vk::ImageLayout::eUndefined;
                         color_attachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
                         color_attachment.storeOp = vk::AttachmentStoreOp::eStore;
 
@@ -148,7 +148,7 @@ namespace nova {
                 .setFormat(depth_tex.get_format())
                 .setSamples(vk::SampleCountFlagBits::e1)
                 .setLoadOp(vk::AttachmentLoadOp::eLoad)
-                .setInitialLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+                .setInitialLayout(vk::ImageLayout::eUndefined)
                 .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
                 .setStoreOp(vk::AttachmentStoreOp::eStore)
                 .setStencilLoadOp(vk::AttachmentLoadOp::eLoad)
