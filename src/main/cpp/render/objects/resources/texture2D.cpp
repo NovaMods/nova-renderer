@@ -46,11 +46,12 @@ namespace nova {
         subresource_range.baseArrayLayer = 0;
         subresource_range.levelCount = 1;
         subresource_range.baseMipLevel = 0;
-        if(usage | vk::ImageUsageFlagBits::eDepthStencilAttachment) {
-            subresource_range.aspectMask = vk::ImageAspectFlagBits::eDepth;
-
-        } else {
+        if(usage | vk::ImageUsageFlagBits::eColorAttachment) {
             subresource_range.aspectMask = vk::ImageAspectFlagBits::eColor;
+        }
+
+        if(usage | vk::ImageUsageFlagBits::eDepthStencilAttachment){
+            subresource_range.aspectMask = vk::ImageAspectFlagBits::eDepth;
         }
 
         vk::ImageViewCreateInfo img_view_create_info = {};

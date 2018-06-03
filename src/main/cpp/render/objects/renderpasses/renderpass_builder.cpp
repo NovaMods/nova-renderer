@@ -201,7 +201,6 @@ namespace nova {
                     const auto &tex = textures.get_texture(output_name);
                     attachments.push_back(tex.get_image_view());
                     framebuffer_size = tex.get_size();
-                    writes_to_backbuffer = true;
 
                 } else {
                     if(outputs.size() > 1) {
@@ -209,6 +208,8 @@ namespace nova {
                                    << " attachments, one of which is the backbuffer. If you're writing to the backbuffer, Nova doesn't allow you to write to any other textures";
                         return {};
                     }
+
+                    writes_to_backbuffer = true;
                 }
             }
         }
