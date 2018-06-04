@@ -207,7 +207,7 @@ namespace nova {
 
             if(pass.texture_outputs) {
                 for(const auto &output : pass.texture_outputs.value()) {
-                    auto& tex_range = resource_used_range[output];
+                    auto& tex_range = resource_used_range[output.name];
 
                     if(pass_idx < tex_range.first_write_pass) {
                         tex_range.first_write_pass = pass_idx;
@@ -216,8 +216,8 @@ namespace nova {
                         tex_range.last_write_pass = pass_idx;
                     }
 
-                    if(std::find(resources_in_order.begin(), resources_in_order.end(), output) == resources_in_order.end()) {
-                        resources_in_order.push_back(output);
+                    if(std::find(resources_in_order.begin(), resources_in_order.end(), output.name) == resources_in_order.end()) {
+                        resources_in_order.push_back(output.name);
                     }
                 }
             }

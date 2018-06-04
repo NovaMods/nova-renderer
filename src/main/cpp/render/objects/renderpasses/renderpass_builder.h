@@ -17,7 +17,7 @@ namespace nova {
         vk::Framebuffer frameBuffer;
         vk::Extent2D framebuffer_size;
         uint32_t num_attachments;
-        std::vector<std::string> texture_outputs;
+        std::vector<texture_attachment> texture_outputs;
     };
 
     std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, texture_manager& textures,

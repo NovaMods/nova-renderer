@@ -44,10 +44,10 @@ namespace nova {
         auto resource_to_write_pass = std::unordered_map<std::string, std::vector<std::string>>{};
 
         for(const auto& item : passes) {
-            auto& pass = item.second;
+            const render_pass& pass = item.second;
 
             for(const auto& output : pass.texture_outputs.value()) {
-                resource_to_write_pass[output].push_back(pass.name);
+                resource_to_write_pass[output.name].push_back(pass.name);
             }
         }
 

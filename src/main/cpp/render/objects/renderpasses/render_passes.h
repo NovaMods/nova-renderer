@@ -102,6 +102,25 @@ namespace nova {
     };
 
     /*!
+     * \brief A description of a texture that a render pass outputs to
+     */
+    struct texture_attachment {
+        /*!
+         * \brief The name of the texture
+         */
+        std::string name;
+
+        /*!
+         * \brief Whether to clear it
+         *
+         * If the texture is a depth buffer, it gets cleared to 1
+         * If the texture is a stencil buffer, it gets cleared to 0xFFFFFFFF
+         * If the texture is a color buffer, it gets cleared to (0, 0, 0, 0)
+         */
+        bool clear = false;
+    };
+
+    /*!
      * \brief A pass over the scene
      *
      * A pass has a few things:
@@ -138,11 +157,11 @@ namespace nova {
         /*!
          * \brief The textures that this pass will write to
          */
-        optional<std::vector<std::string>> texture_outputs;
+        optional<std::vector<texture_attachment>> texture_outputs;
         /*!
          * \brief The depth texture this pass will write to
          */
-        optional<std::string> depth_texture;
+        optional<texture_attachment> depth_texture;
 
         /*!
          * \brief Parses the provided JSON into a render pass

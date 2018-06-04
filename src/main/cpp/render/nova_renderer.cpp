@@ -192,12 +192,32 @@ namespace nova {
                 .setRenderArea({{0, 0}, renderpass_for_pass.framebuffer_size});
 
         vk::Framebuffer framebuffer;
-        if(renderpass_for_pass.texture_outputs[0] == "Backbuffer") {
+        if(renderpass_for_pass.texture_outputs[0].name == "Backbuffer") {
             framebuffer = swapchain->get_current_framebuffer();
 
         } else {
             framebuffer = renderpass_for_pass.frameBuffer;
         }
+
+        std::vector<texture_attachment> attachments = pass.texture_outputs.value_or(std::vector<texture_attachment>());
+        if(pass.depth_texture) {
+            attachments.push_back(pass.depth_texture.value());
+        }
+
+        vk::ClearColorValue clear_color;
+        clear_color.setFloat32({0, 0, 0, 0});
+
+        std::vector<vk::ClearValue> clear_values;
+        clear_values.resize(attachments.size());
+        // Clear any textures we need to clear
+        for(size_t i = 0; i < attachments.size(); i++) {
+            clear_values[i] = vk::ClearValue()
+                    .setColor(clear_color)
+                    .setDepthStencil({0, 0xFFFFFFFF});
+        }
+
+        begin_pass.setClearValueCount(static_cast<uint32_t>(clear_values.size()))
+                .setPClearValues(clear_values.data());
 
         begin_pass.setFramebuffer(framebuffer);
         LOG(INFO) << "Using framebuffer " << (VkFramebuffer)framebuffer;

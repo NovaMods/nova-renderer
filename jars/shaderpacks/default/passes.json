@@ -1,12 +1,25 @@
 [
     {
         "name": "Forward",
-        "textureOutputs": ["LitWorld"],
-        "depthTexture": "DepthBuffer"
+        "textureOutputs": [
+            {
+                "name": "LitWorld",
+                "clear": true
+            }
+        ],
+        "depthTexture": {
+            "name": "DepthBuffer",
+            "clear": true
+        }
     }, 
     {
         "name": "Final",
         "textureInputs": ["LitWorld"],
-        "textureOutputs": ["Backbuffer"]
+        "textureOutputs": [
+            {
+                "name": "Backbuffer",
+                "clear": false
+            }
+        ]
     }
 ]

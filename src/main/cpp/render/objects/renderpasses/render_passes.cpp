@@ -22,14 +22,39 @@ namespace nova {
             }
             return vec;
         });
-        texture_outputs = get_json_value<std::vector<std::string>>(pass_json, "textureOutputs", [&](const nlohmann::json& texture_outputs_json) {
-            auto vec = std::vector<std::string>{};
+        texture_outputs = get_json_value<std::vector<texture_attachment>>(pass_json, "textureOutputs", [&](const nlohmann::json& texture_outputs_json) {
+            auto vec = std::vector<texture_attachment>{};
             for(const auto& val : texture_outputs_json) {
-                vec.push_back(val.get<std::string>());
+                auto name_maybe = get_json_value<std::string>(val, "name");
+                auto clear_maybe = get_json_value<bool>(val, "clear");
+
+                if(!name_maybe) {
+                    LOG(ERROR) << "Color attachment in pass " << name << " does not have a name!";
+                    name_maybe = optional<std::string>("missing_texture");
+                }
+
+                if(!clear_maybe) {
+                    clear_maybe = optional<bool>(false);
+                }
+                vec.push_back(texture_attachment{name_maybe.value(), clear_maybe.value()});
             }
             return vec;
         });
-        depth_texture = get_json_value<std::string>(pass_json, "depthTexture");
+
+        depth_texture = get_json_value<texture_attachment>(pass_json, "depthTexture", [&](const nlohmann::json& val) {
+            auto name_maybe = get_json_value<std::string>(val, "name");
+            auto clear_maybe = get_json_value<bool>(val, "clear");
+
+            if(!name_maybe) {
+                LOG(ERROR) << "Depth attachment in pass " << name << " does not have a name!";
+                name_maybe = optional<std::string>("missing_texture");
+            }
+
+            if(!clear_maybe) {
+                clear_maybe = optional<bool>(false);
+            }
+            return texture_attachment{name_maybe.value(), clear_maybe.value()};
+        });
     }
 
     texture_resource::texture_resource(const nlohmann::json &json) {
