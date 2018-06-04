@@ -29,6 +29,7 @@
 
 INITIALIZE_EASYLOGGINGPP
 
+// Thank you Visual Studio, this was a totally good thing you did yup
 #ifdef max
 #undef max
 #endif
@@ -519,7 +520,8 @@ namespace nova {
         for(const auto& passes_for_pipeline : material_passes_by_pipeline) {
             for(const material_pass& pass : passes_for_pipeline.second) {
                 const auto& mat = std::find_if(materials.begin(), materials.end(), [&](const material& mat) {return mat.name == pass.material_name;});
-                if((*mat).geometry_filter.find("geometry_type::fullscreen_pass") != std::string::npos) {
+                if((*mat).geometry_filter.find("geometry_type::fullscreen_quad") != std::string::npos) {
+                    LOG(DEBUG) << "Inserting a fullscreen quad for material " << (*mat).name;
                     meshes->add_fullscreen_quad_for_material((*mat).name);
                 }
             }

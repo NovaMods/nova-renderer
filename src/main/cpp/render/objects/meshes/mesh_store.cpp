@@ -206,6 +206,12 @@ namespace nova {
     }
 
     void mesh_store::add_fullscreen_quad_for_material(const std::string &material_name) {
+        if(has_fullscreen_quad.find(material_name) != has_fullscreen_quad.end()) {
+            if(has_fullscreen_quad.at(material_name)) {
+                return;
+            }
+        }
+
         union f2i {
             float f;
             int i;
@@ -262,5 +268,7 @@ namespace nova {
         geometry_to_upload_lock.lock();
         geometry_to_upload.emplace(material_name, quad);
         geometry_to_upload_lock.unlock();
+
+        has_fullscreen_quad[material_name] = true;
     }
 }

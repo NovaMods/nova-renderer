@@ -105,6 +105,8 @@ namespace nova {
          * \param filter The function to use to decide which (if any) objects to remove
          */
         void remove_render_objects(std::function<bool(render_object&)> filter);
+
+        std::unordered_map<std::string, bool> has_fullscreen_quad;
     };
 
 }
