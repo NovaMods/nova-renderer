@@ -213,7 +213,7 @@ namespace nova {
         for(size_t i = 0; i < attachments.size(); i++) {
             clear_values[i] = vk::ClearValue()
                     .setColor(clear_color)
-                    .setDepthStencil({0, 0xFFFFFFFF});
+                    .setDepthStencil({1, 0xFFFFFFFF});
         }
 
         begin_pass.setClearValueCount(static_cast<uint32_t>(clear_values.size()))
