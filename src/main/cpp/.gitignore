@@ -157,3 +157,5 @@ build/**
 CMakeSettings.json
 
 **.h___jb_old___
+**.rdc
+**.stackdump
