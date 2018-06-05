@@ -189,7 +189,25 @@ namespace nova {
         uint32_t pass_idx = 0;
         for(const auto& pass : passes) {
             if(pass.texture_inputs) {
-                for(const auto &input : pass.texture_inputs.value()) {
+                const input_textures& all_inputs = pass.texture_inputs.value();
+                // color attachments
+                for(const auto &input : all_inputs.color_attachments) {
+                    auto& tex_range = resource_used_range[input];
+
+                    if(pass_idx < tex_range.first_write_pass) {
+                        tex_range.first_write_pass = pass_idx;
+
+                    } else if(pass_idx > tex_range.last_write_pass) {
+                        tex_range.last_write_pass = pass_idx;
+                    }
+
+                    if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
+                        resources_in_order.push_back(input);
+                    }
+                }
+
+                // shader-only textures
+                for(const auto &input : all_inputs.bound_textures) {
                     auto& tex_range = resource_used_range[input];
 
                     if(pass_idx < tex_range.first_write_pass) {
@@ -294,7 +312,7 @@ namespace nova {
                 }
 
                 auto pixel_format = get_vk_format_from_pixel_format(format.pixel_format);
-                LOG(DEBUG) << "Creating a texture with nova format " << pixel_format_enum::to_string(format.pixel_format) << " and Vulkan format " << vk::to_string(pixel_format);
+                LOG(DEBUG) << "Creating a texture with nova format " << pixel_format_enum::to_string(format.pixel_format) << " and Vulkan format " << vk::to_string(pixel_format) << ". It's being created for texture " << texture_name;
                 auto tex = texture2D(std::to_string(dynamic_textures.size()), dimensions, pixel_format, usage, context);
                 tex.set_name(texture_name);
 

@@ -121,7 +121,23 @@ namespace nova {
         }
 
         if(pass.texture_inputs) {
-            for(const auto& texture_name : pass.texture_inputs.value()) {
+            const input_textures& all_inputs = pass.texture_inputs.value();
+            for(const auto& texture_name : all_inputs.bound_textures) {
+                if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
+                    // TODO: Ignore the implicitly defined resources
+                    LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";
+
+                } else {
+                    const auto &write_passes = resource_to_write_pass.at(texture_name);
+                    ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
+
+                    for(const auto& write_pass : write_passes) {
+                        add_dependent_passes(write_pass, passes, ordered_passes, resource_to_write_pass, depth + 1);
+                    }
+                }
+            }
+
+            for(const auto& texture_name : all_inputs.color_attachments) {
                 if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
                     // TODO: Ignore the implicitly defined resources
                     LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";

@@ -15,13 +15,15 @@ namespace nova {
             }
             return vec;
         });
-        texture_inputs = get_json_value<std::vector<std::string>>(pass_json, "textureInputs", [&](const nlohmann::json& texture_inputs_json) {
-            auto vec = std::vector<std::string>{};
-            for(const auto& val : texture_inputs_json) {
-                vec.push_back(val.get<std::string>());
-            }
-            return vec;
+        texture_inputs = get_json_value<input_textures>(pass_json, "textureInputs", [&](const nlohmann::json& texture_inputs_json) {
+            input_textures retVal;
+
+            retVal.bound_textures = get_json_value<std::vector<std::string>>(texture_inputs_json, "boundTextures").value_or(std::vector<std::string>());
+            retVal.color_attachments = get_json_value<std::vector<std::string>>(texture_inputs_json, "colorAttachments").value_or(std::vector<std::string>());
+
+            return retVal;
         });
+
         texture_outputs = get_json_value<std::vector<texture_attachment>>(pass_json, "textureOutputs", [&](const nlohmann::json& texture_outputs_json) {
             auto vec = std::vector<texture_attachment>{};
             for(const auto& val : texture_outputs_json) {

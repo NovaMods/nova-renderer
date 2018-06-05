@@ -14,7 +14,9 @@
     }, 
     {
         "name": "Final",
-        "textureInputs": ["LitWorld"],
+        "textureInputs": {
+            "boundTextures": ["LitWorld"]
+        },
         "textureOutputs": [
             {
                 "name": "Backbuffer",
