@@ -186,6 +186,18 @@ namespace nova {
 
         LOG(INFO) << "Beginning pass " << pass.name;
 
+        if(pass.texture_inputs) {
+            // Transition anything that's not in shader read optimal to shader read optimal
+            const std::vector<std::string>& shader_textures = pass.texture_inputs.value().bound_textures;
+            for(const auto& tex_name : shader_textures) {
+                auto& tex = shader_resources->get_texture_manager().get_texture(tex_name);
+                if(tex.get_layout() != vk::ImageLayout::eShaderReadOnlyOptimal) {
+                    transfer_image_format(buffer, tex.get_vk_image(), tex.get_layout(), vk::ImageLayout::eShaderReadOnlyOptimal);
+                    tex.set_layout(vk::ImageLayout::eShaderReadOnlyOptimal);
+                }
+            }
+        }
+
         const auto& renderpass_for_pass = renderpasses_by_pass.at(pass.name);
 
         vk::RenderPassBeginInfo begin_pass = vk::RenderPassBeginInfo()
@@ -221,18 +233,30 @@ namespace nova {
                 .setPClearValues(clear_values.data());
 
         begin_pass.setFramebuffer(framebuffer);
-        LOG(INFO) << "Using framebuffer " << (VkFramebuffer)framebuffer;
+        LOG(TRACE) << "Using framebuffer " << (VkFramebuffer)framebuffer;
 
         buffer.beginRenderPass(&begin_pass, vk::SubpassContents::eInline);
 
         auto& pipelines_for_pass = pipelines_by_renderpass.at(pass.name);
-        LOG(INFO) << "Processing data in " << pipelines_for_pass.size() << " pipelines";
+        LOG(DEBUG) << "Processing data in " << pipelines_for_pass.size() << " pipelines";
 
         for(auto& nova_pipeline : pipelines_for_pass) {
             render_pipeline(nova_pipeline, buffer);
         }
 
         buffer.endRenderPass();
+
+        // Set the layouts on all the textures to the layouts tha the renderpass will use them in
+        if(pass.texture_outputs) {
+            const auto& texture_outputs = pass.texture_outputs.value();
+            const auto& textures = shader_resources->get_texture_manager();
+            for(const auto& attachment : texture_outputs) {
+                if(textures.is_texture_known(attachment.name)) {
+                    auto &tex = shader_resources->get_texture_manager().get_texture(attachment.name);
+                    tex.set_layout(vk::ImageLayout::eColorAttachmentOptimal);
+                }
+            }
+        }
     }
 
     void nova_renderer::render_pipeline(pipeline_object &pipeline_data, vk::CommandBuffer& buffer) {

@@ -71,16 +71,12 @@ namespace nova {
 
         /*!
          * \brief Renders a single frame
-         *
-         * This method runs in a separate thread from the rest of the methods in this class. This is because the other
-         * methods are called by Minecraft, from the Minecraft thread, while this method is run in a separate thread. This
-         * is done to keep the OpenGL contexts separate. Hopefully it'll work
          */
         void render_frame();
 
         /*!
-         * \brief determines whether or not the Nova Renderer, and by extension Minecraft, should shut down. Called directly
-         * by the C interface
+         * \brief determines whether or not the Nova Renderer, and by extension Minecraft, should shut down. Called
+         * directly by the C interface
          *
          * \return True if we should shutdown, false otherwise
          */

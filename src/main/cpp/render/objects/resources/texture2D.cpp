@@ -179,31 +179,45 @@ namespace nova {
         // This block seems weirdly hardcoded and not scalable but idk
         vk::PipelineStageFlags source_stage;
         vk::PipelineStageFlags destination_stage;
-        if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eTransferDstOptimal) {
-            barrier.srcAccessMask = vk::AccessFlags();
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+        switch(old_layout) {
+            case vk::ImageLayout::eGeneral:
+            case vk::ImageLayout::eUndefined:
+                barrier.srcAccessMask = vk::AccessFlags();
+                source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+                break;
 
-            source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
-            destination_stage = vk::PipelineStageFlagBits::eTransfer;
+            case vk::ImageLayout::eTransferDstOptimal:
+                barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+                source_stage = vk::PipelineStageFlagBits::eTransfer;
+                break;
 
-        } else if (old_layout == vk::ImageLayout::eTransferDstOptimal && new_layout == vk::ImageLayout::eShaderReadOnlyOptimal) {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+            default:
+                LOG(ERROR) << "Unsupported layout transition! Can't transition from " << vk::to_string(old_layout);
+        }
 
-            source_stage = vk::PipelineStageFlagBits::eTransfer;
-            destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
+        switch(new_layout) {
+            case vk::ImageLayout::eTransferDstOptimal:
+                barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+                destination_stage = vk::PipelineStageFlagBits::eTransfer;
+                break;
 
-        } else if (old_layout == vk::ImageLayout::eGeneral && new_layout == vk::ImageLayout::eTransferDstOptimal) {
-            barrier.srcAccessMask = vk::AccessFlags();
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+            case vk::ImageLayout::eShaderReadOnlyOptimal:
+                barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+                destination_stage = vk::PipelineStageFlagBits::eFragmentShader;
+                break;
 
-            source_stage = vk::PipelineStageFlagBits::eTopOfPipe;
-            destination_stage = vk::PipelineStageFlagBits::eTransfer;
+            case vk::ImageLayout::eGeneral:
+                barrier.dstAccessMask = vk::AccessFlags();
+                destination_stage = vk::PipelineStageFlagBits::eTopOfPipe;
+                break;
 
-        } else {
-            auto ss = std::stringstream{};
-            ss << "Unsupported layout transition! Can't transition from " << vk::to_string(old_layout) << " to " << vk::to_string(new_layout);
-            throw std::invalid_argument(ss.str());
+            case vk::ImageLayout::eColorAttachmentOptimal:
+                barrier.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+                destination_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+                break;
+
+            default:
+                LOG(ERROR) << "Unsupported layout transition! Can't transition to " << vk::to_string(new_layout);
         }
 
         command_buffer.pipelineBarrier(

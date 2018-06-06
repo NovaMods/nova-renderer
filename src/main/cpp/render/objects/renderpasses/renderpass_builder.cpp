@@ -123,7 +123,7 @@ namespace nova {
                         last_texture_size = texture.get_size();
                         last_texture_name = texture.get_name();
 
-                        attachment.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
+                        attachment.setFinalLayout(vk::ImageLayout::eGeneral);
                     }
 
                     auto color_ref = vk::AttachmentReference()
