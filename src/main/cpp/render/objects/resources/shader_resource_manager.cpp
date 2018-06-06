@@ -192,7 +192,7 @@ namespace nova {
 
                 auto image_info = vk::DescriptorImageInfo()
                         .setImageView(texture.get_image_view())
-                        .setImageLayout(texture.get_layout())
+                        .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
                         .setSampler(get_point_sampler());
 
                 write.setPImageInfo(&image_info)
