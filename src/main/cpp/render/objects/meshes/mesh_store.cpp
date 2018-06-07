@@ -227,37 +227,37 @@ namespace nova {
 
         mesh_definition quad;
         quad.vertex_data = {
-                f2i(0.0f).i, f2i(2.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(2.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i,
-                0,
-                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(-1.0f).i, f2i(-3.0f).i, f2i(0.0f).i,                 // Position
+                f2i(0.0f).i, f2i(-1.0f).i,                               // UV0
+                f2i(0.0f).i, f2i(0.0f).i,                               // MidTexCoord
+                0,                                                      // VirtualTextureId
+                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,     // Color
+                f2i(0.0f).i, f2i(1.0f).i,                               // UV1
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Normal
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Tangent
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,     // McEntityId
 
 
-                f2i(2.0f).i, f2i(0.0f).i, f2i(0.0f).i,
-                f2i(2.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i,
-                0,
-                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(3.0f).i, f2i(1.0f).i, f2i(0.0f).i,                  // Position
+                f2i(2.0f).i, f2i(1.0f).i,                               // UV0
+                f2i(0.0f).i, f2i(0.0f).i,                               // MidTexCoord
+                0,                                                      // VirtualTextureId
+                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,     // Color
+                f2i(0.0f).i, f2i(0.0f).i,                               // UV1
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Normal
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Tangent
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,     // McEntityId
 
 
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i,
-                0,
-                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,
+                f2i(-1.0f).i, f2i(1.0f).i, f2i(0.0f).i,                  // Position
+                f2i(0.0f).i, f2i(1.0f).i,                               // UV0
+                f2i(0.0f).i, f2i(0.0f).i,                               // MidTexCoord
+                0,                                                      // VirtualTextureId
+                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,     // Color
+                f2i(0.0f).i, f2i(0.0f).i,                               // UV1
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Normal
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Tangent
+                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,     // McEntityId
         };
 
         quad.indices = {0, 1, 2};
