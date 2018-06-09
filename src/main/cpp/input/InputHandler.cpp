@@ -38,7 +38,7 @@ namespace nova {
 
 	struct mouse_button_event input_handler::dequeue_mouse_button_event() {
 		std::lock_guard<std::mutex> lock_guard(lock_button);
-		if (mouse_button_event_queue.empty()) {
+		if (!mouse_button_event_queue.empty()) {
 			struct mouse_button_event e = mouse_button_event_queue.front();
 			mouse_button_event_queue.pop();
 			return e;
@@ -54,7 +54,7 @@ namespace nova {
 
 	struct mouse_position_event input_handler::dequeue_mouse_position_event() {
 		std::lock_guard<std::mutex> lock_guard(lock_position);
-		if (mouse_position_event_queue.empty()) {
+		if (!mouse_position_event_queue.empty()) {
 			struct mouse_position_event e = mouse_position_event_queue.front();
 			mouse_position_event_queue.pop();
 			return e;
@@ -69,7 +69,7 @@ namespace nova {
 
     struct mouse_scroll_event input_handler::dequeue_mouse_scroll_event() {
         std::lock_guard<std::mutex> lock_guard(lock_scroll);
-        if(mouse_scroll_event_queue.empty()) {
+        if(!mouse_scroll_event_queue.empty()) {
             struct mouse_scroll_event e = mouse_scroll_event_queue.front();
             mouse_scroll_event_queue.pop();
             return e;
@@ -86,7 +86,7 @@ namespace nova {
 	key_press_event input_handler::dequeue_key_press_event()
 	{
 		std::lock_guard<std::mutex> lock_guard(lock_key_press);
-		if (key_press_event_queue.empty()) {
+		if (!key_press_event_queue.empty()) {
 			struct key_press_event e = key_press_event_queue.front();
 			key_press_event_queue.pop();
 			e.key =(int) keymap[e.key];
@@ -104,7 +104,7 @@ namespace nova {
 	key_char_event input_handler::dequeue_key_char_event()
 	{
 		std::lock_guard<std::mutex> lock_guard(lock_key_char);
-		if (key_char_event_queue.empty()) {
+		if (!key_char_event_queue.empty()) {
 			struct key_char_event e = key_char_event_queue.front();
 			key_char_event_queue.pop();
 			return e;
