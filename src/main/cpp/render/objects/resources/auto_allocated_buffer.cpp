@@ -15,6 +15,13 @@ namespace nova {
     }
 
     vk::DescriptorBufferInfo auto_buffer::allocate_space(uint64_t size) {
+        auto ss = std::stringstream{};
+        ss << "Chunks before allocating " << size << " bytes: ";
+        for(const auto& chunk : chunks) {
+            ss << "{offset=" << (uint64_t)chunk.offset << " range=" << (uint64_t)chunk.range << "} ";
+        }
+        LOG(TRACE) << ss.str();
+
         size = size > min_alloc_size ? size : min_alloc_size;
         int32_t index_to_allocate_from = -1;
         if(!chunks.empty()) {
@@ -28,9 +35,11 @@ namespace nova {
             }
         }
 
+        vk::DescriptorBufferInfo ret_val;
+
         if(index_to_allocate_from == -1) {
             // Whoops, couldn't find anything
-            auto ss = std::stringstream{};
+            ss = std::stringstream{};
             ss << "No big enough slots in the buffer. There's " << chunks.size() << " slots. If there's a lot then you got some fragmentation";
 
             LOG(ERROR) << "No big enough slots in the buffer. There's " << chunks.size() << " slots. If there's a lot then you got some fragmentation";
@@ -42,18 +51,29 @@ namespace nova {
         if(chunk_to_allocate_from.range == size) {
             // Easy: unallocate the chunk, return the chunks
 
-            auto ret_val = vk::DescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, chunk_to_allocate_from.range};
+            ret_val = vk::DescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, chunk_to_allocate_from.range};
             chunks.erase(chunks.begin() + index_to_allocate_from);
-            return ret_val;
+            LOG(TRACE) << "Chunk " << index_to_allocate_from << " {offset=" << (uint64_t)chunk_to_allocate_from.offset << " range=" << (uint64_t)chunk_to_allocate_from.range << "} is the exact size we need - removing it now";
+            goto end;
         }
 
         // The chunk is bigger than we need. Allocate at the beginning of it so our iteration algorithm finds the next
         // free chunk nice and early, then shrink it
 
-        auto ret_val = vk::DescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, size};
+        ret_val = vk::DescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, size};
+
+        LOG(TRACE) << "Chunk " << index_to_allocate_from <<  " {offset=" << (uint64_t)chunk_to_allocate_from.offset << " range=" << (uint64_t)chunk_to_allocate_from.range << "} needs to be shunk by " << size << " - decreasing its range and increasing its offset by that amount";
 
         chunk_to_allocate_from.offset += size;
         chunk_to_allocate_from.range -= size;
+
+        end:
+        ss = std::stringstream{};
+        ss << "Current chunks: ";
+        for(const auto& chunk : chunks) {
+            ss << "{offset=" << (uint64_t)chunk.offset << " range=" << (uint64_t)chunk.range << "} ";
+        }
+        LOG(TRACE) << ss.str();
 
         return ret_val;
     }
@@ -64,6 +84,13 @@ namespace nova {
         // it... but that's marginally harder (maybe I'll do it) so let's just try to find the first slot it will fit
 
         LOG(DEBUG) << "Freeing allocation offset=" << to_free.offset << " range=" << to_free.range;
+        auto ss = std::stringstream{};
+        ss << "Chunks before freeing anything: ";
+        for(const auto& chunk : chunks) {
+            ss << "{offset=" << (uint64_t)chunk.offset << " range=" << (uint64_t)chunk.range << "} ";
+        }
+        LOG(TRACE) << ss.str();
+
 
         auto to_free_end = to_free.offset + to_free.range;
 
@@ -89,7 +116,7 @@ namespace nova {
         }
 
         if(to_free_end == first_chunk.offset) {
-            first_chunk.offset -= to_free.offset;
+            first_chunk.offset -= to_free.range;
             first_chunk.range += to_free.range;
             LOG(TRACE) << "Expanded the first chunk backwards to cover the freed allocation";
             goto end;
@@ -143,9 +170,8 @@ namespace nova {
         LOG(FATAL) << "Could not return allocation {offset=" << to_free.offset << " range=" << to_free.range << "} which should not happen. There's probably a bug in the allocator and you need to debug it";
         end:
 
-        LOG(TRACE) << "Current chunks:";
-
-        auto ss = std::stringstream{};
+        ss = std::stringstream{};
+        ss << "Current chunks: ";
         for(const auto& chunk : chunks) {
             ss << "{offset=" << (uint64_t)chunk.offset << " range=" << (uint64_t)chunk.range << "} ";
         }
