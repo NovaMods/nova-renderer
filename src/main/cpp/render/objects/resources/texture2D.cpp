@@ -196,6 +196,11 @@ namespace nova {
                 source_stage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
                 break;
 
+            case vk::ImageLayout::eShaderReadOnlyOptimal:
+                barrier.srcAccessMask = vk::AccessFlagBits::eShaderRead;
+                source_stage = vk::PipelineStageFlagBits::eFragmentShader;
+                break;
+
             default:
                 LOG(ERROR) << "Unsupported layout transition! Can't transition from " << vk::to_string(old_layout);
         }
