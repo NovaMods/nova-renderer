@@ -233,8 +233,9 @@ namespace nova {
          */
         void update_model_matrix(const render_object &renderable);
 
-        void
-    insert_special_geometry(const std::unordered_map<std::string, std::vector<material_pass>> &material_passes_by_pipeline);
+        void insert_special_geometry(const std::unordered_map<std::string, std::vector<material_pass>> &material_passes_by_pipeline);
+
+        void update_per_frame_ubo();
     };
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes);

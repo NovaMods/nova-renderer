@@ -25,6 +25,8 @@ namespace nova {
         VmaAllocation& get_allocation();
         VmaAllocationInfo& get_allocation_info();
 
+        void set_data(const void* data, uint32_t size);
+
 		const std::string& get_name() const;
 
 		const vk::Buffer& get_vk_buffer() const;

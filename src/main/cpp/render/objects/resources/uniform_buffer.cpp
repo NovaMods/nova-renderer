@@ -59,4 +59,11 @@ namespace nova {
 	const uint64_t uniform_buffer::get_size() const {
 		return min_alloc_size;
 	}
+
+    void uniform_buffer::set_data(const void *data, uint32_t size) {
+		void* mapped_data;
+		vmaMapMemory(context->allocator, allocation, &mapped_data);
+		std::memcpy(mapped_data, data, size);
+		vmaUnmapMemory(context->allocator, mapped_data);
+    }
 }

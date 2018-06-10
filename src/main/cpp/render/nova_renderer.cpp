@@ -115,6 +115,8 @@ namespace nova {
     void nova_renderer::render_frame() {
         begin_frame();
 
+        player_camera.recalculate_frustum();
+
         swapchain->aqcuire_next_swapchain_image(swapchain_image_acquire_semaphore);
 
         context->device.resetFences({render_done_fence});
@@ -425,6 +427,7 @@ namespace nova {
         // When the job system is in, updating the UBO matrices will be handled by the job system. For now we'll do it
         // here
 
+        update_per_frame_ubo();
         update_gui_model_matrices();
 
         for(const auto& mat : materials) {
@@ -434,6 +437,17 @@ namespace nova {
                 update_model_matrix(renderable);
             }
         }
+    }
+
+    void nova_renderer::update_per_frame_ubo() {
+        LOG(DEBUG) << "Updating the per-frame UBO";
+
+        auto per_frame_data = per_frame_uniforms{};
+        per_frame_data.gbufferProjection = player_camera.get_projection_matrix();
+        per_frame_data.gbufferModelView = player_camera.get_view_matrix();
+
+        uniform_buffer& per_frame_ubo = shader_resources->get_uniform_buffers().get_buffer("NovaPerFrameUBO");
+        per_frame_ubo.set_data(&per_frame_data, sizeof(per_frame_uniforms));
     }
 
     camera &nova_renderer::get_player_camera() {

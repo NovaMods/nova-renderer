@@ -20,6 +20,18 @@ namespace nova {
 
         auto uniform_buffer_offset_alignment = context->gpu.props.limits.minUniformBufferOffsetAlignment;
         per_model_resources_buffer = std::make_shared<auto_buffer>("NovaPerModelUBO", context, per_model_buffer_create_info, uniform_buffer_offset_alignment, true);
+
+
+
+		vk::BufferCreateInfo create_per_frame_ubo = vk::BufferCreateInfo()
+				.setSize(sizeof(per_frame_uniforms))
+				.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer)
+				.setSharingMode(vk::SharingMode::eExclusive)
+				.setQueueFamilyIndexCount(1)
+				.setPQueueFamilyIndices(&context->graphics_family_idx);
+
+		auto per_frame_ubo = uniform_buffer("NovaPerFrameUBO", context, create_per_frame_ubo, uniform_buffer_offset_alignment, true);
+		add_buffer(per_frame_ubo);
     }
 
     void uniform_buffer_store::on_config_change(nlohmann::json &new_config) {
@@ -40,12 +52,11 @@ namespace nova {
 	}
 
 	const bool uniform_buffer_store::is_buffer_known(std::string buffer_name) const {
-		if(buffer_name == "NovaPerFrameUBO") {
-			return true;
-
-		} else if(buffer_name == "NovaPerModelUBO") {
+		if(buffer_name == "NovaPerModelUBO") {
+			// Special snowflake that's handled differently because stupidly flexible renderers are hard
 			return true;
 		}
+
 		return buffers.find(buffer_name) != buffers.end();
 	}
 
