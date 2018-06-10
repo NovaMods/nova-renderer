@@ -47,6 +47,7 @@ namespace nova {
 	}
 
 	void uniform_buffer_store::add_buffer(uniform_buffer & new_buffer) {
+        LOG(DEBUG) << "Adding buffer " << new_buffer.get_name();
         // CLion yells about this but it's fine
 		buffers.insert(std::make_pair(new_buffer.get_name(), std::move(new_buffer)));
 	}
@@ -57,13 +58,20 @@ namespace nova {
 			return true;
 		}
 
+		auto ss = std::stringstream();
+		ss << "Known buffers: ";
+		for(const auto& buffer : buffers) {
+		    ss << buffer.first << ", ";
+		}
+		LOG(TRACE) << ss.str();
+
 		return buffers.find(buffer_name) != buffers.end();
 	}
 
 	uniform_buffer & uniform_buffer_store::get_buffer(std::string buffer_name) {
 		if(!is_buffer_known(buffer_name)) {
 			LOG(ERROR) << "Buffer " << buffer_name << " is not known to Nova";
-			throw std::runtime_error("Buffer " + buffer_name + " is now known to Nova");
+			throw std::runtime_error("Buffer " + buffer_name + " is not known to Nova");
 		}
 
 		if(buffer_name == "NovaPerModelUBO") {

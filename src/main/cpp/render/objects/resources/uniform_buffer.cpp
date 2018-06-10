@@ -5,7 +5,7 @@
 
 namespace nova {
 
-	uniform_buffer::uniform_buffer(std::string name, std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped) : min_alloc_size(min_alloc_size) {
+	uniform_buffer::uniform_buffer(std::string name, std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped) : name(name), min_alloc_size(min_alloc_size) {
 		VmaAllocationCreateInfo alloc_create = {};
 		alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
@@ -64,6 +64,6 @@ namespace nova {
 		void* mapped_data;
 		vmaMapMemory(context->allocator, allocation, &mapped_data);
 		std::memcpy(mapped_data, data, size);
-		vmaUnmapMemory(context->allocator, mapped_data);
+		vmaUnmapMemory(context->allocator, allocation);
     }
 }
