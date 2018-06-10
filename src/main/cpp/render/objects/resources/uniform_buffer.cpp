@@ -51,4 +51,12 @@ namespace nova {
 	const std::string& uniform_buffer::get_name() const {
 		return name;
 	}
+
+    const vk::Buffer &uniform_buffer::get_vk_buffer() const {
+        return buffer;
+    }
+
+	const uint64_t uniform_buffer::get_size() const {
+		return min_alloc_size;
+	}
 }

@@ -27,6 +27,10 @@ namespace nova {
 
 		const std::string& get_name() const;
 
+		const vk::Buffer& get_vk_buffer() const;
+
+		const uint64_t get_size() const;
+
     protected:
 		std::string name;
 		uint64_t min_alloc_size;

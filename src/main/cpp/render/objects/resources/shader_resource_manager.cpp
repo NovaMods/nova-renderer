@@ -170,6 +170,7 @@ namespace nova {
         // for each resource:
         //  - Get its set and binding from the pipeline
         //  - Update its descriptor set
+        LOG(DEBUG) << "Updating descriptors for material " << mat.material_name;
 
         std::vector<vk::WriteDescriptorSet> writes;
 
@@ -199,6 +200,24 @@ namespace nova {
                      .setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
 
                 LOG(INFO) << "Binding texture " << texture.get_name() << " to descriptor (set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
+
+            } else if(buffers.is_buffer_known(resource_name)) {
+                is_known = true;
+
+                auto& buffer = buffers.get_buffer(resource_name);
+
+                auto buffer_info = vk::DescriptorBufferInfo()
+                    .setBuffer(buffer.get_vk_buffer())
+                    .setOffset(0)
+                    .setRange(buffer.get_size());
+
+                write.setPBufferInfo(&buffer_info)
+                        .setDescriptorType(vk::DescriptorType::eUniformBuffer);
+
+                LOG(INFO) << "Binding buffer " << resource_name << " to descriptor " << "(set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
+
+            } else {
+                LOG(WARNING) << "Resource " << resource_name << " is not known to Nova. I hope you aren't using it cause it doesn't exist";
             }
 
             if(is_known) {

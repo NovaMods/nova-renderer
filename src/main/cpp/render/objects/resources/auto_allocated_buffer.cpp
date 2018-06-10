@@ -15,21 +15,12 @@ namespace nova {
     }
 
     vk::DescriptorBufferInfo auto_buffer::allocate_space(uint64_t size) {
-        auto ss = std::stringstream{};
-        ss << "Chunks before allocating " << size << " bytes: ";
-        for(const auto& chunk : chunks) {
-            ss << "{offset=" << (uint64_t)chunk.offset << " range=" << (uint64_t)chunk.range << "} ";
-        }
-        LOG(TRACE) << ss.str();
-
         size = size > min_alloc_size ? size : min_alloc_size;
         int32_t index_to_allocate_from = -1;
         if(!chunks.empty()) {
             // Iterate backwards so that inserting or deleting has a minimal cost
             for(auto i = static_cast<int32_t>(chunks.size() - 1); i >= 0; --i) {
-                LOG(TRACE) << "Checking if chunk " << i << "'s range, " << chunks[i].range << " is greater than or equal to " << size;
                 if(chunks[i].range >= size) {
-                    LOG(TRACE) << "It is!";
                     index_to_allocate_from = i;
                 }
             }
@@ -39,7 +30,7 @@ namespace nova {
 
         if(index_to_allocate_from == -1) {
             // Whoops, couldn't find anything
-            ss = std::stringstream{};
+            auto ss = std::stringstream{};
             ss << "No big enough slots in the buffer. There's " << chunks.size() << " slots. If there's a lot then you got some fragmentation";
 
             LOG(ERROR) << "No big enough slots in the buffer. There's " << chunks.size() << " slots. If there's a lot then you got some fragmentation";
@@ -53,7 +44,6 @@ namespace nova {
 
             ret_val = vk::DescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, chunk_to_allocate_from.range};
             chunks.erase(chunks.begin() + index_to_allocate_from);
-            LOG(TRACE) << "Chunk " << index_to_allocate_from << " {offset=" << (uint64_t)chunk_to_allocate_from.offset << " range=" << (uint64_t)chunk_to_allocate_from.range << "} is the exact size we need - removing it now";
             goto end;
         }
 
@@ -62,19 +52,10 @@ namespace nova {
 
         ret_val = vk::DescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, size};
 
-        LOG(TRACE) << "Chunk " << index_to_allocate_from <<  " {offset=" << (uint64_t)chunk_to_allocate_from.offset << " range=" << (uint64_t)chunk_to_allocate_from.range << "} needs to be shunk by " << size << " - decreasing its range and increasing its offset by that amount";
-
         chunk_to_allocate_from.offset += size;
         chunk_to_allocate_from.range -= size;
 
         end:
-        ss = std::stringstream{};
-        ss << "Current chunks: ";
-        for(const auto& chunk : chunks) {
-            ss << "{offset=" << (uint64_t)chunk.offset << " range=" << (uint64_t)chunk.range << "} ";
-        }
-        LOG(TRACE) << ss.str();
-
         return ret_val;
     }
 
@@ -83,15 +64,6 @@ namespace nova {
         // Properly we should try to find an allocated space of our size and merge the two allocations on either side of
         // it... but that's marginally harder (maybe I'll do it) so let's just try to find the first slot it will fit
 
-        LOG(DEBUG) << "Freeing allocation offset=" << to_free.offset << " range=" << to_free.range;
-        auto ss = std::stringstream{};
-        ss << "Chunks before freeing anything: ";
-        for(const auto& chunk : chunks) {
-            ss << "{offset=" << (uint64_t)chunk.offset << " range=" << (uint64_t)chunk.range << "} ";
-        }
-        LOG(TRACE) << ss.str();
-
-
         auto to_free_end = to_free.offset + to_free.range;
 
         auto& first_chunk = chunks[0];
@@ -99,32 +71,27 @@ namespace nova {
 
         if(chunks.empty()) {
             chunks.emplace_back(auto_buffer_chunk{to_free.offset, to_free.range});
-            LOG(TRACE) << "No available chunks, so we added the old allocation wholesale";
             goto end;
         }
 
         if(last_chunk.offset + last_chunk.range == to_free.offset) {
             last_chunk.range += to_free.range;
-            LOG(TRACE) << "Expanded the last chunk to cover the newly freed allocation";
             goto end;
         }
 
         if(last_chunk.offset + last_chunk.range < to_free.offset) {
             chunks.emplace_back(auto_buffer_chunk{to_free.offset, to_free.range});
-            LOG(TRACE) << "Inserted a new chunk at the very end of the list";
             goto end;
         }
 
         if(to_free_end == first_chunk.offset) {
             first_chunk.offset -= to_free.range;
             first_chunk.range += to_free.range;
-            LOG(TRACE) << "Expanded the first chunk backwards to cover the freed allocation";
             goto end;
         }
 
         if(to_free_end < first_chunk.offset) {
             chunks.emplace(chunks.begin(), auto_buffer_chunk{to_free.offset, to_free.range});
-            LOG(TRACE) << "Inserting a new chunk at the beginning of the list";
             goto end;
         }
 
@@ -140,7 +107,6 @@ namespace nova {
                 // combine these nerds
                 chunks[i - 1].range += to_free.range + ahead_space.range;
                 chunks.erase(chunks.begin() + i);
-                LOG(TRACE) << "Freed chunk fits between two existing chunks, so the previous one was expanded and the next one was erased";
                 goto end;
             }
 
@@ -148,19 +114,16 @@ namespace nova {
             if(space_between_allocs > to_free.range) {
                 if(behind_space_end == to_free.offset) {
                     chunks[i - 1].range += to_free.range;
-                    LOG(TRACE) << "Expanded chunk " << i - 1 << " forward for the freed allocation";
                     goto end;
                 }
 
                 if(to_free_end == ahead_space.offset) {
                     chunks[i].offset -= to_free.range;
                     chunks[i].range += to_free.range;
-                    LOG(TRACE) << "Expanded chunk " << i << " backwards for the freed allocation";
                     goto end;
                 }
 
                 chunks.emplace(chunks.begin() + i, auto_buffer_chunk{to_free.offset, to_free.range});
-                LOG(TRACE) << "Just made a new chunk cause it's not next to an existing chunk";
                 goto end;
             }
         }
@@ -168,14 +131,9 @@ namespace nova {
         // We got here... without returning our allocation to the pool. Uhm... Did we double-allocate something? This is
         // a bug in my allocator and not something that should happen during Nova so let's just crash
         LOG(FATAL) << "Could not return allocation {offset=" << to_free.offset << " range=" << to_free.range << "} which should not happen. There's probably a bug in the allocator and you need to debug it";
-        end:
 
-        ss = std::stringstream{};
-        ss << "Current chunks: ";
-        for(const auto& chunk : chunks) {
-            ss << "{offset=" << (uint64_t)chunk.offset << " range=" << (uint64_t)chunk.range << "} ";
-        }
-        LOG(TRACE) << ss.str();
+        end:
+        return;
     }
 	
     vk::DeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last) {
