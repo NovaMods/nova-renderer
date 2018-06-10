@@ -59,7 +59,7 @@ namespace nova {
 		}
 
 		auto ss = std::stringstream();
-		ss << "Known buffers: ";
+		ss << "Looking for buffer " << buffer_name << " in known buffers: ";
 		for(const auto& buffer : buffers) {
 		    ss << buffer.first << ", ";
 		}
