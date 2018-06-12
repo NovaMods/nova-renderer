@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\main",
+    "\\src\\main\\cpp",
+    "\\src\\main\\cpp\\geometry_cache",
+    "\\src\\main\\cpp\\geometry_cache\\builders",
+    "\\src\\main\\cpp\\render\\objects",
+    "\\src\\main\\cpp\\render\\objects\\shaders"
+  ],
+  "SelectedNode": "\\src\\main\\cpp\\geometry_cache\\builders\\chunk_builder.h",
+  "PreviewInSolutionExplorer": false
+}

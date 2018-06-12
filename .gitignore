@@ -1,0 +1,30 @@
+### NATIVE/C++ ###
+# Compiled
+*.slo
+*.lo
+*.a
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.lib
+*.exe
+*.app
+*.out
+
+# Precompiled
+*.gch
+*.pch
+
+
+### Java/Gradle ###
+# Build
+build/
+out/
+.gradle/
+gradle/
+
+### IDE/IntelliJ ###
+.idea/
+*.iml
