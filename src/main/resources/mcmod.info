@@ -1,17 +1,16 @@
 [
   {
-    "modid": "nova",
-    "name": "Nova",
+    "modid": "nova-renderer",
+    "name": "Nova renderer",
     "description": "A fast alternative minecraft renderer build upon vulkan",
     "version": "${version}",
     "mcversion": "${mcversion}",
     "url": "https://continuum.graphics/blog/?category=Nova",
     "updateUrl": "",
     "authorList": [
-      "Janrupf",
-      "DethRaid"
+      "GitHub contributors"
     ],
-    "credits": "",
+    "credits": "DethRaid: He has built the nova renderer and did everything that has to be done.\n All the github contributors and bug reportes that helped to improve the projet.\nTODO: EXTEND",
     "logoFile": "",
     "screenshots": [],
     "dependencies": [
