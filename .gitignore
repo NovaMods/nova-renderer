@@ -17,6 +17,8 @@
 *.gch
 *.pch
 
+### VS-Code ###
+.vs/
 
 ### Java/Gradle ###
 # Build
