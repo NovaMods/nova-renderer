@@ -10,11 +10,8 @@
     "authorList": [
       "GitHub contributors"
     ],
-    "credits": "DethRaid: He has built the nova renderer and did everything that has to be done.\n All the github contributors and bug reportes that helped to improve the projet.\nTODO: EXTEND",
+    "credits": "TODO",
     "logoFile": "",
-    "screenshots": [],
-    "dependencies": [
-      ""
-    ]
+    "screenshots": []
   }
 ]

@@ -30,3 +30,7 @@ gradle/
 ### IDE/IntelliJ ###
 .idea/
 *.iml
+
+### Minecraft ###
+# Run directory
+run/

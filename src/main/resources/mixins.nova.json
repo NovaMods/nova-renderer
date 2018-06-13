@@ -1,0 +1,10 @@
+{
+  "package": "com.continuum.nova.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "target": "@env(DEFAULT)",
+  "minVersion": "*",
+  "refmap": "mixins.nova.refmap.json",
+  "client": [
+    "MixinMinecraft"
+  ]
+}

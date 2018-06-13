@@ -2,16 +2,26 @@ buildscript {
     repositories {
         jcenter()
         maven {
+            name = 'oss-sonatype-public'
+            url = 'https://oss.sonatype.org/content/repositories/public/'
+        }
+        maven {
             name = "forge"
             url = "https://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = 'sponge'
+            url = 'http://repo.spongepowered.org/maven'
         }
     }
     dependencies {
         classpath "net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT"
+        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
     }
 }
 
 apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "org.spongepowered.mixin"
 
 version = modVersion
 group = modGroup
@@ -32,9 +42,32 @@ minecraft {
 
 repositories {
     mavenCentral()
+    maven {
+        name = 'sponge'
+        url = 'http://repo.spongepowered.org/maven/'
+    }
 }
 
 dependencies {
+    compile("org.spongepowered:mixin:0.7.8-SNAPSHOT") {
+        exclude module: "launchwrapper"
+        exclude module: "guava"
+    }
+}
+
+mixin {
+    add sourceSets.main, "mixins.nova.refmap.json"
+}
+
+jar {
+    manifest {
+        attributes(
+                "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
+                "TweakOrder": 0,
+                "MixinConfigs": "mixins.nova.json",
+                "FMLCorePlugin": "com.continuum.nova.NovaForgeCoreMod"
+        )
+    }
 }
 
 processResources {
@@ -55,3 +88,6 @@ processResources {
         exclude "mcmod.info"
     }
 }
+
+runClient.outputs.upToDateWhen { false }
+runClient.standardOutput = System.out
