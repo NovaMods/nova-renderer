@@ -60,7 +60,7 @@ namespace nova {
             LOG(FATAL) << "The swapchain returned zero images";
         }
 
-        // Create a dummy renderpass that writes to a single color attachmet - the swapchain
+        // Create a dummy renderpass that writes to a single color attachment - the swapchain
         vk::AttachmentDescription color_attachment = {};
         color_attachment.format = swapchain_format;
         color_attachment.samples = vk::SampleCountFlagBits::e1;

@@ -173,6 +173,8 @@ namespace nova {
         LOG(DEBUG) << "Updating descriptors for material " << mat.material_name;
 
         std::vector<vk::WriteDescriptorSet> writes;
+        std::vector<vk::DescriptorImageInfo> image_infos(mat.bindings.size());
+        std::vector<vk::DescriptorBufferInfo> buffer_infos(mat.bindings.size());
 
         for(const auto& binding : mat.bindings) {
             const auto& descriptor_info = name_to_descriptor.at(binding.first);
@@ -196,7 +198,9 @@ namespace nova {
                         .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
                         .setSampler(get_point_sampler());
 
-                write.setPImageInfo(&image_info)
+                image_infos.push_back(image_info);
+
+                write.setPImageInfo(&image_infos[image_infos.size() - 1])
                      .setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
 
                 LOG(INFO) << "Binding texture " << texture.get_name() << " to descriptor (set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
@@ -211,7 +215,9 @@ namespace nova {
                     .setOffset(0)
                     .setRange(buffer.get_size());
 
-                write.setPBufferInfo(&buffer_info)
+                buffer_infos.push_back(buffer_info);
+
+                write.setPBufferInfo(&buffer_infos[buffer_infos.size() - 1])
                         .setDescriptorType(vk::DescriptorType::eUniformBuffer);
 
                 LOG(INFO) << "Binding buffer " << resource_name << " to descriptor " << "(set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
