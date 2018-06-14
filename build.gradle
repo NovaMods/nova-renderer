@@ -27,6 +27,9 @@ version = modVersion
 group = modGroup
 archivesBaseName = modBaseName
 
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
+
 minecraft {
     version = project.forgeVersion
     runDir = "run"
@@ -53,6 +56,7 @@ dependencies {
         exclude module: "launchwrapper"
         exclude module: "guava"
     }
+    compile group: 'io.github.java-graphics', name: 'glm', version: '1.0.1'
 }
 
 mixin {

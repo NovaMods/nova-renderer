@@ -5,6 +5,10 @@
   "minVersion": "*",
   "refmap": "mixins.nova.refmap.json",
   "client": [
-    "MixinMinecraft"
+    "MixinMinecraft",
+    "MixinLWJGLMouse",
+    "MixinLWJGLKeyboard",
+    "MixinTextureAtlasSprite",
+    "MixinTextureMap"
   ]
 }
