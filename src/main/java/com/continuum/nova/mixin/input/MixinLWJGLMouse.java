@@ -1,4 +1,4 @@
-package com.continuum.nova.mixin;
+package com.continuum.nova.mixin.input;
 
 import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.Mixin;

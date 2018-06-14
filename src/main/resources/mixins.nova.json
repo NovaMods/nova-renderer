@@ -6,10 +6,11 @@
   "refmap": "mixins.nova.refmap.json",
   "client": [
     "MixinMinecraft",
-    "MixinLWJGLMouse",
-    "MixinLWJGLKeyboard",
-    "MixinTextureAtlasSprite",
-    "MixinTextureMap",
-    "MixinFontRenderer"
+    "input.MixinLWJGLMouse",
+    "input.MixinLWJGLKeyboard",
+    "texture.MixinTextureAtlasSprite",
+    "texture.MixinTextureMap",
+    "gui.MixinFontRenderer",
+    "gui.MixinGuiButton"
   ]
 }

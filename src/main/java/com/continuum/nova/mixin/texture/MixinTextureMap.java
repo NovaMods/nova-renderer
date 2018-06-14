@@ -1,4 +1,4 @@
-package com.continuum.nova.mixin;
+package com.continuum.nova.mixin.texture;
 
 import com.continuum.nova.gui.MemoryTextureAtlasSprite;
 import com.continuum.nova.interfaces.INovaTextureMap;

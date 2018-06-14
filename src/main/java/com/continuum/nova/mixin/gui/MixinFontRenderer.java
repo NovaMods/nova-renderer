@@ -1,4 +1,4 @@
-package com.continuum.nova.mixin;
+package com.continuum.nova.mixin.gui;
 
 import com.continuum.nova.gui.NovaDraw;
 import net.minecraft.client.gui.FontRenderer;
@@ -16,7 +16,6 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.awt.*;
