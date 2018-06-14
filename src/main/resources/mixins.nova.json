@@ -9,6 +9,7 @@
     "MixinLWJGLMouse",
     "MixinLWJGLKeyboard",
     "MixinTextureAtlasSprite",
-    "MixinTextureMap"
+    "MixinTextureMap",
+    "MixinFontRenderer"
   ]
 }
