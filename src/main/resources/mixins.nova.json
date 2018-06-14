@@ -11,6 +11,8 @@
     "texture.MixinTextureAtlasSprite",
     "texture.MixinTextureMap",
     "gui.MixinFontRenderer",
-    "gui.MixinGuiButton"
+    "gui.MixinGuiButton",
+    "gui.MixinGuiButtonLanguage",
+    "gui.MixinGuiLabel"
   ]
 }

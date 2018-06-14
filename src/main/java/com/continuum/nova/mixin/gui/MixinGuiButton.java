@@ -1,5 +1,6 @@
 package com.continuum.nova.mixin.gui;
 
+import com.continuum.nova.NovaConstants;
 import com.continuum.nova.gui.NovaDraw;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -31,13 +32,7 @@ public abstract class MixinGuiButton extends Gui {
 
     @Shadow public boolean enabled;
     @Shadow public String displayString;
-    // TODO: What is this?!
-    private float[] stdButtonLocation = {
-            0.0f, 0.1796862f,
-            0.78125f, 0.3359375f
-    };
-    // TODO: What is this?!
-    private float widgetsTextureFactor = 0.00390625F;
+
 
     /**
      * @author Janrupf
@@ -57,15 +52,16 @@ public abstract class MixinGuiButton extends Gui {
                     BUTTON_TEXTURES,
                     new Rectangle2D.Float(xPosition, yPosition, width / 2, height),
                     new Rectangle2D.Float(
-                            stdButtonLocation[0], stdButtonLocation[1] + offsetY,
-                            width / 2 * widgetsTextureFactor, height * widgetsTextureFactor)
+                            NovaConstants.STANDARD_BUTTON_LOCATIONS[0], NovaConstants.STANDARD_BUTTON_LOCATIONS[1] + offsetY,
+                            width / 2 * NovaConstants.WIDGETS_TEXTURE_FACTOR, height * NovaConstants.WIDGETS_TEXTURE_FACTOR)
             );
             NovaDraw.drawRectangle(
                     BUTTON_TEXTURES,
                     new Rectangle2D.Float(xPosition + width / 2, yPosition, width / 2, height),
                     new Rectangle2D.Float(
-                            stdButtonLocation[2] - ((width / 2) * widgetsTextureFactor), stdButtonLocation[1] + offsetY,
-                            (width / 2) * widgetsTextureFactor, height * widgetsTextureFactor)
+                            NovaConstants.STANDARD_BUTTON_LOCATIONS[2] - ((width / 2) * NovaConstants.WIDGETS_TEXTURE_FACTOR),
+                            NovaConstants.STANDARD_BUTTON_LOCATIONS[1] + offsetY,
+                            (width / 2) * NovaConstants.WIDGETS_TEXTURE_FACTOR, height * NovaConstants.WIDGETS_TEXTURE_FACTOR)
             );
             this.mouseDragged(mc, NovaDraw.getMouseX(), NovaDraw.getMouseY());
             int color = 0x00E0E0E0;
