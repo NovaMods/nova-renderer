@@ -5,6 +5,7 @@ import com.continuum.nova.interfaces.INovaEntityRenderer;
 import com.continuum.nova.system.NovaNative;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.lwjgl.opengl.Display;
 import org.spongepowered.asm.mixin.*;
 
@@ -32,6 +33,10 @@ public abstract class MixinEntityRenderer {
 
     @Shadow
     private float smoothCamFilterY;
+
+    @Shadow private boolean lightmapUpdateNeeded;
+
+    @Shadow @Final private DynamicTexture lightmapTexture;
 
     public void nova$updateLightmap(float partialTicks) {
         updateLightmap(partialTicks);
@@ -81,5 +86,13 @@ public abstract class MixinEntityRenderer {
         }
 
         this.mc.mcProfiler.endSection();
+    }
+
+    public boolean nova$isLightmapUpdateNeeded() {
+        return lightmapUpdateNeeded;
+    }
+
+    public DynamicTexture nova$getLightmapTexture() {
+        return lightmapTexture;
     }
 }

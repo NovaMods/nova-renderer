@@ -4,6 +4,8 @@ import com.continuum.nova.chunks.ChunkBuilder;
 import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.gui.NovaDraw;
+import com.continuum.nova.interfaces.INovaDynamicTexture;
+import com.continuum.nova.interfaces.INovaEntityRenderer;
 import com.continuum.nova.interfaces.INovaTextureAtlasSprite;
 import com.continuum.nova.interfaces.INovaTextureMap;
 import com.continuum.nova.system.NovaNative;
@@ -15,6 +17,7 @@ import glm.vec._2.Vec2;
 import glm.vec._3.i.Vec3i;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.color.BlockColors;
@@ -93,7 +96,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public static void create() {
-        if(instance == null) {
+        if(instance != null) {
             throw new IllegalStateException("Instance already created");
         }
         instance = new NovaRenderer();
@@ -157,12 +160,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void addTerrainAtlas(@Nonnull TextureMap blockColorMap) {
         // Copy over the atlas
-        NovaNative.mc_atlas_texture blockColorTexture = getFullImage(blockColorMap.getWidth(), blockColorMap.getHeight(), blockColorMap.getMapUploadedSprites().values());
+        NovaNative.mc_atlas_texture blockColorTexture = getFullImage(((INovaTextureMap)blockColorMap).getWidth(), ((INovaTextureMap)blockColorMap).getHeight(), ((INovaTextureMap)blockColorMap).getMapUploadedSprites().values());
         blockColorTexture.name = BLOCK_COLOR_ATLAS_NAME;
         NovaNative.INSTANCE.add_texture(blockColorTexture);
 
         // Copy over all the icon locations
-        for(String spriteName : blockColorMap.getMapUploadedSprites().keySet()) {
+        for(String spriteName : ((INovaTextureMap)blockColorMap).getMapUploadedSprites().keySet()) {
             TextureAtlasSprite sprite = blockColorMap.getAtlasSprite(spriteName);
             NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
                     sprite.getIconName(),
@@ -302,10 +305,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         EntityRenderer entityRenderer = Minecraft.getMinecraft().entityRenderer;
 
-        boolean shouldUpdateLightmap = entityRenderer.isLightmapUpdateNeeded();
-        entityRenderer.updateLightmap(renderPartialTicks);
+        boolean shouldUpdateLightmap = ((INovaEntityRenderer)entityRenderer).isLightmapUpdateNeeded();
+        ((INovaEntityRenderer)entityRenderer).updateLightmap(renderPartialTicks);
         if(shouldUpdateLightmap) {
-            sendLightmapTexture(entityRenderer.getLightmapTexture());
+            sendLightmapTexture(((INovaEntityRenderer)entityRenderer).getLightmapTexture());
         }
 
 
@@ -361,7 +364,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void sendLightmapTexture(DynamicTexture lightmapTexture) {
         int[] data = lightmapTexture.getTextureData();
-        NovaNative.INSTANCE.send_lightmap_texture(data, data.length, lightmapTexture.getWidth(), lightmapTexture.getHeight());
+        NovaNative.INSTANCE.send_lightmap_texture(data, data.length, ((INovaDynamicTexture)lightmapTexture).getWidth(), ((INovaDynamicTexture)lightmapTexture).getHeight());
     }
 
     private void printProfilerData() {

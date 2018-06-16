@@ -6,16 +6,21 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.MobEffects;
 
+import java.awt.*;
+
 public class SettingsCommandBuilder
 {
+    // TODO: Make it a setting
+    public static final Color FOG_COLOR = Color.LIGHT_GRAY;
+
     public NovaNative.mc_settings getSettings(Minecraft mc)
     {
         NovaNative.mc_settings settings = new NovaNative.mc_settings();
         settings.view_bobbing = mc.gameSettings.viewBobbing;
         settings.render_distance = mc.gameSettings.renderDistanceChunks;
-        settings.fog_color_red = mc.entityRenderer.getFogColorRed();
-        settings.fog_color_green = mc.entityRenderer.getFogColorGreen();
-        settings.fog_color_blue = mc.entityRenderer.getFogColorBlue();
+        settings.fog_color_red = /* mc.entityRenderer.getFogColorRed(); */  FOG_COLOR.getRed();
+        settings.fog_color_green = /* mc.entityRenderer.getFogColorGreen(); */ FOG_COLOR.getGreen();
+        settings.fog_color_blue = /* mc.entityRenderer.getFogColorBlue(); */ FOG_COLOR.getBlue();
         settings.anaglyph = mc.gameSettings.anaglyph;
         settings.display_height = mc.displayHeight;
         settings.display_width = mc.displayWidth;

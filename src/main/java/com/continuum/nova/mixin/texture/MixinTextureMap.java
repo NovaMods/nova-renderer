@@ -155,4 +155,8 @@ public abstract class MixinTextureMap extends AbstractTexture {
     public int nova$getHeight() {
         return height;
     }
+
+    public Map<String, TextureAtlasSprite> nova$getMapUploadedSprites() {
+        return mapUploadedSprites;
+    }
 }

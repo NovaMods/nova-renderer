@@ -4,7 +4,7 @@ import org.lwjgl.input.Keyboard;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-@Mixin(Keyboard.class)
+@Mixin(value = Keyboard.class, remap = false)
 public class MixinLWJGLKeyboard {
     /**
      * @author Janrupf

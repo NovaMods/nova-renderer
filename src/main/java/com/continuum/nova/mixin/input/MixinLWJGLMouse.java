@@ -4,7 +4,7 @@ import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
-@Mixin(Mouse.class)
+@Mixin(value = Mouse.class, remap = false)
 public class MixinLWJGLMouse {
 
     /**

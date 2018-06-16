@@ -37,18 +37,7 @@ public class MixinGuiMainMenu extends GuiScreen {
     @Shadow
     private String splashText;
 
-    /*
-     * Basically comments out the GlCheck, we don't need that
-     * Makes it possible to theoretically completely remove OpenGL libraries
-     */
-    @Inject(
-            method = "<init>",
-            at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GLContext;getCapabilities()Lorg/lwjgl/opengl/ContextCapabilities;", shift = At.Shift.BEFORE),
-            cancellable = true
-    )
-    private void returnBeforeGlCheck(CallbackInfo ci) {
-        ci.cancel();
-    }
+    // Hmm, we can't override the ctor so the check has to stay in here for now
 
     /**
      * @author Janrupf
