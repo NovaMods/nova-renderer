@@ -42,7 +42,7 @@ public class NovaDraw {
 
     private static void clearBuffers() {
         buffers.clear();
-        NovaNative.INSTANCE.clear_gui_buffers();
+        NovaRenderer.getInstance().getNative().clear_gui_buffers();
         currentZ = 0.9999f;
     }
 
@@ -204,7 +204,7 @@ public class NovaDraw {
             for(String filterName : filterMap.keySet()) {
                 if(filterMap.get(filterName).matches(guiGeometry)) {
                     LOG.trace("Adding geometry for filter {}", filterName);
-                    NovaNative.INSTANCE.add_gui_geometry(filterName, guiGeometry);
+                    NovaRenderer.getInstance().getNative().add_gui_geometry(filterName, guiGeometry);
                 }
             }
 

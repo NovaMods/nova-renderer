@@ -1,5 +1,6 @@
 package com.continuum.nova.chunks;
 
+import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.system.NovaNative;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -63,7 +64,7 @@ public class ChunkBuilder {
                 obj.y = range.min.y;
                 obj.z = range.min.z;
 
-                NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
+                NovaRenderer.getInstance().getNative().add_chunk_geometry_for_filter(filterName, obj);
             });
         }
     }

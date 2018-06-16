@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.system.NovaNative;
 import com.continuum.nova.system.NovaNative.mouse_button_event;
 import com.continuum.nova.system.NovaNative.mouse_position_event;
@@ -103,9 +104,9 @@ public class Mouse {
     public static boolean next() {
         lastX = x;
         lastY = y;
-        mouse_button_event e = NovaNative.INSTANCE.get_next_mouse_button_event();
-        mouse_position_event p = NovaNative.INSTANCE.get_next_mouse_position_event();
-        NovaNative.mouse_scroll_event s = NovaNative.INSTANCE.get_next_mouse_scroll_event();
+        mouse_button_event e = NovaRenderer.getInstance().getNative().get_next_mouse_button_event();
+        mouse_position_event p = NovaRenderer.getInstance().getNative().get_next_mouse_position_event();
+        NovaNative.mouse_scroll_event s = NovaRenderer.getInstance().getNative().get_next_mouse_scroll_event();
         if (e.filled == 0 && p.filled == 0 && s.filled == 0) {
             return false;
         }
@@ -207,7 +208,7 @@ public class Mouse {
     }
 
     public static void setGrabbed(boolean grab) {
-        NovaNative.INSTANCE.set_mouse_grabbed(grab);
+        NovaRenderer.getInstance().getNative().set_mouse_grabbed(grab);
         isGrabbed = grab;
     }
 

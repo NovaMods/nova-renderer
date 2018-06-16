@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.system.NovaNative;
 import com.continuum.nova.system.NovaNative.key_press_event;
 import com.continuum.nova.system.NovaNative.key_char_event;
@@ -199,14 +200,14 @@ public class Keyboard {
     }
 
     public static synchronized int getKeyIndex(String keyName) {
-        Integer ret = (Integer) keyMap.get(keyName);
+        Integer ret = keyMap.get(keyName);
         return ret == null ? 0 : ret.intValue();
     }
 
 
     public static boolean next() {
-        key_press_event p = NovaNative.INSTANCE.get_next_key_press_event();
-        key_char_event c = NovaNative.INSTANCE.get_next_key_char_event();
+        key_press_event p = NovaRenderer.getInstance().getNative().get_next_key_press_event();
+        key_char_event c = NovaRenderer.getInstance().getNative().get_next_key_char_event();
 
         if (p.filled==0 && c.filled==0){
             return false;

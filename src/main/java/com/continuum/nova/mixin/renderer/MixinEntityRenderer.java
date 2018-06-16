@@ -1,5 +1,6 @@
 package com.continuum.nova.mixin.renderer;
 
+import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.input.Mouse;
 import com.continuum.nova.interfaces.INovaEntityRenderer;
 import com.continuum.nova.system.NovaNative;
@@ -34,9 +35,12 @@ public abstract class MixinEntityRenderer {
     @Shadow
     private float smoothCamFilterY;
 
-    @Shadow private boolean lightmapUpdateNeeded;
+    @Shadow
+    private boolean lightmapUpdateNeeded;
 
-    @Shadow @Final private DynamicTexture lightmapTexture;
+    @Shadow
+    @Final
+    private DynamicTexture lightmapTexture;
 
     public void nova$updateLightmap(float partialTicks) {
         updateLightmap(partialTicks);
@@ -49,7 +53,7 @@ public abstract class MixinEntityRenderer {
      */
     @Overwrite
     public void updateCameraAndRender(float partialTicks, long nanoTime) {
-        boolean flag = NovaNative.INSTANCE.display_is_active();
+        boolean flag = NovaRenderer.getInstance().getNative().display_is_active();
         this.mc.mcProfiler.startSection("mouse");
 
         if (flag && Minecraft.IS_RUNNING_ON_MAC && this.mc.inGameHasFocus && !Mouse.isInsideWindow()) {

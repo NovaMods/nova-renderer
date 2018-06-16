@@ -173,7 +173,7 @@ public class MixinGuiListWorldSelectionEntry {
 
                 NovaRenderer.getInstance().loadTexture(iconLocation, bufferedimage);
                 NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(iconLocation.toString(), 0, 0, 1, 1);
-                NovaNative.INSTANCE.add_texture_location(location);
+                NovaRenderer.getInstance().getNative().add_texture_location(location);
             }
 
             bufferedimage.getRGB(0, 0, bufferedimage.getWidth(), bufferedimage.getHeight(), this.icon.getTextureData(), 0, bufferedimage.getWidth());
