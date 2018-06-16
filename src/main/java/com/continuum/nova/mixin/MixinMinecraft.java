@@ -19,14 +19,13 @@ public class MixinMinecraft {
     @Shadow public boolean inGameHasFocus;
 
     private Logger novaLogger;
-    private NovaRenderer novaRenderer;
     private NovaNative novaNative = NovaNative.INSTANCE;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void constructorEnd(CallbackInfo info) {
         novaLogger = LogManager.getLogger("Nova");
         novaLogger.info("Loading nova...");
-        novaRenderer = new NovaRenderer();
+        NovaRenderer.create();
         inGameHasFocus = novaNative.display_is_active();
         Mouse.create();
         Keyboard.create();

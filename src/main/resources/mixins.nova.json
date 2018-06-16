@@ -5,14 +5,23 @@
   "minVersion": "*",
   "refmap": "mixins.nova.refmap.json",
   "client": [
-    "MixinMinecraft",
-    "input.MixinLWJGLMouse",
-    "input.MixinLWJGLKeyboard",
-    "texture.MixinTextureAtlasSprite",
-    "texture.MixinTextureMap",
     "gui.MixinFontRenderer",
     "gui.MixinGuiButton",
     "gui.MixinGuiButtonLanguage",
-    "gui.MixinGuiLabel"
+    "gui.MixinGuiLabel",
+    "gui.MixinGuiListWorldSelectionEntry",
+    "gui.MixinGuiMainMenu",
+    "gui.MixinGuiOptionSlider",
+    "gui.MixinGuiScreen",
+    "gui.MixinGuiScreenOptionsSounds$Button",
+    "gui.MixinGuiSlot",
+    "input.MixinLWJGLKeyboard",
+    "input.MixinLWJGLMouse",
+    "texture.MixinDynamicTexture",
+    "texture.MixinTextureAtlasSprite",
+    "texture.MixinTextureMap",
+    "texture.MixinTextureUtil",
+    "MixinMinecraft",
+    "MixinModelManager"
   ]
 }

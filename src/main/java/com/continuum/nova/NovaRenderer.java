@@ -4,6 +4,7 @@ import com.continuum.nova.chunks.ChunkBuilder;
 import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.gui.NovaDraw;
+import com.continuum.nova.interfaces.INovaTextureAtlasSprite;
 import com.continuum.nova.interfaces.INovaTextureMap;
 import com.continuum.nova.system.NovaNative;
 import com.continuum.nova.system.NovaNative.window_size;
@@ -83,7 +84,22 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private ChunkBuilder chunkBuilder;
     private HashMap<String, IGeometryFilter> filterMap;
 
-    public NovaRenderer() {
+    private static NovaRenderer instance;
+    public static NovaRenderer getInstance() {
+        if(instance == null) {
+            throw new IllegalStateException("Tried to access NovaRenderer before it was created");
+        }
+        return instance;
+    }
+
+    public static void create() {
+        if(instance == null) {
+            throw new IllegalStateException("Instance already created");
+        }
+        instance = new NovaRenderer();
+    }
+
+    private NovaRenderer() {
         // I put these in Utils to make this class smaller
         Utils.initBlockTextureLocations(BLOCK_COLOR_TEXTURES_LOCATIONS);
         Utils.initGuiTextureLocations(GUI_COLOR_TEXTURES_LOCATIONS);
@@ -168,7 +184,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }));
 
         Optional<TextureAtlasSprite> whiteImage = ((INovaTextureMap)atlas).getWhiteImage();
-        whiteImage.ifPresent(image -> spriteLocations.put(image.getLocation(), image));
+        whiteImage.ifPresent(image -> spriteLocations.put(((INovaTextureAtlasSprite)image).getLocation(), image));
 
         NovaNative.mc_atlas_texture atlasTexture = getFullImage(((INovaTextureMap)atlas).getWidth(), ((INovaTextureMap)atlas).getHeight(), spriteLocations.values());
         atlasTexture.setName(textureName);

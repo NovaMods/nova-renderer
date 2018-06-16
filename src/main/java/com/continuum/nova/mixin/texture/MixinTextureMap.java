@@ -1,14 +1,20 @@
 package com.continuum.nova.mixin.texture;
 
 import com.continuum.nova.gui.MemoryTextureAtlasSprite;
+import com.continuum.nova.interfaces.INovaTextureAtlasSprite;
 import com.continuum.nova.interfaces.INovaTextureMap;
+import com.continuum.nova.utils.NovaMath;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.*;
+import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,7 +46,6 @@ public abstract class MixinTextureMap {
      * @reason Overwritten because a lot of changes are required that cannot be done at one specific point in the method
      * @inheritDoc
      */
-    /*
     @Overwrite
     public void loadTextureAtlas(IResourceManager resourceManager) {
         int i = Minecraft.getGLMaximumTextureSize();
@@ -53,19 +58,19 @@ public abstract class MixinTextureMap {
         for(Map.Entry<String, TextureAtlasSprite> entry : this.mapRegisteredSprites.entrySet()) {
             TextureAtlasSprite sprite = entry.getValue();
             ResourceLocation spriteLocation = this.getResourceLocation(sprite);
-            sprite.setLocation(spriteLocation);
+            ((INovaTextureAtlasSprite)sprite).setLocation(spriteLocation);
 
             try(IResource spriteResource = resourceManager.getResource(spriteLocation)) {
                 PngSizeInfo spriteSizeInfo = PngSizeInfo.makeFromResource(spriteResource);
                 boolean isAnimated = spriteResource.getMetadata("animation") != null;
-                sprite.setAndValidateSize(spriteSizeInfo, isAnimated);
+                ((INovaTextureAtlasSprite)sprite).setAndValidateSize(spriteSizeInfo, isAnimated);
 
                 // Moved this code up to remove the continue statements
                 j = Math.min(j, Math.min(sprite.getIconWidth(), sprite.getIconHeight()));
                 int lvt_11_2_ = Math.min(Integer.lowestOneBit(sprite.getIconWidth()), Integer.lowestOneBit(sprite.getIconHeight()));
 
                 if (lvt_11_2_ < mipLevel0Size) {
-                    LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", spriteLocation, sprite.getIconWidth(), sprite.getIconHeight(), MathHelper.calculateLogBaseTwo(mipLevel0Size), MathHelper.calculateLogBaseTwo(lvt_11_2_));
+                    LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", spriteLocation, sprite.getIconWidth(), sprite.getIconHeight(), NovaMath.calculateLogBaseTwo(mipLevel0Size), NovaMath.calculateLogBaseTwo(lvt_11_2_));
                     mipLevel0Size = lvt_11_2_;
                 }
 
@@ -119,7 +124,7 @@ public abstract class MixinTextureMap {
         for (TextureAtlasSprite textureatlassprite2 : map.values()) {
             textureatlassprite2.copyFrom(this.missingImage);
         }
-    } */
+    }
 
 
     public void nova$createWhiteTexture(ResourceLocation resourceLocation) {
