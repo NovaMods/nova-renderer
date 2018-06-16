@@ -21,7 +21,7 @@ import java.util.Optional;
 
 @Mixin(TextureMap.class)
 @Implements(@Interface(iface = INovaTextureMap.class, prefix = "nova$"))
-public abstract class MixinTextureMap {
+public abstract class MixinTextureMap extends AbstractTexture {
     @Shadow
     private int mipmapLevels;
 

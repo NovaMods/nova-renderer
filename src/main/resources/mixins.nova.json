@@ -17,6 +17,7 @@
     "gui.MixinGuiSlot",
     "input.MixinLWJGLKeyboard",
     "input.MixinLWJGLMouse",
+    "renderer.MixinEntityRenderer",
     "texture.MixinDynamicTexture",
     "texture.MixinTextureAtlasSprite",
     "texture.MixinTextureMap",
