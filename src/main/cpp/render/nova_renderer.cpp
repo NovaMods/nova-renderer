@@ -214,21 +214,26 @@ namespace nova {
             framebuffer = renderpass_for_pass.frameBuffer;
         }
 
+        int32_t depth_idx = -1;
         std::vector<texture_attachment> attachments = pass.texture_outputs.value_or(std::vector<texture_attachment>());
         if(pass.depth_texture) {
+            depth_idx = static_cast<int32_t>(attachments.size());
             attachments.push_back(pass.depth_texture.value());
         }
 
         vk::ClearColorValue clear_color;
-        clear_color.setFloat32({0, 0, 0, 0});
+        clear_color.setFloat32({0.689f, 0.82f, 0.922f, 0.0f});
 
         std::vector<vk::ClearValue> clear_values;
         clear_values.resize(attachments.size());
         // Clear any textures we need to clear
         for(size_t i = 0; i < attachments.size(); i++) {
-            clear_values[i] = vk::ClearValue()
-                    .setColor(clear_color)
-                    .setDepthStencil({1, 0xFFFFFFFF});
+            if(i == depth_idx) {
+                clear_values[i] = vk::ClearValue().setDepthStencil({1, 0xFFFFFFFF});
+
+            } else {
+                clear_values[i] = vk::ClearValue().setColor(clear_color);
+            }
         }
 
         begin_pass.setClearValueCount(static_cast<uint32_t>(clear_values.size()))

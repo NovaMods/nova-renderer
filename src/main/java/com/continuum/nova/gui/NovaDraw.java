@@ -62,6 +62,11 @@ public class NovaDraw {
      * @param vertexbuffer vertex buffer data
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Float[] vertexbuffer) {
+        //if(texture == null) {
+        //    buffers.get(NovaRenderer.)
+        //    return;
+        //}
+
         if(buffers.containsKey(texture)) {
             buffers.get(texture).add(indexBuffer, vertexbuffer);
         } else {

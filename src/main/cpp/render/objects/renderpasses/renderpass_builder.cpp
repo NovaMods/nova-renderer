@@ -12,7 +12,7 @@
 namespace nova {
     vk::RenderPass make_render_pass(const render_pass& pass, texture_manager& textures, std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain);
 
-    std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, texture_manager& textures, std::shared_ptr<render_context> context);
+    std::tuple<vk::Framebuffer, vk::Extent2D, int32_t> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, texture_manager& textures, std::shared_ptr<render_context> context);
 
     std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, texture_manager& textures,
                                                                                             std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain) {
@@ -24,8 +24,9 @@ namespace nova {
             const auto renderpass = make_render_pass(named_pass.second, textures, context, swapchain);
             pass_vk_info.renderpass = renderpass;
 
-            auto[framebuffer, size] = make_framebuffer(named_pass.second, renderpass, textures, context);
+            auto[framebuffer, size, depth_idx] = make_framebuffer(named_pass.second, renderpass, textures, context);
             pass_vk_info.frameBuffer = framebuffer;
+            pass_vk_info.depth_idx = depth_idx;
             if(size.width > 0 && size.height > 0) {
                 pass_vk_info.framebuffer_size = size;
 
@@ -188,13 +189,14 @@ namespace nova {
     }
 
 
-    std::tuple<vk::Framebuffer, vk::Extent2D> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, texture_manager& textures,
+    std::tuple<vk::Framebuffer, vk::Extent2D, int32_t> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, texture_manager& textures,
                                      std::shared_ptr<render_context> context) {
         LOG(INFO) << "Making framebuffer for pass " << pass.name;
         std::vector<vk::ImageView> attachments;
         vk::Extent2D framebuffer_size;
 
         bool writes_to_backbuffer = false;
+        int32_t depth_idx = -1;
 
         if(pass.texture_outputs) {
             const auto& outputs = pass.texture_outputs.value();
@@ -224,6 +226,9 @@ namespace nova {
             } else {
                 const auto &depth_tex_info = pass.depth_texture.value();
                 const auto &depth_tex = textures.get_texture(depth_tex_info.name);
+
+                depth_idx = static_cast<int32_t>(attachments.size());
+
                 attachments.push_back(depth_tex.get_image_view());
                 framebuffer_size = depth_tex.get_size();
             }
@@ -238,13 +243,13 @@ namespace nova {
                     .setHeight(framebuffer_size.height)
                     .setLayers(1);
 
-            return {context->device.createFramebuffer(framebuffer_create_info), framebuffer_size};
+            return {context->device.createFramebuffer(framebuffer_create_info), framebuffer_size, depth_idx};
         }
 
         if(!writes_to_backbuffer) {
             LOG(ERROR) << "No framebuffer attachments for pass " << pass.name << ". This is an error and you should fix it";
         }
 
-        return {vk::Framebuffer(), framebuffer_size};
+        return {vk::Framebuffer(), framebuffer_size, depth_idx};
     }
 }

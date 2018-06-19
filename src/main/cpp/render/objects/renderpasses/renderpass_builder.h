@@ -18,6 +18,7 @@ namespace nova {
         vk::Extent2D framebuffer_size;
         uint32_t num_attachments;
         std::vector<texture_attachment> texture_outputs;
+        int32_t depth_idx;
     };
 
     std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, texture_manager& textures,

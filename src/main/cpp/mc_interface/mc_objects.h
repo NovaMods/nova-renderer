@@ -10,6 +10,7 @@
 
 #include "mc_gui_objects.h"
 #include <cstdint>
+#include <glm/glm.hpp>
 
 const int CHUNK_WIDTH = 16;
 const int CHUNK_HEIGHT = 256;
@@ -60,6 +61,29 @@ struct mc_block {
 };
 
 /*!
+ * \brief A vertex from a chunk
+ *
+ * Format:
+ * XYZ 	3 32-bit floats
+ * RGBA 4 bytes
+ * UV0 	2 floats
+ * UV1 	2 16-bit floats
+ *
+ * 12 bytes for position (XYZ)
+ * 4 bytes for color (RGBA)
+ * 8 bytes for main UV (UV)
+ * 4 bytes for secondary UV (UV)
+ *
+ * 26 bytes total
+ */
+struct mc_block_vertex {
+	glm::vec3 position;
+	int color;	// GLM doesn't have a byte vector :(
+	glm::vec2 uv0;
+	glm::mediump_vec2 uv1;
+};
+
+/*!
  * \brief Represents a chunk in Minecraft. It's really just a large array of blocks and an ID
  */
 struct mc_chunk_render_object {
@@ -68,7 +92,7 @@ struct mc_chunk_render_object {
 	float y;
 	float z;
 	int id;
-	int* vertex_data;
+	mc_block_vertex* vertex_data;
 	int* indices;
 	int vertex_buffer_size;
 	int index_buffer_size;
