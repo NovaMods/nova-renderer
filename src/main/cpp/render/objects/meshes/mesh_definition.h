@@ -22,11 +22,23 @@ namespace nova {
         POS_COLOR_UV_LIGHTMAPUV_NORMAL_TANGENT, \
         POS_UV_COLOR)
 
+    struct nova_vertex {
+        glm::vec3 position;
+        glm::vec2 uv0;
+        glm::vec2 mid_tex_coord;
+        int virtual_texture_id;
+        glm::vec4 color;
+        glm::vec2 uv1;
+        glm::vec3 normal;
+        glm::vec3 tangent;
+        glm::vec4 metadata;
+    };
+
     /*!
      * \brief Defines the geometry in a mesh so that you can just throw the mesh onto the GPU and not care
      */
     struct mesh_definition {
-        std::vector<int> vertex_data;
+        std::vector<nova_vertex> vertex_data;
         std::vector<int> indices;
         format vertex_format;
         glm::vec3 position;

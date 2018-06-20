@@ -10,7 +10,6 @@
 
 #include "mc_gui_objects.h"
 #include <cstdint>
-#include <glm/glm.hpp>
 
 const int CHUNK_WIDTH = 16;
 const int CHUNK_HEIGHT = 256;
@@ -77,10 +76,17 @@ struct mc_block {
  * 26 bytes total
  */
 struct mc_block_vertex {
-	glm::vec3 position;
-	int color;	// GLM doesn't have a byte vector :(
-	glm::vec2 uv0;
-	glm::mediump_vec2 uv1;
+	float x;
+	float y;
+	float z;
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	uint8_t a;
+	float uv0_u;
+	float uv0_v;
+	uint16_t uv1_u;
+    uint16_t uv1_v;
 };
 
 /*!

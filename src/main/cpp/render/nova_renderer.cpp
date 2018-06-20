@@ -214,10 +214,10 @@ namespace nova {
             framebuffer = renderpass_for_pass.frameBuffer;
         }
 
-        int32_t depth_idx = -1;
+        uint32_t depth_idx = 0xffffffff;
         std::vector<texture_attachment> attachments = pass.texture_outputs.value_or(std::vector<texture_attachment>());
         if(pass.depth_texture) {
-            depth_idx = static_cast<int32_t>(attachments.size());
+            depth_idx = static_cast<uint32_t>(attachments.size());
             attachments.push_back(pass.depth_texture.value());
         }
 

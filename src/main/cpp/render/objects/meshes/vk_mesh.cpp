@@ -33,7 +33,7 @@ namespace nova {
         }
     }
 
-    void vk_mesh::set_data(const std::vector<int>& vertex_data, const std::vector<int>& index_data) {
+    void vk_mesh::set_data(const std::vector<nova_vertex>& vertex_data, const std::vector<int>& index_data) {
         this->data_format = data_format;
 
         upload_vertex_data(vertex_data);
@@ -48,9 +48,9 @@ namespace nova {
         return num_indices > 0;
     }
 
-    void vk_mesh::upload_vertex_data(const std::vector<int> &vertex_data) {
+    void vk_mesh::upload_vertex_data(const std::vector<nova_vertex> &vertex_data) {
         vk::BufferCreateInfo vertex_buffer_create = {};
-        vertex_buffer_create.size = vertex_data.size() * sizeof(int);
+        vertex_buffer_create.size = vertex_data.size() * sizeof(nova_vertex);
         vertex_buffer_create.usage = vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer;
         vertex_buffer_create.sharingMode = vk::SharingMode::eExclusive;
         vertex_buffer_create.queueFamilyIndexCount = 1;

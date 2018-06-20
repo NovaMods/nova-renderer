@@ -36,7 +36,7 @@ namespace nova {
          * \param vertex_data The interleaved vertex data
          * \param data_format The format of the data (\see format)
          */
-        void set_data(const std::vector<int>& vertex_data, const std::vector<int>& index_data);
+        void set_data(const std::vector<nova_vertex>& vertex_data, const std::vector<int>& index_data);
 
         /*!
          * \brief Returns the format of this vertex buffer
@@ -60,7 +60,7 @@ namespace nova {
 
         VmaAllocation indices_alloc;
 
-        void upload_vertex_data(const std::vector<int> &vertex_data);
+        void upload_vertex_data(const std::vector<nova_vertex> &vertex_data);
 
         void upload_index_data(const std::vector<int>& index_data);
     };

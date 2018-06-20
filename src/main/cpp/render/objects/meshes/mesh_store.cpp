@@ -40,50 +40,28 @@ namespace nova {
         mesh_definition cur_screen_buffer = {};
         //cur_screen_buffer.vertex_data.resize(28 * static_cast<unsigned long>(command->vertex_buffer_size / 9), 0);
         for (int i = 0; i + 8 < command->vertex_buffer_size; i += 9) {
+            nova_vertex new_vertex = {};
+
             // position
-            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i]));
-            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+1]));
-            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+2]));
+            new_vertex.position.x = command->vertex_buffer[i];
+            new_vertex.position.y = command->vertex_buffer[i+1];
+            new_vertex.position.z = command->vertex_buffer[i+2];
 
             // UV0
             float u = command->vertex_buffer[i+3] * tex_size.x + tex_location.min.x;
-            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&u));
+            new_vertex.uv0.x = u;
             float v = command->vertex_buffer[i+4] * tex_size.y + tex_location.min.y;
-            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&v));
-
-            // MidTexCoord
-            cur_screen_buffer.vertex_data.push_back(0);
-            cur_screen_buffer.vertex_data.push_back(0);
-
-            // VirtualTextureId
-            cur_screen_buffer.vertex_data.push_back(0);
+            new_vertex.uv0.y = v;
 
             // Color
-            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+5]));
-            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+6]));
-            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+7]));
-            cur_screen_buffer.vertex_data.push_back(*reinterpret_cast<int*>(&command->vertex_buffer[i+8]));
+            new_vertex.color.r = command->vertex_buffer[i+5];
+            new_vertex.color.g = command->vertex_buffer[i+6];
+            new_vertex.color.b = command->vertex_buffer[i+7];
+            new_vertex.color.a = command->vertex_buffer[i+8];
 
-            // UV1
-            cur_screen_buffer.vertex_data.push_back(0);
-            cur_screen_buffer.vertex_data.push_back(0);
-
-            // Normal
-            cur_screen_buffer.vertex_data.push_back(0);
-            cur_screen_buffer.vertex_data.push_back(0);
-            cur_screen_buffer.vertex_data.push_back(0);
-
-            // Tangent
-            cur_screen_buffer.vertex_data.push_back(0);
-            cur_screen_buffer.vertex_data.push_back(0);
-            cur_screen_buffer.vertex_data.push_back(0);
-
-            // McEntityId
-            cur_screen_buffer.vertex_data.push_back(0);
-            cur_screen_buffer.vertex_data.push_back(0);
-            cur_screen_buffer.vertex_data.push_back(0);
-            cur_screen_buffer.vertex_data.push_back(0);
+            cur_screen_buffer.vertex_data.push_back(new_vertex);
         }
+
         cur_screen_buffer.indices.resize(static_cast<unsigned long>(command->index_buffer_size), 0);
         for(int i = 0; i < command->index_buffer_size; i++) {
             cur_screen_buffer.indices[i] = (unsigned int)command->index_buffer[i];
@@ -175,17 +153,26 @@ namespace nova {
         auto& vertex_data = def.vertex_data;
 
         for(int i = 0; i < chunk.vertex_buffer_size; i++) {
-            vertex_data.push_back(chunk.vertex_data[i]);
+            const mc_block_vertex& cur_vertex = chunk.vertex_data[i];
+            nova_vertex new_vertex = {};
 
-            if(i % 7 == 6) {
-                // Add 0s for the normals and tangets since we don't compute those yet
-                vertex_data.push_back(0);
-                vertex_data.push_back(0);
-                vertex_data.push_back(0);
-                vertex_data.push_back(0);
-                vertex_data.push_back(0);
-                vertex_data.push_back(0);
-            }
+            // Position
+            new_vertex.position.x = cur_vertex.x;
+            new_vertex.position.y = cur_vertex.y;
+            new_vertex.position.z = cur_vertex.z;
+
+            new_vertex.uv0.x = cur_vertex.uv0_u;
+            new_vertex.uv0.y = cur_vertex.uv0_v;
+
+            new_vertex.color.r = (float)cur_vertex.r / 255.0f;
+            new_vertex.color.g = (float)cur_vertex.g / 255.0f;
+            new_vertex.color.b = (float)cur_vertex.b / 255.0f;
+            new_vertex.color.a = (float)cur_vertex.a / 255.0f;
+
+            new_vertex.uv1.x = cur_vertex.uv1_u;
+            new_vertex.uv1.y = cur_vertex.uv1_v;
+
+            vertex_data.push_back(new_vertex);
         }
 
         for(int i = 0; i < chunk.index_buffer_size; i++) {
@@ -212,52 +199,43 @@ namespace nova {
             }
         }
 
-        union f2i {
-            float f;
-            int i;
-
-            f2i(float fl) {
-                f = fl;
-            }
-
-            f2i(int in) {
-                i = in;
-            }
-        };
-
         mesh_definition quad;
-        quad.vertex_data = {
-                f2i(-1.0f).i, f2i(-3.0f).i, f2i(0.0f).i,                 // Position
-                f2i(0.0f).i, f2i(-1.0f).i,                               // UV0
-                f2i(0.0f).i, f2i(0.0f).i,                               // MidTexCoord
-                0,                                                      // VirtualTextureId
-                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,     // Color
-                f2i(0.0f).i, f2i(1.0f).i,                               // UV1
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Normal
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Tangent
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,     // McEntityId
+        quad.vertex_data = std::vector<nova_vertex>{
+                nova_vertex{
+                        {-1.0f, -3.0f, 0.0f},                 // Position
+                        {0.0f, -1.0f},                               // UV0
+                        {0.0f, 0.0f},                               // MidTexCoord
+                        0,                                                      // VirtualTextureId
+                        {1.0f, 1.0f, 1.0f, 1.0f},     // Color
+                        {0.0f, 1.0f},                               // UV1
+                        {0.0f, 0.0f, 0.0f},                  // Normal
+                        {0.0f, 0.0f, 0.0f},                  // Tangent
+                        {0.0f, 0.0f, 0.0f, 0.0f}     // McEntityId
+                },
 
+                nova_vertex{
+                        {3.0f,  1.0f,  0.0f},                  // Position
+                        {2.0f, 1.0f},                               // UV0
+                        {0.0f, 0.0f},                               // MidTexCoord
+                        0,                                                      // VirtualTextureId
+                        {1.0f, 1.0f, 1.0f, 1.0f},     // Color
+                        {0.0f, 0.0f},                               // UV1
+                        {0.0f, 0.0f, 0.0f},                  // Normal
+                        {0.0f, 0.0f, 0.0f},                  // Tangent
+                        {0.0f, 0.0f, 0.0f, 0.0f}     // McEntityId
+                },
 
-                f2i(3.0f).i, f2i(1.0f).i, f2i(0.0f).i,                  // Position
-                f2i(2.0f).i, f2i(1.0f).i,                               // UV0
-                f2i(0.0f).i, f2i(0.0f).i,                               // MidTexCoord
-                0,                                                      // VirtualTextureId
-                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,     // Color
-                f2i(0.0f).i, f2i(0.0f).i,                               // UV1
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Normal
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Tangent
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,     // McEntityId
-
-
-                f2i(-1.0f).i, f2i(1.0f).i, f2i(0.0f).i,                  // Position
-                f2i(0.0f).i, f2i(1.0f).i,                               // UV0
-                f2i(0.0f).i, f2i(0.0f).i,                               // MidTexCoord
-                0,                                                      // VirtualTextureId
-                f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i, f2i(1.0f).i,     // Color
-                f2i(0.0f).i, f2i(0.0f).i,                               // UV1
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Normal
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,                  // Tangent
-                f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i, f2i(0.0f).i,     // McEntityId
+                nova_vertex{
+                        {-1.0f, 1.0f,  0.0f},                  // Position
+                        {0.0f, 1.0f},                               // UV0
+                        {0.0f, 0.0f},                               // MidTexCoord
+                        0,                                                      // VirtualTextureId
+                        {1.0f, 1.0f, 1.0f, 1.0f},     // Color
+                        {0.0f, 0.0f},                 // UV1
+                        {0.0f, 0.0f, 0.0f},           // Normal
+                        {0.0f, 0.0f, 0.0f},           // Tangent
+                        {0.0f, 0.0f, 0.0f, 0.0f}     // McEntityId
+                }
         };
 
         quad.indices = {0, 1, 2};
