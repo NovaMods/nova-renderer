@@ -192,7 +192,7 @@ namespace nova {
         void render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, pipeline_object &info);
 
         void
-        render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &info, std::string string);
+        render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &info, std::string per_model_buffer_resource);
 
         void end_frame();
 

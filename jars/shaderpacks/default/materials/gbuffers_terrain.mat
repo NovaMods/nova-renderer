@@ -6,7 +6,8 @@
             "bindings": {
                 "per_frame_uniforms": "NovaPerFrameUBO",
                 "per_model_uniforms": "NovaPerModelUBO",
-                "colortex": "NovaColorAtlas"
+                "colortex": "NovaColorAtlas",
+                "lightmap": "NovaLightmap"
             }
         }
     ]

@@ -220,7 +220,7 @@ namespace nova {
                 write.setPBufferInfo(&buffer_infos[buffer_infos.size() - 1])
                         .setDescriptorType(vk::DescriptorType::eUniformBuffer);
 
-                LOG(INFO) << "Binding buffer " << resource_name << " to descriptor " << "(set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
+                LOG(INFO) << "Binding buffer " << resource_name << " to descriptor " << "(id=" << (VkDescriptorSet)descriptor_set << " set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
 
             } else {
                 LOG(WARNING) << "Resource " << resource_name << " is not known to Nova. I hope you aren't using it cause it doesn't exist";

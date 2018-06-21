@@ -14,7 +14,7 @@ public class NovaConstants {
     public static final int CHUNK_DEPTH                 = 16;
 
     public static final String GUI_ATLAS_NAME           = "gui";
-    public static final String BLOCK_COLOR_ATLAS_NAME   = "block_color";
+    public static final String BLOCK_COLOR_ATLAS_NAME   = "NovaColorAtlas";
     public static final String FONT_ATLAS_NAME          = "font";
 
     public static final String MODEL_FILENAME           = "all_models.json";

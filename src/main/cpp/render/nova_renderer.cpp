@@ -306,6 +306,25 @@ namespace nova {
             }
         }
 
+        for(const auto& resource : pipeline.resource_bindings) {
+            std::stringstream ss;
+            ss << "Shader descriptor {name=" << resource.first << " set=" << resource.second.set << " binding=" << resource.second.binding << ") ";
+            if(pass.bindings.find(resource.first) != pass.bindings.end()) {
+                ss << "has resource " << pass.bindings.at(resource.first) << " bound";
+
+            } else {
+                ss << " has nothing bound!";
+            }
+
+            LOG(TRACE) << ss.str();
+        }
+
+        std::stringstream ss;
+        ss << "Binding descriptors ";
+        for(const auto& desc : pass.descriptor_sets) {
+            ss << (VkDescriptorSet)desc << ", ";
+        }
+        LOG(TRACE) << ss.str();
         buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, pass.descriptor_sets, {});
 
         LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
@@ -314,10 +333,9 @@ namespace nova {
         }
     }
 
-    void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &pipeline_data, std::string string) {
+    void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &pipeline_data, std::string per_model_buffer_resource) {
         LOG(TRACE) << "Binding model matrix descriptor " << (VkDescriptorSet)(mesh.model_matrix_descriptor) << " for render object " << mesh.id;
-        LOG(TRACE) << "Rendering mesh {indexBuffer=" << (VkBuffer)mesh.geometry->indices << ", vertexBuffer=" << (VkBuffer)mesh.geometry->vertex_buffer << ", numIndices=" << mesh.geometry->num_indices << "}";
-        const auto& descriptor = pipeline_data.resource_bindings[string];
+        const auto& descriptor = pipeline_data.resource_bindings[per_model_buffer_resource];
         buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data.layout, descriptor.set, 1, &mesh.model_matrix_descriptor, 0, nullptr);
 
         buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
@@ -496,7 +514,7 @@ namespace nova {
 
         for(const auto& mat : materials) {
             for(const auto& mat_pass : mat.passes) {
-                LOG(INFO) << "Material pass for material " << mat.name << " uses pipeline " << mat_pass.pipeline;
+                LOG(TRACE) << "Material pass for material " << mat.name << " uses pipeline " << mat_pass.pipeline;
                 if(ordered_material_passes.find(mat_pass.pipeline) == ordered_material_passes.end()) {
                     ordered_material_passes[mat_pass.pipeline] = std::vector<material_pass>{};
                 }
