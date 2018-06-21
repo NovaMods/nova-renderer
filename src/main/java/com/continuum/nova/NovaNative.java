@@ -108,6 +108,8 @@ public interface NovaNative extends Library {
             }
 
             vertex_buffer_size = vertexData.size() / 7;
+
+            LOG.info("Adding {} ints, which should be {} vertices", vertexData.size(), vertex_buffer_size);
         }
 
         public void setIndices(List<Integer> indices) {

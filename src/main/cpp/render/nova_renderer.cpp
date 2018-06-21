@@ -315,7 +315,8 @@ namespace nova {
     }
 
     void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &pipeline_data, std::string string) {
-        LOG(INFO) << "Binding model matrix descriptor " << (VkDescriptorSet)(mesh.model_matrix_descriptor) << " for render object " << mesh.id;
+        LOG(TRACE) << "Binding model matrix descriptor " << (VkDescriptorSet)(mesh.model_matrix_descriptor) << " for render object " << mesh.id;
+        LOG(TRACE) << "Rendering mesh {indexBuffer=" << (VkBuffer)mesh.geometry->indices << ", vertexBuffer=" << (VkBuffer)mesh.geometry->vertex_buffer << ", numIndices=" << mesh.geometry->num_indices << "}";
         const auto& descriptor = pipeline_data.resource_bindings[string];
         buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data.layout, descriptor.set, 1, &mesh.model_matrix_descriptor, 0, nullptr);
 

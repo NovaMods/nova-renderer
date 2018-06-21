@@ -152,7 +152,7 @@ namespace nova {
         mesh_definition def = {};
         auto& vertex_data = def.vertex_data;
 
-        for(int i = 0; i < chunk.vertex_buffer_size; i++) {
+        for(int i = 0; i < chunk.vertex_buffer_size / 7; i++) {
             const mc_block_vertex& cur_vertex = chunk.vertex_data[i];
             nova_vertex new_vertex = {};
 

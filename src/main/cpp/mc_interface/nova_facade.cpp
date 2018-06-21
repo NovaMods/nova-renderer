@@ -69,6 +69,7 @@ NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_re
 NOVA_API void execute_frame() {
     MTR_SCOPE("RenderLoop", "execute_frame");
     NOVA_RENDERER->render_frame();
+    LOG(INFO) << "execute_frame done";
 }
 
 NOVA_API void set_fullscreen(int fullscreen) {

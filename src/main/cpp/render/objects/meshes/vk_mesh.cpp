@@ -67,6 +67,8 @@ namespace nova {
         vmaMapMemory(context->allocator, vertex_alloc, &mapped_vbo);
         memcpy(mapped_vbo, vertex_data.data(), vertex_buffer_create.size);
         vmaUnmapMemory(context->allocator, vertex_alloc);
+
+        LOG(DEBUG) << "Uploaded " << vertex_buffer_create.size << " bytes of vertex data for " << vertex_data.size() << " vertices, which are " << sizeof(nova_vertex) << " bytes each";
     }
 
     void vk_mesh::upload_index_data(const std::vector<int>& index_data) {

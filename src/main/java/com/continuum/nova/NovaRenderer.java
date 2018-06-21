@@ -330,17 +330,21 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.start("execute_frame");
         NovaNative.INSTANCE.execute_frame();
         Profiler.end("execute_frame");
+        LOG.info("Native code executed a frame");
 
         Profiler.start("update_window");
         updateWindowSize();
         Profiler.end("update_window");
+        LOG.info("Updated window size");
         int scalefactor = new ScaledResolution(mc).getScaleFactor() * 2;
         if (scalefactor != this.scalefactor) {
             NovaNative.INSTANCE.set_float_setting("scalefactor", scalefactor);
             this.scalefactor = scalefactor;
+            LOG.info("Scale factor changed, updated the native code");
         }
 
         printProfilerData();
+        LOG.info("Printed profiler data (if it was time to)");
     }
 
     private void sendLightmapTexture(DynamicTexture lightmapTexture) {

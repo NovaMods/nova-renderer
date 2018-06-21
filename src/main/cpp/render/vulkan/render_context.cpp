@@ -12,6 +12,8 @@
 #include "../windowing/glfw_vk_window.h"
 #include "command_pool.h"
 
+#define NDEBUG
+
 namespace nova {
     bool layers_are_supported(std::vector<const char*>& validation_layers);
 
