@@ -12,7 +12,7 @@
 namespace nova {
     uniform_buffer_store::uniform_buffer_store(std::shared_ptr<render_context> context) {
         auto per_model_buffer_create_info = vk::BufferCreateInfo()
-                .setSize(5000 * sizeof(glm::mat4))
+                .setSize(10000 * sizeof(glm::mat4))
                 .setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer)
                 .setSharingMode(vk::SharingMode::eExclusive)
                 .setQueueFamilyIndexCount(1)
