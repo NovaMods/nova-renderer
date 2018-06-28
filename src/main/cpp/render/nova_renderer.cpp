@@ -282,21 +282,21 @@ namespace nova {
         }
     }
 
-    void nova_renderer::render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, pipeline_object &pipeline) {
-        const auto& meshes_for_mat = meshes->get_meshes_for_material(pass.material_name);
+    void nova_renderer::render_all_for_material_pass(const material_pass& mat, vk::CommandBuffer &buffer, pipeline_object &pipeline) {
+        const auto& meshes_for_mat = meshes->get_meshes_for_material(mat.material_name);
         if(meshes_for_mat.empty()) {
-            LOG(INFO) << "No meshes available for material " << pass.material_name;
+            LOG(INFO) << "No meshes available for material " << mat.material_name;
             return;
         }
 
-        LOG(INFO) << "Beginning material " << pass.material_name;
+        LOG(INFO) << "Beginning material " << mat.material_name;
 
         auto per_model_buffer_binding = std::string{};
 
         const auto& pipeline_layout = pipeline.layout;
 
         // Find the per-model UBO
-        for(const auto& binding : pass.bindings) {
+        for(const auto& binding : mat.bindings) {
             const auto &descriptor_name = binding.first;
             const auto &resource_name = binding.second;
             if(resource_name == "NovaPerModelUBO") {
@@ -309,8 +309,8 @@ namespace nova {
         for(const auto& resource : pipeline.resource_bindings) {
             std::stringstream ss;
             ss << "Shader descriptor {name=" << resource.first << " set=" << resource.second.set << " binding=" << resource.second.binding << ") ";
-            if(pass.bindings.find(resource.first) != pass.bindings.end()) {
-                ss << "has resource " << pass.bindings.at(resource.first) << " bound";
+            if(mat.bindings.find(resource.first) != mat.bindings.end()) {
+                ss << "has resource " << mat.bindings.at(resource.first) << " bound";
 
             } else {
                 ss << " has nothing bound!";
@@ -321,11 +321,11 @@ namespace nova {
 
         std::stringstream ss;
         ss << "Binding descriptors ";
-        for(const auto& desc : pass.descriptor_sets) {
+        for(const auto& desc : mat.descriptor_sets) {
             ss << (VkDescriptorSet)desc << ", ";
         }
         LOG(TRACE) << ss.str();
-        buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, pass.descriptor_sets, {});
+        buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, mat.descriptor_sets, {});
 
         LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
         for(const auto& mesh : meshes_for_mat) {
@@ -334,7 +334,6 @@ namespace nova {
     }
 
     void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &pipeline_data, std::string per_model_buffer_resource) {
-        LOG(TRACE) << "Binding model matrix descriptor " << (VkDescriptorSet)(mesh.model_matrix_descriptor) << " for render object " << mesh.id;
         const auto& descriptor = pipeline_data.resource_bindings[per_model_buffer_resource];
         buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data.layout, descriptor.set, 1, &mesh.model_matrix_descriptor, 0, nullptr);
 
@@ -466,9 +465,14 @@ namespace nova {
     void nova_renderer::update_per_frame_ubo() {
         LOG(DEBUG) << "Updating the per-frame UBO";
 
+        LOG(DEBUG) << "Camera position: " << player_camera.position << " rotation: " << player_camera.rotation;
+
         auto per_frame_data = per_frame_uniforms{};
         per_frame_data.gbufferProjection = player_camera.get_projection_matrix();
         per_frame_data.gbufferModelView = player_camera.get_view_matrix();
+
+        LOG(TRACE) << "View matrix: " << per_frame_data.gbufferModelView;
+        LOG(TRACE) << "Projection matrix: " << per_frame_data.gbufferProjection;
 
         uniform_buffer& per_frame_ubo = shader_resources->get_uniform_buffers().get_buffer("NovaPerFrameUBO");
         per_frame_ubo.set_data(&per_frame_data, sizeof(per_frame_uniforms));

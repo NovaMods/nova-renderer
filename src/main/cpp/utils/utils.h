@@ -116,6 +116,15 @@ namespace nova {
      * \brief Stream insertion for glm::vec4
      *
      * \param out The stream to write to
+     * \param vec The matrix to write
+     * \return The written to stream
+     */
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::mat4 &mat);
+
+    /*!
+     * \brief Stream insertion for glm::vec4
+     *
+     * \param out The stream to write to
      * \param vec The vector to write
      * \return The written to stream
      */

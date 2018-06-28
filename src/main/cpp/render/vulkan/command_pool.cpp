@@ -75,8 +75,16 @@ namespace nova {
         submit_info.pCommandBuffers = &buffer;
 
         auto& graphics_queue = context->graphics_queue;
-        graphics_queue.submit(1, &submit_info, vk::Fence());
-        graphics_queue.waitIdle();  // This is probably a bad idea but I'm loading resources from disk so the IO is slow anyways
+
+        context->device.resetFences(1, fences);
+
+        graphics_queue.submit(1, &submit_info, fences[0]);
+        LOG(TRACE) << "Submitted buffer, it'll signal the fence when done";
+
+        std::vector<vk::Fence> wait_fences;
+        wait_fences.push_back(fences[0]);
+        context->device.waitForFences(wait_fences, VK_TRUE, ~0ull);
+        LOG(TRACE) << "Waited for the fence";
 
         context->command_buffer_pool->free(*this);
     }

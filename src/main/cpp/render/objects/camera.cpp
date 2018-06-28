@@ -10,13 +10,8 @@
 #include <easylogging++.h>
 
 namespace nova {
-    glm::mat4& camera::get_projection_matrix() {
-        if(projection_matrix_is_dirty) {
-            projection_matrix = glm::perspective(glm::radians(fov), aspect_ratio, near_plane, far_plane);
-            projection_matrix_is_dirty = false;
-        }
-
-        return projection_matrix;
+    glm::mat4 camera::get_projection_matrix() {
+        return glm::perspective(glm::radians(fov), aspect_ratio, near_plane, far_plane);
     }
 
     glm::mat4 camera::get_view_matrix() {
@@ -62,6 +57,7 @@ namespace nova {
         frustum[0][3] /= t;
 
         /* Extract the numbers for the LEFT plane */
+
         frustum[1][0] = clip[0][3] + clip[0][0];
         frustum[1][1] = clip[1][3] + clip[1][0];
         frustum[1][2] = clip[2][3] + clip[2][0];

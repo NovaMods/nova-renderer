@@ -323,6 +323,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             double x = viewEntity.posX;
             double y = viewEntity.posY + viewEntity.getEyeHeight();
             double z = viewEntity.posZ;
+            LOG.info("Setting camera transform position=({}, {}, {}) rotation=({}, {})", x, y, z, yaw, pitch);
             NovaNative.INSTANCE.set_player_camera_transform(x, y, z, yaw, pitch);
         }
         Profiler.end("update_player");

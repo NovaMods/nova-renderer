@@ -159,8 +159,6 @@ set(NOVA_SOURCE
         physics/aabb.cpp
         render/objects/meshes/mesh_definition.cpp
 
-        render/objects/resources/uniform_buffers_definitions.cpp
-
         mc_interface/mc_objects.cpp
         render/objects/camera.cpp
         data_loading/loaders/shader_source_structs.cpp

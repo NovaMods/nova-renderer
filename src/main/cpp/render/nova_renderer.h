@@ -189,7 +189,7 @@ namespace nova {
 
         void render_pipeline(pipeline_object &pipeline_data, vk::CommandBuffer& buffer);
 
-        void render_all_for_material_pass(const material_pass& pass, vk::CommandBuffer &buffer, pipeline_object &info);
+        void render_all_for_material_pass(const material_pass& mat, vk::CommandBuffer &buffer, pipeline_object &info);
 
         void
         render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &info, std::string per_model_buffer_resource);

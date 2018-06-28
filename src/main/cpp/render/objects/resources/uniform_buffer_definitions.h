@@ -151,8 +151,6 @@ namespace nova {
         uint32_t shadowcolor1;
         uint32_t noisetex;
     };
-
-    el::base::Writer& operator<<(el::base::Writer& out, const glm::mat4& mat);
 }
 
 #endif //RENDERER_UNIFORM_BUFFERS_H

@@ -99,6 +99,11 @@ namespace nova {
         return out;
     }
 
+    el::base::Writer &operator<<(el::base::Writer &out, const glm::mat4 &mat) {
+        out << "[" << mat[0] << ",\n " << mat[1] << ",\n " << mat[2] << ",\n " << mat[3] << "]";
+        return out;
+    }
+
     std::string print_color(unsigned int color) {
         auto red = color >> 24;
         auto green = (color >> 16) & 0xFF;

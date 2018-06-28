@@ -23,7 +23,7 @@ namespace nova {
         glm::vec2 rotation;
         glm::vec3 position;
 
-        glm::mat4& get_projection_matrix();
+        glm::mat4 get_projection_matrix();
         glm::mat4 get_view_matrix();
 
         glm::vec3 get_view_direction();
@@ -33,10 +33,6 @@ namespace nova {
         bool has_object_in_frustum(aabb& bounding_box);
 
     private:
-        bool projection_matrix_is_dirty;
-
-        glm::mat4 projection_matrix;
-
         float frustum[6][4];
     };
 }
