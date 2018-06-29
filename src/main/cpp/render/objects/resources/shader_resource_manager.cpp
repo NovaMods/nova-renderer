@@ -64,8 +64,8 @@ namespace nova {
 
         // CLion might tell you to simplify this into a foreach loop... DO NOT! The layouts need to be added in set
         // order, not map order which is what you'll get if you use a foreach - AND IT'S WRONG
-        for(int32_t i = 0; i < pipeline_data.layouts.size(); i++) {
-            layouts.push_back(pipeline_data.layouts.at(i));
+        for(uint32_t i = 0; i < pipeline_data.layouts.size(); i++) {
+            layouts.push_back(pipeline_data.layouts.at(static_cast<int32_t>(i)));
         }
 
         auto alloc_info = vk::DescriptorSetAllocateInfo()

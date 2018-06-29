@@ -172,7 +172,7 @@ namespace nova {
             LOG(WARNING) << "Could not wait for render done fence, " << vk::to_string(fence_wait_result);
         }
 
-        LOG(INFO) << "Frame done";
+        end_frame();
     }
 
     void nova_renderer::execute_pass(const render_pass &pass, vk::CommandBuffer& buffer) {
@@ -351,10 +351,10 @@ namespace nova {
 
     void nova_renderer::init() {
         mtr_init("nova_profile.json");
-        MTR_META_PROCESS_NAME("Nova Renderer")
-        MTR_META_THREAD_NAME("Main Nova Thread")
+        MTR_META_PROCESS_NAME("Nova Renderer");
+        MTR_META_THREAD_NAME("Main Nova Thread");
 
-        MTR_SCOPE("INIT", "MainInit")
+        MTR_SCOPE("INIT", "MainInit");
         render_settings = std::make_shared<settings>("config/config.json");
 
         try {
@@ -487,7 +487,9 @@ namespace nova {
     }
 
     void nova_renderer::end_frame() {
+        LOG(INFO) << "Frame done";
 
+        mtr_flush();
     }
 
     void nova_renderer::begin_frame() {

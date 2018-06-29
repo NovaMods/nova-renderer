@@ -70,8 +70,6 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/minitrace
         )
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs)
-
 # Setup the nova-core library.
 set(NOVA_HEADERS
 
@@ -187,7 +185,7 @@ set(SPIRV_CROSS_SOURCE
         ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
         ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
         ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp
-        )
+        dummy.cpp)
 
 set(SPIRV_CROSS_HEADERS
         ${SPIRV_CROSS_ROOT}/spirv_cross.hpp
@@ -201,7 +199,6 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fno-omit-frame-pointer")
     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer")
 endif (UNIX)
-
 
 if(MSVC)
     if(CMAKE_CXX_FLAGS MATCHES "/Wextra")
@@ -223,14 +220,12 @@ endif()
 # because there are several sub groups that would be extremely small
 source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
-add_library(nova-renderer-obj OBJECT ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
-set_target_properties(nova-renderer-obj PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+add_library(nova-renderer SHARED ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
+set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
-target_compile_definitions(nova-renderer-obj PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)
+target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE MTR_ENABLED)
 
-target_compile_definitions(nova-renderer-obj PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
-
-add_library(nova-renderer SHARED $<TARGET_OBJECTS:nova-renderer-obj>)
+target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE MTR_ENABLED)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
@@ -247,15 +242,12 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
 
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs)
+
 add_executable(nova-test test/main.cpp ${NOVA_SOURCE})
 target_link_libraries(nova-test ${COMMON_LINK_LIBS})
 target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
 set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-
-# Not sure if this is actually doing anything
-if(GLFW_COMPILED)
-    add_dependencies(nova-renderer glfw3)
-endif()
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 
