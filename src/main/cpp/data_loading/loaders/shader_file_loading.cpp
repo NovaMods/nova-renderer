@@ -5,6 +5,7 @@
  * \date 22-Feb-18.
  */
 
+#include <easy/profiler.h>
 #include "shader_loading.h"
 #include "../../utils/utils.h"
 
@@ -185,6 +186,7 @@ namespace nova {
     fs::path get_included_file_path(const fs::path &shader_path, const fs::path &included_file_name);
 
     std::unordered_map<std::string, std::vector<pipeline_data>> load_pipelines_from_folder(const fs::path &shaderpack_path) {
+        EASY_FUNCTION();
         std::vector<pipeline_data> pipelines = read_pipeline_files(shaderpack_path);
         if(pipelines.empty()) {
             LOG(WARNING) << "No pipelines defined by shaderpack. Attempting to guess the intended shaderpack format";
@@ -430,6 +432,7 @@ namespace nova {
     }
 
     std::unordered_map<std::string, render_pass> load_passes_from_folder(const fs::path& shaderpack_path) {
+        EASY_FUNCTION();
         auto passes_path = shaderpack_path / "passes.json";
         auto ss = std::stringstream{};
         ss << passes_path;
@@ -442,6 +445,7 @@ namespace nova {
     }
 
     std::unordered_map<std::string, texture_resource> load_texture_definitions_from_folder(const fs::path& shaderpack_path) {
+        EASY_FUNCTION();
         fs::path resources_path = shaderpack_path / "resources.json";
         if(!fs::exists(resources_path)) {
             // No resources - so let's just early out
@@ -461,6 +465,7 @@ namespace nova {
     }
 
     std::vector<material> load_materials_from_folder(const fs::path& shaderpack_path) {
+        EASY_FUNCTION();
         fs::path materials_path = shaderpack_path / "materials";
         if(!fs::exists(materials_path)) {
             LOG(WARNING) << "No materials found";

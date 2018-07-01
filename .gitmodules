@@ -46,3 +46,6 @@
 [submodule "src/main/cpp/3rdparty/renderdocapi"]
 	path = src/main/cpp/3rdparty/renderdocapi
 	url = https://github.com/NovaMods/RenderDoc-Manager.git
+[submodule "src/main/cpp/3rdparty/profiler"]
+	path = src/main/cpp/3rdparty/profiler
+	url = https://github.com/NovaMods/profiler.git

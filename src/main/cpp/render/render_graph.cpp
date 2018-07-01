@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <unordered_set>
 #include <easylogging++.h>
+#include <easy/profiler.h>
 
 namespace nova {
     /*!
@@ -31,6 +32,7 @@ namespace nova {
                               uint32_t depth);
 
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass> &passes) {
+        EASY_FUNCTION();
         LOG(INFO) << "Ordering passes";
         auto ordered_passes = std::vector<std::string>{};
 

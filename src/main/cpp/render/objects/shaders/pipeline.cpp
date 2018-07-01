@@ -8,6 +8,7 @@
 
 #include <easylogging++.h>
 #include <cstdint>
+#include <easy/profiler.h>
 #include "pipeline.h"
 #include "../../vulkan/render_context.h"
 #include "../resources/shader_resource_manager.h"
@@ -21,6 +22,7 @@ namespace nova {
     std::unordered_map<std::string, std::vector<pipeline_object>> make_pipelines(const shaderpack_data& shaderpack,
                                                                               std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass,
                                                                               std::shared_ptr<render_context> context) {
+        EASY_FUNCTION();
         auto ret_val = std::unordered_map<std::string, std::vector<pipeline_object>>{};
 
         for(const auto& pipelines : shaderpack.pipelines_by_pass) {
@@ -38,6 +40,7 @@ namespace nova {
     }
 
     pipeline_object make_pipeline(const pipeline_data& pipeline_create_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
+        EASY_FUNCTION();
         LOG(INFO) << "Making VkPipeline for pipeline " << pipeline_create_info.name;
 
         // Creates a pipeline out of compiled shaders

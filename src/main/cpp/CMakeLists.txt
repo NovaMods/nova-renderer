@@ -21,7 +21,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_BUILD_TYPE DEBUG)
+set(CMAKE_BUILD_TYPE RELEASE)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 
@@ -40,6 +40,9 @@ set(SHADERC_SKIP_TESTS TRUE)
 
 set(BUILD_SHARED_LIBS TRUE)
 
+set(EASY_PROFILER_NO_GUI ON)
+set(BUILD_SHARED_LIBS ON)
+
 # need to compile GLFW and JSON
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
 add_subdirectory(${3RD_PARTY_DIR}/json)
@@ -52,6 +55,7 @@ add_subdirectory(${3RD_PARTY_DIR}/spirv-headers)
 add_subdirectory(${3RD_PARTY_DIR}/spirv-tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
 add_subdirectory(${3RD_PARTY_DIR}/shaderc)
+add_subdirectory(${3RD_PARTY_DIR}/profiler)
 
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
@@ -67,7 +71,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/renderdocapi
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
-        ${3RD_PARTY_DIR}/minitrace
+        ${3RD_PARTY_DIR}/profiler/include
         )
 
 # Setup the nova-core library.
@@ -132,7 +136,6 @@ set(NOVA_SOURCE
         3rdparty/miniz/miniz_tinfl.c
         3rdparty/miniz/miniz_zip.c
         3rdparty/easyloggingpp/src/easylogging++.cc
-        3rdparty/minitrace/minitrace.c
 
         render/nova_renderer.cpp
         mc_interface/nova_facade.cpp
@@ -223,9 +226,9 @@ source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 add_library(nova-renderer SHARED ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
-target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE MTR_ENABLED)
+target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE BUILD_WITH_EASY_PROFILER)
 
-target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE MTR_ENABLED)
+target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE BUILD_WITH_EASY_PROFILER)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
@@ -242,7 +245,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova_profiler)
 
 add_executable(nova-test test/main.cpp ${NOVA_SOURCE})
 target_link_libraries(nova-test ${COMMON_LINK_LIBS})
