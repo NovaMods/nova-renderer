@@ -489,6 +489,7 @@ namespace nova {
     }
 
     void nova_renderer::end_frame() {
+        NOVA_PROFILER_FLUSH_TO_FILE("profiler_data.txt");
         LOG(INFO) << "Frame done";
     }
 
