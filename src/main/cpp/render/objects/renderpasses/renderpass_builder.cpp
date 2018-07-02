@@ -8,7 +8,7 @@
 #include "../../vulkan/render_context.h"
 #include "../../nova_renderer.h"
 #include <easylogging++.h>
-#include <easy/profiler.h>
+#include <nova/profiler.h>
 
 namespace nova {
     vk::RenderPass make_render_pass(const render_pass& pass, texture_manager& textures, std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain);
@@ -17,7 +17,7 @@ namespace nova {
 
     std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, texture_manager& textures,
                                                                                             std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         std::unordered_map<std::string, pass_vulkan_information> renderpasses;
 
         for(const auto& named_pass : data.passes) {

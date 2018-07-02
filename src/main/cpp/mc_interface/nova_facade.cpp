@@ -37,23 +37,23 @@ NOVA_API void initialize() {
 }
 
 NOVA_API void add_texture(mc_atlas_texture* texture) {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     TEXTURE_MANAGER.add_texture(*texture);
 }
 
 NOVA_API void reset_texture_manager() {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     TEXTURE_MANAGER.reset();
 }
 
 NOVA_API void send_lightmap_texture(int* data, int count, int width, int height) {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     auto& lightmap = TEXTURE_MANAGER.get_texture("NovaLightmap");
     lightmap.set_data(data, {static_cast<uint32_t>(width), static_cast<uint32_t>(height)});
 }
 
 NOVA_API void add_texture_location(mc_texture_atlas_location* location) {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     TEXTURE_MANAGER.add_texture_location(*location);
 }
 
@@ -62,18 +62,18 @@ NOVA_API int get_max_texture_size() {
 }
 
 NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk) {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     MESH_STORE.add_chunk_render_object(std::string(filter_name), *chunk);
 }
 
 NOVA_API void execute_frame() {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     NOVA_RENDERER->render_frame();
     LOG(INFO) << "execute_frame done";
 }
 
 NOVA_API void set_fullscreen(int fullscreen) {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     bool temp_bool = false;
     if(fullscreen == 1) {
         temp_bool = true;
@@ -90,7 +90,7 @@ NOVA_API bool display_is_active() {
 }
 
 NOVA_API void add_gui_geometry(const char * geo_type, mc_gui_geometry * gui_geometry) {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     NOVA_RENDERER->get_mesh_store().add_gui_buffers(geo_type, gui_geometry);
 }
 
@@ -101,26 +101,26 @@ NOVA_API struct window_size get_window_size()
 }
 
 NOVA_API void clear_gui_buffers() {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     NOVA_RENDERER->get_mesh_store().remove_gui_render_objects();
 }
 
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value) {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     settings& settings = NOVA_RENDERER->get_render_settings();
     settings.get_options()["settings"][setting_name] = setting_value;
     settings.update_config_changed();
 }
 
 NOVA_API void set_float_setting(const char * setting_name, float setting_value) {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     settings& settings = NOVA_RENDERER->get_render_settings();
     settings.get_options()["settings"][setting_name] = setting_value;
     settings.update_config_changed();
 }
 
 NOVA_API void set_player_camera_transform(double x, double y, double z, float yaw, float pitch) {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     auto& player_camera = NOVA_RENDERER->get_player_camera();
 
     player_camera.position = {x, y, z};
@@ -154,7 +154,7 @@ NOVA_API void set_mouse_grabbed(int grabbed) {
 }
 
 NOVA_API char* get_materials_and_filters() {
-    EASY_FUNCTION();
+    NOVA_PROFILER_SCOPE;;
     auto& materials = NOVA_RENDERER->get_materials();
 
     int num_chars = 0;

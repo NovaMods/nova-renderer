@@ -8,7 +8,7 @@
  */
 
 #include <easylogging++.h>
-#include <easy/profiler.h>
+#include <nova/profiler.h>
 
 #include "loaders.h"
 #include "shader_loading.h"
@@ -17,7 +17,7 @@
 
 namespace nova {
     shaderpack_data load_shaderpack(const std::string &shaderpack_name) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         // Load the passes
         //  - Check if there's passes in the shaderpack
         //  - If so, identify if there are a complete set of passes

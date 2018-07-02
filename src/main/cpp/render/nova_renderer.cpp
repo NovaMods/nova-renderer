@@ -25,7 +25,7 @@
 
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <easy/profiler.h>
+#include <nova/profiler.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -39,7 +39,7 @@ namespace nova {
     std::shared_ptr<settings> nova_renderer::render_settings;
 
     nova_renderer::nova_renderer() {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         context = std::make_shared<render_context>();
 
         game_window = std::make_shared<glfw_vk_window>();
@@ -112,7 +112,7 @@ namespace nova {
     }
 
     void nova_renderer::render_frame() {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         begin_frame();
 
         player_camera.recalculate_frustum();
@@ -176,7 +176,7 @@ namespace nova {
     }
 
     void nova_renderer::execute_pass(const render_pass &pass, vk::CommandBuffer& buffer) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         if(renderpasses_by_pass.find(pass.name) == renderpasses_by_pass.end()) {
             LOG(ERROR) << "No renderpass defined for pass " << pass.name << ". Skipping this pass";
             return;
@@ -268,7 +268,7 @@ namespace nova {
     }
 
     void nova_renderer::render_pipeline(pipeline_object &pipeline_data, vk::CommandBuffer& buffer) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         if(material_passes_by_pipeline.find(pipeline_data.name) == material_passes_by_pipeline.end()) {
             LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name << ". Skipping this pipeline";
             return;
@@ -285,7 +285,7 @@ namespace nova {
     }
 
     void nova_renderer::render_all_for_material_pass(const material_pass& mat, vk::CommandBuffer &buffer, pipeline_object &pipeline) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         const auto& meshes_for_mat = meshes->get_meshes_for_material(mat.material_name);
         if(meshes_for_mat.empty()) {
             LOG(INFO) << "No meshes available for material " << mat.material_name;
@@ -337,7 +337,7 @@ namespace nova {
     }
 
     void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &pipeline_data, std::string per_model_buffer_resource) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         const auto& descriptor = pipeline_data.resource_bindings[per_model_buffer_resource];
         buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data.layout, descriptor.set, 1, &mesh.model_matrix_descriptor, 0, nullptr);
 
@@ -354,9 +354,6 @@ namespace nova {
     }
 
     void nova_renderer::init() {
-        EASY_PROFILER_ENABLE;
-        profiler::startListen();
-
         render_settings = std::make_shared<settings>("config/config.json");
 
         try {
@@ -397,7 +394,7 @@ namespace nova {
     }
 
     void nova_renderer::load_new_shaderpack(const std::string &new_shaderpack_name) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;
 		LOG(INFO) << "Loading shaderpack " << new_shaderpack_name;
 
         auto shaderpack = load_shaderpack(new_shaderpack_name);
@@ -442,7 +439,7 @@ namespace nova {
     }
 
     void nova_renderer::update_nova_ubos() {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         // For each renderable, update its model matrix
         // Currently that means GUI things get the GUI scaling matrix and chunks get a translation
         // Eventually entities will have a rotation too but that's not an immediate concern
@@ -467,7 +464,7 @@ namespace nova {
     }
 
     void nova_renderer::update_per_frame_ubo() {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         LOG(DEBUG) << "Updating the per-frame UBO";
 
         LOG(DEBUG) << "Camera position: " << player_camera.position << " rotation: " << player_camera.rotation;
@@ -493,8 +490,6 @@ namespace nova {
 
     void nova_renderer::end_frame() {
         LOG(INFO) << "Frame done";
-
-        profiler::dumpBlocksToFile("nova_profile.prof");
     }
 
     void nova_renderer::begin_frame() {
@@ -510,7 +505,7 @@ namespace nova {
     }
 
     std::vector<render_pass> compile_into_list(std::unordered_map<std::string, render_pass> passes) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         auto passes_dependency_order = order_passes(passes);
         auto ordered_passes = std::vector<render_pass>{};
 
@@ -522,7 +517,7 @@ namespace nova {
     }
 
     std::unordered_map<std::string, std::vector<material_pass>> nova_renderer::extract_material_passes(const std::vector<material>& materials) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         auto ordered_material_passes = std::unordered_map<std::string, std::vector<material_pass>>{};
 
         for(const auto& mat : materials) {
@@ -542,7 +537,7 @@ namespace nova {
     }
 
     void nova_renderer::update_model_matrix(const render_object &renderable) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         // This is not an OOP design and the Java gods are mad at me
         // Luckily I'm coding C++
         switch(renderable.type) {
@@ -556,7 +551,7 @@ namespace nova {
     }
 
     void nova_renderer::update_gui_model_matrices() {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         auto& config = render_settings->get_options()["settings"];
         float view_width = config["viewWidth"];
         float view_height = config["viewHeight"];
@@ -585,7 +580,7 @@ namespace nova {
     }
 
     void nova_renderer::update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix, const vk::Device& device) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         // Send the model matrix to the buffer
         // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
         auto& allocation = shader_resources->get_uniform_buffers().get_per_model_buffer()->get_allocation_info();
@@ -594,7 +589,7 @@ namespace nova {
     }
 
     void nova_renderer::insert_special_geometry(const std::unordered_map<std::string, std::vector<material_pass>> &material_passes_by_pipeline) {
-        EASY_FUNCTION();
+        NOVA_PROFILER_SCOPE;;
         // If the material pass has the fullscreen geometry in its filter, insert it into the mesh store
         for(const auto& passes_for_pipeline : material_passes_by_pipeline) {
             for(const material_pass& pass : passes_for_pipeline.second) {
