@@ -76,7 +76,7 @@ namespace nova {
         gui.geometry = std::make_shared<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
 
-        LOG(INFO) << "Game render object " << gui.id << " model matrix descriptor " << (VkDescriptorSet)gui.model_matrix_descriptor;
+        LOG(INFO) << "Adding GUI render object " << gui.id << " model matrix descriptor " << (VkDescriptorSet)gui.model_matrix_descriptor;
 
         if(renderables_grouped_by_material.find(geo_type) == renderables_grouped_by_material.end()) {
             renderables_grouped_by_material[geo_type] = std::vector<render_object>{};
@@ -135,15 +135,18 @@ namespace nova {
             obj.bounding_box.center.y = 128;
             obj.bounding_box.extents = {16, 128, 16};   // TODO: Make these values come from Minecraft
 
-            LOG(INFO) << "Game render object " << obj.id << " model matrix descriptor " << (VkDescriptorSet)obj.model_matrix_descriptor;
+            LOG(INFO) << "Adding render object " << obj.id << " model matrix descriptor " << (VkDescriptorSet)obj.model_matrix_descriptor;
 
-            const std::string& shader_name = std::get<0>(entry);
-            if(renderables_grouped_by_material.find(shader_name) == renderables_grouped_by_material.end()) {
-                renderables_grouped_by_material[shader_name] = std::vector<render_object>{};
+            const std::string& material_name = std::get<0>(entry);
+            if(renderables_grouped_by_material.find(material_name) == renderables_grouped_by_material.end()) {
+                renderables_grouped_by_material[material_name] = std::vector<render_object>{};
+                LOG(TRACE) << "Initialized storage for render objects with material " << material_name;
             }
-            renderables_grouped_by_material.at(shader_name).push_back(obj);
+            renderables_grouped_by_material.at(material_name).push_back(obj);
+            LOG(TRACE) << "Added object to list of things with material " << material_name;
 
             geometry_to_upload.pop();
+            LOG(TRACE) << "Removed the object from the list of geometry to upload";
         }
         geometry_to_upload_lock.unlock();
     }

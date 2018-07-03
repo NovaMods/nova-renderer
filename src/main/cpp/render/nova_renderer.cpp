@@ -166,7 +166,9 @@ namespace nova {
             meshes->remove_old_geometry();
             meshes->upload_new_geometry();
 
+            LOG(TRACE) << "About to reset the main command buffer";
             context->command_buffer_pool->free(main_command_buffer);
+            LOG(TRACE) << "Freed it";
 
         } else {
             LOG(WARNING) << "Could not wait for render done fence, " << vk::to_string(fence_wait_result);
