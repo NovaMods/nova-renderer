@@ -22,7 +22,7 @@ namespace nova {
     std::unordered_map<std::string, std::vector<pipeline_object>> make_pipelines(const shaderpack_data& shaderpack,
                                                                               std::unordered_map<std::string, pass_vulkan_information> renderpasses_by_pass,
                                                                               std::shared_ptr<render_context> context) {
-        NOVA_PROFILER_SCOPE;;
+        NOVA_PROFILER_SCOPE;
         auto ret_val = std::unordered_map<std::string, std::vector<pipeline_object>>{};
 
         for(const auto& pipelines : shaderpack.pipelines_by_pass) {
@@ -40,7 +40,7 @@ namespace nova {
     }
 
     pipeline_object make_pipeline(const pipeline_data& pipeline_create_info, const pass_vulkan_information& renderpass_info, const vk::Device device) {
-        NOVA_PROFILER_SCOPE;;
+        NOVA_PROFILER_SCOPE;
         LOG(INFO) << "Making VkPipeline for pipeline " << pipeline_create_info.name;
 
         // Creates a pipeline out of compiled shaders

@@ -17,7 +17,7 @@ namespace nova {
 
     std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, texture_manager& textures,
                                                                                             std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain) {
-        NOVA_PROFILER_SCOPE;;
+        NOVA_PROFILER_SCOPE;
         std::unordered_map<std::string, pass_vulkan_information> renderpasses;
 
         for(const auto& named_pass : data.passes) {

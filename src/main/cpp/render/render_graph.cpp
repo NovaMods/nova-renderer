@@ -32,7 +32,7 @@ namespace nova {
                               uint32_t depth);
 
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass> &passes) {
-        NOVA_PROFILER_SCOPE;;
+        NOVA_PROFILER_SCOPE;
         LOG(INFO) << "Ordering passes";
         auto ordered_passes = std::vector<std::string>{};
 

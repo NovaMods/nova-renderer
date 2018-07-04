@@ -116,7 +116,7 @@ namespace nova {
     // Implementation based on RenderGraph::build_aliases from the Granite engine
     void texture_manager::create_dynamic_textures(const std::unordered_map<std::string, texture_resource> &textures,
                                                   const std::vector<render_pass> &passes, std::shared_ptr<swapchain_manager> swapchain) {
-        NOVA_PROFILER_SCOPE;;
+        NOVA_PROFILER_SCOPE;
         // For each texture in the passes, try to assign it to an existing resource
         // We'll basically create a list of which texture resources can be assigned to each physical resource
         // We want to alias textures. We can alias texture A and B if all reads from A finish before all writes to B AND

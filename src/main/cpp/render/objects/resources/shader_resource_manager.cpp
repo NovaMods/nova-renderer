@@ -115,7 +115,7 @@ namespace nova {
     }
 
     void shader_resource_manager::create_descriptor_sets(const std::unordered_map<std::string, std::vector<pipeline_object>> &pipelines, std::unordered_map<std::string, std::vector<material_pass>>& material_passes) {
-        NOVA_PROFILER_SCOPE;;
+        NOVA_PROFILER_SCOPE;
         uint32_t num_sets = 0, num_textures = 0, num_buffers = 0;
 
         for(const auto &named_pipeline : pipelines) {

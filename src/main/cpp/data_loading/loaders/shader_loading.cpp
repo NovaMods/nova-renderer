@@ -17,7 +17,7 @@
 
 namespace nova {
     shaderpack_data load_shaderpack(const std::string &shaderpack_name) {
-        NOVA_PROFILER_SCOPE;;
+        NOVA_PROFILER_SCOPE;
         // Load the passes
         //  - Check if there's passes in the shaderpack
         //  - If so, identify if there are a complete set of passes
