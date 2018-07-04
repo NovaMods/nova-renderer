@@ -176,7 +176,7 @@ set(NOVA_SOURCE
         data_loading/loaders/shader_file_loading.cpp
         render/render_graph.cpp
         render/objects/resources/uniform_buffer.cpp
-        render/swapchain_manager.cpp utils/profiler.cpp utils/profiler.h)
+        render/swapchain_manager.cpp)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
