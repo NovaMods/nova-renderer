@@ -13,8 +13,6 @@ import org.spongepowered.asm.mixin.*;
 @Mixin(EntityRenderer.class)
 @Implements(@Interface(iface = INovaEntityRenderer.class, prefix = "nova$"))
 public abstract class MixinEntityRenderer {
-    @Shadow
-    protected abstract void updateLightmap(float partialTicks);
 
     @Shadow
     @Final
@@ -42,7 +40,9 @@ public abstract class MixinEntityRenderer {
     @Final
     private DynamicTexture lightmapTexture;
 
-    public void nova$updateLightmap(float partialTicks) {
+    @Shadow protected abstract void updateLightmap(float partialTicks);
+
+    public void nova$updateLightmapNOVA(float partialTicks) {
         updateLightmap(partialTicks);
     }
 

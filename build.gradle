@@ -22,6 +22,7 @@ buildscript {
 
 apply plugin: "net.minecraftforge.gradle.forge"
 apply plugin: "org.spongepowered.mixin"
+apply from: "nova-native.gradle"
 
 version = modVersion
 group = modGroup

@@ -1,5 +1,6 @@
 package com.continuum.nova.mixin.gui;
 
+import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.gui.NovaDraw;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
@@ -84,7 +85,8 @@ public abstract class MixinFontRenderer {
         try(IResource iresource = resourceManager.getResource(fontTextureLocation)) {
             bufferedimage = TextureUtil.readBufferedImage(iresource.getInputStream());
         } catch(IOException ioexception) {
-            throw new RuntimeException(ioexception);
+            NovaRenderer.getInstance().getLog().warn("Failed to load FontTexture " + fontTextureLocation, ioexception);
+            return;
         }
 
         int imageWidth = bufferedimage.getWidth();

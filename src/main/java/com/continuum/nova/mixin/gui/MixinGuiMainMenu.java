@@ -42,7 +42,7 @@ public class MixinGuiMainMenu extends GuiScreen {
      * @inheritDoc
      */
     @Overwrite
-    public void drawPanorama(int mouseX, int mouseY, float partialTicks) {
+    private void drawPanorama(int mouseX, int mouseY, float partialTicks) {
         // Unused?! Mat4 projmat = Glm.perspective_(120.0F, 1.0F, 0.05F, 10.0F);
 
         Stack<Mat4> matrixStack = new Stack<>();

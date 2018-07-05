@@ -17,7 +17,7 @@
 *.gch
 *.pch
 
-### VS-Code ###
+### VS ###
 .vs/
 
 ### Java/Gradle ###
@@ -25,7 +25,6 @@
 build/
 out/
 .gradle/
-gradle/
 
 ### IDE/IntelliJ ###
 .idea/
@@ -34,3 +33,6 @@ gradle/
 ### Minecraft ###
 # Run directory
 run/
+
+### Compilation ###
+.native-build-props.temp.properties

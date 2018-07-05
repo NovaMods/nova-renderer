@@ -21,7 +21,7 @@ public class MixinGuiScreenOptionsSounds$Button extends GuiButton {
     }
 
     @Inject(
-            method = "mouseDragged",
+            method = "mouseDragged(Lnet/minecraft/client/Minecraft;II)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GlStateManager;color(FFFF)V", shift = At.Shift.BEFORE),
             cancellable = true
     )

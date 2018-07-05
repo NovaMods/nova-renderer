@@ -312,7 +312,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         EntityRenderer entityRenderer = Minecraft.getMinecraft().entityRenderer;
 
         boolean shouldUpdateLightmap = ((INovaEntityRenderer) entityRenderer).isLightmapUpdateNeeded();
-        ((INovaEntityRenderer) entityRenderer).updateLightmap(renderPartialTicks);
+        ((INovaEntityRenderer) entityRenderer).updateLightmapNOVA(renderPartialTicks);
         if (shouldUpdateLightmap) {
             sendLightmapTexture(((INovaEntityRenderer) entityRenderer).getLightmapTexture());
         }
@@ -459,6 +459,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public NovaNative getNative() {
         return _native;
+    }
+
+    public Logger getLog() {
+        return LOG;
     }
 }
 
