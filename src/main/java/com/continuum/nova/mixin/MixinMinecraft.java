@@ -356,7 +356,7 @@ public abstract class MixinMinecraft {
 
         this.renderGlobal.makeEntityOutlineShader();
     }
-    
+
     @Redirect(
             method = "runGameLoop",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/shader/Framebuffer;bindFramebuffer(Z)V")
