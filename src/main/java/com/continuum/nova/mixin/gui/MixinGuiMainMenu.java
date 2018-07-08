@@ -9,10 +9,14 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.ContextCapabilities;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -20,6 +24,7 @@ import java.util.Stack;
 
 @Mixin(GuiMainMenu.class)
 public class MixinGuiMainMenu extends GuiScreen {
+
     @Shadow
     private int panoramaTimer;
 
@@ -35,6 +40,18 @@ public class MixinGuiMainMenu extends GuiScreen {
     private String splashText;
 
     // Hmm, we can't override the ctor so the check has to stay in here for now
+
+    @Redirect(method = "<init>",
+            at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GLContext;getCapabilities()Lorg/lwjgl/opengl/ContextCapabilities;"))
+    private ContextCapabilities redirectContextCaps() {
+        return null;
+    }
+
+    @Redirect(method = "<init>",
+            at = @At(value = "FIELD", target = "Lorg/lwjgl/opengl/ContextCapabilities;OpenGL20:Z"))
+    private boolean redirectContextCaps(ContextCapabilities caps) {
+        return false;
+    }
 
     /**
      * @author Janrupf

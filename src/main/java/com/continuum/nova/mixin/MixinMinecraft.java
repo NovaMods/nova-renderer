@@ -18,6 +18,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.achievement.GuiAchievement;
 import net.minecraft.client.multiplayer.GuiConnecting;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -28,8 +29,10 @@ import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.*;
 import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.client.settings.GameSettings;
@@ -45,6 +48,7 @@ import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.storage.ISaveFormat;
 import org.apache.commons.io.Charsets;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.LWJGLException;
@@ -61,7 +65,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @Mixin(Minecraft.class)
@@ -127,9 +135,6 @@ public abstract class MixinMinecraft {
 
     @Shadow
     public TextureManager renderEngine;
-
-    @Shadow
-    public abstract void drawSplashScreen(TextureManager textureManagerInstance) throws LWJGLException;
 
     @Shadow
     private SkinManager skinManager;
@@ -203,6 +208,15 @@ public abstract class MixinMinecraft {
 
     @Shadow @Final private String launchedVersion;
     @Shadow @Final private Session session;
+    @Shadow @Final private static ResourceLocation LOCATION_MOJANG_PNG;
+    @Shadow @Final private static Logger LOGGER;
+
+    @Shadow public abstract void draw(int p_draw_1_, int p_draw_2_, int p_draw_3_, int p_draw_4_, int p_draw_5_, int p_draw_6_, int p_draw_7_,
+            int p_draw_8_,
+            int p_draw_9_, int p_draw_10_);
+
+    @Shadow protected abstract void checkGLError(String message);
+
     private Logger novaLogger;
 
     @Inject(method = "<init>", at = @At("RETURN"))
@@ -240,10 +254,10 @@ public abstract class MixinMinecraft {
         this.mcResourceManager = new SimpleReloadableResourceManager(this.metadataSerializer_);
         this.mcLanguageManager = new LanguageManager(this.metadataSerializer_, this.gameSettings.language);
         this.mcResourceManager.registerReloadListener(this.mcLanguageManager);
-        this.refreshResources();
+        net.minecraftforge.fml.client.FMLClientHandler.instance().beginMinecraftLoading((Minecraft)(Object) this, this.defaultResourcePacks, this.mcResourceManager);
         this.renderEngine = new TextureManager(this.mcResourceManager);
         this.mcResourceManager.registerReloadListener(this.renderEngine);
-        this.drawSplashScreen(this.renderEngine);
+        net.minecraftforge.fml.client.SplashProgress.drawVanillaScreen(this.renderEngine);
         this.skinManager = new SkinManager(this.renderEngine, new File(this.fileAssets, "skins"), this.sessionService);
         this.saveLoader = new AnvilSaveConverter(new File(this.mcDataDir, "saves"), this.dataFixer);
         this.mcSoundHandler = new SoundHandler(this.mcResourceManager, this.gameSettings);
@@ -264,6 +278,24 @@ public abstract class MixinMinecraft {
         mcResourceManager.registerReloadListener(NovaRenderer.getInstance());
         AchievementList.OPEN_INVENTORY.setStatStringFormatter(new AnonymousClasses.MinecraftStatStringFormatReplacement());
         this.mouseHelper = new MouseHelper();
+        net.minecraftforge.fml.common.ProgressManager.ProgressBar bar= net.minecraftforge.fml.common.ProgressManager.push("Rendering Setup", 5, true);
+        bar.step("GL Setup");
+
+
+        this.checkGLError("Pre startup");
+        GlStateManager.enableTexture2D();
+        GlStateManager.shadeModel(7425);
+        GlStateManager.clearDepth(1.0D);
+        GlStateManager.enableDepth();
+        GlStateManager.depthFunc(515);
+        GlStateManager.enableAlpha();
+        GlStateManager.alphaFunc(516, 0.1F);
+        GlStateManager.cullFace(GlStateManager.CullFace.BACK);
+        GlStateManager.matrixMode(5889);
+        GlStateManager.loadIdentity();
+        GlStateManager.matrixMode(5888);
+        this.checkGLError("Startup");
+        bar.step("Loading Texture Map");
 
         this.textureMapBlocks = new TextureMap("textures");
         this.textureMapBlocks.setMipmapLevels(this.gameSettings.mipmapLevels);
@@ -271,15 +303,19 @@ public abstract class MixinMinecraft {
         this.renderEngine.loadTickableTexture(TextureMap.LOCATION_BLOCKS_TEXTURE, this.textureMapBlocks);
         this.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         this.textureMapBlocks.setBlurMipmapDirect(false, this.gameSettings.mipmapLevels > 0);
+        bar.step("Loading Model Manager");
         this.modelManager = new ModelManager(this.textureMapBlocks);
+        this.mcResourceManager.registerReloadListener(this.modelManager);
         this.blockColors = BlockColors.init();
         NovaRenderer.getInstance().loadShaderpack("default", this.blockColors);
-        this.mcResourceManager.registerReloadListener(this.modelManager);
         this.itemColors = ItemColors.init(this.blockColors);
+        bar.step("Loading Item Renderer");
         this.renderItem = new RenderItem(this.renderEngine, this.modelManager, this.itemColors);
         this.renderManager = new RenderManager(this.renderEngine, this.renderItem);
         this.itemRenderer = new ItemRenderer(Minecraft.getMinecraft());
         this.mcResourceManager.registerReloadListener(this.renderItem);
+        bar.step("Loading Entity Renderer");
+        net.minecraftforge.fml.client.SplashProgress.pause();
         this.entityRenderer = new EntityRenderer(Minecraft.getMinecraft(), this.mcResourceManager);
         this.mcResourceManager.registerReloadListener(this.entityRenderer);
         this.blockRenderDispatcher = new BlockRendererDispatcher(this.modelManager.getBlockModelShapes(), this.blockColors);
@@ -289,19 +325,24 @@ public abstract class MixinMinecraft {
         this.guiAchievement = new GuiAchievement(Minecraft.getMinecraft());
         GlStateManager.viewport(0, 0, this.displayWidth, this.displayHeight);
         this.effectRenderer = new ParticleManager(this.world, this.renderEngine);
+        net.minecraftforge.fml.client.SplashProgress.resume();
+        net.minecraftforge.fml.common.ProgressManager.pop(bar);
+        net.minecraftforge.fml.client.FMLClientHandler.instance().finishMinecraftLoading();
+        this.checkGLError("Post startup");
         this.ingameGUI = new GuiIngame(Minecraft.getMinecraft());
 
         if (this.serverName != null) {
-            this.displayGuiScreen(new GuiConnecting(new GuiMainMenu(), Minecraft.getMinecraft(), this.serverName, this.serverPort));
+            net.minecraftforge.fml.client.FMLClientHandler.instance().connectToServerAtStartup(this.serverName, this.serverPort);
         } else {
             this.displayGuiScreen(new GuiMainMenu());
         }
 
-        this.renderEngine.deleteTexture(this.mojangLogo);
+        net.minecraftforge.fml.client.SplashProgress.clearVanillaResources(renderEngine, mojangLogo);
         this.mojangLogo = null;
         this.loadingScreen = new LoadingScreenRenderer(Minecraft.getMinecraft());
         this.debugRenderer = new DebugRenderer(Minecraft.getMinecraft());
 
+        net.minecraftforge.fml.client.FMLClientHandler.instance().onInitializationComplete();
         if (this.gameSettings.fullScreen && !this.fullscreen) {
             this.toggleFullscreen();
         }
@@ -315,7 +356,7 @@ public abstract class MixinMinecraft {
 
         this.renderGlobal.makeEntityOutlineShader();
     }
-
+    
     @Redirect(
             method = "runGameLoop",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/shader/Framebuffer;bindFramebuffer(Z)V")
@@ -388,9 +429,6 @@ public abstract class MixinMinecraft {
             at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;world:Lnet/minecraft/client/multiplayer/WorldClient;", ordinal = 4, shift = At.Shift.AFTER)
     )
     private void afterWorldAssigned(CallbackInfo callbackInfo) {
-        if (world == null) {
-            throw new RuntimeException("WORLD IS NULL; DEBUG");
-        }
         NovaRenderer.getInstance().setWorld(world);
     }
 

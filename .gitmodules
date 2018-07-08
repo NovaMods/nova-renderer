@@ -6,7 +6,7 @@
 	url = https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers
 [submodule "src/main/cpp/3rdparty/VulkanMemoryAllocator"]
 	path = src/main/cpp/3rdparty/VulkanMemoryAllocator
-	url = https://github.com/KhronosGroup/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 [submodule "src/main/cpp/3rdparty/easyloggingpp"]
 	path = src/main/cpp/3rdparty/easyloggingpp
 	url = https://github.com/muflihun/easyloggingpp.git

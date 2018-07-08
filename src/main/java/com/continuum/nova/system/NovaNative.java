@@ -43,7 +43,7 @@ public interface NovaNative extends Library {
 
         @Override
         public List<String> getFieldOrder() {
-            return Arrays.asList("width", "height", "num_components", "texture_data");
+            return Arrays.asList("width", "height", "num_components", "texture_data", "name");
         }
 
         @Override
@@ -165,7 +165,7 @@ public interface NovaNative extends Library {
 
         @Override
         protected List<String> getFieldOrder() {
-            return Arrays.asList("particle_texture", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "sprite_name");
+            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "atlas_name");
         }
     }
 

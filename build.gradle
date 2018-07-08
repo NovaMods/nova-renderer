@@ -70,7 +70,7 @@ jar {
                 "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
                 "TweakOrder": 0,
                 "MixinConfigs": "mixins.nova.json",
-                "FMLCorePlugin": "com.continuum.nova.NovaForgeCoreMod"
+                "FMLCorePlugin": "com.continuum.nova.coremod.NovaForgeCoreMod"
         )
     }
 }
