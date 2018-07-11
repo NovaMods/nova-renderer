@@ -30,7 +30,7 @@ namespace nova {
 				.setQueueFamilyIndexCount(1)
 				.setPQueueFamilyIndices(&context->graphics_family_idx);
 
-		auto per_frame_ubo = uniform_buffer("NovaPerFrameUBO", context, create_per_frame_ubo, uniform_buffer_offset_alignment, true);
+		auto per_frame_ubo = uniform_buffer("NovaPerFrameUBO", context, create_per_frame_ubo, 912, true);
 		add_buffer(per_frame_ubo);
     }
 

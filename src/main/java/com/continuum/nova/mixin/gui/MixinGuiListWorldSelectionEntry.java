@@ -72,7 +72,7 @@ public class MixinGuiListWorldSelectionEntry {
      * @inheritDoc
      */
     @Overwrite
-    public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected) {
+    public void drawEntry(int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
         String s = this.worldSummary.getDisplayName();
         String s1 = this.worldSummary.getFileName() + " (" + DATE_FORMAT.format(new Date(this.worldSummary.getLastTimePlayed())) + ")";
         String s2 = "";
@@ -107,9 +107,9 @@ public class MixinGuiListWorldSelectionEntry {
             }
         }
 
-        this.client.fontRendererObj.drawString(s, x + 32 + 3, y + 1, 16777215);
-        this.client.fontRendererObj.drawString(s1, x + 32 + 3, y + this.client.fontRendererObj.FONT_HEIGHT + 3, 8421504);
-        this.client.fontRendererObj.drawString(s2, x + 32 + 3, y + this.client.fontRendererObj.FONT_HEIGHT + this.client.fontRendererObj.FONT_HEIGHT + 3, 8421504);
+        this.client.fontRenderer.drawString(s, x + 32 + 3, y + 1, 16777215);
+        this.client.fontRenderer.drawString(s1, x + 32 + 3, y + this.client.fontRenderer.FONT_HEIGHT + 3, 8421504);
+        this.client.fontRenderer.drawString(s2, x + 32 + 3, y + this.client.fontRenderer.FONT_HEIGHT + this.client.fontRenderer.FONT_HEIGHT + 3, 8421504);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         this.client.getTextureManager().bindTexture(this.icon != null ? this.iconLocation : ICON_MISSING);
 

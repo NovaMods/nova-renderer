@@ -26,7 +26,7 @@ import java.util.Stack;
 public class MixinGuiMainMenu extends GuiScreen {
 
     @Shadow
-    private int panoramaTimer;
+    private float panoramaTimer;
 
     @Shadow
     @Final
@@ -181,9 +181,9 @@ public class MixinGuiMainMenu extends GuiScreen {
         NovaDraw.translate((this.width / 2 + 90), 70, 0);
         NovaDraw.rotate(-20, false, false, true);
         float f = 1.8F - MathHelper.abs(MathHelper.sin((float) (Minecraft.getSystemTime() % 1000L) / 1000.0F * ((float) Math.PI * 2F)) * 0.1F);
-        f = f * 100.0F / (float) (this.fontRendererObj.getStringWidth(this.splashText) + 32);
+        f = f * 100.0F / (float) (this.fontRenderer.getStringWidth(this.splashText) + 32);
         NovaDraw.scale(f, f, 1);
-        this.drawCenteredString(this.fontRendererObj, this.splashText, 0, -8, -256);
+        this.drawCenteredString(this.fontRenderer, this.splashText, 0, -8, -256);
         NovaDraw.resetMatrix();
         String s = "Minecraft 1.10";
 
@@ -193,9 +193,9 @@ public class MixinGuiMainMenu extends GuiScreen {
             s = s + ("release".equalsIgnoreCase(this.mc.getVersionType()) ? "" : "/" + this.mc.getVersionType());
         }
 
-        this.drawString(this.fontRendererObj, s, 2, this.height - 10, -1);
+        this.drawString(this.fontRenderer, s, 2, this.height - 10, -1);
         String s1 = "Copyright Mojang AB. Do not distribute!";
-        this.drawString(this.fontRendererObj, s1, this.width - this.fontRendererObj.getStringWidth(s1) - 2, this.height - 10, -1);
+        this.drawString(this.fontRenderer, s1, this.width - this.fontRenderer.getStringWidth(s1) - 2, this.height - 10, -1);
 
 
         super.drawScreen(mouseX, mouseY, partialTicks);

@@ -1,0 +1,19 @@
+{
+    "gui": {
+        "pass": "Forward",
+
+        "states": [
+            "DisableAlphaWrite"
+        ],
+
+        "vertexShader": "shaders/gui",
+        "fragmentShader": "shaders/gui",
+
+        "vertexFields": [
+            {"field": "Position"},
+            {"field": "UV0"},
+            {"field": "Color"},
+            {"field": "VirtualTextureId"}
+        ]
+    }
+}

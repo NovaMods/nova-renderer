@@ -31,7 +31,7 @@ public class MixinGuiScreenOptionsSounds$Button extends GuiButton {
 
         NovaDraw.drawRectangle(
                 BUTTON_TEXTURES,
-                new Rectangle2D.Float(this.xPosition + (int)(this.volume * (float)(this.width - 8)), yPosition,4, height),
+                new Rectangle2D.Float(this.x + (int)(this.volume * (float)(this.width - 8)), y,4, height),
                 new Rectangle2D.Float(
                         NovaConstants.STANDARD_BUTTON_LOCATIONS[0],
                         NovaConstants.STANDARD_BUTTON_LOCATIONS[1] + offsetY,
@@ -41,7 +41,7 @@ public class MixinGuiScreenOptionsSounds$Button extends GuiButton {
         );
         NovaDraw.drawRectangle(
                 BUTTON_TEXTURES,
-                new Rectangle2D.Float(this.xPosition + (int)(this.volume * (float)(this.width - 8)) + 4, yPosition,4, height),
+                new Rectangle2D.Float(this.x + (int)(this.volume * (float)(this.width - 8)) + 4, y,4, height),
                 new Rectangle2D.Float(
                         NovaConstants.STANDARD_BUTTON_LOCATIONS[2] - (4 * NovaConstants.WIDGETS_TEXTURE_FACTOR),
                         NovaConstants.STANDARD_BUTTON_LOCATIONS[1] + offsetY,

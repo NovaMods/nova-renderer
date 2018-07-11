@@ -3,9 +3,9 @@ package com.continuum.nova.mixin.gui;
 import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.gui.NovaDraw;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.IResource;
@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.awt.*;
@@ -66,6 +67,10 @@ public abstract class MixinFontRenderer {
 
     private Color color;
 
+    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/FontRenderer;bindTexture(Lnet/minecraft/util/ResourceLocation;)V"))
+    private void noBindTexture(FontRenderer _this, ResourceLocation loc) {
+        // no-op
+    }
     /**
      * @author Janrupf
      * @reason Use changed {@link MixinFontRenderer#readFontTexture(IResourceManager)}
@@ -304,7 +309,7 @@ public abstract class MixinFontRenderer {
 
                 if (this.strikethroughStyle) {
                     Tessellator tessellator = Tessellator.getInstance();
-                    VertexBuffer vertexbuffer = tessellator.getBuffer();
+                    BufferBuilder vertexbuffer = tessellator.getBuffer();
                     GlStateManager.disableTexture2D();
                     vertexbuffer.begin(7, DefaultVertexFormats.POSITION);
                     vertexbuffer.pos((double)this.posX,         (double)(this.posY + (float)(this.FONT_HEIGHT / 2)),        0.0D).endVertex();
@@ -317,7 +322,7 @@ public abstract class MixinFontRenderer {
 
                 if (this.underlineStyle) {
                     Tessellator tessellator1 = Tessellator.getInstance();
-                    VertexBuffer vertexbuffer1 = tessellator1.getBuffer();
+                    BufferBuilder vertexbuffer1 = tessellator1.getBuffer();
                     GlStateManager.disableTexture2D();
                     vertexbuffer1.begin(7, DefaultVertexFormats.POSITION);
                     int l = this.underlineStyle ? -1 : 0;

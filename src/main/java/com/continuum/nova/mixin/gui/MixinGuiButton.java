@@ -19,8 +19,8 @@ public abstract class MixinGuiButton extends Gui {
 
     @Shadow public boolean visible;
     @Shadow protected boolean hovered;
-    @Shadow public int xPosition;
-    @Shadow public int yPosition;
+    @Shadow public int x;
+    @Shadow public int y;
     @Shadow public int width;
     @Shadow public int height;
 
@@ -40,24 +40,24 @@ public abstract class MixinGuiButton extends Gui {
      * @inheritDoc
      */
     @Overwrite
-    public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTick) {
         if (this.visible) {
             float offsetY;
-            this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+            this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
             int drawState = getHoverState(hovered);
             offsetY = (float) drawState * 0.078125f;
             NovaDraw.incrementZ();
 
             NovaDraw.drawRectangle(
                     BUTTON_TEXTURES,
-                    new Rectangle2D.Float(xPosition, yPosition, width / 2, height),
+                    new Rectangle2D.Float(x, y, width / 2, height),
                     new Rectangle2D.Float(
                             NovaConstants.STANDARD_BUTTON_LOCATIONS[0], NovaConstants.STANDARD_BUTTON_LOCATIONS[1] + offsetY,
                             width / 2 * NovaConstants.WIDGETS_TEXTURE_FACTOR, height * NovaConstants.WIDGETS_TEXTURE_FACTOR)
             );
             NovaDraw.drawRectangle(
                     BUTTON_TEXTURES,
-                    new Rectangle2D.Float(xPosition + width / 2, yPosition, width / 2, height),
+                    new Rectangle2D.Float(x + width / 2, y, width / 2, height),
                     new Rectangle2D.Float(
                             NovaConstants.STANDARD_BUTTON_LOCATIONS[2] - ((width / 2) * NovaConstants.WIDGETS_TEXTURE_FACTOR),
                             NovaConstants.STANDARD_BUTTON_LOCATIONS[1] + offsetY,
@@ -71,8 +71,8 @@ public abstract class MixinGuiButton extends Gui {
                 color = 0x00FFFFA0;
             }
 
-            FontRenderer fontrenderer = mc.fontRendererObj;
-            this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, color);
+            FontRenderer fontrenderer = mc.fontRenderer;
+            this.drawCenteredString(fontrenderer, this.displayString, this.x + this.width / 2, this.y + (this.height - 8) / 2, color);
         }
     }
 }

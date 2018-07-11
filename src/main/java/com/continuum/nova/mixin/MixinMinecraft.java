@@ -5,7 +5,6 @@ import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.input.Keyboard;
 import com.continuum.nova.input.Mouse;
 import com.continuum.nova.system.NovaNative;
-import com.continuum.nova.utils.AnonymousClasses;
 import com.google.common.hash.Hashing;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
@@ -18,9 +17,6 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.gui.achievement.GuiAchievement;
-import net.minecraft.client.multiplayer.GuiConnecting;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.renderer.*;
@@ -29,17 +25,13 @@ import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.color.ItemColors;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.*;
 import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.profiler.Snooper;
-import net.minecraft.stats.AchievementList;
-import net.minecraft.stats.IStatStringFormat;
 import net.minecraft.util.MouseHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Session;
@@ -48,7 +40,6 @@ import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.storage.ISaveFormat;
 import org.apache.commons.io.Charsets;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.LWJGLException;
@@ -62,14 +53,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @Mixin(Minecraft.class)
@@ -126,7 +113,7 @@ public abstract class MixinMinecraft {
     private IReloadableResourceManager mcResourceManager;
     @Shadow
     @Final
-    private MetadataSerializer metadataSerializer_;
+    private MetadataSerializer metadataSerializer;
     @Shadow
     private LanguageManager mcLanguageManager;
 
@@ -154,7 +141,7 @@ public abstract class MixinMinecraft {
     @Shadow
     private MusicTicker mcMusicTicker;
     @Shadow
-    public FontRenderer fontRendererObj;
+    public FontRenderer fontRenderer;
 
     @Shadow
     public abstract boolean isUnicode();
@@ -181,8 +168,6 @@ public abstract class MixinMinecraft {
     private BlockRendererDispatcher blockRenderDispatcher;
     @Shadow
     public RenderGlobal renderGlobal;
-    @Shadow
-    public GuiAchievement guiAchievement;
     @Shadow
     public ParticleManager effectRenderer;
     @Shadow
@@ -250,11 +235,11 @@ public abstract class MixinMinecraft {
         this.setInitialDisplayMode();
 
         this.registerMetadataSerializers();
-        this.mcResourcePackRepository = new ResourcePackRepository(this.fileResourcepacks, new File(this.mcDataDir, "server-resource-packs"), this.mcDefaultResourcePack, this.metadataSerializer_, this.gameSettings);
-        this.mcResourceManager = new SimpleReloadableResourceManager(this.metadataSerializer_);
-        this.mcLanguageManager = new LanguageManager(this.metadataSerializer_, this.gameSettings.language);
+        this.mcResourcePackRepository = new ResourcePackRepository(this.fileResourcepacks, new File(this.mcDataDir, "server-resource-packs"), this.mcDefaultResourcePack, this.metadataSerializer, this.gameSettings);
+        this.mcResourceManager = new SimpleReloadableResourceManager(this.metadataSerializer);
+        this.mcLanguageManager = new LanguageManager(this.metadataSerializer, this.gameSettings.language);
         this.mcResourceManager.registerReloadListener(this.mcLanguageManager);
-        net.minecraftforge.fml.client.FMLClientHandler.instance().beginMinecraftLoading((Minecraft)(Object) this, this.defaultResourcePacks, this.mcResourceManager);
+        net.minecraftforge.fml.client.FMLClientHandler.instance().beginMinecraftLoading((Minecraft)(Object)this, this.defaultResourcePacks, this.mcResourceManager, this.metadataSerializer);
         this.renderEngine = new TextureManager(this.mcResourceManager);
         this.mcResourceManager.registerReloadListener(this.renderEngine);
         net.minecraftforge.fml.client.SplashProgress.drawVanillaScreen(this.renderEngine);
@@ -263,20 +248,19 @@ public abstract class MixinMinecraft {
         this.mcSoundHandler = new SoundHandler(this.mcResourceManager, this.gameSettings);
         this.mcResourceManager.registerReloadListener(this.mcSoundHandler);
         this.mcMusicTicker = new MusicTicker(Minecraft.getMinecraft());
-        this.fontRendererObj = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii"), this.renderEngine, false);
+        this.fontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii"), this.renderEngine, false);
 
         if (this.gameSettings.language != null) {
-            this.fontRendererObj.setUnicodeFlag(this.isUnicode());
-            this.fontRendererObj.setBidiFlag(this.mcLanguageManager.isCurrentLanguageBidirectional());
+            this.fontRenderer.setUnicodeFlag(this.isUnicode());
+            this.fontRenderer.setBidiFlag(this.mcLanguageManager.isCurrentLanguageBidirectional());
         }
 
         this.standardGalacticFontRenderer = new FontRenderer(this.gameSettings, new ResourceLocation("font/ascii_sga"), this.renderEngine, false);
-        this.mcResourceManager.registerReloadListener(this.fontRendererObj);
+        this.mcResourceManager.registerReloadListener(this.fontRenderer);
         this.mcResourceManager.registerReloadListener(this.standardGalacticFontRenderer);
         this.mcResourceManager.registerReloadListener(new GrassColorReloadListener());
         this.mcResourceManager.registerReloadListener(new FoliageColorReloadListener());
         mcResourceManager.registerReloadListener(NovaRenderer.getInstance());
-        AchievementList.OPEN_INVENTORY.setStatStringFormatter(new AnonymousClasses.MinecraftStatStringFormatReplacement());
         this.mouseHelper = new MouseHelper();
         net.minecraftforge.fml.common.ProgressManager.ProgressBar bar= net.minecraftforge.fml.common.ProgressManager.push("Rendering Setup", 5, true);
         bar.step("GL Setup");
@@ -305,9 +289,9 @@ public abstract class MixinMinecraft {
         this.textureMapBlocks.setBlurMipmapDirect(false, this.gameSettings.mipmapLevels > 0);
         bar.step("Loading Model Manager");
         this.modelManager = new ModelManager(this.textureMapBlocks);
-        this.mcResourceManager.registerReloadListener(this.modelManager);
         this.blockColors = BlockColors.init();
         NovaRenderer.getInstance().loadShaderpack("default", this.blockColors);
+        this.mcResourceManager.registerReloadListener(this.modelManager);
         this.itemColors = ItemColors.init(this.blockColors);
         bar.step("Loading Item Renderer");
         this.renderItem = new RenderItem(this.renderEngine, this.modelManager, this.itemColors);
@@ -322,7 +306,6 @@ public abstract class MixinMinecraft {
         this.mcResourceManager.registerReloadListener(this.blockRenderDispatcher);
         this.renderGlobal = new RenderGlobal(Minecraft.getMinecraft());
         this.mcResourceManager.registerReloadListener(this.renderGlobal);
-        this.guiAchievement = new GuiAchievement(Minecraft.getMinecraft());
         GlStateManager.viewport(0, 0, this.displayWidth, this.displayHeight);
         this.effectRenderer = new ParticleManager(this.world, this.renderEngine);
         net.minecraftforge.fml.client.SplashProgress.resume();

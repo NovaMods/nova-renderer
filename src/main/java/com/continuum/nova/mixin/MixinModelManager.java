@@ -20,7 +20,7 @@ public class MixinModelManager {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/BlockModelShapes;reloadModels()V", shift = At.Shift.AFTER)
     )
     private void hookOnResourceManagerReload(IResourceManager resMan, CallbackInfo callbackInfo) {
-        // NovaRenderer.getInstance().onResourceManagerReload(resourceManager);
+        NovaRenderer.getInstance().onResourceManagerReload(resMan);
         NovaRenderer.getInstance().addTerrainAtlas(texMap);
     }
 }

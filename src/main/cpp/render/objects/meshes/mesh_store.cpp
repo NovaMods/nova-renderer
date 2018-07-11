@@ -13,6 +13,7 @@
 #include "mesh_store.h"
 #include "../../nova_renderer.h"
 #include "vk_mesh.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace nova {
     mesh_store::mesh_store(std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources)
@@ -126,7 +127,14 @@ namespace nova {
             render_object obj = {};
             obj.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
             obj.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
+
+            glm::mat4 model_matrix(1.0);
+            model_matrix = glm::translate(model_matrix, def.position);
+            memcpy(((uint8_t*)shader_resources->get_uniform_buffers().get_per_model_buffer()->get_allocation_info().pMappedData)
+                   + obj.per_model_buffer_range.offset, &model_matrix, obj.per_model_buffer_range.range);
+
             obj.upload_model_matrix(context->device);
+
             obj.geometry = std::make_shared<vk_mesh>(def, context);
             obj.type = geometry_type::block;
             obj.parent_id = def.id;
@@ -152,6 +160,7 @@ namespace nova {
     }
 
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
+        LOG(TRACE) << "Adding chunk render object";
         mesh_definition def = {};
         auto& vertex_data = def.vertex_data;
 
@@ -177,10 +186,13 @@ namespace nova {
 
             vertex_data.push_back(new_vertex);
         }
+        LOG(TRACE) << "\tPushed vertex data";
 
         for(int i = 0; i < chunk.index_buffer_size; i++) {
             def.indices.push_back(chunk.indices[i]);
         }
+
+        LOG(TRACE) << "\tPushed index data";
 
         def.vertex_format = format::all_values()[chunk.format];
         def.position = {chunk.x, chunk.y, chunk.z};
@@ -189,6 +201,7 @@ namespace nova {
         geometry_to_upload_lock.lock();
         geometry_to_upload.emplace(filter_name, def);
         geometry_to_upload_lock.unlock();
+        LOG(TRACE) << "\tDone";
     }
 
     void mesh_store::remove_render_objects_with_parent(long parent_id) {

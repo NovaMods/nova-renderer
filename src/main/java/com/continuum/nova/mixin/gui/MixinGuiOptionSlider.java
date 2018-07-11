@@ -38,7 +38,7 @@ public class MixinGuiOptionSlider extends GuiButton {
         {
             if (this.dragging)
             {
-                this.sliderValue = (float)(mouseX - (this.xPosition + 4)) / (float)(this.width - 8);
+                this.sliderValue = (float)(mouseX - (this.x + 4)) / (float)(this.width - 8);
                 this.sliderValue = MathHelper.clamp(this.sliderValue, 0.0F, 1.0F);
                 float f = this.options.denormalizeValue(this.sliderValue);
                 mc.gameSettings.setOptionFloatValue(this.options, f);
@@ -53,7 +53,7 @@ public class MixinGuiOptionSlider extends GuiButton {
 
             NovaDraw.drawRectangle(
                     BUTTON_TEXTURES,
-                    new Rectangle2D.Float(this.xPosition + (int)(this.sliderValue * (float)(this.width - 8)), yPosition,4, height),
+                    new Rectangle2D.Float(this.x + (int)(this.sliderValue * (float)(this.width - 8)), y,4, height),
                     new Rectangle2D.Float(
                             NovaConstants.STANDARD_BUTTON_LOCATIONS[0],
                             NovaConstants.STANDARD_BUTTON_LOCATIONS[1] + offsetY,
@@ -63,7 +63,7 @@ public class MixinGuiOptionSlider extends GuiButton {
             );
             NovaDraw.drawRectangle(
                     BUTTON_TEXTURES,
-                    new Rectangle2D.Float(this.xPosition + (int)(this.sliderValue * (float)(this.width - 8)) + 4, yPosition,4, height),
+                    new Rectangle2D.Float(this.x + (int)(this.sliderValue * (float)(this.width - 8)) + 4, y,4, height),
                     new Rectangle2D.Float(
                             NovaConstants.STANDARD_BUTTON_LOCATIONS[2] - (4 * NovaConstants.WIDGETS_TEXTURE_FACTOR),
                             NovaConstants.STANDARD_BUTTON_LOCATIONS[1] + offsetY,

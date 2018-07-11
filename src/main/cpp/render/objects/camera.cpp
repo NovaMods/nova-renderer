@@ -5,9 +5,11 @@
 
 #include "camera.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
 #include <utility>
 #include "../../physics/aabb.h"
 #include <easylogging++.h>
+#include <../../utils/utils.h>
 
 namespace nova {
     glm::mat4 camera::get_projection_matrix() {
@@ -15,17 +17,28 @@ namespace nova {
     }
 
     glm::mat4 camera::get_view_matrix() {
-        glm::mat4 view_matrix;
-        view_matrix = glm::rotate(view_matrix, glm::radians(180.0f), {0, 1, 0});
-        view_matrix = glm::rotate(view_matrix, glm::radians(-rotation.y), { 1, 0, 0 });
-        view_matrix = glm::rotate(view_matrix, glm::radians(rotation.x), { 0, 1, 0 });
-        view_matrix = glm::translate(view_matrix, -position);
+        glm::mat4 translate(1.0);
+        translate = glm::translate(translate, -position);;
+        LOG(TRACE) << "\tcreating view matrix, translate: " << translate;
 
-        return view_matrix;
+        glm::mat4 rotate(1.0);
+        rotate = glm::scale(rotate, { 1, -1, 1 });
+
+        rotate = glm::rotate(rotate, glm::radians(180.0f), { 0, 1, 0 });
+        rotate = glm::rotate(rotate, glm::radians(-rotation.y), { 1, 0, 0 });
+        rotate = glm::rotate(rotate, glm::radians(rotation.x), { 0, 1, 0 });
+        LOG(TRACE) << "\tcreating view matrix, rotate: " << rotate;
+
+        glm::mat4 untranslate(1.0);
+        untranslate = glm::translate(untranslate, position);;
+        LOG(TRACE) << "\tcreating view matrix, untranslate: " << untranslate;
+        auto final = rotate * translate;
+        LOG(TRACE) << "\tcreating view matrix, finished: " << final;
+        return final;
     }
 
     glm::vec3 camera::get_view_direction() {
-        glm::mat4 view_matrix;
+        glm::mat4 view_matrix(1.0);
         view_matrix = glm::rotate(view_matrix, glm::radians(180.0f), {0, 1, 0});
         view_matrix = glm::rotate(view_matrix, glm::radians(-rotation.y), { 1, 0, 0 });
         view_matrix = glm::rotate(view_matrix, glm::radians(rotation.x), { 0, 1, 0 });

@@ -1,7 +1,7 @@
 #include "../render/nova_renderer.h"
 
 #include <easylogging++.h>
-#include "../render/objects/textures/texture2D.h"
+#include "../render/objects/resources/texture2D.h"
 #include "../mc_interface/nova.h"
 
 bool is_format_supported(vk::PhysicalDevice& physical_device, vk::Format format, vk::FormatFeatureFlags features) {

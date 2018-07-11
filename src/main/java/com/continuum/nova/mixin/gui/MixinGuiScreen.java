@@ -35,7 +35,7 @@ public class MixinGuiScreen extends Gui {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         NovaDraw.incrementZ();
 
-        this.buttonList.forEach(guiButton -> guiButton.drawButton(this.mc, mouseX, mouseY));
+        this.buttonList.forEach(guiButton -> guiButton.drawButton(this.mc, mouseX, mouseY, partialTicks));
 
         this.labelList.forEach(guiLabel -> guiLabel.drawLabel(this.mc, mouseX, mouseY));
     }

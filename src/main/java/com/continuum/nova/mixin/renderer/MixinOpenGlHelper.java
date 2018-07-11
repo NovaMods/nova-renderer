@@ -25,7 +25,7 @@ public class MixinOpenGlHelper {
      */
     @Overwrite
     public static boolean areShadersSupported() {
-        return false;
+        return true;
     }
 
     /**

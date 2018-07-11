@@ -27,7 +27,7 @@ public class MixinGuiButtonLanguage extends GuiButton {
             NovaDraw.incrementZ();
             NovaDraw.drawRectangle(
                     BUTTON_TEXTURES,
-                    new Rectangle2D.Float(xPosition, yPosition, width, height),
+                    new Rectangle2D.Float(x, y, width, height),
                     new Rectangle2D.Float(
                             0, 0.4140625f + (hovered ? 0.078125f : 0),
                             width * NovaConstants.WIDGETS_TEXTURE_FACTOR, height * NovaConstants.WIDGETS_TEXTURE_FACTOR)

@@ -1,4 +1,5 @@
 //
+//
 // Created by David on 25-Dec-15.
 //
 
@@ -472,11 +473,12 @@ namespace nova {
         LOG(DEBUG) << "Camera position: " << player_camera.position << " rotation: " << player_camera.rotation;
 
         auto per_frame_data = per_frame_uniforms{};
-        per_frame_data.gbufferProjection = player_camera.get_projection_matrix();
+        per_frame_data.gbufferProjection = glm::transpose(player_camera.get_projection_matrix());
         per_frame_data.gbufferModelView = player_camera.get_view_matrix();
 
         LOG(TRACE) << "View matrix: " << per_frame_data.gbufferModelView;
         LOG(TRACE) << "Projection matrix: " << per_frame_data.gbufferProjection;
+        LOG(TRACE) << "Set " << sizeof(per_frame_uniforms) << " bytes of uniform data";
 
         uniform_buffer& per_frame_ubo = shader_resources->get_uniform_buffers().get_buffer("NovaPerFrameUBO");
         per_frame_ubo.set_data(&per_frame_data, sizeof(per_frame_uniforms));

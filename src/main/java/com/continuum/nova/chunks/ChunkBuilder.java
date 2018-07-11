@@ -43,7 +43,7 @@ public class ChunkBuilder {
     }
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
-        blockRendererDispatcher = null; //FIXME: Minecraft.getMinecraft().getBlockRenderDispatcher();
+        blockRendererDispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher(); //FIXME: Minecraft.getMinecraft().getBlockRenderDispatcher();
         Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
 
         for(int x = range.min.x; x <= range.max.x; x++) {
@@ -63,8 +63,9 @@ public class ChunkBuilder {
                 obj.x = range.min.x;
                 obj.y = range.min.y;
                 obj.z = range.min.z;
-
+                System.out.println("FILTER: " + filterName);
                 NovaRenderer.getInstance().getNative().add_chunk_geometry_for_filter(filterName, obj);
+                System.out.println("DONE");
             });
         }
     }
@@ -96,7 +97,7 @@ public class ChunkBuilder {
         IndexList indices = new IndexList();
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
         CapturingVertexBuffer capturingVertexBuffer = new CapturingVertexBuffer(chunkPos);
-        BlockFluidRenderer fluidRenderer = null; // FIXME: blockRendererDispatcher.getFluidRenderer();
+        BlockFluidRenderer fluidRenderer = blockRendererDispatcher.fluidRenderer; // FIXME: blockRendererDispatcher.getFluidRenderer();
 
         int blockIndexCounter = 0;
         for(BlockPos blockPos : positions) {
