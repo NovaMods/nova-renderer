@@ -63,9 +63,7 @@ public class ChunkBuilder {
                 obj.x = range.min.x;
                 obj.y = range.min.y;
                 obj.z = range.min.z;
-                System.out.println("FILTER: " + filterName);
                 NovaRenderer.getInstance().getNative().add_chunk_geometry_for_filter(filterName, obj);
-                System.out.println("DONE");
             });
         }
     }

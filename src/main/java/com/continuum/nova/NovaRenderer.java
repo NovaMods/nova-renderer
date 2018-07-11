@@ -85,7 +85,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
     private World world;
 
-    final private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(10*0+1);
+    final private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     private ChunkBuilder chunkBuilder;
     private HashMap<String, IGeometryFilter> filterMap;

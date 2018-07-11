@@ -160,7 +160,6 @@ namespace nova {
     }
 
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
-        LOG(TRACE) << "Adding chunk render object";
         mesh_definition def = {};
         auto& vertex_data = def.vertex_data;
 
@@ -186,13 +185,10 @@ namespace nova {
 
             vertex_data.push_back(new_vertex);
         }
-        LOG(TRACE) << "\tPushed vertex data";
 
         for(int i = 0; i < chunk.index_buffer_size; i++) {
             def.indices.push_back(chunk.indices[i]);
         }
-
-        LOG(TRACE) << "\tPushed index data";
 
         def.vertex_format = format::all_values()[chunk.format];
         def.position = {chunk.x, chunk.y, chunk.z};
@@ -201,7 +197,6 @@ namespace nova {
         geometry_to_upload_lock.lock();
         geometry_to_upload.emplace(filter_name, def);
         geometry_to_upload_lock.unlock();
-        LOG(TRACE) << "\tDone";
     }
 
     void mesh_store::remove_render_objects_with_parent(long parent_id) {

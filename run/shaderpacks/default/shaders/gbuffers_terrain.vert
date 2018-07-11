@@ -1,7 +1,10 @@
 #version 450
 
-layout(set = 2, binding = 0) uniform sampler2D colortex;
-layout(set = 2, binding = 3) uniform sampler2D lightmap;
+layout(location = 0) in vec3 position_in;
+layout(location = 2) in vec2 uv_in;
+layout(location = 3) in vec2 lightmap_uv_in;
+layout(location = 4) in vec3 normal_in;
+layout(location = 1) in vec4 color_in;
 
 layout(set = 0, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
@@ -53,26 +56,20 @@ layout(set = 0, binding = 0) uniform per_frame_uniforms {
     float centerDepthSmooth;
 };
 
-layout(location = 0) in vec2 uv;
-layout(location = 1) in vec4 color;
-layout(location = 2) in vec2 lightmap_uv;
-layout(location = 3) in vec3 normal;
+layout(set = 1, binding = 0) uniform per_model_uniforms{
+    mat4 gbufferModel;
+};
 
-layout(location = 0) out vec4 color_out;
+layout(location = 0) out vec2 uv;
+layout(location = 1) out vec4 color;
+layout(location = 2) out vec2 lightmap_uv;
+layout(location = 3) out vec3 normal;
 
 void main() {
+	gl_Position =  gbufferProjection * gbufferModelView * gbufferModel * vec4(position_in, 1.0f);
 
-    if(textureSize(colortex, 0).x > 0) {
-        vec4 tex_sample = texture(colortex, uv);
-        if(tex_sample.a < 0.5) {
-            color_out = vec4(1, 0, 1, 1);
-        } else {
-            color_out = tex_sample;
-        }
-    } else {
-        color_out = vec4(1, 0, 0, 1);
-    }
-
-   //color_out.rgb *= texture(lightmap, lightmap_uv).rgb;// * color.rgb / 255.0f;
-
+	uv = uv_in;
+ 	color = color_in;
+ 	lightmap_uv = (lightmap_uv_in + 0.5) / 256;
+ 	normal = normal_in;
 }
