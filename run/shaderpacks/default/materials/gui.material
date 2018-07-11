@@ -1,6 +1,7 @@
 {
     "gui": {
         "pass": "Forward",
+        "depthFunc": "Always",
 
         "states": [
             "DisableAlphaWrite"
