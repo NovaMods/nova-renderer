@@ -1,6 +1,9 @@
+import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import org.gradle.api.tasks.options.Option
 import org.apache.tools.ant.taskdefs.condition.Os
+
+import java.lang.reflect.Field
 
 @CompileStatic
 class NativeTaskConstants {
@@ -47,6 +50,41 @@ class VulkanSdkSetupTask extends DefaultTask {
     VulkanSdkSetupTask() {
         description = "Sets up VulkanSDK into ${NativeTaskConstants.VULKAN_SDK_DIR.getAbsolutePath()}"
         group = "native"
+        outputs.upToDateWhen {
+            if (!ignoreSystemProvided) {
+                boolean skip = false
+                Properties properties = BuildPropertiesHelper.loadTmpBuildProps()
+                String vulkanSdkSystem = System.getenv("VULKAN_SDK")
+                if (vulkanSdkSystem != null && !vulkanSdkSystem.trim().equals("")) {
+                    logger.info("Skipping VulkanSDK installation because it is proved via the enviroment variable VULKAN_SDK and set to ${vulkanSdkSystem}")
+                    properties.setProperty("sdk", "ENV")
+                    skip = true
+                } else {
+                    ExecResult result = project.exec {
+                        commandLine cmakeCommand, "-P", "check_vulkan.cmake"
+                        ignoreExitValue = true
+                        standardOutput = new ByteArrayOutputStream()
+                        errorOutput = new ByteArrayOutputStream()
+                    }
+
+                    if (result.exitValue == 0) {
+                        logger.info("Skipping VulkanSDK installation because it is proved via find_package(Vulkan) in cmake")
+                        properties.setProperty("sdk", "CMake")
+                        skip = true
+                    }
+                }
+                BuildPropertiesHelper.saveTmpBuildProps(properties)
+                if (skip) {
+                    return true
+                }
+            }
+
+            if (INSTALL_DIR.exists() && INSTALL_DIR.isDirectory() && !force) {
+                return true
+            }
+
+            return false
+        }
     }
 
     @Option(option = "ignore-system-provided", description = "Ignore and build even if there is a sdk provided by the system")
@@ -81,32 +119,6 @@ class VulkanSdkSetupTask extends DefaultTask {
 
     @TaskAction
     void run() {
-        if (!ignoreSystemProvided) {
-            boolean skip = false
-            Properties properties = BuildPropertiesHelper.loadTmpBuildProps()
-            String vulkanSdkSystem = System.getenv("VULKAN_SDK")
-            if (vulkanSdkSystem != null && !vulkanSdkSystem.trim().equals("")) {
-                logger.info("Skipping VulkanSDK installation because it is proved via the enviroment variable VULKAN_SDK and set to ${vulkanSdkSystem}")
-                properties.setProperty("sdk", "ENV")
-                skip = true
-            } else {
-                ExecResult result = project.exec {
-                    commandLine cmakeCommand, "-P", "check_vulkan.cmake",
-                            ignoreExitValue = true
-                }
-
-                if (result.exitValue == 0) {
-                    logger.info("Skipping VulkanSDK installation because it is proved via find_package(Vulkan) in cmake")
-                    properties.setProperty("sdk", "CMake")
-                    skip = true
-                }
-            }
-            BuildPropertiesHelper.saveTmpBuildProps(properties)
-            if (skip) {
-                return
-            }
-        }
-
         Properties properties = BuildPropertiesHelper.loadTmpBuildProps()
         properties.setProperty("sdk", "integrated")
         BuildPropertiesHelper.saveTmpBuildProps(properties)
@@ -115,10 +127,6 @@ class VulkanSdkSetupTask extends DefaultTask {
             if (!NativeTaskConstants.VULKAN_SDK_DIR.mkdirs()) {
                 throw new GradleException("Failed to create VulkanSDK dir ${NativeTaskConstants.VULKAN_SDK_DIR.getAbsolutePath()}")
             }
-        }
-
-        if (INSTALL_DIR.exists() && INSTALL_DIR.isDirectory()) {
-            return
         }
 
         if (makeCommand == null) {
@@ -201,6 +209,11 @@ class VulkanSdkSetupTask extends DefaultTask {
 
         install("tools", "-DVULKAN_HEADERS_INSTALL_DIR=${INSTALL_DIR.getAbsolutePath()}", "-DVULKAN_LOADER_INSTALL=${INSTALL_DIR.getAbsolutePath()}",
                 "-DGLSLANG_INSTALL_DIR=${glslangInstallDir.getAbsolutePath()}")
+
+        project.copy {
+            from new File(INSTALL_DIR, "share/vulkan/explicit_layer.d").getAbsolutePath()
+            into new File(INSTALL_DIR, "etc/vulkan/explicit_layer.d").getAbsolutePath()
+        }
     }
 
     void cloneRepo(String url, String moduleName) {
@@ -848,13 +861,13 @@ runClient {
         String sdkDir = new File(NativeTaskConstants.VULKAN_SDK_DIR, "install").getAbsolutePath()
         environment(
                 "VULKAN_SDK": sdkDir,
-                "PATH": System.getenv("PATH") + File.pathSeparator + sdkDir + File.separator + "bin"
+                "PATH": System.getenv("PATH") + File.pathSeparator + sdkDir + File.separator + "bin",
+                "VK_LAYER_PATH": sdkDir + "/etc/vulkan/explicit_layer.d"
         )
 
         if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
             environment(
-                    "LD_LIBRARY_PATH": System.getenv("LD_LIBRARY_PATH") + File.pathSeparator + sdkDir + "/lib",
-                    "VK_LAYER_PATH": sdkDir + "/etc/vulkan/explicit_layer.d"
+                    "LD_LIBRARY_PATH": sdkDir + "/lib", // That might or might not be required, but for now its in here
             )
         }
     }
