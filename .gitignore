@@ -36,3 +36,6 @@ run/
 
 ### Compilation ###
 .native-build-props.temp.properties
+
+### VulkanSDK ###
+vulkan_sdk/

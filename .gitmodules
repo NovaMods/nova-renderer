@@ -34,3 +34,6 @@
 [submodule "src/main/cpp/3rdparty/shaderc"]
 	path = src/main/cpp/3rdparty/shaderc
 	url = https://github.com/google/shaderc
+[submodule "src/main/cpp/3rdparty/SPIRV-Cross"]
+	path = src/main/cpp/3rdparty/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross
