@@ -1,9 +1,9 @@
 #version 450
 
 layout(location = 0) in vec3 position_in;
-layout(location = 1) in vec2 uv_in;
-layout(location = 2) in vec2 lightmap_uv_in;
-layout(location = 3) in vec3 normal_in;
+layout(location = 2) in vec2 uv_in;
+layout(location = 3) in vec2 lightmap_uv_in;
+layout(location = 4) in vec3 normal_in;
 
 layout(std140) uniform per_frame_uniforms {
     mat4 gbufferModelView;

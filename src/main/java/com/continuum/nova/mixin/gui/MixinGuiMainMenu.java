@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,7 +24,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.Stack;
 
 @Mixin(GuiMainMenu.class)
-public class MixinGuiMainMenu extends GuiScreen {
+public abstract class MixinGuiMainMenu extends GuiScreen {
 
     @Shadow
     private float panoramaTimer;
@@ -40,6 +41,16 @@ public class MixinGuiMainMenu extends GuiScreen {
     private String splashText;
 
     // Hmm, we can't override the ctor so the check has to stay in here for now
+
+    @Shadow @Final private static ResourceLocation field_194400_H;
+
+    @Shadow @Final private float minceraftRoll;
+
+    @Shadow private int widthCopyrightRest;
+
+    @Shadow private int widthCopyright;
+
+    @Shadow protected abstract void renderSkybox(int mouseX, int mouseY, float partialTicks);
 
     @Redirect(method = "<init>",
             at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GLContext;getCapabilities()Lorg/lwjgl/opengl/ContextCapabilities;"))
@@ -155,28 +166,57 @@ public class MixinGuiMainMenu extends GuiScreen {
     }
 
     /**
-     * @author Janrupf
+     * @author Janrupf, Barteks2x
      * @reason Change render code to nova
      * @inheritDoc
      */
     @Overwrite
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        //this.drawPanorama(mouseX, mouseY, partialTicks);
+        this.panoramaTimer += partialTicks;
 
-        int titleStartPosX = (this.width / 2) - 137;
+        //GlStateManager.disableAlpha();
+        //this.renderSkybox(mouseX, mouseY, partialTicks);
+        //GlStateManager.enableAlpha();
+
+        int titleStartPosX = this.width / 2 - 137;
+        // todo: MINCERAFT (not a typo)
+        /*if ((double)this.minceraftRoll < 1.0E-4D)
+        {
+            this.drawTexturedModalRect(titleStartPosX + 0, 30, 0, 0, 99, 44);
+            this.drawTexturedModalRect(titleStartPosX + 99, 30, 129, 0, 27, 44);
+            this.drawTexturedModalRect(titleStartPosX + 99 + 26, 30, 126, 0, 3, 44);
+            this.drawTexturedModalRect(titleStartPosX + 99 + 26 + 3, 30, 99, 0, 26, 44);
+            this.drawTexturedModalRect(titleStartPosX + 155, 30, 0, 45, 155, 44);
+        }
+        else*/
+        NovaDraw.incrementZ();
+        {
+            // Minecraft logo
+            NovaDraw.drawRectangle(
+                    MINECRAFT_TITLE_TEXTURES,
+                    new Rectangle2D.Float(titleStartPosX, 30, 155, 44),
+                    new Rectangle2D.Float(0, 0, 0.60546875f, 0.171875f)
+            );
+            NovaDraw.drawRectangle(
+                    MINECRAFT_TITLE_TEXTURES,
+                    new Rectangle2D.Float(titleStartPosX + 155, 30, 155, 44),
+                    new Rectangle2D.Float(0, 45 / 256f, 0.60546875f, 0.171875f)
+            );
+        }
 
         NovaDraw.incrementZ();
 
+        // draw "java edition"
         NovaDraw.drawRectangle(
-                MINECRAFT_TITLE_TEXTURES,
-                new Rectangle2D.Float(titleStartPosX, 30, 155, 44),
-                new Rectangle2D.Float(0, 0, 0.60546875f, 0.171875f)
+                field_194400_H, // java edition logo
+                new Rectangle2D.Float(titleStartPosX + 88, 67, 98, 14),
+                new Rectangle2D.Float(0, 0, 98 / 128f, 14 / 16f)
         );
-        NovaDraw.drawRectangle(
-                MINECRAFT_TITLE_TEXTURES,
-                new Rectangle2D.Float(titleStartPosX + 155, 30, 155, 44),
-                new Rectangle2D.Float(0, 45 / 256f, 0.60546875f, 0.171875f)
-        );
+
+        // Forge just draws text, no GL calls here
+        this.splashText =
+                net.minecraftforge.client.ForgeHooksClient
+                        .renderMainMenu((GuiMainMenu) (Object) this, this.fontRenderer, this.width, this.height, this.splashText);
 
         NovaDraw.translate((this.width / 2 + 90), 70, 0);
         NovaDraw.rotate(-20, false, false, true);
@@ -185,7 +225,8 @@ public class MixinGuiMainMenu extends GuiScreen {
         NovaDraw.scale(f, f, 1);
         this.drawCenteredString(this.fontRenderer, this.splashText, 0, -8, -256);
         NovaDraw.resetMatrix();
-        String s = "Minecraft 1.10";
+
+        String s = "Minecraft 1.12.2";
 
         if (this.mc.isDemo()) {
             s = s + " Demo";
@@ -193,11 +234,35 @@ public class MixinGuiMainMenu extends GuiScreen {
             s = s + ("release".equalsIgnoreCase(this.mc.getVersionType()) ? "" : "/" + this.mc.getVersionType());
         }
 
-        this.drawString(this.fontRenderer, s, 2, this.height - 10, -1);
-        String s1 = "Copyright Mojang AB. Do not distribute!";
-        this.drawString(this.fontRenderer, s1, this.width - this.fontRenderer.getStringWidth(s1) - 2, this.height - 10, -1);
+        java.util.List<String> brandings =
+                com.google.common.collect.Lists.reverse(net.minecraftforge.fml.common.FMLCommonHandler.instance().getBrandings(true));
+        for (int brdline = 0; brdline < brandings.size(); brdline++) {
+            String brd = brandings.get(brdline);
+            if (!com.google.common.base.Strings.isNullOrEmpty(brd)) {
+                this.drawString(this.fontRenderer, brd, 2, this.height - (10 + brdline * (this.fontRenderer.FONT_HEIGHT + 1)), 16777215);
+            }
+        }
 
+        this.drawString(this.fontRenderer, "Copyright Mojang AB. Do not distribute!", this.widthCopyrightRest, this.height - 10, -1);
 
+        /*
+        if (mouseX > this.widthCopyrightRest && mouseX < this.widthCopyrightRest + this.widthCopyright && mouseY > this.height - 10
+                && mouseY < this.height && Mouse.isInsideWindow()) {
+            drawRect(this.widthCopyrightRest, this.height - 1, this.widthCopyrightRest + this.widthCopyright, this.height, -1);
+        }
+
+        if (this.openGLWarning1 != null && !this.openGLWarning1.isEmpty()) {
+            drawRect(this.openGLWarningX1 - 2, this.openGLWarningY1 - 2, this.openGLWarningX2 + 2, this.openGLWarningY2 - 1, 1428160512);
+            this.drawString(this.fontRenderer, this.openGLWarning1, this.openGLWarningX1, this.openGLWarningY1, -1);
+            this.drawString(this.fontRenderer, this.openGLWarning2, (this.width - this.openGLWarning2Width) / 2, (this.buttonList.get(0)).y - 12, -1);
+        }
+*/
         super.drawScreen(mouseX, mouseY, partialTicks);
+/*
+        if (this.areRealmsNotificationsEnabled()) {
+            this.realmsNotification.drawScreen(mouseX, mouseY, partialTicks);
+        }
+        modUpdateNotification.drawScreen(mouseX, mouseY, partialTicks);
+        */
     }
 }

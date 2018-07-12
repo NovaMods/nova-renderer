@@ -52,6 +52,7 @@ public class Utils {
         locations.add(new ResourceLocation("gui/presets/madness"));
         locations.add(new ResourceLocation("gui/presets/water"));
         locations.add(new ResourceLocation("gui/title/minecraft"));
+        locations.add(new ResourceLocation("gui/title/edition"));
         locations.add(new ResourceLocation("gui/title/mojang"));
         locations.add(new ResourceLocation("gui/title/background/panorama_0"));
         locations.add(new ResourceLocation("gui/title/background/panorama_1"));

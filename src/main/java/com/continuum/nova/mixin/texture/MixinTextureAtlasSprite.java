@@ -36,7 +36,7 @@ public abstract class MixinTextureAtlasSprite {
         if(isAnimated) {
             this.height = this.width;
         } else if(sizeInfo.pngHeight != sizeInfo.pngWidth) {
-            throw new IOException("broken aspect ratio and not an animation");
+            //throw new IOException("broken aspect ratio and not an animation");
         }
     }
 }

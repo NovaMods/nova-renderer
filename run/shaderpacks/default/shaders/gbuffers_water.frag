@@ -60,8 +60,7 @@ layout(location = 0) out vec4 color_out;
 void main() {
     if(textureSize(colortex, 0).x > 0) {
         vec4 tex_sample = texture(colortex, uv);
-        color_out = tex_sample;// * color;
-
+        color_out = tex_sample;
     } else {
         color_out = vec4(1, 0, 1, 0.5);
     }

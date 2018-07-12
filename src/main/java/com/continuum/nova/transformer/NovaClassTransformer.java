@@ -1,28 +1,42 @@
 package com.continuum.nova.transformer;
 
+import com.sun.org.apache.bcel.internal.generic.INVOKESTATIC;
 import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraftforge.fml.common.asm.transformers.deobf.FMLRemappingAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.commons.RemappingClassAdapter;
+import org.objectweb.asm.Type;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class NovaClassTransformer implements IClassTransformer {
 
+    private static final Set<String> blacklistPrefixes = new HashSet<>();
+
+    static {
+        blacklistPrefixes.add("org.lwjgl.");
+        blacklistPrefixes.add("net.minecraft.client.renderer.GlStateManage");
+        blacklistPrefixes.add("net.minecraft.client.renderer.OpenGlHelper");
+        blacklistPrefixes.add("com.continuum.nova.transformer.");
+    }
     @Override public byte[] transform(String name, String transformedName, byte[] basicClass) {
         if (transformedName == null) {
             return basicClass;
         }
-        if (transformedName.contains("ForgeHooksClient")) {
-            ClassReader classReader = new ClassReader(basicClass);
-            ClassWriter classWriter = new ClassWriter(0);
-            ForgeHooksVisitor visitor = new ForgeHooksVisitor(classWriter);
-            classReader.accept(visitor, 0);
-            return classWriter.toByteArray();
+        for (String p : blacklistPrefixes) {
+            if (transformedName.startsWith(p)) {
+                return basicClass;
+            }
         }
-        return basicClass;
+
+        ClassReader classReader = new ClassReader(basicClass);
+        ClassWriter classWriter = new ClassWriter(0);
+        ForgeHooksVisitor visitor = new ForgeHooksVisitor(classWriter);
+        classReader.accept(visitor, 0);
+        return classWriter.toByteArray();
     }
 
     private static class ForgeHooksVisitor extends ClassVisitor {
@@ -38,57 +52,84 @@ public class NovaClassTransformer implements IClassTransformer {
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc,
                 String signature, String[] exceptions) {
-            // todo: add srg names
-            final String STATE_MANAGER = "net/minecraft/client/renderer/GlStateManager",
-                    ROTATE = "rotate", MULT_MATRIX = "multMatrix", VERTEX_POINTER = "glVertexPointer",
-                    ENABLE_CLIENT_STATE = "glEnableClientState", NORMAL_POINTER = "glNormalPointer",
-            COLOR_PTR = "glColorPointer", TEX_COORD_PTR = "glTexCoordPointer", DISABLE_CLIENT_STATE = "glDisableClientState";
-
             return new MethodVisitor(Opcodes.ASM5, cv.visitMethod(access, name, desc, signature, exceptions)) {
                 @Override public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-                    if (owner.startsWith("org/lwjgl/opengl")) {
-                        switch (name) {
-                            case "glRotatef":
-                                super.visitMethodInsn(opcode, STATE_MANAGER, ROTATE, desc, itf);
-                                return;
-                            case "glMultMatrix":
-                                super.visitMethodInsn(opcode, STATE_MANAGER, MULT_MATRIX, desc, itf);
-                                return;
-                            case "glVertexPointer":
-                                super.visitMethodInsn(opcode, STATE_MANAGER, VERTEX_POINTER, desc, itf);
-                                return;
-                            case "glEnableClientState":
-                                super.visitMethodInsn(opcode, STATE_MANAGER, ENABLE_CLIENT_STATE, desc, itf);
-                                return;
-                            case "glNormalPointer":
-                                super.visitMethodInsn(opcode, STATE_MANAGER, NORMAL_POINTER, desc, itf);
-                                return;
-                            case "glColorPointer":
-                                super.visitMethodInsn(opcode, STATE_MANAGER, COLOR_PTR, desc, itf);
-                                return;
-                            case "glTexCoordPointer":
-                                super.visitMethodInsn(opcode, STATE_MANAGER, TEX_COORD_PTR, desc, itf);
-                                return;
-
-                            case "glEnableVertexAttribArray":
-                                // this is used only for GENERIC VertexFormatElement.EnumUsage, which is not used by vanilla
-                                super.visitMethodInsn(opcode, owner, name, desc, itf);
-                                return;
-                            case "glVertexAttribPointer":
-                                // this is used only for GENERIC VertexFormatElement.EnumUsage, which is not used by vanilla
-                                super.visitMethodInsn(opcode, owner, name, desc, itf);
-                                return;
-                            case "glDisableClientState":
-                                super.visitMethodInsn(opcode, STATE_MANAGER, DISABLE_CLIENT_STATE, desc, itf);
-                                return;
-                            case "glDisableVertexAttribArray":
-                                // this is used only for GENERIC VertexFormatElement.EnumUsage, which is not used by vanilla
-                                super.visitMethodInsn(opcode, owner, name, desc, itf);
-                                return;
+                    if (owner.equals("org/lwjgl/opengl/GL11")
+                            || owner.equals("org/lwjgl/opengl/GL12")
+                            || owner.equals("org/lwjgl/opengl/GL13")
+                            || owner.equals("org/lwjgl/opengl/GL14")
+                            || owner.equals("org/lwjgl/opengl/GL15")
+                            || owner.equals("org/lwjgl/opengl/GL20")
+                            || owner.equals("org/lwjgl/opengl/GL21")
+                            || owner.equals("org/lwjgl/opengl/GL30")
+                            || owner.equals("org/lwjgl/opengl/GL31")
+                            || owner.equals("org/lwjgl/opengl/GL32")
+                            || owner.equals("org/lwjgl/opengl/GL33")
+                            || owner.equals("org/lwjgl/opengl/GL40")
+                            || owner.equals("org/lwjgl/opengl/GL41")
+                            || owner.equals("org/lwjgl/opengl/GL42")
+                            || owner.equals("org/lwjgl/opengl/GL43")
+                            || owner.equals("org/lwjgl/opengl/GL44")
+                            || owner.equals("org/lwjgl/opengl/GL45")
+                            || owner.equals("org/lwjgl/opengl/GLContext")
+                            || owner.equals("org/lwjgl/opengl/Display")) {
+                        if (removeCalls(opcode, owner, name, desc, itf)) {
+                            return;
                         }
-                        int i = 0;
                     }
                     super.visitMethodInsn(opcode, owner, name, desc, itf);
+                }
+
+                private boolean removeCalls(int opcode, String owner, String name, String desc, boolean itf) {
+                    if (owner.equals("org/lwjgl/opengl/Display") && (name.equals("create") || name.equals("getDisplayMode"))) {
+                        return false;
+                    }
+                    System.err.println("Found usage of method " + owner + "." + name + ";" + desc + ", removing");
+
+                    for (Type t : Type.getArgumentTypes(desc)) {
+                        switch (t.getSize()) {
+                            case 2:
+                                super.visitInsn(Opcodes.POP2);
+                                System.err.println("\tPOP2");
+                                break;
+                            case 1:
+                                super.visitInsn(Opcodes.POP);
+                                System.err.println("\tPOP");
+                                break;
+                        }
+                    }
+                    if (opcode != Opcodes.INVOKESTATIC) {
+                        super.visitInsn(Opcodes.POP);
+                        System.err.println("\tPOP (object)");
+                    }
+                    switch (Type.getReturnType(desc).getSort()) {
+                        case Type.OBJECT:
+                        case Type.ARRAY:
+                            System.err.println("\tACONST_NULL");
+                            super.visitInsn(Opcodes.ACONST_NULL);
+                            break;
+                        case Type.DOUBLE:
+                            System.err.println("\tDCONST_0");
+                            super.visitInsn(Opcodes.DCONST_0);
+                            break;
+                        case Type.LONG:
+                            System.err.println("\tLCONST_0");
+                            super.visitInsn(Opcodes.LCONST_0);
+                            break;
+                        case Type.FLOAT:
+                            System.err.println("\tFCONST_0");
+                            super.visitInsn(Opcodes.FCONST_0);
+                            break;
+                        case Type.INT:
+                        case Type.SHORT:
+                        case Type.BYTE:
+                        case Type.CHAR:
+                        case Type.BOOLEAN:
+                            System.err.println("\tICONST_0");
+                            super.visitInsn(Opcodes.ICONST_0);
+                            break;
+                    }
+                    return true;
                 }
             };
         }
