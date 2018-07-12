@@ -6,12 +6,14 @@ import org.apache.tools.ant.taskdefs.condition.Os
 class NativeTaskConstants {
     public static final File NATIVE_BUILD_DIR = new File("src/main/cpp/build")
     public static final File NATIVE_BUILD_PROPS_FILE = new File(".native-build-props.temp.properties")
+    public static final File VULKAN_SDK_DIR = new File("vulkan_sdk")
 }
 
 @CompileStatic
 class NativeBuildSetupTask extends DefaultTask {
     boolean skipPython = false
     boolean skipGit = false
+    boolean skipVulkanSdk = false
     boolean forceUpdateGlslang
 
     String gitCommand = "git"
@@ -30,6 +32,11 @@ class NativeBuildSetupTask extends DefaultTask {
     @Option(option = "skip-git", description = "Should the git setup be skipped")
     void shouldSkipGit(boolean should) {
         skipGit = should
+    }
+
+    @Option(option = "skip-vulkan-sdk", description = "Skip VulkanSDK check (includes auto download and setup)")
+    void shouldSkipVulkanSdk(boolean should) {
+        skipVulkanSdk = should
     }
 
     @Option(option = "force-update-glslang", description = "Force update 3rdparty/glslang/External (with python)")
@@ -542,4 +549,5 @@ task buildNative(type: CompleteNativeBuildTask)
 
 clean {
     delete "src/main/cpp/build"
+    delete "src/main/cpp/3rdparty/glslang/External"
 }
