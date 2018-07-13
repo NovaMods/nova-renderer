@@ -1,51 +1,48 @@
-[submodule "src/main/cpp/3rdparty/glm"]
-	path = src/main/cpp/3rdparty/glm
-	url = https://github.com/g-truc/glm.git
+[submodule "src/main/cpp/3rdparty/SPIRV-Cross"]
+	path = src/main/cpp/3rdparty/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross
+[submodule "src/main/cpp/3rdparty/Vulkan-LoaderAndValidationLayers"]
+	path = src/main/cpp/3rdparty/Vulkan-LoaderAndValidationLayers
+	url = https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers
+[submodule "src/main/cpp/3rdparty/VulkanMemoryAllocator"]
+	path = src/main/cpp/3rdparty/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+[submodule "src/main/cpp/3rdparty/easyloggingpp"]
+	path = src/main/cpp/3rdparty/easyloggingpp
+	url = https://github.com/muflihun/easyloggingpp.git
 [submodule "src/main/cpp/3rdparty/glfw"]
 	path = src/main/cpp/3rdparty/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "src/main/cpp/3rdparty/miniz"]
-	path = src/main/cpp/3rdparty/miniz
-	url = https://github.com/richgel999/miniz.git
-[submodule "src/main/cpp/3rdparty/easyloggingpp"]
-	path = src/main/cpp/3rdparty/easyloggingpp
-	url = https://github.com/easylogging/easyloggingpp.git
-[submodule "src/main/cpp/3rdparty/googletest"]
-	path = src/main/cpp/3rdparty/googletest
-	url = https://github.com/google/googletest.git
-[submodule "src/main/cpp/3rdparty/optional"]
-	path = src/main/cpp/3rdparty/optional
-	url = https://github.com/akrzemi1/Optional.git
-[submodule "src/main/cpp/3rdparty/VulkanMemoryAllocator"]
-	path = src/main/cpp/3rdparty/VulkanMemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule "src/main/cpp/3rdparty/shaderc"]
-	path = src/main/cpp/3rdparty/shaderc
-	url = https://github.com/google/shaderc.git
-[submodule "src/main/cpp/3rdparty/spirv-tools"]
-	path = src/main/cpp/3rdparty/spirv-tools
-	url = https://github.com/KhronosGroup/SPIRV-Tools.git
-[submodule "src/main/cpp/3rdparty/spirv-headers"]
-	path = src/main/cpp/3rdparty/spirv-headers
-	url = https://github.com/KhronosGroup/SPIRV-Headers.git
+[submodule "src/main/cpp/3rdparty/glm"]
+	path = src/main/cpp/3rdparty/glm
+	url = https://github.com/g-truc/glm.git
 [submodule "src/main/cpp/3rdparty/glslang"]
 	path = src/main/cpp/3rdparty/glslang
 	url = https://github.com/KhronosGroup/glslang.git
-[submodule "docs/nova-renderer.wiki"]
-	path = docs/nova-renderer.wiki
-	url = https://github.com/NovaMods/nova-renderer.wiki.git
+[submodule "src/main/cpp/3rdparty/googletest"]
+	path = src/main/cpp/3rdparty/googletest
+	url = https://github.com/google/googletest.git
 [submodule "src/main/cpp/3rdparty/json"]
-    path = src/main/cpp/3rdparty/json
-    url = https://github.com/nlohmann/json.git
-[submodule "src/main/cpp/3rdparty/Vulkan-LoaderAndValidationLayers"]
-	path = src/main/cpp/3rdparty/Vulkan-LoaderAndValidationLayers
-	url = https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers.git
-[submodule "src/main/cpp/3rdparty/SPIRV-Cross"]
-	path = src/main/cpp/3rdparty/SPIRV-Cross
-	url = https://github.com/KhronosGroup/SPIRV-Cross.git
-[submodule "src/main/cpp/3rdparty/renderdocapi"]
-	path = src/main/cpp/3rdparty/renderdocapi
-	url = https://github.com/NovaMods/RenderDoc-Manager.git
+	path = src/main/cpp/3rdparty/json
+	url = https://github.com/nlohmann/json.git
+[submodule "src/main/cpp/3rdparty/miniz"]
+	path = src/main/cpp/3rdparty/miniz
+	url = https://github.com/richgel999/miniz.git
+[submodule "src/main/cpp/3rdparty/optional"]
+	path = src/main/cpp/3rdparty/optional
+	url = https://github.com/akrzemi1/Optional.git
 [submodule "src/main/cpp/3rdparty/profiler"]
 	path = src/main/cpp/3rdparty/profiler
-	url = https://github.com/NovaMods/profiler.git
+	url = https://github.com/NovaMods/profiler
+[submodule "src/main/cpp/3rdparty/renderdocapi"]
+	path = src/main/cpp/3rdparty/renderdocapi
+	url = https://github.com/NovaMods/RenderDoc-Manager
+[submodule "src/main/cpp/3rdparty/shaderc"]
+	path = src/main/cpp/3rdparty/shaderc
+	url = https://github.com/google/shaderc
+[submodule "src/main/cpp/3rdparty/spirv-headers"]
+	path = src/main/cpp/3rdparty/spirv-headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers
+[submodule "src/main/cpp/3rdparty/spirv-tools"]
+	path = src/main/cpp/3rdparty/spirv-tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools
