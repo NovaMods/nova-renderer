@@ -1,9 +1,3 @@
-[submodule "src/main/cpp/3rdparty/SPIRV-Cross"]
-	path = src/main/cpp/3rdparty/SPIRV-Cross
-	url = https://github.com/KhronosGroup/SPIRV-Cross
-[submodule "src/main/cpp/3rdparty/Vulkan-LoaderAndValidationLayers"]
-	path = src/main/cpp/3rdparty/Vulkan-LoaderAndValidationLayers
-	url = https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers
 [submodule "src/main/cpp/3rdparty/VulkanMemoryAllocator"]
 	path = src/main/cpp/3rdparty/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
@@ -40,9 +34,6 @@
 [submodule "src/main/cpp/3rdparty/shaderc"]
 	path = src/main/cpp/3rdparty/shaderc
 	url = https://github.com/google/shaderc
-[submodule "src/main/cpp/3rdparty/spirv-headers"]
-	path = src/main/cpp/3rdparty/spirv-headers
-	url = https://github.com/KhronosGroup/SPIRV-Headers
-[submodule "src/main/cpp/3rdparty/spirv-tools"]
-	path = src/main/cpp/3rdparty/spirv-tools
-	url = https://github.com/KhronosGroup/SPIRV-Tools
+[submodule "src/main/cpp/3rdparty/SPIRV-Cross"]
+	path = src/main/cpp/3rdparty/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross

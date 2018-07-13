@@ -207,6 +207,10 @@ public abstract class MixinMinecraft {
     @Inject(method = "<init>", at = @At("RETURN"))
     private void constructorEnd(CallbackInfo info) {
         novaLogger = LogManager.getLogger("Nova");
+        novaLogger.info("VULKAN_SDK is " + System.getenv("VULKAN_SDK"));
+        novaLogger.info("PATH is " + System.getenv("PATH"));
+        novaLogger.info("LD_LIBRARY_PATH is " + System.getenv("LD_LIBRARY_PATH"));
+        novaLogger.info("VK_LAYER_PATH is " + System.getenv("VK_LAYER_PATH"));
         novaLogger.info("Loading nova...");
         NovaRenderer.create();
         NovaRenderer.getInstance().preInit();

@@ -141,57 +141,21 @@ sftp-config.json
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-### MCP ###
-CHANGELOG
-LICENSE.txt
-
-# Scripts #
-cleanup.sh
-cleanup.bat
-decompile.bat
-decompile.sh
-getchangedsrc.bat
-getchangedsrc.sh
-recompile.bat
-recompile.sh
-reformat.bat
-reformat.sh
-reobfuscate.bat
-reobfuscate.sh
-reobfuscate_srg.bat
-reobfuscate_srg.sh
-startclient.bat
-startclient.sh
-startserver.sh
-startserver.bat
-updatemcp.bat
-updatemcp.sh
-updatemd5.bat
-updatemd5.sh
-updateids.bat
-updateids.sh
-updatenames.bat
-updatenames.sh
-
 ### Minecraft source and libraries ###
-conf/
-!jars/
-jars/*
-!jars/config/
-!jars/shaderpacks/default/
 !docs/
 docs/*
 !docs/schemas/
 !docs/examples/
-runtime/
 temp/
 eclipse/
-src/main/java/net/
-!src/main/java/com/
+run/
+!run/config/
+!run/shaderpacks
 
 ### Gradle ###
 .gradle
 /build/
+.native-build-props.temp.properties
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -218,10 +182,6 @@ nova-test.dir/
 x64/
 
 .idea/modules/
-mappingviewer/
-mcp/
-reobf/
-target/
 
 *.png
 /.idea/inspectionProfiles
@@ -233,35 +193,8 @@ target/
 /*.log
 /*.lck
 
-### Minecraft textures, copied from mcp
-src/main/resources
-!src/main/resources/log4j2.xml
 /.idea
 logs/
 
-### MCP files
-
-src/minecraft/
-bin/
-conf/
-eclipse/
-lib/
-logs/
-mappingviewer/
-mcp/
-reobf/
-runtime/
-temp/
-cleanup.*
-decompile.*
-getchargedsrc.*
-mcp931.zip
-recompile.*
-reformat.*
-reobfuscate*
-startclient*
-startserver*
-updateids*
-updatemcp*
-updatemd5*
-updatenames*
+### VulkanSDK
+vulkan_sdk/
