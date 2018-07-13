@@ -22,7 +22,7 @@ public class MixinGuiButtonLanguage extends GuiButton {
      * @inheritDoc
      */
     @Overwrite
-    public void drawButton(Minecraft mc, int mouseX, int mouseY) {
+    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
             NovaDraw.incrementZ();
             NovaDraw.drawRectangle(

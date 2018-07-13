@@ -1,0 +1,17 @@
+[
+  {
+    "modid": "nova-renderer",
+    "name": "Nova renderer",
+    "description": "A fast alternative minecraft renderer build upon vulkan",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://continuum.graphics/blog/?category=Nova",
+    "updateUrl": "",
+    "authorList": [
+      "GitHub contributors"
+    ],
+    "credits": "TODO",
+    "logoFile": "",
+    "screenshots": []
+  }
+]

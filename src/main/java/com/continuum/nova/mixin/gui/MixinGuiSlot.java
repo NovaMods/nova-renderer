@@ -85,16 +85,14 @@ public abstract class MixinGuiSlot {
     public int headerPadding;
 
     @Shadow
-    protected abstract void updateItemPos(int entryID, int insideLeft, int yPos);
-
-    @Shadow
     protected boolean showSelectionBox;
 
     @Shadow
     protected abstract boolean isSelected(int slotIndex);
 
-    @Shadow
-    protected abstract void drawSlot(int entryID, int insideLeft, int yPos, int insideSlotHeight, int mouseXIn, int mouseYIn);
+    @Shadow protected abstract void updateItemPos(int entryID, int insideLeft, int yPos, float partialTicks);
+
+    @Shadow protected abstract void drawSlot(int slotIndex, int xPos, int yPos, int heightIn, int mouseXIn, int mouseYIn, float partialTicks);
 
     /**
      * @author Janrupf
@@ -135,7 +133,7 @@ public abstract class MixinGuiSlot {
             }
             NovaDraw.incrementZ();
 
-            drawSelectionBox(k, l, mouseXIn, mouseYIn);
+            drawSelectionBox(k, l, mouseXIn, mouseYIn, partialTicks);
 
             GlStateManager.disableDepth();
             NovaDraw.incrementZ();
@@ -243,7 +241,7 @@ public abstract class MixinGuiSlot {
      * @inheritDoc
      */
     @Overwrite
-    protected void drawSelectionBox(int insideLeft, int insideTop, int mouseXIn, int mouseYIn) {
+    protected void drawSelectionBox(int insideLeft, int insideTop, int mouseXIn, int mouseYIn, float partialTicks) {
         int i = this.getSize();
 
         ResourceLocation whiteTextureLocation = NovaConstants.WHITE_TEXTURE_GUI_LOCATION;
@@ -253,7 +251,7 @@ public abstract class MixinGuiSlot {
             int l = this.slotHeight - 4;
 
             if (k > this.bottom || k + l < this.top) {
-                this.updateItemPos(j, insideLeft, k);
+                this.updateItemPos(j, insideLeft, k, partialTicks);
             }
 
             if (this.showSelectionBox && this.isSelected(j)) {
@@ -294,7 +292,7 @@ public abstract class MixinGuiSlot {
             }
             NovaDraw.incrementZ();
 
-            this.drawSlot(j, insideLeft, k, l, mouseXIn, mouseYIn);
+            this.drawSlot(j, insideLeft, k, l, mouseXIn, mouseYIn, partialTicks);
         }
     }
 
