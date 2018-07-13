@@ -1,9 +1,6 @@
-import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import org.gradle.api.tasks.options.Option
 import org.apache.tools.ant.taskdefs.condition.Os
-
-import java.lang.reflect.Field
 
 @CompileStatic
 class NativeTaskConstants {
@@ -725,6 +722,9 @@ class CompleteNativeBuildTask extends DefaultTask {
     String makeCommand = null
     String msbuildCommand = "msbuild"
 
+    boolean fullReleaseMode = false
+    boolean ciMode = false
+
     CompleteNativeBuildTask() {
         group = "native"
         description = "All native tasks grouped together for a simple run"
@@ -810,8 +810,23 @@ class CompleteNativeBuildTask extends DefaultTask {
         msbuildCommand = command
     }
 
+    @Option(option = "full-release", description = "Create a full release for your platform")
+    void enableFullReleaseMode(boolean enable) {
+        fullReleaseMode = enable
+    }
+
+    @Option(option = "ci", description = "Run the task as a ci task [DO NOT USE UNLESS BEING RUN FROM CI!]")
+    void enableCiMode(boolean enable) {
+        fullReleaseMode = enable
+        ciMode = enable
+    }
+
     @TaskAction
     void run() {
+        if(!buildType.equalsIgnoreCase("release") && fullReleaseMode) {
+            throw new GradleException("Cannot run a full release build with build type other than release")
+        }
+
         def setupTask = project.tasks.setupNativeBuild
         setupTask.skipPython = skipPython
         setupTask.skipGit = skipGit
@@ -843,7 +858,82 @@ class CompleteNativeBuildTask extends DefaultTask {
         buildTask.msbuildCommand = msbuildCommand
         buildTask.execute()
 
-        project.tasks.moveLibrary.execute()
+        if(!fullReleaseMode) {
+            project.tasks.moveLibrary.execute()
+        } else {
+            File novaLibFile
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                novaLibFile = new File(NativeTaskConstants.NATIVE_BUILD_DIR, "nova-renderer.dll")
+            } else {
+                novaLibFile = new File(NativeTaskConstants.NATIVE_BUILD_DIR, "libnova-renderer.so")
+            }
+
+            if(ciMode) {
+                File ciOut = new File("ci_out")
+                if(!ciOut.exists() || !ciOut.isDirectory()) {
+                    if (!ciOut.mkdirs()) {
+                        throw new GradleException("Failed to create directory ${ciOut.getAbsolutePath()}")
+                    }
+                }
+
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    if(System.properties['sun.arch.data.model'].toString().contains("64") && !force32bit) {
+                        novaLibFile.renameTo(new File(ciOut, "nova-renderer-x64.dll"))
+                    } else {
+                        novaLibFile.renameTo(new File(ciOut, "nova-renderer-x32.dll"))
+                    }
+                } else {
+                    if(System.properties['sun.arch.data.model'].toString().contains("64") && force32bit) {
+                        throw new GradleException("Cannot build 32bit binary for linux on a 64bit system safe [Failing because in CI mode]")
+                    }
+
+                    if(System.properties['sun.arch.data.model'].toString().contains("64") && !force32bit) {
+                        novaLibFile.renameTo(new File(ciOut, "libnova-renderer-x64.so"))
+                    } else {
+                        novaLibFile.renameTo(new File(ciOut, "libnova-renderer-x32.so"))
+                    }
+                }
+            } else {
+                String filename
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    if(System.properties['sun.arch.data.model'].toString().contains("64") && !force32bit) {
+                        filename = "nova-renderer-x64.dll"
+                    } else {
+                        filename = "nova-renderer-x32.dll"
+                    }
+                } else {
+                    if(System.properties['sun.arch.data.model'].toString().contains("64") && force32bit) {
+                        throw new GradleException("Cannot build 32bit binary for linux on a 64bit system safe [Failing because in full release mode]")
+                    }
+
+                    if(System.properties['sun.arch.data.model'].toString().contains("64") && !force32bit) {
+                        filename = "libnova-renderer-x64.so"
+                    } else {
+                        filename = "libnova-renderer-x32.so"
+                    }
+                }
+
+                File out = new File("src/main/resources/${filename}")
+                if(out.exists() && out.isFile()) {
+                    if(!out.delete()) {
+                        throw new GradleException("Failed to delete ${out.getAbsolutePath()}")
+                    }
+                }
+
+                if(!out.getParentFile().exists() || !out.getParentFile().isDirectory()) {
+                    if(!out.getParentFile().mkdirs()) {
+                        throw new GradleException("Failed to create directory ${out.getParentFile().getAbsolutePath()}")
+                    }
+                }
+
+                if(!novaLibFile.renameTo(out)) {
+                    throw new GradleException("Failed to rename ${novaLibFile.getAbsolutePath()} to ${out.getAbsolutePath()}")
+                }
+
+                // Force log
+                println "Building native release succeeded, you can now run the build task!"
+            }
+        }
     }
 }
 

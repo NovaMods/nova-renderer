@@ -13,6 +13,8 @@ import com.continuum.nova.system.NovaNative.window_size;
 import com.continuum.nova.utils.Profiler;
 import com.continuum.nova.utils.Utils;
 import com.sun.jna.Native;
+import com.sun.jna.Platform;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import glm.Glm;
 import glm.vec._2.Vec2;
 import glm.vec._3.i.Vec3i;
@@ -29,8 +31,10 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.entity.Entity;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.LoaderExceptionModCrash;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -255,7 +259,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
         LOG.info("PID: " + pid + " TID: " + Thread.currentThread().getId());
-        _native = (NovaNative) Native.loadLibrary(Paths.get("./libnova-renderer.so").toAbsolutePath().normalize().toString(), NovaNative.class);
+        try {
+            installNative();
+        } catch (IOException e) {
+            throw new LoaderExceptionModCrash("Nova renderer failed to load native library", e);
+        }
         _native.initialize();
         LOG.info("Native code initialized");
         updateWindowSize();
@@ -276,6 +284,47 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             return Float.compare(range1DistToPlayer, range2DistToPlayer);
         });
         chunkUpdateListener = new ChunkUpdateListener(chunksToUpdate);
+    }
+
+    private void installNative() throws IOException {
+        if((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
+            LOG.info("Nova is very likely running in a development environment, trying to load native from run directory...");
+            try {
+                if (Platform.isWindows()) {
+                    _native = (NovaNative) Native.loadLibrary("./nova-renderer.dll", NovaNative.class);
+                } else {
+                    _native = (NovaNative) Native.loadLibrary("./libnova-renderer.so", NovaNative.class);
+                }
+                LOG.info("Succeeded in loading nova from run directory.");
+                return;
+            } catch (Exception e) {
+                LOG.warn("Failed to load nova from run directory", e);
+            }
+        }
+
+        File novaConfigDir = new File("config/nova/");
+        if(!novaConfigDir.exists() || !novaConfigDir.isDirectory()) {
+            if(!novaConfigDir.mkdirs()) {
+                throw new IOException("Failed to create directory " + novaConfigDir.getAbsolutePath());
+            }
+        }
+
+        File toLoad;
+        if(Platform.isWindows()) {
+            if(Platform.is64Bit()) {
+                toLoad = Native.extractFromResourcePath("/nova-renderer-x64.dll");
+            } else {
+                toLoad = Native.extractFromResourcePath("/nova-renderer-x32.dll");
+            }
+        } else {
+            if(Platform.is64Bit()) {
+                toLoad = Native.extractFromResourcePath("/libnova-renderer-x64.so");
+            } else {
+                toLoad = Native.extractFromResourcePath("/libnova-renderer-x32.so");
+            }
+        }
+
+        _native = (NovaNative) Native.loadLibrary(toLoad.getAbsolutePath(), NovaNative.class);
     }
 
     private void updateWindowSize() {
