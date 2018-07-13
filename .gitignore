@@ -265,11 +265,3 @@ updateids*
 updatemcp*
 updatemd5*
 updatenames*
-
-### Merge stuff please remove
-.gitattributes
-LICENSE
-docs/
-readme.md
-renderdoc.cap
-renderdoc-linux.cap
