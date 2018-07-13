@@ -14,7 +14,7 @@
 #include <experimental/filesystem>
 
 #include <optional.hpp>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <easylogging++.h>
 #include "../../utils/smart_enum.h"

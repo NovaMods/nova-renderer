@@ -76,6 +76,11 @@ public class ChunkUpdateListener implements IWorldEventListener {
     }
 
     @Override
+    public void spawnParticle(int id, boolean ignoreRange, boolean minimiseParticleLevel, double x, double y, double z, double xSpeed, double ySpeed,
+            double zSpeed, int... parameters) {
+    }
+
+    @Override
     public void onEntityAdded(Entity entityIn) {
 
     }

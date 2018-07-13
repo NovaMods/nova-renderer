@@ -62,7 +62,7 @@ NOVA_API int get_max_texture_size() {
 }
 
 NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk) {
-    NOVA_PROFILER_SCOPE;
+    //NOVA_PROFILER_SCOPE;
     MESH_STORE.add_chunk_render_object(std::string(filter_name), *chunk);
 }
 

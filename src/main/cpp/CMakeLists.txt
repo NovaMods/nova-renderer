@@ -65,7 +65,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/glad/include
         ${3RD_PARTY_DIR}/glm
         ${3RD_PARTY_DIR}/miniz
-        ${3RD_PARTY_DIR}/json/src
+        ${3RD_PARTY_DIR}/json/include
         ${3RD_PARTY_DIR}/googletest/googletest/include
         ${3RD_PARTY_DIR}/optional
         ${3RD_PARTY_DIR}/renderdocapi
@@ -253,34 +253,3 @@ target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
 set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
-
-if (WIN32)
-    if (CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_custom_command(TARGET nova-renderer POST_BUILD
-                COMMAND copy /Y "libnova_profiler.dll" "../../../jars/versions/1.10/1.10-natives")
-
-        add_custom_command(TARGET nova-renderer POST_BUILD
-                COMMAND copy /Y "nova-renderer.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives")
-
-    else()
-        add_custom_command(TARGET nova-renderer POST_BUILD
-                COMMAND copy /Y "libnova_profilerd.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives")
-
-        add_custom_command(TARGET nova-renderer POST_BUILD
-                COMMAND copy /Y "nova-rendererd.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives")
-        add_custom_command(TARGET nova-renderer POST_BUILD
-                COMMAND move /Y "..\\..\\..\\jars\\versions\\1.10\\1.10-natives\\nova-rendererd.dll" "..\\..\\..\\jars\\versions\\1.10\\1.10-natives\\nova-renderer.dll")
-    endif()
-endif (WIN32)
-if (UNIX)
-    if (CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_custom_command(TARGET nova-renderer POST_BUILD
-                COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-renderer.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/")
-
-    else()
-        add_custom_command(TARGET nova-renderer POST_BUILD
-                COMMAND cp -f "${CMAKE_CURRENT_LIST_DIR}/libnova-rendererd.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/")
-        add_custom_command(TARGET nova-renderer POST_BUILD
-                COMMAND mv -uf "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-rendererd.so" "${CMAKE_CURRENT_LIST_DIR}/../../../jars/versions/1.10/1.10-natives/libnova-renderer.so")
-    endif()
-endif (UNIX)

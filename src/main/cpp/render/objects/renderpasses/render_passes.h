@@ -6,7 +6,7 @@
 #ifndef NOVA_RENDERER_RENDER_PASSES_H
 #define NOVA_RENDERER_RENDER_PASSES_H
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include "../../../utils/smart_enum.h"
 #include <optional.hpp>
 

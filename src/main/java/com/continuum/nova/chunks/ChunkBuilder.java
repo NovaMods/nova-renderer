@@ -1,6 +1,7 @@
 package com.continuum.nova.chunks;
 
-import com.continuum.nova.NovaNative;
+import com.continuum.nova.NovaRenderer;
+import com.continuum.nova.system.NovaNative;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockFluidRenderer;
@@ -16,8 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Splits chunks up into meshes with one mesh for each shader
@@ -44,7 +43,7 @@ public class ChunkBuilder {
     }
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
-        blockRendererDispatcher =  Minecraft.getMinecraft().getBlockRenderDispatcher();
+        blockRendererDispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher(); //FIXME: Minecraft.getMinecraft().getBlockRenderDispatcher();
         Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
 
         for(int x = range.min.x; x <= range.max.x; x++) {
@@ -64,8 +63,7 @@ public class ChunkBuilder {
                 obj.x = range.min.x;
                 obj.y = range.min.y;
                 obj.z = range.min.z;
-
-                NovaNative.INSTANCE.add_chunk_geometry_for_filter(filterName, obj);
+                NovaRenderer.getInstance().getNative().add_chunk_geometry_for_filter(filterName, obj);
             });
         }
     }
@@ -97,7 +95,7 @@ public class ChunkBuilder {
         IndexList indices = new IndexList();
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
         CapturingVertexBuffer capturingVertexBuffer = new CapturingVertexBuffer(chunkPos);
-        BlockFluidRenderer fluidRenderer = blockRendererDispatcher.getFluidRenderer();
+        BlockFluidRenderer fluidRenderer = blockRendererDispatcher.fluidRenderer; // FIXME: blockRendererDispatcher.getFluidRenderer();
 
         int blockIndexCounter = 0;
         for(BlockPos blockPos : positions) {

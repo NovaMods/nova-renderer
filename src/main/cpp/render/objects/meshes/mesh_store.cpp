@@ -13,6 +13,7 @@
 #include "mesh_store.h"
 #include "../../nova_renderer.h"
 #include "vk_mesh.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace nova {
     mesh_store::mesh_store(std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources)
@@ -126,7 +127,14 @@ namespace nova {
             render_object obj = {};
             obj.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
             obj.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
+
+            glm::mat4 model_matrix(1.0);
+            model_matrix = glm::translate(model_matrix, def.position);
+            memcpy(((uint8_t*)shader_resources->get_uniform_buffers().get_per_model_buffer()->get_allocation_info().pMappedData)
+                   + obj.per_model_buffer_range.offset, &model_matrix, obj.per_model_buffer_range.range);
+
             obj.upload_model_matrix(context->device);
+
             obj.geometry = std::make_shared<vk_mesh>(def, context);
             obj.type = geometry_type::block;
             obj.parent_id = def.id;

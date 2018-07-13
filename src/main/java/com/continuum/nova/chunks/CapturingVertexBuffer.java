@@ -1,10 +1,11 @@
 package com.continuum.nova.chunks;
 
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
  * @author ddubois
  * @since 01-Sep-17
  */
-public class CapturingVertexBuffer extends VertexBuffer {
+public class CapturingVertexBuffer extends BufferBuilder {
     private static class Vertex {
         float x;
         float y;
@@ -79,7 +80,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
     }
 
     @Override
-    public VertexBuffer pos(double x, double y, double z) {
+    public BufferBuilder pos(double x, double y, double z) {
         curVertex.x = (float)x - chunkPosition.getX();
         curVertex.y = (float)y - chunkPosition.getY();
         curVertex.z = (float)z - chunkPosition.getZ();
@@ -88,12 +89,12 @@ public class CapturingVertexBuffer extends VertexBuffer {
     }
 
     @Override
-    public VertexBuffer color(float red, float green, float blue, float alpha) {
+    public BufferBuilder color(float red, float green, float blue, float alpha) {
         return color((int)red * 255, (int)green * 255, (int)blue * 255, (int)alpha * 255);
     }
 
     @Override
-    public VertexBuffer color(int red, int green, int blue, int alpha) {
+    public BufferBuilder color(int red, int green, int blue, int alpha) {
         int data = 0;
         data |= (red & 255) << 24;
         data |= (green & 255) << 16;
@@ -106,7 +107,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
     }
 
     @Override
-    public VertexBuffer tex(double u, double v) {
+    public BufferBuilder tex(double u, double v) {
         curVertex.u = (float)u;
         curVertex.v = (float)v;
 
@@ -114,7 +115,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
     }
 
     @Override
-    public VertexBuffer lightmap(int u, int v) {
+    public BufferBuilder lightmap(int u, int v) {
         curVertex.lmCoord = (u << 16) + v;
 
         return this;
@@ -122,7 +123,7 @@ public class CapturingVertexBuffer extends VertexBuffer {
 
     @Override
     public void endVertex() {
-        ++this.vertexCount;
+        this.vertexCount++;
 
         boolean shouldAdd = true;
         for(Vertex v : data) {

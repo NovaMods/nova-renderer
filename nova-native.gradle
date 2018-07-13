@@ -1,0 +1,545 @@
+import groovy.transform.CompileStatic
+import org.gradle.api.tasks.options.Option
+import org.apache.tools.ant.taskdefs.condition.Os
+
+@CompileStatic
+class NativeTaskConstants {
+    public static final File NATIVE_BUILD_DIR = new File("src/main/cpp/build")
+    public static final File NATIVE_BUILD_PROPS_FILE = new File(".native-build-props.temp.properties")
+}
+
+@CompileStatic
+class NativeBuildSetupTask extends DefaultTask {
+    boolean skipPython = false
+    boolean skipGit = false
+    boolean forceUpdateGlslang
+
+    String gitCommand = "git"
+    String pythonCommand = "python"
+
+    NativeBuildSetupTask() {
+        description = "Setups nova's native build enviroment"
+        group = "native"
+    }
+
+    @Option(option = "skip-python", description = "Should the python setup by skipped")
+    void shouldSkipPython(boolean should) {
+        skipPython = should
+    }
+
+    @Option(option = "skip-git", description = "Should the git setup be skipped")
+    void shouldSkipGit(boolean should) {
+        skipGit = should
+    }
+
+    @Option(option = "force-update-glslang", description = "Force update 3rdparty/glslang/External (with python)")
+    void forceUpdateGlslang(boolean force) {
+        forceUpdateGlslang = force
+    }
+
+    @Option(option = "git-command", description = "Set custom git locatation/command")
+    void setGitCommand(String command) {
+        gitCommand = command
+    }
+
+    @Option(option = "python-command", description = "Set custom python locatation/command")
+    void setPythonCommand(String command) {
+        pythonCommand = command
+    }
+
+    @TaskAction
+    void run() {
+        if (!skipGit) {
+            ByteArrayOutputStream gitOut = new ByteArrayOutputStream()
+            ExecResult gitVersionResult = project.exec {
+                def self = it as ExecSpec
+                self.commandLine(gitCommand, "--version")
+                self.standardOutput = gitOut
+                self.ignoreExitValue = true
+            }
+
+            if (gitVersionResult.exitValue != 0) {
+                logger.error("Git not found! Please add it to your path or run this task with 'gradlew buildNative --skip-git' and update " +
+                        "this submodules with git or the software you cloned this repo with.")
+                logger.error("If you downloaded this repo with the download zip option from Github, please install git.")
+                logger.error("If you don't have git in the path but have it installed pass the executable with --git-command.")
+                throw new GradleException("Git was not found in the path. It is required to download the submodules")
+            }
+
+            ExecResult gitResult = project.exec {
+                def self = it as ExecSpec
+                self.commandLine(gitCommand, "submodule", "update", "--init", "--recursive")
+                self.ignoreExitValue = true
+            }
+
+            if (gitResult.exitValue != 0) {
+                throw new GradleException("Failed to run git for updating submodules")
+            }
+        }
+
+        NativeTaskConstants.NATIVE_BUILD_DIR.mkdirs()
+        if (!(NativeTaskConstants.NATIVE_BUILD_DIR.exists() && NativeTaskConstants.NATIVE_BUILD_DIR.isDirectory())) {
+            throw new GradleException("Failed to create native build directory " + NativeTaskConstants.NATIVE_BUILD_DIR.getAbsolutePath())
+        }
+
+        def spirvToolsDir = new File("src/main/cpp/3rdparty/glslang/External/spirv-tools")
+        boolean glslangUpToDate = spirvToolsDir.exists() && spirvToolsDir.isDirectory()
+
+        if (forceUpdateGlslang && skipPython) {
+            throw new GradleException("Cannot use --skip-python and --force-update-glsl at the same time")
+        }
+
+        if (!skipPython && !glslangUpToDate) {
+            ByteArrayOutputStream pythonOut = new ByteArrayOutputStream()
+            ExecResult pythonVersionResult = project.exec {
+                def self = it as ExecSpec
+                self.commandLine(pythonCommand, "--version")
+                self.errorOutput = pythonOut
+                self.ignoreExitValue = true
+            }
+
+            if (pythonVersionResult.exitValue != 0) {
+                logger.error("Python not found! If you want to run src/main/cpp/3rdparty/glslang/update_glslang_sources.py manually " +
+                        "and skip running python from here, use 'gradlew buildNative --skip-python'.")
+                logger.error("If you don't have python in the path but have it installed pass the executable with --python-command.")
+                throw new GradleException("Python was not found in the path. It is required to build some dependencies")
+            }
+
+            if (!pythonOut.toString().startsWith("Python 2.7")) {
+                logger.warn("Running Python scripts might fail because it looks like you are not using python 2.7! ")
+            }
+
+            ExecResult pythonResult = project.exec {
+                def self = it as ExecSpec
+                self.workingDir new File("src/main/cpp/3rdparty/glslang")
+                self.commandLine(pythonCommand, "update_glslang_sources.py")
+                self.ignoreExitValue = true
+            }
+
+            if (pythonResult.exitValue != 0) {
+                throw new GradleException("Failed to run python for setting up glslang")
+            }
+        }
+
+        if (glslangUpToDate) {
+            logger.info("Skipping updating glslang because it is up to date.")
+        }
+    }
+}
+
+task setupNativeBuild(type: NativeBuildSetupTask)
+
+@CompileStatic
+class CMakeInvokeTask extends DefaultTask {
+    boolean useDefaultGenerator
+    String customGenerator = null
+    String buildType = "RELEASE"
+    String cmakeCommand = "cmake"
+    boolean force32bit
+
+    CMakeInvokeTask() {
+        description = "Executes CMake to generate Makefile"
+        group = "native"
+    }
+
+    @Option(option = "default-generator", description = "Run CMake without searching for compiler and passing -G flag")
+    void shouldUseDefaultGenerator(boolean should) {
+        useDefaultGenerator = should
+    }
+
+    @Option(option = "force-generator", description = "Force specified generator to be passed to CMake with -G")
+    void setCustomGenerator(String generator) {
+        customGenerator = generator
+    }
+
+    @Option(option = "build-type", description = "Build type to pass to CMake (as '-DCMAKE_BUILD_TYPE'), defaults to 'RELEASE")
+    void setBuildType(String type) {
+        buildType = type
+    }
+
+    @Option(option = "cmake-command", description = "Set custom cmake locatation/command")
+    void setCmakeCommand(String command) {
+        cmakeCommand = command
+    }
+
+    @Option(option = "force-32bit", description = "Force target data model to be 32bit")
+    void force32bit(boolean force) {
+        force32bit = force
+    }
+
+    boolean gccOnPath() {
+        try {
+            return project.exec {
+                def self = it as ExecSpec
+                self.commandLine("gcc", "--version")
+                self.ignoreExitValue = true
+            }.exitValue == 0
+        } catch (Exception e) {
+            return false
+        }
+    }
+
+    boolean msvcOnPath() {
+        try {
+            return project.exec {
+                def self = it as ExecSpec
+                self.commandLine("msbuild.exe", "/help")
+                self.ignoreExitValue = true
+            }.exitValue == 0
+        } catch(Exception e) {
+            return false
+        }
+    }
+
+    @TaskAction
+    void run() {
+        if(!NativeTaskConstants.NATIVE_BUILD_PROPS_FILE.exists() || !NativeTaskConstants.NATIVE_BUILD_PROPS_FILE.isFile()) {
+            try {
+                if(!NativeTaskConstants.NATIVE_BUILD_PROPS_FILE.createNewFile()) {
+                    throw new IOException("createNewFile() returned false")
+                }
+            } catch (IOException e) {
+                throw new GradleException(
+                        "Failed to create native build properties file ${NativeTaskConstants.NATIVE_BUILD_PROPS_FILE.getAbsolutePath()}", e)
+            }
+        }
+
+        ExecResult cmakeVersionResult = project.exec {
+            def self = it as ExecSpec
+            self.commandLine(cmakeCommand, "--version")
+            self.ignoreExitValue = true
+        }
+
+        if(cmakeVersionResult.exitValue != 0) {
+            logger.error("CMake not found! Install it and add it to the path or pass the install location with --cmake-command")
+            throw new GradleException("CMake not found")
+        }
+
+        if(customGenerator != null && useDefaultGenerator) {
+            throw new GradleException("Cannot use --force-generator and --default-generator at the same time")
+        }
+
+        boolean useGcc
+        boolean useMsvc
+
+        if(!useDefaultGenerator && customGenerator == null) {
+            useGcc = gccOnPath()
+            useMsvc = msvcOnPath()
+            if (!useGcc && !useMsvc) {
+                logger.error("Unable to find gcc or MSVC/MSBuild! Please add them to your path or use the --force-generator or --default-generator option.")
+                throw new GradleException("No suitable compiler found")
+            }
+        }
+
+        boolean usedMsvc
+
+        ExecResult cmakeResult
+        if(!useDefaultGenerator && customGenerator == null) {
+            cmakeResult = project.exec {
+                def self = it as ExecSpec
+                self.workingDir NativeTaskConstants.NATIVE_BUILD_DIR
+                self.ignoreExitValue = true
+                if (useMsvc) {
+                    usedMsvc = true
+                    if(System.properties['sun.arch.data.model'].toString().contains("64") && !force32bit) {
+                        logger.info("Configuring for MSVC 64-Bit")
+                        self.commandLine(cmakeCommand, "..", "-G", "Visual Studio 15 2017 Win64", "-DCMAKE_BUILD_TYPE=" + buildType)
+                    } else {
+                        logger.info("Configuring for MSVC 32-Bit")
+                        self.commandLine(cmakeCommand, "..", "-G", "Visual Studio 15", "-DCMAKE_BUILD_TYPE=" + buildType)
+                    }
+                } else if(useGcc) {
+                    if(force32bit) {
+                        logger.warn("Ignoring --force-32bit because we are building with GCC and this option is unsafe with CMake and GCC. " +
+                                "(Edit the CMakeLists.txt to archive this by expanding CMAKE_CXX_FLAGS to include -m32)")
+                    }
+
+                    if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+                        logger.info("Configuring for MinGW gcc")
+                        self.commandLine(cmakeCommand, "..", "-G", "MinGW Makefiles", "-DCMAKE_BUILD_TYPE=" + buildType)
+                    } else {
+                        logger.info("Configuring for gcc")
+                        self.commandLine(cmakeCommand, "..", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + buildType)
+                    }
+                } else {
+                    throw new GradleException("UNREACHABLE CODE")
+                }
+            }
+        } else {
+            cmakeResult = project.exec {
+                def self = it as ExecSpec
+                self.workingDir NativeTaskConstants.NATIVE_BUILD_DIR
+                self.ignoreExitValue = true
+                if(customGenerator != null) {
+                    self.commandLine(cmakeCommand, "..", "-G" + customGenerator, "-DCMAKE_BUILD_TYPE=" + buildType)
+                } else {
+                    self.commandLine(cmakeCommand, "..", "-DCMAKE_BUILD_TYPE=" + buildType)
+                }
+            }
+        }
+
+        if(cmakeResult.exitValue != 0) {
+            throw new GradleException("CMake exited with code ${cmakeResult.exitValue}")
+        }
+
+        Properties properties = new Properties()
+        properties.setProperty("msvc", Boolean.toString(usedMsvc))
+        properties.store(NativeTaskConstants.NATIVE_BUILD_PROPS_FILE.newWriter(), "DO NOT EDIT THIS FILE, IT IS MACHINE GENERATED")
+    }
+}
+
+task invokeCMake(type: CMakeInvokeTask)
+
+class BinaryBuildTask extends DefaultTask {
+    String buildCommand = null
+    String makeCommand = null
+    String msbuildCommand = "msbuild"
+
+    BinaryBuildTask() {
+        group = "native"
+        description = "Executes Make to build binaries"
+    }
+
+    @Option(option = "build-command", description = "Set custom build command")
+    void setBuildCommand(String command) {
+        buildCommand = command
+    }
+
+    @Option(option = "make-command", description = "Set custom make command/location (ignored if Makefile was not generated for Make)")
+    void setMakeCommand(String command) {
+        makeCommand = command
+    }
+
+    @Option(option = "msbuild-command", description = "Set custom msbuild command/location (ignored if Makefile was not generated for MSBuild)")
+    void setMsbuildCommand(String command) {
+        msbuildCommand = command
+    }
+
+    @TaskAction
+    void run() {
+        if(buildCommand != null) {
+            Process p = buildCommand.execute()
+            p.waitFor()
+
+            if(p.exitValue() != null) {
+                throw new GradleException("Failed to execute custom build command!")
+            }
+
+            return
+        }
+
+        if(!NativeTaskConstants.NATIVE_BUILD_PROPS_FILE.exists() || !NativeTaskConstants.NATIVE_BUILD_PROPS_FILE.isFile()) {
+            throw new GradleException("Run CMake task first! " +
+                    "(Native properties file ${NativeTaskConstants.NATIVE_BUILD_PROPS_FILE.getAbsolutePath()} not found!")
+        }
+
+        Properties properties = new Properties()
+        properties.load(NativeTaskConstants.NATIVE_BUILD_PROPS_FILE.newDataInputStream())
+        boolean msvc = Boolean.parseBoolean(properties.getProperty("msvc"))
+
+        if(msvc) {
+            ExecResult msvcResult = project.exec {
+                def self = it as ExecSpec
+                self.workingDir = NativeTaskConstants.NATIVE_BUILD_DIR
+                self.ignoreExitValue = true
+                self.commandLine(msbuildCommand, "nova-renderer.vcxproj", "/t:Build", "/m", "/p:Configuration=Debug")
+            }
+
+            if(msvcResult.exitValue != 0) {
+                throw new GradleException("Failed to invoke MSBuild.exe!")
+            }
+        } else {
+            String makeExecutable = makeCommand
+
+            if(makeExecutable == null) {
+                if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    makeExecutable = "mingw32-make"
+                } else {
+                    makeExecutable = "make"
+                }
+            }
+
+            ExecResult makeVersionResult = project.exec {
+                def self = it as ExecSpec
+                self.ignoreExitValue = true
+                self.commandLine(makeExecutable, "--version")
+            }
+
+            if(makeVersionResult.exitValue != 0) {
+                logger.error("Make not found! Please install it and add it to the path or pass the install location via --make-command!")
+                throw new GradleException("Make not found")
+            }
+
+            ExecResult makeResult = project.exec {
+                def self = it as ExecSpec
+                self.workingDir NativeTaskConstants.NATIVE_BUILD_DIR
+                self.ignoreExitValue = true
+                self.commandLine(makeExecutable, "-f", "Makefile", "nova-renderer")
+            }
+
+            if(makeResult.exitValue != 0) {
+                throw new GradleException("Make exited with non zero exit code ${makeResult.exitValue}")
+            }
+        }
+    }
+}
+
+task buildLibrary(type: BinaryBuildTask)
+
+task moveLibrary() {
+    // FIXME: When the native is packaged as a resource this needs to be updated
+    group = "native"
+    description = "Moves the built native library file to the run directory"
+
+    doLast {
+        File novaLibFile
+        if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+            novaLibFile = new File(NativeTaskConstants.NATIVE_BUILD_DIR, "nova-renderer.dll")
+        } else {
+            novaLibFile = new File(NativeTaskConstants.NATIVE_BUILD_DIR, "libnova-renderer.so")
+        }
+
+        if(!novaLibFile.exists() || !novaLibFile.isFile()) {
+            throw new GradleException(novaLibFile.getAbsolutePath() + " not found! Please build it first with the buildLibrary task")
+        }
+
+        File targetFile
+        if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+            targetFile = new File("run/nova-renderer.dll")
+        } else {
+            targetFile = new File("run/libnova-renderer.so")
+        }
+
+        if(targetFile.exists() && targetFile.isFile()) {
+            if(!targetFile.delete()) {
+                throw new GradleException("Failed to delete " + targetFile.getAbsolutePath())
+            }
+        }
+
+        if(!novaLibFile.renameTo(targetFile)) {
+            throw new GradleException("Failed to move " + novaLibFile.getAbsolutePath() + "to" +
+                targetFile.getAbsolutePath())
+        }
+    }
+}
+
+class CompleteNativeBuildTask extends DefaultTask {
+    boolean skipPython = false
+    boolean skipGit = false
+    boolean forceUpdateGlslang
+    String gitCommand = "git"
+    String pythonCommand = "python"
+
+    boolean useDefaultGenerator
+    String customGenerator = null
+    String buildType = "RELEASE"
+    String cmakeCommand = "cmake"
+    boolean force32bit
+
+    String buildCommand = null
+    String makeCommand = null
+    String msbuildCommand = "msbuild"
+
+    CompleteNativeBuildTask() {
+        group = "native"
+        description = "All native tasks grouped together for a simple run"
+     }
+
+    @Option(option = "skip-python", description = "Should the python setup by skipped")
+    void shouldSkipPython(boolean should) {
+        skipPython = should
+    }
+
+    @Option(option = "skip-git", description = "Should the git setup be skipped")
+    void shouldSkipGit(boolean should) {
+        skipGit = should
+    }
+
+    @Option(option = "force-update-glslang", description = "Force update 3rdparty/glslang/External (with python)")
+    void forceUpdateGlslang(boolean force) {
+        forceUpdateGlslang = force
+    }
+
+    @Option(option = "git-command", description = "Set custom git locatation/command")
+    void setGitCommand(String command) {
+        gitCommand = command
+    }
+
+    @Option(option = "python-command", description = "Set custom python locatation/command")
+    void setPythonCommand(String command) {
+        pythonCommand = command
+    }
+
+    @Option(option = "default-generator", description = "Run CMake without searching for compiler and passing -G flag")
+    void shouldUseDefaultGenerator(boolean should) {
+        useDefaultGenerator = should
+    }
+
+    @Option(option = "force-generator", description = "Force specified generator to be passed to CMake with -G")
+    void setCustomGenerator(String generator) {
+        customGenerator = generator
+    }
+
+    @Option(option = "build-type", description = "Build type to pass to CMake (as '-DCMAKE_BUILD_TYPE'), defaults to 'RELEASE")
+    void setBuildType(String type) {
+        buildType = type
+    }
+
+    @Option(option = "cmake-command", description = "Set custom cmake locatation/command")
+    void setCmakeCommand(String command) {
+        cmakeCommand = command
+    }
+
+    @Option(option = "force-32bit", description = "Force target data model to be 32bit")
+    void force32bit(boolean force) {
+        force32bit = force
+    }
+
+    @Option(option = "build-command", description = "Set custom build command")
+    void setBuildCommand(String command) {
+        buildCommand = command
+    }
+
+    @Option(option = "make-command", description = "Set custom make command/location (ignored if Makefile was not generated for Make)")
+    void setMakeCommand(String command) {
+        makeCommand = command
+    }
+
+    @Option(option = "msbuild-command", description = "Set custom msbuild command/location (ignored if Makefile was not generated for MSBuild)")
+    void setMsbuildCommand(String command) {
+        msbuildCommand = command
+    }
+
+    @TaskAction
+    void run() {
+        def setupTask = project.tasks.setupNativeBuild
+        setupTask.skipPython = skipPython
+        setupTask.skipGit = skipGit
+        setupTask.forceUpdateGlslang = forceUpdateGlslang
+        setupTask.gitCommand = gitCommand
+        setupTask.pythonCommand = pythonCommand
+        setupTask.execute()
+
+        def cmakeTask = project.tasks.invokeCMake
+        cmakeTask.useDefaultGenerator = useDefaultGenerator
+        cmakeTask.customGenerator = customGenerator
+        cmakeTask.buildType = buildType
+        cmakeTask.cmakeCommand = cmakeCommand
+        cmakeTask.force32bit = force32bit
+        cmakeTask.execute()
+
+        def buildTask = project.tasks.buildLibrary
+        buildTask.buildCommand = buildCommand
+        buildTask.makeCommand = makeCommand
+        buildTask.msbuildCommand = msbuildCommand
+        buildTask.execute()
+
+        project.tasks.moveLibrary.execute()
+    }
+}
+
+task buildNative(type: CompleteNativeBuildTask)
+
+clean {
+    delete "src/main/cpp/build"
+}

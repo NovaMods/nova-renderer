@@ -8,7 +8,7 @@
 
 #include <string>
 #include <unordered_map>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include "../../../data_loading/settings.h"
 #include "uniform_buffer_definitions.h"
 #include "uniform_buffer.h"

@@ -1,6 +1,6 @@
 package com.continuum.nova.gui;
 
-import com.continuum.nova.NovaNative;
+import com.continuum.nova.system.NovaNative;
 import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.input.Mouse;
@@ -42,7 +42,7 @@ public class NovaDraw {
 
     private static void clearBuffers() {
         buffers.clear();
-        NovaNative.INSTANCE.clear_gui_buffers();
+        NovaRenderer.getInstance().getNative().clear_gui_buffers();
         currentZ = 0.9999f;
     }
 
@@ -62,11 +62,6 @@ public class NovaDraw {
      * @param vertexbuffer vertex buffer data
      */
     public static void draw(ResourceLocation texture, Integer[] indexBuffer, Float[] vertexbuffer) {
-        //if(texture == null) {
-        //    buffers.get(NovaRenderer.)
-        //    return;
-        //}
-
         if(buffers.containsKey(texture)) {
             buffers.get(texture).add(indexBuffer, vertexbuffer);
         } else {
@@ -209,7 +204,7 @@ public class NovaDraw {
             for(String filterName : filterMap.keySet()) {
                 if(filterMap.get(filterName).matches(guiGeometry)) {
                     LOG.trace("Adding geometry for filter {}", filterName);
-                    NovaNative.INSTANCE.add_gui_geometry(filterName, guiGeometry);
+                    NovaRenderer.getInstance().getNative().add_gui_geometry(filterName, guiGeometry);
                 }
             }
 

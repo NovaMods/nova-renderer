@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import com.continuum.nova.NovaNative;
-import com.continuum.nova.NovaNative.mouse_button_event;
-import com.continuum.nova.NovaNative.mouse_position_event;
+import com.continuum.nova.NovaRenderer;
+import com.continuum.nova.system.NovaNative;
+import com.continuum.nova.system.NovaNative.mouse_button_event;
+import com.continuum.nova.system.NovaNative.mouse_position_event;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,9 +40,6 @@ public class Mouse {
     private static int last_event_raw_x;
     private static int last_event_raw_y;
     private static boolean isGrabbed;
-
-    private Mouse() {
-    }
 
     public static boolean isClipMouseCoordinatesToWindow() {
         return false;
@@ -99,45 +97,45 @@ public class Mouse {
     }
 
     public static int getButtonIndex(String buttonName) {
-        Integer ret = (Integer) buttonMap.get(buttonName);
+        Integer ret = buttonMap.get(buttonName);
         return ret == null ? -1 : ret.intValue();
     }
 
     public static boolean next() {
         lastX = x;
         lastY = y;
-        mouse_button_event e = NovaNative.INSTANCE.get_next_mouse_button_event();
-        mouse_position_event p = NovaNative.INSTANCE.get_next_mouse_position_event();
-        NovaNative.mouse_scroll_event s = NovaNative.INSTANCE.get_next_mouse_scroll_event();
-        if (e.filled == 0 && p.filled==0 && s.filled == 0){
+        mouse_button_event e = NovaRenderer.getInstance().getNative().get_next_mouse_button_event();
+        mouse_position_event p = NovaRenderer.getInstance().getNative().get_next_mouse_position_event();
+        NovaNative.mouse_scroll_event s = NovaRenderer.getInstance().getNative().get_next_mouse_scroll_event();
+        if (e.filled == 0 && p.filled == 0 && s.filled == 0) {
             return false;
         }
-        if (e.filled == 1){
-            if (e.action ==1){
+        if (e.filled == 1) {
+            if (e.action == 1) {
                 buttonDownBuffer.add(e.button);
 
-            } else{
+            } else {
                 buttonDownBuffer.remove(e.button);
             }
             eventButton = e.button;
             eventState = e.action == 1;
-            LOG.trace("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
+            LOG.trace("button: " + e.button + ";action: " + e.action + ";mods: " + e.mods + "; filled: " + e.filled);
 
-        }else{
+        } else {
             eventButton = -1;
             eventState = false;
         }
-        if(p.filled == 1 ){
+        if (p.filled == 1) {
             dx += p.xpos - x;
             dy += p.ypos - y;
             x = p.xpos;
             y = p.ypos;
             LOG.trace("dx: {} dy: {}", dx, dy);
         }
-        if(s.filled == 1){
-            event_dwheel = (int )s.yoffset;
-            LOG.trace("button: " +e.button +";action: "+e.action+ ";mods: "+e.mods +"; filled: "+e.filled);
-        }else{
+        if (s.filled == 1) {
+            event_dwheel = (int) s.yoffset;
+            LOG.trace("button: " + e.button + ";action: " + e.action + ";mods: " + e.mods + "; filled: " + e.filled);
+        } else {
             event_dwheel = 0;
         }
 
@@ -210,7 +208,7 @@ public class Mouse {
     }
 
     public static void setGrabbed(boolean grab) {
-        NovaNative.INSTANCE.set_mouse_grabbed(grab);
+        NovaRenderer.getInstance().getNative().set_mouse_grabbed(grab);
         isGrabbed = grab;
     }
 

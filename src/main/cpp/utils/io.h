@@ -6,7 +6,7 @@
 #ifndef RENDERER_IO_H
 #define RENDERER_IO_H
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include "../mc_interface/mc_objects.h"
 
 namespace nova {    nlohmann::json to_json(const mc_block& block);

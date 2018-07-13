@@ -7,7 +7,7 @@
 
 #define GLFW_VULKAN_SUPPORT
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../data_loading/settings.h"
 #if __WIN32__

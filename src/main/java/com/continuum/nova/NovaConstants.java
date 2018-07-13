@@ -25,4 +25,12 @@ public class NovaConstants {
 
     public static final ResourceLocation WHITE_TEXTURE_GUI_LOCATION = new ResourceLocation("white_gui");
     public static final ResourceLocation LIGHTMAP_LOCATION = new ResourceLocation("");
+
+    // TODO: What is this?!
+    public static final float[] STANDARD_BUTTON_LOCATIONS = {
+            0.0f, 0.1796862f,
+            0.78125f, 0.3359375f
+    };
+    // TODO: What is this?!
+    public static final float WIDGETS_TEXTURE_FACTOR = 0.00390625F;
 }

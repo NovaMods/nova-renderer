@@ -8,7 +8,7 @@
 #include "mc_objects.h"
 
 #include <sstream>
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 
 bool mc_block_definition::is_emissive() const {
     return light_value > 0;

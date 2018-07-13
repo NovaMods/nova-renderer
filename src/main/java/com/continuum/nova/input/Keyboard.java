@@ -2,18 +2,14 @@ package com.continuum.nova.input;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.InputImplementation;
-
-import com.continuum.nova.NovaNative;
-import com.continuum.nova.NovaNative.key_press_event;
-import com.continuum.nova.NovaNative.key_char_event;
+import com.continuum.nova.NovaRenderer;
+import com.continuum.nova.system.NovaNative;
+import com.continuum.nova.system.NovaNative.key_press_event;
+import com.continuum.nova.system.NovaNative.key_char_event;
 public class Keyboard {
     public static final int EVENT_SIZE = 18;
     public static final int CHAR_NONE = 0;
@@ -204,14 +200,14 @@ public class Keyboard {
     }
 
     public static synchronized int getKeyIndex(String keyName) {
-        Integer ret = (Integer) keyMap.get(keyName);
+        Integer ret = keyMap.get(keyName);
         return ret == null ? 0 : ret.intValue();
     }
 
 
     public static boolean next() {
-        key_press_event p = NovaNative.INSTANCE.get_next_key_press_event();
-        key_char_event c = NovaNative.INSTANCE.get_next_key_char_event();
+        key_press_event p = NovaRenderer.getInstance().getNative().get_next_key_press_event();
+        key_char_event c = NovaRenderer.getInstance().getNative().get_next_key_char_event();
 
         if (p.filled==0 && c.filled==0){
             return false;

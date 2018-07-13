@@ -1,6 +1,6 @@
 package com.continuum.nova.chunks;
 
-import com.continuum.nova.NovaNative;
+import com.continuum.nova.system.NovaNative;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockRenderLayer;
 import org.apache.logging.log4j.LogManager;

@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <exception>
 
-#include <json.hpp>
+#include <nlohmann/json.hpp>
 #include <fstream>
 
 #include <easylogging++.h>
