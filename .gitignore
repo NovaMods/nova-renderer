@@ -25,10 +25,14 @@
 build/
 out/
 .gradle/
+bin/
+.project
+.classpath
 
-### IDE/IntelliJ ###
+### IDE/[IntelliJ/Eclipse] ###
 .idea/
 *.iml
+.settings/
 
 ### Minecraft ###
 # Run directory
