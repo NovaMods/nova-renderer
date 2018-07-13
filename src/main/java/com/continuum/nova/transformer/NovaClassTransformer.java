@@ -81,7 +81,9 @@ public class NovaClassTransformer implements IClassTransformer {
                 }
 
                 private boolean removeCalls(int opcode, String owner, String name, String desc, boolean itf) {
-                    if (owner.equals("org/lwjgl/opengl/Display") && (name.equals("create") || name.equals("getDisplayMode"))) {
+                    if (owner.equals("org/lwjgl/opengl/Display") &&
+                            (name.equals("create") || name.equals("getDisplayMode") || name.equals("getWidth") || name.equals("getHeight")
+                                    || name.equals("isActive"))) {
                         return false;
                     }
                     System.err.println("Found usage of method " + owner + "." + name + ";" + desc + ", removing");
