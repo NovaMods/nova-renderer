@@ -41,7 +41,7 @@ set(SHADERC_SKIP_TESTS TRUE)
 set(BUILD_SHARED_LIBS TRUE)
 
 set(EASY_PROFILER_NO_GUI ON)
-set(BUILD_SHARED_LIBS ON)
+set(BUILD_SHARED_LIBS OFF)
 
 # need to compile GLFW and JSON
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
