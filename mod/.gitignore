@@ -148,9 +148,9 @@ docs/*
 !docs/examples/
 temp/
 eclipse/
-run/
 !run/config/
 !run/shaderpacks
+run/
 
 ### Gradle ###
 .gradle
