@@ -41,7 +41,7 @@ set(SHADERC_SKIP_TESTS TRUE)
 set(BUILD_SHARED_LIBS TRUE)
 
 set(EASY_PROFILER_NO_GUI ON)
-set(BUILD_SHARED_LIBS ON)
+set(BUILD_SHARED_LIBS OFF)
 
 # need to compile GLFW and JSON
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
@@ -51,6 +51,8 @@ add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 add_subdirectory(${3RD_PARTY_DIR}/googletest)
 add_subdirectory(${3RD_PARTY_DIR}/optional)
+add_subdirectory(${3RD_PARTY_DIR}/spirv-headers)
+add_subdirectory(${3RD_PARTY_DIR}/spirv-tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
 add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 add_subdirectory(${3RD_PARTY_DIR}/profiler)

@@ -1,39 +1,48 @@
-[submodule "src/main/cpp/3rdparty/VulkanMemoryAllocator"]
-	path = src/main/cpp/3rdparty/VulkanMemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-[submodule "src/main/cpp/3rdparty/easyloggingpp"]
-	path = src/main/cpp/3rdparty/easyloggingpp
-	url = https://github.com/muflihun/easyloggingpp.git
-[submodule "src/main/cpp/3rdparty/glfw"]
-	path = src/main/cpp/3rdparty/glfw
-	url = https://github.com/glfw/glfw.git
-[submodule "src/main/cpp/3rdparty/glm"]
-	path = src/main/cpp/3rdparty/glm
-	url = https://github.com/g-truc/glm.git
-[submodule "src/main/cpp/3rdparty/glslang"]
-	path = src/main/cpp/3rdparty/glslang
-	url = https://github.com/KhronosGroup/glslang.git
-[submodule "src/main/cpp/3rdparty/googletest"]
-	path = src/main/cpp/3rdparty/googletest
-	url = https://github.com/google/googletest.git
-[submodule "src/main/cpp/3rdparty/json"]
-	path = src/main/cpp/3rdparty/json
-	url = https://github.com/nlohmann/json.git
-[submodule "src/main/cpp/3rdparty/miniz"]
-	path = src/main/cpp/3rdparty/miniz
-	url = https://github.com/richgel999/miniz.git
-[submodule "src/main/cpp/3rdparty/optional"]
-	path = src/main/cpp/3rdparty/optional
-	url = https://github.com/akrzemi1/Optional.git
-[submodule "src/main/cpp/3rdparty/profiler"]
-	path = src/main/cpp/3rdparty/profiler
+[submodule "native/src/3rdparty/easyloggingpp"]
+	path = native/src/3rdparty/easyloggingpp
+	url = https://github.com/muflihun/easyloggingpp
+[submodule "native/src/3rdparty/glfw"]
+	path = native/src/3rdparty/glfw
+	url = https://github.com/glfw/glfw
+[submodule "native/src/3rdparty/glm"]
+	path = native/src/3rdparty/glm
+	url = https://github.com/g-truc/glm
+[submodule "native/src/3rdparty/glslang"]
+	path = native/src/3rdparty/glslang
+	url = https://github.com/KhronosGroup/glslang
+[submodule "native/src/3rdparty/googletest"]
+	path = native/src/3rdparty/googletest
+	url = https://github.com/google/googletest
+[submodule "native/src/3rdparty/profiler"]
+	path = native/src/3rdparty/profiler
 	url = https://github.com/NovaMods/profiler
-[submodule "src/main/cpp/3rdparty/renderdocapi"]
-	path = src/main/cpp/3rdparty/renderdocapi
+[submodule "native/src/3rdparty/json"]
+	path = native/src/3rdparty/json
+	url = https://github.com/nlohmann/json
+[submodule "native/src/3rdparty/miniz"]
+	path = native/src/3rdparty/miniz
+	url = https://github.com/richgel999/miniz
+[submodule "native/src/3rdparty/Optional"]
+	path = native/src/3rdparty/Optional
+	url = https://github.com/akrzemi1/Optional
+[submodule "native/src/3rdparty/optional"]
+	path = native/src/3rdparty/optional
+	url = https://github.com/akrzemi1/Optional
+[submodule "native/src/3rdparty/renderdocapi"]
+	path = native/src/3rdparty/renderdocapi
 	url = https://github.com/NovaMods/RenderDoc-Manager
-[submodule "src/main/cpp/3rdparty/shaderc"]
-	path = src/main/cpp/3rdparty/shaderc
+[submodule "native/src/3rdparty/shaderc"]
+	path = native/src/3rdparty/shaderc
 	url = https://github.com/google/shaderc
-[submodule "src/main/cpp/3rdparty/SPIRV-Cross"]
-	path = src/main/cpp/3rdparty/SPIRV-Cross
+[submodule "native/src/3rdparty/SPIRV-Cross"]
+	path = native/src/3rdparty/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross
+[submodule "native/src/3rdparty/VulkanMemoryAllocator"]
+	path = native/src/3rdparty/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+[submodule "native/src/3rdparty/spirv-tools"]
+	path = native/src/3rdparty/spirv-tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools
+[submodule "native/src/3rdparty/spirv-headers"]
+	path = native/src/3rdparty/spirv-headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers
