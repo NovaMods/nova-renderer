@@ -68,6 +68,7 @@ build/
 # Gradle:
 .idea/gradle.xml
 .idea/libraries
+bin/
 
 # Mongo Explorer plugin:
 .idea/mongoSettings.xml
@@ -148,9 +149,9 @@ docs/*
 !docs/examples/
 temp/
 eclipse/
+run/*
 !run/config/
 !run/shaderpacks
-run/
 
 ### Gradle ###
 .gradle
