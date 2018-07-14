@@ -208,7 +208,7 @@ namespace nova {
             if(vertex_field == vertex_field_enum::Empty) {
                 continue;
             }
-            const vertex_attribute& attribute = get_all_vertex_attributes()[vertex_field.to_string()];
+            vertex_attribute attribute = get_all_vertex_attributes()[vertex_field.to_string()];
             attribute_descriptions.emplace_back(cur_binding, 0, attribute.format, attribute.offset);
             cur_binding++;
         }
