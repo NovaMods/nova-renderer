@@ -1,6 +1,6 @@
 [submodule "native/src/3rdparty/easyloggingpp"]
 	path = native/src/3rdparty/easyloggingpp
-	url = https://github.com/muflihun/easyloggingpp
+	url = https://github.com/Barteks2x/easyloggingpp
 [submodule "native/src/3rdparty/glfw"]
 	path = native/src/3rdparty/glfw
 	url = https://github.com/glfw/glfw

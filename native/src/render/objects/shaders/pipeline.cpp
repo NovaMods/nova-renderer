@@ -280,7 +280,7 @@ namespace nova {
 
         vk::PipelineRasterizationStateCreateInfo raster_create_info = {};
         raster_create_info.polygonMode = vk::PolygonMode::eFill;
-        raster_create_info.cullMode == vk::CullModeFlagBits::eBack;
+        raster_create_info.cullMode = vk::CullModeFlagBits::eBack;
         raster_create_info.frontFace = vk::FrontFace::eCounterClockwise;
         raster_create_info.lineWidth = 1;
 
