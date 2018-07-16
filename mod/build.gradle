@@ -380,12 +380,12 @@ task buildReleaseNatives() {
 
 task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
     doLast {
-        final String BASE_DIR = Paths.get("../native").toAbsolutePath().normalize().toString()
-        java.nio.file.Path windowsTargetRenderer = Paths.get("src/main/resources/nova-renderer.dll").toAbsolutePath().normalize()
-        java.nio.file.Path windowsTargetProfiler = Paths.get("src/main/resources/nova-profiler.dll").toAbsolutePath().normalize()
+        final String BASE_DIR = Paths.get("../native").normalize().toString()
+        java.nio.file.Path windowsTargetRenderer = Paths.get("src/main/resources/nova-renderer.dll").normalize()
+        java.nio.file.Path windowsTargetProfiler = Paths.get("src/main/resources/nova-profiler.dll").normalize()
 
-        java.nio.file.Path linuxTargetRenderer = Paths.get("src/main/resources/libnova-renderer.so").toAbsolutePath().normalize()
-        java.nio.file.Path linuxTargetProfiler = Paths.get("src/main/resources/libnova-profiler.so").toAbsolutePath().normalize()
+        java.nio.file.Path linuxTargetRenderer = Paths.get("src/main/resources/libnova-renderer.so").normalize()
+        java.nio.file.Path linuxTargetProfiler = Paths.get("src/main/resources/libnova-profiler.so").normalize()
 
         Properties buildProperties = loadTmpBuildProps()
         if(Boolean.parseBoolean(buildProperties.getProperty("platform-built", "false"))) {
