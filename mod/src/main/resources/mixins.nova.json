@@ -29,6 +29,7 @@
     "texture.MixinTextureMap",
     "texture.MixinTextureUtil",
     "MixinMinecraft",
-    "MixinModelManager"
+    "MixinModelManager",
+    "MixinSplashProgress"
   ]
 }

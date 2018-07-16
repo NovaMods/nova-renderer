@@ -192,18 +192,29 @@ public abstract class MixinMinecraft {
     @Shadow
     private boolean fullscreen;
 
-    @Shadow public abstract void updateDisplay();
+    @Shadow
+    public abstract void updateDisplay();
 
-    @Shadow @Final private String launchedVersion;
-    @Shadow @Final private Session session;
-    @Shadow @Final private static ResourceLocation LOCATION_MOJANG_PNG;
-    @Shadow @Final private static Logger LOGGER;
+    @Shadow
+    @Final
+    private String launchedVersion;
+    @Shadow
+    @Final
+    private Session session;
+    @Shadow
+    @Final
+    private static ResourceLocation LOCATION_MOJANG_PNG;
+    @Shadow
+    @Final
+    private static Logger LOGGER;
 
-    @Shadow public abstract void draw(int p_draw_1_, int p_draw_2_, int p_draw_3_, int p_draw_4_, int p_draw_5_, int p_draw_6_, int p_draw_7_,
-            int p_draw_8_,
-            int p_draw_9_, int p_draw_10_);
+    @Shadow
+    public abstract void draw(int p_draw_1_, int p_draw_2_, int p_draw_3_, int p_draw_4_, int p_draw_5_, int p_draw_6_, int p_draw_7_,
+                              int p_draw_8_,
+                              int p_draw_9_, int p_draw_10_);
 
-    @Shadow protected abstract void checkGLError(String message);
+    @Shadow
+    protected abstract void checkGLError(String message);
 
     private Logger novaLogger;
 
@@ -246,7 +257,7 @@ public abstract class MixinMinecraft {
         this.mcResourceManager = new SimpleReloadableResourceManager(this.metadataSerializer);
         this.mcLanguageManager = new LanguageManager(this.metadataSerializer, this.gameSettings.language);
         this.mcResourceManager.registerReloadListener(this.mcLanguageManager);
-        net.minecraftforge.fml.client.FMLClientHandler.instance().beginMinecraftLoading((Minecraft)(Object)this, this.defaultResourcePacks, this.mcResourceManager, this.metadataSerializer);
+        net.minecraftforge.fml.client.FMLClientHandler.instance().beginMinecraftLoading((Minecraft) (Object) this, this.defaultResourcePacks, this.mcResourceManager, this.metadataSerializer);
         this.renderEngine = new TextureManager(this.mcResourceManager);
         this.mcResourceManager.registerReloadListener(this.renderEngine);
         net.minecraftforge.fml.client.SplashProgress.drawVanillaScreen(this.renderEngine);
@@ -269,7 +280,7 @@ public abstract class MixinMinecraft {
         this.mcResourceManager.registerReloadListener(new FoliageColorReloadListener());
         mcResourceManager.registerReloadListener(NovaRenderer.getInstance());
         this.mouseHelper = new MouseHelper();
-        net.minecraftforge.fml.common.ProgressManager.ProgressBar bar= net.minecraftforge.fml.common.ProgressManager.push("Rendering Setup", 5, true);
+        net.minecraftforge.fml.common.ProgressManager.ProgressBar bar = net.minecraftforge.fml.common.ProgressManager.push("Rendering Setup", 5, true);
         bar.step("GL Setup");
 
 
@@ -446,7 +457,7 @@ public abstract class MixinMinecraft {
             fullscreen = !fullscreen;
             gameSettings.fullScreen = fullscreen;
 
-            if(fullscreen) {
+            if (fullscreen) {
                 NovaRenderer.getInstance().getNative().set_fullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
             } else {
                 NovaRenderer.getInstance().getNative().set_fullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
@@ -481,8 +492,7 @@ public abstract class MixinMinecraft {
 
         GameProfile gameprofile = this.session.getProfile();
 
-        if (gameprofile.getId() != null)
-        {
+        if (gameprofile.getId() != null) {
             playerSnooper.addStatToSnooper("uuid", Hashing.sha1().hashBytes(gameprofile.getId().toString().getBytes(Charsets.ISO_8859_1)).toString());
         }
     }
