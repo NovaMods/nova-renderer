@@ -240,9 +240,6 @@ File tmpBuildPropsFile = new File(".native-build-props.temp.properties")
 ext.tmpBuildPropsFile = tmpBuildPropsFile
 Properties loadTmpBuildProps() {
     Properties props = new Properties()
-    if(!tmpBuildPropsFile.exists()) {
-        println "CREATE FILE"
-    }
     ensureFile(tmpBuildPropsFile)
     props.load(tmpBuildPropsFile.newReader())
     return props
@@ -379,14 +376,6 @@ void buildRelease(String platform) {
 
 task buildReleaseNatives() {
     doLast {
-        if(project.hasProperty("FAKE-GEN")) {
-            Properties buildProperties = loadTmpBuildProps()
-            buildProperties.setProperty("platform-built", "false")
-            buildProperties.setProperty("windows-built", "true")
-            buildProperties.setProperty("linux-built", "true")
-            saveTmpBuildProperties(buildProperties)
-            return
-        }
         if ((!Os.isFamily(Os.FAMILY_UNIX) || !System.getProperty("os.arch").contains("64")) || !project.hasProperty("enableCrossBuild")) {
             logger.info("Building platform release")
             buildRelease(null)
