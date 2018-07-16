@@ -10,6 +10,7 @@
     "shadowMapResolution": 1024
   },
   "readOnly": {
+    "enableRenderDoc": false,
     "uboBindPoints": {
       "per_frame_uniforms": 0,
       "gui_uniforms": 3

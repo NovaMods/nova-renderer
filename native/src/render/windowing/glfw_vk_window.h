@@ -82,6 +82,8 @@ namespace nova {
         struct window_parameters windowed_window_parameters;
 
         void set_framebuffer_size(glm::ivec2 new_framebuffer_size);
+
+        bool should_enable_renderdoc();
     };
 }
 
