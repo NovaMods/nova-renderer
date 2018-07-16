@@ -25,9 +25,6 @@
 [submodule "native/src/3rdparty/Optional"]
 	path = native/src/3rdparty/Optional
 	url = https://github.com/akrzemi1/Optional
-[submodule "native/src/3rdparty/optional"]
-	path = native/src/3rdparty/optional
-	url = https://github.com/akrzemi1/Optional
 [submodule "native/src/3rdparty/renderdocapi"]
 	path = native/src/3rdparty/renderdocapi
 	url = https://github.com/NovaMods/RenderDoc-Manager

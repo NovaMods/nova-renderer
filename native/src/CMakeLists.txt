@@ -50,7 +50,7 @@ add_subdirectory(${3RD_PARTY_DIR}/glm)
 add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 add_subdirectory(${3RD_PARTY_DIR}/googletest)
-add_subdirectory(${3RD_PARTY_DIR}/optional)
+add_subdirectory(${3RD_PARTY_DIR}/Optional)
 add_subdirectory(${3RD_PARTY_DIR}/spirv-headers)
 add_subdirectory(${3RD_PARTY_DIR}/spirv-tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
@@ -67,7 +67,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/json/include
         ${3RD_PARTY_DIR}/googletest/googletest/include
-        ${3RD_PARTY_DIR}/optional
+        ${3RD_PARTY_DIR}/Optional
         ${3RD_PARTY_DIR}/renderdocapi
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include

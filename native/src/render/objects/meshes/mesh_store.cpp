@@ -169,7 +169,7 @@ namespace nova {
                                (static_cast<int>(obj.position.y) == static_cast<int>(chunk.y)) &&
                                (static_cast<int>(obj.position.z) == static_cast<int>(chunk.z));
                     if (del) {
-                        remove_render_objects(obj);
+                        remove_render_objects([&](render_object& obj2) ->bool{ return obj2.id == obj.id; });
                     }
                 }
             }
