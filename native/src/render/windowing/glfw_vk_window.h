@@ -44,8 +44,6 @@ namespace nova {
 
         ~glfw_vk_window();
 
-        int init();
-
         void destroy();
 
         void end_frame();
