@@ -139,9 +139,10 @@ namespace nova {
             obj.type = geometry_type::block;
             obj.parent_id = def.id;
             obj.position = def.position;
-            obj.bounding_box.center = def.position;
-            obj.bounding_box.center.y = 128;
-            obj.bounding_box.extents = {16, 128, 16};   // TODO: Make these values come from Minecraft
+
+            obj.bounding_box.center = {def.position.x + 8, def.position.y + 8, def.position.z + 8};
+            obj.bounding_box.extents = {16, 16, 16};   // TODO: Make these values come from Minecraft
+            // obj.needs_deletion = false; // TODO: needed for anything?
 
             LOG(INFO) << "Adding render object " << obj.id << " model matrix descriptor " << (VkDescriptorSet)obj.model_matrix_descriptor;
 
@@ -157,6 +158,24 @@ namespace nova {
             LOG(TRACE) << "Removed the object from the list of geometry to upload";
         }
         geometry_to_upload_lock.unlock();
+    }
+
+    void mesh_store::remove_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
+        try {
+            if (renderables_grouped_by_material.find(filter_name) != renderables_grouped_by_material.end()) {
+                auto &group = renderables_grouped_by_material.at(filter_name);
+                for (auto& obj : group) {
+                    bool del = (static_cast<int>(obj.position.x) == static_cast<int>(chunk.x)) &&
+                               (static_cast<int>(obj.position.y) == static_cast<int>(chunk.y)) &&
+                               (static_cast<int>(obj.position.z) == static_cast<int>(chunk.z));
+                    if (del) {
+                        remove_render_objects(obj);
+                    }
+                }
+            }
+        } catch (std::exception &e) {
+            LOG(ERROR) << "REMOVING CHUNK ERROR: " << e.what();
+        }
     }
 
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
@@ -193,6 +212,8 @@ namespace nova {
         def.vertex_format = format::all_values()[chunk.format];
         def.position = {chunk.x, chunk.y, chunk.z};
         def.id = chunk.id;
+
+        remove_chunk_render_object(filter_name,chunk);
 
         geometry_to_upload_lock.lock();
         geometry_to_upload.emplace(filter_name, def);

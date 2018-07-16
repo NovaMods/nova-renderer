@@ -34,6 +34,12 @@ public class NovaDraw {
 
     private static Mat4 ModelMatrix = new Mat4();
 
+    public static final Stack<Mat4> matrixStack = new Stack<>();
+
+    static {
+        matrixStack.push(new Mat4(1));
+    }
+
 
     /**
      * private constructor cause this class only has static things
@@ -85,7 +91,7 @@ public class NovaDraw {
         Float[] vertexbuffer = new Float[vertices.length * 9];
         for (int v = 0; v < vertices.length; v++) {
 
-            Vec4 transformedVertex = ModelMatrix.mul(new Vec4(vertices[v].x,vertices[v].y,currentZ,1));
+            Vec4 transformedVertex = matrixStack.peek().mul(ModelMatrix).mul(new Vec4(vertices[v].x,vertices[v].y,currentZ,1));
 
             vertexbuffer[v * 9] = transformedVertex.x;
             vertexbuffer[v * 9 + 1] = transformedVertex.y;

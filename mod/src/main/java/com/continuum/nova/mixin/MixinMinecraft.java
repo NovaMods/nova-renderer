@@ -373,13 +373,6 @@ public abstract class MixinMinecraft {
     }
 
     @Redirect(
-            method = "updateDisplay",
-            at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;update()V", remap = false)
-    )
-    private void proxyUpdateDisplay() {
-    }
-
-    @Redirect(
             method = "setIngameFocus",
             at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;isActive()Z", remap = false)
     )

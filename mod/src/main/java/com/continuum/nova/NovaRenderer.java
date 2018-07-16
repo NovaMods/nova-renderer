@@ -10,6 +10,7 @@ import com.continuum.nova.interfaces.INovaTextureAtlasSprite;
 import com.continuum.nova.interfaces.INovaTextureMap;
 import com.continuum.nova.system.NovaNative;
 import com.continuum.nova.system.NovaNative.window_size;
+import com.continuum.nova.texture.INovaTextureManager;
 import com.continuum.nova.utils.Profiler;
 import com.continuum.nova.utils.Utils;
 import com.sun.jna.Native;
@@ -23,6 +24,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -83,7 +85,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private IResourceManager resourceManager;
 
-    private ChunkUpdateListener chunkUpdateListener;
+    // TODO: make private again?
+    public ChunkUpdateListener chunkUpdateListener;
 
     private PriorityQueue<ChunkUpdateListener.BlockUpdateRange> chunksToUpdate;
     private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
@@ -96,6 +99,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private NovaNative _native;
 
     private static NovaRenderer instance;
+
+    public static INovaTextureManager getTextureManager() {
+        return (INovaTextureManager) Minecraft.getMinecraft().getTextureManager();
+    }
 
     public static NovaRenderer getInstance() {
         if (instance == null) {
@@ -117,6 +124,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Utils.initGuiTextureLocations(GUI_COLOR_TEXTURES_LOCATIONS);
         Utils.initFontTextureLocations(FONT_COLOR_TEXTURES_LOCATIONS);
         Utils.initFreeTextures(FREE_TEXTURES);
+    }
+
+    public HashMap<String, IGeometryFilter> getFilterMap(){
+      return this.filterMap;
     }
 
     @Override
@@ -255,6 +266,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void preInit() {
+        RenderChunk.class.getName();//force load, debug
         System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
@@ -481,6 +493,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         String filters = _native.get_materials_and_filters();
         String[] filtersSplit = filters.split("\n");
         Profiler.end("load_shaderpack");
+
+        LOG.info("Received filters `{}`", filters);
 
         if (filtersSplit.length < 2 || filtersSplit.length % 2 != 0) {
             throw new IllegalStateException("Must have a POT number of filters and shader names");

@@ -43,29 +43,6 @@ public class ChunkBuilder {
     }
 
     public void createMeshesForChunk(ChunkUpdateListener.BlockUpdateRange range) {
-        blockRendererDispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher(); //FIXME: Minecraft.getMinecraft().getBlockRenderDispatcher();
-        Map<String, List<BlockPos>> blocksForFilter = new HashMap<>();
-
-        for(int x = range.min.x; x <= range.max.x; x++) {
-            for(int y = range.min.y; y < range.max.y; y++) {
-                for(int z = range.min.z; z <= range.max.z; z++) {
-                    filterBlockAtPos(blocksForFilter, new BlockPos(x, y, z));
-                }
-            }
-        }
-
-        final int chunkHashCode = 31 * range.min.x + range.min.z;
-
-        for(String filterName : blocksForFilter.keySet()) {
-            Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBlocks(blocksForFilter.get(filterName), world, new BlockPos(range.min.x, range.min.y, range.min.z));
-            renderObj.ifPresent(obj -> {
-                obj.id = chunkHashCode;
-                obj.x = range.min.x;
-                obj.y = range.min.y;
-                obj.z = range.min.z;
-                NovaRenderer.getInstance().getNative().add_chunk_geometry_for_filter(filterName, obj);
-            });
-        }
     }
 
     /**
@@ -76,107 +53,18 @@ public class ChunkBuilder {
      */
     private void filterBlockAtPos(Map<String, List<BlockPos>> blocksForFilter, BlockPos pos) {
         IBlockState blockState = world.getBlockState(pos);
-        if(blockState.getRenderType().equals(EnumBlockRenderType.INVISIBLE)) {
-            return;
-        }
+
 
         for(Map.Entry<String, IGeometryFilter> entry : filters.entrySet()) {
-            if(entry.getValue().matches(blockState)) {
-                if(!blocksForFilter.containsKey(entry.getKey())) {
-                    blocksForFilter.put(entry.getKey(), new ArrayList<>());
+            if(blockState.getRenderType().equals(EnumBlockRenderType.LIQUID)) {
+                if(entry.getValue().matches(blockState)) {
+                    if(!blocksForFilter.containsKey(entry.getKey())) {
+                        blocksForFilter.put(entry.getKey(), new ArrayList<>());
+                    }
+                    blocksForFilter.get(entry.getKey()).add(pos);
                 }
-                blocksForFilter.get(entry.getKey()).add(pos);
             }
         }
-    }
-
-    private Optional<NovaNative.mc_chunk_render_object> makeMeshForBlocks(List<BlockPos> positions, World world, BlockPos chunkPos) {
-        List<Integer> vertexData = new ArrayList<>();
-        IndexList indices = new IndexList();
-        NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
-        CapturingVertexBuffer capturingVertexBuffer = new CapturingVertexBuffer(chunkPos);
-        BlockFluidRenderer fluidRenderer = blockRendererDispatcher.fluidRenderer; // FIXME: blockRendererDispatcher.getFluidRenderer();
-
-        int blockIndexCounter = 0;
-        for(BlockPos blockPos : positions) {
-            IBlockState blockState = world.getBlockState(blockPos);
-
-            if(blockState.getRenderType() == EnumBlockRenderType.MODEL) {
-                IBakedModel blockModel = blockRendererDispatcher.getModelForState(blockState);
-                int colorMultiplier = blockColors.colorMultiplier(blockState, null, null, 0);
-
-                List<EnumFacing> actuallyAllValuesOfEnumFacing = new ArrayList<>();
-                Collections.addAll(actuallyAllValuesOfEnumFacing, EnumFacing.values());
-
-                // FUCK YOU NULL
-                // AND FUCK WHOEVER DECIDED THAT NULL WAS A MEMBER OF ENUMFACING
-                actuallyAllValuesOfEnumFacing.add(null);
-
-                int faceIndexCounter = 0;
-                for(EnumFacing facing : actuallyAllValuesOfEnumFacing) {
-                    List<BakedQuad> quads = blockModel.getQuads(blockState, facing, 0);
-                    boolean shouldSideBeRendered = true;
-                    if(facing != null) {
-                        // When Nova explodes and I get invited to Sweden to visit Mojang, the absolute first thing I'm
-                        // going to do it find whoever decided to use `null` rather than ADDING ANOTHER FUCKING ENUM
-                        // VALUE and I'm going to make them regret everything they've ever done
-                        shouldSideBeRendered = blockState.shouldSideBeRendered(world, blockPos, facing);
-                    }
-                    boolean hasQuads = !quads.isEmpty();
-                    if(shouldSideBeRendered && hasQuads) {
-                        int lmCoords;
-                        if(facing == null) {
-                            // This logic would be reasonable to write and simple to maintain IF THEY HAD JUST ADDED
-                            // ANOTHER FUCKING VALUE TO THEIR STUPID FUCKING ENUM
-                            lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(EnumFacing.UP));
-                        } else {
-                            lmCoords = blockState.getPackedLightmapCoords(world, blockPos.offset(facing));
-                        }
-                        
-                        for(BakedQuad quad : quads) {
-                            if(quad.hasTintIndex()) {
-                                colorMultiplier = blockColors.colorMultiplier(blockState, world, blockPos, quad.getTintIndex());
-                            }
-                            int[] quadVertexData = addPosition(quad, blockPos.subtract(chunkPos));
-                            setVertexColor(quadVertexData, colorMultiplier);
-                            setLightmapCoord(quadVertexData, lmCoords);
-
-                            for(int data : quadVertexData) {
-                                vertexData.add(data);
-                            }
-
-                            indices.addIndicesForFace(faceIndexCounter, blockIndexCounter);
-                            faceIndexCounter += 4;
-                        }
-                    }
-                }
-
-                blockIndexCounter += faceIndexCounter;
-
-            } else if(blockState.getRenderType() == EnumBlockRenderType.LIQUID) {
-                // Why do liquids have to be different? :(
-                fluidRenderer.renderFluid(world, blockState, blockPos, capturingVertexBuffer);
-            }
-        }
-
-        vertexData.addAll(capturingVertexBuffer.getData());
-
-        int offset = indices.size();
-        for(int i = 0; i < capturingVertexBuffer.getVertexCount() / 4; i++) {
-            indices.addIndicesForFace(offset, 0);
-
-            offset += 4;
-        }
-
-        if(vertexData.isEmpty()) {
-            return Optional.empty();
-        }
-
-        chunk_render_object.setVertex_data(vertexData);
-        chunk_render_object.setIndices(indices);
-        chunk_render_object.format = NovaNative.NovaVertexFormat.POS_UV_LIGHTMAPUV_NORMAL_TANGENT.ordinal();
-
-        return Optional.of(chunk_render_object);
     }
 
     private void setLightmapCoord(int[] quadVertexData, int lmCoords) {

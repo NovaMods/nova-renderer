@@ -1,11 +1,13 @@
 package com.continuum.nova.chunks;
 
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
+import java.nio.IntBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,7 +20,7 @@ public class CapturingVertexBuffer extends BufferBuilder {
         float x;
         float y;
         float z;
-        int color;
+        int color = 0xFFFFFFFF;
         float u;
         float v;
         int lmCoord;
@@ -58,7 +60,7 @@ public class CapturingVertexBuffer extends BufferBuilder {
             ints.add(Float.floatToIntBits(y));
             ints.add(Float.floatToIntBits(z));
 
-            ints.add(color);
+             ints.add(color);
 
             ints.add(Float.floatToIntBits(u));
             ints.add(Float.floatToIntBits(v));
@@ -70,12 +72,20 @@ public class CapturingVertexBuffer extends BufferBuilder {
     }
 
     private List<Vertex> data = new ArrayList<>();
-    private final BlockPos chunkPosition;
+    private BlockPos chunkPosition;
 
+    private ArrayList<Integer> intDataStore= new ArrayList<>();
     private Vertex curVertex = new Vertex();
 
     public CapturingVertexBuffer(BlockPos chunkPosition) {
         super(0);
+        this.chunkPosition = chunkPosition;
+        this.reset();
+        this.vertexFormat = DefaultVertexFormats.BLOCK;
+        this.vertexFormatElement = this.vertexFormat.getElement(0);
+    }
+
+    public void setChunkPos(BlockPos chunkPosition) {
         this.chunkPosition = chunkPosition;
     }
 
@@ -88,9 +98,13 @@ public class CapturingVertexBuffer extends BufferBuilder {
         return this;
     }
 
+    private int getBufferSize() {
+        return this.vertexCount * this.vertexFormat.getIntegerSize();
+    }
+
     @Override
     public BufferBuilder color(float red, float green, float blue, float alpha) {
-        return color((int)red * 255, (int)green * 255, (int)blue * 255, (int)alpha * 255);
+        return color((int)(red * 255), (int)(green * 255), (int)(blue * 255), (int)(alpha * 255));
     }
 
     @Override
@@ -123,30 +137,36 @@ public class CapturingVertexBuffer extends BufferBuilder {
 
     @Override
     public void endVertex() {
-        this.vertexCount++;
-
-        boolean shouldAdd = true;
-        for(Vertex v : data) {
-            if(v.equals(data)) {
-                shouldAdd = false;
-                break;
-            }
+        List<Integer> intsList = curVertex.toInts();
+        int[] intArr = new int[intsList.size()];
+        int x = 0;
+        for (Integer i : intsList) {
+            intArr[x] = i;
+            x++;
         }
-
-        if(shouldAdd) {
-            data.add(curVertex);
-        }
-
+        this.addVertexData(intArr);
         curVertex = new Vertex();
     }
 
     public List<Integer> getData() {
         List<Integer> finalData = new ArrayList<>();
 
-        for(Vertex v : data) {
-            finalData.addAll(v.toInts());
+        int[] arr = new int[this.rawIntBuffer.limit()];
+        int oldPos = this.rawIntBuffer.position();
+        ((IntBuffer) this.rawIntBuffer.position(0)).get(arr);
+        this.rawIntBuffer.position(oldPos);
+        for (int i : arr) {
+            finalData.add(i);
         }
 
         return finalData;
+    }
+
+    public IntBuffer getRawData() {
+        return this.rawIntBuffer;
+    }
+
+    public boolean isEmpty(){
+      return this.vertexCount<1;
     }
 }

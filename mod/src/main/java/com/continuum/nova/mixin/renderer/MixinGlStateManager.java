@@ -1,5 +1,9 @@
 package com.continuum.nova.mixin.renderer;
 
+import static com.continuum.nova.gui.NovaDraw.matrixStack;
+
+import com.continuum.nova.gui.NovaDraw;
+import glm.mat._4.Mat4;
 import net.minecraft.client.renderer.GlStateManager;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,6 +14,7 @@ import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Stack;
 
 @Mixin(value = GlStateManager.class, remap = false)
 public class MixinGlStateManager {
@@ -390,6 +395,7 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void loadIdentity() {
+        matrixStack.peek().set(1);
     }
 
     /**
@@ -398,6 +404,7 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void pushMatrix() {
+        matrixStack.push(new Mat4(matrixStack.peek()));
     }
 
     /**
@@ -406,6 +413,7 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void popMatrix() {
+        matrixStack.pop();
     }
 
     /**
@@ -422,6 +430,7 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void ortho(double left, double right, double bottom, double top, double zNear, double zFar) {
+        matrixStack.peek().ortho((float) left, (float) right, (float) bottom, (float) top, (float) zNear, (float) zFar);
     }
 
     /**
@@ -430,7 +439,7 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void rotate(float angle, float x, float y, float z) {
-        //GL11.glRotatef(angle, x, y, z);
+        matrixStack.peek().rotate((float) Math.toRadians(angle), x, y, z);
     }
 
     /**
@@ -439,6 +448,7 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void scale(float x, float y, float z) {
+        matrixStack.peek().scale(x, y, 1);
     }
 
     /**
@@ -447,6 +457,7 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void scale(double x, double y, double z) {
+        matrixStack.peek().scale((float) x, (float) y, (float) 1);
     }
 
     /**
@@ -455,6 +466,7 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void translate(float x, float y, float z) {
+        matrixStack.peek().translate(x, y, 0);
     }
 
     /**
@@ -463,6 +475,7 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void translate(double x, double y, double z) {
+        matrixStack.peek().translate((float) x, (float) y, (float) 0);
     }
 
     /**
@@ -471,6 +484,12 @@ public class MixinGlStateManager {
      */
     @Overwrite
     public static void multMatrix(FloatBuffer matrix) {
+        float[] f = new float[16];
+        for (int i = 0; i < f.length; i++) {
+            f[i] = matrix.get();
+        }
+        Mat4 mat = new Mat4(f);
+        matrixStack.peek().mul(mat);
     }
 
     @Inject(
