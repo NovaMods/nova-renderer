@@ -50,10 +50,14 @@ namespace nova {
 
         glfwGetWindowSize(window, &window_dimensions.x, &window_dimensions.y);
 
+        if(should_enable_renderdoc()) {
 #if __WIN32__
-        //renderdoc_manager = std::make_unique<RenderDocManager>(window, R"(C:\Program Files\RenderDoc\renderdoc.dll)", "captures/nova");
-        //LOG(INFO) << "Hooked into RenderDoc";
+            renderdoc_manager = std::make_unique<RenderDocManager>(window,
+                                                                   R"(C:\Program Files\RenderDoc\renderdoc.dll)",
+                                                                   "captures/nova");
+            LOG(INFO) << "Hooked into RenderDoc";
 #endif
+        }
 
         glfwSetKeyCallback(window, key_callback);
 		glfwSetCharCallback(window, key_character_callback);
@@ -166,5 +170,19 @@ namespace nova {
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not create surface";
         }
+    }
+
+    bool glfw_vk_window::should_enable_renderdoc() {
+        auto& settings = nova_renderer::get_render_settings();
+
+        auto static_settings = get_json_value<nlohmann::json>(settings.get_options(), "readOnly");
+        if(static_settings) {
+            auto should_enable_renderdoc = get_json_value<bool>(*static_settings, "enableRenderDoc");
+            if(*should_enable_renderdoc) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
