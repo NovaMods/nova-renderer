@@ -357,7 +357,7 @@ namespace nova {
     }
 
     void nova_renderer::init() {
-        render_settings = std::make_shared<settings>("config/config.json");
+        render_settings = std::make_shared<settings>("config/nova/config.json");
 
         try {
             instance = std::make_unique<nova_renderer>();

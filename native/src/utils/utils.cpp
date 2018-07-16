@@ -9,7 +9,7 @@
 
 void initialize_logging() {
     // Configure the logger
-    el::Configurations conf("config/logging.conf");
+    el::Configurations conf("config/nova/logging.conf");
 
     // Turn debug and trace off in release builds
 #ifdef NDEBUG

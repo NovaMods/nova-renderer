@@ -5,6 +5,7 @@ import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.input.Keyboard;
 import com.continuum.nova.input.Mouse;
 import com.continuum.nova.system.NovaNative;
+import com.continuum.nova.utils.Utils;
 import com.google.common.hash.Hashing;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
@@ -39,6 +40,7 @@ import net.minecraft.util.Timer;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.storage.ISaveFormat;
+import net.minecraftforge.fml.common.LoaderExceptionModCrash;
 import org.apache.commons.io.Charsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,6 +59,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import javax.annotation.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @Mixin(Minecraft.class)
@@ -294,7 +297,11 @@ public abstract class MixinMinecraft {
         bar.step("Loading Model Manager");
         this.modelManager = new ModelManager(this.textureMapBlocks);
         this.blockColors = BlockColors.init();
-        NovaRenderer.getInstance().loadShaderpack("default", this.blockColors);
+        try {
+            NovaRenderer.getInstance().loadShaderpack(Utils.getShaderpackNameFromConfig(), this.blockColors);
+        } catch (IOException e) {
+            throw new LoaderExceptionModCrash("Nova failed to read shaderpack name from config", e);
+        }
         this.mcResourceManager.registerReloadListener(this.modelManager);
         this.itemColors = ItemColors.init(this.blockColors);
         bar.step("Loading Item Renderer");

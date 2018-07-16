@@ -1,4 +1,7 @@
 # Only things for native itself in here! src has its own .gitignore
 
-build/
 .vscode/
+excluded_files/
+dev-build/
+release-build-*/
+toolchains/vulkan-dll-location.txt

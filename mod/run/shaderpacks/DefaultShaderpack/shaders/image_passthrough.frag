@@ -1,6 +1,6 @@
 #version 450
 
-layout(set = 2, location = 0) uniform sampler2D tex;
+layout(binding = 0, set = 2, location = 0) uniform sampler2D tex;
 
 layout(location = 0) in vec2 uv;
 

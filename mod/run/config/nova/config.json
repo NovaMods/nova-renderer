@@ -1,6 +1,6 @@
 {
   "settings": {
-    "loadedShaderpack": "default",
+    "loadedShaderpack": "DefaultShaderpack",
     "loadedResourcepacks": [
       "/versions/1.10/1.10.jar"
     ],

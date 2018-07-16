@@ -1,3 +1,12 @@
+import com.github.jengelman.gradle.plugins.shadow.relocation.RelocateClassContext
+import com.github.jengelman.gradle.plugins.shadow.relocation.RelocatePathContext
+import com.github.jengelman.gradle.plugins.shadow.relocation.Relocator
+import org.apache.tools.ant.taskdefs.condition.Os
+
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
+
 buildscript {
     repositories {
         jcenter()
@@ -20,8 +29,19 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'de.fuerstenau.buildconfig' version '1.1.8'
+}
 apply plugin: "net.minecraftforge.gradle.forge"
 apply plugin: "org.spongepowered.mixin"
+apply plugin: "idea"
+
+String VulkanDllLocation
+ext.VulkanDllLocation = VulkanDllLocation
+if(file("private-data.gradle").exists() && file("private-data.gradle").isFile()) {
+    apply from: "private-data.gradle"
+}
 
 version = modVersion
 group = modGroup
@@ -51,11 +71,18 @@ repositories {
     }
 }
 
+configurations {
+    shadow
+    compile.extendsFrom shadow
+}
+
 dependencies {
-    compile("org.spongepowered:mixin:0.7.8-SNAPSHOT") {
+    shadow("org.spongepowered:mixin:0.7.8-SNAPSHOT") {
         transitive = false
     }
-    compile group: 'io.github.java-graphics', name: 'glm', version: '1.0.1'
+    shadow(group: 'io.github.java-graphics', name: 'glm', version: '1.0.1') {
+        transitive = false
+    }
 }
 
 mixin {
@@ -72,6 +99,28 @@ jar {
                 "FMLCorePlugin": "com.continuum.nova.coremod.NovaForgeCoreMod"
         )
     }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+
+    relocate "benchmark", "shadow.benchmark"
+    relocate "dev", "shadow.dev"
+    relocate "glf", "shadow.glf"
+    relocate "glm", "shadow.glm"
+    relocate "jglm", "shadow.jglm"
+    relocate "joou", "shadow.joou"
+}
+
+reobf {
+    //noinspection GroovyMissingReturnStatement
+    shadowJar {}
+}
+build.dependsOn reobfShadowJar
+compileJava.outputs.upToDateWhen {false}
+afterEvaluate {
+    generateBuildConfig.mustRunAfter buildReleaseNatives
+    generateBuildConfig.outputs.upToDateWhen {false}
 }
 
 processResources {
@@ -91,7 +140,332 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude "mcmod.info"
     }
+
+    exclude "META-INF/services/"
+    exclude "META-INF/maven/"
+}
+
+task packageDefaultShaderpack(type: Zip) {
+    from fileTree(dir: "run/shaderpacks/default")
+    archiveName "DefaultShaderpack.zip"
+    destinationDir(file("src/main/resources/defaults"))
+}
+build.dependsOn packageDefaultShaderpack
+
+void ensureDir(File dir, boolean recreate = false) {
+    if(recreate && dir.exists() && dir.isDirectory()) {
+        if(!dir.deleteDir()) {
+            throw new GradleException("Unable to delete directory ${dir.getAbsolutePath()}")
+        }
+        ensureDir(dir)
+        return
+    }
+
+    if (!dir.exists()) {
+        if (!dir.mkdirs()) {
+            throw new GradleException("Unable to create directory ${dir.getAbsolutePath()}")
+        }
+    } else if (dir.isFile()) {
+        if (!dir.delete()) {
+            throw new GradleException("${dir.getAbsolutePath()} is a file and we were unable to delete it, please delete it manually")
+        }
+        ensureDir(dir)
+    }
+}
+
+void ensureFile(File file) {
+    if(!file.exists()) {
+        try {
+            if(!file.createNewFile()) {
+                throw new IOException("Failed to create ${file.getAbsolutePath()} for unknown reason")
+            }
+        } catch (IOException e) {
+            throw new GradleException("Unable to create file ${file.getAbsolutePath()}", e)
+        }
+    } else if(file.isDirectory()) {
+        if(!file.deleteDir()) {
+            throw new GradleException("${dir.getAbsolutePath()} is a directory and we were unable to delete it, please delete it manually")
+        }
+
+        ensureFile(file)
+    }
+}
+
+void ensureCommandWorks(String... cmdline) {
+    try {
+        if (exec {
+            commandLine(cmdline)
+            standardOutput = new ByteArrayOutputStream()
+            standardInput = new ByteArrayInputStream()
+            errorOutput = new ByteArrayOutputStream()
+        }.exitValue != 0) {
+            throw new GradleException("${cmdline.toArrayString()} exited with non zero exit code")
+        }
+    } catch (IOException e) {
+        throw new GradleException("Failed to run ${cmdline.toArrayString()}", e)
+    }
+}
+
+OutputStream prefixedOutputStream(String prefix, OutputStream parentStream) {
+    OutputStream ret =  new OutputStream() {
+        StringBuilder builder = new StringBuilder(prefix)
+
+        @Override
+        void write(int i) throws IOException {
+            if(i as char == '\n' as char) {
+                builder.append(i as char)
+                parentStream.write(builder.toString().getBytes())
+                parentStream.flush()
+                builder.setLength(0)
+                builder.append(prefix)
+            } else {
+                builder.append(i as char)
+            }
+        }
+    }
+    return ret
+}
+
+File tmpBuildPropsFile = new File(".native-build-props.temp.properties")
+ext.tmpBuildPropsFile = tmpBuildPropsFile
+Properties loadTmpBuildProps() {
+    Properties props = new Properties()
+    ensureFile(tmpBuildPropsFile)
+    props.load(tmpBuildPropsFile.newReader())
+    return props
+}
+
+void saveTmpBuildProperties(Properties props) {
+    ensureFile(tmpBuildPropsFile)
+    props.store(tmpBuildPropsFile.newWriter(false), "MACHINE GENERATED FILE, DO NOT EDIT")
+}
+
+void buildRelease(String platform) {
+    delete("src/main/resources/libnova-renderer.so")
+    delete("src/main/resources/libnova-profiler.so")
+
+    delete("src/main/resources/nova-renderer.dll")
+    delete("src/main/resources/nova-profiler.dll")
+
+    File nativeBuildDir
+    ensureCommandWorks("cmake", "--version")
+
+    if(platform != null) {
+        if(!Os.isFamily(Os.FAMILY_UNIX) || !System.getProperty("os.arch").contains("64")) {
+            throw new GradleException("Cross building is only supported on a 64bit Linux system!")
+        }
+        try {
+            ensureCommandWorks("x86_64-w64-mingw32-gcc-posix", "--version")
+        } catch (GradleException e) {
+            if(platform == "linux") {
+                logger.warn("Cross compiler not working, falling back to default for linux (disable cross compiling in settings.gradle)")
+                platform = null
+            } else if(platform == "windows") {
+                logger.warn("Cross compiler not working, aborting (disable cross compiling in settings.gradle)")
+                return
+            }
+        }
+    }
+
+    Properties buildProperties = loadTmpBuildProps()
+    if(platform == null) { // Ok, build for current platform... Let CMake decide what to do
+        nativeBuildDir = new File("../native/release-build-platform/")
+        ensureDir(nativeBuildDir, true)
+
+        if(exec {
+            commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE"
+            workingDir = nativeBuildDir
+            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN] ", System.out)
+            errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN] ", System.err)
+        }.exitValue != 0) {
+            throw new GradleException("Failed to invoke cmake for generating makefiles")
+        }
+
+        if(exec {
+            commandLine "cmake", "--build", ".", "--target", "nova-renderer"
+            workingDir = nativeBuildDir
+            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD] ", System.out)
+            errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD] ", System.err)
+        }.exitValue != 0) {
+            throw new GradleException("Failed to invoke cmake for building binary")
+        }
+
+        buildProperties.setProperty("platform-built", "true")
+        buildProperties.setProperty("windows-built", "false")
+        buildProperties.setProperty("linux-built", "false")
+
+        if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+            buildProperties.setProperty("windows-built", "true")
+        } else {
+            buildProperties.setProperty("linux-built", "true")
+        }
+    } else if(platform.equalsIgnoreCase("linux")) {
+        ensureCommandWorks("cmake", "--version")
+        nativeBuildDir = new File("../native/release-build-linux/")
+        ensureDir(nativeBuildDir, true)
+
+        if(exec {
+            commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE",
+                    "-DCMAKE_TOOLCHAIN_FILE=${new File("../native/toolchains/linux-x86_64.cmake").getAbsolutePath()}"
+            workingDir = nativeBuildDir
+            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN/LINUX] ", System.out)
+            errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN/LINUX] ", System.err)
+        }.exitValue != 0) {
+            throw new GradleException("Failed to invoke cmake for generating makefiles")
+        }
+
+        if(exec {
+            commandLine "cmake", "--build", ".", "--target", "nova-renderer", "--", "-j${Runtime.getRuntime().availableProcessors()}"
+            workingDir = nativeBuildDir
+            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD/LINUX] ", System.out)
+            errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD/LINUX] ", System.err)
+        }.exitValue != 0) {
+            throw new GradleException("Failed to invoke cmake for building binary")
+        }
+
+        buildProperties.setProperty("platform-built", "false")
+        buildProperties.setProperty("linux-built", "true")
+    } else if(platform.equalsIgnoreCase("windows")) {
+        ensureCommandWorks("cmake", "--version")
+        nativeBuildDir = new File("../native/release-build-windows/")
+        ensureDir(nativeBuildDir, true)
+
+        if(exec {
+            commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE",
+                    "-DCMAKE_TOOLCHAIN_FILE=${new File("../native/toolchains/windows-x86_64.cmake").getAbsolutePath()}"
+            workingDir = nativeBuildDir
+            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN/WINDOWS] ", System.out)
+            errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN/WINDOWS] ", System.err)
+
+            if(VulkanDllLocation != null) {
+                File vulkanDllLocationFile = new File("../native/toolchains/vulkan-dll-location.txt").getAbsoluteFile()
+                ensureFile(vulkanDllLocationFile)
+                vulkanDllLocationFile.write((String) VulkanDllLocation)
+            }
+        }.exitValue != 0) {
+            throw new GradleException("Failed to invoke cmake for generating makefiles")
+        }
+
+        if(exec {
+            commandLine "cmake", "--build", ".", "--target", "nova-renderer", "--", "-j${Runtime.getRuntime().availableProcessors()}"
+            workingDir = nativeBuildDir
+            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD/WINDOWS] ", System.out)
+            errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD/WINDOWS] ", System.err)
+        }.exitValue != 0) {
+            throw new GradleException("Failed to invoke cmake for building binary")
+        }
+
+        buildProperties.setProperty("platform-built", "false")
+        buildProperties.setProperty("windows-built", "true")
+    } else {
+        throw new GradleException("Unknown platform ${platform}, currently only windows and linux are supported! (Note, the only arch that is supported is 64bit!")
+    }
+
+    saveTmpBuildProperties(buildProperties)
+}
+
+task buildReleaseNatives() {
+    doLast {
+        if ((!Os.isFamily(Os.FAMILY_UNIX) || !System.getProperty("os.arch").contains("64")) || !project.hasProperty("enableCrossBuild")) {
+            logger.info("Building platform release")
+            buildRelease(null)
+        } else {
+            logger.info("Building windows release")
+            buildRelease("windows")
+            logger.info("Building linux release")
+            buildRelease("linux")
+        }
+    }
+}
+
+task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
+    doLast {
+        final String BASE_DIR = Paths.get("../native").toAbsolutePath().normalize().toString()
+        java.nio.file.Path windowsTargetRenderer = Paths.get("src/main/resources/nova-renderer.dll").toAbsolutePath().normalize()
+        java.nio.file.Path windowsTargetProfiler = Paths.get("src/main/resources/nova-profiler.dll").toAbsolutePath().normalize()
+
+        java.nio.file.Path linuxTargetRenderer = Paths.get("src/main/resources/libnova-renderer.so").toAbsolutePath().normalize()
+        java.nio.file.Path linuxTargetProfiler = Paths.get("src/main/resources/libnova-profiler.so").toAbsolutePath().normalize()
+
+        Properties buildProperties = loadTmpBuildProps()
+        if(Boolean.parseBoolean(buildProperties.getProperty("platform-built", "false"))) {
+            if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+                Files.copy(Paths.get(BASE_DIR, "release-build-platform/nova-renderer.dll"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-profiler.dll"), windowsTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
+            } else {
+                Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.so"), linuxTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-profiler.so"), linuxTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
+            }
+        }
+
+        if(Boolean.parseBoolean(buildProperties.getProperty("linux-built", "false"))) {
+            Files.copy(Paths.get(BASE_DIR, "release-build-linux/libnova-renderer.so"), linuxTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
+            Files.copy(Paths.get(BASE_DIR, "release-build-linux/libnova-profiler.so"), linuxTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        if(Boolean.parseBoolean(buildProperties.getProperty("windows-built", "false"))) {
+            Files.copy(Paths.get(BASE_DIR, "release-build-windows/nova-renderer.dll"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
+            Files.copy(Paths.get(BASE_DIR, "release-build-windows/libnova-profiler.dll"), windowsTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
+}
+
+buildConfig {
+    appName = project.name
+    version = project.version
+
+    clsName = "ModBuildConfig"
+    packageName = "com.continuum.nova"
+
+    Properties buildProperties = loadTmpBuildProps()
+    buildConfigField "boolean", "WINDOWS_SUPPORTED", {buildProperties.getProperty("windows-built", "false")}
+    buildConfigField "boolean", "LINUX_SUPPORTED", {buildProperties.getProperty("linux-built", "false")}
+    buildConfigField "boolean", "PLATFORM_BUILD", {buildProperties.getProperty("platform-built", "false")}
+}
+
+build.dependsOn copyReleaseBuilds
+
+task buildDevLibrary() {
+    File nativeBuildDir
+    doFirst {
+        ensureCommandWorks("cmake", "--version")
+        nativeBuildDir = new File("../native/dev-build").getAbsoluteFile()
+        ensureDir(nativeBuildDir)
+    }
+
+    doLast {
+        if(exec {
+            commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=DEBUG"
+            workingDir = nativeBuildDir
+            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN] ", System.out)
+            errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN] ", System.err)
+        }.exitValue != 0) {
+            throw new GradleException("Failed to invoke cmake for generating makefiles")
+        }
+
+        if(exec {
+            commandLine "cmake", "--build", ".", "--target", "nova-renderer"
+            workingDir = nativeBuildDir
+            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD] ", System.out)
+            errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD] ", System.err)
+        }.exitValue != 0) {
+            throw new GradleException("Failed to invoke cmake for building binary")
+        }
+    }
+}
+
+//noinspection GroovyAssignabilityCheck
+task copyLibraryToRunDir(type: Copy, dependsOn: buildDevLibrary) {
+    from "../native/dev-build"
+    into "run"
+    if(Os.isFamily(Os.FAMILY_WINDOWS)) {
+        include "nova-renderer.dll"
+    } else {
+        include "libnova-renderer.so"
+    }
 }
 
 runClient.outputs.upToDateWhen { false }
 runClient.standardOutput = System.out
+//noinspection GroovyAssignabilityCheck
+runClient.dependsOn copyLibraryToRunDir

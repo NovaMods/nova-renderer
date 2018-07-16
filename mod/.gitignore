@@ -157,6 +157,7 @@ run/*
 .gradle
 /build/
 .native-build-props.temp.properties
+private-data.gradle
 
 # Ignore Gradle GUI config
 gradle-app.setting
