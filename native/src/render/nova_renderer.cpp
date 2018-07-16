@@ -578,6 +578,10 @@ namespace nova {
             for(const auto &gui_obj : gui_objects) {
                 update_gui_model_matrix(gui_obj, gui_model, device);
             }
+            std::vector<render_object> &gui_text_objexts = meshes->get_meshes_for_material("gui_text");
+            for(const auto &gui_obj : gui_text_objexts) {
+                update_gui_model_matrix(gui_obj, gui_model, device);
+            }
         } catch(std::exception& e) {
             LOG(WARNING) << "Load some GUIs you fool";
             LOG(WARNING) << e.what() << std::endl;

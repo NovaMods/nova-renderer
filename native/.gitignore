@@ -1,7 +1,13 @@
 # Only things for native itself in here! src has its own .gitignore
 
+<<<<<<< HEAD
 .vscode/
 excluded_files/
 dev-build/
 release-build-*/
 toolchains/vulkan-dll-location.txt
+=======
+build/
+.vscode/
+.vs/
+>>>>>>> 43f8bc1f93436da46e8c0a0c45020169a63457f3

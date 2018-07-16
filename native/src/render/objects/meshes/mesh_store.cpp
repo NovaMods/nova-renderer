@@ -249,7 +249,7 @@ namespace nova {
                 }
         };
 
-        quad.indices = {0, 1, 2};
+        quad.indices = {2, 1, 0};
         quad.vertex_format = format::POS_COLOR_UV_LIGHTMAPUV_NORMAL_TANGENT;
         quad.position = glm::vec3(0);
         quad.id = 0;
