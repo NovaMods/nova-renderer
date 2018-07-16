@@ -1,7 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.relocation.RelocateClassContext
-import com.github.jengelman.gradle.plugins.shadow.relocation.RelocatePathContext
-import com.github.jengelman.gradle.plugins.shadow.relocation.Relocator
-import de.fuerstenau.gradle.buildconfig.GenerateBuildConfigTask
 import org.apache.tools.ant.taskdefs.condition.Os
 
 import java.nio.file.Files
@@ -31,7 +27,6 @@ buildscript {
     dependencies {
         classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
         classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
-        classpath 'gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8'
     }
 }
 
@@ -123,10 +118,6 @@ reobf {
 }
 build.dependsOn reobfShadowJar
 compileJava.outputs.upToDateWhen {false}
-afterEvaluate {
-    generateBuildConfig.mustRunAfter buildReleaseNatives
-    generateBuildConfig.outputs.upToDateWhen {false}
-}
 
 processResources {
     // this will ensure that this task is redone when the versions change.
@@ -235,6 +226,9 @@ File tmpBuildPropsFile = new File(".native-build-props.temp.properties")
 ext.tmpBuildPropsFile = tmpBuildPropsFile
 Properties loadTmpBuildProps() {
     Properties props = new Properties()
+    if(!tmpBuildPropsFile.exists()) {
+        println "CREATE FILE"
+    }
     ensureFile(tmpBuildPropsFile)
     props.load(tmpBuildPropsFile.newReader())
     return props
@@ -371,6 +365,14 @@ void buildRelease(String platform) {
 
 task buildReleaseNatives() {
     doLast {
+        if(project.hasProperty("FAKE-GEN")) {
+            Properties buildProperties = loadTmpBuildProps()
+            buildProperties.setProperty("platform-built", "false")
+            buildProperties.setProperty("windows-built", "true")
+            buildProperties.setProperty("linux-built", "true")
+            saveTmpBuildProperties(buildProperties)
+            return
+        }
         if ((!Os.isFamily(Os.FAMILY_UNIX) || !System.getProperty("os.arch").contains("64")) || !project.hasProperty("enableCrossBuild")) {
             logger.info("Building platform release")
             buildRelease(null)
@@ -411,39 +413,6 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
         if(Boolean.parseBoolean(buildProperties.getProperty("windows-built", "false"))) {
             Files.copy(Paths.get(BASE_DIR, "release-build-windows/nova-renderer.dll"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
             Files.copy(Paths.get(BASE_DIR, "release-build-windows/libnova-profiler.dll"), windowsTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
-        }
-    }
-}
-
-task generateBuildConfig (type: GenerateBuildConfigTask) {
-    outputDir = new File ("${buildDir}/gen/buildconfig/src/main/")
-
-    appName = project.name
-    version = project.version
-
-    clsName = "ModBuildConfig"
-    packageName = "com.continuum.nova"
-
-    Properties buildProperties = loadTmpBuildProps()
-    buildConfigField "boolean", "WINDOWS_SUPPORTED", buildProperties.getProperty("windows-built", "false")
-    buildConfigField "boolean", "LINUX_SUPPORTED", buildProperties.getProperty("linux-built", "false")
-    buildConfigField "boolean", "PLATFORM_BUILD", buildProperties.getProperty("platform-built", "false")
-}
-
-task compileBuildConfig(type:JavaCompile, dependsOn: generateBuildConfig) {
-    classpath = files ()
-    destinationDir = new File ("${buildDir}/gen/buildconfig/classes/main/")
-    source = generateBuildConfig.outputDir
-}
-compileBuildConfig.mustRunAfter copyReleaseBuilds
-
-sourceSets {
-    main {
-        compileClasspath += compileBuildConfig.outputs.files
-        compileBuildConfig.outputs.files.findAll {
-            !it.name.endsWith ('dependency-cache')
-        }.each {
-            output.dir it
         }
     }
 }

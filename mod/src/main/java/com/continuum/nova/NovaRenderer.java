@@ -308,12 +308,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
         }
 
-        if(ModBuildConfig.PLATFORM_BUILD) {
-            LOG.warn("Nova is running with a " + (ModBuildConfig.LINUX_SUPPORTED ? "linux" : "windows") + " only build!");
-        }
-
         if(Platform.isWindows()) {
-            if(!ModBuildConfig.WINDOWS_SUPPORTED) {
+            if(NovaRenderer.class.getResource("/nova-renderer.dll") == null) {
                 // User friendly fail, show dialog box before crashing
                 JOptionPane.showMessageDialog(null, "The nova build you are using was build without Windows support!\n" +
                         "   Please download an official build from our buildserver!");
@@ -322,7 +318,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             Utils.extractResource("/nova-renderer.dll", nativeExtractDir.toPath(), true);
             Utils.extractResource("/nova-profiler.dll", nativeExtractDir.toPath(), true);
         } else {
-            if(!ModBuildConfig.LINUX_SUPPORTED) {
+            if(NovaRenderer.class.getResource("/libnova-renderer.so") == null) {
                 // User friendly fail, show dialog box before crashing
                 JOptionPane.showMessageDialog(null, "The nova build you are using was build without Linux support!\n" +
                         "   Please download an official build from our buildserver!");
