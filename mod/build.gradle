@@ -1,6 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.relocation.RelocateClassContext
 import com.github.jengelman.gradle.plugins.shadow.relocation.RelocatePathContext
 import com.github.jengelman.gradle.plugins.shadow.relocation.Relocator
+import de.fuerstenau.gradle.buildconfig.GenerateBuildConfigTask
 import org.apache.tools.ant.taskdefs.condition.Os
 
 import java.nio.file.Files
@@ -22,16 +23,20 @@ buildscript {
             name = 'sponge'
             url = 'http://repo.spongepowered.org/maven'
         }
+        maven {
+            name = "gradle plugins"
+            url 'https://plugins.gradle.org/m2/'
+        }
     }
     dependencies {
         classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
         classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
+        classpath 'gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8'
     }
 }
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.4'
-    id 'de.fuerstenau.buildconfig' version '1.1.8'
 }
 apply plugin: "net.minecraftforge.gradle.forge"
 apply plugin: "org.spongepowered.mixin"
@@ -410,7 +415,9 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
     }
 }
 
-buildConfig {
+task generateBuildConfig (type: GenerateBuildConfigTask) {
+    outputDir = new File ("${buildDir}/gen/buildconfig/src/main/")
+
     appName = project.name
     version = project.version
 
@@ -418,9 +425,27 @@ buildConfig {
     packageName = "com.continuum.nova"
 
     Properties buildProperties = loadTmpBuildProps()
-    buildConfigField "boolean", "WINDOWS_SUPPORTED", {buildProperties.getProperty("windows-built", "false")}
-    buildConfigField "boolean", "LINUX_SUPPORTED", {buildProperties.getProperty("linux-built", "false")}
-    buildConfigField "boolean", "PLATFORM_BUILD", {buildProperties.getProperty("platform-built", "false")}
+    buildConfigField "boolean", "WINDOWS_SUPPORTED", buildProperties.getProperty("windows-built", "false")
+    buildConfigField "boolean", "LINUX_SUPPORTED", buildProperties.getProperty("linux-built", "false")
+    buildConfigField "boolean", "PLATFORM_BUILD", buildProperties.getProperty("platform-built", "false")
+}
+
+task compileBuildConfig(type:JavaCompile, dependsOn: generateBuildConfig) {
+    classpath = files ()
+    destinationDir = new File ("${buildDir}/gen/buildconfig/classes/main/")
+    source = generateBuildConfig.outputDir
+}
+compileBuildConfig.mustRunAfter copyReleaseBuilds
+
+sourceSets {
+    main {
+        compileClasspath += compileBuildConfig.outputs.files
+        compileBuildConfig.outputs.files.findAll {
+            !it.name.endsWith ('dependency-cache')
+        }.each {
+            output.dir it
+        }
+    }
 }
 
 build.dependsOn copyReleaseBuilds
