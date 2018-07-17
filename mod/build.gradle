@@ -257,7 +257,7 @@ void buildPlatformRelease() {
     ensureDir(nativeBuildDir, true)
 
     if(exec {
-        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE"
+        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE", "-G", (Os.isFamily(Os.FAMILY_WINDOWS) ? "MinGW Makefiles" : "Unix Makefiles")
         workingDir = nativeBuildDir
         standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN] ", System.out)
         errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN] ", System.err)
