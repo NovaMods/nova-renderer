@@ -1,5 +1,6 @@
 package com.continuum.nova.mixin;
 
+import com.continuum.nova.NovaConstants;
 import com.continuum.nova.NovaForge;
 import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.input.Keyboard;
@@ -311,7 +312,8 @@ public abstract class MixinMinecraft {
         try {
             NovaRenderer.getInstance().loadShaderpack(Utils.getShaderpackNameFromConfig(), this.blockColors);
         } catch (IOException e) {
-            throw new LoaderExceptionModCrash("Nova failed to read shaderpack name from config", e);
+            novaLogger.error("Failed to load shaderpack name  from config! Loading default...", e);
+            NovaRenderer.getInstance().loadShaderpack("DefaultShaderpack", this.blockColors);
         }
         this.mcResourceManager.registerReloadListener(this.modelManager);
         this.itemColors = ItemColors.init(this.blockColors);
@@ -488,7 +490,7 @@ public abstract class MixinMinecraft {
         playerSnooper.addStatToSnooper("client_brand", ClientBrandRetriever.getClientModName());
         playerSnooper.addStatToSnooper("launched_version", this.launchedVersion);
         playerSnooper.addStatToSnooper("vulkan_max_texture_size", NovaRenderer.getInstance().getNative().get_max_texture_size());
-        playerSnooper.addStatToSnooper("nova_renderer_version", NovaForge.VERSION /* NovaRenderer.getInstance().getVersion() */);
+        playerSnooper.addStatToSnooper("nova_renderer_version", NovaConstants.VERSION);
 
         GameProfile gameprofile = this.session.getProfile();
 
