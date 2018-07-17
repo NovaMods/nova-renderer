@@ -289,10 +289,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             LOG.info("Nova is very likely running in a development environment, trying to load native from run directory...");
             try {
                 if (Platform.isWindows()) {
-                    File misprefixedProfiler = new File("./libnova-profiler.dll"); // Some weirdness
-                    if(misprefixedProfiler.exists() && misprefixedProfiler.isFile()) {
-                        misprefixedProfiler.renameTo(new File("./nova-profiler.dll"));
-                    }
                     _native = Native.loadLibrary("./nova-renderer.dll", NovaNative.class);
                 } else {
                     _native = Native.loadLibrary("./libnova-renderer.so", NovaNative.class);
@@ -316,7 +312,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                 throw new IllegalStateException("Windows is not supported by the current nova build");
             }
             Utils.extractResource("/nova-renderer.dll", nativeExtractDir.toPath(), true);
-            Utils.extractResource("/nova-profiler.dll", nativeExtractDir.toPath(), true);
+            Utils.extractResource("/libnova-profiler.dll", nativeExtractDir.toPath(), true);
         } else {
             if(NovaRenderer.class.getResource("/libnova-renderer.so") == null) {
                 throw new IllegalStateException("Linux is not supported by the current nova build");

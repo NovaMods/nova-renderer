@@ -374,7 +374,7 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
     doLast {
         final String BASE_DIR = Paths.get("../native").normalize().toString()
         java.nio.file.Path windowsTargetRenderer = Paths.get("src/main/resources/nova-renderer.dll").normalize()
-        java.nio.file.Path windowsTargetProfiler = Paths.get("src/main/resources/nova-profiler.dll").normalize()
+        java.nio.file.Path windowsTargetProfiler = Paths.get("src/main/resources/libnova-profiler.dll").normalize()
 
         java.nio.file.Path linuxTargetRenderer = Paths.get("src/main/resources/libnova-renderer.so").normalize()
         java.nio.file.Path linuxTargetProfiler = Paths.get("src/main/resources/libnova-profiler.so").normalize()
@@ -439,8 +439,7 @@ task copyLibraryToRunDir(type: Copy, dependsOn: buildDevLibrary) {
     into "run"
     if(Os.isFamily(Os.FAMILY_WINDOWS)) {
         include "nova-renderer.dll"
-        include "libnova-profiler.dll" // it COULD be named like this...
-        include "nova-profiler.dll"
+        include "libnova-profiler.dll"
     } else {
         include "libnova-renderer.so"
         include "libnova-profiler.so"
