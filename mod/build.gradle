@@ -160,6 +160,7 @@ task packageDefaultShaderpack(type: Zip) {
     archiveName "DefaultShaderpack.zip"
     destinationDir(file("src/main/resources/defaults"))
 }
+processResources.mustRunAfter packageDefaultShaderpack
 build.dependsOn packageDefaultShaderpack
 
 void ensureDir(File dir, boolean recreate = false) {
@@ -402,7 +403,7 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
         }
     }
 }
-
+processResources.mustRunAfter copyReleaseBuilds
 build.dependsOn copyReleaseBuilds
 
 task buildDevLibrary() {

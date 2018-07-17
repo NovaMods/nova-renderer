@@ -9,6 +9,7 @@
 hs_err_pid*
 # gradle
 .gradle/
+.native-build-props.temp.properties
 ###################
 # run/ exclusions #
 ###################
@@ -48,3 +49,9 @@ target/
 # renderdoc #
 #############
 *.cap
+
+############
+# compiled #
+############
+*.so
+*.dll
