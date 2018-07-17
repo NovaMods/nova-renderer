@@ -1,5 +1,6 @@
 package com.continuum.nova.mixin.gui;
 
+import glm.Glm;
 import com.continuum.nova.gui.NovaDraw;
 import glm.mat._4.Mat4;
 import glm.vec._4.Vec4;
@@ -18,6 +19,11 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -55,6 +61,123 @@ public abstract class MixinGuiMainMenu extends GuiScreen {
     private boolean redirectContextCaps(ContextCapabilities caps) {
         return false;
     }
+    /**
+     * Draws the main menu panorama
+     */
+     /**
+      * @author Cole Kissane
+      * @reason PANORAMA
+      */
+    @Overwrite
+    private void drawPanorama(int mouseX, int mouseY, float partialTicks)
+    {
+
+        Mat4 projmat = Glm.perspective_(120.0F, 1.0F, 0.05F, 10.0F);
+
+        Stack<Mat4> matrixStack = new Stack<>();
+        matrixStack.push(new Mat4());
+
+        //matrixStack.peek().rotate(180.0F, 1.0F, 0.0F, 0.0F);
+        //matrixStack.peek().rotate(90.0F, 0.0F, 0.0F, 1.0F);
+
+
+        for (int j = 0; j < 1; ++j)
+        {
+            matrixStack.push(matrixStack.peek());
+
+            float f = ((float)(j % 8) / 8.0F - 0.5F) / 64.0F;
+            float f1 = ((float)(j / 8) / 8.0F - 0.5F) / 64.0F;
+            float f2 = 0.0F;
+            //matrixStack.peek().translate(f, f1, 0.0F);
+            matrixStack.peek().rotate(MathHelper.sin(((float)this.panoramaTimer + partialTicks) / 40000.0F) * 25.0F*0.0f + 20.0F, 1.0F, 0.0F, 0.0F);
+            matrixStack.peek().rotate(-((float)this.panoramaTimer + partialTicks) * 0.001F, 0.0F, 1.0F, 0.0F);
+
+            for (int k = 0; k < 6; ++k)
+            {
+                matrixStack.push(matrixStack.peek());
+
+                float shift=128.0f;
+                if (k == 1)
+                {
+                    matrixStack.peek().rotate(90.0F, 0.0F, 1.0F, 0.0F);
+
+                }
+
+                if (k == 2)
+                {
+                    matrixStack.peek().rotate(180.0F, 0.0F, 1.0F, 0.0F);
+
+                }
+
+                if (k == 3)
+                {
+                    matrixStack.peek().rotate(-90.0F, 0.0F, 1.0F, 0.0F);
+
+                }
+
+                if (k == 4)
+                {
+                    matrixStack.peek().rotate(90.0F, 1.0F, 0.0F, 0.0F);
+
+                }
+
+                if (k == 5)
+                {
+                    matrixStack.peek().rotate(-90.0F, 1.0F, 0.0F, 0.0F);
+
+                }
+                //matrixStack.peek().translate(0.0f,0.0F, -shift);
+                //matrixStack.peek().rotate(90.0F, 1.0F, 0.0F, 0.0F);
+
+                int l = 255 / (j + 1);
+                Color vertexColor = new Color(255, 255, 255, 255);
+
+
+                Mat4 modelViewProj = matrixStack.peek();
+
+                Vec4 firstVertice =   modelViewProj.mul(new Vec4(-128,-128,1,1));
+                Vec4 secondVertice =   modelViewProj.mul(new Vec4(128,-128,1,1));
+                Vec4 thirdVertice =   modelViewProj.mul(new Vec4(-128,128,1,1));
+                Vec4 fourthVertice =   modelViewProj.mul(new Vec4(128,128,1,1));
+
+                Integer[] indexBuffer = new Integer[]{0, 1, 2, 2, 1, 3};
+                float oX=0.0f;
+                float oY=0.0f;
+                NovaDraw.Vertex[] vertices = new NovaDraw.Vertex[]{
+                        new NovaDraw.Vertex(
+                                firstVertice.x+oX, firstVertice.y+oY,
+                                0, 0,
+                                vertexColor
+                        ),
+                        new NovaDraw.Vertex(
+                                secondVertice.x+oX, secondVertice.y+oY,
+                                1, 0,
+                                vertexColor
+                        ),
+                        new NovaDraw.Vertex(
+                                thirdVertice.x+oX, thirdVertice.y+oY,
+                                0, 1,
+                                vertexColor
+                        ),
+                        new NovaDraw.Vertex(
+                                fourthVertice.x+oX, fourthVertice.y+oY,
+                                1, 1,
+                                vertexColor
+                        )
+                };
+
+                NovaDraw.draw(TITLE_PANORAMA_PATHS[k],indexBuffer,vertices);
+                matrixStack.pop();
+
+            }
+
+            matrixStack.pop();
+
+            GlStateManager.colorMask(true, true, true, false);
+        }
+
+    }
+
 
     /**
      * @author Barteks2x
@@ -62,7 +185,7 @@ public abstract class MixinGuiMainMenu extends GuiScreen {
      */
     @Overwrite
     private void renderSkybox(int mouseX, int mouseY, float partialTicks) {
-
+      this.drawPanorama(mouseX, mouseY, partialTicks);
     }
 
 }
