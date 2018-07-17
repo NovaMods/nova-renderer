@@ -242,6 +242,7 @@ public interface NovaNative extends Library {
         FALLING_BLOCK,
         GUI,
         TEXT,
+        GUI_BACKGROUND,
         CLOUD,
         SKY_DECORATION,
         SELECTION_BOX,

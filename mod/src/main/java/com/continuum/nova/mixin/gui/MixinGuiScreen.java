@@ -32,20 +32,6 @@ public class MixinGuiScreen extends Gui {
      * @inheritDoc
      */
     @Overwrite
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        NovaDraw.incrementZ();
-
-        this.buttonList.forEach(guiButton -> guiButton.drawButton(this.mc, mouseX, mouseY, partialTicks));
-
-        this.labelList.forEach(guiLabel -> guiLabel.drawLabel(this.mc, mouseX, mouseY));
-    }
-
-    /**
-     * @author Janrupf
-     * @reason Change render code to nova
-     * @inheritDoc
-     */
-    @Overwrite
     public void drawBackground(int tint) {
         NovaDraw.drawRectangle(
                 OPTIONS_BACKGROUND,
