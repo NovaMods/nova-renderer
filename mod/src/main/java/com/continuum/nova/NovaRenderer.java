@@ -38,7 +38,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -310,18 +309,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         if(Platform.isWindows()) {
             if(NovaRenderer.class.getResource("/nova-renderer.dll") == null) {
-                // User friendly fail, show dialog box before crashing
-                JOptionPane.showMessageDialog(null, "The nova build you are using was build without Windows support!\n" +
-                        "   Please download an official build from our buildserver!");
                 throw new IllegalStateException("Windows is not supported by the current nova build");
             }
             Utils.extractResource("/nova-renderer.dll", nativeExtractDir.toPath(), true);
             Utils.extractResource("/nova-profiler.dll", nativeExtractDir.toPath(), true);
         } else {
             if(NovaRenderer.class.getResource("/libnova-renderer.so") == null) {
-                // User friendly fail, show dialog box before crashing
-                JOptionPane.showMessageDialog(null, "The nova build you are using was build without Linux support!\n" +
-                        "   Please download an official build from our buildserver!");
                 throw new IllegalStateException("Linux is not supported by the current nova build");
             }
             Utils.extractResource("/libnova-renderer.so", nativeExtractDir.toPath(), true);
