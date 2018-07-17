@@ -16,14 +16,12 @@ hs_err_pid*
 # exclude everything in run...
 run/*
 # except the config directory, so that we can later add some specific stuff in it
-!run/config
-# and excepot shaderpacks
-!run/shaderpacks
-# exclude everything in run/config, except our own config
+!run/config/
+# ... thats how gitignores work
 run/config/*
-!run/config/config.json
-!run/config/logging.conf
-!run/config/shaders.json
+!run/config/nova
+# and except shaderpacks
+!run/shaderpacks
 
 ##################
 #### intellij ####
@@ -35,3 +33,13 @@ build/
 *.iml
 out/
 .idea_modules/
+
+##################
+# bin exclusions #
+##################
+bin/
+
+###########
+# unknown #
+###########
+target/

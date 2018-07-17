@@ -18,10 +18,8 @@ endfunction()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_BUILD_TYPE DEBUG)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 
@@ -245,7 +243,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova_profiler)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler)
 
 add_executable(nova-test test/main.cpp ${NOVA_SOURCE})
 target_link_libraries(nova-test ${COMMON_LINK_LIBS})

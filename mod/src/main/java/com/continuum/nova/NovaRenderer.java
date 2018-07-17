@@ -14,14 +14,12 @@ import com.continuum.nova.utils.Profiler;
 import com.continuum.nova.utils.Utils;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import glm.Glm;
 import glm.vec._2.Vec2;
 import glm.vec._3.i.Vec3i;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -45,7 +43,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -56,7 +53,6 @@ import static com.continuum.nova.utils.Utils.getImageData;
 public class NovaRenderer implements IResourceManagerReloadListener {
 
     private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
-    private BlockModelShapes shapes;
 
     private boolean firstLoad = true;
 
@@ -66,8 +62,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private Map<ResourceLocation, TextureAtlasSprite> guiSpriteLocations = new HashMap<>();
 
     private static final List<ResourceLocation> BLOCK_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
-    private TextureMap blockAtlas = new TextureMap("textures");
-    private Map<ResourceLocation, TextureAtlasSprite> blockSpriteLocations = new HashMap<>();
 
     private static final List<ResourceLocation> FONT_COLOR_TEXTURES_LOCATIONS = new ArrayList<>();
     private TextureMap fontAtlas = new TextureMap("textures");
@@ -255,10 +249,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void preInit() {
-        System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path"));
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
         LOG.info("PID: " + pid + " TID: " + Thread.currentThread().getId());
+        try {
+            Utils.copyDefaults();
+        } catch (IOException e) {
+            throw new LoaderExceptionModCrash("Nova failed to copy defaults", e);
+        }
         try {
             installNative();
         } catch (IOException e) {
@@ -291,51 +289,48 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             LOG.info("Nova is very likely running in a development environment, trying to load native from run directory...");
             try {
                 if (Platform.isWindows()) {
-                    _native = (NovaNative) Native.loadLibrary("./nova-renderer.dll", NovaNative.class);
+                    _native = Native.loadLibrary("./nova-renderer.dll", NovaNative.class);
                 } else {
-                    _native = (NovaNative) Native.loadLibrary("./libnova-renderer.so", NovaNative.class);
+                    _native = Native.loadLibrary("./libnova-renderer.so", NovaNative.class);
                 }
                 LOG.info("Succeeded in loading nova from run directory.");
                 return;
-            } catch (Exception e) {
-                LOG.warn("Failed to load nova from run directory", e);
+            } catch (Throwable e) {
+                LOG.warn("Failed to load nova from run directory");
             }
         }
 
-        File novaConfigDir = new File("config/nova/");
-        if(!novaConfigDir.exists() || !novaConfigDir.isDirectory()) {
-            if(!novaConfigDir.mkdirs()) {
-                throw new IOException("Failed to create directory " + novaConfigDir.getAbsolutePath());
+        File nativeExtractDir = new File("mods/nova-natives");
+        if(!nativeExtractDir.exists() || !nativeExtractDir.isDirectory()) {
+            if(!nativeExtractDir.mkdirs()) {
+                throw new IOException("Failed to create directory " + nativeExtractDir.getAbsolutePath());
             }
         }
 
-        File toLoad;
         if(Platform.isWindows()) {
-            if(Platform.is64Bit()) {
-                toLoad = Native.extractFromResourcePath("/nova-renderer-x64.dll");
-            } else {
-                toLoad = Native.extractFromResourcePath("/nova-renderer-x32.dll");
+            if(NovaRenderer.class.getResource("/nova-renderer.dll") == null) {
+                throw new IllegalStateException("Windows is not supported by the current nova build");
             }
+            Utils.extractResource("/nova-renderer.dll", nativeExtractDir.toPath(), true);
+            Utils.extractResource("/nova-profiler.dll", nativeExtractDir.toPath(), true);
         } else {
-            if(Platform.is64Bit()) {
-                toLoad = Native.extractFromResourcePath("/libnova-renderer-x64.so");
-            } else {
-                toLoad = Native.extractFromResourcePath("/libnova-renderer-x32.so");
+            if(NovaRenderer.class.getResource("/libnova-renderer.so") == null) {
+                throw new IllegalStateException("Linux is not supported by the current nova build");
             }
+            Utils.extractResource("/libnova-renderer.so", nativeExtractDir.toPath(), true);
+            Utils.extractResource("/libnova-profiler.so", nativeExtractDir.toPath(), true);
         }
+        nativeExtractDir.deleteOnExit();
 
-        _native = (NovaNative) Native.loadLibrary(toLoad.getAbsolutePath(), NovaNative.class);
+        System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path") + File.pathSeparator + nativeExtractDir.getAbsolutePath());
+        _native = Native.loadLibrary("nova-renderer", NovaNative.class);
     }
 
     private void updateWindowSize() {
         window_size size = _native.get_window_size();
         int oldHeight = height;
         int oldWidth = width;
-        if (oldHeight != size.height || oldWidth != size.width) {
-            resized = true;
-        } else {
-            resized = false;
-        }
+        resized = oldHeight != size.height || oldWidth != size.width;
         height = size.height;
         width = size.width;
 

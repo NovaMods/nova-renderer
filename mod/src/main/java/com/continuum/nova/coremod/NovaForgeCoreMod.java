@@ -1,6 +1,5 @@
 package com.continuum.nova.coremod;
 
-import com.continuum.nova.NovaForgeModContainer;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;

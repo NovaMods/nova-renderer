@@ -1,6 +1,6 @@
 {
   "settings": {
-    "loadedShaderpack": "default",
+    "loadedShaderpack": "DefaultShaderpack",
     "loadedResourcepacks": [
       "/versions/1.10/1.10.jar"
     ],
@@ -10,7 +10,6 @@
     "shadowMapResolution": 1024
   },
   "readOnly": {
-    "enableRenderDoc": false,
     "uboBindPoints": {
       "per_frame_uniforms": 0,
       "gui_uniforms": 3
