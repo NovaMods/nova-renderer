@@ -289,6 +289,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             LOG.info("Nova is very likely running in a development environment, trying to load native from run directory...");
             try {
                 if (Platform.isWindows()) {
+                    File misprefixedProfiler = new File("./libnova-profiler.dll"); // Some weirdness
+                    if(misprefixedProfiler.exists() && misprefixedProfiler.isFile()) {
+                        misprefixedProfiler.renameTo(new File("./nova-profiler.dll"));
+                    }
                     _native = Native.loadLibrary("./nova-renderer.dll", NovaNative.class);
                 } else {
                     _native = Native.loadLibrary("./libnova-renderer.so", NovaNative.class);
@@ -296,7 +300,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                 LOG.info("Succeeded in loading nova from run directory.");
                 return;
             } catch (Throwable e) {
-                LOG.warn("Failed to load nova from run directory");
+                LOG.warn("Failed to load nova from run directory", e);
             }
         }
 
