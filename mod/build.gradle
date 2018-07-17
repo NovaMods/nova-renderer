@@ -388,6 +388,7 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.so"), linuxTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-profiler.so"), linuxTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
             }
+            return
         }
 
         if(Boolean.parseBoolean(buildProperties.getProperty("linux-built", "false"))) {
