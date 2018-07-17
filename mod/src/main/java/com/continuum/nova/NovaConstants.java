@@ -20,8 +20,13 @@ public class NovaConstants {
     public static final String MODEL_FILENAME           = "all_models.json";
     public static final String CHUNK_FILENAME           = "chunk.json";
 
-    public static final String MODID                    = "Nova Renderer";
+    public static final String MOD_NAME                 = "Nova Renderer";
+    public static final String MOD_ID                   = "nova-renderer";
     public static final String VERSION                  = "0.0.4";
+
+    public static final String CORE_MOD_NAME            = "Nova Renderer Core";
+    public static final String CORE_MOD_ID              = "nova-renderer-core";
+    public static final String CORE_MOD_VERSION         = "0.0.1";
 
     public static final ResourceLocation WHITE_TEXTURE_GUI_LOCATION = new ResourceLocation("white_gui");
     public static final ResourceLocation LIGHTMAP_LOCATION = new ResourceLocation("");

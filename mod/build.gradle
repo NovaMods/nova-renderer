@@ -250,126 +250,108 @@ void saveTmpBuildProperties(Properties props) {
     props.store(tmpBuildPropsFile.newWriter(false), "MACHINE GENERATED FILE, DO NOT EDIT")
 }
 
-void buildRelease(String platform) {
-    delete("src/main/resources/libnova-renderer.so")
-    delete("src/main/resources/libnova-profiler.so")
-
-    delete("src/main/resources/nova-renderer.dll")
-    delete("src/main/resources/nova-profiler.dll")
-
-    File nativeBuildDir
+void buildPlatformRelease() {
     ensureCommandWorks("cmake", "--version")
+    Properties buildProperties = loadTmpBuildProps()
+    File nativeBuildDir = new File("../native/release-build-platform/")
+    ensureDir(nativeBuildDir, true)
 
-    if(platform != null) {
-        if(!Os.isFamily(Os.FAMILY_UNIX) || !System.getProperty("os.arch").contains("64")) {
-            throw new GradleException("Cross building is only supported on a 64bit Linux system!")
-        }
-        try {
-            ensureCommandWorks("x86_64-w64-mingw32-gcc-posix", "--version")
-        } catch (GradleException e) {
-            if(platform == "linux") {
-                logger.warn("Cross compiler not working, falling back to default for linux (disable cross compiling in settings.gradle)")
-                platform = null
-            } else if(platform == "windows") {
-                logger.warn("Cross compiler not working, aborting (disable cross compiling in settings.gradle)")
-                return
-            }
-        }
+    if(exec {
+        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE"
+        workingDir = nativeBuildDir
+        standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN] ", System.out)
+        errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN] ", System.err)
+    }.exitValue != 0) {
+        throw new GradleException("Failed to invoke cmake for generating makefiles")
     }
 
-    Properties buildProperties = loadTmpBuildProps()
-    if(platform == null) { // Ok, build for current platform... Let CMake decide what to do
-        nativeBuildDir = new File("../native/release-build-platform/")
-        ensureDir(nativeBuildDir, true)
+    if(exec {
+        commandLine "cmake", "--build", ".", "--target", "nova-renderer"
+        workingDir = nativeBuildDir
+        standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD] ", System.out)
+        errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD] ", System.err)
+    }.exitValue != 0) {
+        throw new GradleException("Failed to invoke cmake for building binary")
+    }
 
-        if(exec {
-            commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE"
-            workingDir = nativeBuildDir
-            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN] ", System.out)
-            errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN] ", System.err)
-        }.exitValue != 0) {
-            throw new GradleException("Failed to invoke cmake for generating makefiles")
-        }
+    buildProperties.setProperty("platform-built", "true")
+    buildProperties.setProperty("windows-built", "false")
+    buildProperties.setProperty("linux-built", "false")
 
-        if(exec {
-            commandLine "cmake", "--build", ".", "--target", "nova-renderer"
-            workingDir = nativeBuildDir
-            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD] ", System.out)
-            errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD] ", System.err)
-        }.exitValue != 0) {
-            throw new GradleException("Failed to invoke cmake for building binary")
-        }
-
-        buildProperties.setProperty("platform-built", "true")
-        buildProperties.setProperty("windows-built", "false")
-        buildProperties.setProperty("linux-built", "false")
-
-        if(Os.isFamily(Os.FAMILY_WINDOWS)) {
-            buildProperties.setProperty("windows-built", "true")
-        } else {
-            buildProperties.setProperty("linux-built", "true")
-        }
-    } else if(platform.equalsIgnoreCase("linux")) {
-        ensureCommandWorks("cmake", "--version")
-        nativeBuildDir = new File("../native/release-build-linux/")
-        ensureDir(nativeBuildDir, true)
-
-        if(exec {
-            commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE",
-                    "-DCMAKE_TOOLCHAIN_FILE=${new File("../native/toolchains/linux-x86_64.cmake").getAbsolutePath()}"
-            workingDir = nativeBuildDir
-            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN/LINUX] ", System.out)
-            errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN/LINUX] ", System.err)
-        }.exitValue != 0) {
-            throw new GradleException("Failed to invoke cmake for generating makefiles")
-        }
-
-        if(exec {
-            commandLine "cmake", "--build", ".", "--target", "nova-renderer", "--", "-j${Runtime.getRuntime().availableProcessors()}"
-            workingDir = nativeBuildDir
-            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD/LINUX] ", System.out)
-            errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD/LINUX] ", System.err)
-        }.exitValue != 0) {
-            throw new GradleException("Failed to invoke cmake for building binary")
-        }
-
-        buildProperties.setProperty("platform-built", "false")
-        buildProperties.setProperty("linux-built", "true")
-    } else if(platform.equalsIgnoreCase("windows")) {
-        ensureCommandWorks("cmake", "--version")
-        nativeBuildDir = new File("../native/release-build-windows/")
-        ensureDir(nativeBuildDir, true)
-
-        if(exec {
-            commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE",
-                    "-DCMAKE_TOOLCHAIN_FILE=${new File("../native/toolchains/windows-x86_64.cmake").getAbsolutePath()}"
-            workingDir = nativeBuildDir
-            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN/WINDOWS] ", System.out)
-            errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN/WINDOWS] ", System.err)
-
-            if(VulkanDllLocation != null) {
-                File vulkanDllLocationFile = new File("../native/toolchains/vulkan-dll-location.txt").getAbsoluteFile()
-                ensureFile(vulkanDllLocationFile)
-                vulkanDllLocationFile.write((String) VulkanDllLocation)
-            }
-        }.exitValue != 0) {
-            throw new GradleException("Failed to invoke cmake for generating makefiles")
-        }
-
-        if(exec {
-            commandLine "cmake", "--build", ".", "--target", "nova-renderer", "--", "-j${Runtime.getRuntime().availableProcessors()}"
-            workingDir = nativeBuildDir
-            standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD/WINDOWS] ", System.out)
-            errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD/WINDOWS] ", System.err)
-        }.exitValue != 0) {
-            throw new GradleException("Failed to invoke cmake for building binary")
-        }
-
-        buildProperties.setProperty("platform-built", "false")
+    if(Os.isFamily(Os.FAMILY_WINDOWS)) {
         buildProperties.setProperty("windows-built", "true")
     } else {
-        throw new GradleException("Unknown platform ${platform}, currently only windows and linux are supported! (Note, the only arch that is supported is 64bit!")
+        buildProperties.setProperty("linux-built", "true")
     }
+
+    saveTmpBuildProperties(buildProperties)
+}
+
+void buildLinuxRelease() {
+    ensureCommandWorks("cmake", "--version")
+    Properties buildProperties = loadTmpBuildProps()
+    File nativeBuildDir = new File("../native/release-build-platform/")
+    ensureDir(nativeBuildDir, true)
+
+    if(exec {
+        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE",
+                "-DCMAKE_TOOLCHAIN_FILE=${new File("../native/toolchains/linux-x86_64.cmake").getAbsolutePath()}"
+        workingDir = nativeBuildDir
+        standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN/LINUX] ", System.out)
+        errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN/LINUX] ", System.err)
+    }.exitValue != 0) {
+        throw new GradleException("Failed to invoke cmake for generating makefiles")
+    }
+
+    if(exec {
+        commandLine "cmake", "--build", ".", "--target", "nova-renderer", "--", "-j${Runtime.getRuntime().availableProcessors()}"
+        workingDir = nativeBuildDir
+        standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD/LINUX] ", System.out)
+        errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD/LINUX] ", System.err)
+    }.exitValue != 0) {
+        throw new GradleException("Failed to invoke cmake for building binary")
+    }
+
+    buildProperties.setProperty("platform-built", "false")
+    buildProperties.setProperty("linux-built", "true")
+
+    saveTmpBuildProperties(buildProperties)
+}
+
+void buildWindowsRelease() {
+    ensureCommandWorks("cmake", "--version")
+    ensureCommandWorks("x86_64-w64-mingw32-gcc-posix", "--version")
+    Properties buildProperties = loadTmpBuildProps()
+    File nativeBuildDir = new File("../native/release-build-windows/")
+    ensureDir(nativeBuildDir, true)
+
+    if(exec {
+        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE",
+                "-DCMAKE_TOOLCHAIN_FILE=${new File("../native/toolchains/windows-x86_64.cmake").getAbsolutePath()}"
+        workingDir = nativeBuildDir
+        standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN/WINDOWS] ", System.out)
+        errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN/WINDOWS] ", System.err)
+
+        if(VulkanDllLocation != null) {
+            File vulkanDllLocationFile = new File("../native/toolchains/vulkan-dll-location.txt").getAbsoluteFile()
+            ensureFile(vulkanDllLocationFile)
+            vulkanDllLocationFile.write((String) VulkanDllLocation)
+        }
+    }.exitValue != 0) {
+        throw new GradleException("Failed to invoke cmake for generating makefiles")
+    }
+
+    if(exec {
+        commandLine "cmake", "--build", ".", "--target", "nova-renderer", "--", "-j${Runtime.getRuntime().availableProcessors()}"
+        workingDir = nativeBuildDir
+        standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD/WINDOWS] ", System.out)
+        errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD/WINDOWS] ", System.err)
+    }.exitValue != 0) {
+        throw new GradleException("Failed to invoke cmake for building binary")
+    }
+
+    buildProperties.setProperty("platform-built", "false")
+    buildProperties.setProperty("windows-built", "true")
 
     saveTmpBuildProperties(buildProperties)
 }
@@ -378,12 +360,12 @@ task buildReleaseNatives() {
     doLast {
         if ((!Os.isFamily(Os.FAMILY_UNIX) || !System.getProperty("os.arch").contains("64")) || !project.hasProperty("enableCrossBuild")) {
             logger.info("Building platform release")
-            buildRelease(null)
+            buildPlatformRelease()
         } else {
             logger.info("Building windows release")
-            buildRelease("windows")
+            buildWindowsRelease()
             logger.info("Building linux release")
-            buildRelease("linux")
+            buildLinuxRelease()
         }
     }
 }
