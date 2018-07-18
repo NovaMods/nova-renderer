@@ -380,31 +380,25 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
     doLast {
         final String BASE_DIR = Paths.get("../native").normalize().toString()
         java.nio.file.Path windowsTargetRenderer = Paths.get("src/main/resources/nova-renderer.dll").normalize()
-        java.nio.file.Path windowsTargetProfiler = Paths.get("src/main/resources/libnova-profiler.dll").normalize()
 
         java.nio.file.Path linuxTargetRenderer = Paths.get("src/main/resources/libnova-renderer.so").normalize()
-        java.nio.file.Path linuxTargetProfiler = Paths.get("src/main/resources/libnova-profiler.so").normalize()
 
         Properties buildProperties = loadTmpBuildProps()
         if(Boolean.parseBoolean(buildProperties.getProperty("platform-built", "false"))) {
             if(Os.isFamily(Os.FAMILY_WINDOWS)) {
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/nova-renderer.dll"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
-                Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-profiler.dll"), windowsTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
             } else {
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.so"), linuxTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
-                Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-profiler.so"), linuxTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
             }
             return
         }
 
         if(Boolean.parseBoolean(buildProperties.getProperty("linux-built", "false"))) {
             Files.copy(Paths.get(BASE_DIR, "release-build-linux/libnova-renderer.so"), linuxTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
-            Files.copy(Paths.get(BASE_DIR, "release-build-linux/libnova-profiler.so"), linuxTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
         }
 
         if(Boolean.parseBoolean(buildProperties.getProperty("windows-built", "false"))) {
             Files.copy(Paths.get(BASE_DIR, "release-build-windows/nova-renderer.dll"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
-            Files.copy(Paths.get(BASE_DIR, "release-build-windows/libnova-profiler.dll"), windowsTargetProfiler, StandardCopyOption.REPLACE_EXISTING)
         }
     }
 }
@@ -446,10 +440,8 @@ task copyLibraryToRunDir(type: Copy, dependsOn: buildDevLibrary) {
     into "run"
     if(Os.isFamily(Os.FAMILY_WINDOWS)) {
         include "nova-renderer.dll"
-        include "libnova-profiler.dll"
     } else {
         include "libnova-renderer.so"
-        include "libnova-profiler.so"
     }
 }
 

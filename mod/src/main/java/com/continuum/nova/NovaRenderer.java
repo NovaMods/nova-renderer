@@ -312,7 +312,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                 throw new IllegalStateException("Windows is not supported by the current nova build");
             }
             Utils.extractResource("/nova-renderer.dll", nativeExtractDir.toPath(), true);
-            Utils.extractResource("/libnova-profiler.dll", nativeExtractDir.toPath(), true);
             Utils.extractResource("/libwinpthread-1.dll", nativeExtractDir.toPath(), true);
             Utils.extractResource("/libwinpthread-license.txt", nativeExtractDir.toPath(), true); // not sure if this is needed, but its only a few kb so
         } else {
@@ -320,7 +319,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                 throw new IllegalStateException("Linux is not supported by the current nova build");
             }
             Utils.extractResource("/libnova-renderer.so", nativeExtractDir.toPath(), true);
-            Utils.extractResource("/libnova-profiler.so", nativeExtractDir.toPath(), true);
         }
         nativeExtractDir.deleteOnExit();
 
