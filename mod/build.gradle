@@ -363,10 +363,15 @@ task buildReleaseNatives() {
             logger.info("Building platform release")
             buildPlatformRelease()
         } else {
-            logger.info("Building windows release")
-            buildWindowsRelease()
-            logger.info("Building linux release")
-            buildLinuxRelease()
+            if(!project.hasProperty("skipWindowsCross")) {
+                logger.info("Building windows release")
+                buildWindowsRelease()
+            }
+
+            if(!project.hasProperty("skipLinuxCross")) {
+                logger.info("Building linux release")
+                buildLinuxRelease()
+            }
         }
     }
 }

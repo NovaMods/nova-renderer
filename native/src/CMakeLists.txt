@@ -194,6 +194,7 @@ set(SPIRV_CROSS_HEADERS
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
 endif (WIN32)
 
 if (UNIX)

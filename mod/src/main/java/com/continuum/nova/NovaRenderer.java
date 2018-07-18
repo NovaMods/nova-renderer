@@ -313,6 +313,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
             Utils.extractResource("/nova-renderer.dll", nativeExtractDir.toPath(), true);
             Utils.extractResource("/libnova-profiler.dll", nativeExtractDir.toPath(), true);
+            Utils.extractResource("/libwinpthread-1.dll", nativeExtractDir.toPath(), true);
+            Utils.extractResource("/libwinpthread-license.txt", nativeExtractDir.toPath(), true); // not sure if this is needed, but its only a few kb so
         } else {
             if(NovaRenderer.class.getResource("/libnova-renderer.so") == null) {
                 throw new IllegalStateException("Linux is not supported by the current nova build");
@@ -322,7 +324,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
         nativeExtractDir.deleteOnExit();
 
-        System.getProperties().setProperty("jna.library.path", System.getProperty("java.library.path") + File.pathSeparator + nativeExtractDir.getAbsolutePath());
+        System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator + nativeExtractDir.getAbsolutePath()); // Make sure java can load dependencies
+        System.setProperty("jna.library.path", System.getProperty("java.library.path"));
+
         _native = Native.loadLibrary("nova-renderer", NovaNative.class);
     }
 
