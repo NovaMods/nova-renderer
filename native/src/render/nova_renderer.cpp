@@ -133,7 +133,7 @@ namespace nova {
 
         update_nova_ubos();
 
-        LOG(DEBUG) << "We have " << passes_list.size() << " passes to render";
+        LOG(TRACE) << "We have " << passes_list.size() << " passes to render";
         for (const auto &pass : passes_list) {
             execute_pass(pass, main_command_buffer.buffer);
         }
@@ -190,7 +190,7 @@ namespace nova {
             return;
         }
 
-        LOG(INFO) << "Beginning pass " << pass.name;
+        LOG(TRACE) << "Beginning pass " << pass.name;
 
         if(pass.texture_inputs) {
             // Transition anything that's not in shader read optimal to shader read optimal
@@ -249,7 +249,7 @@ namespace nova {
         buffer.beginRenderPass(&begin_pass, vk::SubpassContents::eInline);
 
         auto& pipelines_for_pass = pipelines_by_renderpass.at(pass.name);
-        LOG(DEBUG) << "Processing data in " << pipelines_for_pass.size() << " pipelines";
+        LOG(TRACE) << "Processing data in " << pipelines_for_pass.size() << " pipelines";
 
         for(auto& nova_pipeline : pipelines_for_pass) {
             render_pipeline(nova_pipeline, buffer);
@@ -276,12 +276,12 @@ namespace nova {
             LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name << ". Skipping this pipeline";
             return;
         }
-        LOG(INFO) << "Rendering pipeline " << pipeline_data.name;
+        LOG(TRACE) << "Rendering pipeline " << pipeline_data.name;
 
         buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data.pipeline);
 
         const auto& material_passes = material_passes_by_pipeline.at(pipeline_data.name);
-        LOG(INFO) << "There are " << material_passes.size() << " material passes";
+        LOG(TRACE) << "There are " << material_passes.size() << " material passes";
         for(const auto& mat : material_passes) {
             render_all_for_material_pass(mat, buffer, pipeline_data);
         }
@@ -291,11 +291,11 @@ namespace nova {
         NOVA_PROFILER_SCOPE;
         const auto& meshes_for_mat = meshes->get_meshes_for_material(mat.material_name);
         if(meshes_for_mat.empty()) {
-            LOG(INFO) << "No meshes available for material " << mat.material_name;
+            LOG(WARNING) << "No meshes available for material " << mat.material_name;
             return;
         }
 
-        LOG(INFO) << "Beginning material " << mat.material_name;
+        LOG(TRACE) << "Beginning material " << mat.material_name;
 
         auto per_model_buffer_binding = std::string{};
 
@@ -333,7 +333,7 @@ namespace nova {
         LOG(TRACE) << ss.str();
         buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, mat.descriptor_sets, {});
 
-        LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
+        LOG(TRACE) << "Rendering " << meshes_for_mat.size() << " things";
         for(const auto& mesh : meshes_for_mat) {
             render_mesh(mesh, buffer, pipeline, per_model_buffer_binding);
         }
@@ -468,9 +468,9 @@ namespace nova {
 
     void nova_renderer::update_per_frame_ubo() {
         NOVA_PROFILER_SCOPE;
-        LOG(DEBUG) << "Updating the per-frame UBO";
+        LOG(TRACE) << "Updating the per-frame UBO";
 
-        LOG(DEBUG) << "Camera position: " << player_camera.position << " rotation: " << player_camera.rotation;
+        LOG(TRACE) << "Camera position: " << player_camera.position << " rotation: " << player_camera.rotation;
 
         auto per_frame_data = per_frame_uniforms{};
         per_frame_data.gbufferProjection = player_camera.get_projection_matrix();
@@ -494,11 +494,11 @@ namespace nova {
 
     void nova_renderer::end_frame() {
         NOVA_PROFILER_FLUSH_TO_FILE("profiler_data.txt");
-        LOG(INFO) << "Frame done";
+        LOG(TRACE) << "Frame done";
     }
 
     void nova_renderer::begin_frame() {
-        LOG(INFO) << "Beginning frame";
+        LOG(TRACE) << "Beginning frame";
     }
 
     std::shared_ptr<render_context> nova_renderer::get_render_context() {

@@ -102,7 +102,7 @@ namespace nova {
     }
 
     void texture2D::upload_data_with_staging_buffer(void *data, vk::Extent3D image_size) {
-        LOG(INFO) << "Setting data for texture " << name;
+        LOG(TRACE) << "Setting data for texture " << name;
         vk::Buffer staging_buffer;
         VmaAllocation staging_buffer_allocation;
         auto buffer_size = image_size.width * image_size.height * image_size.depth * 4;
@@ -121,13 +121,13 @@ namespace nova {
 
         vmaCreateBuffer(context->allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
                         reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
-        LOG(INFO) << "Allocated staging buffer " << (VkBuffer)staging_buffer;
+        LOG(TRACE) << "Allocated staging buffer " << (VkBuffer)staging_buffer;
 
         void* mapped_data;
         vmaMapMemory(context->allocator, staging_buffer_allocation, &mapped_data);
         std::memcpy(mapped_data, data, buffer_size);
         vmaUnmapMemory(context->allocator, staging_buffer_allocation);
-        LOG(INFO) << "Copied data to staging buffer";
+        LOG(TRACE) << "Copied data to staging buffer";
 
         auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
         command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
@@ -141,11 +141,11 @@ namespace nova {
         command_buffer.end_as_single_command();
 
         vmaDestroyBuffer(context->allocator, (VkBuffer)staging_buffer, staging_buffer_allocation);
-        LOG(INFO) << "Destroyed staging buffer";
+        LOG(TRACE) << "Destroyed staging buffer";
     }
 
     void texture2D::destroy() {
-        LOG(INFO) << "Destroying image view " << (VkImageView)image_view;
+        LOG(TRACE) << "Destroying image view " << (VkImageView)image_view;
 
         vmaDestroyImage(context->allocator, (VkImage)image, allocation);
         context->device.destroyImageView(image_view);

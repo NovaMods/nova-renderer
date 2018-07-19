@@ -58,7 +58,7 @@ namespace nova {
             return {};
         }
 
-        LOG(INFO) << "Creating descriptor sets for pipeline " << pipeline_data.name;
+        LOG(TRACE) << "Creating descriptor sets for pipeline " << pipeline_data.name;
 
         auto layouts = std::vector<vk::DescriptorSetLayout>{};
         layouts.reserve(pipeline_data.layouts.size());
@@ -77,7 +77,7 @@ namespace nova {
         std::vector<vk::DescriptorSet> descriptors = device.allocateDescriptorSets(alloc_info);
 
         total_allocated_descriptor_sets += layouts.size();
-        LOG(DEBUG) << "We've created " << total_allocated_descriptor_sets << " sets";
+        LOG(TRACE) << "We've created " << total_allocated_descriptor_sets << " sets";
 
         return descriptors;
     }
@@ -99,7 +99,7 @@ namespace nova {
             .setBorderColor(vk::BorderColor::eFloatTransparentBlack);
 
         point_sampler = device.createSampler(sampler_create);
-        LOG(INFO) << "Created point sampler " << (VkSampler)point_sampler;
+        LOG(DEBUG) << "Created point sampler " << (VkSampler)point_sampler;
     }
 
     vk::Sampler shader_resource_manager::get_point_sampler() {
@@ -154,15 +154,15 @@ namespace nova {
     }
 
     vk::DescriptorSet shader_resource_manager::create_model_matrix_descriptor() {
-        LOG(DEBUG) << "Creating per-model descriptor " << ++per_model_descriptor_count;
-        LOG(DEBUG) << "We've allocated " << ++total_allocated_descriptor_sets << " in total";
+        LOG(TRACE) << "Creating per-model descriptor " << ++per_model_descriptor_count;
+        LOG(TRACE) << "We've allocated " << ++total_allocated_descriptor_sets << " in total";
         auto descriptor = device.allocateDescriptorSets(model_matrix_descriptor_allocate_info)[0];
-        LOG(INFO) << "Allocated descriptor " << (VkDescriptorSet)descriptor;
+        LOG(TRACE) << "Allocated descriptor " << (VkDescriptorSet)descriptor;
         return descriptor;
     }
 
     void shader_resource_manager::free_descriptor(vk::DescriptorSet to_free) {
-        LOG(INFO) << "Freeing descriptor " << (VkDescriptorSet)to_free;
+        LOG(TRACE) << "Freeing descriptor " << (VkDescriptorSet)to_free;
         per_model_descriptor_count--;
         total_allocated_descriptor_sets--;
         device.freeDescriptorSets(descriptor_pool, {to_free});
@@ -172,7 +172,7 @@ namespace nova {
         // for each resource:
         //  - Get its set and binding from the pipeline
         //  - Update its descriptor set
-        LOG(DEBUG) << "Updating descriptors for material " << mat.material_name;
+        LOG(TRACE) << "Updating descriptors for material " << mat.material_name;
 
         std::vector<vk::WriteDescriptorSet> writes;
         std::vector<vk::DescriptorImageInfo> image_infos(mat.bindings.size());
@@ -205,7 +205,7 @@ namespace nova {
                 write.setPImageInfo(&image_infos[image_infos.size() - 1])
                      .setDescriptorType(vk::DescriptorType::eCombinedImageSampler);
 
-                LOG(INFO) << "Binding texture " << texture.get_name() << " to descriptor (set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
+                LOG(TRACE) << "Binding texture " << texture.get_name() << " to descriptor (set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
 
             } else if(buffers.is_buffer_known(resource_name)) {
                 is_known = true;
@@ -222,7 +222,7 @@ namespace nova {
                 write.setPBufferInfo(&buffer_infos[buffer_infos.size() - 1])
                         .setDescriptorType(vk::DescriptorType::eUniformBuffer);
 
-                LOG(INFO) << "Binding buffer " << resource_name << " to descriptor " << "(id=" << (VkDescriptorSet)descriptor_set << " set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
+                LOG(TRACE) << "Binding buffer " << resource_name << " to descriptor " << "(id=" << (VkDescriptorSet)descriptor_set << " set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
 
             } else {
                 LOG(WARNING) << "Resource " << resource_name << " is not known to Nova. I hope you aren't using it cause it doesn't exist";
