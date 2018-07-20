@@ -208,14 +208,14 @@ namespace nova {
             // Right now I'm not dealing with that
         }
 
-        LOG(INFO) << "Reading shaders from disk";
+        LOG(DEBUG) << "Reading shaders from disk";
         auto sources = load_sources_from_folder(shaderpack_path, pipelines);
-        LOG(INFO) << "Read all shader sources";
+        LOG(DEBUG) << "Read all shader sources";
 
         auto pipelines_by_pass = std::unordered_map<std::string, std::vector<pipeline_data>>{};
 
         for(auto& pipeline : pipelines) {
-            LOG(INFO) << "Trying to get sources for pipeline " << pipeline.name;
+            LOG(DEBUG) << "Trying to get sources for pipeline " << pipeline.name;
             if(sources.find(pipeline.name) == sources.end()) {
                 LOG(WARNING) << "Could not find shader sources for pipeline " << pipeline.name;
                 continue;
@@ -229,7 +229,7 @@ namespace nova {
 
             pipelines_by_pass[pipeline.pass.value()].push_back(pipeline);
         }
-        LOG(INFO) << "Sorted all sources";
+        LOG(DEBUG) << "Sorted all sources";
 
         return pipelines_by_pass;
     }
@@ -286,7 +286,7 @@ namespace nova {
         std::unordered_map<std::string, shader_definition> sources;
 
         for(const auto& pipeline : pipelines) {
-            LOG(INFO) << "Loading shader sources for pipeline " << pipeline.name;
+            LOG(TRACE) << "Loading shader sources for pipeline " << pipeline.name;
             auto shader_lines = shader_definition{};
 
             // The pass data is filled from parent passes, so we should have the fragment shader and vertex shader at
@@ -316,7 +316,7 @@ namespace nova {
                 LOG(WARNING) << "You've set a tessellation evaluation shader but not a control shader. You need both for this pipeline to perform tessellation, so Nova will not perform tessellation for this pipeline";
 
             } else if(pipeline.tessellation_control_shader && pipeline.tessellation_evaluation_shader){
-                LOG(INFO) << "Trying to load tessellation shaders";
+                LOG(TRACE) << "Trying to load tessellation shaders";
                 shader_lines.tessellation_evaluation_source = load_shader_file(shaders_path / pipeline.tessellation_evaluation_shader.value(), tess_eval_extensions);
                 shader_lines.tessellation_control_source = load_shader_file(shaders_path / pipeline.tessellation_control_shader.value(), tess_control_extensions);
             }
@@ -335,7 +335,7 @@ namespace nova {
 
             std::ifstream stream(full_shader_path.string(), std::ios::in);
             if(stream.good()) {
-                LOG(INFO) << "Loading shader file " << full_shader_path;
+                LOG(DEBUG) << "Loading shader file " << full_shader_path;
                 auto loaded_shader_file = shader_file{};
                 loaded_shader_file.lines = read_shader_stream(stream, full_shader_path);
                 loaded_shader_file.language = language_from_extension(extension);

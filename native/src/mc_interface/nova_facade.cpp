@@ -74,7 +74,7 @@ NOVA_API void remove_chunk_geometry_for_filter(const char* filter_name, mc_chunk
 NOVA_API void execute_frame() {
     NOVA_PROFILER_SCOPE;
     NOVA_RENDERER->render_frame();
-    LOG(INFO) << "execute_frame done";
+    LOG(TRACE) << "execute_frame done";
 }
 
 NOVA_API void set_fullscreen(int fullscreen) {
@@ -169,7 +169,7 @@ NOVA_API char* get_materials_and_filters() {
         num_chars += 2;
     }
 
-    LOG(DEBUG) << "There are a total of " << materials.size() << " shaders, which have a total of " << num_chars << " needed for their filters and names";
+    LOG(TRACE) << "There are a total of " << materials.size() << " shaders, which have a total of " << num_chars << " needed for their filters and names";
 
     auto* filters = new char[num_chars];
     int write_pos = 0;

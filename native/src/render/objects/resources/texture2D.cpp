@@ -15,7 +15,7 @@ namespace nova {
     texture2D::texture2D(const std::string name, vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage, std::shared_ptr<render_context> context) : context(context), name(name), format(format) {
         size = dimensions;
 
-        LOG(TRACE) << "Creating image " << name << " with usage " << vk::to_string(usage);
+        LOG(DEBUG) << "Creating image " << name << " with usage " << vk::to_string(usage);
 
         vk::ImageCreateInfo image_create_info = {};
         image_create_info.samples = vk::SampleCountFlagBits::e1;
@@ -73,7 +73,7 @@ namespace nova {
         LOG(TRACE) << "Created image view";
         layout = image_create_info.initialLayout;
 
-        LOG(DEBUG) << "Created new image";
+        LOG(TRACE) << "Created new image";
     }
 
     void texture2D::set_data(void* pixel_data, vk::Extent2D dimensions) {
@@ -255,6 +255,6 @@ namespace nova {
 
         command_buffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
 
-        LOG(INFO) << "Recorded command into command buffer " << (VkCommandBuffer)command_buffer << " to copy data to image " << (VkImage)image;
+        LOG(TRACE) << "Recorded command into command buffer " << (VkCommandBuffer)command_buffer << " to copy data to image " << (VkImage)image;
     }
 }

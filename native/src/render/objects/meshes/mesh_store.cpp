@@ -18,7 +18,6 @@
 namespace nova {
     mesh_store::mesh_store(std::shared_ptr<render_context> context, std::shared_ptr<shader_resource_manager> shader_resources)
             : context(context), shader_resources(shader_resources) {
-        LOG(INFO) << "Does the mesh store have shader resources? " << (bool)shader_resources;
     }
 
     std::vector<render_object>& mesh_store::get_meshes_for_material(std::string material_name) {
@@ -77,7 +76,7 @@ namespace nova {
         gui.geometry = std::make_shared<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
 
-        LOG(INFO) << "Adding GUI render object " << gui.id << " model matrix descriptor " << (VkDescriptorSet)gui.model_matrix_descriptor;
+        LOG(TRACE) << "Adding GUI render object " << gui.id << " model matrix descriptor " << (VkDescriptorSet)gui.model_matrix_descriptor;
 
         if(renderables_grouped_by_material.find(geo_type) == renderables_grouped_by_material.end()) {
             renderables_grouped_by_material[geo_type] = std::vector<render_object>{};
@@ -104,7 +103,7 @@ namespace nova {
                 if (removed_elements != group.second.end()) {
                     // Free the allocations of each render object
                     for (auto it = removed_elements; it != group.second.end(); ++it) {
-                        LOG(INFO) << "Removing render object " << (*it).id;
+                        LOG(TRACE) << "Removing render object " << (*it).id;
                         per_model_buffer->free_allocation((*it).per_model_buffer_range);
                         shader_resources->free_descriptor((*it).model_matrix_descriptor);
                     }
@@ -144,7 +143,7 @@ namespace nova {
             obj.bounding_box.extents = {16, 16, 16};   // TODO: Make these values come from Minecraft
             // obj.needs_deletion = false; // TODO: needed for anything?
 
-            LOG(INFO) << "Adding render object " << obj.id << " model matrix descriptor " << (VkDescriptorSet)obj.model_matrix_descriptor;
+            LOG(TRACE) << "Adding render object " << obj.id << " model matrix descriptor " << (VkDescriptorSet)obj.model_matrix_descriptor;
 
             const std::string& material_name = std::get<0>(entry);
             if(renderables_grouped_by_material.find(material_name) == renderables_grouped_by_material.end()) {

@@ -49,7 +49,7 @@ namespace nova {
     }
 
     vk::RenderPass make_render_pass(const render_pass& pass, texture_manager& textures, std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain) {
-        LOG(INFO) << "Making VkRenderPass for pass " << pass.name;
+        LOG(DEBUG) << "Making VkRenderPass for pass " << pass.name;
 
         std::vector<vk::AttachmentDescription> attachments;
 
@@ -75,7 +75,6 @@ namespace nova {
                     last_texture_name = "Backbuffer";
 
                 } else {
-                    LOG(TRACE) << "Getting initial texture '" << texture_outputs_vec[0].name << "' from the texture store";
                     const auto &first_tex = textures.get_texture(texture_outputs_vec[0].name);
                     last_texture_size = first_tex.get_size();
                     last_texture_name = first_tex.get_name();
@@ -98,8 +97,6 @@ namespace nova {
                     }
 
                     if(color_attachment_info.name.find("Backbuffer") != std::string::npos) {
-                        LOG(TRACE) << "Special snowflake backbuffer code path";
-
                         // The backbuffer is a special snowflake
                         if(swapchain->get_swapchain_extent() != last_texture_size) {
                             LOG(ERROR) << "Backbuffer does not have the same size as texture "
@@ -113,8 +110,6 @@ namespace nova {
                         attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
 
                     } else {
-                        LOG(TRACE) << "Getting color attachment info '" << color_attachment_info.name
-                                   << "' from the texture store";
                         const auto &texture = textures.get_texture(color_attachment_info.name);
 
                         if(texture.get_size() != last_texture_size) {
@@ -193,7 +188,7 @@ namespace nova {
 
     std::tuple<vk::Framebuffer, vk::Extent2D, int32_t> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, texture_manager& textures,
                                      std::shared_ptr<render_context> context) {
-        LOG(INFO) << "Making framebuffer for pass " << pass.name;
+        LOG(DEBUG) << "Making framebuffer for pass " << pass.name;
         std::vector<vk::ImageView> attachments;
         vk::Extent2D framebuffer_size;
 
@@ -222,8 +217,7 @@ namespace nova {
         }
         if(pass.depth_texture) {
             if (writes_to_backbuffer) {
-                LOG(ERROR)
-                        << "Passes that write to the backbuffer are not allowed to write to a depth buffer. Ignoring depth buffer for pass "
+                LOG(ERROR) << "Passes that write to the backbuffer are not allowed to write to a depth buffer. Ignoring depth buffer for pass "
                         << pass.name;
             } else {
                 const auto &depth_tex_info = pass.depth_texture.value();

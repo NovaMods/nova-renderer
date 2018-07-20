@@ -73,7 +73,7 @@ namespace nova {
             }
         }
 
-        LOG(INFO) << "All data for shaderpack " << shaderpack_name << " read from disk";
+        LOG(DEBUG) << "All data for shaderpack " << shaderpack_name << " read from disk";
 
         return pack;
     }
@@ -193,7 +193,7 @@ namespace nova {
         auto textures = std::unordered_map<std::string, texture_resource>{};
 
         for(const auto& texture_json : json) {
-            LOG(INFO) << "Parsing texture " << texture_json;
+            LOG(TRACE) << "Parsing texture " << texture_json;
             try {
                 auto texture = texture_resource(texture_json);
                 textures[texture.name] = texture;

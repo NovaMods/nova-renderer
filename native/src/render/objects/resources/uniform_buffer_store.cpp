@@ -58,13 +58,6 @@ namespace nova {
 			return true;
 		}
 
-		auto ss = std::stringstream();
-		ss << "Looking for buffer " << buffer_name << " in known buffers: ";
-		for(const auto& buffer : buffers) {
-		    ss << buffer.first << ", ";
-		}
-		LOG(TRACE) << ss.str();
-
 		return buffers.find(buffer_name) != buffers.end();
 	}
 
