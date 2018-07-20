@@ -424,7 +424,7 @@ task buildDevLibrary() {
         }
 
         if(exec {
-            commandLine "cmake", "--build", ".", "--target", "nova-renderer"
+            commandLine "cmake", "--build", ".", "--target", "nova-renderer", "--", "-j${Runtime.getRuntime().availableProcessors()}"
             workingDir = nativeBuildDir
             standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD] ", System.out)
             errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD] ", System.err)
