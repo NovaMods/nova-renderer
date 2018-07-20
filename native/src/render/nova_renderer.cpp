@@ -27,6 +27,7 @@
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <nova/profiler.h>
+#include "../utils/crash_handler.h"
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -40,6 +41,8 @@ namespace nova {
     std::shared_ptr<settings> nova_renderer::render_settings;
 
     nova_renderer::nova_renderer() {
+        crash_handler::install(); // Instantly set up crash handler to catch everything
+
         NOVA_PROFILER_SCOPE;
         context = std::make_shared<render_context>();
 
@@ -94,10 +97,14 @@ namespace nova {
         context->graphics_queue.waitIdle();
         LOG(TRACE) << "Waited for the GPU to be done";
 
-        inputs.reset();
-        LOG(TRACE) << "Released the inputs";
-        meshes.reset();
-        LOG(TRACE) << "Reset the meshes";
+        if(inputs) {
+            inputs.reset();
+            LOG(TRACE) << "Released the inputs";
+        }
+        if(meshes) {
+            meshes.reset();
+            LOG(TRACE) << "Reset the meshes";
+        }
 
         auto& device = context->device;
 
@@ -105,8 +112,14 @@ namespace nova {
         device.destroySemaphore(render_finished_semaphore);
         LOG(TRACE) << "Destroyed the semaphores";
 
+        device.destroyFence(render_done_fence);
+        LOG(TRACE) << "Destroyed the fence";
+
         game_window.reset();
         LOG(TRACE) << "Reset the game window";
+
+        swapchain->deinit();
+        LOG(TRACE) << "Deinitialized swapchain";
 
         shader_resources.reset();
         LOG(TRACE) << "Reset the shader resource manager";
@@ -438,6 +451,7 @@ namespace nova {
     }
 
     void nova_renderer::deinit() {
+        instance.reset(nullptr);
         instance.release();
     }
 
