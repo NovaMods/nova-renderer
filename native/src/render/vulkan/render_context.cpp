@@ -155,9 +155,14 @@ namespace nova {
                 }
 
                 if(props.queueFlags & vk::QueueFlagBits::eGraphics) {
+                    if(props.timestampValidBits == 0) {
+                        LOG(FATAL) << "Queue doesn't support timestamps!";
+                    }
+                    timestampValidBits = props.timestampValidBits;
                     graphics_idx = i;
                     break;
                 }
+
             }
 
             // Find present queue family
@@ -274,6 +279,7 @@ namespace nova {
         }
 
         device.destroyPipelineCache(pipeline_cache);
+        device.destroyQueryPool(timestamp_query_pool);
 
         vk_instance.destroy();
 
@@ -283,6 +289,19 @@ namespace nova {
     void render_context::create_pipeline_cache() {
         vk::PipelineCacheCreateInfo cache_create_info = {};
         pipeline_cache = device.createPipelineCache(cache_create_info);
+    }
+
+    void render_context::recreate_timestamp_query_pool(uint32_t size) {
+        if(timestamp_query_pool) {
+            device.destroyQueryPool(timestamp_query_pool);
+        }
+
+        vk::QueryPoolCreateInfo timestamp_query_pool_create_info{};
+        timestamp_query_pool_create_info.pNext = nullptr;
+        timestamp_query_pool_create_info.queryType = vk::QueryType::eTimestamp;
+        timestamp_query_pool_create_info.queryCount = size;
+
+        timestamp_query_pool = device.createQueryPool(timestamp_query_pool_create_info);
     }
 
     // This function should really be outside of this file, but I want to keep vulkan creation things in here
