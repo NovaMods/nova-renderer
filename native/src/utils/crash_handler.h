@@ -5,8 +5,6 @@
 #ifndef NOVA_RENDERER_CRASH_HANDLER_H
 #define NOVA_RENDERER_CRASH_HANDLER_H
 
-#include <csignal>
-
 namespace nova {
     class crash_handler {
     private:
