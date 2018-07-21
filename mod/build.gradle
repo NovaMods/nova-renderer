@@ -251,6 +251,19 @@ void saveTmpBuildProperties(Properties props) {
     props.store(tmpBuildPropsFile.newWriter(false), "MACHINE GENERATED FILE, DO NOT EDIT")
 }
 
+task updateSubmodules() {
+    doLast {
+        if(exec {
+            commandLine "git", "submodule", "update", "--init", "--recursive"
+            workingDir = new File("../")
+            standardOutput = prefixedOutputStream("[GIT:SUBMODULES/STDOUT => GEN] ", System.out)
+            errorOutput = prefixedOutputStream("[GIT:SUBMODULES/STDERR => GEN] ", System.err)
+        }.exitValue != 0) {
+            throw new GradleException("Failed to get git submodules")
+        }
+    }
+}
+
 void buildPlatformRelease() {
     ensureCommandWorks("cmake", "--version")
     Properties buildProperties = loadTmpBuildProps()
@@ -405,7 +418,7 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
 processResources.mustRunAfter copyReleaseBuilds
 build.dependsOn copyReleaseBuilds
 
-task buildDevLibrary() {
+task buildDevLibrary(dependsOn: updateSubmodules) {
     File nativeBuildDir
     doFirst {
         ensureCommandWorks("cmake", "--version")
