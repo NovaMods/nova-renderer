@@ -132,7 +132,7 @@ namespace nova {
         for(auto& gpu : gpus) {
             if(gpu.props.vendorID == 0x8086 && gpus.size() > 1) {
                 // We found an Intel GPU, but there's other GPUs available on this system so we should skip the Intel
-                // one - other GPUs are all but garaunteed to be more powerful
+                // one - other GPUs are all but guaranteed to be more powerful
                 continue;
             }
 
@@ -158,7 +158,7 @@ namespace nova {
                     if(props.timestampValidBits == 0) {
                         LOG(FATAL) << "Queue doesn't support timestamps!";
                     }
-                    timestampValidBits = props.timestampValidBits;
+                    timestamp_valid_bits = props.timestampValidBits;
                     graphics_idx = i;
                     break;
                 }
@@ -185,10 +185,13 @@ namespace nova {
                 graphics_family_idx = graphics_idx;
                 present_family_idx = present_idx;
                 physical_device = gpu.device;
+                timestamp_period = gpu.props.limits.timestampPeriod;
                 this->gpu = gpu;
                 LOG(INFO) << "Selected graphics device " << gpu.props.deviceName;
                 LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageDimension2D << " texels in a 2D texture";
                 LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageArrayLayers << " array layers";
+                LOG(INFO) << "It takes " << timestamp_period << " nanoseconds to increment a timestamp query";
+                LOG(INFO) << timestamp_valid_bits << " bits are valid for a timestamp";
                 return;
             }
         }

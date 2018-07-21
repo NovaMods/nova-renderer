@@ -500,14 +500,30 @@ namespace nova {
 
     void nova_renderer::end_frame() {
         NOVA_PROFILER_FLUSH_TO_FILE("profiler_data.txt");
-        std::vector<uint32_t> *buffer = new std::vector<uint32_t>(passes_list.size() * 2);
-        context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer->size(), buffer->size() *
-                                                    sizeof(uint32_t), buffer->data(), sizeof(uint32_t), vk::QueryResultFlagBits::eWait);
-        unsigned int index = 0;
-        while(index < (buffer->size() - 1)) {
-            uint32_t beginVal = buffer->at(index++);
-            uint32_t endVal = buffer->at(index++);
-            LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " << (endVal - beginVal);
+        if(context->timestamp_valid_bits <= 32) {
+            std::vector<uint32_t> *buffer = new std::vector<uint32_t>(passes_list.size() * 2);
+            context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer->size(), buffer->size() *
+                                                                                                  sizeof(uint32_t),
+                                                buffer->data(), sizeof(uint32_t), vk::QueryResultFlagBits::eWait);
+
+            unsigned int index = 0;
+            while(index < (buffer->size() - 1)) {
+                uint32_t begin_val = buffer->at(index++);
+                uint32_t end_val = buffer->at(index++);
+                LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " <<  ((end_val - begin_val) * context->timestamp_period);
+            }
+        } else {
+            std::vector<uint64_t > *buffer = new std::vector<uint64_t >(passes_list.size() * 2);
+            context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer->size(), buffer->size() *
+                                                                                                  sizeof(uint64_t),
+                                                buffer->data(), sizeof(uint64_t), vk::QueryResultFlagBits::eWait);
+
+            unsigned int index = 0;
+            while(index < (buffer->size() - 1)) {
+                uint64_t begin_val = buffer->at(index++);
+                uint64_t end_val = buffer->at(index++);
+                LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " << ((end_val - begin_val) * context->timestamp_period);
+            }
         }
         LOG(INFO) << "Frame done";
     }

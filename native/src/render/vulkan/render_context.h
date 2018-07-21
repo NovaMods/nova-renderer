@@ -70,7 +70,8 @@ namespace nova {
 
         vk::PipelineCache pipeline_cache;
 
-        uint32_t timestampValidBits;
+        uint32_t timestamp_valid_bits;
+        float timestamp_period;
         vk::QueryPool timestamp_query_pool;
 
         ~render_context();
