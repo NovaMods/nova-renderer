@@ -508,4 +508,13 @@ public abstract class MixinMinecraft {
     public static int getGLMaximumTextureSize() {
         return NovaRenderer.getInstance().getNative().get_max_texture_size();
     }
+
+    @Inject(
+            method = "shutdownMinecraftApplet",
+            at = @At(value = "HEAD")
+    )
+    private void destructNova(CallbackInfo info) {
+        novaLogger.info("Destroying nova");
+        NovaRenderer.getInstance().getNative().destruct();
+    }
 }
