@@ -8,4 +8,3 @@ if(NOT Vulkan_LIBRARY)
 		# set(Vulkan_LIBRARY <your/path>) # Uncomment this line
 	endif()
 endif()
-message("Vulkan_LIBRARY is ${Vulkan_LIBRARY}")

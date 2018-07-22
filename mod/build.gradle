@@ -41,6 +41,8 @@ String VulkanDllLocation
 ext.VulkanDllLocation = VulkanDllLocation
 if(file("private-data.gradle").exists() && file("private-data.gradle").isFile()) {
     apply from: "private-data.gradle"
+} else if(project.hasProperty("privateDataLocation")) {
+    apply from: project.privateDataLocation
 }
 
 version = modVersion
