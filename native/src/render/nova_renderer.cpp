@@ -147,8 +147,12 @@ namespace nova {
         update_nova_ubos();
 
         LOG(DEBUG) << "We have " << passes_list.size() << " passes to render";
+        main_command_buffer.buffer.resetQueryPool(context->timestamp_query_pool, 0, static_cast<uint32_t>(passes_list.size() * 2));
+        uint32_t query_pool_write_index = 0;
         for (const auto &pass : passes_list) {
+            main_command_buffer.buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, context->timestamp_query_pool, query_pool_write_index++);
             execute_pass(pass, main_command_buffer.buffer);
+            main_command_buffer.buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, context->timestamp_query_pool, query_pool_write_index++);
         }
 
         main_command_buffer.buffer.end();
@@ -428,6 +432,8 @@ namespace nova {
             return;
         }
 
+        context->recreate_timestamp_query_pool(static_cast<uint32_t>(passes_list.size() * 2));
+
         auto& textures = shader_resources->get_texture_manager();
 
         LOG(INFO) << "Initializing framebuffer attachments...";
@@ -508,6 +514,31 @@ namespace nova {
 
     void nova_renderer::end_frame() {
         NOVA_PROFILER_FLUSH_TO_FILE("profiler_data.txt");
+        if(context->timestamp_valid_bits <= 32) {
+            std::vector<uint32_t> buffer = std::vector<uint32_t>(passes_list.size() * 2);
+            context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer.size(), buffer.size() *
+                                                                                                  sizeof(uint32_t),
+                                                buffer.data(), sizeof(uint32_t), vk::QueryResultFlagBits::eWait);
+
+            unsigned int index = 0;
+            while(index < (buffer.size() - 1)) {
+                uint32_t begin_val = buffer.at(index++);
+                uint32_t end_val = buffer.at(index++);
+                LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " <<  ((end_val - begin_val) * context->timestamp_period) / 1000000 << "ms";
+            }
+        } else {
+            std::vector<uint64_t > buffer = std::vector<uint64_t >(passes_list.size() * 2);
+            context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer.size() , buffer.size() *
+                                                                                                  sizeof(uint64_t),
+                                                buffer.data(), sizeof(uint64_t), vk::QueryResultFlagBits::eWait);
+
+            unsigned int index = 0;
+            while(index < (buffer.size() - 1)) {
+                uint64_t begin_val = buffer.at(index++);
+                uint64_t end_val = buffer.at(index++);
+                LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " << ((end_val - begin_val) * context->timestamp_period) / 1000000 << "ms";
+            }
+        }
         LOG(INFO) << "Frame done";
     }
 
