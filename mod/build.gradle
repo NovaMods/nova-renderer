@@ -92,13 +92,18 @@ configurations {
     compile.extendsFrom shadow
 }
 
+// mojang's text2speech depends on jna 4.4.0 (which we implcitly depend on), but glm 1.0.1 depends on 4.2.2, so force using the newer one
+configurations.all {
+    resolutionStrategy {
+        force("net.java.dev.jna:jna:4.4.0")
+    }
+}
+
 dependencies {
     shadow("org.spongepowered:mixin:0.7.8-SNAPSHOT") {
         transitive = false
     }
-    shadow(group: 'io.github.java-graphics', name: 'glm', version: '1.0.1') {
-        transitive = false
-    }
+    shadow(group: 'io.github.java-graphics', name: 'glm', version: '1.0.1')
 }
 
 mixin {
