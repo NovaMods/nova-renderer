@@ -15,6 +15,8 @@ import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.chunk.VisGraph;
 import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -60,24 +62,43 @@ public abstract class MixinRenderChunk {
         }
     }
 
+    @Inject(method = "stopCompileTask",
+            at = @At(
+                    value = "FIELD", // this.compiledChunk = CompiledChunk.DUMMY;
+                    target = "Lnet/minecraft/client/renderer/chunk/RenderChunk;compiledChunk:Lnet/minecraft/client/renderer/chunk/CompiledChunk;"
+            ))
+    private void onReset(CallbackInfo cbi) {
+        // setting the CompiledChunk to DUMMY means it will no longer render. This happens for RenderChunks that move out of view and have their
+        // positions changed to those on the newly in view. So remove the nova geometry, if any
+        NovaNative.mc_chunk_render_object obj = new NovaNative.mc_chunk_render_object();
+        // setting these should be enough for remove
+        obj.id = index;
+        obj.x = this.position.getX();
+        obj.y = this.position.getY();
+        obj.z = this.position.getZ();
+
+        for (Map.Entry<String, CapturingVertexBuffer> data :  blockLayers.entrySet()) {
+            if (data.getValue().isEmpty()) {
+                continue;
+            }
+            NovaRenderer.getInstance().getNative().remove_chunk_geometry_for_filter(data.getKey(), obj);
+            data.getValue().reset();
+        }
+    }
+
     private Optional<NovaNative.mc_chunk_render_object> makeMeshForBuffer(CapturingVertexBuffer capturingVertexBuffer) {
+        if (capturingVertexBuffer.isEmpty()) {
+            return Optional.empty();
+        }
+
         IndexList indices = new IndexList();
         NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
         IntBuffer dat = capturingVertexBuffer.getRawData();
-        //vertexData.addAll(capturingVertexBuffer.getData());
         int dat_len = dat.limit();
         int offset = indices.size();
         for (int i = 0; i < dat_len / 7 / 4; i++) {
             indices.addIndicesForFace(offset, 0);
-
             offset += 4;
-        }
-
-        if (capturingVertexBuffer.isEmpty()) {
-        /*  if(dat_len>0){
-LOG.error("Wrong DAT ELN:"+dat_len);
-}*/
-            return Optional.empty();
         }
 
         chunk_render_object.setVertex_data(dat);
@@ -166,7 +187,7 @@ LOG.error("Wrong DAT ELN:"+dat_len);
                 obj.y = this.position.getY();
                 obj.z = this.position.getZ();
 
-                //  LOG.info("Adding render geometry for chunk {}", range);
+                NovaNative.LOG.info("Adding render geometry for chunk {}, layer {}", this.position, entry.getKey());
                 NovaRenderer.getInstance().getNative().add_chunk_geometry_for_filter(entry.getKey(), obj);
             });
 

@@ -23,13 +23,15 @@ namespace nova {
     }
 
     void vk_mesh::destroy() {
-        auto allocator = context->allocator;
-        if((VkBuffer)vertex_buffer != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(allocator, (VkBuffer)vertex_buffer, vertex_alloc);
-        }
+        if(context) {
+            auto allocator = context->allocator;
+            if((VkBuffer) vertex_buffer != VK_NULL_HANDLE) {
+                vmaDestroyBuffer(allocator, (VkBuffer) vertex_buffer, vertex_alloc);
+            }
 
-        if((VkBuffer)indices != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(allocator, (VkBuffer)indices, indices_alloc);
+            if((VkBuffer) indices != VK_NULL_HANDLE) {
+                vmaDestroyBuffer(allocator, (VkBuffer) indices, indices_alloc);
+            }
         }
     }
 
@@ -92,5 +94,44 @@ namespace nova {
         vmaUnmapMemory(context->allocator, indices_alloc);
 
         num_indices = static_cast<uint32_t>(index_data.size());
+    }
+
+    vk_mesh::vk_mesh(vk_mesh &&other) noexcept {
+        context = other.context;
+
+        vertex_buffer = other.vertex_buffer;
+        indices = other.indices;
+        num_indices = other.num_indices;
+
+        data_format = other.data_format;
+        vertex_alloc = other.vertex_alloc;
+        indices_alloc = other.indices_alloc;
+
+        // Set the other's context to nullptr so the destructor knows to not destruct it
+        other.context = nullptr;
+    }
+
+    vk_mesh &vk_mesh::operator=(vk_mesh &&other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+        this->destroy();
+
+        context = other.context;
+
+        vertex_buffer = other.vertex_buffer;
+        indices = other.indices;
+        num_indices = other.num_indices;
+
+        data_format = other.data_format;
+        vertex_alloc = other.vertex_alloc;
+        indices_alloc = other.indices_alloc;
+
+        // Set the other's context to nullptr so the destructor knows to not destruct it
+        other.context = nullptr;
+        other.vertex_buffer = nullptr;
+        other.indices = nullptr;
+
+        return *this;
     }
 }

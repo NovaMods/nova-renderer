@@ -74,13 +74,16 @@ NOVA_API void reset_texture_manager();
 /*!
  * \brief Adds a chunk to Minecraft, or updates an existing chunk
  *
- * Chunks are identified by their chunk ID. Nova maintains a mapping from chunk ID to render_objects for that chunk.
- * This lets Nova clean out the geometry for an old chunk to make room for a new chunk
- *
  * \param chunk The chunk to add to Nova
  */
 NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object* chunk);
 
+/*!
+ * \brief Removes a chunk from Minecraft
+ *
+ * \param chunk The chunk to remove. Only position and ID need to be initialized
+ */
+NOVA_API void remove_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk);
 /*!
  * \brief Updates the Nova Renderer and renders the current frame
  */

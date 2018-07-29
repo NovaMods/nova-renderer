@@ -160,7 +160,7 @@ namespace nova {
 
         game_window->end_frame();
 
-        auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, std::numeric_limits<uint64_t>::max());
+        auto fence_wait_result = context->device.waitForFences({render_done_fence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
         if (fence_wait_result == vk::Result::eSuccess) {
             // Process geometry updates
             meshes->remove_gui_render_objects();
@@ -341,14 +341,15 @@ namespace nova {
 
     void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &pipeline_data, std::string per_model_buffer_resource) {
         NOVA_PROFILER_SCOPE;
+        LOG(TRACE) << "Rendering mesh " << mesh.id;
         const auto& descriptor = pipeline_data.resource_bindings[per_model_buffer_resource];
         buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data.layout, descriptor.set, 1, &mesh.model_matrix_descriptor, 0, nullptr);
 
-        buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
+        buffer.bindIndexBuffer(mesh.geometry.indices, {0}, vk::IndexType::eUint32);
 
-        buffer.bindVertexBuffers(0, {mesh.geometry->vertex_buffer}, {0});
+        buffer.bindVertexBuffers(0, {mesh.geometry.vertex_buffer}, {0});
 
-        buffer.drawIndexed(mesh.geometry->num_indices, 1, 0, 0, 0);
+        buffer.drawIndexed(mesh.geometry.num_indices, 1, 0, 0, 0);
     }
 
     bool nova_renderer::should_end() {
@@ -590,11 +591,7 @@ namespace nova {
 
     void nova_renderer::update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix, const vk::Device& device) {
         NOVA_PROFILER_SCOPE;
-        // Send the model matrix to the buffer
-        // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
-        auto& allocation = shader_resources->get_uniform_buffers().get_per_model_buffer()->get_allocation_info();
-        memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
-        LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
+        gui_obj.write_new_model_ubo(model_matrix);
     }
 
     void nova_renderer::insert_special_geometry(const std::unordered_map<std::string, std::vector<material_pass>> &material_passes_by_pipeline) {

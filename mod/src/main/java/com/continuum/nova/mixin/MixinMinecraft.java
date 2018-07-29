@@ -392,6 +392,7 @@ public abstract class MixinMinecraft {
             this.displayHeight = NovaRenderer.getInstance().getHeight();
 
             novaLogger.info("Window was resized to: " + displayWidth + "x" + displayHeight);
+
             this.resize(this.displayWidth, this.displayHeight);
         }
     }

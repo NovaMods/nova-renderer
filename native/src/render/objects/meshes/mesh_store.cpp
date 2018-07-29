@@ -69,23 +69,29 @@ namespace nova {
 
         cur_screen_buffer.vertex_format = format::POS_UV_COLOR;
 
-        render_object gui;
-        gui.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
-        gui.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
+        render_object gui(context, *shader_resources, sizeof(glm::mat4), cur_screen_buffer);
         gui.upload_model_matrix(context->device);
-        gui.geometry = std::make_shared<vk_mesh>(cur_screen_buffer, context);
         gui.type = geometry_type::gui;
+        if(!strcmp(geo_type,"gui_background")){
+            gui.type = geometry_type::gui_background;
+        }else if(!strcmp(geo_type,"gui_text")){
+            gui.type = geometry_type::text;
+        }
 
         LOG(TRACE) << "Adding GUI render object " << gui.id << " model matrix descriptor " << (VkDescriptorSet)gui.model_matrix_descriptor;
 
         if(renderables_grouped_by_material.find(geo_type) == renderables_grouped_by_material.end()) {
-            renderables_grouped_by_material[geo_type] = std::vector<render_object>{};
+            renderables_grouped_by_material[geo_type] = std::vector<render_object>();
+            renderables_grouped_by_material[geo_type].reserve(15);
         }
-        renderables_grouped_by_material.at(geo_type).push_back(gui);
+        auto id = gui.id;
+        auto& renderables = renderables_grouped_by_material.at(geo_type);
+        renderables.push_back(std::move(gui));
+        LOG(TRACE) << "Finished adding GUI render object " << id << ". There are now " << renderables.size() << " GUI things";
     }
 
     void mesh_store::remove_gui_render_objects() {
-        remove_render_objects([](auto& render_obj) {return render_obj.type == geometry_type::gui || render_obj.type == geometry_type::text;});
+        remove_render_objects([](auto& render_obj) {return render_obj.type == geometry_type::gui || render_obj.type == geometry_type::text || render_obj.type == geometry_type::gui_background;});
     }
 
     void mesh_store::remove_render_objects(std::function<bool(render_object&)> filter) {
@@ -93,23 +99,13 @@ namespace nova {
     }
 
     void mesh_store::remove_old_geometry() {
+        LOG(TRACE) << "Removing old geometry";
         while(!geometry_to_remove.empty()) {
             auto &filter = geometry_to_remove.front();
-
             auto per_model_buffer = shader_resources->get_uniform_buffers().get_per_model_buffer();
             for (auto &group : renderables_grouped_by_material) {
-                auto removed_elements = std::remove_if(group.second.begin(), group.second.end(), filter);
-
-                if (removed_elements != group.second.end()) {
-                    // Free the allocations of each render object
-                    for (auto it = removed_elements; it != group.second.end(); ++it) {
-                        LOG(TRACE) << "Removing render object " << (*it).id;
-                        per_model_buffer->free_allocation((*it).per_model_buffer_range);
-                        shader_resources->free_descriptor((*it).model_matrix_descriptor);
-                    }
-                }
-
-                group.second.erase(removed_elements, group.second.end());
+                const std::vector<render_object>::iterator& removed_elements_ref = std::remove_if(group.second.begin(), group.second.end(), filter);
+                group.second.erase(removed_elements_ref, group.second.end());
             }
 
             geometry_to_remove.pop();
@@ -123,58 +119,37 @@ namespace nova {
             const auto& entry = geometry_to_upload.front();
             const auto& def = std::get<1>(entry);
 
-            render_object obj = {};
-            obj.model_matrix_descriptor = shader_resources->create_model_matrix_descriptor();
-            obj.per_model_buffer_range = shader_resources->get_uniform_buffers().get_per_model_buffer()->allocate_space(sizeof(glm::mat4));
-
+            render_object obj(context, *shader_resources, sizeof(glm::mat4), def);
             glm::mat4 model_matrix(1.0);
             model_matrix = glm::translate(model_matrix, def.position);
-            memcpy(((uint8_t*)shader_resources->get_uniform_buffers().get_per_model_buffer()->get_allocation_info().pMappedData)
-                   + obj.per_model_buffer_range.offset, &model_matrix, obj.per_model_buffer_range.range);
-
+            obj.write_new_model_ubo(model_matrix);
             obj.upload_model_matrix(context->device);
 
-            obj.geometry = std::make_shared<vk_mesh>(def, context);
             obj.type = geometry_type::block;
             obj.parent_id = def.id;
             obj.position = def.position;
 
             obj.bounding_box.center = {def.position.x + 8, def.position.y + 8, def.position.z + 8};
             obj.bounding_box.extents = {16, 16, 16};   // TODO: Make these values come from Minecraft
-            // obj.needs_deletion = false; // TODO: needed for anything?
-
-            LOG(TRACE) << "Adding render object " << obj.id << " model matrix descriptor " << (VkDescriptorSet)obj.model_matrix_descriptor;
 
             const std::string& material_name = std::get<0>(entry);
             if(renderables_grouped_by_material.find(material_name) == renderables_grouped_by_material.end()) {
                 renderables_grouped_by_material[material_name] = std::vector<render_object>{};
-                LOG(TRACE) << "Initialized storage for render objects with material " << material_name;
             }
-            renderables_grouped_by_material.at(material_name).push_back(obj);
-            LOG(TRACE) << "Added object to list of things with material " << material_name;
+            renderables_grouped_by_material.at(material_name).push_back(std::move(obj));
 
             geometry_to_upload.pop();
-            LOG(TRACE) << "Removed the object from the list of geometry to upload";
         }
         geometry_to_upload_lock.unlock();
     }
 
     void mesh_store::remove_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {
-        try {
-            if (renderables_grouped_by_material.find(filter_name) != renderables_grouped_by_material.end()) {
-                auto &group = renderables_grouped_by_material.at(filter_name);
-                for (auto& obj : group) {
-                    bool del = (static_cast<int>(obj.position.x) == static_cast<int>(chunk.x)) &&
-                               (static_cast<int>(obj.position.y) == static_cast<int>(chunk.y)) &&
-                               (static_cast<int>(obj.position.z) == static_cast<int>(chunk.z));
-                    if (del) {
-                        remove_render_objects([&](render_object& obj2) ->bool{ return obj2.id == obj.id; });
-                    }
-                }
-            }
-        } catch (std::exception &e) {
-            LOG(ERROR) << "REMOVING CHUNK ERROR: " << e.what();
-        }
+        remove_render_objects([&](render_object& obj) ->bool{
+            bool r = (static_cast<int>(obj.position.x) == static_cast<int>(chunk.x)) &&
+                   (static_cast<int>(obj.position.y) == static_cast<int>(chunk.y)) &&
+                   (static_cast<int>(obj.position.z) == static_cast<int>(chunk.z));
+            return r;
+        });
     }
 
     void mesh_store::add_chunk_render_object(std::string filter_name, mc_chunk_render_object &chunk) {

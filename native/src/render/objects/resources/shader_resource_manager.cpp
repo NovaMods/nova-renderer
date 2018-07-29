@@ -12,6 +12,8 @@
 namespace nova {
     shader_resource_manager::shader_resource_manager(std::shared_ptr<render_context> context) : device(context->device), textures(context), buffers(context), context(context) {
         create_point_sampler();
+
+        create_descriptor_pool(15000, 15000, 1000);
     }
 
     void shader_resource_manager::create_descriptor_pool(uint32_t num_sets, uint32_t num_buffers, uint32_t num_textures) {
@@ -116,32 +118,6 @@ namespace nova {
 
     void shader_resource_manager::create_descriptor_sets(const std::unordered_map<std::string, std::vector<pipeline_object>> &pipelines, std::unordered_map<std::string, std::vector<material_pass>>& material_passes) {
         NOVA_PROFILER_SCOPE;
-        uint32_t num_sets = 0, num_textures = 0, num_buffers = 0;
-
-        for(const auto &named_pipeline : pipelines) {
-            for(const auto &pipeline : named_pipeline.second) {
-
-                num_sets += pipeline.layouts.size();
-
-                for(const auto &named_binding : pipeline.resource_bindings) {
-                    const resource_binding &binding = named_binding.second;
-
-                    if(binding.descriptorType == vk::DescriptorType::eUniformBuffer) {
-                        num_buffers++;
-
-                    } else if(binding.descriptorType == vk::DescriptorType::eCombinedImageSampler) {
-                        num_textures += material_passes.size();
-
-                    } else {
-                        LOG(WARNING) << "Descriptor type " << vk::to_string(binding.descriptorType)
-                                     << " is not supported yet";
-                    }
-                }
-            }
-        }
-
-        create_descriptor_pool(10000 + num_sets, 10000 + num_buffers, num_textures);
-
         for(const auto &named_pipeline : pipelines) {
             for(const auto& pipeline : named_pipeline.second) {
                 auto& mats = material_passes[pipeline.name];
@@ -166,6 +142,7 @@ namespace nova {
         per_model_descriptor_count--;
         total_allocated_descriptor_sets--;
         device.freeDescriptorSets(descriptor_pool, {to_free});
+        LOG(TRACE) << "It's free!";
     }
 
     void shader_resource_manager::update_all_descriptor_sets(const material_pass &mat, const std::unordered_map<std::string, resource_binding> &name_to_descriptor) {

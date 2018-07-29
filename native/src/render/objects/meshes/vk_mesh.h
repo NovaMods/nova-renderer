@@ -22,6 +22,10 @@ namespace nova {
      */
     class vk_mesh {
     public:
+        vk_mesh() = default;
+
+        vk_mesh(const vk_mesh&) = default;
+
         explicit vk_mesh(std::shared_ptr<render_context> context);
 
         vk_mesh(const mesh_definition &definition, std::shared_ptr<render_context> context);
@@ -46,6 +50,9 @@ namespace nova {
         format get_format();
 
         bool has_data() const;
+
+        vk_mesh(vk_mesh&& other) noexcept;
+        vk_mesh& operator=(vk_mesh&& other) noexcept;
 
         vk::Buffer vertex_buffer;
         vk::Buffer indices;
