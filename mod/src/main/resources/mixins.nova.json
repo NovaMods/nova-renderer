@@ -27,6 +27,8 @@
     "texture.MixinTextureUtil",
     "texture.MixinTextureManager",
     "MixinMinecraft",
+    "MixinModelManager",
+    "MixinSplashProgress",
     "MixinModelManager"
   ],
   "injectors": {

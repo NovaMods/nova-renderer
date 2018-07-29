@@ -27,6 +27,7 @@
 #include <easylogging++.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <nova/profiler.h>
+#include "../utils/crash_handler.h"
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -40,6 +41,8 @@ namespace nova {
     std::shared_ptr<settings> nova_renderer::render_settings;
 
     nova_renderer::nova_renderer() {
+        crash_handler::install(); // Instantly set up crash handler to catch everything
+
         NOVA_PROFILER_SCOPE;
         context = std::make_shared<render_context>();
 
@@ -94,10 +97,14 @@ namespace nova {
         context->graphics_queue.waitIdle();
         LOG(TRACE) << "Waited for the GPU to be done";
 
-        inputs.reset();
-        LOG(TRACE) << "Released the inputs";
-        meshes.reset();
-        LOG(TRACE) << "Reset the meshes";
+        if(inputs) {
+            inputs.reset();
+            LOG(TRACE) << "Released the inputs";
+        }
+        if(meshes) {
+            meshes.reset();
+            LOG(TRACE) << "Reset the meshes";
+        }
 
         auto& device = context->device;
 
@@ -105,8 +112,14 @@ namespace nova {
         device.destroySemaphore(render_finished_semaphore);
         LOG(TRACE) << "Destroyed the semaphores";
 
+        device.destroyFence(render_done_fence);
+        LOG(TRACE) << "Destroyed the fence";
+
         game_window.reset();
         LOG(TRACE) << "Reset the game window";
+
+        swapchain->deinit();
+        LOG(TRACE) << "Deinitialized swapchain";
 
         shader_resources.reset();
         LOG(TRACE) << "Reset the shader resource manager";
@@ -133,9 +146,13 @@ namespace nova {
 
         update_nova_ubos();
 
-        LOG(TRACE) << "We have " << passes_list.size() << " passes to render";
+        LOG(DEBUG) << "We have " << passes_list.size() << " passes to render";
+        main_command_buffer.buffer.resetQueryPool(context->timestamp_query_pool, 0, static_cast<uint32_t>(passes_list.size() * 2));
+        uint32_t query_pool_write_index = 0;
         for (const auto &pass : passes_list) {
+            main_command_buffer.buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, context->timestamp_query_pool, query_pool_write_index++);
             execute_pass(pass, main_command_buffer.buffer);
+            main_command_buffer.buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, context->timestamp_query_pool, query_pool_write_index++);
         }
 
         main_command_buffer.buffer.end();
@@ -358,7 +375,7 @@ namespace nova {
     }
 
     void nova_renderer::init() {
-        render_settings = std::make_shared<settings>("config/config.json");
+        render_settings = std::make_shared<settings>("config/nova/config.json");
 
         try {
             instance = std::make_unique<nova_renderer>();
@@ -416,6 +433,8 @@ namespace nova {
             return;
         }
 
+        context->recreate_timestamp_query_pool(static_cast<uint32_t>(passes_list.size() * 2));
+
         auto& textures = shader_resources->get_texture_manager();
 
         LOG(INFO) << "Initializing framebuffer attachments...";
@@ -439,6 +458,7 @@ namespace nova {
     }
 
     void nova_renderer::deinit() {
+        instance.reset(nullptr);
         instance.release();
     }
 
@@ -495,7 +515,32 @@ namespace nova {
 
     void nova_renderer::end_frame() {
         NOVA_PROFILER_FLUSH_TO_FILE("profiler_data.txt");
-        LOG(TRACE) << "Frame done";
+        if(context->timestamp_valid_bits <= 32) {
+            std::vector<uint32_t> buffer = std::vector<uint32_t>(passes_list.size() * 2);
+            context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer.size(), buffer.size() *
+                                                                                                  sizeof(uint32_t),
+                                                buffer.data(), sizeof(uint32_t), vk::QueryResultFlagBits::eWait);
+
+            unsigned int index = 0;
+            while(index < (buffer.size() - 1)) {
+                uint32_t begin_val = buffer.at(index++);
+                uint32_t end_val = buffer.at(index++);
+                LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " <<  ((end_val - begin_val) * context->timestamp_period) / 1000000 << "ms";
+            }
+        } else {
+            std::vector<uint64_t > buffer = std::vector<uint64_t >(passes_list.size() * 2);
+            context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer.size() , buffer.size() *
+                                                                                                  sizeof(uint64_t),
+                                                buffer.data(), sizeof(uint64_t), vk::QueryResultFlagBits::eWait);
+
+            unsigned int index = 0;
+            while(index < (buffer.size() - 1)) {
+                uint64_t begin_val = buffer.at(index++);
+                uint64_t end_val = buffer.at(index++);
+                LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " << ((end_val - begin_val) * context->timestamp_period) / 1000000 << "ms";
+            }
+        }
+        LOG(INFO) << "Frame done";
     }
 
     void nova_renderer::begin_frame() {

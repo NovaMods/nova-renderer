@@ -190,3 +190,7 @@ NOVA_API char* get_materials_and_filters() {
     filters[num_chars - 1] = '\0';
     return filters;
 }
+
+NOVA_API void destruct() {
+    nova_renderer::deinit();
+}

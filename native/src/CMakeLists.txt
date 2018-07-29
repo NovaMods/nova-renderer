@@ -18,10 +18,8 @@ endfunction()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_BUILD_TYPE RELEASE)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 
@@ -97,6 +95,8 @@ set(NOVA_HEADERS
         mc_interface/mc_objects.h
 
         utils/utils.h
+        utils/crash_handler.h
+
         data_loading/settings.h
         data_loading/loaders/loaders.h
         data_loading/loaders/shader_loading.h
@@ -151,6 +151,7 @@ set(NOVA_SOURCE
         render/windowing/glfw_vk_window.cpp
 
         utils/utils.cpp
+        utils/crash_handler.cpp
 
         data_loading/settings.cpp
         data_loading/loaders/shader_loading.cpp
@@ -196,24 +197,22 @@ set(SPIRV_CROSS_HEADERS
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
+    set(CMAKE_CXX_FLAGS "-static-libstdc++ -static-libgcc ${CMAKE_CXX_FLAGS}")
 endif (WIN32)
 
 if (UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fno-omit-frame-pointer -O0")
-    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -O0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fno-omit-frame-pointer -fPIC")
+    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer")
 endif (UNIX)
 
-if(MSVC)
-    if(CMAKE_CXX_FLAGS MATCHES "/Wextra")
-        string(REGEX REPLACE "/Wextra" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    endif()
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g -rdynamic")
+    set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g -rdynamic")
+    message("Enabling symbol output")
+endif()
 
-    # Force to always compile with W4
-    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-    endif()
+if(MSVC)
+    message(FATAL_ERROR "MSVC is not supported, use MinGW with gcc")
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Update if necessary
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")

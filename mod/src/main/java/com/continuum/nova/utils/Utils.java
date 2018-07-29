@@ -1,10 +1,21 @@
 package com.continuum.nova.utils;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import net.minecraft.util.ResourceLocation;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class Utils {
     private Utils() {}
@@ -702,5 +713,70 @@ public class Utils {
             }
         }
         return convertedImageData;
+    }
+
+    public static void copyDefaults() throws IOException {
+        Path shaderpacksDir = ensureDir(new File("./shaderpacks")).toPath();
+        Path defaultShaderpackDir = shaderpacksDir.resolve("DefaultShaderpack");
+        if(!defaultShaderpackDir.toFile().exists()) {
+            extractResource("/defaults/DefaultShaderpack.zip", shaderpacksDir);
+            unzip(shaderpacksDir.resolve("DefaultShaderpack.zip").toFile(), defaultShaderpackDir);
+        }
+
+        Path configDir = ensureDir(new File("./config/nova")).toPath();
+        extractResource("/defaults/config.json", configDir);
+        extractResource("/defaults/logging.conf", configDir);
+    }
+
+    public static void extractResource(String name, Path targetDir) throws IOException {
+        extractResource(name, targetDir, false);
+    }
+
+    public static void extractResource(String name, Path targetDir, boolean overwrite) throws IOException {
+        String tName = new File(name).getName();
+        if(overwrite) {
+            Files.copy(Utils.class.getResourceAsStream(name), targetDir.resolve(tName), StandardCopyOption.REPLACE_EXISTING);
+        } else {
+            File target = targetDir.resolve(tName).toFile();
+            if(target.exists() && target.isFile()) {
+                return;
+            }
+            Files.copy(Utils.class.getResourceAsStream(name), targetDir.resolve(tName));
+        }
+    }
+
+    public static File ensureDir(File dir) throws IOException {
+        if(!dir.exists() || !dir.isDirectory()) {
+            if(!dir.mkdirs()) {
+                throw new IOException("Failed to create directory " + dir.getAbsolutePath());
+            }
+        }
+
+        return dir;
+    }
+
+    public static void unzip(File file) throws IOException {
+        unzip(file, null);
+    }
+
+    public static void unzip(File file, Path unzipDir) throws IOException {
+        ZipFile zipFile = new ZipFile(file);
+        Path outDir = unzipDir != null ? unzipDir : Paths.get(file.getName().replaceFirst("[.][^.]+$", ""));
+        ensureDir(outDir.toFile());
+        Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
+        while(enumeration.hasMoreElements()) {
+            ZipEntry entry = enumeration.nextElement();
+            Path target = outDir.resolve(entry.getName());
+            if(entry.isDirectory()) {
+                ensureDir(target.toFile());
+            } else {
+                Files.copy(zipFile.getInputStream(entry), outDir.resolve(entry.getName()));
+            }
+        }
+    }
+
+    public static String getShaderpackNameFromConfig() throws IOException {
+        return new JsonParser().parse(new FileReader("config/nova/config.json")).
+                getAsJsonObject().get("settings").getAsJsonObject().get("loadedShaderpack").getAsString();
     }
 }

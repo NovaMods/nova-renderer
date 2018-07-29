@@ -230,7 +230,11 @@ namespace nova {
     }
 
     void swapchain_manager::deinit() {
-        for(auto& iv : swapchain_image_views) {
+        for(auto &i : swapchain_images) {
+            context->device.destroyImage(i);
+        }
+
+        for(auto &iv : swapchain_image_views) {
             context->device.destroyImageView(iv);
         }
     }

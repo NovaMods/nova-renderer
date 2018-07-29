@@ -168,12 +168,10 @@ public class Mouse {
     }
 
     public static int getX() {
-        next();
         return x;
     }
 
     public static int getY() {
-        next();
         return y;
     }
 

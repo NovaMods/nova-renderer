@@ -34,11 +34,7 @@ namespace nova {
 
     void render_context::create_instance(glfw_vk_window &window) {
         validation_layers = {
-                "VK_LAYER_GOOGLE_threading",
-                "VK_LAYER_LUNARG_parameter_validation",
-                "VK_LAYER_LUNARG_object_tracker",
-                "VK_LAYER_LUNARG_core_validation",
-                "VK_LAYER_GOOGLE_unique_objects"
+                "VK_LAYER_LUNARG_standard_validation" // Enable them all
         };
 
         vk::ApplicationInfo app_info = {};
@@ -137,7 +133,7 @@ namespace nova {
         for(auto& gpu : gpus) {
             if(gpu.props.vendorID == 0x8086 && gpus.size() > 1) {
                 // We found an Intel GPU, but there's other GPUs available on this system so we should skip the Intel
-                // one - other GPUs are all but garaunteed to be more powerful
+                // one - other GPUs are all but guaranteed to be more powerful
                 continue;
             }
 
@@ -160,9 +156,14 @@ namespace nova {
                 }
 
                 if(props.queueFlags & vk::QueueFlagBits::eGraphics) {
+                    if(props.timestampValidBits == 0) {
+                        LOG(FATAL) << "Queue doesn't support timestamps!";
+                    }
+                    timestamp_valid_bits = props.timestampValidBits;
                     graphics_idx = i;
                     break;
                 }
+
             }
 
             // Find present queue family
@@ -185,10 +186,13 @@ namespace nova {
                 graphics_family_idx = graphics_idx;
                 present_family_idx = present_idx;
                 physical_device = gpu.device;
+                timestamp_period = gpu.props.limits.timestampPeriod;
                 this->gpu = gpu;
                 LOG(INFO) << "Selected graphics device " << gpu.props.deviceName;
                 LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageDimension2D << " texels in a 2D texture";
                 LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageArrayLayers << " array layers";
+                LOG(INFO) << "It takes " << timestamp_period << " nanoseconds to increment a timestamp query";
+                LOG(INFO) << timestamp_valid_bits << " bits are valid for a timestamp";
                 return;
             }
         }
@@ -279,7 +283,11 @@ namespace nova {
         }
 
         device.destroyPipelineCache(pipeline_cache);
+        device.destroyQueryPool(timestamp_query_pool);
 
+        command_buffer_pool.reset(nullptr);
+
+        device.destroy();
         vk_instance.destroy();
 
         LOG(TRACE) << "Destroyed the render context";
@@ -288,6 +296,19 @@ namespace nova {
     void render_context::create_pipeline_cache() {
         vk::PipelineCacheCreateInfo cache_create_info = {};
         pipeline_cache = device.createPipelineCache(cache_create_info);
+    }
+
+    void render_context::recreate_timestamp_query_pool(uint32_t size) {
+        if(timestamp_query_pool) {
+            device.destroyQueryPool(timestamp_query_pool);
+        }
+
+        vk::QueryPoolCreateInfo timestamp_query_pool_create_info{};
+        timestamp_query_pool_create_info.pNext = nullptr;
+        timestamp_query_pool_create_info.queryType = vk::QueryType::eTimestamp;
+        timestamp_query_pool_create_info.queryCount = size;
+
+        timestamp_query_pool = device.createQueryPool(timestamp_query_pool_create_info);
     }
 
     // This function should really be outside of this file, but I want to keep vulkan creation things in here

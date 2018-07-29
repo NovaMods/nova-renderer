@@ -70,6 +70,10 @@ namespace nova {
 
         vk::PipelineCache pipeline_cache;
 
+        uint32_t timestamp_valid_bits;
+        float timestamp_period;
+        vk::QueryPool timestamp_query_pool;
+
         ~render_context();
 
         void create_instance(glfw_vk_window &window);
@@ -83,6 +87,8 @@ namespace nova {
         void create_command_pool_and_command_buffers();
 
         void create_pipeline_cache();
+
+        void recreate_timestamp_query_pool(uint32_t size);
 
     private:
 

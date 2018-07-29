@@ -1,5 +1,6 @@
-package com.continuum.nova;
+package com.continuum.nova.coremod;
 
+import com.continuum.nova.NovaConstants;
 import com.google.common.eventbus.EventBus;
 import net.minecraftforge.fml.common.DummyModContainer;
 import net.minecraftforge.fml.common.LoadController;
@@ -11,10 +12,10 @@ public class NovaForgeModContainer extends DummyModContainer {
     public NovaForgeModContainer() {
         super(new ModMetadata());
         ModMetadata meta = getMetadata();
-        meta.version = "0.0.1-SNAPSHOT";
+        meta.version = NovaConstants.CORE_MOD_VERSION;
+        meta.name = NovaConstants.CORE_MOD_NAME;
         meta.description = "Forge wrapper of the nova renderer. This is the coremod!";
-        meta.name = "Nova renderer core";
-        meta.modId = "nova-renderer-core";
+        meta.modId = NovaConstants.CORE_MOD_ID;
         meta.credits = ""; // TODO: Fill in credits
         meta.authorList = Collections.emptyList(); // TODO: Fill in authors
     }

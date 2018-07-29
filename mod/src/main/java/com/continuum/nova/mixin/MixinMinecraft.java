@@ -1,10 +1,12 @@
 package com.continuum.nova.mixin;
 
+import com.continuum.nova.NovaConstants;
 import com.continuum.nova.NovaForge;
 import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.input.Keyboard;
 import com.continuum.nova.input.Mouse;
 import com.continuum.nova.system.NovaNative;
+import com.continuum.nova.utils.Utils;
 import com.google.common.hash.Hashing;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
@@ -39,6 +41,7 @@ import net.minecraft.util.Timer;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.storage.ISaveFormat;
+import net.minecraftforge.fml.common.LoaderExceptionModCrash;
 import org.apache.commons.io.Charsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,6 +60,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import javax.annotation.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 @Mixin(Minecraft.class)
@@ -189,18 +193,29 @@ public abstract class MixinMinecraft {
     @Shadow
     private boolean fullscreen;
 
-    @Shadow public abstract void updateDisplay();
+    @Shadow
+    public abstract void updateDisplay();
 
-    @Shadow @Final private String launchedVersion;
-    @Shadow @Final private Session session;
-    @Shadow @Final private static ResourceLocation LOCATION_MOJANG_PNG;
-    @Shadow @Final private static Logger LOGGER;
+    @Shadow
+    @Final
+    private String launchedVersion;
+    @Shadow
+    @Final
+    private Session session;
+    @Shadow
+    @Final
+    private static ResourceLocation LOCATION_MOJANG_PNG;
+    @Shadow
+    @Final
+    private static Logger LOGGER;
 
-    @Shadow public abstract void draw(int p_draw_1_, int p_draw_2_, int p_draw_3_, int p_draw_4_, int p_draw_5_, int p_draw_6_, int p_draw_7_,
-            int p_draw_8_,
-            int p_draw_9_, int p_draw_10_);
+    @Shadow
+    public abstract void draw(int p_draw_1_, int p_draw_2_, int p_draw_3_, int p_draw_4_, int p_draw_5_, int p_draw_6_, int p_draw_7_,
+                              int p_draw_8_,
+                              int p_draw_9_, int p_draw_10_);
 
-    @Shadow protected abstract void checkGLError(String message);
+    @Shadow
+    protected abstract void checkGLError(String message);
 
     private Logger novaLogger;
 
@@ -243,7 +258,7 @@ public abstract class MixinMinecraft {
         this.mcResourceManager = new SimpleReloadableResourceManager(this.metadataSerializer);
         this.mcLanguageManager = new LanguageManager(this.metadataSerializer, this.gameSettings.language);
         this.mcResourceManager.registerReloadListener(this.mcLanguageManager);
-        net.minecraftforge.fml.client.FMLClientHandler.instance().beginMinecraftLoading((Minecraft)(Object)this, this.defaultResourcePacks, this.mcResourceManager, this.metadataSerializer);
+        net.minecraftforge.fml.client.FMLClientHandler.instance().beginMinecraftLoading((Minecraft) (Object) this, this.defaultResourcePacks, this.mcResourceManager, this.metadataSerializer);
         this.renderEngine = new TextureManager(this.mcResourceManager);
         this.mcResourceManager.registerReloadListener(this.renderEngine);
         net.minecraftforge.fml.client.SplashProgress.drawVanillaScreen(this.renderEngine);
@@ -266,7 +281,7 @@ public abstract class MixinMinecraft {
         this.mcResourceManager.registerReloadListener(new FoliageColorReloadListener());
         mcResourceManager.registerReloadListener(NovaRenderer.getInstance());
         this.mouseHelper = new MouseHelper();
-        net.minecraftforge.fml.common.ProgressManager.ProgressBar bar= net.minecraftforge.fml.common.ProgressManager.push("Rendering Setup", 5, true);
+        net.minecraftforge.fml.common.ProgressManager.ProgressBar bar = net.minecraftforge.fml.common.ProgressManager.push("Rendering Setup", 5, true);
         bar.step("GL Setup");
 
 
@@ -294,7 +309,12 @@ public abstract class MixinMinecraft {
         bar.step("Loading Model Manager");
         this.modelManager = new ModelManager(this.textureMapBlocks);
         this.blockColors = BlockColors.init();
-        NovaRenderer.getInstance().loadShaderpack("default", this.blockColors);
+        try {
+            NovaRenderer.getInstance().loadShaderpack(Utils.getShaderpackNameFromConfig(), this.blockColors);
+        } catch (IOException e) {
+            novaLogger.error("Failed to load shaderpack name  from config! Loading default...", e);
+            NovaRenderer.getInstance().loadShaderpack("DefaultShaderpack", this.blockColors);
+        }
         this.mcResourceManager.registerReloadListener(this.modelManager);
         this.itemColors = ItemColors.init(this.blockColors);
         bar.step("Loading Item Renderer");
@@ -433,7 +453,7 @@ public abstract class MixinMinecraft {
             fullscreen = !fullscreen;
             gameSettings.fullScreen = fullscreen;
 
-            if(fullscreen) {
+            if (fullscreen) {
                 NovaRenderer.getInstance().getNative().set_fullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
             } else {
                 NovaRenderer.getInstance().getNative().set_fullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
@@ -464,12 +484,11 @@ public abstract class MixinMinecraft {
         playerSnooper.addStatToSnooper("client_brand", ClientBrandRetriever.getClientModName());
         playerSnooper.addStatToSnooper("launched_version", this.launchedVersion);
         playerSnooper.addStatToSnooper("vulkan_max_texture_size", NovaRenderer.getInstance().getNative().get_max_texture_size());
-        playerSnooper.addStatToSnooper("nova_renderer_version", NovaForge.VERSION /* NovaRenderer.getInstance().getVersion() */);
+        playerSnooper.addStatToSnooper("nova_renderer_version", NovaConstants.VERSION);
 
         GameProfile gameprofile = this.session.getProfile();
 
-        if (gameprofile.getId() != null)
-        {
+        if (gameprofile.getId() != null) {
             playerSnooper.addStatToSnooper("uuid", Hashing.sha1().hashBytes(gameprofile.getId().toString().getBytes(Charsets.ISO_8859_1)).toString());
         }
     }
@@ -482,5 +501,14 @@ public abstract class MixinMinecraft {
     @Overwrite
     public static int getGLMaximumTextureSize() {
         return NovaRenderer.getInstance().getNative().get_max_texture_size();
+    }
+
+    @Inject(
+            method = "shutdownMinecraftApplet",
+            at = @At(value = "HEAD")
+    )
+    private void destructNova(CallbackInfo info) {
+        novaLogger.info("Destroying nova");
+        NovaRenderer.getInstance().getNative().destruct();
     }
 }

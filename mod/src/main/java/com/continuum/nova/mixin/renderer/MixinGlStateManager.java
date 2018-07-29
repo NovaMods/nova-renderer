@@ -16,7 +16,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Stack;
 
-@Mixin(value = GlStateManager.class, remap = false)
+@Mixin(value = GlStateManager.class)
 public class MixinGlStateManager {
     /**
      * @author Janrupf
