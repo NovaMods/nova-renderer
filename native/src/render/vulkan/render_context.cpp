@@ -369,9 +369,6 @@ namespace nova {
         if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
         {
             LOG(ERROR) << "ERROR: API: " << layer_prefix << " " << msg;
-            if(objType != VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT) {
-                LOG(ERROR) << msg[1000000000]; // force segfault
-            }
         }
         // Warnings may hint at unexpected / non-spec API usage
         if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
