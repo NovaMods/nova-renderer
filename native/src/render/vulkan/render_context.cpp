@@ -6,11 +6,16 @@
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 
+#include <cstdint>
 #include <easylogging++.h>
 #include <unordered_set>
 #include "render_context.h"
 #include "../windowing/glfw_vk_window.h"
 #include "command_pool.h"
+#ifndef _WIN32
+#include <execinfo.h>
+#endif
+#include <unistd.h>
 
 namespace nova {
     bool layers_are_supported(std::vector<const char*>& validation_layers);
@@ -386,7 +391,23 @@ namespace nova {
         {
             LOG(ERROR) << "DEBUG: API: " << layer_prefix << " " << msg;
         }
+#ifndef _WIN32
+        if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+            void *array[50];
+            int size;
 
+            // get void*'s for all entries on the stack
+            size = backtrace(array, 10);
+
+            // print out all the frames to stderr
+            LOG(ERROR) << "Stacktrace: ";
+            char **data = backtrace_symbols(array, size);
+            for (int i = 0; i < size; i++) {
+                LOG(ERROR) << "\t" << data[i];
+            }
+            free(data);
+        }
+#endif
         return VK_FALSE;
     }
 }

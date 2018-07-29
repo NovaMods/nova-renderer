@@ -56,3 +56,4 @@ target/
 src/main/resources/*.so
 src/main/resources/*.dll
 !src/main/resources/libwinpthread-1.dll
+

@@ -131,6 +131,8 @@ public interface IGeometryFilter {
                     return guiBuffer.texture_name.contains("gui/");
                 case TEXT:
                     return guiBuffer.texture_name.contains("font/");
+                case GUI_BACKGROUND:
+                    return guiBuffer.texture_name.contains("options_background");
                 default:
                     return false;
             }

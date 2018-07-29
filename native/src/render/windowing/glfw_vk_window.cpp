@@ -46,7 +46,7 @@ namespace nova {
         if(window == nullptr) {
             LOG(FATAL) << "Could not initialize window :(";
         }
-        LOG(INFO) << "GLFW window created";
+        LOG(DEBUG) << "GLFW window created";
 
         glfwGetWindowSize(window, &window_dimensions.x, &window_dimensions.y);
 

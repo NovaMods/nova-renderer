@@ -1,35 +1,32 @@
 {
+  "required": true,
   "package": "com.continuum.nova.mixin",
   "compatibilityLevel": "JAVA_8",
   "target": "@env(DEFAULT)",
   "minVersion": "*",
   "refmap": "mixins.nova.refmap.json",
   "client": [
-    "gui.MixinFontRenderer",
-    "gui.MixinGuiButton",
-    "gui.MixinGuiButtonLanguage",
-    "gui.MixinGuiLabel",
-    "gui.MixinGuiListWorldSelectionEntry",
-    "gui.MixinGuiMainMenu",
-    "gui.MixinGuiOptionSlider",
+    "gui.MixinGui",
     "gui.MixinGuiScreen",
-    "gui.MixinGuiScreenOptionsSounds$Button",
-    "gui.MixinGuiSlot",
+    "gui.MixinFontRenderer",
+    "gui.MixinGuiMainMenu",
     "input.MixinLWJGLKeyboard",
     "input.MixinLWJGLMouse",
     "renderer.MixinEntityRenderer",
     "renderer.MixinGlStateManager",
     "renderer.MixinOpenGlHelper",
-    "renderer.MixinBooleanState",
-    "renderer.MixinProfile_DEFAULT",
-    "renderer.MixinProfile_PLAYER_SKIN",
-    "renderer.MixinProfile_TRANSPARENT_MODEL",
+    "renderer.chunk.MixinRenderChunk",
     "texture.MixinDynamicTexture",
     "texture.MixinTextureAtlasSprite",
     "texture.MixinTextureMap",
     "texture.MixinTextureUtil",
+    "texture.MixinTextureManager",
     "MixinMinecraft",
     "MixinModelManager",
-    "MixinSplashProgress"
-  ]
+    "MixinSplashProgress",
+    "MixinModelManager"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

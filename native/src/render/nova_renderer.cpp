@@ -177,7 +177,7 @@ namespace nova {
 
         game_window->end_frame();
 
-        auto fence_wait_result = context->device.waitForFences({render_done_fence}, true, std::numeric_limits<uint64_t>::max());
+        auto fence_wait_result = context->device.waitForFences({render_done_fence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
         if (fence_wait_result == vk::Result::eSuccess) {
             // Process geometry updates
             meshes->remove_gui_render_objects();
@@ -207,7 +207,7 @@ namespace nova {
             return;
         }
 
-        LOG(INFO) << "Beginning pass " << pass.name;
+        LOG(TRACE) << "Beginning pass " << pass.name;
 
         if(pass.texture_inputs) {
             // Transition anything that's not in shader read optimal to shader read optimal
@@ -266,7 +266,7 @@ namespace nova {
         buffer.beginRenderPass(&begin_pass, vk::SubpassContents::eInline);
 
         auto& pipelines_for_pass = pipelines_by_renderpass.at(pass.name);
-        LOG(DEBUG) << "Processing data in " << pipelines_for_pass.size() << " pipelines";
+        LOG(TRACE) << "Processing data in " << pipelines_for_pass.size() << " pipelines";
 
         for(auto& nova_pipeline : pipelines_for_pass) {
             render_pipeline(nova_pipeline, buffer);
@@ -293,12 +293,12 @@ namespace nova {
             LOG(WARNING) << "No material passes assigned to pipeline " << pipeline_data.name << ". Skipping this pipeline";
             return;
         }
-        LOG(INFO) << "Rendering pipeline " << pipeline_data.name;
+        LOG(TRACE) << "Rendering pipeline " << pipeline_data.name;
 
         buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline_data.pipeline);
 
         const auto& material_passes = material_passes_by_pipeline.at(pipeline_data.name);
-        LOG(INFO) << "There are " << material_passes.size() << " material passes";
+        LOG(TRACE) << "There are " << material_passes.size() << " material passes";
         for(const auto& mat : material_passes) {
             render_all_for_material_pass(mat, buffer, pipeline_data);
         }
@@ -308,11 +308,11 @@ namespace nova {
         NOVA_PROFILER_SCOPE;
         const auto& meshes_for_mat = meshes->get_meshes_for_material(mat.material_name);
         if(meshes_for_mat.empty()) {
-            LOG(INFO) << "No meshes available for material " << mat.material_name;
+            LOG(WARNING) << "No meshes available for material " << mat.material_name;
             return;
         }
 
-        LOG(INFO) << "Beginning material " << mat.material_name;
+        LOG(TRACE) << "Beginning material " << mat.material_name;
 
         auto per_model_buffer_binding = std::string{};
 
@@ -350,7 +350,7 @@ namespace nova {
         LOG(TRACE) << ss.str();
         buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 0, mat.descriptor_sets, {});
 
-        LOG(INFO) << "Rendering " << meshes_for_mat.size() << " things";
+        LOG(TRACE) << "Rendering " << meshes_for_mat.size() << " things";
         for(const auto& mesh : meshes_for_mat) {
             render_mesh(mesh, buffer, pipeline, per_model_buffer_binding);
         }
@@ -358,14 +358,15 @@ namespace nova {
 
     void nova_renderer::render_mesh(const render_object &mesh, vk::CommandBuffer &buffer, pipeline_object &pipeline_data, std::string per_model_buffer_resource) {
         NOVA_PROFILER_SCOPE;
+        LOG(TRACE) << "Rendering mesh " << mesh.id;
         const auto& descriptor = pipeline_data.resource_bindings[per_model_buffer_resource];
         buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_data.layout, descriptor.set, 1, &mesh.model_matrix_descriptor, 0, nullptr);
 
-        buffer.bindIndexBuffer(mesh.geometry->indices, {0}, vk::IndexType::eUint32);
+        buffer.bindIndexBuffer(mesh.geometry.indices, {0}, vk::IndexType::eUint32);
 
-        buffer.bindVertexBuffers(0, {mesh.geometry->vertex_buffer}, {0});
+        buffer.bindVertexBuffers(0, {mesh.geometry.vertex_buffer}, {0});
 
-        buffer.drawIndexed(mesh.geometry->num_indices, 1, 0, 0, 0);
+        buffer.drawIndexed(mesh.geometry.num_indices, 1, 0, 0, 0);
     }
 
     bool nova_renderer::should_end() {
@@ -488,9 +489,9 @@ namespace nova {
 
     void nova_renderer::update_per_frame_ubo() {
         NOVA_PROFILER_SCOPE;
-        LOG(DEBUG) << "Updating the per-frame UBO";
+        LOG(TRACE) << "Updating the per-frame UBO";
 
-        LOG(DEBUG) << "Camera position: " << player_camera.position << " rotation: " << player_camera.rotation;
+        LOG(TRACE) << "Camera position: " << player_camera.position << " rotation: " << player_camera.rotation;
 
         auto per_frame_data = per_frame_uniforms{};
         per_frame_data.gbufferProjection = player_camera.get_projection_matrix();
@@ -543,7 +544,7 @@ namespace nova {
     }
 
     void nova_renderer::begin_frame() {
-        LOG(INFO) << "Beginning frame";
+        LOG(TRACE) << "Beginning frame";
     }
 
     std::shared_ptr<render_context> nova_renderer::get_render_context() {
@@ -635,11 +636,7 @@ namespace nova {
 
     void nova_renderer::update_gui_model_matrix(const render_object& gui_obj, const glm::mat4& model_matrix, const vk::Device& device) {
         NOVA_PROFILER_SCOPE;
-        // Send the model matrix to the buffer
-        // The per-model uniforms buffer is constantly mapped, so we can just grab the mapping from it
-        auto& allocation = shader_resources->get_uniform_buffers().get_per_model_buffer()->get_allocation_info();
-        memcpy(((uint8_t*)allocation.pMappedData) + gui_obj.per_model_buffer_range.offset, &model_matrix, gui_obj.per_model_buffer_range.range);
-        LOG(INFO) << "Copied the GUI data to the buffer" << std::endl;
+        gui_obj.write_new_model_ubo(model_matrix);
     }
 
     void nova_renderer::insert_special_geometry(const std::unordered_map<std::string, std::vector<material_pass>> &material_passes_by_pipeline) {

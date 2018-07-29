@@ -104,37 +104,37 @@ public class Mouse {
     public static boolean next() {
         lastX = x;
         lastY = y;
-        mouse_button_event e = NovaRenderer.getInstance().getNative().get_next_mouse_button_event();
-        mouse_position_event p = NovaRenderer.getInstance().getNative().get_next_mouse_position_event();
-        NovaNative.mouse_scroll_event s = NovaRenderer.getInstance().getNative().get_next_mouse_scroll_event();
-        if (e.filled == 0 && p.filled == 0 && s.filled == 0) {
+        mouse_button_event buttonEvent = NovaRenderer.getInstance().getNative().get_next_mouse_button_event();
+        mouse_position_event positionEvent = NovaRenderer.getInstance().getNative().get_next_mouse_position_event();
+        NovaNative.mouse_scroll_event scrollEvent = NovaRenderer.getInstance().getNative().get_next_mouse_scroll_event();
+        if (buttonEvent.filled == 0 && positionEvent.filled == 0 && scrollEvent.filled == 0) {
             return false;
         }
-        if (e.filled == 1) {
-            if (e.action == 1) {
-                buttonDownBuffer.add(e.button);
+        if (buttonEvent.filled == 1) {
+            if (buttonEvent.action == 1) {
+                buttonDownBuffer.add(buttonEvent.button);
 
             } else {
-                buttonDownBuffer.remove(e.button);
+                buttonDownBuffer.remove(buttonEvent.button);
             }
-            eventButton = e.button;
-            eventState = e.action == 1;
-            LOG.trace("button: " + e.button + ";action: " + e.action + ";mods: " + e.mods + "; filled: " + e.filled);
+            eventButton = buttonEvent.button;
+            eventState = buttonEvent.action == 1;
+            LOG.trace("button: " + buttonEvent.button + ";action: " + buttonEvent.action + ";mods: " + buttonEvent.mods + "; filled: " + buttonEvent.filled);
 
         } else {
             eventButton = -1;
             eventState = false;
         }
-        if (p.filled == 1) {
-            dx += p.xpos - x;
-            dy += p.ypos - y;
-            x = p.xpos;
-            y = p.ypos;
+        if (positionEvent.filled == 1) {
+            dx += positionEvent.xpos - x;
+            dy += positionEvent.ypos - y;
+            x = positionEvent.xpos;
+            y = positionEvent.ypos;
             LOG.trace("dx: {} dy: {}", dx, dy);
         }
-        if (s.filled == 1) {
-            event_dwheel = (int) s.yoffset;
-            LOG.trace("button: " + e.button + ";action: " + e.action + ";mods: " + e.mods + "; filled: " + e.filled);
+        if (scrollEvent.filled == 1) {
+            event_dwheel = (int) scrollEvent.yoffset;
+            LOG.trace("button: " + buttonEvent.button + ";action: " + buttonEvent.action + ";mods: " + buttonEvent.mods + "; filled: " + buttonEvent.filled);
         } else {
             event_dwheel = 0;
         }

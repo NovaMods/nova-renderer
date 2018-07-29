@@ -18,7 +18,10 @@ namespace nova {
 
         uniform_buffer(std::string name, std::shared_ptr<render_context> context, vk::BufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
 
-        uniform_buffer(uniform_buffer &&old) noexcept;
+		uniform_buffer(uniform_buffer &&old) noexcept;
+
+		// TODO: figure out what actually uses this
+		uniform_buffer(const uniform_buffer &old) = default;
 
         virtual ~uniform_buffer();
 

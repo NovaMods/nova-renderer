@@ -393,13 +393,6 @@ public abstract class MixinMinecraft {
     }
 
     @Redirect(
-            method = "updateDisplay",
-            at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;update()V", remap = false)
-    )
-    private void proxyUpdateDisplay() {
-    }
-
-    @Redirect(
             method = "setIngameFocus",
             at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;isActive()Z", remap = false)
     )
@@ -419,6 +412,7 @@ public abstract class MixinMinecraft {
             this.displayHeight = NovaRenderer.getInstance().getHeight();
 
             novaLogger.info("Window was resized to: " + displayWidth + "x" + displayHeight);
+
             this.resize(this.displayWidth, this.displayHeight);
         }
     }
@@ -429,14 +423,6 @@ public abstract class MixinMinecraft {
     )
     private void hookUpdateCameraAndWindow(CallbackInfo callbackInfo) {
         NovaRenderer.getInstance().updateCameraAndRender(timer.renderPartialTicks, Minecraft.getMinecraft());
-    }
-
-    @Inject(
-            method = "loadWorld(Lnet/minecraft/client/multiplayer/WorldClient;Ljava/lang/String;)V",
-            at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;world:Lnet/minecraft/client/multiplayer/WorldClient;", ordinal = 4, shift = At.Shift.AFTER)
-    )
-    private void afterWorldAssigned(CallbackInfo callbackInfo) {
-        NovaRenderer.getInstance().setWorld(world);
     }
 
     @Inject(

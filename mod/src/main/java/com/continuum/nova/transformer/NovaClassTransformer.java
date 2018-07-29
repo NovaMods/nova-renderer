@@ -9,6 +9,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,8 +19,6 @@ public class NovaClassTransformer implements IClassTransformer {
 
     static {
         blacklistPrefixes.add("org.lwjgl.");
-        blacklistPrefixes.add("net.minecraft.client.renderer.GlStateManage");
-        blacklistPrefixes.add("net.minecraft.client.renderer.OpenGlHelper");
         blacklistPrefixes.add("com.continuum.nova.transformer.");
     }
     @Override public byte[] transform(String name, String transformedName, byte[] basicClass) {
@@ -88,7 +87,10 @@ public class NovaClassTransformer implements IClassTransformer {
                     }
                     System.err.println("Found usage of method " + owner + "." + name + ";" + desc + ", removing");
 
-                    for (Type t : Type.getArgumentTypes(desc)) {
+                    Type[] args = Type.getArgumentTypes(desc);
+                    // iterate backwards to pop in the right order
+                    for (int i = args.length - 1; i >= 0; i--) {
+                        Type t = args[i];
                         switch (t.getSize()) {
                             case 2:
                                 super.visitInsn(Opcodes.POP2);
@@ -102,7 +104,7 @@ public class NovaClassTransformer implements IClassTransformer {
                     }
                     if (opcode != Opcodes.INVOKESTATIC) {
                         super.visitInsn(Opcodes.POP);
-                        System.err.println("\tPOP (object)");
+                        System.err.println("\tPOP (this)");
                     }
                     switch (Type.getReturnType(desc).getSort()) {
                         case Type.OBJECT:

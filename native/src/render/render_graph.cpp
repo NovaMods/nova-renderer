@@ -33,14 +33,14 @@ namespace nova {
 
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass> &passes) {
         NOVA_PROFILER_SCOPE;
-        LOG(INFO) << "Ordering passes";
+        LOG(INFO) << "Executing Pass Schedule";
         auto ordered_passes = std::vector<std::string>{};
 
         /*
          * Build some accelleration structures
          */
 
-        LOG(INFO) << "Collecting passes that write to each resource...";
+        LOG(DEBUG) << "Collecting passes that write to each resource...";
         // Maps from resource name to pass that writes to that resource, then from resource name to pass that reads from
         // that resource
         auto resource_to_write_pass = std::unordered_map<std::string, std::vector<std::string>>{};
@@ -57,7 +57,7 @@ namespace nova {
          * Initial ordering of passes
          */
 
-        LOG(INFO) << "First pass at ordering passes...";
+        LOG(DEBUG) << "First pass at ordering passes...";
         // The passes, in simple dependency order
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
             LOG(ERROR) << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";

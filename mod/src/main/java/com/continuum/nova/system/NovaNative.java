@@ -4,6 +4,8 @@ import com.sun.jna.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.List;
 
@@ -100,14 +102,17 @@ public interface NovaNative extends Library {
         public int vertex_buffer_size;
         public int index_buffer_size;
 
-        public void setVertex_data(List<Integer> vertexData) {
-            vertex_data = new Memory(vertexData.size() * Native.getNativeSize(Integer.class));
-            for(int i = 0; i < vertexData.size(); i++) {
-                Integer data = vertexData.get(i);
-                vertex_data.setInt(i * Native.getNativeSize(Integer.TYPE), data);
-            }
+        public void setVertex_data(IntBuffer vertexData) {
+            int s = vertexData.limit();
+            Memory vertex_datam = new Memory(s * Native.getNativeSize(Integer.class));
+            ByteBuffer bbuf = vertex_datam.getByteBuffer(0, s * Native.getNativeSize(Integer.class));
+            bbuf.position(0);
+            vertexData.position(0);
+            bbuf.asIntBuffer().put(vertexData);
+            bbuf.position(0);
+            vertex_data = vertex_datam;
 
-            vertex_buffer_size = vertexData.size();
+            vertex_buffer_size = s;
         }
 
         public void setIndices(List<Integer> indices) {
@@ -237,6 +242,7 @@ public interface NovaNative extends Library {
         FALLING_BLOCK,
         GUI,
         TEXT,
+        GUI_BACKGROUND,
         CLOUD,
         SKY_DECORATION,
         SELECTION_BOX,
@@ -269,6 +275,8 @@ public interface NovaNative extends Library {
     void reset_texture_manager();
 
     void add_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
+
+    void remove_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
 
     boolean should_close();
 

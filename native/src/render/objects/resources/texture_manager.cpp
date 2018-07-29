@@ -13,9 +13,8 @@
 
 namespace nova {
     texture_manager::texture_manager(std::shared_ptr<render_context> context) : context(context) {
-        LOG(INFO) << "Creating the Texture Manager";
+        LOG(DEBUG) << "Creating the Texture Manager";
         reset();
-        LOG(INFO) << "Texture manager created";
     }
 
     texture_manager::~texture_manager() {
@@ -37,13 +36,13 @@ namespace nova {
         locations.clear();
         auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
         atlases["NovaLightmap"] = texture2D("NovaLightmap", vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, usage, context);
-        LOG(INFO) << "Created lightmap";
+        LOG(TRACE) << "Created lightmap";
 
         clear_dynamic_textures();
     }
 
     void texture_manager::add_texture(mc_atlas_texture &new_texture) {
-        LOG(INFO) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
+        LOG(DEBUG) << "Adding texture " << new_texture.name << " (" << new_texture.width << "x" << new_texture.height << ")";
         std::string texture_name = new_texture.name;
         auto dimensions = vk::Extent2D{new_texture.width, new_texture.height};
         auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
@@ -245,14 +244,14 @@ namespace nova {
             pass_idx++;
         }
 
-        LOG(INFO) << "Ordered resources";
+        LOG(TRACE) << "Ordered resources";
 
         // Figure out which resources can be aliased
         std::unordered_map<std::string, std::string> aliases;
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
-            LOG(INFO) << "Determining if we can alias `" << to_alias_name << "`. Does it exist? " << (textures.find(to_alias_name) != textures.end());
+            LOG(TRACE) << "Determining if we can alias `" << to_alias_name << "`. Does it exist? " << (textures.find(to_alias_name) != textures.end());
             if(to_alias_name == "Backbuffer" || to_alias_name == "backbuffer") {
                 // Yay special cases!
                 continue;
@@ -262,7 +261,7 @@ namespace nova {
 
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
-                LOG(INFO) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
+                LOG(TRACE) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
                 const auto& try_alias_name = resources_in_order[j];
                 if(resource_used_range[to_alias_name].is_disjoint_with(resource_used_range[try_alias_name])) {
                     // They can be aliased if they have the same format
@@ -274,7 +273,7 @@ namespace nova {
             }
         }
 
-        LOG(INFO) << "Figured out which resources can be aliased";
+        LOG(TRACE) << "Figured out which resources can be aliased";
 
         auto swapchain_dimensions = swapchain->get_swapchain_extent();
 
@@ -285,13 +284,13 @@ namespace nova {
         for(const auto& named_texture : textures) {
             std::string texture_name = named_texture.first;
             while(aliases.find(texture_name) != aliases.end()) {
-                LOG(INFO) << "Resource " << texture_name << " is aliased with " << aliases[texture_name];
+                LOG(TRACE) << "Resource " << texture_name << " is aliased with " << aliases[texture_name];
                 texture_name = aliases[texture_name];
             }
 
             // We've found the first texture in this alias chain - let's create an actual texture for it if needed
             if(dynamic_tex_name_to_idx.find(texture_name) == dynamic_tex_name_to_idx.end()) {
-                LOG(INFO) << "Need to create it";
+                LOG(TRACE) << "Need to create it";
                 // The texture we're all aliasing doesn't have a real texture yet. Let's fix that
                 const texture_format& format = textures.at(texture_name).format;
 
@@ -322,11 +321,11 @@ namespace nova {
                 dynamic_textures.push_back(tex);
                 dynamic_tex_name_to_idx[texture_name] = new_tex_index;
 
-                LOG(INFO) << "Added texture " << tex.get_name() << " to the dynamic textures";
-                LOG(INFO) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
+                LOG(TRACE) << "Added texture " << tex.get_name() << " to the dynamic textures";
+                LOG(TRACE) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
 
             } else {
-                LOG(INFO) << "The physical resource already exists, so we're just gonna use that";
+                LOG(TRACE) << "The physical resource already exists, so we're just gonna use that";
                 // The texture we're aliasing already has a real texture behind it - so let's use that
                 dynamic_tex_name_to_idx[named_texture.first] = dynamic_tex_name_to_idx[texture_name];
             }
@@ -334,7 +333,7 @@ namespace nova {
     }
 
     void texture_manager::clear_dynamic_textures() {
-        LOG(INFO) << "Cleared dynamic textures";
+        LOG(TRACE) << "Cleared dynamic textures";
         dynamic_textures.resize(0);
         dynamic_tex_name_to_idx.erase(dynamic_tex_name_to_idx.begin(), dynamic_tex_name_to_idx.end());
     }

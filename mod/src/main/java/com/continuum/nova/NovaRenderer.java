@@ -1,7 +1,5 @@
 package com.continuum.nova;
 
-import com.continuum.nova.chunks.ChunkBuilder;
-import com.continuum.nova.chunks.ChunkUpdateListener;
 import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.gui.NovaDraw;
 import com.continuum.nova.interfaces.INovaDynamicTexture;
@@ -10,13 +8,11 @@ import com.continuum.nova.interfaces.INovaTextureAtlasSprite;
 import com.continuum.nova.interfaces.INovaTextureMap;
 import com.continuum.nova.system.NovaNative;
 import com.continuum.nova.system.NovaNative.window_size;
+import com.continuum.nova.texture.INovaTextureManager;
 import com.continuum.nova.utils.Profiler;
 import com.continuum.nova.utils.Utils;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
-import glm.Glm;
-import glm.vec._2.Vec2;
-import glm.vec._3.i.Vec3i;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.ScaledResolution;
@@ -28,10 +24,8 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
-import net.minecraft.entity.Entity;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.common.LoaderExceptionModCrash;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,8 +38,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import static com.continuum.nova.NovaConstants.*;
 import static com.continuum.nova.utils.Utils.getImageData;
@@ -77,19 +69,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private IResourceManager resourceManager;
 
-    private ChunkUpdateListener chunkUpdateListener;
-
-    private PriorityQueue<ChunkUpdateListener.BlockUpdateRange> chunksToUpdate;
-    private Set<ChunkUpdateListener.BlockUpdateRange> updatedChunks = new HashSet<>();
-    private World world;
-
-    final private Executor chunkUpdateThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
-    private ChunkBuilder chunkBuilder;
     private HashMap<String, IGeometryFilter> filterMap;
     private NovaNative _native;
 
     private static NovaRenderer instance;
+
+    public static INovaTextureManager getTextureManager() {
+        return (INovaTextureManager) Minecraft.getMinecraft().getTextureManager();
+    }
 
     public static NovaRenderer getInstance() {
         if (instance == null) {
@@ -111,6 +98,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Utils.initGuiTextureLocations(GUI_COLOR_TEXTURES_LOCATIONS);
         Utils.initFontTextureLocations(FONT_COLOR_TEXTURES_LOCATIONS);
         Utils.initFreeTextures(FREE_TEXTURES);
+    }
+
+    public HashMap<String, IGeometryFilter> getFilterMap(){
+      return this.filterMap;
     }
 
     @Override
@@ -265,23 +256,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         _native.initialize();
         LOG.info("Native code initialized");
         updateWindowSize();
-
-        // Moved here so that it's initialized after the native code is loaded
-        chunksToUpdate = new PriorityQueue<>((range1, range2) -> {
-            Vec3i range1Center = new Vec3i();
-            Vec3i range2Center = new Vec3i();
-
-            Glm.add(range1Center, range1.min, new Vec3i(8, 128, 8));
-            Glm.add(range2Center, range2.min, new Vec3i(8, 128, 8));
-
-            Entity player = Minecraft.getMinecraft().player;
-            Vec2 playerPos = new Vec2(player.posX, player.posZ);
-            float range1DistToPlayer = new Vec2().distance(new Vec2(range1Center.x, range1Center.z), playerPos);
-            float range2DistToPlayer = new Vec2().distance(new Vec2(range2Center.x, range2Center.z), playerPos);
-
-            return Float.compare(range1DistToPlayer, range2DistToPlayer);
-        });
-        chunkUpdateListener = new ChunkUpdateListener(chunksToUpdate);
     }
 
     private void installNative() throws IOException {
@@ -372,20 +346,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         }
         Profiler.end("render_gui");
 
-        Profiler.start("update_chunks");
-        int numChunksUpdated = 0;
-        while (!chunksToUpdate.isEmpty()) {
-            ChunkUpdateListener.BlockUpdateRange range = chunksToUpdate.remove();
-            // chunkBuilder.createMeshesForChunk(range);
-            chunkUpdateThreadPool.execute(() -> chunkBuilder.createMeshesForChunk(range));
-            updatedChunks.add(range);
-            numChunksUpdated++;
-            if (numChunksUpdated > 10) {
-                break;
-            }
-        }
-        Profiler.end("update_chunks");
-
         Profiler.start("update_player");
         EntityPlayerSP viewEntity = mc.player;
         if (viewEntity != null) {
@@ -421,18 +381,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void printProfilerData() {
         Profiler.logData();
-    }
-
-    public void setWorld(World world) {
-        if (world != null) {
-            world.addEventListener(chunkUpdateListener);
-            this.world = world;
-            chunksToUpdate.clear();
-
-            if (chunkBuilder != null) {
-                chunkBuilder.setWorld(world);
-            }
-        }
     }
 
     /**
@@ -479,6 +427,8 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         String[] filtersSplit = filters.split("\n");
         Profiler.end("load_shaderpack");
 
+        LOG.info("Received filters `{}`", filters);
+
         if (filtersSplit.length < 2 || filtersSplit.length % 2 != 0) {
             throw new IllegalStateException("Must have a POT number of filters and shader names");
         }
@@ -494,13 +444,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             filterMap.put(filterName, filter);
         }
         Profiler.end("build_filters");
-
-        Profiler.start("new_chunk_builder");
-        chunkBuilder = new ChunkBuilder(filterMap, world, blockColors);
-
-        chunksToUpdate.addAll(updatedChunks);
-        updatedChunks.clear();
-        Profiler.end("new_chunk_builder");
     }
 
     public NovaNative getNative() {
