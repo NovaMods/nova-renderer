@@ -13,7 +13,6 @@
 #include <optional.hpp>
 
 #include "../../utils/smart_enum.h"
-#include "resources/texture_manager.h"
 #include "../../physics/aabb.h"
 #include "resources/shader_resource_manager.h"
 #include "meshes/mesh_definition.h"

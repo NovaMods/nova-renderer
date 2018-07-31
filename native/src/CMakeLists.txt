@@ -93,6 +93,7 @@ set(NOVA_HEADERS
 
         mc_interface/mc_gui_objects.h
         mc_interface/mc_objects.h
+        mc_interface/mc_interface_dump.h
 
         utils/utils.h
         utils/crash_handler.h
@@ -246,7 +247,7 @@ endif()
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler)
 
-add_executable(nova-test test/main.cpp ${NOVA_SOURCE})
+add_executable(nova-test test/main.cpp ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 target_link_libraries(nova-test ${COMMON_LINK_LIBS})
 target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
 set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
