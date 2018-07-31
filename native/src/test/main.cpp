@@ -13,6 +13,7 @@ int main(int argc, char **argv) {
     while (!in.eof()) {
         std::string str;
         std::getline(in, str, '\0');
+        std::cout << "Func: " << str;
         if (str == "dump_initialize") {
             initialize();
         } else if (str == "dump_add_texture") {
@@ -70,10 +71,10 @@ int main(int argc, char **argv) {
             in.read((char*) &chunk.index_buffer_size, sizeof(chunk.index_buffer_size));
 
             std::vector<char> vertex_data(chunk.vertex_buffer_size);
-            in.read(vertex_data.data(), sizeof(vertex_data));
+            in.read(vertex_data.data(), vertex_data.size());
 
             std::vector<char> index_data(chunk.index_buffer_size * sizeof(uint32_t));
-            in.read(index_data.data(), sizeof(index_data));
+            in.read(index_data.data(), index_data.size());
 
             chunk.vertex_data = (mc_block_vertex*) vertex_data.data();
             chunk.indices = (uint32_t*) index_data.data();
@@ -94,10 +95,10 @@ int main(int argc, char **argv) {
             in.read((char*) &chunk.index_buffer_size, sizeof(chunk.index_buffer_size));
 
             std::vector<char> vertex_data(chunk.vertex_buffer_size);
-            in.read(vertex_data.data(), sizeof(vertex_data));
+            in.read(vertex_data.data(), vertex_data.size());
 
             std::vector<char> index_data(chunk.index_buffer_size * sizeof(uint32_t));
-            in.read(index_data.data(), sizeof(index_data));
+            in.read(index_data.data(), index_data.size());
 
             chunk.vertex_data = (mc_block_vertex*) vertex_data.data();
             chunk.indices = (uint32_t*) index_data.data();
