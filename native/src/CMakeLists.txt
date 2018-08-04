@@ -225,6 +225,9 @@ source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
 add_library(nova-renderer SHARED ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
+endif()
 
 target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE BUILD_WITH_EASY_PROFILER)
 
