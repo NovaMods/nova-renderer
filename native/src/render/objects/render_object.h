@@ -19,25 +19,6 @@
 #include "meshes/vk_mesh.h"
 
 namespace nova {
-
-    SMART_ENUM(geometry_type, \
-    block, \
-    entity, \
-    falling_block, \
-    gui, \
-    text, \
-    gui_background, \
-    cloud, \
-    sky_decoration, \
-    selection_box, \
-    glint, \
-    weather, \
-    hand, \
-    fullscreen_quad, \
-    particle, \
-    lit_particle, \
-    eyes)
-
     /*!
      * \brief Represents something that can be rendered
      *

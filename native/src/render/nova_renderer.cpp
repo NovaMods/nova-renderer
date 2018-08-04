@@ -131,7 +131,6 @@ namespace nova {
         swapchain->aqcuire_next_swapchain_image(swapchain_image_acquire_semaphore);
 
         // Process geometry updates
-        // The GPU is probably done with these things. If not then UUUUUUUUUUGGGGGGGGGGGGHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
         meshes->remove_gui_render_objects();
         meshes->remove_old_geometry();
         meshes->upload_new_geometry();
