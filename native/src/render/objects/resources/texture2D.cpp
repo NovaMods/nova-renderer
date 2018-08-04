@@ -102,7 +102,7 @@ namespace nova {
     }
 
     void texture2D::upload_data_with_staging_buffer(void *data, vk::Extent3D image_size) {
-        LOG(TRACE) << "Setting data for texture " << name;
+        LOG(TRACE) << "Setting data for texture " << name << " to data of size " << image_size.width << ", " << image_size.height << ", " << image_size.depth;
         vk::Buffer staging_buffer;
         VmaAllocation staging_buffer_allocation;
         auto buffer_size = image_size.width * image_size.height * image_size.depth * 4;
@@ -129,14 +129,20 @@ namespace nova {
         vmaUnmapMemory(context->allocator, staging_buffer_allocation);
         LOG(TRACE) << "Copied data to staging buffer";
 
-        auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
+        auto command_buffer = context->command_buffer_pool->alloc_command_buffer(0);
         command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
         command_buffer.begin_as_single_commend();
 
-        transfer_image_format(command_buffer.buffer, image, layout, vk::ImageLayout::eTransferDstOptimal);
+        if(name != "NovaLightmap") {
+            transfer_image_format(command_buffer.buffer, image, layout, vk::ImageLayout::eTransferDstOptimal);
+        }
+
         copy_buffer_to_image(command_buffer.buffer, staging_buffer, image, size.width, size.height);
-        transfer_image_format(command_buffer.buffer, image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
-        layout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+        if(name != "NovaLightmap") {
+            transfer_image_format(command_buffer.buffer, image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+            layout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        }
 
         command_buffer.end_as_single_command();
 

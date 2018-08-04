@@ -84,7 +84,6 @@ namespace nova {
                     LOG(DEBUG) << "Adding color texture '" << color_attachment_info.name << "'";
 
                     auto attachment = vk::AttachmentDescription()
-                            .setFormat(swapchain->get_swapchain_format())
                             .setSamples(vk::SampleCountFlagBits::e1)
                             .setInitialLayout(vk::ImageLayout::eUndefined)
                             .setStoreOp(vk::AttachmentStoreOp::eStore);
@@ -108,6 +107,7 @@ namespace nova {
                         last_texture_name = "Backbuffer";
 
                         attachment.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+                        attachment.setFormat(swapchain->get_swapchain_format());
 
                     } else {
                         const auto &texture = textures.get_texture(color_attachment_info.name);
@@ -122,6 +122,7 @@ namespace nova {
                         last_texture_name = texture.get_name();
 
                         attachment.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
+                        attachment.setFormat(texture.get_format());
                     }
 
                     auto color_ref = vk::AttachmentReference()

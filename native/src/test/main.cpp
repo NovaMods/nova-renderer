@@ -8,17 +8,19 @@
 #include <fstream>
 
 int main(int argc, char **argv) {
-    std::ifstream in("nova_debug_dump", std::ios::binary);
+    std::ifstream in("nova_dump_input", std::ios::binary);
     if(!in.is_open() || !in.good()) {
-        throw std::runtime_error("Could not open file `nova_debug_dump`");
+        throw std::runtime_error("Could not open file `nova_dump_input`");
     }
 
     while (!in.eof()) {
         std::string str;
         std::getline(in, str, '\0');
         std::cout << "Func: " << str << "\n";
+
         if (str == "dump_initialize") {
             initialize();
+
         } else if (str == "dump_add_texture") {
             mc_atlas_texture tex = {};
             in.read((char*) &tex.width, sizeof(tex.width));
@@ -34,8 +36,10 @@ int main(int argc, char **argv) {
             tex.texture_data = (unsigned char*) data.data();
 
             add_texture(&tex);
+
         } else if (str == "dump_reset_texture_manager") {
             reset_texture_manager();
+
         } else if (str == "dump_send_lightmap_texture") {
             int count, width, height;
             in.read((char*) &count, sizeof(count));
@@ -46,6 +50,7 @@ int main(int argc, char **argv) {
             in.read((char*) data, sizeof(data));
 
             send_lightmap_texture(data, count, width, height);
+
         } else if (str == "dump_add_texture_location") {
             mc_texture_atlas_location loc = {};
             std::string name;
@@ -58,8 +63,10 @@ int main(int argc, char **argv) {
             in.read((char*) &loc.max_v, sizeof(loc.max_v));
 
             add_texture_location(&loc);
+
         } else if (str == "dump_get_max_texture_size") {
             get_max_texture_size();
+
         } else if (str == "dump_add_chunk_geometry_for_filter") {
             std::string name;
             std::getline(in, name, '\0');
@@ -110,16 +117,20 @@ int main(int argc, char **argv) {
 
         } else if (str == "dump_execute_frame") {
             execute_frame();
+
         } else if (str == "dump_set_fullscreen") {
             uint32_t fs;
             in.read((char*) &fs, sizeof(uint32_t));
             set_fullscreen(fs);
+
         } else if (str == "dump_should_close") {
             if (should_close()) {
                 return -1;
             }
+
         } else if (str == "dump_display_is_active") {
             display_is_active();
+
         } else if (str == "dump_add_gui_geometry") {
             std::string geo_type;
             std::string texture_name;
@@ -145,8 +156,10 @@ int main(int argc, char **argv) {
             gui.vertex_buffer = (float*) vertex_data;
 
             add_gui_geometry(geo_type.c_str(), &gui);
+
         } else if (str == "dump_clear_gui_buffers") {
             clear_gui_buffers();
+
         } else if (str == "dump_set_string_setting") {
             std::string setting_name;
             std::string setting_value;
@@ -154,6 +167,7 @@ int main(int argc, char **argv) {
             std::getline(in, setting_value, '\0');
 
             set_string_setting(setting_name.c_str(), setting_value.c_str());
+
         } else if (str == "dump_set_float_setting") {
             std::string setting_name;
             float setting_value;
@@ -161,6 +175,7 @@ int main(int argc, char **argv) {
             in.read((char*) &setting_value, sizeof(setting_value));
 
             set_float_setting(setting_name.c_str(), setting_value);
+
         } else if (str == "dump_set_player_camera_transform") {
             double x, y, z;
             float yaw, pitch;
@@ -172,14 +187,18 @@ int main(int argc, char **argv) {
             in.read((char*) &pitch, sizeof(pitch));
 
             set_player_camera_transform(x, y, z, yaw, pitch);
+
         } else if (str == "dump_set_mouse_grabbed") {
             uint32_t grabbed;
             in.read((char*) &grabbed, sizeof(grabbed));
             set_mouse_grabbed(grabbed);
+
         } else if (str == "dump_get_materials_and_filters") {
             get_materials_and_filters();
+
         } else if (str == "dump_destruct") {
             destruct();
+
         } else {
             throw std::runtime_error("This should be impossible");
         }

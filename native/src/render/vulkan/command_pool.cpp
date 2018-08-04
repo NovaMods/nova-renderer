@@ -23,7 +23,7 @@ namespace nova {
         }
     }
 
-    command_buffer command_pool::get_command_buffer(uint8_t thread_idx) {
+    command_buffer command_pool::alloc_command_buffer(uint8_t thread_idx) {
         command_buffer buffer = {};
 
         vk::CommandBufferAllocateInfo command_buffer_allocation_info = {};
@@ -76,16 +76,7 @@ namespace nova {
 
         auto& graphics_queue = context->graphics_queue;
 
-        context->device.resetFences(1, fences);
-
-        graphics_queue.submit(1, &submit_info, fences[0]);
-        LOG(TRACE) << "Submitted buffer, it'll signal the fence when done";
-
-        std::vector<vk::Fence> wait_fences;
-        wait_fences.push_back(fences[0]);
-        context->device.waitForFences(wait_fences, VK_TRUE, ~0ull);
-        LOG(TRACE) << "Waited for the fence";
-
-        context->command_buffer_pool->free(*this);
+        graphics_queue.submit(1, &submit_info, {});
+        LOG(TRACE) << "Submitted buffer";
     }
 }

@@ -89,7 +89,8 @@ namespace nova {
 
         vk::FenceCreateInfo fence_create_info = vk::FenceCreateInfo()
             .setFlags(vk::FenceCreateFlagBits::eSignaled);
-        render_done_fence = context->device.createFence(fence_create_info);
+
+        main_command_buffer = context->command_buffer_pool->alloc_command_buffer(0);
     }
 
     nova_renderer::~nova_renderer() {
@@ -112,9 +113,6 @@ namespace nova {
         device.destroySemaphore(render_finished_semaphore);
         LOG(TRACE) << "Destroyed the semaphores";
 
-        device.destroyFence(render_done_fence);
-        LOG(TRACE) << "Destroyed the fence";
-
         game_window.reset();
         LOG(TRACE) << "Reset the game window";
 
@@ -133,9 +131,12 @@ namespace nova {
 
         swapchain->aqcuire_next_swapchain_image(swapchain_image_acquire_semaphore);
 
-        context->device.resetFences({render_done_fence});
+        // Process geometry updates
+        // The GPU is probably done with these things. If not then UUUUUUUUUUGGGGGGGGGGGGHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+        meshes->remove_gui_render_objects();
+        meshes->remove_old_geometry();
+        meshes->upload_new_geometry();
 
-        auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
         main_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
         LOG(TRACE) << "Rendering with command buffer " << (VkCommandBuffer) main_command_buffer.buffer;
 
@@ -171,26 +172,11 @@ namespace nova {
                 .setSignalSemaphoreCount(static_cast<uint32_t>(signal_semaphores.size()))
                 .setPSignalSemaphores(signal_semaphores.data());
 
-        context->graphics_queue.submit(1, &submit_info, render_done_fence);
+        context->graphics_queue.submit(1, &submit_info, {});
 
         swapchain->present_current_image(signal_semaphores);
 
         game_window->end_frame();
-
-        auto fence_wait_result = context->device.waitForFences({render_done_fence}, VK_TRUE, std::numeric_limits<uint64_t>::max());
-        if (fence_wait_result == vk::Result::eSuccess) {
-            // Process geometry updates
-            meshes->remove_gui_render_objects();
-            meshes->remove_old_geometry();
-            meshes->upload_new_geometry();
-
-            LOG(TRACE) << "About to reset the main command buffer";
-            context->command_buffer_pool->free(main_command_buffer);
-            LOG(TRACE) << "Freed it";
-
-        } else {
-            LOG(WARNING) << "Could not wait for render done fence, " << vk::to_string(fence_wait_result);
-        }
 
         end_frame();
     }
@@ -517,27 +503,31 @@ namespace nova {
         NOVA_PROFILER_FLUSH_TO_FILE("profiler_data.txt");
         if(context->timestamp_valid_bits <= 32) {
             std::vector<uint32_t> buffer = std::vector<uint32_t>(passes_list.size() * 2);
-            context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer.size(), buffer.size() *
-                                                                                                  sizeof(uint32_t),
-                                                buffer.data(), sizeof(uint32_t), vk::QueryResultFlagBits::eWait);
+            vk::Result query_readback_result = context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer.size(), buffer.size() * sizeof(uint32_t),
+                                                buffer.data(), sizeof(uint32_t), vk::QueryResultFlags());
 
-            unsigned int index = 0;
-            while(index < (buffer.size() - 1)) {
-                uint32_t begin_val = buffer.at(index++);
-                uint32_t end_val = buffer.at(index++);
-                LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " <<  ((end_val - begin_val) * context->timestamp_period) / 1000000 << "ms";
+            if(query_readback_result == vk::Result::eSuccess) {
+                unsigned int index = 0;
+                while(index < (buffer.size() - 1)) {
+                    uint32_t begin_val = buffer.at(index++);
+                    uint32_t end_val = buffer.at(index++);
+                    LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took "
+                               << ((end_val - begin_val) * context->timestamp_period) / 1000000 << "ms";
+                }
             }
         } else {
             std::vector<uint64_t > buffer = std::vector<uint64_t >(passes_list.size() * 2);
-            context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer.size() , buffer.size() *
-                                                                                                  sizeof(uint64_t),
-                                                buffer.data(), sizeof(uint64_t), vk::QueryResultFlagBits::eWait);
+            vk::Result query_readback_result = context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer.size() , buffer.size() * sizeof(uint64_t),
+                                                buffer.data(), sizeof(uint64_t), vk::QueryResultFlagBits::e64);
 
-            unsigned int index = 0;
-            while(index < (buffer.size() - 1)) {
-                uint64_t begin_val = buffer.at(index++);
-                uint64_t end_val = buffer.at(index++);
-                LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " << ((end_val - begin_val) * context->timestamp_period) / 1000000 << "ms";
+            if(query_readback_result == vk::Result::eSuccess) {
+                unsigned int index = 0;
+                while(index < (buffer.size() - 1)) {
+                    uint64_t begin_val = buffer.at(index++);
+                    uint64_t end_val = buffer.at(index++);
+                    LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took "
+                               << ((end_val - begin_val) * context->timestamp_period) / 1000000 << "ms";
+                }
             }
         }
         LOG(INFO) << "Frame done";
