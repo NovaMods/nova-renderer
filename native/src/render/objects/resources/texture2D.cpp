@@ -261,9 +261,6 @@ namespace nova {
 
         command_buffer.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCDFAInspection"
         LOG(TRACE) << "Recorded command into command buffer " << (VkCommandBuffer)command_buffer << " to copy data to image " << (VkImage)image;
-#pragma clang diagnostic pop
     }
 }
