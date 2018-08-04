@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
+#include "../../vulkan/command_pool.h"
 
 namespace nova {
     class render_context;
@@ -78,7 +79,14 @@ namespace nova {
         vk::ImageLayout layout;
         VmaAllocation allocation;
 
-        void upload_data_with_staging_buffer(void *data, vk::Extent3D image_size);
+        uint32_t buffer_size;
+        vk::Buffer staging_buffer;
+        VmaAllocation staging_buffer_allocation;
+
+        // Each texture has a single command buffer it uses to update its data
+        command_buffer uploading_command_buffer;
+
+        void upload_data_with_staging_buffer(void *data, vk::Extent2D image_size);
     };
 
     /*!

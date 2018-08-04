@@ -87,9 +87,6 @@ namespace nova {
         render_finished_semaphore = context->device.createSemaphore(create_info);
         LOG(TRACE) << "Created semaphores";
 
-        vk::FenceCreateInfo fence_create_info = vk::FenceCreateInfo()
-            .setFlags(vk::FenceCreateFlagBits::eSignaled);
-
         main_command_buffer = context->command_buffer_pool->alloc_command_buffer(0);
     }
 
@@ -108,6 +105,8 @@ namespace nova {
         }
 
         auto& device = context->device;
+
+        context->command_buffer_pool->free(main_command_buffer);
 
         device.destroySemaphore(swapchain_image_acquire_semaphore);
         device.destroySemaphore(render_finished_semaphore);

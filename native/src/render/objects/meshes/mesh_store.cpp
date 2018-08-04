@@ -120,10 +120,13 @@ namespace nova {
             const auto& def = std::get<1>(entry);
 
             render_object obj(context, *shader_resources, sizeof(glm::mat4), def);
+            LOG(TRACE) << "Created new render object " << obj.id;
             glm::mat4 model_matrix(1.0);
             model_matrix = glm::translate(model_matrix, def.position);
             obj.write_new_model_ubo(model_matrix);
+            LOG(TRACE) << "Updated the per-model UBO with this mesh's model matrix";
             obj.upload_model_matrix(context->device);
+            LOG(TRACE) << "Uploaded model matrix UBO to the GPU";
 
             obj.type = geometry_type::block;
             obj.parent_id = def.id;
@@ -135,8 +138,10 @@ namespace nova {
             const std::string& material_name = std::get<0>(entry);
             if(renderables_grouped_by_material.find(material_name) == renderables_grouped_by_material.end()) {
                 renderables_grouped_by_material[material_name] = std::vector<render_object>{};
+                LOG(TRACE) << "Created new list of render objects for material " << material_name;
             }
             renderables_grouped_by_material.at(material_name).push_back(std::move(obj));
+            LOG(TRACE) << "Moved the render object into the boi";
 
             geometry_to_upload.pop();
         }
