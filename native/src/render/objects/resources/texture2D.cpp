@@ -74,11 +74,31 @@ namespace nova {
         layout = image_create_info.initialLayout;
 
         LOG(TRACE) << "Created new image";
+
+        uploading_command_buffer = context->command_buffer_pool->alloc_command_buffer(0);
+
+        buffer_size = dimensions.width * dimensions.height * 4;
+
+        vk::BufferCreateInfo buffer_create_info = {};
+        buffer_create_info.queueFamilyIndexCount = 1;
+        buffer_create_info.pQueueFamilyIndices = &context->graphics_family_idx;
+        buffer_create_info.usage = vk::BufferUsageFlagBits::eTransferSrc;
+
+        // A standard image from disk is 32 bpp in Nova. I'm going to hate myself when Joey wants something else
+        buffer_create_info.size = buffer_size;
+
+        VmaAllocationCreateInfo staging_buffer_allocation_info = {};
+        staging_buffer_allocation_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        staging_buffer_allocation_info.flags = 0;
+
+        vmaCreateBuffer(context->allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
+                        reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
+        LOG(TRACE) << "Allocated staging buffer " << (VkBuffer)staging_buffer;
     }
 
     void texture2D::set_data(void* pixel_data, vk::Extent2D dimensions) {
         // Create a staging buffer and use that to upload the data
-        upload_data_with_staging_buffer(pixel_data, vk::Extent3D{dimensions.width, dimensions.height, 1});
+        upload_data_with_staging_buffer(pixel_data, vk::Extent2D{dimensions.width, dimensions.height});
     }
 
     vk::Extent2D texture2D::get_size() const {
@@ -101,27 +121,8 @@ namespace nova {
         return name;
     }
 
-    void texture2D::upload_data_with_staging_buffer(void *data, vk::Extent3D image_size) {
-        LOG(TRACE) << "Setting data for texture " << name;
-        vk::Buffer staging_buffer;
-        VmaAllocation staging_buffer_allocation;
-        auto buffer_size = image_size.width * image_size.height * image_size.depth * 4;
-
-        vk::BufferCreateInfo buffer_create_info = {};
-        buffer_create_info.queueFamilyIndexCount = 1;
-        buffer_create_info.pQueueFamilyIndices = &context->graphics_family_idx;
-        buffer_create_info.usage = vk::BufferUsageFlagBits::eTransferSrc;
-
-        // A standard image from disk is 32 bpp in Nova. I'm going to hate myself when Joey wants something else
-        buffer_create_info.size = buffer_size;
-
-        VmaAllocationCreateInfo staging_buffer_allocation_info = {};
-        staging_buffer_allocation_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-        staging_buffer_allocation_info.flags = 0;
-
-        vmaCreateBuffer(context->allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
-                        reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
-        LOG(TRACE) << "Allocated staging buffer " << (VkBuffer)staging_buffer;
+    void texture2D::upload_data_with_staging_buffer(void *data, vk::Extent2D image_size) {
+        LOG(TRACE) << "Setting data for texture " << name << " to data of size " << image_size.width << ", " << image_size.height;
 
         void* mapped_data;
         vmaMapMemory(context->allocator, staging_buffer_allocation, &mapped_data);
@@ -129,19 +130,21 @@ namespace nova {
         vmaUnmapMemory(context->allocator, staging_buffer_allocation);
         LOG(TRACE) << "Copied data to staging buffer";
 
-        auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
-        command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
-        command_buffer.begin_as_single_commend();
+        uploading_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+        uploading_command_buffer.begin_as_single_commend();
 
-        transfer_image_format(command_buffer.buffer, image, layout, vk::ImageLayout::eTransferDstOptimal);
-        copy_buffer_to_image(command_buffer.buffer, staging_buffer, image, size.width, size.height);
-        transfer_image_format(command_buffer.buffer, image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
-        layout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        if(name != "NovaLightmap") {
+            transfer_image_format(uploading_command_buffer.buffer, image, layout, vk::ImageLayout::eTransferDstOptimal);
+        }
 
-        command_buffer.end_as_single_command();
+        copy_buffer_to_image(uploading_command_buffer.buffer, staging_buffer, image, size.width, size.height);
 
-        vmaDestroyBuffer(context->allocator, (VkBuffer)staging_buffer, staging_buffer_allocation);
-        LOG(TRACE) << "Destroyed staging buffer";
+        if(name != "NovaLightmap") {
+            transfer_image_format(uploading_command_buffer.buffer, image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+            layout = vk::ImageLayout::eShaderReadOnlyOptimal;
+        }
+
+        uploading_command_buffer.end_as_single_command();
     }
 
     void texture2D::destroy() {
@@ -149,6 +152,9 @@ namespace nova {
 
         vmaDestroyImage(context->allocator, (VkImage)image, allocation);
         context->device.destroyImageView(image_view);
+
+        vmaDestroyBuffer(context->allocator, (VkBuffer)staging_buffer, staging_buffer_allocation);
+        LOG(TRACE) << "Destroyed staging buffer";
     }
 
     vk::ImageView texture2D::get_image_view() const {

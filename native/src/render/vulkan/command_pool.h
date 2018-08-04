@@ -42,7 +42,7 @@ namespace nova {
          * \param thread_idx the index of the thread that wants a command buffer
          * \return A command buffer
          */
-        command_buffer get_command_buffer(uint8_t thread_idx);
+        command_buffer alloc_command_buffer(uint8_t thread_idx);
 
         /*!
          * \brief Frees the specified command buffer

@@ -153,9 +153,8 @@ namespace nova {
 
         vk::Semaphore render_finished_semaphore;
 
-        // Will be replaced when I merge in the render graph, for now this is kinda a hack to let me validate the rest
-        // of the Nova Vulkan code
-        vk::Fence render_done_fence;
+        // The command buffer that renders the entire frame
+        command_buffer main_command_buffer;
 
         /*
          * Internal variables

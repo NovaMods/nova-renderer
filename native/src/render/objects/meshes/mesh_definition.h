@@ -13,6 +13,24 @@
 #include "../../../utils/smart_enum.h"
 
 namespace nova {
+    SMART_ENUM(geometry_type, \
+    block, \
+    entity, \
+    falling_block, \
+    gui, \
+    text, \
+    gui_background, \
+    cloud, \
+    sky_decoration, \
+    selection_box, \
+    glint, \
+    weather, \
+    hand, \
+    fullscreen_quad, \
+    particle, \
+    lit_particle, \
+    eyes)
+
     /*!
      * \brief Specifies the format of vertex buffer data
      */
@@ -43,6 +61,8 @@ namespace nova {
         format vertex_format;
         glm::vec3 position;
         int id;
+
+        geometry_type type;
     };
 }
 

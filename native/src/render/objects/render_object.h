@@ -13,32 +13,12 @@
 #include <optional.hpp>
 
 #include "../../utils/smart_enum.h"
-#include "resources/texture_manager.h"
 #include "../../physics/aabb.h"
 #include "resources/shader_resource_manager.h"
 #include "meshes/mesh_definition.h"
 #include "meshes/vk_mesh.h"
 
 namespace nova {
-
-    SMART_ENUM(geometry_type, \
-    block, \
-    entity, \
-    falling_block, \
-    gui, \
-    text, \
-    gui_background, \
-    cloud, \
-    sky_decoration, \
-    selection_box, \
-    glint, \
-    weather, \
-    hand, \
-    fullscreen_quad, \
-    particle, \
-    lit_particle, \
-    eyes)
-
     /*!
      * \brief Represents something that can be rendered
      *

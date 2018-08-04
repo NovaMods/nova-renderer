@@ -93,15 +93,15 @@ struct mc_block_vertex {
  * \brief Represents a chunk in Minecraft. It's really just a large array of blocks and an ID
  */
 struct mc_chunk_render_object {
-	int format;
+	uint32_t format;
 	float x;
 	float y;
 	float z;
-	int id;
+	uint32_t id;
 	mc_block_vertex* vertex_data;
-	int* indices;
-	int vertex_buffer_size;
-	int index_buffer_size;
+	uint32_t* indices;
+	uint32_t vertex_buffer_size;
+	uint32_t index_buffer_size;
 
 };
 
@@ -109,10 +109,10 @@ struct mc_chunk_render_object {
  * \brief Represents a single quad in Minecraft
  */
 struct mc_baked_quad {
-	int num_vertices;
-	int tint_index;
+	uint32_t num_vertices;
+	uint32_t tint_index;
 	const char * texture_name;
-    int vertex_data[28];
+	uint32_t vertex_data[28];
 };
 
 /*!
@@ -120,7 +120,7 @@ struct mc_baked_quad {
  */
 struct mc_baked_model {
     const char * block_state;
-	int num_quads;
+	uint32_t num_quads;
     mc_baked_quad* quads;
 };
 
@@ -128,7 +128,7 @@ struct mc_baked_model {
  * \brief Describes a single entity
  */
 struct mc_entity {
-    int id;
+	uint32_t id;
 };
 
 /*!
@@ -149,9 +149,9 @@ struct mc_render_gui_params {
 
 struct mc_gui_geometry {
     const char *texture_name;  //!< The resource name of the texture.
-	int index_buffer_size;
-	int vertex_buffer_size;
-	int* index_buffer;
+	uint32_t index_buffer_size;
+	uint32_t vertex_buffer_size;
+	uint32_t* index_buffer;
     float* vertex_buffer;
 	const char * atlas_name;
 };

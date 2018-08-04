@@ -18,6 +18,7 @@ namespace nova {
     }
 
     void crash_handler::handle_terminate() {
+#ifndef _WIN32
         const std::exception_ptr ptr = std::current_exception();
         if(!ptr) {
             std::cerr << "nova::crash_handler::handle_terminate() called without current exception!" << std::endl;
@@ -46,6 +47,7 @@ namespace nova {
 
         std::cerr << "Exception handling complete, exiting with code " << EXIT_FAILURE << std::endl;
         std::exit(EXIT_FAILURE);
+#endif
     }
 
     void crash_handler::print_stacktrace() {
