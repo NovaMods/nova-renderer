@@ -225,6 +225,7 @@ source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
 add_library(nova-renderer SHARED ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 
 target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE BUILD_WITH_EASY_PROFILER)
 
@@ -249,7 +250,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES}
 
 add_executable(nova-test test/main.cpp ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 target_link_libraries(nova-test ${COMMON_LINK_LIBS})
-target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE DUMP_NOVA_CALLS=1)
+target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
 set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
