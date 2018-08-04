@@ -9,21 +9,11 @@
 #include <iostream>
 #include <fstream>
 
-#ifdef DUMP_NOVA_CALLS
 // func name is null terminated, no need to write length
 #define DUMP_FUNC do { dump_out.write(__func__, sizeof(__func__)); dump_out.flush(); } while(false)
 #define W_UINT32(x) do { uint32_t d[] = { (uint32_t) x }; dump_out.write((char*) d, sizeof(uint32_t)); } while(false)
 #define W_FLOAT(x) do { float d[] = { (float) x }; dump_out.write((char*) d, sizeof(float)); } while(false)
 #define W_DOUBLE(x) do { double d[] = { (double) x }; dump_out.write((char*) d, sizeof(double)); } while(false)
-
-#else
-
-#define DUMP_FUNC
-#define W_UINT32(x)
-#define W_FLOAT(x)
-#define W_DOUBLE(x)
-
-#endif
 
 using namespace nova;
 
