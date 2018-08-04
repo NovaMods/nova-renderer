@@ -249,7 +249,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES}
 
 add_executable(nova-test test/main.cpp ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 target_link_libraries(nova-test ${COMMON_LINK_LIBS})
-target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
+target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE DUMP_NOVA_CALLS=1)
 set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})

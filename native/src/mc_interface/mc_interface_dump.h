@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 
+#ifdef DUMP_NOVA_CALLS
 // func name is null terminated, no need to write length
 #define DUMP_FUNC do { dump_out.write(__func__, sizeof(__func__)); dump_out.flush(); } while(false)
 #define W_UINT32(x) do { uint32_t d[] = { (uint32_t) x }; dump_out.write((char*) d, sizeof(uint32_t)); } while(false)
@@ -204,3 +205,51 @@ void dump_destruct() {
     dump_lock.unlock();
     dump_out.close();
 }
+
+#else
+
+#define DUMP_FUNC
+#define W_UINT32(x)
+#define W_FLOAT(x)
+#define W_DOUBLE(x)
+
+void dump_initialize() {}
+
+void dump_add_texture(mc_atlas_texture* texture) {}
+
+void dump_reset_texture_manager() {}
+
+void dump_send_lightmap_texture(uint32_t* data, int count, int width, int height) {}
+
+void dump_add_texture_location(mc_texture_atlas_location* location) {}
+
+void dump_get_max_texture_size() {}
+
+void dump_add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk) {}
+
+void dump_remove_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk) {}
+
+void dump_execute_frame() {}
+
+void dump_set_fullscreen(int fs) {}
+
+void dump_should_close() {}
+
+void dump_display_is_active() {}
+
+void dump_add_gui_geometry(const char * geo_type, mc_gui_geometry * gui_geometry) {}
+
+void dump_clear_gui_buffers() {}
+
+void dump_set_string_setting(const char * setting_name, const char * setting_value) {}
+
+void dump_set_float_setting(const char * setting_name, float setting_value) {}
+
+void dump_set_player_camera_transform(double x, double y, double z, float yaw, float pitch) {}
+
+void dump_set_mouse_grabbed(int grabbed) {}
+
+void dump_get_materials_and_filters() {}
+
+void dump_destruct() {}
+#endif
