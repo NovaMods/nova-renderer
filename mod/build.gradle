@@ -311,7 +311,7 @@ void buildPlatformRelease() {
 void buildLinuxRelease() {
     ensureCommandWorks("cmake", "--version")
     Properties buildProperties = loadTmpBuildProps()
-    File nativeBuildDir = new File("../native/release-build-platform/")
+    File nativeBuildDir = new File("../native/release-build-linux/")
     ensureDir(nativeBuildDir, true)
 
     if(exec {
