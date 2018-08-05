@@ -73,7 +73,7 @@ namespace nova {
         id = other.id;
         model_matrix_descriptor = other.model_matrix_descriptor;
         per_model_buffer_range = other.per_model_buffer_range;
-        resource_manager = other.resource_manager;
+        // TODO: make resource_manager an shared_ptr again, so it can be moved
 
         // set other to moved from state
         other.model_matrix_descriptor = nullptr;

@@ -36,7 +36,7 @@ NOVA_API void initialize();
  * \param width The width of the lightmap
  * \param height The height of the lightmap
  */
-NOVA_API void send_lightmap_texture(int* data, int count, int width, int height);
+NOVA_API void send_lightmap_texture(uint32_t* data, int count, int width, int height);
 
 /*!
  * \brief Adds a new texture to the Nova Renderer, allowing the native code to use that texture

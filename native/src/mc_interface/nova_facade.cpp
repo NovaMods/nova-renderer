@@ -21,6 +21,8 @@
 #include "../utils/utils.h"
 #include "../render/objects/meshes/mesh_store.h"
 
+#include "mc_interface_dump.h"
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
 using namespace nova;
@@ -33,51 +35,61 @@ using namespace nova;
 // runs in thread 5
 
 NOVA_API void initialize() {
+    dump_initialize();
     nova_renderer::init();
 }
 
 NOVA_API void add_texture(mc_atlas_texture* texture) {
+    dump_add_texture(texture);
     NOVA_PROFILER_SCOPE;
     TEXTURE_MANAGER.add_texture(*texture);
 }
 
 NOVA_API void reset_texture_manager() {
+    dump_reset_texture_manager();
     NOVA_PROFILER_SCOPE;
     TEXTURE_MANAGER.reset();
 }
 
-NOVA_API void send_lightmap_texture(int* data, int count, int width, int height) {
+NOVA_API void send_lightmap_texture(uint32_t* data, int count, int width, int height) {
+    dump_send_lightmap_texture(data, count, width, height);
     NOVA_PROFILER_SCOPE;
     auto& lightmap = TEXTURE_MANAGER.get_texture("NovaLightmap");
     lightmap.set_data(data, {static_cast<uint32_t>(width), static_cast<uint32_t>(height)});
 }
 
 NOVA_API void add_texture_location(mc_texture_atlas_location* location) {
+    dump_add_texture_location(location);
     NOVA_PROFILER_SCOPE;
     TEXTURE_MANAGER.add_texture_location(*location);
 }
 
 NOVA_API int get_max_texture_size() {
+    dump_get_max_texture_size();
     return TEXTURE_MANAGER.get_max_texture_size();
 }
 
 NOVA_API void add_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk) {
+    dump_add_chunk_geometry_for_filter(filter_name, chunk);
     NOVA_PROFILER_SCOPE;
     MESH_STORE.add_chunk_render_object(std::string(filter_name), *chunk);
 }
 
 NOVA_API void remove_chunk_geometry_for_filter(const char* filter_name, mc_chunk_render_object * chunk) {
+    dump_remove_chunk_geometry_for_filter(filter_name, chunk);
     NOVA_PROFILER_SCOPE;
     MESH_STORE.remove_chunk_render_object(std::string(filter_name), *chunk);
 }
 
 NOVA_API void execute_frame() {
+    dump_execute_frame();
     NOVA_PROFILER_SCOPE;
     NOVA_RENDERER->render_frame();
     LOG(TRACE) << "execute_frame done";
 }
 
 NOVA_API void set_fullscreen(int fullscreen) {
+    dump_set_fullscreen(fullscreen);
     NOVA_PROFILER_SCOPE;
     bool temp_bool = false;
     if(fullscreen == 1) {
@@ -87,14 +99,17 @@ NOVA_API void set_fullscreen(int fullscreen) {
 }
 
 NOVA_API bool should_close() {
+    dump_should_close();
     return NOVA_RENDERER->should_end();
 }
 
 NOVA_API bool display_is_active() {
+    dump_display_is_active();
     return NOVA_RENDERER->get_game_window().is_active();
 }
 
 NOVA_API void add_gui_geometry(const char * geo_type, mc_gui_geometry * gui_geometry) {
+    dump_add_gui_geometry(geo_type, gui_geometry);
     NOVA_PROFILER_SCOPE;
     NOVA_RENDERER->get_mesh_store().add_gui_buffers(geo_type, gui_geometry);
 }
@@ -106,11 +121,13 @@ NOVA_API struct window_size get_window_size()
 }
 
 NOVA_API void clear_gui_buffers() {
+    dump_clear_gui_buffers();
     NOVA_PROFILER_SCOPE;
     NOVA_RENDERER->get_mesh_store().remove_gui_render_objects();
 }
 
 NOVA_API void set_string_setting(const char * setting_name, const char * setting_value) {
+    dump_set_string_setting(setting_name, setting_value);
     NOVA_PROFILER_SCOPE;
     settings& settings = NOVA_RENDERER->get_render_settings();
     settings.get_options()["settings"][setting_name] = setting_value;
@@ -118,6 +135,7 @@ NOVA_API void set_string_setting(const char * setting_name, const char * setting
 }
 
 NOVA_API void set_float_setting(const char * setting_name, float setting_value) {
+    dump_set_float_setting(setting_name, setting_value);
     NOVA_PROFILER_SCOPE;
     settings& settings = NOVA_RENDERER->get_render_settings();
     settings.get_options()["settings"][setting_name] = setting_value;
@@ -125,6 +143,7 @@ NOVA_API void set_float_setting(const char * setting_name, float setting_value) 
 }
 
 NOVA_API void set_player_camera_transform(double x, double y, double z, float yaw, float pitch) {
+    dump_set_player_camera_transform(x, y, z, yaw, pitch);
     NOVA_PROFILER_SCOPE;
     auto& player_camera = NOVA_RENDERER->get_player_camera();
 
@@ -155,10 +174,12 @@ NOVA_API struct key_char_event get_next_key_char_event()
 }
 
 NOVA_API void set_mouse_grabbed(int grabbed) {
+    dump_set_mouse_grabbed(grabbed);
     NOVA_RENDERER->get_game_window().set_mouse_grabbed(grabbed != 0);
 }
 
 NOVA_API char* get_materials_and_filters() {
+    dump_get_materials_and_filters();
     NOVA_PROFILER_SCOPE;
     auto& materials = NOVA_RENDERER->get_materials();
 
@@ -192,5 +213,6 @@ NOVA_API char* get_materials_and_filters() {
 }
 
 NOVA_API void destruct() {
+    dump_destruct();
     nova_renderer::deinit();
 }
