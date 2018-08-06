@@ -100,13 +100,13 @@ namespace nova {
         move_into_self(other);
     }
 
-    texture2D& texture2D::operator==(nova::texture2D &&other) {
+    texture2D& texture2D::operator==(nova::texture2D &&other) noexcept {
         move_into_self(other);
 
         return *this;
     }
 
-    void texture2D::move_into_self(texture2D &other) {
+    void texture2D::move_into_self(texture2D &other) noexcept {
         destroy();
 
         context = other.context;
@@ -115,6 +115,7 @@ namespace nova {
         name = std::move(other.name);
 
         image = other.image;
+        image_view = other.image_view;
         format = other.format;
         layout = other.layout;
         allocation = other.allocation;
@@ -127,7 +128,7 @@ namespace nova {
         mapped_data = other.mapped_data;
         data_upload_cmd_buffer = std::move(other.data_upload_cmd_buffer);
 
-        other.size = {0, 0};
+        other.size = vk::Extent2D(0, 0);
     }
 
     texture2D::~texture2D() {
@@ -179,9 +180,7 @@ namespace nova {
     void texture2D::upload_data_with_staging_buffer(void *data, vk::Extent3D image_size) {
         LOG(TRACE) << "Setting data for texture " << name;
         if(!frequently_updated) {
-            vk::Buffer staging_buffer;
-            VmaAllocation staging_buffer_allocation;
-            auto buffer_size = image_size.width * image_size.height * image_size.depth * 4;
+            buffer_size = image_size.width * image_size.height * image_size.depth * 4;
 
             vk::BufferCreateInfo buffer_create_info = {};
             buffer_create_info.queueFamilyIndexCount = 1;

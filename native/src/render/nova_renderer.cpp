@@ -28,6 +28,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <nova/profiler.h>
 #include "../utils/crash_handler.h"
+#include "../utils/command_buffer_watchdog.h"
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -51,6 +52,9 @@ namespace nova {
 
         context->create_instance(*game_window);
         LOG(TRACE) << "Instance created";
+
+        command_buffer_watchdog::initialize(context->device);
+
         context->setup_debug_callback();
         LOG(TRACE) << "Debug callback set up";
         game_window->create_surface(context);

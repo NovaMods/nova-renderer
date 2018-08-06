@@ -16,7 +16,7 @@ namespace nova {
     std::tuple<vk::Framebuffer, vk::Extent2D, int32_t> make_framebuffer(const render_pass &pass, const vk::RenderPass renderpass, texture_manager& textures, std::shared_ptr<render_context> context);
 
     std::unordered_map<std::string, pass_vulkan_information> make_passes(const shaderpack_data& data, texture_manager& textures,
-                                                                                            std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain) {
+            std::shared_ptr<render_context> context, std::shared_ptr<swapchain_manager> swapchain) {
         NOVA_PROFILER_SCOPE;
         std::unordered_map<std::string, pass_vulkan_information> renderpasses;
 

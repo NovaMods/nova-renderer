@@ -28,15 +28,11 @@ namespace nova {
             return;
         }
 
-        for(auto& tex : atlases) {
-            tex.second.destroy();
-        }
-
         atlases.clear();
         locations.clear();
         auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
-        atlases["NovaLightmap"] = texture2D("NovaLightmap", vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, usage,
-                                            context, true);
+        atlases.emplace("NovaLightmap", texture2D("NovaLightmap", vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, usage,
+                                            context, true));
         LOG(TRACE) << "Created lightmap";
 
         clear_dynamic_textures();
@@ -49,7 +45,6 @@ namespace nova {
         auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
         texture2D texture(texture_name, dimensions, vk::Format::eR8G8B8A8Unorm, usage, context);
         LOG(TRACE) << "Created texture object";
-        texture.set_name(texture_name);
 
         std::vector<uint8_t> pixel_data((std::size_t) (new_texture.width * new_texture.height * new_texture.num_components));
         for(uint32_t i = 0; i < new_texture.width * new_texture.height * new_texture.num_components; i++) {
@@ -62,8 +57,8 @@ namespace nova {
 
         LOG(TRACE) << "Sent texture data to GPU";
 
-        atlases[texture_name] = texture;
         LOG(DEBUG) << "Texture atlas " << texture_name << " is Vulkan texture " << texture.get_vk_image();
+        atlases.emplace(texture_name, std::move(texture));
     }
 
     void texture_manager::add_texture_location(mc_texture_atlas_location &location) {
@@ -316,11 +311,10 @@ namespace nova {
                 auto pixel_format = get_vk_format_from_pixel_format(format.pixel_format);
                 LOG(DEBUG) << "Creating a texture with nova format " << pixel_format_enum::to_string(format.pixel_format) << " and Vulkan format " << vk::to_string(pixel_format) << ". It's being created for texture " << texture_name;
                 auto tex = texture2D(std::to_string(dynamic_textures.size()), dimensions, pixel_format, usage, context);
-                tex.set_name(texture_name);
 
                 auto new_tex_index = dynamic_textures.size();
-                dynamic_textures.push_back(tex);
-                dynamic_tex_name_to_idx[texture_name] = new_tex_index;
+                dynamic_textures.emplace_back(std::move(tex));
+                dynamic_tex_name_to_idx.emplace(texture_name, new_tex_index);
 
                 LOG(TRACE) << "Added texture " << tex.get_name() << " to the dynamic textures";
                 LOG(TRACE) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
