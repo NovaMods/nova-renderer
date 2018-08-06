@@ -12,7 +12,9 @@
 #include "../../nova_renderer.h"
 
 namespace nova {
-    texture2D::texture2D(const std::string name, vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage, std::shared_ptr<render_context> context) : context(context), name(name), format(format) {
+    texture2D::texture2D(const std::string name, vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage,
+                         std::shared_ptr<render_context> context, bool frequently_updated) :
+            context(context), name(name), format(format), frequently_updated(frequently_updated) {
         size = dimensions;
 
         LOG(DEBUG) << "Creating image " << name << " with usage " << vk::to_string(usage);
@@ -37,10 +39,9 @@ namespace nova {
                                      reinterpret_cast<VkImage*>(&image), &allocation, nullptr);
 
         if(result != (VkResult)vk::Result::eSuccess) {
-            LOG(FATAL) << "Could not create image";
+            LOG(ERROR) << "Could not create image" << name;
+            throw std::runtime_error("Could not create image " + name);
         }
-
-        LOG(DEBUG) << "Created image " << (VkImage)image;
 
         vk::ImageSubresourceRange subresource_range = {};
         subresource_range.layerCount = 1;
@@ -50,16 +51,13 @@ namespace nova {
         subresource_range.aspectMask = vk::ImageAspectFlags();
         if((usage & vk::ImageUsageFlagBits::eColorAttachment) != vk::ImageUsageFlagBits()) {
             subresource_range.aspectMask |= vk::ImageAspectFlagBits::eColor;
-            LOG(TRACE) << "Using color aspect";
         }
 
         if((usage & vk::ImageUsageFlagBits::eDepthStencilAttachment) != vk::ImageUsageFlagBits()) {
             subresource_range.aspectMask |= vk::ImageAspectFlagBits::eDepth;
-            LOG(TRACE) << "Using depth aspect";
 
         } else if((usage & vk::ImageUsageFlagBits::eSampled) != vk::ImageUsageFlagBits()) {
             subresource_range.aspectMask |= vk::ImageAspectFlagBits::eColor;
-            LOG(TRACE) << "Using sampled color aspect";
         }
 
 
@@ -70,10 +68,87 @@ namespace nova {
         img_view_create_info.subresourceRange = subresource_range;
 
         image_view = context->device.createImageView(img_view_create_info);
-        LOG(TRACE) << "Created image view";
         layout = image_create_info.initialLayout;
 
-        LOG(TRACE) << "Created new image";
+        if(frequently_updated) {
+            buffer_size = dimensions.width * dimensions.height * 4;
+
+            vk::BufferCreateInfo buffer_create_info = {};
+            buffer_create_info.queueFamilyIndexCount = 1;
+            buffer_create_info.pQueueFamilyIndices = &context->graphics_family_idx;
+            buffer_create_info.usage = vk::BufferUsageFlagBits::eTransferSrc;
+
+            // A standard image from disk is 32 bpp in Nova. I'm going to hate myself when Joey wants something else
+            buffer_create_info.size = buffer_size;
+
+            VmaAllocationCreateInfo staging_buffer_allocation_info = {};
+            staging_buffer_allocation_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+            staging_buffer_allocation_info.flags = 0;
+
+            vmaCreateBuffer(context->allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
+                            reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
+
+            vmaMapMemory(context->allocator, staging_buffer_allocation, &mapped_data);
+
+            data_upload_cmd_buffer = context->command_buffer_pool->get_command_buffer(0);
+        }
+
+        LOG(DEBUG) << "Image creation successful";
+    }
+
+    texture2D::texture2D(texture2D&& other) noexcept {
+        move_into_self(other);
+    }
+
+    texture2D& texture2D::operator==(nova::texture2D &&other) {
+        move_into_self(other);
+
+        return *this;
+    }
+
+    void texture2D::move_into_self(texture2D &other) {
+        destroy();
+
+        context = other.context;
+
+        size = other.size;
+        name = std::move(other.name);
+
+        image = other.image;
+        format = other.format;
+        layout = other.layout;
+        allocation = other.allocation;
+
+        frequently_updated = other.frequently_updated;
+
+        buffer_size = other.buffer_size;
+        staging_buffer = other.staging_buffer;
+        staging_buffer_allocation = other.staging_buffer_allocation;
+        mapped_data = other.mapped_data;
+        data_upload_cmd_buffer = std::move(other.data_upload_cmd_buffer);
+
+        other.size = {0, 0};
+    }
+
+    texture2D::~texture2D() {
+        destroy();
+    }
+
+    void texture2D::destroy() {
+        if(size == vk::Extent2D(0, 0)) {
+            // Texture was either never initialized or was already destroyed
+            return;
+        }
+
+        if(frequently_updated) {
+            vmaUnmapMemory(context->allocator, staging_buffer_allocation);
+            vmaDestroyBuffer(context->allocator, (VkBuffer) staging_buffer, staging_buffer_allocation);
+
+            context->command_buffer_pool->free(data_upload_cmd_buffer);
+        }
+
+        context->device.destroyImageView(image_view);
+        vmaDestroyImage(context->allocator, (VkImage)image, allocation);
     }
 
     void texture2D::set_data(void* pixel_data, vk::Extent2D dimensions) {
@@ -103,52 +178,57 @@ namespace nova {
 
     void texture2D::upload_data_with_staging_buffer(void *data, vk::Extent3D image_size) {
         LOG(TRACE) << "Setting data for texture " << name;
-        vk::Buffer staging_buffer;
-        VmaAllocation staging_buffer_allocation;
-        auto buffer_size = image_size.width * image_size.height * image_size.depth * 4;
+        if(!frequently_updated) {
+            vk::Buffer staging_buffer;
+            VmaAllocation staging_buffer_allocation;
+            auto buffer_size = image_size.width * image_size.height * image_size.depth * 4;
 
-        vk::BufferCreateInfo buffer_create_info = {};
-        buffer_create_info.queueFamilyIndexCount = 1;
-        buffer_create_info.pQueueFamilyIndices = &context->graphics_family_idx;
-        buffer_create_info.usage = vk::BufferUsageFlagBits::eTransferSrc;
+            vk::BufferCreateInfo buffer_create_info = {};
+            buffer_create_info.queueFamilyIndexCount = 1;
+            buffer_create_info.pQueueFamilyIndices = &context->graphics_family_idx;
+            buffer_create_info.usage = vk::BufferUsageFlagBits::eTransferSrc;
 
-        // A standard image from disk is 32 bpp in Nova. I'm going to hate myself when Joey wants something else
-        buffer_create_info.size = buffer_size;
+            // A standard image from disk is 32 bpp in Nova. I'm going to hate myself when Joey wants something else
+            buffer_create_info.size = buffer_size;
 
-        VmaAllocationCreateInfo staging_buffer_allocation_info = {};
-        staging_buffer_allocation_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-        staging_buffer_allocation_info.flags = 0;
+            VmaAllocationCreateInfo staging_buffer_allocation_info = {};
+            staging_buffer_allocation_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+            staging_buffer_allocation_info.flags = 0;
 
-        vmaCreateBuffer(context->allocator, reinterpret_cast<VkBufferCreateInfo*>(&buffer_create_info), &staging_buffer_allocation_info,
-                        reinterpret_cast<VkBuffer*>(&staging_buffer), &staging_buffer_allocation, nullptr);
-        LOG(TRACE) << "Allocated staging buffer " << (VkBuffer)staging_buffer;
+            vmaCreateBuffer(context->allocator, reinterpret_cast<VkBufferCreateInfo *>(&buffer_create_info),
+                            &staging_buffer_allocation_info,
+                            reinterpret_cast<VkBuffer *>(&staging_buffer), &staging_buffer_allocation, nullptr);
+            LOG(TRACE) << "Allocated staging buffer " << (VkBuffer) staging_buffer;
 
-        void* mapped_data;
-        vmaMapMemory(context->allocator, staging_buffer_allocation, &mapped_data);
+            vmaMapMemory(context->allocator, staging_buffer_allocation, &mapped_data);
+        }
+
         std::memcpy(mapped_data, data, buffer_size);
-        vmaUnmapMemory(context->allocator, staging_buffer_allocation);
         LOG(TRACE) << "Copied data to staging buffer";
 
-        auto command_buffer = context->command_buffer_pool->get_command_buffer(0);
-        command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
-        command_buffer.begin_as_single_commend();
+        if(!frequently_updated) {
+            vmaUnmapMemory(context->allocator, staging_buffer_allocation);
 
-        transfer_image_format(command_buffer.buffer, image, layout, vk::ImageLayout::eTransferDstOptimal);
-        copy_buffer_to_image(command_buffer.buffer, staging_buffer, image, size.width, size.height);
-        transfer_image_format(command_buffer.buffer, image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+            data_upload_cmd_buffer = context->command_buffer_pool->get_command_buffer(0);
+        }
+
+        data_upload_cmd_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+        data_upload_cmd_buffer.begin_as_single_commend();
+
+        transfer_image_format(data_upload_cmd_buffer.buffer, image, layout, vk::ImageLayout::eTransferDstOptimal);
+        copy_buffer_to_image(data_upload_cmd_buffer.buffer, staging_buffer, image, size.width, size.height);
+        transfer_image_format(data_upload_cmd_buffer.buffer, image, vk::ImageLayout::eTransferDstOptimal,
+                              vk::ImageLayout::eShaderReadOnlyOptimal);
         layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
-        command_buffer.end_as_single_command();
+        data_upload_cmd_buffer.end_as_single_command();
 
-        vmaDestroyBuffer(context->allocator, (VkBuffer)staging_buffer, staging_buffer_allocation);
-        LOG(TRACE) << "Destroyed staging buffer";
-    }
+        if(!frequently_updated) {
+            vmaDestroyBuffer(context->allocator, (VkBuffer) staging_buffer, staging_buffer_allocation);
+            LOG(TRACE) << "Destroyed staging buffer";
 
-    void texture2D::destroy() {
-        LOG(TRACE) << "Destroying image view " << (VkImageView)image_view;
-
-        vmaDestroyImage(context->allocator, (VkImage)image, allocation);
-        context->device.destroyImageView(image_view);
+            context->command_buffer_pool->free(data_upload_cmd_buffer);
+        }
     }
 
     vk::ImageView texture2D::get_image_view() const {

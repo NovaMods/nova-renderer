@@ -85,7 +85,5 @@ namespace nova {
         wait_fences.push_back(fences[0]);
         context->device.waitForFences(wait_fences, VK_TRUE, ~0ull);
         LOG(TRACE) << "Waited for the fence";
-
-        context->command_buffer_pool->free(*this);
     }
 }

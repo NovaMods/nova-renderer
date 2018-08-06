@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
+#include "../../vulkan/command_pool.h"
 
 namespace nova {
     class render_context;
@@ -22,7 +23,24 @@ namespace nova {
     public:
         texture2D() = default;
 
-        texture2D(const std::string name, vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage, std::shared_ptr<render_context> context);
+        /*!
+         * \brief Constructs a new texture!
+         *
+         * \param name The name of the texture. Mostly useful for debug logging
+         * \param dimensions The size of the texture, in pixels
+         * \param format The format of the texture
+         * \param usage How the texture will be used
+         * \param context The global render context
+         * \param frequently_updated If true, the texture's staging buffer, and a command buffer to send the copy from
+         * the staging buffer to the actual image, will be allocated in the constructor and reused. If false, the
+         * staging buffer and command buffer will be allocated when the texture is updated
+         */
+        texture2D(const std::string name, vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage,
+                  std::shared_ptr<render_context> context, bool frequently_updated = false);
+
+        texture2D(texture2D&& other) noexcept;
+
+        ~texture2D();
 
         /*!
          * \brief Sets this texture's data to the given parameters
@@ -52,11 +70,6 @@ namespace nova {
         void set_name(std::string name);
         const std::string& get_name() const;
 
-        /*!
-         * \brief Destroys the Vulkan resources associated with this texture
-         */
-        void destroy();
-
         vk::ImageView get_image_view() const;
 
         /*!
@@ -66,10 +79,12 @@ namespace nova {
         void set_layout(vk::ImageLayout layout);
         vk::ImageLayout get_layout() const;
 
+        texture2D& operator==(texture2D&& other) noexcept;
+
     private:
         std::shared_ptr<render_context> context;
 
-        vk::Extent2D size;
+        vk::Extent2D size = {0, 0};
         std::string name;
 
         vk::Image image;
@@ -78,7 +93,21 @@ namespace nova {
         vk::ImageLayout layout;
         VmaAllocation allocation;
 
+        bool frequently_updated;
+
+        // Resources used to send texture data to the GPU. If frequently_updated is true these are allocated in the
+        // constructor, otherwise they're allocated and destroyed when you upload texture data
+        uint32_t buffer_size;
+        vk::Buffer staging_buffer;
+        VmaAllocation staging_buffer_allocation;
+        void *mapped_data;
+        command_buffer data_upload_cmd_buffer;
+
         void upload_data_with_staging_buffer(void *data, vk::Extent3D image_size);
+
+        void destroy();
+
+        void move_into_self(texture2D &other) noexcept;
     };
 
     /*!
