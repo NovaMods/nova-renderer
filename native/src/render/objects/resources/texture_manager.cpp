@@ -35,7 +35,8 @@ namespace nova {
         atlases.clear();
         locations.clear();
         auto usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst;
-        atlases["NovaLightmap"] = texture2D("NovaLightmap", vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, usage, context);
+        atlases["NovaLightmap"] = texture2D("NovaLightmap", vk::Extent2D{16, 16}, vk::Format::eR8G8B8A8Unorm, usage,
+                                            context, true);
         LOG(TRACE) << "Created lightmap";
 
         clear_dynamic_textures();
