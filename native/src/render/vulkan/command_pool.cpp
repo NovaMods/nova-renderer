@@ -82,7 +82,7 @@ namespace nova {
         graphics_queue.submit(1, &submit_info, fences[0]);
         LOG(TRACE) << "Submitted buffer, it'll signal the fence when done";
 
-        command_buffer_watchdog::add_watch(execution_context, fences[0]);
+        command_buffer_watchdog::get_instance().add_watch(execution_context, fences[0]);
 
         std::vector<vk::Fence> wait_fences;
         wait_fences.push_back(fences[0]);

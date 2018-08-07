@@ -29,25 +29,29 @@ namespace nova {
     public:
         static void initialize(const vk::Device& device);
 
+        static command_buffer_watchdog& get_instance();
+
         /*!
          * \brief Adds the fence to the list of fences to watch. It'll be polled every time the watchdog updates
          *
          * \param fence The fence to watch for completion of
          * \param name A human-readable name for this fence
          */
-        static void add_watch(const std::string &name, const vk::Fence &fence);
+        void add_watch(const std::string &name, const vk::Fence &fence);
+
+        void remove_watch(const std::string& name);
 
         void operator()();
 
     private:
         static command_buffer_watchdog* instance;
 
-        static std::vector<watched_fence> watched_fences;
-        static std::mutex watched_fences_lock;
-
-        static std::thread runner;
+        std::vector<watched_fence> watched_fences;
+        std::mutex watched_fences_lock;
 
         vk::Device device;
+
+        std::thread runner;
 
         void tick();
 

@@ -89,10 +89,6 @@ namespace nova {
         swapchain_image_acquire_semaphore = context->device.createSemaphore(create_info);
         render_finished_semaphore = context->device.createSemaphore(create_info);
         LOG(TRACE) << "Created semaphores";
-
-        vk::FenceCreateInfo fence_create_info = vk::FenceCreateInfo()
-            .setFlags(vk::FenceCreateFlagBits::eSignaled);
-        render_done_fence = context->device.createFence(fence_create_info);
     }
 
     nova_renderer::~nova_renderer() {
@@ -115,9 +111,6 @@ namespace nova {
         device.destroySemaphore(render_finished_semaphore);
         LOG(TRACE) << "Destroyed the semaphores";
 
-        device.destroyFence(render_done_fence);
-        LOG(TRACE) << "Destroyed the fence";
-
         game_window.reset();
         LOG(TRACE) << "Reset the game window";
 
@@ -133,10 +126,9 @@ namespace nova {
         begin_frame();
 
         player_camera.recalculate_frustum();
+        update_nova_ubos();
 
         swapchain->aqcuire_next_swapchain_image(swapchain_image_acquire_semaphore);
-
-        context->device.resetFences({render_done_fence});
 
         auto main_command_buffer = context->command_buffer_pool->get_command_buffer(0);
         main_command_buffer.buffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
@@ -144,10 +136,6 @@ namespace nova {
 
         vk::CommandBufferBeginInfo cmd_buf_begin_info = {};
         main_command_buffer.buffer.begin(cmd_buf_begin_info);
-
-        player_camera.recalculate_frustum();
-
-        update_nova_ubos();
 
         LOG(DEBUG) << "We have " << passes_list.size() << " passes to render";
         main_command_buffer.buffer.resetQueryPool(context->timestamp_query_pool, 0, static_cast<uint32_t>(passes_list.size() * 2));
@@ -174,8 +162,11 @@ namespace nova {
                 .setSignalSemaphoreCount(static_cast<uint32_t>(signal_semaphores.size()))
                 .setPSignalSemaphores(signal_semaphores.data());
 
+        const auto& render_done_fence = swapchain->get_current_frame_fence();
+        context->device.resetFences({render_done_fence});
+
         context->graphics_queue.submit(1, &submit_info, render_done_fence);
-        command_buffer_watchdog::add_watch("Main command buffer", render_done_fence);
+        command_buffer_watchdog::get_instance().add_watch("Main command buffer", render_done_fence);
 
         swapchain->present_current_image(signal_semaphores);
 
@@ -519,6 +510,7 @@ namespace nova {
 
     void nova_renderer::end_frame() {
         NOVA_PROFILER_FLUSH_TO_FILE("profiler_data.txt");
+/*
         if(context->timestamp_valid_bits <= 32) {
             std::vector<uint32_t> buffer = std::vector<uint32_t>(passes_list.size() * 2);
             context->device.getQueryPoolResults(context->timestamp_query_pool, 0, buffer.size(), buffer.size() *
@@ -544,6 +536,7 @@ namespace nova {
                 LOG(TRACE) << "Pass " << passes_list.at((index / 2) - 1).name << " took " << ((end_val - begin_val) * context->timestamp_period) / 1000000 << "ms";
             }
         }
+         */
         LOG(INFO) << "Frame done";
     }
 

@@ -10,6 +10,7 @@
 #include "../../vulkan/render_context.h"
 #include "../../vulkan/command_pool.h"
 #include "../../nova_renderer.h"
+#include "../../../utils/command_buffer_watchdog.h"
 
 namespace nova {
     texture2D::texture2D(const std::string name, vk::Extent2D dimensions, vk::Format format, vk::ImageUsageFlags usage,
@@ -220,12 +221,13 @@ namespace nova {
                               vk::ImageLayout::eShaderReadOnlyOptimal);
         layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
-        data_upload_cmd_buffer.end_as_single_command();
+        data_upload_cmd_buffer.end_as_single_command(name + " data upload");
 
         if(!frequently_updated) {
             vmaDestroyBuffer(context->allocator, (VkBuffer) staging_buffer, staging_buffer_allocation);
             LOG(TRACE) << "Destroyed staging buffer";
 
+            command_buffer_watchdog::get_instance().remove_watch(name + " data upload");
             context->command_buffer_pool->free(data_upload_cmd_buffer);
         }
     }

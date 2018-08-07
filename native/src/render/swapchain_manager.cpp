@@ -120,6 +120,10 @@ namespace nova {
 
             auto framebuffer = context->device.createFramebuffer(framebuffer_create_info);
             framebuffers.push_back(framebuffer);
+
+            vk::FenceCreateInfo fence_create_info = vk::FenceCreateInfo()
+                    .setFlags(vk::FenceCreateFlagBits::eSignaled);
+            fences.push_back(context->device.createFence(fence_create_info));
         }
 
         context->device.destroyRenderPass(renderpass);
@@ -237,6 +241,10 @@ namespace nova {
         for(auto &iv : swapchain_image_views) {
             context->device.destroyImageView(iv);
         }
+
+        for(auto &f : fences) {
+            context->device.destroyFence(f);
+        }
     }
 
     void swapchain_manager::aqcuire_next_swapchain_image(vk::Semaphore image_acquire_semaphore) {
@@ -275,5 +283,11 @@ namespace nova {
 
     vk::Format swapchain_manager::get_swapchain_format() {
         return swapchain_format;
+    }
+
+    vk::Fence swapchain_manager::get_current_frame_fence() {
+        auto fence = fences[cur_swapchain_index];
+
+        return fence;
     }
 }

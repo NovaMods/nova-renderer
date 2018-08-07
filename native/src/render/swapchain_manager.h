@@ -29,6 +29,7 @@ namespace nova {
         void set_current_layout(vk::ImageLayout new_layout);
 
         vk::Framebuffer get_current_framebuffer();
+        vk::Fence get_current_frame_fence();
 
         vk::Image get_current_image();
         vk::ImageLayout get_current_layout();
@@ -52,6 +53,7 @@ namespace nova {
         std::vector<vk::ImageView> swapchain_image_views;
         std::vector<vk::Image> swapchain_images;
         std::vector<vk::ImageLayout> swapchain_image_layouts;
+        std::vector<vk::Fence> fences;
 
         uint32_t cur_swapchain_index = 0;
 
