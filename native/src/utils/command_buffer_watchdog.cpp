@@ -10,15 +10,15 @@ namespace nova {
     command_buffer_watchdog* command_buffer_watchdog::instance;
     std::vector<watched_fence> command_buffer_watchdog::watched_fences;
     std::mutex command_buffer_watchdog::watched_fences_lock;
+    std::thread command_buffer_watchdog::runner;
 
 
     void command_buffer_watchdog::initialize(const vk::Device& device) {
         instance = new command_buffer_watchdog(device);
+        runner = std::thread(*instance);
     }
 
-    command_buffer_watchdog::command_buffer_watchdog(const vk::Device &device) : device(device) {
-        runner = std::thread(*this);
-    }
+    command_buffer_watchdog::command_buffer_watchdog(const vk::Device &device) : device(device) {}
 
     void command_buffer_watchdog::tick() {
         const auto polling_time = std::chrono::high_resolution_clock::now();
@@ -28,7 +28,8 @@ namespace nova {
         for(const auto& watch : watched_fences) {
             const auto status = device.getFenceStatus(watch.fence);
             if(status == vk::Result::eSuccess) {
-                LOG(TRACE) << "Watch " << watch.name << " finished after " << (polling_time - watch.start_time).count() << "ms";
+                const std::chrono::high_resolution_clock::duration time_since_buffer_start = polling_time - watch.start_time;
+                LOG(TRACE) << "Watch " << watch.name << " finished after " << time_since_buffer_start.count() << "ms";
 
             } else if(status == vk::Result::eNotReady) {
                 LOG(TRACE) << "Still waiting for " << watch.name;

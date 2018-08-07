@@ -45,9 +45,9 @@ namespace nova {
         static std::vector<watched_fence> watched_fences;
         static std::mutex watched_fences_lock;
 
-        vk::Device device;
+        static std::thread runner;
 
-        std::thread runner;
+        vk::Device device;
 
         void tick();
 
