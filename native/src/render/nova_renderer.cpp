@@ -52,9 +52,6 @@ namespace nova {
 
         context->create_instance(*game_window);
         LOG(TRACE) << "Instance created";
-
-        command_buffer_watchdog::initialize(context->device);
-
         context->setup_debug_callback();
         LOG(TRACE) << "Debug callback set up";
         game_window->create_surface(context);
@@ -72,7 +69,9 @@ namespace nova {
 
         shader_resources = std::make_shared<shader_resource_manager>(context);
 
-        LOG(INFO) << "Vulkan code initialized";
+        LOG(DEBUG) << "Vulkan code initialized";
+
+        command_buffer_watchdog::initialize(context->device);
 
         meshes = std::make_shared<mesh_store>(context, shader_resources);
         inputs = std::make_shared<input_handler>();

@@ -9,11 +9,11 @@
 
 int main(int argc, char **argv) {
     std::ifstream in;
-    in.open("nova_dump_input", std::ios::in | std::ios::binary);
+    in.open("nova_debug_dump", std::ios::in | std::ios::binary);
     while (!in.eof()) {
         std::string str;
         std::getline(in, str, '\0');
-        std::cout << "Func: " << str;
+        std::cout << "Func: " << str << "\n";
         if (str == "dump_initialize") {
             initialize();
         } else if (str == "dump_add_texture") {
