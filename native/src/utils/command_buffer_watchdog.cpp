@@ -16,7 +16,9 @@ namespace nova {
         instance = new command_buffer_watchdog(device);
     }
 
-    command_buffer_watchdog::command_buffer_watchdog(const vk::Device &device) : device(device), runner(*this) {}
+    command_buffer_watchdog::command_buffer_watchdog(const vk::Device &device) : device(device) {
+        runner = std::thread(*this);
+    }
 
     void command_buffer_watchdog::tick() {
         const auto polling_time = std::chrono::high_resolution_clock::now();
@@ -26,7 +28,7 @@ namespace nova {
         for(const auto& watch : watched_fences) {
             const auto status = device.getFenceStatus(watch.fence);
             if(status == vk::Result::eSuccess) {
-                LOG(TRACE) << "Watch " << watch.name << " finished after " << polling_time - watch.start_time;
+                LOG(TRACE) << "Watch " << watch.name << " finished after " << (polling_time - watch.start_time).count() << "ms";
 
             } else if(status == vk::Result::eNotReady) {
                 LOG(TRACE) << "Still waiting for " << watch.name;
@@ -34,7 +36,7 @@ namespace nova {
         }
 
         const auto& removed_itr = std::remove_if(watched_fences.begin(), watched_fences.end(),
-                       [](const watched_fence& watch){return device.getFenceStatus(watch.fence) == vk::Result::eSuccess;});
+                       [this](const watched_fence& watch){return device.getFenceStatus(watch.fence) == vk::Result::eSuccess;});
         watched_fences.erase(removed_itr, watched_fences.end());
 
         watched_fences_lock.unlock();
@@ -48,7 +50,7 @@ namespace nova {
         }
 
         watched_fences_lock.lock();
-        watched_fences.emplace(fence, name, std::chrono::high_resolution_clock::now());
+        watched_fences.emplace_back(fence, name, std::chrono::high_resolution_clock::now());
         watched_fences_lock.unlock();
     }
 
@@ -56,7 +58,7 @@ namespace nova {
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     void command_buffer_watchdog::operator()() {
         while(true) {
-            std::this_thread::sleep_for(milliseconds_between_updates);
+            std::this_thread::sleep_for(std::chrono::high_resolution_clock::duration(1));
 
             tick();
         }

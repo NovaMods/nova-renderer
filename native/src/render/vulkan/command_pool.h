@@ -19,7 +19,7 @@ namespace nova {
         uint32_t pool_idx;
 
         void begin_as_single_commend();
-        void end_as_single_command();
+        void end_as_single_command(const std::string& execution_context = "Context-less single-use command buffer");
     };
 
     /*!

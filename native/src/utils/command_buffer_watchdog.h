@@ -16,9 +16,9 @@ namespace nova {
     struct watched_fence {
         vk::Fence fence;
         std::string name;
-        std::chrono::time_point start_time;
+        std::chrono::high_resolution_clock::time_point start_time;
 
-        watched_fence(const vk::Fence& fence, std::string name, const std::chrono::time_point& start_time) :
+        watched_fence(const vk::Fence& fence, std::string name, const std::chrono::high_resolution_clock::time_point& start_time) :
                 fence(fence), name(std::move(name)), start_time(start_time) {}
     };
 
@@ -40,14 +40,12 @@ namespace nova {
         void operator()();
 
     private:
-        static command_buffer_watchdog* instance = nullptr;
+        static command_buffer_watchdog* instance;
 
         static std::vector<watched_fence> watched_fences;
         static std::mutex watched_fences_lock;
 
         vk::Device device;
-
-        std::chrono::duration milliseconds_between_updates = 1ms;
 
         std::thread runner;
 

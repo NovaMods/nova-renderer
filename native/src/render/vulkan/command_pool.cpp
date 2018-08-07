@@ -7,6 +7,7 @@
 #include "command_pool.h"
 #include "render_context.h"
 #include "../nova_renderer.h"
+#include "../../utils/command_buffer_watchdog.h"
 
 namespace nova {
     command_pool::command_pool(vk::Device device, uint32_t queue_family_index, uint32_t num_threads) {
@@ -65,7 +66,7 @@ namespace nova {
         buffer.begin(begin_info);
     }
 
-    void command_buffer::end_as_single_command() {
+    void command_buffer::end_as_single_command(const std::string& execution_context) {
         auto context = nova_renderer::instance->get_render_context();
 
         buffer.end();
@@ -80,6 +81,8 @@ namespace nova {
 
         graphics_queue.submit(1, &submit_info, fences[0]);
         LOG(TRACE) << "Submitted buffer, it'll signal the fence when done";
+
+        command_buffer_watchdog::add_watch(execution_context, fences[0]);
 
         std::vector<vk::Fence> wait_fences;
         wait_fences.push_back(fences[0]);

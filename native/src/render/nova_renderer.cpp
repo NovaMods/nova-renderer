@@ -176,6 +176,7 @@ namespace nova {
                 .setPSignalSemaphores(signal_semaphores.data());
 
         context->graphics_queue.submit(1, &submit_info, render_done_fence);
+        command_buffer_watchdog::add_watch("Main command buffer", render_done_fence);
 
         swapchain->present_current_image(signal_semaphores);
 
