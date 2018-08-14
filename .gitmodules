@@ -1,45 +1,42 @@
-[submodule "native/src/3rdparty/easyloggingpp"]
-	path = native/src/3rdparty/easyloggingpp
+[submodule "native/3rdparty/easyloggingpp"]
+	path = native/3rdparty/easyloggingpp
 	url = https://github.com/Barteks2x/easyloggingpp
-[submodule "native/src/3rdparty/glfw"]
-	path = native/src/3rdparty/glfw
+[submodule "native/3rdparty/glfw"]
+	path = native/3rdparty/glfw
 	url = https://github.com/glfw/glfw
-[submodule "native/src/3rdparty/glm"]
-	path = native/src/3rdparty/glm
+[submodule "native/3rdparty/glm"]
+	path = native/3rdparty/glm
 	url = https://github.com/g-truc/glm
-[submodule "native/src/3rdparty/glslang"]
-	path = native/src/3rdparty/glslang
+[submodule "native/3rdparty/glslang"]
+	path = native/3rdparty/glslang
 	url = https://github.com/KhronosGroup/glslang
-[submodule "native/src/3rdparty/googletest"]
-	path = native/src/3rdparty/googletest
+[submodule "native/3rdparty/googletest"]
+	path = native/3rdparty/googletest
 	url = https://github.com/google/googletest
-[submodule "native/src/3rdparty/profiler"]
-	path = native/src/3rdparty/profiler
+[submodule "native/3rdparty/profiler"]
+	path = native/3rdparty/profiler
 	url = https://github.com/NovaMods/profiler
-[submodule "native/src/3rdparty/json"]
-	path = native/src/3rdparty/json
+[submodule "native/3rdparty/json"]
+	path = native/3rdparty/json
 	url = https://github.com/nlohmann/json
-[submodule "native/src/3rdparty/miniz"]
-	path = native/src/3rdparty/miniz
+[submodule "native/3rdparty/miniz"]
+	path = native/3rdparty/miniz
 	url = https://github.com/richgel999/miniz
-[submodule "native/src/3rdparty/Optional"]
-	path = native/src/3rdparty/Optional
-	url = https://github.com/akrzemi1/Optional
-[submodule "native/src/3rdparty/renderdocapi"]
-	path = native/src/3rdparty/renderdocapi
+[submodule "native/3rdparty/renderdocapi"]
+	path = native/3rdparty/renderdocapi
 	url = https://github.com/NovaMods/RenderDoc-Manager
-[submodule "native/src/3rdparty/shaderc"]
-	path = native/src/3rdparty/shaderc
+[submodule "native/3rdparty/shaderc"]
+	path = native/3rdparty/shaderc
 	url = https://github.com/google/shaderc
-[submodule "native/src/3rdparty/SPIRV-Cross"]
-	path = native/src/3rdparty/SPIRV-Cross
+[submodule "native/3rdparty/SPIRV-Cross"]
+	path = native/3rdparty/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross
-[submodule "native/src/3rdparty/VulkanMemoryAllocator"]
-	path = native/src/3rdparty/VulkanMemoryAllocator
+[submodule "native/3rdparty/VulkanMemoryAllocator"]
+	path = native/3rdparty/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-[submodule "native/src/3rdparty/spirv-tools"]
-	path = native/src/3rdparty/spirv-tools
+[submodule "native/3rdparty/spirv-tools"]
+	path = native/3rdparty/spirv-tools
 	url = https://github.com/KhronosGroup/SPIRV-Tools
-[submodule "native/src/3rdparty/spirv-headers"]
-	path = native/src/3rdparty/spirv-headers
+[submodule "native/3rdparty/spirv-headers"]
+	path = native/3rdparty/spirv-headers
 	url = https://github.com/KhronosGroup/SPIRV-Headers

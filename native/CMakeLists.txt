@@ -81,30 +81,31 @@ include_directories(SYSTEM
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
-        mc_interface/nova_mc_interface.cpp
-        mc_interface/jni/com_continuum_nova_system_NovaNative.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_GeometryType.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_key_char_event.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_key_press_event.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_mc_atlas_texture.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_mc_gui_buffer.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_mc_settings.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_mc_texture_atlas_location.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_button_event.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_position_event.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_scroll_event.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_NativeBoolean.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_NovaVertexFormat.h
-        mc_interface/jni/com_continuum_nova_system_NovaNative_window_size.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_GeometryType.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_key_char_event.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_key_press_event.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_atlas_texture.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_gui_buffer.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_settings.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_texture_atlas_location.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_button_event.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_position_event.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_scroll_event.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_NativeBoolean.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_NovaVertexFormat.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative_window_size.h
         )
 
 set(NOVA_SOURCE
-        # Need to compile third party stuff, too...
-        3rdparty/miniz/miniz.c
-        3rdparty/miniz/miniz_tdef.c
-        3rdparty/miniz/miniz_tinfl.c
-        3rdparty/miniz/miniz_zip.c
-        3rdparty/easyloggingpp/src/easylogging++.cc
+        # Third party stuff that's too lame to have it's own CMakeLists.txt
+        ${3RD_PARTY_DIR}/miniz/miniz.c
+        ${3RD_PARTY_DIR}/miniz/miniz_tdef.c
+        ${3RD_PARTY_DIR}/miniz/miniz_tinfl.c
+        ${3RD_PARTY_DIR}/miniz/miniz_zip.c
+        ${3RD_PARTY_DIR}/easyloggingpp/src/easylogging++.cc
+
+        src/mc_interface/nova_mc_interface.cpp
         )
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
@@ -124,7 +125,7 @@ set(SPIRV_CROSS_HEADERS
         )
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} 3rdparty/renderdocapi/RenderDocManager.cpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} ${3RD_PARTY_DIR}/renderdocapi/RenderDocManager.cpp)
     set(CMAKE_CXX_FLAGS "-static-libstdc++ -static-libgcc ${CMAKE_CXX_FLAGS}")
 endif (WIN32)
 
