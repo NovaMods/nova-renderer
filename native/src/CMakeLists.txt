@@ -20,6 +20,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_BUILD_TYPE RELEASE)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 
@@ -74,61 +75,7 @@ include_directories(SYSTEM
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
-
-        render/objects/resources/uniform_buffer_definitions.h
-
-        mc_interface/nova.h
-        render/nova_renderer.h
-        render/objects/resources/texture_manager.h
-        utils/types.h
-
-        render/objects/shaders/pipeline.h
-        render/objects/resources/uniform_buffer.h
-        render/objects/meshes/vk_mesh.h
-        render/objects/resources/texture2D.h
-
-        render/windowing/glfw_vk_window.h
-
-        input/InputHandler.h
-
-        mc_interface/mc_gui_objects.h
-        mc_interface/mc_objects.h
-        mc_interface/mc_interface_dump.h
-
-        utils/utils.h
-        utils/crash_handler.h
-
-        data_loading/settings.h
-        data_loading/loaders/loaders.h
-        data_loading/loaders/shader_loading.h
-        data_loading/loaders/loader_utils.h
-        render/objects/meshes/mesh_store.h
-        render/objects/render_object.h
-        render/objects/resources/uniform_buffer_store.h
-        render/objects/resources/uniform_buffer_definitions.h
-        render/objects/resources/uniform_buffer.h
-
-        physics/aabb.h
-        data_loading/loaders/shader_source_structs.h
-        render/objects/meshes/mesh_definition.h
-        render/objects/camera.h
-        utils/io.h
-        render/objects/resources/shader_resource_manager.h
-        data_loading/direct_buffers.h
-        mc_interface/nova_jni.h
-        render/objects/render_object.h
-        utils/stb_image_write.h
-        render/objects/renderpasses/renderpass_builder.h
-        render/vulkan/render_context.h
-        render/vulkan/command_pool.h
-        render/objects/resources/auto_allocated_buffer.h
-        render/objects/renderpasses/materials.h
-
-        render/objects/renderpasses/render_passes.h
-        render/render_graph.h
-        render/objects/meshes/vertex_attributes.h
-        render/swapchain_manager.h
-        )
+        mc_interface/nova_mc_interface.h)
 
 set(NOVA_SOURCE
         # Need to compile third party stuff, too...
@@ -137,48 +84,7 @@ set(NOVA_SOURCE
         3rdparty/miniz/miniz_tinfl.c
         3rdparty/miniz/miniz_zip.c
         3rdparty/easyloggingpp/src/easylogging++.cc
-
-        render/nova_renderer.cpp
-        mc_interface/nova_facade.cpp
-        render/objects/resources/texture_manager.cpp
-        render/objects/resources/uniform_buffer_store.cpp
-
-        input/InputHandler.cpp
-
-        render/objects/shaders/pipeline.cpp
-        render/objects/meshes/vk_mesh.cpp
-        render/objects/resources/texture2D.cpp
-
-        render/windowing/glfw_vk_window.cpp
-
-        utils/utils.cpp
-        utils/crash_handler.cpp
-
-        data_loading/settings.cpp
-        data_loading/loaders/shader_loading.cpp
-        data_loading/loaders/loader_utils.cpp
-
-        render/objects/meshes/mesh_store.cpp
-        physics/aabb.cpp
-        render/objects/meshes/mesh_definition.cpp
-
-        mc_interface/mc_objects.cpp
-        render/objects/camera.cpp
-        data_loading/loaders/shader_source_structs.cpp
-        data_loading/direct_buffers.cpp
-        render/objects/render_object.cpp
-        render/vulkan/command_pool.cpp
-        render/objects/renderpasses/renderpass_builder.cpp
-        render/objects/renderpasses/materials.cpp
-
-        render/vulkan/render_context.cpp
-        render/objects/resources/shader_resource_manager.cpp
-        render/objects/resources/auto_allocated_buffer.cpp
-        render/objects/renderpasses/render_passes.cpp
-        data_loading/loaders/shader_file_loading.cpp
-        render/render_graph.cpp
-        render/objects/resources/uniform_buffer.cpp
-        render/swapchain_manager.cpp utils/command_buffer_watchdog.cpp utils/command_buffer_watchdog.h)
+        )
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
@@ -190,7 +96,7 @@ set(SPIRV_CROSS_SOURCE
         ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
         ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
         ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp
-        dummy.cpp)
+        )
 
 set(SPIRV_CROSS_HEADERS
         ${SPIRV_CROSS_ROOT}/spirv_cross.hpp
