@@ -1,31 +1,26 @@
 package com.continuum.nova.system;
 
-import com.sun.jna.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.Arrays;
 import java.util.List;
 
-public interface NovaNative extends Library {
-    // FIXME: (NovaNative) Native.loadLibrary("nova-renderer", NovaNative.class);
+public class NovaNative {
+    public static final Logger LOG = LogManager.getLogger(NovaNative.class);
 
-    Logger LOG = LogManager.getLogger(NovaNative.class);
-
-    enum NovaVertexFormat {
+    public enum NovaVertexFormat {
         POS,
         POS_UV,
         POS_UV_LIGHTMAPUV_NORMAL_TANGENT,
         POS_UV_COLOR
     }
 
-    class mc_atlas_texture extends Structure {
+    public static class mc_atlas_texture {
         public int width;
         public int height;
         public int num_components;
-        public Pointer texture_data;
+        public byte[] texture_data;
         public String name;
 
         public mc_atlas_texture(int width, int height, int num_components, byte[] texture_data) {
@@ -33,19 +28,11 @@ public interface NovaNative extends Library {
             this.height = height;
             this.num_components = num_components;
 
-            this.texture_data = new Memory(width * height * num_components * Native.getNativeSize(Byte.TYPE));
-            for(int i = 0; i < width * height * num_components; i++) {
-                this.texture_data.setByte(i, texture_data[i]);
-            }
+            this.texture_data = texture_data;
         }
 
         public void setName(String name) {
             this.name = name;
-        }
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("width", "height", "num_components", "texture_data", "name");
         }
 
         @Override
@@ -59,7 +46,7 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_texture_atlas_location extends Structure {
+    public static class mc_texture_atlas_location {
         public String name;
         public float min_u;
         public float max_u;
@@ -75,11 +62,6 @@ public interface NovaNative extends Library {
         }
 
         @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("name", "min_u", "max_u", "min_v", "max_v");
-        }
-
-        @Override
         public String toString() {
             return "mc_texture_atlas_location{" +
                     "name='" + name + '\'' +
@@ -91,47 +73,34 @@ public interface NovaNative extends Library {
         }
     }
 
-    class mc_chunk_render_object extends Structure {
+    public static class mc_chunk_render_object {
         public int format;
         public float x;
         public float y;
         public float z;
         public int id;
-        public Pointer vertex_data; // int[]
-        public Pointer indices;     // int[]
+        public int[] vertex_data; // int[]
+        public int[] indices;     // int[]
         public int vertex_buffer_size;
         public int index_buffer_size;
 
         public void setVertex_data(IntBuffer vertexData) {
-            int s = vertexData.limit();
-            Memory vertex_datam = new Memory(s * Native.getNativeSize(Integer.class));
-            ByteBuffer bbuf = vertex_datam.getByteBuffer(0, s * Native.getNativeSize(Integer.class));
-            bbuf.position(0);
-            vertexData.position(0);
-            bbuf.asIntBuffer().put(vertexData);
-            bbuf.position(0);
-            vertex_data = vertex_datam;
+            vertex_data = vertexData.array();
 
-            vertex_buffer_size = s;
+            vertex_buffer_size = vertex_data.length;
         }
 
         public void setIndices(List<Integer> indices) {
-            this.indices = new Memory(indices.size() * Native.getNativeSize(Integer.class));
-            for(int i = 0; i < indices.size(); i++) {
-                Integer data = indices.get(i);
-                this.indices.setInt(i * Native.getNativeSize(Integer.TYPE), data);
+            this.indices = new int[indices.size()];
+            for(int i = 0; i < this.indices.length; i++) {
+                this.indices[i] = indices.get(i);
             }
 
             index_buffer_size = indices.size();
         }
-
-        @Override
-        public List<String> getFieldOrder() {
-            return Arrays.asList("format", "x", "y", "z", "id", "vertex_data", "indices", "vertex_buffer_size", "index_buffer_size");
-        }
     }
 
-    class mc_settings extends Structure {
+    public static class mc_settings {
         public boolean render_menu;
 
         public boolean anaglyph;
@@ -149,94 +118,55 @@ public interface NovaNative extends Library {
         public int render_distance;
 
         public boolean has_blindness;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList(
-                    "render_menu", "anaglyph", "fog_color_red", "fog_color_green", "fog_color_blue", "display_width",
-                    "display_height", "view_bobbing", "should_render_clouds", "render_distance",
-                    "has_blindness"
-            );
-        }
     }
 
-    class mc_gui_buffer extends Structure {
+    public static class mc_gui_buffer  {
         public String texture_name;
         public int index_buffer_size;
         public int vertex_buffer_size;
-        public Pointer index_buffer; // int[]
-        public Pointer vertex_buffer; // float[]
+        public int[] index_buffer; // int[]
+        public float[] vertex_buffer; // float[]
         public String atlas_name;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("texture_name", "index_buffer_size", "vertex_buffer_size", "index_buffer", "vertex_buffer", "atlas_name");
-        }
     }
 
-    class mouse_button_event extends Structure implements Structure.ByValue {
+    public class mouse_button_event {
         public int button;
         public int action;
         public int mods;
         public int filled;
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("button", "action", "mods","filled");
-        }
     }
 
-    class mouse_position_event extends Structure implements Structure.ByValue {
+    public class mouse_position_event {
         public int xpos;
         public int ypos;
         public int filled;
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("xpos", "ypos","filled");
-        }
     }
 
-    class mouse_scroll_event extends Structure implements Structure.ByValue {
+    public class mouse_scroll_event {
         public double xoffset;
         public double yoffset;
         public int filled;
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("xoffset", "yoffset","filled");
-        }
     }
 
-    class key_press_event extends Structure implements Structure.ByValue {
+    public class key_press_event {
         public int key;
         public int scancode;
         public int action;
         public int mods;
         public int filled;
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("key", "scancode", "action","mods","filled");
-        }
     }
 
-    class key_char_event extends Structure implements Structure.ByValue {
+    public class key_char_event {
         public long unicode_char;
         public int filled;
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("unicode_char","filled");
-        }
     }
 
-    class window_size extends Structure implements Structure.ByValue{
+    public class window_size {
         public int height;
         public int width;
-
-        @Override
-        protected List<String> getFieldOrder() {
-            return Arrays.asList("height","width");
-        }
     }
 
-    enum GeometryType {
+    public enum GeometryType {
         BLOCK,
         ENTITY,
         FALLING_BLOCK,
@@ -255,60 +185,60 @@ public interface NovaNative extends Library {
         EYES
     }
 
-    enum NativeBoolean{
+    public enum NativeBoolean {
         FALSE,
         TRUE
     }
 
-    void initialize();
+    public native void initialize();
 
-    void execute_frame();
+    public native void execute_frame();
 
-    void send_lightmap_texture(int[] data, int length, int width, int height);
+    public native void send_lightmap_texture(int[] data, int length, int width, int height);
 
-    void add_texture(mc_atlas_texture texture);
+    public native void add_texture(mc_atlas_texture texture);
 
-    void add_texture_location(mc_texture_atlas_location location);
+    public native void add_texture_location(mc_texture_atlas_location location);
 
-    int get_max_texture_size();
+    public native int get_max_texture_size();
 
-    void reset_texture_manager();
+    public native void reset_texture_manager();
 
-    void add_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
+    public native  void add_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
 
-    void remove_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
+    public native void remove_chunk_geometry_for_filter(String filter_name, mc_chunk_render_object render_object);
 
-    boolean should_close();
+    public native boolean should_close();
 
-    void add_gui_geometry(String type, mc_gui_buffer buffer);
+    public native void add_gui_geometry(String type, mc_gui_buffer buffer);
 
-    void clear_gui_buffers();
+    public native void clear_gui_buffers();
 
-    void set_mouse_grabbed(boolean grabbed);
+    public native void set_mouse_grabbed(boolean grabbed);
 
-    mouse_button_event get_next_mouse_button_event();
+    public native mouse_button_event get_next_mouse_button_event();
 
-    mouse_position_event get_next_mouse_position_event();
+    public native mouse_position_event get_next_mouse_position_event();
 
-    mouse_scroll_event get_next_mouse_scroll_event();
+    public native mouse_scroll_event get_next_mouse_scroll_event();
 
-    key_press_event get_next_key_press_event();
+    public native key_press_event get_next_key_press_event();
 
-    key_char_event get_next_key_char_event();
+    public native key_char_event get_next_key_char_event();
 
-    window_size get_window_size();
+    public native window_size get_window_size();
 
-    void set_fullscreen(int fullscreen);
+    public native  void set_fullscreen(int fullscreen);
 
-    boolean display_is_active();
+    public native boolean display_is_active();
 
-    void set_string_setting(String setting, String value);
+    public native void set_string_setting(String setting, String value);
 
-    void set_float_setting(String setting_name, float setting_value);
+    public native void set_float_setting(String setting_name, float setting_value);
 
-    void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
+    public native void set_player_camera_transform(double x, double y, double z, float yaw, float pitch);
 
-    String get_materials_and_filters();
+    public native String get_materials_and_filters();
 
-    void destruct();
+    public native void destruct();
 }

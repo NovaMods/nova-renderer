@@ -170,6 +170,17 @@ task packageDefaultShaderpack(type: Zip) {
 processResources.mustRunAfter packageDefaultShaderpack
 build.dependsOn packageDefaultShaderpack
 
+build.doLast {
+    if(exec {
+        commandLine "javah", "-jni", "-cp", "mod/classes/production/Nova_Renderer_main", "-d", "native/src/mc_interface/jni", "com.continuum.nova.system.NovaNative"
+        workingDir = new File("../")
+        standardOutput = prefixedOutputStream("[JNI:GENERATE HEADERS => STDOUT] ", System.out)
+        errorOutput = prefixedOutputStream("[JNI:GENERATE HEADERS => STDERR] ", System.err)
+    }.exitValue != 0) {
+        throw new GradleException("Failed to generate headers for native code")
+    }
+}
+
 void ensureDir(File dir, boolean recreate = false) {
     if(recreate && dir.exists() && dir.isDirectory()) {
         if(!dir.deleteDir()) {

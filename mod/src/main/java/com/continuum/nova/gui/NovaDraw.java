@@ -293,18 +293,18 @@ public class NovaDraw {
 
             // assign the index buffer
             command.index_buffer_size = this.indexBuffer.size();
-            command.index_buffer = new Memory(command.index_buffer_size * Native.getNativeSize(Integer.TYPE));
-            for (int i = 0; i < command.index_buffer_size; i++) {
-                Integer index = this.indexBuffer.get(i);
-                command.index_buffer.setInt(i * Native.getNativeSize(Integer.TYPE), (int) (index != null ? index : 0));
+
+            command.index_buffer = new int[indexBuffer.size()];
+            for(int i = 0; i < command.index_buffer_size; i++) {
+                command.index_buffer[i] = indexBuffer.get(i);
             }
 
             // assign the vertex buffer
             command.vertex_buffer_size = this.vertexBuffer.size();
-            command.vertex_buffer = new Memory(command.vertex_buffer_size * Native.getNativeSize(Float.TYPE));
-            for (int i = 0; i < command.vertex_buffer_size; i++) {
-                Float vertex = this.vertexBuffer.get(i);
-                command.vertex_buffer.setFloat(i * Native.getNativeSize(Float.TYPE), (float) (vertex != null ? vertex : 0));
+
+            command.vertex_buffer = new float[vertexBuffer.size()];
+            for(int i = 0; i < command.vertex_buffer_size; i++) {
+                command.vertex_buffer[i] = vertexBuffer.get(i);
             }
 
             command.atlas_name = NovaRenderer.atlasTextureOfSprite(texture);

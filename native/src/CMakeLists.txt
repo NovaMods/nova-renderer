@@ -28,6 +28,12 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
 find_package(Vulkan)
+
+find_package(JNI)
+if(NOT JNI_FOUND)
+    message(ERROR "Could not find JNI")
+endif()
+
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -75,7 +81,22 @@ include_directories(SYSTEM
 
 # Setup the nova-core library.
 set(NOVA_HEADERS
-        mc_interface/nova_mc_interface.h)
+        mc_interface/nova_mc_interface.cpp
+        mc_interface/jni/com_continuum_nova_system_NovaNative.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_GeometryType.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_key_char_event.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_key_press_event.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_mc_atlas_texture.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_mc_gui_buffer.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_mc_settings.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_mc_texture_atlas_location.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_button_event.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_position_event.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_scroll_event.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_NativeBoolean.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_NovaVertexFormat.h
+        mc_interface/jni/com_continuum_nova_system_NovaNative_window_size.h
+        )
 
 set(NOVA_SOURCE
         # Need to compile third party stuff, too...
@@ -130,15 +151,15 @@ endif()
 source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
 add_library(nova-renderer SHARED ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
+target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC ELPP_THREAD_SAFE)
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
     target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
 
-target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE BUILD_WITH_EASY_PROFILER)
-
-target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE BUILD_WITH_EASY_PROFILER)
+target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)
+target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
@@ -155,9 +176,9 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler ${JNI_LIBRARIES})
 
-add_executable(nova-test test/main.cpp ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
+add_executable(nova-test ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 target_link_libraries(nova-test ${COMMON_LINK_LIBS})
 target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
 set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")

@@ -10,6 +10,7 @@ import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.system.NovaNative;
 import com.continuum.nova.system.NovaNative.key_press_event;
 import com.continuum.nova.system.NovaNative.key_char_event;
+
 public class Keyboard {
     public static final int EVENT_SIZE = 18;
     public static final int CHAR_NONE = 0;
