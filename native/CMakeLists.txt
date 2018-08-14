@@ -54,8 +54,6 @@ add_subdirectory(${3RD_PARTY_DIR}/json)
 add_subdirectory(${3RD_PARTY_DIR}/glm)
 add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
-add_subdirectory(${3RD_PARTY_DIR}/googletest)
-add_subdirectory(${3RD_PARTY_DIR}/Optional)
 add_subdirectory(${3RD_PARTY_DIR}/spirv-headers)
 add_subdirectory(${3RD_PARTY_DIR}/spirv-tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
@@ -125,7 +123,7 @@ set(SPIRV_CROSS_HEADERS
         )
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} ${3RD_PARTY_DIR}/renderdocapi/RenderDocManager.cpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
     set(CMAKE_CXX_FLAGS "-static-libstdc++ -static-libgcc ${CMAKE_CXX_FLAGS}")
 endif (WIN32)
 
@@ -168,7 +166,7 @@ endif (WIN32)
 
 # This is needed on MSVC otherwise the build files get spread out all over the place.
 # The only *problem* is that we wont be able to create multi-config builds. Personally
-# I dont see this as a problem currently. This will make the location more predictable
+# I dont see this as a problem currently. This will make the location more predictablelajsdhfnvfsadk;jh
 # cross platform as well. Though i think object files are still cached across build
 # types so this should be fine.
 get_target_property(OUTPUT_DIR nova-renderer LIBRARY_OUTPUT_DIRECTORY)
