@@ -104,7 +104,7 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/easyloggingpp/src/easylogging++.cc
 
         src/mc_interface/nova_mc_interface.cpp
-        )
+        src/nova_renderer.cpp src/nova_renderer.h src/vulkan/vulkan_render_device.cpp src/vulkan/vulkan_render_device.h)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is

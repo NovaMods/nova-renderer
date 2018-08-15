@@ -6,6 +6,7 @@
  */
 
 #include "jni/com_continuum_nova_system_NovaNative.h"
+#include "../nova_renderer.h"
 
 /*!
  * \brief Initializes Nova
@@ -15,7 +16,7 @@
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_initialize(JNIEnv * env, jobject obj) {
-
+    nova::nova_renderer::initialize();
 }
 
 /*
