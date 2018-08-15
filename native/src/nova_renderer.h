@@ -41,10 +41,6 @@ namespace nova {
 
         /*!
          * \brief Initializes the Nova Renderer
-         *
-         * This method does all these things:
-         * - Initialize the rendering window
-         * -
          */
         nova_renderer();
 
@@ -75,6 +71,8 @@ namespace nova {
 
     private:
         static std::unique_ptr<nova_renderer> instance;
+
+        void initialize_vulkan_backend();
     };
 }
 

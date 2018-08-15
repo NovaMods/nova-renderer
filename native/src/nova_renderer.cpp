@@ -27,4 +27,12 @@ namespace nova {
             instance.release();
         }
     }
+
+    nova_renderer::nova_renderer() {
+        initialize_vulkan_backend();
+    }
+
+    void nova_renderer::initialize_vulkan_backend() {
+
+    }
 }

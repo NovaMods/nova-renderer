@@ -20,7 +20,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_BUILD_TYPE RELEASE)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 
@@ -104,7 +103,9 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/easyloggingpp/src/easylogging++.cc
 
         src/mc_interface/nova_mc_interface.cpp
-        src/nova_renderer.cpp src/nova_renderer.h src/vulkan/vulkan_render_device.cpp src/vulkan/vulkan_render_device.h)
+        src/nova_renderer.cpp src/nova_renderer.h
+        src/vulkan/vulkan_render_device.cpp src/vulkan/vulkan_render_device.h
+        src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.h src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.h)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
