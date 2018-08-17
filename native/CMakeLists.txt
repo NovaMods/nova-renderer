@@ -105,7 +105,7 @@ set(NOVA_SOURCE
         src/mc_interface/nova_mc_interface.cpp
         src/nova_renderer.cpp src/nova_renderer.h
         src/vulkan/vulkan_render_device.cpp src/vulkan/vulkan_render_device.h
-        src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.h src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.h)
+        src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.h src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.h src/fs_access/zip_folder_accessor.cpp src/fs_access/zip_folder_accessor.h)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is

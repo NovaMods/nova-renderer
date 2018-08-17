@@ -16,9 +16,9 @@ namespace nova {
     public:
         explicit regular_folder_accessor(const std::experimental::filesystem::path &folder);
 
-        bool does_resource_exist(const fs::path& resource_path);
+        bool does_resource_exist(const fs::path& resource_path) override;
 
-        std::vector<uint8_t> load_resource(const fs::path& resource_path);
+        std::vector<uint8_t> read_resource(const fs::path &resource_path) override;
     };
 }
 

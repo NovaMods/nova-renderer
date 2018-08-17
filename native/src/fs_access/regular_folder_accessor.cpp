@@ -27,7 +27,7 @@ namespace nova {
         }
     }
 
-    std::vector<uint8_t> regular_folder_accessor::load_resource(const fs::path &resource_path) {
+    std::vector<uint8_t> regular_folder_accessor::read_resource(const fs::path &resource_path) {
         if(!does_resource_exist(resource_path)) {
             throw std::runtime_error("Resource at path " + resource_path.string() + " does not exist");
         }
