@@ -63,7 +63,7 @@ namespace nova {
         texture_store* get_texture_store() const;
 
         /*!
-         * \brief Returns the mesh store, where Nove stores all its meshes
+         * \brief Returns the mesh store, where Nova stores all its meshes
          *
          * \return Nova's mesh store
          */
