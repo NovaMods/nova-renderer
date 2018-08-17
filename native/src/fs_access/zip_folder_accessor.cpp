@@ -4,6 +4,8 @@
  */
 
 #include <miniz_zip.h>
+#include <easylogging++.h>
+
 #include "zip_folder_accessor.h"
 
 namespace nova {
@@ -11,7 +13,8 @@ namespace nova {
         : folder_accessor_base(folder) {
         const auto folder_string = folder.string();
         if(!mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0)) {
-            throw std::runtime_error("Could not open zip archive " + folder_string);
+            LOG(DEBUG) << "Could not open zip archive " << folder_string;
+            throw resource_not_found_error(folder_string);
         }
     }
 
@@ -43,7 +46,8 @@ namespace nova {
     std::vector<uint8_t> zip_folder_accessor::read_resource(const fs::path &resource_path) {
         std::string resource_string = resource_path.string();
         if(!does_resource_exist(resource_path)) {
-            throw std::runtime_error("Resource at path " + resource_string + " does not exist");
+            LOG(DEBUG) << "Resource at path " << resource_string << " does not exist";
+            throw resource_not_found_error(resource_string);
         }
 
         uint32_t file_idx = resource_indexes.at(resource_string);
@@ -54,7 +58,8 @@ namespace nova {
             mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             std::string err = mz_zip_get_error_string(err_code);
 
-            throw std::runtime_error("Could not get information for file " + resource_string + ": " + err);
+            LOG(DEBUG) << "Could not get information for file " << resource_string << ": " << err;
+            throw resource_not_found_error(resource_string);
         }
 
         std::vector<uint8_t> resource_buffer(file_stat.m_uncomp_size);
@@ -64,7 +69,8 @@ namespace nova {
             mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             std::string err = mz_zip_get_error_string(err_code);
 
-            throw std::runtime_error("Could not extract file " + resource_string + ": " + err);
+            LOG(DEBUG) << "Could not extract file " << resource_string << ": " << err;
+            throw resource_not_found_error(resource_string);
         }
 
         return resource_buffer;

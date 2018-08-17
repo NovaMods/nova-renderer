@@ -4,6 +4,7 @@
  */
 
 #include <fstream>
+#include <easylogging++.h>
 #include "regular_folder_accessor.h"
 
 namespace nova {
@@ -29,7 +30,8 @@ namespace nova {
 
     std::vector<uint8_t> regular_folder_accessor::read_resource(const fs::path &resource_path) {
         if(!does_resource_exist(resource_path)) {
-            throw std::runtime_error("Resource at path " + resource_path.string() + " does not exist");
+            LOG(DEBUG) << "Resource at path " + resource_path.string() + " does not exist";
+            throw resource_not_found_error(resource_path.string());
         }
 
         std::vector<uint8_t> buf;
@@ -39,7 +41,8 @@ namespace nova {
             const auto resource_string = resource_path.string();
 
             resource_existance.emplace(resource_string, false);
-            throw std::runtime_error("Could not load resource at path " + resource_string);
+            LOG(DEBUG) << "Could not load resource at path " << resource_string;
+            throw resource_not_found_error(resource_string);
         }
 
         while(!resource_stream.eof()) {

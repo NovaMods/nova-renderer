@@ -15,4 +15,6 @@ namespace nova {
 
         return {};
     }
+
+    resource_not_found_error::resource_not_found_error(const std::string &resource_name) : runtime_error(resource_name) {}
 }

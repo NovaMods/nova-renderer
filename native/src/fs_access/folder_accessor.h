@@ -14,6 +14,12 @@
 namespace fs = std::experimental::filesystem;
 
 namespace nova {
+    class resource_not_found_error : public std::runtime_error {
+    public:
+        explicit resource_not_found_error(const std::string &resource_name);
+
+    };
+
     /*!
      * \brief A collection of resources on the filsysstem
      *
