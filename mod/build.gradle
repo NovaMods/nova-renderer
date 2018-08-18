@@ -278,7 +278,7 @@ void buildPlatformRelease() {
     ensureDir(nativeBuildDir, true)
 
     if(exec {
-        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE", "-G", (Os.isFamily(Os.FAMILY_WINDOWS) ? "MinGW Makefiles" : "Unix Makefiles")
+        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE", "-G", (Os.isFamily(Os.FAMILY_WINDOWS) ? "MinGW Makefiles" : "Unix Makefiles"), (Os.isFamily(Os.FAMILY_MAC) ? "-DCMAKE_CXX_COMPILER=g++-7" : "")
         workingDir = nativeBuildDir
         standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN] ", System.out)
         errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN] ", System.err)
@@ -449,7 +449,7 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
             if(Os.isFamily(Os.FAMILY_WINDOWS)) {
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/nova-renderer.dll"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
             } else if(Os.isFamily(Os.FAMILY_MAC)) {
-                Files.copy(Paths.get(BASE_DIR, "release-build-platform/nova-renderer.dylib"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.dylib"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
             } else {
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.so"), linuxTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
             }
