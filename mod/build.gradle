@@ -278,7 +278,7 @@ void buildPlatformRelease() {
     ensureDir(nativeBuildDir, true)
 
     if(exec {
-        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE", "-G", (Os.isFamily(Os.FAMILY_WINDOWS) ? "MinGW Makefiles" : "Unix Makefiles")
+        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE", "-G", (Os.isFamily(Os.FAMILY_WINDOWS) ? "MinGW Makefiles" : "Unix Makefiles"), (Os.isFamily(Os.FAMILY_MAC) ? "-DCMAKE_CXX_COMPILER=g++-7" : "")
         workingDir = nativeBuildDir
         standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN] ", System.out)
         errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN] ", System.err)
@@ -298,9 +298,12 @@ void buildPlatformRelease() {
     buildProperties.setProperty("platform-built", "true")
     buildProperties.setProperty("windows-built", "false")
     buildProperties.setProperty("linux-built", "false")
+    buildProperties.setProperty("macos-built", "false")
 
     if(Os.isFamily(Os.FAMILY_WINDOWS)) {
         buildProperties.setProperty("windows-built", "true")
+    } else if(Os.isFamily(Os.FAMILY_MAC)) {
+        buildProperties.setProperty("macos-built", "true")
     } else {
         buildProperties.setProperty("linux-built", "true")
     }
@@ -335,6 +338,37 @@ void buildLinuxRelease() {
 
     buildProperties.setProperty("platform-built", "false")
     buildProperties.setProperty("linux-built", "true")
+
+    saveTmpBuildProperties(buildProperties)
+}
+
+void buildMacOSRelease() {
+    ensureCommandWorks("cmake", "--version")
+    Properties buildProperties = loadTmpBuildProps()
+    File nativeBuildDir = new File("../native/release-build-macos/")
+    ensureDir(nativeBuildDir, true)
+
+    if(exec {
+        commandLine "cmake", "../src", "-DCMAKE_BUILD_TYPE=RELEASE",
+                "-DCMAKE_TOOLCHAIN_FILE=${new File("../native/toolchains/macos-x86_64.cmake").getAbsolutePath()}"
+        workingDir = nativeBuildDir
+        standardOutput = prefixedOutputStream("[CMAKE/STDOUT => GEN/MACOS] ", System.out)
+        errorOutput = prefixedOutputStream("[CMAKE/STDERR => GEN/MACOS] ", System.err)
+    }.exitValue != 0) {
+        throw new GradleException("Failed to invoke cmake for generating makefiles")
+    }
+
+    if(exec {
+        commandLine "cmake", "--build", ".", "--target", "nova-renderer", "--", "-j${Runtime.getRuntime().availableProcessors()}"
+        workingDir = nativeBuildDir
+        standardOutput = prefixedOutputStream("[CMAKE/STDOUT => BUILD/MACOS] ", System.out)
+        errorOutput = prefixedOutputStream("[CMAKE/STDERR => BUILD/MACOS] ", System.err)
+    }.exitValue != 0) {
+        throw new GradleException("Failed to invoke cmake for building binary")
+    }
+
+    buildProperties.setProperty("platform-built", "false")
+    buildProperties.setProperty("macos-built", "true")
 
     saveTmpBuildProperties(buildProperties)
 }
@@ -392,6 +426,11 @@ task buildReleaseNatives(dependsOn: updateSubmodules) {
                 logger.info("Building linux release")
                 buildLinuxRelease()
             }
+
+            if(!project.hasProperty("skipMacOSCross")) {
+                logger.info("Building macOS release")
+                buildMacOSRelease()
+            }
         }
     }
 }
@@ -403,10 +442,14 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
 
         java.nio.file.Path linuxTargetRenderer = Paths.get("src/main/resources/libnova-renderer.so").normalize()
 
+        java.nio.file.Path macosTargetRenderer = Paths.get("src/main/resources/libnova-renderer.dylib").normalize()
+
         Properties buildProperties = loadTmpBuildProps()
         if(Boolean.parseBoolean(buildProperties.getProperty("platform-built", "false"))) {
             if(Os.isFamily(Os.FAMILY_WINDOWS)) {
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/nova-renderer.dll"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
+            } else if(Os.isFamily(Os.FAMILY_MAC)) {
+                Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.dylib"), macosTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
             } else {
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.so"), linuxTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
             }
@@ -415,6 +458,10 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
 
         if(Boolean.parseBoolean(buildProperties.getProperty("linux-built", "false"))) {
             Files.copy(Paths.get(BASE_DIR, "release-build-linux/libnova-renderer.so"), linuxTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        if(Boolean.parseBoolean(buildProperties.getProperty("macos-built", "false"))) {
+            Files.copy(Paths.get(BASE_DIR, "release-build-macos/libnova-renderer.dylib"), macosTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
         }
 
         if(Boolean.parseBoolean(buildProperties.getProperty("windows-built", "false"))) {
@@ -460,6 +507,8 @@ task copyLibraryToRunDir(type: Copy, dependsOn: buildDevLibrary) {
     into "run"
     if(Os.isFamily(Os.FAMILY_WINDOWS)) {
         include "nova-renderer.dll"
+    } else if(Os.isFamily(Os.FAMILY_MAC)) {
+        include "libnova-renderer.dylib"
     } else {
         include "libnova-renderer.so"
     }
