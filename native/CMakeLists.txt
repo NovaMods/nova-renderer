@@ -92,7 +92,7 @@ set(NOVA_HEADERS
         src/mc_interface/jni/com_continuum_nova_system_NovaNative_NativeBoolean.h
         src/mc_interface/jni/com_continuum_nova_system_NovaNative_NovaVertexFormat.h
         src/mc_interface/jni/com_continuum_nova_system_NovaNative_window_size.h
-        )
+        src/render_context/platform.h)
 
 set(NOVA_SOURCE
         # Third party stuff that's too lame to have it's own CMakeLists.txt
@@ -104,8 +104,8 @@ set(NOVA_SOURCE
 
         src/mc_interface/nova_mc_interface.cpp
         src/nova_renderer.cpp src/nova_renderer.h
-        src/vulkan/vulkan_render_device.cpp src/vulkan/vulkan_render_device.h
-        src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.h src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.h src/fs_access/zip_folder_accessor.cpp src/fs_access/zip_folder_accessor.h)
+        src/render_context/vulkan/vulkan_render_device.cpp src/render_context/vulkan/vulkan_render_device.h
+        src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.h src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.h src/fs_access/zip_folder_accessor.cpp src/fs_access/zip_folder_accessor.h src/render_context/vulkan/per_thread_data.cpp src/render_context/vulkan/per_thread_data.h)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
