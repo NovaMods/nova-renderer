@@ -449,7 +449,7 @@ task copyReleaseBuilds(dependsOn: buildReleaseNatives) {
             if(Os.isFamily(Os.FAMILY_WINDOWS)) {
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/nova-renderer.dll"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
             } else if(Os.isFamily(Os.FAMILY_MAC)) {
-                Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.dylib"), windowsTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.dylib"), macosTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
             } else {
                 Files.copy(Paths.get(BASE_DIR, "release-build-platform/libnova-renderer.so"), linuxTargetRenderer, StandardCopyOption.REPLACE_EXISTING)
             }
