@@ -264,8 +264,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             try {
                 if (Platform.isWindows()) {
                     _native = Native.loadLibrary("./nova-renderer.dll", NovaNative.class);
-                } else {
+                } else if (Platform.isLinux()) {
                     _native = Native.loadLibrary("./libnova-renderer.so", NovaNative.class);
+                } else {
+                    _native = Native.loadLibrary("./libnova-renderer.dylib", NovaNative.class);
                 }
                 LOG.info("Succeeded in loading nova from run directory.");
                 return;
@@ -288,11 +290,16 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             Utils.extractResource("/nova-renderer.dll", nativeExtractDir.toPath(), true);
             Utils.extractResource("/libwinpthread-1.dll", nativeExtractDir.toPath(), true);
             Utils.extractResource("/libwinpthread-license.txt", nativeExtractDir.toPath(), true); // not sure if this is needed, but its only a few kb so
-        } else {
+        } else if(Platform.isLinux()) {
             if(NovaRenderer.class.getResource("/libnova-renderer.so") == null) {
                 throw new IllegalStateException("Linux is not supported by the current nova build");
             }
             Utils.extractResource("/libnova-renderer.so", nativeExtractDir.toPath(), true);
+        } else {
+            if(NovaRenderer.class.getResource("/libnova-renderer.dylib") == null) {
+                throw new IllegalStateException("macOS is not supported bt the current nova build");
+            }
+            Utils.extractResource("/libnova-renderer.dylib", nativeExtractDir.toPath(), true);
         }
         nativeExtractDir.deleteOnExit();
 

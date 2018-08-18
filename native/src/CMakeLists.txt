@@ -245,7 +245,7 @@ endif (WIN32)
 # types so this should be fine.
 get_target_property(OUTPUT_DIR nova-renderer LIBRARY_OUTPUT_DIRECTORY)
 nova_set_all_target_outputs(nova-renderer ${OUTPUT_DIR})
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+if(CMAKE_SYSTEM_NAME MATCHES ("Linux" OR "macOS"))
     set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
 endif()
 
