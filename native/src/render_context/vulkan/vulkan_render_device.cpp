@@ -10,6 +10,7 @@
 #include <easylogging++.h>
 #include <unordered_set>
 #include "vulkan_render_device.h"
+#include "timestamp_query_pool.h"
 
 //#include "../windowing/glfw_vk_window.h"
 //#include "command_pool.h"
@@ -38,8 +39,6 @@ namespace nova {
         create_instance(window);
         setup_debug_callback();
         find_device_and_queues();
-        create_semaphores();
-        create_command_pool_and_command_buffers();
         create_pipeline_cache();
     }
 
@@ -59,7 +58,7 @@ namespace nova {
         vk::InstanceCreateInfo create_info = {};
         create_info.pApplicationInfo = &app_info;
 
-        extensions = get_required_extensions(window);
+        const auto extensions = get_required_extensions(window);
         create_info.ppEnabledExtensionNames = extensions.data();
         create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 
@@ -94,25 +93,26 @@ namespace nova {
     }
 
     void render_device::find_device_and_queues() {
-        enumerate_gpus();
+        const auto gpus = enumerate_gpus();
         LOG(TRACE) << "Enumerated GPUs";
-        select_physical_device();
+        const auto gpu = select_physical_device(gpus);
         LOG(TRACE) << "Found a physical device that will work I guess";
-        create_logical_device_and_queues();
+        create_logical_device_and_queues(gpu);
         LOG(TRACE) << "Basic queue and logical device was found";
     }
 
-    void render_device::enumerate_gpus() {
+    std::vector<gpu_info> render_device::enumerate_gpus() {
         auto devices = vk_instance.enumeratePhysicalDevices();
         LOG(TRACE) << "There are " << devices.size() << " physical devices";
         if(devices.empty()) {
             LOG(FATAL) << "Apparently you have zero devices. You know you need a GPU to run Nova, right?";
         }
 
-        this->gpus.resize(devices.size());
+        std::vector<gpu_info> gpus;
+        gpus.resize(devices.size());
         LOG(TRACE) << "Reserved " << devices.size() << " slots for devices";
         for(uint32_t i = 0; i < devices.size(); i++) {
-            gpu_info& gpu = this->gpus[i];
+            gpu_info gpu;
             gpu.device = devices[i];
 
             // get the queues the device supports
@@ -135,11 +135,17 @@ namespace nova {
             gpu.mem_props = gpu.device.getMemoryProperties();
             gpu.props = gpu.device.getProperties();
             gpu.supported_features = gpu.device.getFeatures();
-            LOG(TRACE) << "Got the memory properties and device properties";
+
+            gpus.push_back(gpu);
+            LOG(TRACE) << "Got the memory properties and device properties for device " << (VkDevice)device;
         }
+
+        return gpus;
     }
 
-    void render_device::select_physical_device() {
+    const gpu_info render_device::select_physical_device(const std::vector<gpu_info>& gpus) {
+        uint32_t timestamp_valid_bits = 0;
+        float timestamp_period;
         for(auto& gpu : gpus) {
             if(gpu.props.vendorID == 0x8086 && gpus.size() > 1) {
                 // We found an Intel GPU, but there's other GPUs available on this system so we should skip the Intel
@@ -194,19 +200,24 @@ namespace nova {
                 physical_device = gpu.device;
                 timestamp_period = gpu.props.limits.timestampPeriod;
                 this->gpu = gpu;
+
+                timestamp_queries = std::make_unique<timestamp_query_pool>(timestamp_period, timestamp_valid_bits);
+
                 LOG(INFO) << "Selected graphics device " << gpu.props.deviceName;
                 LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageDimension2D << " texels in a 2D texture";
                 LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageArrayLayers << " array layers";
                 LOG(INFO) << "It takes " << timestamp_period << " nanoseconds to increment a timestamp query";
                 LOG(INFO) << timestamp_valid_bits << " bits are valid for a timestamp";
-                return;
+                return gpu;
             }
         }
 
         LOG(FATAL) << "Could not find a device with both present and graphics queues";
+
+        return {};
     }
 
-    void render_device::create_logical_device_and_queues() {
+    void render_device::create_logical_device_and_queues(const gpu_info& info) {
         std::unordered_set<uint32_t> unique_idx;
         unique_idx.insert(graphics_family_idx);
         unique_idx.insert(present_family_idx);
@@ -255,24 +266,6 @@ namespace nova {
         vmaCreateAllocator(&allocatorInfo, &allocator);
     }
 
-    void render_device::create_semaphores() {
-        acquire_semaphores.resize(NUM_FRAME_DATA);
-        render_complete_semaphores.resize(NUM_FRAME_DATA);
-
-        vk::SemaphoreCreateInfo semaphore_create_info = {};
-        for(int i = 0; i < NUM_FRAME_DATA; i++) {
-            acquire_semaphores[i] = device.createSemaphore(semaphore_create_info, nullptr);
-            render_complete_semaphores[i] = device.createSemaphore(semaphore_create_info, nullptr);
-        }
-    }
-
-    void render_device::create_command_pool_and_command_buffers() {
-        // TODO: Get the number of threads dynamically based on the user's CPU core count
-        command_buffer_pool = std::make_unique<command_pool>(device, graphics_family_idx, 8);
-    }
-
-
-
     render_device::~render_device() {
 //#ifndef NDEBUG
         DestroyDebugReportCallback(vk_instance, debug_report_callback, nullptr);
@@ -289,9 +282,8 @@ namespace nova {
         }
 
         device.destroyPipelineCache(pipeline_cache);
-        device.destroyQueryPool(timestamp_query_pool);
 
-        command_buffer_pool.reset(nullptr);
+        timestamp_queries.release();
 
         device.destroy();
         vk_instance.destroy();
@@ -302,19 +294,6 @@ namespace nova {
     void render_device::create_pipeline_cache() {
         vk::PipelineCacheCreateInfo cache_create_info = {};
         pipeline_cache = device.createPipelineCache(cache_create_info);
-    }
-
-    void render_device::recreate_timestamp_query_pool(uint32_t size) {
-        if(timestamp_query_pool) {
-            device.destroyQueryPool(timestamp_query_pool);
-        }
-
-        vk::QueryPoolCreateInfo timestamp_query_pool_create_info{};
-        timestamp_query_pool_create_info.pNext = nullptr;
-        timestamp_query_pool_create_info.queryType = vk::QueryType::eTimestamp;
-        timestamp_query_pool_create_info.queryCount = size;
-
-        timestamp_query_pool = device.createQueryPool(timestamp_query_pool_create_info);
     }
 
     // This function should really be outside of this file, but I want to keep vulkan creation things in here

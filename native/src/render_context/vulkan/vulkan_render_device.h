@@ -17,6 +17,7 @@
 namespace nova {
     class glfw_vk_window;
     class command_pool;
+    class timestamp_query_pool;
 
     struct gpu_info {
         vk::PhysicalDevice device;
@@ -38,17 +39,13 @@ namespace nova {
     };
 
     /*!
-     * \brief An abstraction over Vulkan physical and logical devices
+     * \brief Holds global render-related resources
      *
-     * Pretty sure I need one command buffer pool per thread that does things
-     *
-     * Some more things that are needed:
-     *      - A texture uploading queue
-     *      - A chunk uploading queue
-     *      - A render queue
-     *      - I've always seen things with a separate queue for presenting
-     *      - One or more compute shader queues could be awesome, except that Nova won't use many compute shaders by
-     *          default
+     * Some example resources:
+     *  - VkDevice and VkInstance
+     *  - Information about the GPU we're using
+     *  - Information about timestamp queries
+     *  - All the queues that Nova uses
      */
     class render_device {
     public:
@@ -56,17 +53,10 @@ namespace nova {
         vk::SurfaceKHR surface;
         gpu_info gpu;
 
-        std::vector<const char *> validation_layers;
-        std::vector<const char *> extensions;
-
         std::vector<vk::Semaphore> acquire_semaphores;
         std::vector<vk::Semaphore> render_complete_semaphores;
 
         vk::PipelineCache pipeline_cache;
-
-        uint32_t timestamp_valid_bits;
-        float timestamp_period;
-        vk::QueryPool timestamp_query_pool;
 
         /*!
          * \brief Creates a Vulkan render device. Initializes the Vulkan context, selects a GPU to use, created the
@@ -84,9 +74,7 @@ namespace nova {
          * graphics driver to clean up any memory from Nova
          */
         ~render_device();
-
-        void recreate_timestamp_query_pool(uint32_t size);
-
+        
         /*!
          * \brief Submits one or more command buffers to the specified queue
          * \param submit_info The submission info for the command buffers you want to submit
@@ -107,26 +95,22 @@ namespace nova {
 
         void find_device_and_queues();
 
-        void create_semaphores();
-
-        void create_command_pool_and_command_buffers();
-
         void create_pipeline_cache();
 
-        void create_logical_device_and_queues();
+        void create_logical_device_and_queues(const gpu_info& info);
 
-        void enumerate_gpus();
+        std::vector<gpu_info> enumerate_gpus();
 
-        void select_physical_device();
+        const gpu_info select_physical_device(const std::vector<gpu_info>& vector);
 
+        // Needed in both create_instance and create_logical_device_and_queues
+        std::vector<const char *> validation_layers;
 
         uint32_t graphics_family_idx;
         uint32_t present_family_idx;
 
         vk::Queue graphics_queue;
         vk::Queue present_queue;
-
-        std::vector<gpu_info> gpus;
 
         vk::PhysicalDevice physical_device;
 
@@ -139,6 +123,8 @@ namespace nova {
         VkDebugReportCallbackEXT debug_report_callback;
 
         vk::Device device;
+
+        std::unique_ptr<timestamp_query_pool> timestamp_queries;
     };
 }
 

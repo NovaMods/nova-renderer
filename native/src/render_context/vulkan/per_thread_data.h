@@ -10,9 +10,9 @@ namespace nova {
     /*!
      * \brief Per-thread data
      */
-    class per_thread_data {
-    private:
-        command_pool pool;
+    struct per_thread_data {
+        // Tasks can allocate, record, and execute command buffers, so each thread needs its own command buffer pool
+        command_pool cmd_buf_pool;
     };
 }
 
