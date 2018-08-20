@@ -97,7 +97,7 @@ namespace nova {
 
         void create_pipeline_cache();
 
-        void create_logical_device_and_queues(const gpu_info& info);
+        void create_logical_device_and_queues(const gpu_info& gpu_info);
 
         std::vector<gpu_info> enumerate_gpus();
 

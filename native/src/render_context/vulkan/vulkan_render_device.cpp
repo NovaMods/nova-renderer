@@ -217,7 +217,7 @@ namespace nova {
         return {};
     }
 
-    void render_device::create_logical_device_and_queues(const gpu_info& info) {
+    void render_device::create_logical_device_and_queues(const gpu_info& gpu_info) {
         std::unordered_set<uint32_t> unique_idx;
         unique_idx.insert(graphics_family_idx);
         unique_idx.insert(present_family_idx);
