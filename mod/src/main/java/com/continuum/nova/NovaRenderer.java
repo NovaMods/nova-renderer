@@ -72,7 +72,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private IResourceManager resourceManager;
 
     private HashMap<String, IGeometryFilter> filterMap;
-    private NovaNative _native;
 
     private static NovaRenderer instance;
 
@@ -114,7 +113,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             firstLoad = false;
         }
 
-        _native.resetTextureManager();
+        NovaNative.resetTextureManager();
 
         addGuiAtlas(resourceManager);
         addFontAtlas(resourceManager);
@@ -158,7 +157,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         // Copy over the atlas
         MinecraftAtlasTexture blockColorTexture = getFullImage(((INovaTextureMap) blockColorMap).getWidth(), ((INovaTextureMap) blockColorMap).getHeight(), ((INovaTextureMap) blockColorMap).getMapUploadedSprites().values());
         blockColorTexture.name = BLOCK_COLOR_ATLAS_NAME;
-        _native.addTexture(blockColorTexture);
+        NovaNative.addTexture(blockColorTexture);
 
         // Copy over all the icon locations
         for (String spriteName : ((INovaTextureMap) blockColorMap).getMapUploadedSprites().keySet()) {
@@ -171,7 +170,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     sprite.getMaxV()
             );
 
-            _native.addTextureLocation(location);
+            NovaNative.addTextureLocation(location);
         }
     }
 
@@ -189,7 +188,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         atlasTexture.setName(textureName);
 
         LOG.info("Adding atlas texture {}", atlasTexture);
-        _native.addTexture(atlasTexture);
+        NovaNative.addTexture(atlasTexture);
 
         for (TextureAtlasSprite sprite : spriteLocations.values()) {
             MinecraftTextureAtlasLocation location = new MinecraftTextureAtlasLocation(
@@ -200,7 +199,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     sprite.getMaxV()
             );
 
-            _native.addTextureLocation(location);
+            NovaNative.addTextureLocation(location);
         }
     }
 
@@ -255,7 +254,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         } catch (IOException e) {
             throw new LoaderExceptionModCrash("Nova renderer failed to load native library", e);
         }
-        _native.initialize();
+        NovaNative.initialize();
         LOG.info("Native code initialized");
         updateWindowSize();
     }
@@ -265,9 +264,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             LOG.info("Nova is very likely running in a development environment, trying to load native from run directory...");
             try {
                 if (Platform.isWindows()) {
-                    _native = Native.loadLibrary("./nova-renderer.dll", NovaNative.class);
                 } else {
-                    _native = Native.loadLibrary("./libnova-renderer.so", NovaNative.class);
                 }
                 LOG.info("Succeeded in loading nova from run directory.");
                 return;
@@ -301,11 +298,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator + nativeExtractDir.getAbsolutePath()); // Make sure java can load dependencies
         System.setProperty("jna.library.path", System.getProperty("java.library.path"));
 
-        _native = Native.loadLibrary("nova-renderer", NovaNative.class);
     }
 
     private void updateWindowSize() {
-        WindowSize size = _native.getWindowSize();
+        WindowSize size = NovaNative.getWindowSize();
         int oldHeight = height;
         int oldWidth = width;
         resized = oldHeight != size.height || oldWidth != size.width;
@@ -327,7 +323,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void updateCameraAndRender(float renderPartialTicks, Minecraft mc) {
-        if (_native.shouldClose()) {
+        if (NovaNative.shouldClose()) {
             mc.shutdown();
         }
 
@@ -356,12 +352,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             double x = viewEntity.posX;
             double y = viewEntity.posY + viewEntity.getEyeHeight();
             double z = viewEntity.posZ;
-            _native.setPlayerCameraTransform(x, y, z, yaw, pitch);
+            NovaNative.setPlayerCameraTransform(x, y, z, yaw, pitch);
         }
         Profiler.end("update_player");
 
         Profiler.start("executeFrame");
-        _native.executeFrame();
+        NovaNative.executeFrame();
         Profiler.end("executeFrame");
 
         Profiler.start("update_window");
@@ -369,7 +365,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Profiler.end("update_window");
         int scalefactor = new ScaledResolution(mc).getScaleFactor() * 2;
         if (scalefactor != this.scalefactor) {
-            _native.setFloatSetting("scalefactor", scalefactor);
+            NovaNative.setFloatSetting("scalefactor", scalefactor);
             this.scalefactor = scalefactor;
         }
 
@@ -378,7 +374,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void sendLightmapTexture(DynamicTexture lightmapTexture) {
         int[] data = lightmapTexture.getTextureData();
-        _native.sendLightmapTexture(data, data.length, ((INovaDynamicTexture) lightmapTexture).getWidth(), ((INovaDynamicTexture) lightmapTexture).getHeight());
+        NovaNative.sendLightmapTexture(data, data.length, ((INovaDynamicTexture) lightmapTexture).getWidth(), ((INovaDynamicTexture) lightmapTexture).getHeight());
     }
 
     private void printProfilerData() {
@@ -401,10 +397,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         MinecraftAtlasTexture tex = new MinecraftAtlasTexture(image.getWidth(), image.getHeight(), 4, imageData);
         tex.setName(location.toString());
-        _native.addTexture(tex);
+        NovaNative.addTexture(tex);
 
         MinecraftTextureAtlasLocation loc = new MinecraftTextureAtlasLocation(location.toString(), 0, 0, 1, 1);
-        _native.addTextureLocation(loc);
+        NovaNative.addTextureLocation(loc);
     }
 
     public static String atlasTextureOfSprite(ResourceLocation texture) {
@@ -423,9 +419,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void loadShaderpack(String shaderpackName, BlockColors blockColors) {
         Profiler.start("load_shaderpack");
-        _native.setStringSetting("loadedShaderpack", shaderpackName);
+        NovaNative.setStringSetting("loadedShaderpack", shaderpackName);
 
-        String filters = _native.getMaterialsAndFilters();
+        String filters = NovaNative.getMaterialsAndFilters();
         String[] filtersSplit = filters.split("\n");
         Profiler.end("load_shaderpack");
 
@@ -446,10 +442,6 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             filterMap.put(filterName, filter);
         }
         Profiler.end("build_filters");
-    }
-
-    public NovaNative getNative() {
-        return _native;
     }
 
     public Logger getLog() {

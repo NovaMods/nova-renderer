@@ -76,24 +76,6 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/profiler/include
         )
 
-# Setup the nova-core library.
-set(NOVA_HEADERS
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_GeometryType.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_key_char_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_key_press_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_atlas_texture.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_gui_buffer.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_settings.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_texture_atlas_location.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_button_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_position_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_scroll_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_NativeBoolean.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_NovaVertexFormat.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_window_size.h
-        src/render_context/platform.h)
-
 set(NOVA_SOURCE
         # Third party stuff that's too lame to have it's own CMakeLists.txt
         ${3RD_PARTY_DIR}/miniz/miniz.c
@@ -105,6 +87,8 @@ set(NOVA_SOURCE
         src/mc_interface/nova_mc_interface.cpp
         src/nova_renderer.cpp src/nova_renderer.h
         src/render_context/vulkan/vulkan_render_device.cpp src/render_context/vulkan/vulkan_render_device.h
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative.h
+        src/render_context/platform.h
         src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.h src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.h src/fs_access/zip_folder_accessor.cpp src/fs_access/zip_folder_accessor.h src/render_context/vulkan/per_thread_data.cpp src/render_context/vulkan/per_thread_data.h src/render_context/vulkan/timestamp_query_pool.cpp src/render_context/vulkan/timestamp_query_pool.h)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
@@ -124,7 +108,7 @@ set(SPIRV_CROSS_HEADERS
         )
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
     set(CMAKE_CXX_FLAGS "-static-libstdc++ -static-libgcc ${CMAKE_CXX_FLAGS}")
 endif (WIN32)
 
@@ -148,7 +132,7 @@ endif()
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
-source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
+source_group("nova" FILES ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
 add_library(nova-renderer SHARED ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})

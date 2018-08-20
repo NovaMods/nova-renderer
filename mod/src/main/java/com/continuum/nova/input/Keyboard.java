@@ -9,6 +9,7 @@ import java.util.Map;
 import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.system.KeyPressEvent;
 import com.continuum.nova.system.KeyCharEvent;
+import com.continuum.nova.system.NovaNative;
 
 public class Keyboard {
     public static final int EVENT_SIZE = 18;
@@ -206,8 +207,8 @@ public class Keyboard {
 
 
     public static boolean next() {
-        KeyPressEvent p = NovaRenderer.getInstance().getNative().getNextKeyPressEvent();
-        KeyCharEvent c = NovaRenderer.getInstance().getNative().getNextKeyCharEvent();
+        KeyPressEvent p = NovaNative.getNextKeyPressEvent();
+        KeyCharEvent c = NovaNative.getNextKeyCharEvent();
 
         if (p.filled==0 && c.filled==0){
             return false;

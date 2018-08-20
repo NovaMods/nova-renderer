@@ -6,6 +6,7 @@ import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.chunks.IndexList;
 import com.continuum.nova.system.MinecraftChunkRenderObject;
 import com.continuum.nova.system.NovaNative;
+import com.continuum.nova.system.NovaVertexFormat;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
@@ -77,7 +78,7 @@ public abstract class MixinRenderChunk {
             if (data.getValue().isEmpty()) {
                 continue;
             }
-            NovaRenderer.getInstance().getNative().removeChunkGeometryForFilter(data.getKey(), obj);
+            NovaNative.removeChunkGeometryForFilter(data.getKey(), obj);
             data.getValue().reset();
         }
     }
@@ -99,7 +100,7 @@ public abstract class MixinRenderChunk {
 
         chunk_render_object.setVertex_data(dat);
         chunk_render_object.setIndices(indices);
-        chunk_render_object.format = NovaNative.NovaVertexFormat.POS_UV_LIGHTMAPUV_NORMAL_TANGENT.ordinal();
+        chunk_render_object.format = NovaVertexFormat.POS_UV_LIGHTMAPUV_NORMAL_TANGENT.ordinal();
 
         return Optional.of(chunk_render_object);
     }
@@ -184,7 +185,7 @@ public abstract class MixinRenderChunk {
                 obj.z = this.position.getZ();
 
                 NovaNative.LOG.info("Adding render geometry for chunk {}, layer {}", this.position, entry.getKey());
-                NovaRenderer.getInstance().getNative().addChunkGeometryForFilter(entry.getKey(), obj);
+                NovaNative.addChunkGeometryForFilter(entry.getKey(), obj);
             });
 
         }

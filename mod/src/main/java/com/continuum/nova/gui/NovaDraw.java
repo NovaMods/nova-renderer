@@ -4,6 +4,7 @@ import com.continuum.nova.system.MinecraftGuiBuffer;
 import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.input.Mouse;
+import com.continuum.nova.system.NovaNative;
 import com.sun.jna.Memory;
 import glm.mat._4.Mat4;
 import glm.vec._4.Vec4;
@@ -48,7 +49,7 @@ public class NovaDraw {
 
     private static void clearBuffers() {
         buffers.clear();
-        NovaRenderer.getInstance().getNative().clearGuiBuffers();
+        NovaNative.clearGuiBuffers();
         currentZ = 0.9999f;
     }
 
@@ -210,7 +211,7 @@ public class NovaDraw {
             for (String filterName : filterMap.keySet()) {
                 if (filterMap.get(filterName).matches(guiGeometry)) {
                     LOG.trace("Adding geometry for filter {}", filterName);
-                    NovaRenderer.getInstance().getNative().addGuiGeometry(filterName, guiGeometry);
+                    NovaNative.addGuiGeometry(filterName, guiGeometry);
                 }
             }
 

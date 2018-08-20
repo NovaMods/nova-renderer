@@ -6,86 +6,55 @@ import org.apache.logging.log4j.Logger;
 public class NovaNative {
     public static final Logger LOG = LogManager.getLogger(NovaNative.class);
 
-    public enum NovaVertexFormat {
-        POS,
-        POS_UV,
-        POS_UV_LIGHTMAPUV_NORMAL_TANGENT,
-        POS_UV_COLOR
-    }
+    public static native void initialize();
 
-    public enum GeometryType {
-        BLOCK,
-        ENTITY,
-        FALLING_BLOCK,
-        GUI,
-        TEXT,
-        GUI_BACKGROUND,
-        CLOUD,
-        SKY_DECORATION,
-        SELECTION_BOX,
-        GLINT,
-        WEATHER,
-        HAND,
-        FULLSCREEN_QUAD,
-        PARTICLE,
-        LIT_PARTICLE,
-        EYES
-    }
+    public static native void executeFrame();
 
-    public enum NativeBoolean {
-        FALSE,
-        TRUE
-    }
+    public static native void sendLightmapTexture(int[] data, int length, int width, int height);
 
-    public native void initialize();
+    public static native void addTexture(MinecraftAtlasTexture texture);
 
-    public native void executeFrame();
+    public static native void addTextureLocation(MinecraftTextureAtlasLocation location);
 
-    public native void sendLightmapTexture(int[] data, int length, int width, int height);
+    public static native int getMaxTextureSize();
 
-    public native void addTexture(MinecraftAtlasTexture texture);
+    public static native void resetTextureManager();
 
-    public native void addTextureLocation(MinecraftTextureAtlasLocation location);
+    public static native void addChunkGeometryForFilter(String filter_name, MinecraftChunkRenderObject render_object);
 
-    public native int getMaxTextureSize();
+    public static native void removeChunkGeometryForFilter(String filter_name, MinecraftChunkRenderObject render_object);
 
-    public native void resetTextureManager();
+    public static native boolean shouldClose();
 
-    public native  void addChunkGeometryForFilter(String filter_name, MinecraftChunkRenderObject render_object);
+    public static native void addGuiGeometry(String type, MinecraftGuiBuffer buffer);
 
-    public native void removeChunkGeometryForFilter(String filter_name, MinecraftChunkRenderObject render_object);
+    public static native void clearGuiBuffers();
 
-    public native boolean shouldClose();
+    public static native void setMouseGrabbed(boolean grabbed);
 
-    public native void addGuiGeometry(String type, MinecraftGuiBuffer buffer);
+    public static native MouseButtonEvent getNextMouseButtonEvent();
 
-    public native void clearGuiBuffers();
+    public static native MousePositionEvent getNextMousePositionEvent();
 
-    public native void setMouseGrabbed(boolean grabbed);
+    public static native MouseScrollEvent getNextMouseScrollEvent();
 
-    public native MouseButtonEvent getNextMouseButtonEvent();
+    public static native KeyPressEvent getNextKeyPressEvent();
 
-    public native MousePositionEvent getNextMousePositionEvent();
+    public static native KeyCharEvent getNextKeyCharEvent();
 
-    public native MouseScrollEvent getNextMouseScrollEvent();
+    public static native WindowSize getWindowSize();
 
-    public native KeyPressEvent getNextKeyPressEvent();
+    public static native void setFullscreen(boolean fullscreen);
 
-    public native KeyCharEvent getNextKeyCharEvent();
+    public static native boolean displayIsActive();
 
-    public native WindowSize getWindowSize();
+    public static native void setStringSetting(String setting, String value);
 
-    public native  void setFullscreen(int fullscreen);
+    public static native void setFloatSetting(String setting_name, float setting_value);
 
-    public native boolean displayIsActive();
+    public static native void setPlayerCameraTransform(double x, double y, double z, float yaw, float pitch);
 
-    public native void setStringSetting(String setting, String value);
+    public static native String getMaterialsAndFilters();
 
-    public native void setFloatSetting(String setting_name, float setting_value);
-
-    public native void setPlayerCameraTransform(double x, double y, double z, float yaw, float pitch);
-
-    public native String getMaterialsAndFilters();
-
-    public native void destruct();
+    public static native void destruct();
 }

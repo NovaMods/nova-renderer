@@ -229,7 +229,7 @@ public abstract class MixinMinecraft {
         NovaRenderer.getInstance().preInit();
         Mouse.create();
         Keyboard.create();
-        inGameHasFocus = NovaRenderer.getInstance().getNative().displayIsActive();
+        inGameHasFocus = NovaNative.displayIsActive();
     }
 
     /**
@@ -395,7 +395,7 @@ public abstract class MixinMinecraft {
             at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;isActive()Z", remap = false)
     )
     private boolean proxyIsActive() {
-        return NovaRenderer.getInstance().getNative().displayIsActive();
+        return NovaNative.displayIsActive();
     }
 
     /**
@@ -429,7 +429,7 @@ public abstract class MixinMinecraft {
     )
     private void hookDisplayGuiScreen(GuiScreen guiScreen, CallbackInfo callbackInfo) {
         if (guiScreen == null) {
-            NovaRenderer.getInstance().getNative().clearGuiBuffers();
+            NovaNative.clearGuiBuffers();
         }
     }
 
@@ -444,9 +444,9 @@ public abstract class MixinMinecraft {
             gameSettings.fullScreen = fullscreen;
 
             if (fullscreen) {
-                NovaRenderer.getInstance().getNative().setFullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
+                NovaNative.setFullscreen(true);
             } else {
-                NovaRenderer.getInstance().getNative().setFullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
+                NovaNative.setFullscreen(false);
             }
 
             updateDisplay();
@@ -473,7 +473,7 @@ public abstract class MixinMinecraft {
         // TODO: Add vulkan stats
         playerSnooper.addStatToSnooper("client_brand", ClientBrandRetriever.getClientModName());
         playerSnooper.addStatToSnooper("launched_version", this.launchedVersion);
-        playerSnooper.addStatToSnooper("vulkan_max_texture_size", NovaRenderer.getInstance().getNative().getMaxTextureSize());
+        playerSnooper.addStatToSnooper("vulkan_max_texture_size", NovaNative.getMaxTextureSize());
         playerSnooper.addStatToSnooper("nova_renderer_version", NovaConstants.VERSION);
 
         GameProfile gameprofile = this.session.getProfile();
@@ -490,7 +490,7 @@ public abstract class MixinMinecraft {
      */
     @Overwrite
     public static int getGLMaximumTextureSize() {
-        return NovaRenderer.getInstance().getNative().getMaxTextureSize();
+        return NovaNative.getMaxTextureSize();
     }
 
     @Inject(
@@ -499,6 +499,6 @@ public abstract class MixinMinecraft {
     )
     private void destructNova(CallbackInfo info) {
         novaLogger.info("Destroying nova");
-        NovaRenderer.getInstance().getNative().destruct();
+        NovaNative.destruct();
     }
 }

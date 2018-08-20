@@ -2,6 +2,7 @@ package com.continuum.nova.mixin.renderer;
 
 import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.interfaces.INovaEntityRenderer;
+import com.continuum.nova.system.NovaNative;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -41,7 +42,7 @@ public abstract class MixinEntityRenderer implements INovaEntityRenderer {
 
     @Redirect(method = "updateCameraAndRender", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;isActive()Z"))
     private boolean isWindowActiveNova() {
-        return NovaRenderer.getInstance().getNative().displayIsActive();
+        return NovaNative.displayIsActive();
     }
 
     @Redirect(method = "renderWorldPass",

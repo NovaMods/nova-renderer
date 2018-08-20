@@ -1,7 +1,7 @@
 package com.continuum.nova.chunks;
 
+import com.continuum.nova.system.GeometryType;
 import com.continuum.nova.system.MinecraftGuiBuffer;
-import com.continuum.nova.system.NovaNative;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockRenderLayer;
 import org.apache.logging.log4j.LogManager;
@@ -114,15 +114,15 @@ public interface IGeometryFilter {
     }
 
     class GeometryTypeGeometryFilter implements IGeometryFilter {
-        private NovaNative.GeometryType type;
+        private GeometryType type;
 
-        public GeometryTypeGeometryFilter(NovaNative.GeometryType type) {
+        public GeometryTypeGeometryFilter(GeometryType type) {
             this.type = type;
         }
 
         @Override
         public boolean matches(IBlockState blockState) {
-            return type == NovaNative.GeometryType.BLOCK;
+            return type == GeometryType.BLOCK;
         }
 
         @Override
@@ -250,7 +250,7 @@ public interface IGeometryFilter {
     static IGeometryFilter makeFilterFromToken(final String token) {
         if(token.startsWith("geometry_type::")) {
             String typeName = token.substring(15);
-            NovaNative.GeometryType type = NovaNative.GeometryType.valueOf(typeName.toUpperCase());
+            GeometryType type = GeometryType.valueOf(typeName.toUpperCase());
             return new GeometryTypeGeometryFilter(type);
 
         } else if(token.startsWith("name::")) {
