@@ -13,7 +13,7 @@ extern "C" {
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_initialize
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -21,7 +21,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_initialize
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_executeFrame
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -29,7 +29,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_executeFrame
  * Signature: ([IIII)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_sendLightmapTexture
-  (JNIEnv *, jobject, jintArray, jint, jint, jint);
+  (JNIEnv *, jclass, jintArray, jint, jint, jint);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -37,7 +37,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_sendLightmapTex
  * Signature: (Lcom/continuum/nova/system/MinecraftAtlasTexture;)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_addTexture
-  (JNIEnv *, jobject, jobject);
+  (JNIEnv *, jclass, jobject);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -45,7 +45,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_addTexture
  * Signature: (Lcom/continuum/nova/system/MinecraftTextureAtlasLocation;)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_addTextureLocation
-  (JNIEnv *, jobject, jobject);
+  (JNIEnv *, jclass, jobject);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -53,7 +53,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_addTextureLocat
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_continuum_nova_system_NovaNative_getMaxTextureSize
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -61,7 +61,7 @@ JNIEXPORT jint JNICALL Java_com_continuum_nova_system_NovaNative_getMaxTextureSi
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_resetTextureManager
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -69,7 +69,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_resetTextureMan
  * Signature: (Ljava/lang/String;Lcom/continuum/nova/system/MinecraftChunkRenderObject;)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_addChunkGeometryForFilter
-  (JNIEnv *, jobject, jstring, jobject);
+  (JNIEnv *, jclass, jstring, jobject);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -77,7 +77,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_addChunkGeometr
  * Signature: (Ljava/lang/String;Lcom/continuum/nova/system/MinecraftChunkRenderObject;)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_removeChunkGeometryForFilter
-  (JNIEnv *, jobject, jstring, jobject);
+  (JNIEnv *, jclass, jstring, jobject);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -85,7 +85,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_removeChunkGeom
  * Signature: ()Z
  */
 JNIEXPORT jboolean JNICALL Java_com_continuum_nova_system_NovaNative_shouldClose
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -93,7 +93,7 @@ JNIEXPORT jboolean JNICALL Java_com_continuum_nova_system_NovaNative_shouldClose
  * Signature: (Ljava/lang/String;Lcom/continuum/nova/system/MinecraftGuiBuffer;)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_addGuiGeometry
-  (JNIEnv *, jobject, jstring, jobject);
+  (JNIEnv *, jclass, jstring, jobject);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -101,7 +101,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_addGuiGeometry
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_clearGuiBuffers
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -109,7 +109,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_clearGuiBuffers
  * Signature: (Z)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setMouseGrabbed
-  (JNIEnv *, jobject, jboolean);
+  (JNIEnv *, jclass, jboolean);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -117,7 +117,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setMouseGrabbed
  * Signature: ()Lcom/continuum/nova/system/MouseButtonEvent;
  */
 JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextMouseButtonEvent
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -125,7 +125,7 @@ JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextMouse
  * Signature: ()Lcom/continuum/nova/system/MousePositionEvent;
  */
 JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextMousePositionEvent
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -133,7 +133,7 @@ JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextMouse
  * Signature: ()Lcom/continuum/nova/system/MouseScrollEvent;
  */
 JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextMouseScrollEvent
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -141,7 +141,7 @@ JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextMouse
  * Signature: ()Lcom/continuum/nova/system/KeyPressEvent;
  */
 JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextKeyPressEvent
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -149,7 +149,7 @@ JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextKeyPr
  * Signature: ()Lcom/continuum/nova/system/KeyCharEvent;
  */
 JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextKeyCharEvent
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -157,7 +157,7 @@ JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getNextKeyCh
  * Signature: ()Lcom/continuum/nova/system/WindowSize;
  */
 JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getWindowSize
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -165,7 +165,7 @@ JNIEXPORT jobject JNICALL Java_com_continuum_nova_system_NovaNative_getWindowSiz
  * Signature: (Z)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setFullscreen
-  (JNIEnv *, jobject, jboolean);
+  (JNIEnv *, jclass, jboolean);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -173,7 +173,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setFullscreen
  * Signature: ()Z
  */
 JNIEXPORT jboolean JNICALL Java_com_continuum_nova_system_NovaNative_displayIsActive
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -181,7 +181,7 @@ JNIEXPORT jboolean JNICALL Java_com_continuum_nova_system_NovaNative_displayIsAc
  * Signature: (Ljava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setStringSetting
-  (JNIEnv *, jobject, jstring, jstring);
+  (JNIEnv *, jclass, jstring, jstring);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -189,7 +189,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setStringSettin
  * Signature: (Ljava/lang/String;F)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setFloatSetting
-  (JNIEnv *, jobject, jstring, jfloat);
+  (JNIEnv *, jclass, jstring, jfloat);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -197,7 +197,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setFloatSetting
  * Signature: (DDDFF)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setPlayerCameraTransform
-  (JNIEnv *, jobject, jdouble, jdouble, jdouble, jfloat, jfloat);
+  (JNIEnv *, jclass, jdouble, jdouble, jdouble, jfloat, jfloat);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -205,7 +205,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_setPlayerCamera
  * Signature: ()Ljava/lang/String;
  */
 JNIEXPORT jstring JNICALL Java_com_continuum_nova_system_NovaNative_getMaterialsAndFilters
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
@@ -213,7 +213,7 @@ JNIEXPORT jstring JNICALL Java_com_continuum_nova_system_NovaNative_getMaterials
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_destruct
-  (JNIEnv *, jobject);
+  (JNIEnv *, jclass);
 
 #ifdef __cplusplus
 }
