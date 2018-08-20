@@ -9,8 +9,8 @@
 #include <cstdint>
 #include <easylogging++.h>
 #include <unordered_set>
-#include "vulkan_render_device.h"
-#include "timestamp_query_pool.h"
+#include "vulkan_render_device.hpp"
+#include "timestamp_query_pool.hpp"
 
 //#include "../windowing/glfw_vk_window.h"
 //#include "command_pool.h"

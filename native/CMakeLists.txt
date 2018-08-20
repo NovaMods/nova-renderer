@@ -28,10 +28,7 @@ set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
 find_package(Vulkan)
 
-find_package(JNI)
-if(NOT JNI_FOUND)
-    message(ERROR "Could not find JNI")
-endif()
+find_package(JNI REQUIRED)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -85,11 +82,11 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/easyloggingpp/src/easylogging++.cc
 
         src/mc_interface/nova_mc_interface.cpp
-        src/nova_renderer.cpp src/nova_renderer.h
-        src/render_context/vulkan/vulkan_render_device.cpp src/render_context/vulkan/vulkan_render_device.h
+        src/nova_renderer.cpp src/nova_renderer.hpp
+        src/render_context/vulkan/vulkan_render_device.cpp src/render_context/vulkan/vulkan_render_device.hpp
         src/mc_interface/jni/com_continuum_nova_system_NovaNative.h
-        src/render_context/platform.h
-        src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.h src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.h src/fs_access/zip_folder_accessor.cpp src/fs_access/zip_folder_accessor.h src/render_context/vulkan/per_thread_data.cpp src/render_context/vulkan/per_thread_data.h src/render_context/vulkan/timestamp_query_pool.cpp src/render_context/vulkan/timestamp_query_pool.h)
+        src/render_context/platform.hpp
+        src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.hpp src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.hpp src/fs_access/zip_folder_accessor.cpp src/fs_access/zip_folder_accessor.hpp src/render_context/vulkan/per_thread_data.cpp src/render_context/vulkan/per_thread_data.hpp src/render_context/vulkan/timestamp_query_pool.cpp src/render_context/vulkan/timestamp_query_pool.hpp)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is

@@ -8,7 +8,7 @@
 
 #define MINIZ_HEADER_FILE_ONLY
 #include <miniz_zip.h>
-#include "folder_accessor.h"
+#include "folder_accessor.hpp"
 
 namespace fs = std::experimental::filesystem;
 

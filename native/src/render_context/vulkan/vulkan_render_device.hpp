@@ -6,7 +6,7 @@
 #ifndef NOVA_RENDERER_VULKAN_RENDER_DEVICE_H
 #define NOVA_RENDERER_VULKAN_RENDER_DEVICE_H
 
-#include "../platform.h"
+#include "../platform.hpp"
 
 #ifdef SUPPORT_VULKAN
 

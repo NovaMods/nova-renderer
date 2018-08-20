@@ -6,7 +6,7 @@
  */
 
 #include "jni/com_continuum_nova_system_NovaNative.h"
-#include "../nova_renderer.h"
+#include "../nova_renderer.hpp"
 
 /*!
  * \brief Initializes Nova

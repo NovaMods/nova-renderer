@@ -6,7 +6,7 @@
 #ifndef NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H
 #define NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H
 
-#include "folder_accessor.h"
+#include "folder_accessor.hpp"
 
 namespace nova {
     /*!
