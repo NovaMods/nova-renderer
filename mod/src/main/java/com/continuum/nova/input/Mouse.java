@@ -5,9 +5,9 @@ import java.util.HashSet;
 import java.util.Map;
 
 import com.continuum.nova.NovaRenderer;
-import com.continuum.nova.system.NovaNative;
-import com.continuum.nova.system.NovaNative.mouse_button_event;
-import com.continuum.nova.system.NovaNative.mouse_position_event;
+import com.continuum.nova.system.MouseScrollEvent;
+import com.continuum.nova.system.MouseButtonEvent;
+import com.continuum.nova.system.MousePositionEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -104,9 +104,9 @@ public class Mouse {
     public static boolean next() {
         lastX = x;
         lastY = y;
-        mouse_button_event buttonEvent = NovaRenderer.getInstance().getNative().get_next_mouse_button_event();
-        mouse_position_event positionEvent = NovaRenderer.getInstance().getNative().get_next_mouse_position_event();
-        NovaNative.mouse_scroll_event scrollEvent = NovaRenderer.getInstance().getNative().get_next_mouse_scroll_event();
+        MouseButtonEvent buttonEvent = NovaRenderer.getInstance().getNative().getNextMouseButtonEvent();
+        MousePositionEvent positionEvent = NovaRenderer.getInstance().getNative().getNextMousePositionEvent();
+        MouseScrollEvent scrollEvent = NovaRenderer.getInstance().getNative().getNextMouseScrollEvent();
         if (buttonEvent.filled == 0 && positionEvent.filled == 0 && scrollEvent.filled == 0) {
             return false;
         }
@@ -206,7 +206,7 @@ public class Mouse {
     }
 
     public static void setGrabbed(boolean grab) {
-        NovaRenderer.getInstance().getNative().set_mouse_grabbed(grab);
+        NovaRenderer.getInstance().getNative().setMouseGrabbed(grab);
         isGrabbed = grab;
     }
 

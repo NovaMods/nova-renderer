@@ -1,11 +1,10 @@
 package com.continuum.nova.gui;
 
-import com.continuum.nova.system.NovaNative;
+import com.continuum.nova.system.MinecraftGuiBuffer;
 import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.input.Mouse;
 import com.sun.jna.Memory;
-import com.sun.jna.Native;
 import glm.mat._4.Mat4;
 import glm.vec._4.Vec4;
 import net.minecraft.client.Minecraft;
@@ -49,7 +48,7 @@ public class NovaDraw {
 
     private static void clearBuffers() {
         buffers.clear();
-        NovaRenderer.getInstance().getNative().clear_gui_buffers();
+        NovaRenderer.getInstance().getNative().clearGuiBuffers();
         currentZ = 0.9999f;
     }
 
@@ -205,13 +204,13 @@ public class NovaDraw {
             Buffers b = entry.getValue();
             ResourceLocation texture = entry.getKey();
             long timeWithAlloc = System.nanoTime();
-            NovaNative.mc_gui_buffer guiGeometry = b.toNativeCommand(texture);
+            MinecraftGuiBuffer guiGeometry = b.toNativeCommand(texture);
             long timePrev = System.nanoTime();
 
             for (String filterName : filterMap.keySet()) {
                 if (filterMap.get(filterName).matches(guiGeometry)) {
                     LOG.trace("Adding geometry for filter {}", filterName);
-                    NovaRenderer.getInstance().getNative().add_gui_geometry(filterName, guiGeometry);
+                    NovaRenderer.getInstance().getNative().addGuiGeometry(filterName, guiGeometry);
                 }
             }
 
@@ -286,9 +285,9 @@ public class NovaDraw {
          * @param texture the texture
          * @return the native struct
          */
-        public NovaNative.mc_gui_buffer toNativeCommand(ResourceLocation texture) {
+        public MinecraftGuiBuffer toNativeCommand(ResourceLocation texture) {
             // create a new struct
-            NovaNative.mc_gui_buffer command = new NovaNative.mc_gui_buffer();
+            MinecraftGuiBuffer command = new MinecraftGuiBuffer();
             command.texture_name = texture.getResourcePath();
 
             // assign the index buffer

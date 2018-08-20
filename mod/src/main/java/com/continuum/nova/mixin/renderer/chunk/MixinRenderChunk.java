@@ -4,6 +4,7 @@ import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.chunks.CapturingVertexBuffer;
 import com.continuum.nova.chunks.IGeometryFilter;
 import com.continuum.nova.chunks.IndexList;
+import com.continuum.nova.system.MinecraftChunkRenderObject;
 import com.continuum.nova.system.NovaNative;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -13,10 +14,7 @@ import net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator;
 import net.minecraft.client.renderer.chunk.CompiledChunk;
 import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.chunk.VisGraph;
-import net.minecraft.client.renderer.vertex.VertexBuffer;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -31,11 +29,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -70,7 +66,7 @@ public abstract class MixinRenderChunk {
     private void onReset(CallbackInfo cbi) {
         // setting the CompiledChunk to DUMMY means it will no longer render. This happens for RenderChunks that move out of view and have their
         // positions changed to those on the newly in view. So remove the nova geometry, if any
-        NovaNative.mc_chunk_render_object obj = new NovaNative.mc_chunk_render_object();
+        MinecraftChunkRenderObject obj = new MinecraftChunkRenderObject();
         // setting these should be enough for remove
         obj.id = index;
         obj.x = this.position.getX();
@@ -81,18 +77,18 @@ public abstract class MixinRenderChunk {
             if (data.getValue().isEmpty()) {
                 continue;
             }
-            NovaRenderer.getInstance().getNative().remove_chunk_geometry_for_filter(data.getKey(), obj);
+            NovaRenderer.getInstance().getNative().removeChunkGeometryForFilter(data.getKey(), obj);
             data.getValue().reset();
         }
     }
 
-    private Optional<NovaNative.mc_chunk_render_object> makeMeshForBuffer(CapturingVertexBuffer capturingVertexBuffer) {
+    private Optional<MinecraftChunkRenderObject> makeMeshForBuffer(CapturingVertexBuffer capturingVertexBuffer) {
         if (capturingVertexBuffer.isEmpty()) {
             return Optional.empty();
         }
 
         IndexList indices = new IndexList();
-        NovaNative.mc_chunk_render_object chunk_render_object = new NovaNative.mc_chunk_render_object();
+        MinecraftChunkRenderObject chunk_render_object = new MinecraftChunkRenderObject();
         IntBuffer dat = capturingVertexBuffer.getRawData();
         int dat_len = dat.limit();
         int offset = indices.size();
@@ -179,7 +175,7 @@ public abstract class MixinRenderChunk {
             //entry.getValue().finishDrawing();
             CapturingVertexBuffer b = entry.getValue();
             //this.blockLayers.put(entry.getKey(),new CapturingVertexBuffer(minPos));
-            Optional<NovaNative.mc_chunk_render_object> renderObj = makeMeshForBuffer(b);
+            Optional<MinecraftChunkRenderObject> renderObj = makeMeshForBuffer(b);
 
             renderObj.ifPresent(obj -> {
                 obj.id = index;
@@ -188,7 +184,7 @@ public abstract class MixinRenderChunk {
                 obj.z = this.position.getZ();
 
                 NovaNative.LOG.info("Adding render geometry for chunk {}, layer {}", this.position, entry.getKey());
-                NovaRenderer.getInstance().getNative().add_chunk_geometry_for_filter(entry.getKey(), obj);
+                NovaRenderer.getInstance().getNative().addChunkGeometryForFilter(entry.getKey(), obj);
             });
 
         }

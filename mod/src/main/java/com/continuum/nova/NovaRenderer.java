@@ -6,8 +6,10 @@ import com.continuum.nova.interfaces.INovaDynamicTexture;
 import com.continuum.nova.interfaces.INovaEntityRenderer;
 import com.continuum.nova.interfaces.INovaTextureAtlasSprite;
 import com.continuum.nova.interfaces.INovaTextureMap;
+import com.continuum.nova.system.MinecraftAtlasTexture;
+import com.continuum.nova.system.MinecraftTextureAtlasLocation;
 import com.continuum.nova.system.NovaNative;
-import com.continuum.nova.system.NovaNative.window_size;
+import com.continuum.nova.system.WindowSize;
 import com.continuum.nova.texture.INovaTextureManager;
 import com.continuum.nova.utils.Profiler;
 import com.continuum.nova.utils.Utils;
@@ -112,7 +114,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             firstLoad = false;
         }
 
-        _native.reset_texture_manager();
+        _native.resetTextureManager();
 
         addGuiAtlas(resourceManager);
         addFontAtlas(resourceManager);
@@ -154,14 +156,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void addTerrainAtlas(@Nonnull TextureMap blockColorMap) {
         // Copy over the atlas
-        NovaNative.mc_atlas_texture blockColorTexture = getFullImage(((INovaTextureMap) blockColorMap).getWidth(), ((INovaTextureMap) blockColorMap).getHeight(), ((INovaTextureMap) blockColorMap).getMapUploadedSprites().values());
+        MinecraftAtlasTexture blockColorTexture = getFullImage(((INovaTextureMap) blockColorMap).getWidth(), ((INovaTextureMap) blockColorMap).getHeight(), ((INovaTextureMap) blockColorMap).getMapUploadedSprites().values());
         blockColorTexture.name = BLOCK_COLOR_ATLAS_NAME;
-        _native.add_texture(blockColorTexture);
+        _native.addTexture(blockColorTexture);
 
         // Copy over all the icon locations
         for (String spriteName : ((INovaTextureMap) blockColorMap).getMapUploadedSprites().keySet()) {
             TextureAtlasSprite sprite = blockColorMap.getAtlasSprite(spriteName);
-            NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
+            MinecraftTextureAtlasLocation location = new MinecraftTextureAtlasLocation(
                     sprite.getIconName(),
                     sprite.getMinU(),
                     sprite.getMinV(),
@@ -169,7 +171,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     sprite.getMaxV()
             );
 
-            _native.add_texture_location(location);
+            _native.addTextureLocation(location);
         }
     }
 
@@ -183,14 +185,14 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         Optional<TextureAtlasSprite> whiteImage = ((INovaTextureMap) atlas).getWhiteImage();
         whiteImage.ifPresent(image -> spriteLocations.put(((INovaTextureAtlasSprite) image).getLocation(), image));
 
-        NovaNative.mc_atlas_texture atlasTexture = getFullImage(((INovaTextureMap) atlas).getWidth(), ((INovaTextureMap) atlas).getHeight(), spriteLocations.values());
+        MinecraftAtlasTexture atlasTexture = getFullImage(((INovaTextureMap) atlas).getWidth(), ((INovaTextureMap) atlas).getHeight(), spriteLocations.values());
         atlasTexture.setName(textureName);
 
         LOG.info("Adding atlas texture {}", atlasTexture);
-        _native.add_texture(atlasTexture);
+        _native.addTexture(atlasTexture);
 
         for (TextureAtlasSprite sprite : spriteLocations.values()) {
-            NovaNative.mc_texture_atlas_location location = new NovaNative.mc_texture_atlas_location(
+            MinecraftTextureAtlasLocation location = new MinecraftTextureAtlasLocation(
                     sprite.getIconName(),
                     sprite.getMinU(),
                     sprite.getMinV(),
@@ -198,11 +200,11 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                     sprite.getMaxV()
             );
 
-            _native.add_texture_location(location);
+            _native.addTextureLocation(location);
         }
     }
 
-    private NovaNative.mc_atlas_texture getFullImage(int atlasWidth, int atlasHeight, Collection<TextureAtlasSprite> sprites) {
+    private MinecraftAtlasTexture getFullImage(int atlasWidth, int atlasHeight, Collection<TextureAtlasSprite> sprites) {
         byte[] imageData = new byte[atlasWidth * atlasHeight * 4];
 
         for (TextureAtlasSprite sprite : sprites) {
@@ -231,7 +233,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             }
         }
 
-        return new NovaNative.mc_atlas_texture(
+        return new MinecraftAtlasTexture(
                 atlasWidth,
                 atlasHeight,
                 4,
@@ -303,7 +305,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     private void updateWindowSize() {
-        window_size size = _native.get_window_size();
+        WindowSize size = _native.getWindowSize();
         int oldHeight = height;
         int oldWidth = width;
         resized = oldHeight != size.height || oldWidth != size.width;
@@ -325,7 +327,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public void updateCameraAndRender(float renderPartialTicks, Minecraft mc) {
-        if (_native.should_close()) {
+        if (_native.shouldClose()) {
             mc.shutdown();
         }
 
@@ -354,20 +356,20 @@ public class NovaRenderer implements IResourceManagerReloadListener {
             double x = viewEntity.posX;
             double y = viewEntity.posY + viewEntity.getEyeHeight();
             double z = viewEntity.posZ;
-            _native.set_player_camera_transform(x, y, z, yaw, pitch);
+            _native.setPlayerCameraTransform(x, y, z, yaw, pitch);
         }
         Profiler.end("update_player");
 
-        Profiler.start("execute_frame");
-        _native.execute_frame();
-        Profiler.end("execute_frame");
+        Profiler.start("executeFrame");
+        _native.executeFrame();
+        Profiler.end("executeFrame");
 
         Profiler.start("update_window");
         updateWindowSize();
         Profiler.end("update_window");
         int scalefactor = new ScaledResolution(mc).getScaleFactor() * 2;
         if (scalefactor != this.scalefactor) {
-            _native.set_float_setting("scalefactor", scalefactor);
+            _native.setFloatSetting("scalefactor", scalefactor);
             this.scalefactor = scalefactor;
         }
 
@@ -376,7 +378,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     private void sendLightmapTexture(DynamicTexture lightmapTexture) {
         int[] data = lightmapTexture.getTextureData();
-        _native.send_lightmap_texture(data, data.length, ((INovaDynamicTexture) lightmapTexture).getWidth(), ((INovaDynamicTexture) lightmapTexture).getHeight());
+        _native.sendLightmapTexture(data, data.length, ((INovaDynamicTexture) lightmapTexture).getWidth(), ((INovaDynamicTexture) lightmapTexture).getHeight());
     }
 
     private void printProfilerData() {
@@ -397,12 +399,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
         byte[] imageData = getImageData(image);
 
-        NovaNative.mc_atlas_texture tex = new NovaNative.mc_atlas_texture(image.getWidth(), image.getHeight(), 4, imageData);
+        MinecraftAtlasTexture tex = new MinecraftAtlasTexture(image.getWidth(), image.getHeight(), 4, imageData);
         tex.setName(location.toString());
-        _native.add_texture(tex);
+        _native.addTexture(tex);
 
-        NovaNative.mc_texture_atlas_location loc = new NovaNative.mc_texture_atlas_location(location.toString(), 0, 0, 1, 1);
-        _native.add_texture_location(loc);
+        MinecraftTextureAtlasLocation loc = new MinecraftTextureAtlasLocation(location.toString(), 0, 0, 1, 1);
+        _native.addTextureLocation(loc);
     }
 
     public static String atlasTextureOfSprite(ResourceLocation texture) {
@@ -421,9 +423,9 @@ public class NovaRenderer implements IResourceManagerReloadListener {
 
     public void loadShaderpack(String shaderpackName, BlockColors blockColors) {
         Profiler.start("load_shaderpack");
-        _native.set_string_setting("loadedShaderpack", shaderpackName);
+        _native.setStringSetting("loadedShaderpack", shaderpackName);
 
-        String filters = _native.get_materials_and_filters();
+        String filters = _native.getMaterialsAndFilters();
         String[] filtersSplit = filters.split("\n");
         Profiler.end("load_shaderpack");
 

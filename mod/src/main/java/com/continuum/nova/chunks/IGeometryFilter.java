@@ -1,5 +1,6 @@
 package com.continuum.nova.chunks;
 
+import com.continuum.nova.system.MinecraftGuiBuffer;
 import com.continuum.nova.system.NovaNative;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockRenderLayer;
@@ -13,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 public interface IGeometryFilter {
     boolean matches(IBlockState blockState);
 
-    boolean matches(NovaNative.mc_gui_buffer guiBuffer);
+    boolean matches(MinecraftGuiBuffer guiBuffer);
 
     class AndGeometryFilter implements IGeometryFilter {
         private IGeometryFilter left;
@@ -30,7 +31,7 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+        public boolean matches(MinecraftGuiBuffer guiBuffer) {
             return left.matches(guiBuffer) && right.matches(guiBuffer);
         }
 
@@ -55,7 +56,7 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+        public boolean matches(MinecraftGuiBuffer guiBuffer) {
             return left.matches(guiBuffer) || right.matches(guiBuffer);
         }
 
@@ -78,7 +79,7 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+        public boolean matches(MinecraftGuiBuffer guiBuffer) {
             // hardcoded but refactoring the system to unify GUI and regular meshes is hard
             return name.equals("gui");
         }
@@ -102,7 +103,7 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+        public boolean matches(MinecraftGuiBuffer guiBuffer) {
             return "gui".contains(namePart);
         }
 
@@ -125,7 +126,7 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+        public boolean matches(MinecraftGuiBuffer guiBuffer) {
             switch(type) {
                 case GUI:
                     return guiBuffer.texture_name.contains("gui/");
@@ -162,7 +163,7 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+        public boolean matches(MinecraftGuiBuffer guiBuffer) {
             // GUI uses all sorts of transparent and semi-transparent textures
             return true;
         }
@@ -190,7 +191,7 @@ public interface IGeometryFilter {
         }
 
         @Override
-        public boolean matches(NovaNative.mc_gui_buffer guiBuffer) {
+        public boolean matches(MinecraftGuiBuffer guiBuffer) {
             // No the GUI can't emit light shut up
             return false;
         }
