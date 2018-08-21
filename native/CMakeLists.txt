@@ -63,7 +63,6 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/glm
         ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/json/include
-        ${3RD_PARTY_DIR}/googletest/googletest/include
         ${3RD_PARTY_DIR}/Optional
         ${3RD_PARTY_DIR}/renderdocapi
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
@@ -80,11 +79,23 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/easyloggingpp/src/easylogging++.cc
 
         src/mc_interface/nova_mc_interface.cpp
-        src/nova_renderer.cpp src/nova_renderer.hpp
-        src/render_context/vulkan/vulkan_render_device.cpp src/render_context/vulkan/vulkan_render_device.hpp
+        src/nova_renderer.cpp
+        src/nova_renderer.hpp
+        # src/render_context/vulkan/vulkan_render_device.cpp
+        # src/render_context/vulkan/vulkan_render_device.hpp
         src/mc_interface/jni/com_continuum_nova_system_NovaNative.h
         src/render_context/platform.hpp
-        src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.hpp src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.hpp src/fs_access/zip_folder_accessor.cpp src/fs_access/zip_folder_accessor.hpp src/render_context/vulkan/per_thread_data.cpp src/render_context/vulkan/per_thread_data.hpp src/render_context/vulkan/timestamp_query_pool.cpp src/render_context/vulkan/timestamp_query_pool.hpp)
+        src/fs_access/folder_accessor.cpp
+        src/fs_access/folder_accessor.hpp
+        src/fs_access/regular_folder_accessor.cpp
+        src/fs_access/regular_folder_accessor.hpp
+        src/fs_access/zip_folder_accessor.cpp
+        src/fs_access/zip_folder_accessor.hpp
+        # src/render_context/vulkan/per_thread_data.cpp
+        # src/render_context/vulkan/per_thread_data.hpp
+        # src/render_context/vulkan/timestamp_query_pool.cpp
+        # src/render_context/vulkan/timestamp_query_pool.hpp
+        )
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
