@@ -6,7 +6,7 @@
 #include <miniz_zip.h>
 #include <easylogging++.h>
 
-#include "zip_folder_accessor.h"
+#include "zip_folder_accessor.hpp"
 
 namespace nova {
     zip_folder_accessor::zip_folder_accessor(const std::experimental::filesystem::path &folder)

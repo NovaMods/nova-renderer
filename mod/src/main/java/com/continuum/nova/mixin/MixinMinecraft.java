@@ -1,7 +1,6 @@
 package com.continuum.nova.mixin;
 
 import com.continuum.nova.NovaConstants;
-import com.continuum.nova.NovaForge;
 import com.continuum.nova.NovaRenderer;
 import com.continuum.nova.input.Keyboard;
 import com.continuum.nova.input.Mouse;
@@ -41,7 +40,6 @@ import net.minecraft.util.Timer;
 import net.minecraft.util.datafix.DataFixer;
 import net.minecraft.world.chunk.storage.AnvilSaveConverter;
 import net.minecraft.world.storage.ISaveFormat;
-import net.minecraftforge.fml.common.LoaderExceptionModCrash;
 import org.apache.commons.io.Charsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -231,7 +229,7 @@ public abstract class MixinMinecraft {
         NovaRenderer.getInstance().preInit();
         Mouse.create();
         Keyboard.create();
-        inGameHasFocus = NovaRenderer.getInstance().getNative().display_is_active();
+        inGameHasFocus = NovaNative.displayIsActive();
     }
 
     /**
@@ -397,7 +395,7 @@ public abstract class MixinMinecraft {
             at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;isActive()Z", remap = false)
     )
     private boolean proxyIsActive() {
-        return NovaRenderer.getInstance().getNative().display_is_active();
+        return NovaNative.displayIsActive();
     }
 
     /**
@@ -431,7 +429,7 @@ public abstract class MixinMinecraft {
     )
     private void hookDisplayGuiScreen(GuiScreen guiScreen, CallbackInfo callbackInfo) {
         if (guiScreen == null) {
-            NovaRenderer.getInstance().getNative().clear_gui_buffers();
+            NovaNative.clearGuiBuffers();
         }
     }
 
@@ -446,9 +444,9 @@ public abstract class MixinMinecraft {
             gameSettings.fullScreen = fullscreen;
 
             if (fullscreen) {
-                NovaRenderer.getInstance().getNative().set_fullscreen(NovaNative.NativeBoolean.TRUE.ordinal());
+                NovaNative.setFullscreen(true);
             } else {
-                NovaRenderer.getInstance().getNative().set_fullscreen(NovaNative.NativeBoolean.FALSE.ordinal());
+                NovaNative.setFullscreen(false);
             }
 
             updateDisplay();
@@ -475,7 +473,7 @@ public abstract class MixinMinecraft {
         // TODO: Add vulkan stats
         playerSnooper.addStatToSnooper("client_brand", ClientBrandRetriever.getClientModName());
         playerSnooper.addStatToSnooper("launched_version", this.launchedVersion);
-        playerSnooper.addStatToSnooper("vulkan_max_texture_size", NovaRenderer.getInstance().getNative().get_max_texture_size());
+        playerSnooper.addStatToSnooper("vulkan_max_texture_size", NovaNative.getMaxTextureSize());
         playerSnooper.addStatToSnooper("nova_renderer_version", NovaConstants.VERSION);
 
         GameProfile gameprofile = this.session.getProfile();
@@ -492,7 +490,7 @@ public abstract class MixinMinecraft {
      */
     @Overwrite
     public static int getGLMaximumTextureSize() {
-        return NovaRenderer.getInstance().getNative().get_max_texture_size();
+        return NovaNative.getMaxTextureSize();
     }
 
     @Inject(
@@ -501,6 +499,6 @@ public abstract class MixinMinecraft {
     )
     private void destructNova(CallbackInfo info) {
         novaLogger.info("Destroying nova");
-        NovaRenderer.getInstance().getNative().destruct();
+        NovaNative.destruct();
     }
 }

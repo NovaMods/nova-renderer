@@ -3,7 +3,7 @@
  * \date 14-Aug-18.
  */
 
-#include "folder_accessor.h"
+#include "folder_accessor.hpp"
 
 namespace nova {
     folder_accessor_base::folder_accessor_base(const fs::path &folder) : our_folder(folder) {}

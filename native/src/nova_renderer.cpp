@@ -3,7 +3,7 @@
  * \date 14-Aug-18.
  */
 
-#include "nova_renderer.h"
+#include "nova_renderer.hpp"
 
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;

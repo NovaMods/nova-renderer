@@ -28,10 +28,7 @@ set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
 find_package(Vulkan)
 
-find_package(JNI)
-if(NOT JNI_FOUND)
-    message(ERROR "Could not find JNI")
-endif()
+find_package(JNI REQUIRED)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -53,8 +50,8 @@ add_subdirectory(${3RD_PARTY_DIR}/json)
 add_subdirectory(${3RD_PARTY_DIR}/glm)
 add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
-add_subdirectory(${3RD_PARTY_DIR}/spirv-headers)
-add_subdirectory(${3RD_PARTY_DIR}/spirv-tools)
+add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
+add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
 add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 add_subdirectory(${3RD_PARTY_DIR}/profiler)
@@ -70,7 +67,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/json/include
         ${3RD_PARTY_DIR}/googletest/googletest/include
         ${3RD_PARTY_DIR}/Optional
-        ${3RD_PARTY_DIR}/renderdocapi
+        ${3RD_PARTY_DIR}/RenderDoc-Manager
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
         ${3RD_PARTY_DIR}/profiler/include
@@ -92,7 +89,16 @@ set(NOVA_HEADERS
         src/mc_interface/jni/com_continuum_nova_system_NovaNative_NativeBoolean.h
         src/mc_interface/jni/com_continuum_nova_system_NovaNative_NovaVertexFormat.h
         src/mc_interface/jni/com_continuum_nova_system_NovaNative_window_size.h
-        src/api_specific/platform.h)
+
+        src/platform.hpp
+        src/vulkan/timestamp_query_pool.hpp
+        src/vulkan/per_thread_data.hpp
+        src/fs_access/zip_folder_accessor.hpp
+        src/fs_access/regular_folder_accessor.hpp
+        src/fs_access/folder_accessor.hpp
+        src/vulkan/vulkan_render_device.hpp
+        src/nova_renderer.hpp
+        )
 
 set(NOVA_SOURCE
         # Third party stuff that's too lame to have it's own CMakeLists.txt
@@ -102,10 +108,14 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/miniz/miniz_zip.c
         ${3RD_PARTY_DIR}/easyloggingpp/src/easylogging++.cc
 
-        src/mc_interface/nova_mc_interface.cpp
-        src/nova_renderer.cpp src/nova_renderer.h
-        src/api_specific/vulkan/vulkan_render_device.cpp src/api_specific/vulkan/vulkan_render_device.h
-        src/fs_access/folder_accessor.cpp src/fs_access/folder_accessor.h src/fs_access/regular_folder_accessor.cpp src/fs_access/regular_folder_accessor.h src/fs_access/zip_folder_accessor.cpp src/fs_access/zip_folder_accessor.h src/api_specific/vulkan/per_thread_data.cpp src/api_specific/vulkan/per_thread_data.h src/api_specific/vulkan/timestamp_query_pool.cpp src/api_specific/vulkan/timestamp_query_pool.h)
+        src/nova_renderer.cpp
+        src/fs_access/folder_accessor.cpp
+        src/fs_access/regular_folder_accessor.cpp
+        src/fs_access/zip_folder_accessor.cpp
+        src/vulkan/per_thread_data.cpp
+        src/vulkan/timestamp_query_pool.cpp
+        src/vulkan/glfw_window.cpp src/vulkan/glfw_window.hpp src/util/util.cpp src/util/util.hpp src/input/input_handler.cpp src/input/input_handler.hpp)
+
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
@@ -124,7 +134,7 @@ set(SPIRV_CROSS_HEADERS
         )
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${NOVA_HEADERS} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
     set(CMAKE_CXX_FLAGS "-static-libstdc++ -static-libgcc ${CMAKE_CXX_FLAGS}")
 endif (WIN32)
 
@@ -148,7 +158,7 @@ endif()
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
-source_group("nova" FILES ${NOVA_HEADERS} ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
+source_group("nova" FILES ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
 add_library(nova-renderer SHARED ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})

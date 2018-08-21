@@ -5,7 +5,7 @@
 
 #include <fstream>
 #include <easylogging++.h>
-#include "regular_folder_accessor.h"
+#include "regular_folder_accessor.hpp"
 
 namespace nova {
     regular_folder_accessor::regular_folder_accessor(const std::experimental::filesystem::path &folder)
