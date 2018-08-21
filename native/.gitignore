@@ -165,5 +165,6 @@ dev-build/
 release-build-*/
 toolchains/vulkan-dll-location.txt
 build/
+bin/
 .vscode/
 .vs/

@@ -39,8 +39,6 @@ set(BUILD_ICD OFF)
 
 set(SHADERC_SKIP_TESTS TRUE)
 
-set(BUILD_SHARED_LIBS TRUE)
-
 set(EASY_PROFILER_NO_GUI ON)
 set(BUILD_SHARED_LIBS OFF)
 
@@ -148,7 +146,7 @@ endif (WIN32)
 
 # This is needed on MSVC otherwise the build files get spread out all over the place.
 # The only *problem* is that we wont be able to create multi-config builds. Personally
-# I dont see this as a problem currently. This will make the location more predictablelajsdhfnvfsadk;jh
+# I dont see this as a problem currently. This will make the location more predictable
 # cross platform as well. Though i think object files are still cached across build
 # types so this should be fine.
 get_target_property(OUTPUT_DIR nova-renderer LIBRARY_OUTPUT_DIRECTORY)
