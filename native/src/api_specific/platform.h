@@ -13,9 +13,9 @@
  * for
  *
  * The promise of cross-platform rendering APIs is nice, but in a few short months of Vulkan I've already run into all
- * kinda of problems. Khronos' promises ring empty
+ * kinds of problems. Khronos' promises ring empty
  */
 
-#define SUPPORT_VULKAN
+#define SUPPORT_VULKAN 1
 
 #endif //NOVA_RENDERER_PLATFORM_H

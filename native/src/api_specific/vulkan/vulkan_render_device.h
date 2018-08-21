@@ -47,7 +47,7 @@ namespace nova {
      *  - Information about timestamp queries
      *  - All the queues that Nova uses
      */
-    class render_device {
+    class vulkan_render_context {
     public:
         vk::Instance vk_instance = nullptr;
         vk::SurfaceKHR surface;
@@ -64,7 +64,7 @@ namespace nova {
          *
          * \param window The window we're rendering to
          */
-        explicit render_device(glfw_vk_window& window);
+        explicit vulkan_render_context(glfw_vk_window& window);
 
         /*!
          * \brief Destructs this render device, cleaning up stuff
@@ -73,7 +73,7 @@ namespace nova {
          * anything - the validation layers will complain, sure, but the OS should clean up all our memory and tell the
          * graphics driver to clean up any memory from Nova
          */
-        ~render_device();
+        ~vulkan_render_context();
         
         /*!
          * \brief Submits one or more command buffers to the specified queue

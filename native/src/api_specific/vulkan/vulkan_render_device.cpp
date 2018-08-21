@@ -35,14 +35,14 @@ namespace nova {
             void *userData);
 
 
-    render_device::render_device(glfw_vk_window &window) {
+    vulkan_render_context::vulkan_render_context(glfw_vk_window &window) {
         create_instance(window);
         setup_debug_callback();
         find_device_and_queues();
         create_pipeline_cache();
     }
 
-    void render_device::create_instance(glfw_vk_window &window) {
+    void vulkan_render_context::create_instance(glfw_vk_window &window) {
         validation_layers = {
                 "VK_LAYER_LUNARG_standard_validation" // Enable them all
         };
@@ -76,7 +76,7 @@ namespace nova {
         vk_instance = vk::createInstance(create_info, nullptr);
     }
 
-    void render_device::setup_debug_callback() {
+    void vulkan_render_context::setup_debug_callback() {
 //#ifndef NDEBUG
         CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vk_instance.getProcAddr("vkCreateDebugReportCallbackEXT");
         DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vk_instance.getProcAddr("vkDestroyDebugReportCallbackEXT");
@@ -92,7 +92,7 @@ namespace nova {
 //#endif
     }
 
-    void render_device::find_device_and_queues() {
+    void vulkan_render_context::find_device_and_queues() {
         const auto gpus = enumerate_gpus();
         LOG(TRACE) << "Enumerated GPUs";
         const auto gpu = select_physical_device(gpus);
@@ -101,7 +101,7 @@ namespace nova {
         LOG(TRACE) << "Basic queue and logical device was found";
     }
 
-    std::vector<gpu_info> render_device::enumerate_gpus() {
+    std::vector<gpu_info> vulkan_render_context::enumerate_gpus() {
         auto devices = vk_instance.enumeratePhysicalDevices();
         LOG(TRACE) << "There are " << devices.size() << " physical devices";
         if(devices.empty()) {
@@ -143,7 +143,7 @@ namespace nova {
         return gpus;
     }
 
-    const gpu_info render_device::select_physical_device(const std::vector<gpu_info>& gpus) {
+    const gpu_info vulkan_render_context::select_physical_device(const std::vector<gpu_info>& gpus) {
         uint32_t timestamp_valid_bits = 0;
         float timestamp_period;
         for(auto& gpu : gpus) {
@@ -217,7 +217,7 @@ namespace nova {
         return {};
     }
 
-    void render_device::create_logical_device_and_queues(const gpu_info& info) {
+    void vulkan_render_context::create_logical_device_and_queues(const gpu_info& info) {
         std::unordered_set<uint32_t> unique_idx;
         unique_idx.insert(graphics_family_idx);
         unique_idx.insert(present_family_idx);
@@ -266,7 +266,7 @@ namespace nova {
         vmaCreateAllocator(&allocatorInfo, &allocator);
     }
 
-    render_device::~render_device() {
+    vulkan_render_context::~vulkan_render_context() {
 //#ifndef NDEBUG
         DestroyDebugReportCallback(vk_instance, debug_report_callback, nullptr);
 //#endif
@@ -291,7 +291,7 @@ namespace nova {
         LOG(TRACE) << "Destroyed the render context";
     }
 
-    void render_device::create_pipeline_cache() {
+    void vulkan_render_context::create_pipeline_cache() {
         vk::PipelineCacheCreateInfo cache_create_info = {};
         pipeline_cache = device.createPipelineCache(cache_create_info);
     }

@@ -11,6 +11,8 @@
 #include <string>
 #include <memory>
 
+#include "api_specific/vulkan/vulkan_render_device.h"
+
 namespace nova {
     class texture_store;
     class mesh_store;
@@ -72,7 +74,11 @@ namespace nova {
     private:
         static std::unique_ptr<nova_renderer> instance;
 
+#ifdef SUPPORT_VULKAN
+        vulkan_render_context context;
+
         void initialize_vulkan_backend();
+#endif
     };
 }
 
