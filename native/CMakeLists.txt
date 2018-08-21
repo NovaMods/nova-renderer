@@ -3,19 +3,6 @@ project(nova-renderer)
 
 option(NOVA_TEST "Enable tests." OFF)
 
-# Functions
-function(nova_set_all_target_outputs target output_dir)
-    set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${output_dir})
-    set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${output_dir})
-    set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${output_dir})
-    set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${output_dir})
-    set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${output_dir})
-    set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${output_dir})
-    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${output_dir})
-    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${output_dir})
-    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${output_dir})
-endfunction()
-
 # Initialize cmake options
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
@@ -52,7 +39,6 @@ set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 add_subdirectory(${3RD_PARTY_DIR}/glm)
-add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
 add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
@@ -69,7 +55,6 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/glm
         ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/json/include
-        ${3RD_PARTY_DIR}/Optional
         ${3RD_PARTY_DIR}/renderdocapi
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
@@ -82,7 +67,6 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/miniz/miniz_tdef.c
         ${3RD_PARTY_DIR}/miniz/miniz_tinfl.c
         ${3RD_PARTY_DIR}/miniz/miniz_zip.c
-        ${3RD_PARTY_DIR}/easyloggingpp/src/easylogging++.cc
 
         src/mc_interface/nova_mc_interface.cpp
         src/nova_renderer.cpp
