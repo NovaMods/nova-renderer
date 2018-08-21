@@ -11,6 +11,8 @@
 #include <nlohmann/json.hpp>
 #include "GLFW/glfw3.h"
 #include "../../data_loading/settings.h"
+#include "../settings.hpp"
+
 #if __WIN32__
 #include <RenderDocManager.h>
 #endif
@@ -47,7 +49,7 @@ namespace nova {
 
         void destroy();
 
-        void end_frame();
+        void on_frame_end();
 
         void set_fullscreen(bool fullscreen);
 
@@ -55,7 +57,7 @@ namespace nova {
 
         bool should_close();
 
-        void create_surface(std::shared_ptr<render_context> context);
+        void create_surface(vk::Instance instance, vk::SurfaceKHR surface);
 
         bool is_active();
 
@@ -72,6 +74,13 @@ namespace nova {
         static void setActive(bool active);
 
         const char** get_required_extensions(uint32_t* count) const;
+
+        // Delete copy and move operators
+        glfw_vk_window(glfw_vk_window& other) = delete;
+        glfw_vk_window& operator=(glfw_vk_window& other) = delete;
+
+        glfw_vk_window(glfw_vk_window&& other) noexcept = delete;
+        glfw_vk_window& operator=(glfw_vk_window&& other) noexcept = delete;
 
     private:
         static bool active;

@@ -8,7 +8,8 @@
 #include <easylogging++.h>
 
 #include "glfw_window.hpp"
-#include "../util/util.hpp"
+#include "../util/utils.hpp"
+#include "../nova_renderer.hpp"
 
 namespace nova {
     void error_callback(int error, const char *description) {
@@ -123,7 +124,7 @@ namespace nova {
         return window_dimensions;
     }
 
-    void glfw_vk_window::end_frame() {
+    void glfw_vk_window::on_frame_end() {
         glfwPollEvents();
 
         glm::ivec2 new_window_size;
@@ -135,11 +136,11 @@ namespace nova {
     }
 
     void glfw_vk_window::set_framebuffer_size(glm::ivec2 new_framebuffer_size) {
-        nlohmann::json &settings = nova_renderer::instance->get_render_settings().get_options();
+        nlohmann::json &settings = nova_renderer::get_instance()->get_settings().get_options();
         settings["settings"]["viewWidth"] = new_framebuffer_size.x;
         settings["settings"]["viewHeight"] = new_framebuffer_size.y;
         window_dimensions = new_framebuffer_size;
-        nova_renderer::instance->get_render_settings().update_config_changed();
+        nova_renderer::get_instance()->get_settings().update_config_changed();
     }
 
     void glfw_vk_window::on_config_change(nlohmann::json &new_config) {
@@ -164,15 +165,15 @@ namespace nova {
         return glfwGetRequiredInstanceExtensions(count);
     }
 
-    void glfw_vk_window::create_surface(std::shared_ptr<render_context> context) {
-        auto err = glfwCreateWindowSurface((VkInstance)context->vk_instance, window, nullptr, reinterpret_cast<VkSurfaceKHR *>(&context->surface));
+    void glfw_vk_window::create_surface(vk::Instance instance, vk::SurfaceKHR surface) {
+        auto err = glfwCreateWindowSurface((VkInstance)instance, window, nullptr, reinterpret_cast<VkSurfaceKHR *>(&surface));
         if(err != VK_SUCCESS) {
             LOG(FATAL) << "Could not create surface";
         }
     }
 
     bool glfw_vk_window::should_enable_renderdoc() {
-        auto& settings = nova_renderer::get_render_settings();
+        auto& settings = nova_renderer::get_instance()->get_settings();
 
         auto static_settings = get_json_value<nlohmann::json>(settings.get_options(), "readOnly");
         if(static_settings) {

@@ -73,33 +73,6 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/profiler/include
         )
 
-# Setup the nova-core library.
-set(NOVA_HEADERS
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_GeometryType.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_key_char_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_key_press_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_atlas_texture.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_gui_buffer.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_settings.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mc_texture_atlas_location.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_button_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_position_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_mouse_scroll_event.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_NativeBoolean.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_NovaVertexFormat.h
-        src/mc_interface/jni/com_continuum_nova_system_NovaNative_window_size.h
-
-        src/platform.hpp
-        src/vulkan/timestamp_query_pool.hpp
-        src/vulkan/per_thread_data.hpp
-        src/fs_access/zip_folder_accessor.hpp
-        src/fs_access/regular_folder_accessor.hpp
-        src/fs_access/folder_accessor.hpp
-        src/vulkan/vulkan_render_device.hpp
-        src/nova_renderer.hpp
-        )
-
 set(NOVA_SOURCE
         # Third party stuff that's too lame to have it's own CMakeLists.txt
         ${3RD_PARTY_DIR}/miniz/miniz.c
@@ -108,13 +81,29 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/miniz/miniz_zip.c
         ${3RD_PARTY_DIR}/easyloggingpp/src/easylogging++.cc
 
+        src/mc_interface/jni/com_continuum_nova_system_NovaNative.h
+
+        src/platform.hpp
+        src/vulkan/timestamp_query_pool.hpp
+        src/vulkan/per_thread_data.hpp
+        src/loading/zip_folder_accessor.hpp
+        src/loading/regular_folder_accessor.hpp
+        src/loading/folder_accessor.hpp
+        src/vulkan/vulkan_render_device.hpp
+        src/nova_renderer.hpp
+
         src/nova_renderer.cpp
-        src/fs_access/folder_accessor.cpp
-        src/fs_access/regular_folder_accessor.cpp
-        src/fs_access/zip_folder_accessor.cpp
+        src/loading/folder_accessor.cpp
+        src/loading/regular_folder_accessor.cpp
+        src/loading/zip_folder_accessor.cpp
         src/vulkan/per_thread_data.cpp
         src/vulkan/timestamp_query_pool.cpp
-        src/vulkan/glfw_window.cpp src/vulkan/glfw_window.hpp src/util/util.cpp src/util/util.hpp src/input/input_handler.cpp src/input/input_handler.hpp)
+        src/vulkan/vulkan_render_device.cpp
+        src/vulkan/glfw_window.cpp
+        src/vulkan/glfw_window.hpp
+        src/util/utils.cpp src/util/utils.hpp
+        src/input/input_handler.cpp src/input/input_handler.hpp
+        src/settings.cpp src/settings.hpp)
 
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The

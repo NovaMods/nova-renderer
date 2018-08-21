@@ -10,10 +10,11 @@
 #include <easylogging++.h>
 #include <unordered_set>
 #include "vulkan_render_device.hpp"
-#include "timestamp_query_pool.hpp"
 
-//#include "../windowing/glfw_vk_window.h"
-//#include "command_pool.h"
+#ifdef SUPPORT_VULKAN
+#include "timestamp_query_pool.hpp"
+#include "glfw_window.hpp"
+
 #ifndef _WIN32
 #include <execinfo.h>
 #endif
@@ -40,11 +41,13 @@ namespace nova {
         setup_debug_callback();
         find_device_and_queues();
         create_pipeline_cache();
+
+        window.create_surface(vk_instance, surface);
     }
 
     void vulkan_render_context::create_instance(glfw_vk_window &window) {
         validation_layers = {
-                "VK_LAYER_LUNARG_standard_validation" // Enable them all
+                "VK_LAYER_LUNARG_standard_validation"
         };
 
         vk::ApplicationInfo app_info = {};
@@ -217,11 +220,7 @@ namespace nova {
         return {};
     }
 
-<<<<<<< HEAD:native/src/api_specific/vulkan/vulkan_render_device.cpp
     void vulkan_render_context::create_logical_device_and_queues(const gpu_info& info) {
-=======
-    void render_device::create_logical_device_and_queues(const gpu_info& gpu_info) {
->>>>>>> 746e237988574cb0698a8068db1ad3188accc511:native/src/render_context/vulkan/vulkan_render_device.cpp
         std::unordered_set<uint32_t> unique_idx;
         unique_idx.insert(graphics_family_idx);
         unique_idx.insert(present_family_idx);
@@ -400,3 +399,5 @@ namespace nova {
         return VK_FALSE;
     }
 }
+
+#endif

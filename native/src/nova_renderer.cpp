@@ -28,7 +28,7 @@ namespace nova {
         }
     }
 
-    nova_renderer::nova_renderer() {
+    nova_renderer::nova_renderer() : render_settings("config/nova/config.json"), context(window) {
         initialize_vulkan_backend();
     }
 
