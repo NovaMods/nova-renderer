@@ -1,5 +1,4 @@
 .idea
-lib
 build/out
 Makefile
 glfw3-prefix/
@@ -165,5 +164,6 @@ dev-build/
 release-build-*/
 toolchains/vulkan-dll-location.txt
 build/
+bin/
 .vscode/
 .vs/

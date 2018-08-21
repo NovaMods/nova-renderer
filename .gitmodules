@@ -1,6 +1,3 @@
-[submodule "native/3rdparty/easyloggingpp"]
-	path = native/3rdparty/easyloggingpp
-	url = https://github.com/Barteks2x/easyloggingpp.git
 [submodule "native/3rdparty/glm"]
 	path = native/3rdparty/glm
 	url = https://github.com/g-truc/glm.git

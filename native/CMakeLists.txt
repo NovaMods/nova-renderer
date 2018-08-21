@@ -1,18 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(nova-renderer)
 
-# Functions
-function(nova_set_all_target_outputs target output_dir)
-    set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${output_dir})
-    set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${output_dir})
-    set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${output_dir})
-    set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${output_dir})
-    set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${output_dir})
-    set_target_properties(${target} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${output_dir})
-    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${output_dir})
-    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${output_dir})
-    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${output_dir})
-endfunction()
+option(NOVA_TEST "Enable tests." OFF)
 
 # Initialize cmake options
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -27,8 +16,13 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
 find_package(Vulkan)
-
 find_package(JNI REQUIRED)
+
+if(NOVA_TEST)
+    enable_testing()
+    find_package(GTest REQUIRED)
+    include_directories(${GTEST_INCLUDE_DIRS})
+endif()
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -39,16 +33,12 @@ set(BUILD_ICD OFF)
 
 set(SHADERC_SKIP_TESTS TRUE)
 
-set(BUILD_SHARED_LIBS TRUE)
-
 set(EASY_PROFILER_NO_GUI ON)
 set(BUILD_SHARED_LIBS OFF)
-
 # need to compile GLFW and JSON
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 add_subdirectory(${3RD_PARTY_DIR}/glm)
-add_subdirectory(${3RD_PARTY_DIR}/easyloggingpp)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
 add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
@@ -65,8 +55,6 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/glm
         ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/json/include
-        ${3RD_PARTY_DIR}/googletest/googletest/include
-        ${3RD_PARTY_DIR}/Optional
         ${3RD_PARTY_DIR}/RenderDoc-Manager
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
@@ -79,7 +67,6 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/miniz/miniz_tdef.c
         ${3RD_PARTY_DIR}/miniz/miniz_tinfl.c
         ${3RD_PARTY_DIR}/miniz/miniz_zip.c
-        ${3RD_PARTY_DIR}/easyloggingpp/src/easylogging++.cc
 
         src/mc_interface/jni/com_continuum_nova_system_NovaNative.h
 
@@ -103,8 +90,8 @@ set(NOVA_SOURCE
         src/vulkan/glfw_window.hpp
         src/util/utils.cpp src/util/utils.hpp
         src/input/input_handler.cpp src/input/input_handler.hpp
-        src/settings.cpp src/settings.hpp)
-
+        src/settings.cpp src/settings.hpp
+        )
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
@@ -164,22 +151,13 @@ if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
 endif (WIN32)
 
-# This is needed on MSVC otherwise the build files get spread out all over the place.
-# The only *problem* is that we wont be able to create multi-config builds. Personally
-# I dont see this as a problem currently. This will make the location more predictablelajsdhfnvfsadk;jh
-# cross platform as well. Though i think object files are still cached across build
-# types so this should be fine.
-get_target_property(OUTPUT_DIR nova-renderer LIBRARY_OUTPUT_DIRECTORY)
-nova_set_all_target_outputs(nova-renderer ${OUTPUT_DIR})
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    set_target_properties(nova-renderer PROPERTIES CXX_VISIBILITY_PRESET hidden)
-endif()
-
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler ${JNI_LIBRARIES})
-
-add_executable(nova-test ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
-target_link_libraries(nova-test ${COMMON_LINK_LIBS})
-target_compile_definitions(nova-test PUBLIC STATIC_LINKAGE)
-set_target_properties(nova-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
+
+if(NOVA_TEST)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    add_executable(nova-test tests/src/filesystem_test.cpp)
+    add_dependencies(nova-test nova-renderer)
+    target_link_libraries(nova-test nova-renderer ${GTEST_BOTH_LIBRARIES} ${COMMON_LINK_LIBS})
+    add_test(NovaTests nova-test)
+endif()
