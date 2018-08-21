@@ -1,5 +1,4 @@
 .idea
-lib
 build/out
 Makefile
 glfw3-prefix/
