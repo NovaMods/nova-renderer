@@ -6,6 +6,8 @@
 #include "logger.hpp"
 
 namespace nova {
+    logger logger::instance;
+
     void logger::add_log_handler(log_level level, const std::function<void(std::string)> &log_handler) {
         log_handlers.emplace(level, log_handler);
     }

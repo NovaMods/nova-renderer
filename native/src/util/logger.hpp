@@ -25,11 +25,13 @@ namespace nova {
      */
     class logger {
     public:
+        static logger instance;
+
         void add_log_handler(log_level level, const std::function<void(std::string)>& log_handler);
 
         void log(log_level level, const std::string& msg);
 
-        void set_maximum_level_enabled(const log_level level, bool is_enabled);
+        void set_maximum_level_enabled(log_level level, bool is_enabled);
 
     private:
         std::unordered_map<log_level, bool> is_level_enabled;
