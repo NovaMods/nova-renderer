@@ -35,4 +35,8 @@ namespace nova {
     void nova_renderer::initialize_vulkan_backend() {
 
     }
+
+    settings &nova_renderer::get_settings() const {
+        return render_settings;
+    }
 }

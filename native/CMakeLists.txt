@@ -69,6 +69,7 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/miniz/miniz_zip.c
 
         mc_interface/jni/com_continuum_nova_system_NovaNative.h
+        mc_interface/nova_mc_interface.cpp
 
         src/platform.hpp
         src/vulkan/timestamp_query_pool.hpp
@@ -88,10 +89,14 @@ set(NOVA_SOURCE
         src/vulkan/vulkan_render_device.cpp
         src/vulkan/glfw_window.cpp
         src/vulkan/glfw_window.hpp
-        src/util/utils.cpp src/util/utils.hpp
-        src/input/input_handler.cpp src/input/input_handler.hpp
-        src/settings.cpp src/settings.hpp
-        src/util/logger.cpp src/util/logger.hpp)
+        src/util/utils.cpp
+        src/util/utils.hpp
+        src/input/input_handler.cpp
+        src/input/input_handler.hpp
+        src/settings.cpp
+        src/settings.hpp
+        src/util/logger.cpp
+        src/util/logger.hpp)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is

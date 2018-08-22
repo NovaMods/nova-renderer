@@ -7,6 +7,7 @@
 
 #include "jni/com_continuum_nova_system_NovaNative.h"
 #include "../src/nova_renderer.hpp"
+#include "../src/util/logger.hpp"
 
 /*!
  * \brief Initializes Nova
@@ -16,7 +17,45 @@
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_initialize
-        (JNIEnv *, jclass) {
+        (JNIEnv* env, jclass) {
+
+    jobject loggerFactoryClass = env->FindClass("org/apache/logging/log4j/LogManager");
+    jmethodID getLogger = env->GetMethodID(loggerFactoryClass, "getLogger", "(V)org/apache/logging/log4j/Logger");
+    jobject logger = env->CallStaticObjectMethod(loggerFactoryClass, getLogger);
+
+    jobject loggerClass = env->FindClass("org/apache/logging/log4j/Logger");
+
+    jmethodID traceLog  = env->GetMethodID(loggerClass, "trace", "(java/lang/String)void");
+    jmethodID debugLog  = env->GetMethodID(loggerClass, "debug", "(java/lang/String)void");
+    jmethodID infoLog   = env->GetMethodID(loggerClass, "info",  "(java/lang/String)void");
+    jmethodID warnLog   = env->GetMethodID(loggerClass, "warn",  "(java/lang/String)void");
+    jmethodID errorLog  = env->GetMethodID(loggerClass, "error", "(java/lang/String)void");
+
+    nova::logger::instance.add_log_handler(nova::log_level::TRACE, [=](const std::string& msg){
+        jstring str = env->NewStringUTF(msg.c_str());
+        env->CallVoidMethod(logger, traceLog, str);
+    });
+
+    nova::logger::instance.add_log_handler(nova::log_level::DEBUG, [=](const std::string& msg){
+        jstring str = env->NewStringUTF(msg.c_str());
+        env->CallVoidMethod(logger, debugLog, str);
+    });
+
+    nova::logger::instance.add_log_handler(nova::log_level::INFO, [=](const std::string& msg){
+        jstring str = env->NewStringUTF(msg.c_str());
+        env->CallVoidMethod(logger, infoLog, str);
+    });
+
+    nova::logger::instance.add_log_handler(nova::log_level::WARN, [=](const std::string& msg){
+        jstring str = env->NewStringUTF(msg.c_str());
+        env->CallVoidMethod(logger, warnLog, str);
+    });
+
+    nova::logger::instance.add_log_handler(nova::log_level::ERROR, [=](const std::string& msg){
+        jstring str = env->NewStringUTF(msg.c_str());
+        env->CallVoidMethod(logger, errorLog, str);
+    });
+
     nova::nova_renderer::initialize();
 }
 

@@ -17,8 +17,8 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
-#include <easylogging++.h>
 #include <glm/glm.hpp>
+#include <sstream>
 
 /*!
  * \brief Initializes the logging system
@@ -73,69 +73,6 @@ namespace nova {
      * use it after calling this function of you'll have a bad time
      */
     nlohmann::json load_json_from_stream(std::istream& stream);
-
-    /*!
-     * \brief Stream insertion for glm::ivec3
-     *
-     * \param out The stream to write to
-     * \param vec The vector to write
-     * \return The written to stream
-     */
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::ivec3 &vec);
-
-    /*!
-     * \brief Stream insertion for glm::vec2
-     *
-     * \param out The stream to write to
-     * \param vec The vector to write
-     * \return The written to stream
-     */
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec2 &vec);
-
-    /*!
-     * \brief Stream insertion for glm::vec3
-     *
-     * \param out The stream to write to
-     * \param vec The vector to write
-     * \return The written to stream
-     */
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec3 &vec);
-
-    /*!
-     * \brief Stream insertion for glm::vec4
-     *
-     * \param out The stream to write to
-     * \param vec The vector to write
-     * \return The written to stream
-     */
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec4 &vec);
-
-    /*!
-     * \brief Stream insertion for glm::vec4
-     *
-     * \param out The stream to write to
-     * \param vec The matrix to write
-     * \return The written to stream
-     */
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::mat4 &mat);
-
-    /*!
-     * \brief Stream insertion for glm::vec4
-     *
-     * \param out The stream to write to
-     * \param vec The vector to write
-     * \return The written to stream
-     */
-    template <typename T>
-    el::base::Writer &operator<<(el::base::Writer &out, const std::vector<T> &vec) {
-        out << "(";
-        for(auto& val : vec) {
-            out << val << ", ";
-        }
-        out << ")";
-
-        return out;
-    }
 
     std::string print_color(unsigned int color);
 

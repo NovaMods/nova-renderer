@@ -6,11 +6,14 @@
 #ifndef RENDERER_GLFW_GL_WINDOW_H
 #define RENDERER_GLFW_GL_WINDOW_H
 
+#include "../platform.hpp"
+
+#ifdef SUPPORT_VULKAN
+
 #define GLFW_VULKAN_SUPPORT
 
 #include <nlohmann/json.hpp>
 #include "GLFW/glfw3.h"
-#include "../../data_loading/settings.h"
 #include "../settings.hpp"
 
 #if __WIN32__
@@ -97,5 +100,5 @@ namespace nova {
     };
 }
 
-
+#endif
 #endif //RENDERER_GLFW_GL_WINDOW_H

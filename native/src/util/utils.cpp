@@ -3,16 +3,8 @@
  * \date 18-May-16.
  */
 
-#include <easylogging++.h>
-
-#include "utils.h"
-
-void initialize_logging() {
-    // Configure the logger
-    el::Configurations conf("config/nova/logging.conf");
-
-    el::Loggers::reconfigureAllLoggers(conf);
-}
+#include "utils.hpp"
+#include "logger.hpp"
 
 namespace nova {
     resource_not_found::resource_not_found(const std::string &msg) {
@@ -25,7 +17,7 @@ namespace nova {
 
     nlohmann::json load_json_from_stream(std::istream& stream) {
         if(stream.bad()) {
-            LOG(ERROR) << "Bad stream~ EOF? " << stream.eof() << " If not, it must be something else. Returning empty JSON cause life is hard";
+            logger::instance::log(log_level::ERROR, std::string("Bad stream~ EOF? ") + (stream.eof() ? "true" : "false") + " If not, it must be something else. Returning empty JSON cause life is hard");
             return {};
         }
 
@@ -40,15 +32,15 @@ namespace nova {
             auto comment_pos = buf.find("//");
             if(comment_pos != std::string::npos) {
                 line_is_comment = true;
-                LOG(TRACE) << "Found possible comment line `" << buf << "`";
+                logger::instance::log(log_level::TRACE, "Found possible comment line `" + buf + "`");
                 for(size_t i = 0; i < comment_pos; i++) {
                     if(buf[i] != ' ' && buf[i] != '\t' && buf[i] != '\n') {
                         line_is_comment = false;
-                        LOG(TRACE) << "There's stuff in front of it so it hopefully isn't a comment";
+                        logger::instance::log(log_level::TRACE, "There's stuff in front of it so it hopefully isn't a comment");
                     }
                 }
                 if(line_is_comment) {
-                    LOG(DEBUG) << "Skipping comment line `" << buf << "`";
+                    logger::instance::log(log_level::DEBUG, "Skipping comment line `" + buf + "`");
                 }
             }
 
@@ -60,7 +52,7 @@ namespace nova {
         try {
             return nlohmann::json::parse(accum.c_str());
         } catch(std::exception& e) {
-            LOG(ERROR) << e.what();
+            logger::instance::log(log_level::ERROR, e.what());
             return {};
         }
     }
@@ -69,31 +61,6 @@ namespace nova {
         std::vector<std::string> elems;
         split(s, delim, std::back_inserter(elems));
         return elems;
-    }
-
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::ivec3 &vec) {
-        out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
-        return out;
-    }
-
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec2 &vec) {
-        out << "(" << vec.x << ", " << vec.y << ")";
-        return out;
-    }
-
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec3 &vec) {
-        out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
-        return out;
-    }
-
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::vec4 &vec) {
-        out << "(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ")";
-        return out;
-    }
-
-    el::base::Writer &operator<<(el::base::Writer &out, const glm::mat4 &mat) {
-        out << "[" << mat[0] << ",\n " << mat[1] << ",\n " << mat[2] << ",\n " << mat[3] << "]";
-        return out;
     }
 
     std::string print_color(unsigned int color) {

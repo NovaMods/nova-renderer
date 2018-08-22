@@ -13,19 +13,6 @@ namespace nova {
     }
 
     void logger::log(const log_level level, const std::string &msg) {
-        if(is_level_enabled.at(level)) {
-            log_handlers.at(level)(msg);
-        }
-    }
-
-    void logger::set_maximum_level_enabled(const log_level level, bool is_enabled) {
-        for(log_level i = log_level::TRACE; i < log_level::MAX_LEVEL; i++) {
-            if(i < level) {
-                is_level_enabled.emplace(i, false);
-
-            } else {
-                is_level_enabled.emplace(i, true);
-            }
-        }
+        log_handlers.at(level)(msg);
     }
 }
