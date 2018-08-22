@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include "../../src/fs_access/regular_folder_accessor.hpp"
+#include "../../src/loading/regular_folder_accessor.hpp"
 
 TEST(nova_filesystem, invalid_folder) {
     nova::regular_folder_accessor accessor("");

@@ -13,7 +13,6 @@ import com.continuum.nova.system.WindowSize;
 import com.continuum.nova.texture.INovaTextureManager;
 import com.continuum.nova.utils.Profiler;
 import com.continuum.nova.utils.Utils;
-import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -31,6 +30,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.LoaderExceptionModCrash;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import sun.rmi.runtime.Log;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
@@ -46,7 +46,7 @@ import static com.continuum.nova.utils.Utils.getImageData;
 
 public class NovaRenderer implements IResourceManagerReloadListener {
 
-    private static final Logger LOG = LogManager.getLogger(NovaRenderer.class);
+    private Logger logger;
 
     private boolean firstLoad = true;
 
@@ -86,14 +86,15 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         return instance;
     }
 
-    public static void create() {
+    public static void create(Logger logger) {
         if (instance != null) {
             throw new IllegalStateException("Instance already created");
         }
-        instance = new NovaRenderer();
+        instance = new NovaRenderer(logger);
     }
 
-    private NovaRenderer() {
+    private NovaRenderer(Logger loggerger) {
+        this.logger = loggerger;
         // I put these in Utils to make this class smaller
         Utils.initBlockTextureLocations(BLOCK_COLOR_TEXTURES_LOCATIONS);
         Utils.initGuiTextureLocations(GUI_COLOR_TEXTURES_LOCATIONS);
@@ -134,10 +135,10 @@ public class NovaRenderer implements IResourceManagerReloadListener {
                 if (image != null) {
                     loadTexture(loc, image);
                 } else {
-                    LOG.error("Free texture " + loc + " has no data!");
+                    logger.error("Free texture " + loc + " has no data!");
                 }
             } catch (IOException e) {
-                LOG.error("Could not load free texture " + loc, e);
+                logger.error("Could not load free texture " + loc, e);
             }
         }
     }
@@ -145,12 +146,12 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     private void addGuiAtlas(@Nonnull IResourceManager resourceManager) {
         novaGuiAtlas.createWhiteTexture(WHITE_TEXTURE_GUI_LOCATION);
         addAtlas(resourceManager, guiAtlas, GUI_COLOR_TEXTURES_LOCATIONS, guiSpriteLocations, GUI_ATLAS_NAME);
-        LOG.debug("Created GUI atlas");
+        logger.debug("Created GUI atlas");
     }
 
     private void addFontAtlas(@Nonnull IResourceManager resourceManager) {
         addAtlas(resourceManager, fontAtlas, FONT_COLOR_TEXTURES_LOCATIONS, fontSpriteLocations, FONT_ATLAS_NAME);
-        LOG.debug("Created font atlas");
+        logger.debug("Created font atlas");
     }
 
     public void addTerrainAtlas(@Nonnull TextureMap blockColorMap) {
@@ -187,7 +188,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         MinecraftAtlasTexture atlasTexture = getFullImage(((INovaTextureMap) atlas).getWidth(), ((INovaTextureMap) atlas).getHeight(), spriteLocations.values());
         atlasTexture.setName(textureName);
 
-        LOG.info("Adding atlas texture {}", atlasTexture);
+        logger.info("Adding atlas texture {}", atlasTexture);
         NovaNative.addTexture(atlasTexture);
 
         for (TextureAtlasSprite sprite : spriteLocations.values()) {
@@ -243,7 +244,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     public void preInit() {
         System.getProperties().setProperty("jna.dump_memory", "false");
         String pid = ManagementFactory.getRuntimeMXBean().getName();
-        LOG.info("PID: " + pid + " TID: " + Thread.currentThread().getId());
+        logger.info("PID: " + pid + " TID: " + Thread.currentThread().getId());
         try {
             Utils.copyDefaults();
         } catch (IOException e) {
@@ -254,22 +255,22 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         } catch (IOException e) {
             throw new LoaderExceptionModCrash("Nova renderer failed to load native library", e);
         }
-        NovaNative.initialize();
-        LOG.info("Native code initialized");
+        NovaNative.initialize(logger);
+        logger.info("Native code initialized");
         updateWindowSize();
     }
 
     private void installNative() throws IOException {
         if((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
-            LOG.info("Nova is very likely running in a development environment, trying to load native from run directory...");
+            logger.info("Nova is very likely running in a development environment, trying to load native from run directory...");
             try {
                 if (Platform.isWindows()) {
                 } else {
                 }
-                LOG.info("Succeeded in loading nova from run directory.");
+                logger.info("Succeeded in loading nova from run directory.");
                 return;
             } catch (Throwable e) {
-                LOG.warn("Failed to load nova from run directory", e);
+                logger.warn("Failed to load nova from run directory", e);
             }
         }
 
@@ -389,7 +390,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
      */
     public void loadTexture(ResourceLocation location, BufferedImage image) {
         if (resourceManager == null) {
-            LOG.error("Trying to load texture " + location + " but there's no resource manager");
+            logger.error("Trying to load texture " + location + " but there's no resource manager");
             return;
         }
 
@@ -425,15 +426,15 @@ public class NovaRenderer implements IResourceManagerReloadListener {
         String[] filtersSplit = filters.split("\n");
         Profiler.end("load_shaderpack");
 
-        LOG.info("Received filters `{}`", filters);
+        logger.info("Received filters `{}`", filters);
 
         if (filtersSplit.length < 2 || filtersSplit.length % 2 != 0) {
             throw new IllegalStateException("Must have a POT number of filters and shader names");
         }
 
         Profiler.start("build_filters");
-        LOG.debug("Filters: '{}'", String.join(", ", filtersSplit));
-        LOG.debug("Received {} shaders with filters", filtersSplit.length);
+        logger.debug("Filters: '{}'", String.join(", ", filtersSplit));
+        logger.debug("Received {} shaders with filters", filtersSplit.length);
 
         filterMap = new HashMap<>();
         for (int i = 0; i < filtersSplit.length; i += 2) {
@@ -445,7 +446,7 @@ public class NovaRenderer implements IResourceManagerReloadListener {
     }
 
     public Logger getLog() {
-        return LOG;
+        return logger;
     }
 }
 

@@ -225,7 +225,7 @@ public abstract class MixinMinecraft {
         novaLogger.info("LD_LIBRARY_PATH is " + System.getenv("LD_LIBRARY_PATH"));
         novaLogger.info("VK_LAYER_PATH is " + System.getenv("VK_LAYER_PATH"));
         novaLogger.info("Loading nova...");
-        NovaRenderer.create();
+        NovaRenderer.create(novaLogger);
         NovaRenderer.getInstance().preInit();
         Mouse.create();
         Keyboard.create();

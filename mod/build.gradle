@@ -179,7 +179,8 @@ task generateJniHeaders() {
 
     doLast {
         if(exec {
-            commandLine "javah", "-jni", "-cp", sourceSets.main.output.asPath, "-d", "native/src/mc_interface/jni", "com.continuum.nova.system.NovaNative"
+            commandLine "javah", "-jni", "-cp", sourceSets.main.output.asPath + File.pathSeparator + sourceSets.main.compileClasspath.asPath,
+                    "-d", "native/src/mc_interface/jni", "com.continuum.nova.system.NovaNative"
             workingDir = new File("../")
             standardOutput = prefixedOutputStream("[JNI:GENERATE HEADERS => STDOUT] ", System.out)
             errorOutput = prefixedOutputStream("[JNI:GENERATE HEADERS => STDERR] ", System.err)
