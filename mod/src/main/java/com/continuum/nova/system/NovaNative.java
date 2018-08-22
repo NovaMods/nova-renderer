@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 public class NovaNative {
     public static final Logger LOG = LogManager.getLogger(NovaNative.class);
 
-    public static native void initialize();
+    public static native void initialize(Logger logger);
 
     public static native void executeFrame();
 
