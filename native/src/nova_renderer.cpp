@@ -4,6 +4,12 @@
  */
 
 #include "nova_renderer.hpp"
+#include "loading/loading_utils.hpp"
+#include "loading/shaderpack_loading.hpp"
+
+#include <experimental/filesystem>
+
+namespace fs = std::experimental::filesystem;
 
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
@@ -38,5 +44,13 @@ namespace nova {
 
     settings &nova_renderer::get_settings() const {
         return render_settings;
+    }
+
+    void nova_renderer::execute_frame() {
+
+    }
+
+    void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
+        const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
     }
 }

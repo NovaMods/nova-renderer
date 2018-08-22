@@ -62,6 +62,11 @@ namespace nova {
         void load_shaderpack(const std::string& shaderpack_name);
 
         /*!
+         * \brief Executes a single frame
+         */
+        void execute_frame();
+
+        /*!
          * \brief Returns the texture store where all the textures are stored
          *
          * \return Nova's texture store

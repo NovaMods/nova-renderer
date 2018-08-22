@@ -65,7 +65,9 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_initialize
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_executeFrame
-        (JNIEnv *, jclass);
+        (JNIEnv *, jclass) {
+    nova::nova_renderer::get_instance()->execute_frame();
+}
 
 /*
  * Class:     com_continuum_nova_system_NovaNative
