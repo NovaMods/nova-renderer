@@ -19,7 +19,7 @@ namespace nova {
     }
 
     void logger::set_maximum_level_enabled(const log_level level, bool is_enabled) {
-        for(log_level i = log_level::TRACE; i < log_level::MAX_LEVEL) {
+        for(log_level i = log_level::TRACE; i < log_level::MAX_LEVEL; i++) {
             if(i < level) {
                 is_level_enabled.emplace(i, false);
 
