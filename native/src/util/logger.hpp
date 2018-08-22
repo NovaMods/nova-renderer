@@ -17,7 +17,6 @@ namespace nova {
         INFO,
         WARN,
         ERROR,
-        MAX_LEVEL
     };
 
     /*!
