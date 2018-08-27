@@ -95,8 +95,9 @@ set(NOVA_SOURCE
         src/input/input_handler.hpp
         src/settings.cpp
         src/settings.hpp
+        src/util/smart_enum.hpp
         src/util/logger.cpp
-        src/util/logger.hpp src/loading/shaderpack_loading.cpp src/loading/shaderpack_loading.hpp src/loading/loading_utils.cpp src/loading/loading_utils.hpp)
+        src/util/logger.hpp src/loading/shaderpack_loading.cpp src/loading/shaderpack_loading.hpp src/loading/loading_utils.cpp src/loading/loading_utils.hpp src/loading/shaderpack_data.hpp src/loading/shaderpack-data.cpp)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is

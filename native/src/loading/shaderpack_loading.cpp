@@ -13,20 +13,25 @@ namespace nova {
     fs::path SHADERPACK_ROOT("shaderpacks");
     fs::path BEDROCK_SHADERPACK_ROOT("resourcepacks");
 
-    folder_accessor_base* get_shaderpack_accessor(const std::experimental::filesystem::path &shaderpack_name);
+    folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name);
 
-    void load_shaderpack_data(const fs::path& shaderpack_name) {
+    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name) {
         folder_accessor_base* folder_access = get_shaderpack_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?
+        // - resources.json, to describe the dynamic resources that a shaderpack needs
+        // - passes.json, to describe the frame graph itself
+        // - All the pipeline descriptions
+        // - All the material descriptions
         //
-        // -
+        // All these things are loaded from the filesystem
+
 
         delete folder_access;
     }
 
-    folder_accessor_base* get_shaderpack_accessor(const std::experimental::filesystem::path &shaderpack_name) {
+    folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name) {
         folder_accessor_base* folder_access = nullptr;
         fs::path path_to_shaderpack = SHADERPACK_ROOT / shaderpack_name;
 

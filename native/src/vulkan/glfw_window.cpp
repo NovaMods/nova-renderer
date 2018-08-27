@@ -5,15 +5,16 @@
 
 
 #include <vulkan/vulkan.h>
-#include <easylogging++.h>
 
 #include "glfw_window.hpp"
 #include "../util/utils.hpp"
 #include "../nova_renderer.hpp"
+#include "../util/logger.hpp"
+#include <cstdlib>
 
 namespace nova {
     void error_callback(int error, const char *description) {
-        LOG(ERROR) << "Error " << error << ": " << description;
+        logger::instance.log(log_level::ERROR, "Error " + std::to_string(error) + ": " + description);
     }
 
     void window_focus_callback(GLFWwindow *window, int focused) {
@@ -28,7 +29,8 @@ namespace nova {
         glfwSetErrorCallback(error_callback);
 
         if(glfwInit() == 0) {
-            LOG(FATAL) << "Could not initialize GLFW";
+            logger::instance.log(log_level::ERROR, "Could not initialize GLFW");
+            exit(-1);
         }
 
         nlohmann::json &config = nova_renderer::get_render_settings().get_options();

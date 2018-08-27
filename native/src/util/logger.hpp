@@ -28,7 +28,7 @@ namespace nova {
 
         void add_log_handler(log_level level, const std::function<void(std::string)>& log_handler);
 
-        inline void log(log_level level, const std::string& msg);
+        inline void log(const log_level level, const std::string& msg);
 
     private:
         std::unordered_map<log_level, std::function<void(std::string)>> log_handlers;

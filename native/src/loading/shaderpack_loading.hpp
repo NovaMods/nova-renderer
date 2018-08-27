@@ -7,11 +7,13 @@
 #define NOVA_RENDERER_SHADERPACK_LOADING_HPP
 
 #include <experimental/filesystem>
+#include <unordered_map>
+#include "shaderpack_data.hpp"
 
 namespace fs = std::experimental::filesystem;
 
 namespace nova {
-    void load_shaderpack_data(const fs::path& shaderpack_name);
+    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name);
 }
 
 #endif //NOVA_RENDERER_SHADERPACK_LOADING_HPP
