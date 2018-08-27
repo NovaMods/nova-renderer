@@ -12,9 +12,8 @@
 
 #define GLFW_VULKAN_SUPPORT
 
-#include <nlohmann/json.hpp>
 #include "GLFW/glfw3.h"
-#include "../settings.hpp"
+#include "../settings/settings.hpp"
 
 #if __WIN32__
 #include <RenderDocManager.h>
@@ -70,9 +69,9 @@ namespace nova {
          * iconfig_change_listener methods
          */
 
-        void on_config_change(nlohmann::json &new_config) override;
+        void on_config_change(settings_options &new_config) override;
 
-        void on_config_loaded(nlohmann::json &config) override;
+        void on_config_loaded(settings_options &config) override;
 
         static void setActive(bool active);
 

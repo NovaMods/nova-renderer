@@ -7,7 +7,6 @@
 #include <vk_mem_alloc.h>
 
 #include <cstdint>
-#include <easylogging++.h>
 #include <unordered_set>
 #include "vulkan_render_device.hpp"
 
@@ -19,6 +18,7 @@
 #include <execinfo.h>
 #endif
 #include <unistd.h>
+#include "../util/logger.hpp"
 
 namespace nova {
     bool layers_are_supported(std::vector<const char*>& validation_layers);
@@ -245,20 +245,20 @@ namespace nova {
         device_features.tessellationShader = VK_TRUE;
         device_features.samplerAnisotropy = VK_TRUE;
 
-        vk::DeviceCreateInfo info = {};
-        info.queueCreateInfoCount = static_cast<uint32_t>(devq_info.size());
-        info.pQueueCreateInfos = devq_info.data();
-        info.pEnabledFeatures = &device_features;
-        info.enabledExtensionCount = 1;
+        vk::DeviceCreateInfo create_info = {};
+        create_info.queueCreateInfoCount = static_cast<uint32_t>(devq_info.size());
+        create_info.pQueueCreateInfos = devq_info.data();
+        create_info.pEnabledFeatures = &device_features;
+        create_info.enabledExtensionCount = 1;
         const char* swapchain_extension = "VK_KHR_swapchain";
-        info.ppEnabledExtensionNames = &swapchain_extension;
+        create_info.ppEnabledExtensionNames = &swapchain_extension;
 
-        info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
+        create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
         if(!validation_layers.empty()) {
-            info.ppEnabledLayerNames = validation_layers.data();
+            create_info.ppEnabledLayerNames = validation_layers.data();
         }
 
-        device = physical_device.createDevice(info, nullptr);
+        device = physical_device.createDevice(create_info, nullptr);
 
         graphics_queue = device.getQueue(graphics_family_idx, 0);
         present_queue = device.getQueue(graphics_family_idx, 0);

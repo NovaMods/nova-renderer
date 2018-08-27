@@ -12,7 +12,7 @@ namespace nova {
      */
     struct per_thread_datapp {
         // Tasks can allocate, record, and execute command buffers, so each thread needs its own command buffer pool
-        command_pool cmd_buf_pool;
+        // command_pool cmd_buf_pool;
     };
 }
 

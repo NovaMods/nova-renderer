@@ -14,7 +14,6 @@
 #include <exception>
 #include <optional>
 
-#include <nlohmann/json.hpp>
 #include <fstream>
 
 #include <glm/glm.hpp>
@@ -60,60 +59,9 @@ namespace nova {
         std::string message;
     };
 
-    /*!
-     * \brief Loads a json data structure from the provided stream
-     *
-     * A couple assumptions are made here:
-     *  - The stream is already open
-     *  - The stream will return a valid JSON string
-     *
-     * If one or both of these is not true, this method will throw an exception
-     *
-     * Also worth noting: this function will close the stream. Do not try to
-     * use it after calling this function of you'll have a bad time
-     */
-    nlohmann::json load_json_from_stream(std::istream& stream);
-
     std::string print_color(unsigned int color);
 
     std::string print_array(int data[], int num_elements);
-
-    /*!
-     * \brief Checks if the given value is in the provided json
-     * \param key The key to look for
-     * \param json_obj The JSON object to look for the key in
-     * \param decoder A function that deserializes the value
-     * \return An optional that wraps the
-     */
-    template <typename ValType>
-    std::optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string key, std::function<ValType(const nlohmann::json&)> decoder) {
-        const auto& itr = json_obj.find(key);
-        if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key);
-            ValType val = decoder(json_node);
-            return std::optional<ValType>{std::move(val)};
-        }
-
-        return std::optional<ValType>{};
-    }
-
-    /*!
-     * \brief Checks if the given value is in the provided json
-     * \param key The key to look for
-     * \param json_obj The JSON object to look for the key in
-     * \param decoder A function that deserializes the value
-     * \return An optional that wraps the
-     */
-    template <typename ValType>
-    std:: optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string key) {
-        const auto& itr = json_obj.find(key);
-        if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key);
-            return std::optional<ValType>(json_node.get<ValType>());
-        }
-
-        return std::optional<ValType>{};
-    }
 }
 
 #endif //RENDERER_UTILS_H

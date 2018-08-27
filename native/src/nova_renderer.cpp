@@ -24,11 +24,11 @@ namespace nova {
 
     void nova_renderer::deinitialize() {
         if(instance) {
-            instance.release();
+            instance.reset(nullptr);
         }
     }
 
-    nova_renderer::nova_renderer() : render_settings("config/nova/config.json"), context(window) {
+    nova_renderer::nova_renderer() : render_settings(settings_options{}), context(window) {
         initialize_vulkan_backend();
     }
 
@@ -36,7 +36,7 @@ namespace nova {
 
     }
 
-    settings &nova_renderer::get_settings() const {
+    settings &nova_renderer::get_settings() {
         return render_settings;
     }
 }
