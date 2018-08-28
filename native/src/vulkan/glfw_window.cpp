@@ -10,11 +10,11 @@
 #include "../util/utils.hpp"
 #include "../nova_renderer.hpp"
 #include "../util/logger.hpp"
-#include <cstdlib>
 
 namespace nova {
     void error_callback(int error, const char *description) {
-        logger::instance.log(log_level::ERROR, "Error " + std::to_string(error) + ": " + description);
+        // TODO: This message is a bit... bad
+        nova::logger::instance.log(nova::log_level::ERROR) << "Error callback: " << error << ": " << description;
     }
 
     void window_focus_callback(GLFWwindow *window, int focused) {

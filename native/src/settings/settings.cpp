@@ -4,37 +4,28 @@
  */
 
 #include "settings.hpp"
-#include "util/utils.hpp"
-
-#include <easylogging++.h>
+#include "../util/utils.hpp"
 
 namespace nova {
-    settings::settings(std::string filename) {
-        LOG(INFO) << "Loading config from " << filename;
-
-        std::ifstream config_file(filename);
-        if(config_file.is_open()) {
-            options = load_json_from_stream(config_file);
-        }
-    }
+    settings::settings(settings_options options) : options(options) {}
 
     void settings::register_change_listener(iconfig_listener *new_listener) {
         config_change_listeners.push_back(new_listener);
     }
 
-    nlohmann::json &settings::get_options() {
+    settings_options &settings::get_options() {
         return options;
     }
 
     void settings::update_config_changed() {
         for(iconfig_listener *l : config_change_listeners) {
-            l->on_config_change(options["settings"]);
+            l->on_config_change(options);
         }
     }
 
     void settings::update_config_loaded() {
         for(iconfig_listener *l : config_change_listeners) {
-            l->on_config_loaded(options["readOnly"]);
+            l->on_config_loaded(options);
         }
     }
 }

@@ -16,7 +16,6 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
 find_package(Vulkan)
-find_package(JNI REQUIRED)
 
 if(NOVA_TEST)
     enable_testing()
@@ -35,26 +34,26 @@ set(SHADERC_SKIP_TESTS TRUE)
 
 set(EASY_PROFILER_NO_GUI ON)
 set(BUILD_SHARED_LIBS OFF)
-# need to compile GLFW and JSON
-add_subdirectory(${3RD_PARTY_DIR}/glfw)
-add_subdirectory(${3RD_PARTY_DIR}/json)
+
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    add_subdirectory(${3RD_PARTY_DIR}/glfw)
+    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
+    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
+    add_subdirectory(${3RD_PARTY_DIR}/glslang)
+    add_subdirectory(${3RD_PARTY_DIR}/shaderc)
+endif()
+
 add_subdirectory(${3RD_PARTY_DIR}/glm)
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
-add_subdirectory(${3RD_PARTY_DIR}/glslang)
-add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 add_subdirectory(${3RD_PARTY_DIR}/profiler)
 
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
-        ${JNI_INCLUDE_DIRS}
         ${3RD_PARTY_DIR}/glfw/include
         ${3RD_PARTY_DIR}/easyloggingpp/src
         ${3RD_PARTY_DIR}/glad/include
         ${3RD_PARTY_DIR}/glm
         ${3RD_PARTY_DIR}/miniz
-        ${3RD_PARTY_DIR}/json/include
         ${3RD_PARTY_DIR}/RenderDoc-Manager
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
@@ -68,9 +67,6 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/miniz/miniz_tinfl.c
         ${3RD_PARTY_DIR}/miniz/miniz_zip.c
 
-        mc_interface/jni/com_continuum_nova_system_NovaNative.h
-        mc_interface/nova_mc_interface.cpp
-
         src/platform.hpp
         src/vulkan/timestamp_query_pool.hpp
         src/vulkan/per_thread_data.hpp
@@ -79,7 +75,6 @@ set(NOVA_SOURCE
         src/loading/folder_accessor.hpp
         src/vulkan/vulkan_render_device.hpp
         src/nova_renderer.hpp
-
         src/nova_renderer.cpp
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
@@ -91,13 +86,21 @@ set(NOVA_SOURCE
         src/vulkan/glfw_window.hpp
         src/util/utils.cpp
         src/util/utils.hpp
-        src/input/input_handler.cpp
-        src/input/input_handler.hpp
-        src/settings.cpp
-        src/settings.hpp
         src/util/smart_enum.hpp
+        src/settings/settings.cpp
+        src/settings/settings.hpp
         src/util/logger.cpp
-        src/util/logger.hpp src/loading/shaderpack_loading.cpp src/loading/shaderpack_loading.hpp src/loading/loading_utils.cpp src/loading/loading_utils.hpp src/loading/shaderpack_data.hpp src/loading/shaderpack-data.cpp)
+        src/util/logger.hpp
+        src/loading/shaderpack_loading.cpp
+        src/loading/shaderpack_loading.hpp
+        src/loading/loading_utils.cpp
+        src/loading/loading_utils.hpp
+        src/loading/shaderpack_data.hpp
+        src/loading/shaderpack-data.cpp
+
+        src/dx12/win32_window.hpp
+        src/dx12/win32_window.cpp
+        )
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
@@ -131,18 +134,18 @@ if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     message("Enabling symbol output")
 endif()
 
-if(MSVC)
-    message(FATAL_ERROR "MSVC is not supported, use MinGW with gcc")
-elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Update if necessary
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
 endif()
+
+set(NOVA_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
 source_group("nova" FILES ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
-add_library(nova-renderer SHARED ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
+add_library(nova-renderer STATIC ${NOVA_SOURCE} ${SPIRV_CROSS_SOURCE})
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC ELPP_THREAD_SAFE)
@@ -157,7 +160,7 @@ if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
 endif (WIN32)
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler ${JNI_LIBRARIES})
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler)
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 
 if(NOVA_TEST)
@@ -166,4 +169,23 @@ if(NOVA_TEST)
     add_dependencies(nova-test nova-renderer)
     target_link_libraries(nova-test nova-renderer ${GTEST_BOTH_LIBRARIES} ${COMMON_LINK_LIBS})
     add_test(NovaTests nova-test)
+    set(CMAKE_CXX_FLAGS "${NOVA_CXX_FLAGS}")
+endif()
+
+####################################
+# Game Specific variants from here #
+####################################
+
+# Minecraft is the only variant for now so enable it by default for now
+option(NOVA_MINECRAFT "Build minecraft library." ON)
+if(NOVA_MINECRAFT)
+    find_package(JNI REQUIRED)
+    set(NOVA_MC_SOURCE
+            mc_interface/jni/com_continuum_nova_system_NovaNative.h
+            mc_interface/nova_mc_interface.cpp
+            )
+    add_library(nova-minecraft ${NOVA_MC_SOURCE})
+    add_dependencies(nova-minecraft nova-renderer)
+    target_include_directories(nova-minecraft PUBLIC ${JNI_INCLUDE_DIRS})
+    target_link_libraries(nova-minecraft nova-render ${COMMON_LINK_LIBS} ${JNI_LIBRARIES})
 endif()

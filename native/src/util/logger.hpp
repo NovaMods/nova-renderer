@@ -1,3 +1,5 @@
+#include <utility>
+
 /*!
  * \author ddubois 
  * \date 21-Aug-18.
@@ -9,6 +11,7 @@
 #include <string>
 #include <functional>
 #include <unordered_map>
+#include <sstream>
 
 namespace nova {
     enum class log_level {
@@ -17,8 +20,11 @@ namespace nova {
         INFO,
         WARN,
         ERROR,
+        FATAL,
+        MAX_LEVEL
     };
 
+    class __log_stream;
     /*!
      * \brief A logger interface that can be implemented for whatever game Nova uses
      */
@@ -26,13 +32,32 @@ namespace nova {
     public:
         static logger instance;
 
-        void add_log_handler(log_level level, const std::function<void(std::string)>& log_handler);
+        void add_log_handler(log_level level, const std::function<void(std::string)> &log_handler);
 
-        inline void log(const log_level level, const std::string& msg);
+        void log(log_level level, const std::string &msg) const;
+
+        __log_stream log(log_level level) const;
 
     private:
         std::unordered_map<log_level, std::function<void(std::string)>> log_handlers;
     };
+
+    // Allow stream logging
+    class __log_stream : public std::stringstream {
+    private:
+        const logger _logger;
+        const log_level level;
+
+    public:
+        explicit __log_stream(logger logger, log_level level) : _logger(std::move(logger)), level(level) {}
+
+        ~__log_stream() {
+            _logger.log(level, str());
+        }
+    };
+
+// easylogging++ like macros
+#define LOG(LEVEL) nova::logger::instance.log(nova::log_level::LEVEL)
 }
 
 

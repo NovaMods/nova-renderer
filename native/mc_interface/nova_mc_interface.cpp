@@ -5,6 +5,10 @@
  * \date 14-Aug-18.
  */
 
+#define STRING_VOID_SIGNATURE "(Ljava/lang/String;)V"
+#define JSTRING(std_string) env->NewStringUTF(std_string.c_str())
+
+#include <iostream>
 #include "jni/com_continuum_nova_system_NovaNative.h"
 #include "../src/nova_renderer.hpp"
 #include "../src/util/logger.hpp"
@@ -14,49 +18,93 @@
  *
  * Class:     com_continuum_nova_system_NovaNative
  * Method:    initialize
- * Signature: ()V
+ * Signature: (Lorg/apache/logging/log4j/Logger;)V
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_initialize
-        (JNIEnv* env, jclass) {
+        (JNIEnv *env, jclass nova_native_class, jobject log4j_logger) {
+    jclass log4j_logger_class = env->GetObjectClass(log4j_logger);
 
-    jobject loggerFactoryClass = env->FindClass("org/apache/logging/log4j/LogManager");
-    jmethodID getLogger = env->GetMethodID(loggerFactoryClass, "getLogger", "(V)org/apache/logging/log4j/Logger");
-    jobject logger = env->CallStaticObjectMethod(loggerFactoryClass, getLogger);
+    jmethodID info_method = env->GetMethodID(log4j_logger_class, "info", STRING_VOID_SIGNATURE);
+    if(info_method) {
+        nova::logger::instance.add_log_handler(nova::log_level::INFO, [log4j_logger, info_method, env](auto msg) {
+            env->CallVoidMethod(log4j_logger, info_method, JSTRING(msg));
+        });
+    } else {
+        std::cerr << "Failed to find method id for org/apache/logging/log4j/Logger#info(Ljava/lang/String;)V" << std::endl;
+        nova::logger::instance.add_log_handler(nova::log_level::INFO, [](auto msg) {
+           std::cout << "[NOVA JNI FALLBACK LOGGER/INFO] " << msg << std::endl;
+        });
+    }
 
-    jobject loggerClass = env->FindClass("org/apache/logging/log4j/Logger");
+    jmethodID warn_method = env->GetMethodID(log4j_logger_class, "warn", STRING_VOID_SIGNATURE);
+    if(warn_method) {
+        nova::logger::instance.add_log_handler(nova::log_level::WARN, [log4j_logger, warn_method, env](auto msg) {
+            env->CallVoidMethod(log4j_logger, warn_method, JSTRING(msg));
+        });
+    } else {
+        std::cerr << "Failed to find method id for org/apache/logging/log4j/Logger#warn(Ljava/lang/String;)V" << std::endl;
+        nova::logger::instance.add_log_handler(nova::log_level::WARN, [](auto msg) {
+            std::cerr << "[NOVA JNI FALLBACK LOGGER/WARN] " << msg << std::endl;
+        });
+    }
 
-    jmethodID traceLog  = env->GetMethodID(loggerClass, "trace", "(java/lang/String)void");
-    jmethodID debugLog  = env->GetMethodID(loggerClass, "debug", "(java/lang/String)void");
-    jmethodID infoLog   = env->GetMethodID(loggerClass, "info",  "(java/lang/String)void");
-    jmethodID warnLog   = env->GetMethodID(loggerClass, "warn",  "(java/lang/String)void");
-    jmethodID errorLog  = env->GetMethodID(loggerClass, "error", "(java/lang/String)void");
+    jmethodID error_method = env->GetMethodID(log4j_logger_class, "error", STRING_VOID_SIGNATURE);
+    if(error_method) {
+        nova::logger::instance.add_log_handler(nova::log_level::ERROR, [log4j_logger, error_method, env](auto msg) {
+            env->CallVoidMethod(log4j_logger, error_method, JSTRING(msg));
+        });
+    } else {
+        std::cerr << "Failed to find method id for org/apache/logging/log4j/Logger#error(Ljava/lang/String;)V" << std::endl;
+        nova::logger::instance.add_log_handler(nova::log_level::ERROR, [](auto msg) {
+            std::cerr << "[NOVA JNI FALLBACK LOGGER/ERROR] " << msg << std::endl;
+        });
+    }
 
-    nova::logger::instance.add_log_handler(nova::log_level::TRACE, [=](const std::string& msg){
-        jstring str = env->NewStringUTF(msg.c_str());
-        env->CallVoidMethod(logger, traceLog, str);
-    });
+    jmethodID fatal_method = env->GetMethodID(log4j_logger_class, "fatal", STRING_VOID_SIGNATURE);
+    if(fatal_method) {
+        nova::logger::instance.add_log_handler(nova::log_level::FATAL, [log4j_logger, fatal_method, env](auto msg) {
+            env->CallVoidMethod(log4j_logger, fatal_method, JSTRING(msg));
+        });
+    } else {
+        std::cerr << "Failed to find method id for org/apache/logging/log4j/Logger#fatal(Ljava/lang/String;)V" << std::endl;
+        nova::logger::instance.add_log_handler(nova::log_level::FATAL, [](auto msg) {
+            std::cerr << "[NOVA JNI FALLBACK LOGGER/FATAL] " << msg << std::endl;
+        });
+    }
 
-    nova::logger::instance.add_log_handler(nova::log_level::DEBUG, [=](const std::string& msg){
-        jstring str = env->NewStringUTF(msg.c_str());
-        env->CallVoidMethod(logger, debugLog, str);
-    });
+    jmethodID debug_method = env->GetMethodID(log4j_logger_class, "debug", STRING_VOID_SIGNATURE);
+    if(debug_method) {
+        nova::logger::instance.add_log_handler(nova::log_level::DEBUG, [log4j_logger, debug_method, env](auto msg) {
+            env->CallVoidMethod(log4j_logger, debug_method, JSTRING(msg));
+        });
+    } else {
+        std::cerr << "Failed to find method id for org/apache/logging/log4j/Logger#debug(Ljava/lang/String;)V" << std::endl;
+        nova::logger::instance.add_log_handler(nova::log_level::DEBUG, [](auto msg) {
+            std::cout << "[NOVA JNI FALLBACK LOGGER/DEBUG] " << msg << std::endl;
+        });
+    }
 
-    nova::logger::instance.add_log_handler(nova::log_level::INFO, [=](const std::string& msg){
-        jstring str = env->NewStringUTF(msg.c_str());
-        env->CallVoidMethod(logger, infoLog, str);
-    });
+    jmethodID trace_method = env->GetMethodID(log4j_logger_class, "trace", STRING_VOID_SIGNATURE);
+    if(trace_method) {
+        nova::logger::instance.add_log_handler(nova::log_level::TRACE, [log4j_logger, trace_method, env](auto msg) {
+            env->CallVoidMethod(log4j_logger, trace_method, JSTRING(msg));
+        });
 
-    nova::logger::instance.add_log_handler(nova::log_level::WARN, [=](const std::string& msg){
-        jstring str = env->NewStringUTF(msg.c_str());
-        env->CallVoidMethod(logger, warnLog, str);
-    });
+        // MAX_LEVEL can be interpreted as TRACE for log4j
+        nova::logger::instance.add_log_handler(nova::log_level::MAX_LEVEL, [log4j_logger, trace_method, env](auto msg) {
+            env->CallVoidMethod(log4j_logger, trace_method, JSTRING(("(MAX_LEVEL) " + msg)));
+        });
+    } else {
+        std::cerr << "Failed to find method id for org/apache/logging/log4j/Logger#trace(Ljava/lang/String;)V" << std::endl;
+        nova::logger::instance.add_log_handler(nova::log_level::TRACE, [](auto msg) {
+            std::cout << "[NOVA JNI FALLBACK LOGGER/TRACE] " << msg << std::endl;
+        });
 
-    nova::logger::instance.add_log_handler(nova::log_level::ERROR, [=](const std::string& msg){
-        jstring str = env->NewStringUTF(msg.c_str());
-        env->CallVoidMethod(logger, errorLog, str);
-    });
+        nova::logger::instance.add_log_handler(nova::log_level::MAX_LEVEL, [](auto msg) {
+            std::cout << "[NOVA JNI FALLBACK LOGGER/MAX] " << msg << std::endl;
+        });
+    }
 
-    nova::nova_renderer::initialize();
 }
 
 /*

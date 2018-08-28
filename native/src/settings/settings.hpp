@@ -8,9 +8,19 @@
 
 #include <string>
 #include <vector>
-#include <nlohmann/json.hpp>
 
 namespace nova {
+
+    /*!
+     * \brief Nova settings, this doc has to be filled. See the TODO's
+     */
+    /* TODO: Since JSON is no longer here because Nova itself shouldn't depend on json configs at all, make this a way to set nova options
+     * TODO: Abstract this so a shaderpack for example does only contain the data of the pack itself and compiled SPIR-V, but provide built-in methods to parse shaderpacks
+     */
+    struct settings_options {
+
+    };
+
     /*!
      * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
      */
@@ -26,7 +36,7 @@ namespace nova {
          *
          * \param new_config The updated configuration
          */
-        virtual void on_config_change(nlohmann::json &new_config) = 0;
+        virtual void on_config_change(settings_options &new_config) = 0;
 
         /*!
          * \brief Tells listeners that the configuration has been loaded
@@ -42,7 +52,7 @@ namespace nova {
          *
          * \param config The configuration that was loaded
          */
-        virtual void on_config_loaded(nlohmann::json &config) = 0;
+        virtual void on_config_loaded(settings_options &config) = 0;
     };
 
     /*!
@@ -58,14 +68,14 @@ namespace nova {
          *
          * \param filename The name of the file to load the config from
          */
-        explicit settings(std::string filename);
+        explicit settings(settings_options options);
 
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer
          */
         void register_change_listener(iconfig_listener *new_listener);
 
-        nlohmann::json &get_options();
+        settings_options &get_options();
 
         /*!
          * \brief Updates all the change listeners with the current state of the settings
@@ -83,7 +93,7 @@ namespace nova {
         void update_config_loaded();
 
     private:
-        nlohmann::json options;
+        settings_options options;
         std::vector<iconfig_listener *> config_change_listeners;
     };
 }

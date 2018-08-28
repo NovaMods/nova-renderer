@@ -10,12 +10,11 @@
 
 #include <string>
 #include <memory>
-#include <nlohmann/json.hpp>
 
 #include "vulkan/vulkan_render_device.hpp"
 #include "vulkan/glfw_window.hpp"
 #include "input/input_handler.hpp"
-#include "settings.hpp"
+#include "settings/settings.hpp"
 
 namespace nova {
     class texture_store;
@@ -82,7 +81,7 @@ namespace nova {
 
         input_handler& get_input_handler() const;
 
-        settings& get_settings() const;
+        settings &get_settings();
 
     private:
         static std::unique_ptr<nova_renderer> instance;
