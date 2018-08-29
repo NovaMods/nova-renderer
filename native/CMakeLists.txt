@@ -65,31 +65,30 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/miniz/miniz_zip.c
 
         src/platform.hpp
-        src/vulkan/timestamp_query_pool.hpp
-        src/vulkan/per_thread_data.hpp
+        src/render_engine/vulkan/timestamp_query_pool.hpp
+        src/render_engine/vulkan/per_thread_data.hpp
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp
         src/loading/folder_accessor.hpp
-        src/vulkan/vulkan_render_device.hpp
+        src/render_engine/vulkan/vulkan_render_device.hpp
         src/nova_renderer.hpp
 
         src/nova_renderer.cpp
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
         src/loading/zip_folder_accessor.cpp
-        src/vulkan/per_thread_data.cpp
-        src/vulkan/timestamp_query_pool.cpp
-        src/vulkan/vulkan_render_device.cpp
-        src/vulkan/glfw_window.cpp
-        src/vulkan/glfw_window.hpp
+        src/render_engine/vulkan/per_thread_data.cpp
+        src/render_engine/vulkan/timestamp_query_pool.cpp
+        src/render_engine/vulkan/vulkan_render_device.cpp
+        src/render_engine/vulkan/glfw_window.cpp
+        src/render_engine/vulkan/glfw_window.hpp
         src/util/utils.cpp
         src/util/utils.hpp
-        src/input/input_handler.cpp
-        src/input/input_handler.hpp
         src/settings/settings.cpp
         src/settings/settings.hpp
         src/util/logger.cpp
-        src/util/logger.hpp)
+        src/util/logger.hpp src/render_engine/render_engine.hpp
+        src/util/macros.hpp)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is

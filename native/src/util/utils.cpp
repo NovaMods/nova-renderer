@@ -7,14 +7,6 @@
 #include "logger.hpp"
 
 namespace nova {
-    resource_not_found::resource_not_found(const std::string &msg) {
-        message = "Could not find resource " + msg;
-    }
-
-    const char * resource_not_found::what() const noexcept {
-        return message.c_str();
-    }
-
     std::vector<std::string> split(const std::string &s, char delim) {
         std::vector<std::string> elems;
         split(s, delim, std::back_inserter(elems));

@@ -18,7 +18,7 @@
 #include <execinfo.h>
 #endif
 #include <unistd.h>
-#include "../util/logger.hpp"
+#include "../../util/logger.hpp"
 
 namespace nova {
     bool layers_are_supported(std::vector<const char*>& validation_layers);
@@ -56,7 +56,7 @@ namespace nova {
         app_info.pEngineName = "Nova Renderer 0.5";
         app_info.engineVersion = VK_MAKE_VERSION(0, 5, 0);
         app_info.apiVersion = VK_API_VERSION_1_0;
-        LOG(TRACE) << "Created vk::ApplicationInfo struct";
+        NOVA_LOG(TRACE) << "Created vk::ApplicationInfo struct";
 
         vk::InstanceCreateInfo create_info = {};
         create_info.pApplicationInfo = &app_info;
@@ -69,7 +69,7 @@ namespace nova {
 //        create_info.enabledLayerCount = 0;
 //#else
         if(!layers_are_supported(validation_layers)) {
-            LOG(FATAL) << "The layers we need aren't available";
+            NOVA_LOG(FATAL) << "The layers we need aren't available";
         }
 
         create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
@@ -90,57 +90,57 @@ namespace nova {
         callbackCreateInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)debug_callback;
 
         if(CreateDebugReportCallback(vk_instance, &callbackCreateInfo, nullptr, &debug_report_callback) != VK_SUCCESS) {
-            LOG(FATAL) << "Could not set up debug callback";
+            NOVA_LOG(FATAL) << "Could not set up debug callback";
         }
 //#endif
     }
 
     void vulkan_render_context::find_device_and_queues() {
         const auto gpus = enumerate_gpus();
-        LOG(TRACE) << "Enumerated GPUs";
+        NOVA_LOG(TRACE) << "Enumerated GPUs";
         const auto gpu = select_physical_device(gpus);
-        LOG(TRACE) << "Found a physical device that will work I guess";
+        NOVA_LOG(TRACE) << "Found a physical device that will work I guess";
         create_logical_device_and_queues(gpu);
-        LOG(TRACE) << "Basic queue and logical device was found";
+        NOVA_LOG(TRACE) << "Basic queue and logical device was found";
     }
 
     std::vector<gpu_info> vulkan_render_context::enumerate_gpus() {
         auto devices = vk_instance.enumeratePhysicalDevices();
-        LOG(TRACE) << "There are " << devices.size() << " physical devices";
+        NOVA_LOG(TRACE) << "There are " << devices.size() << " physical devices";
         if(devices.empty()) {
-            LOG(FATAL) << "Apparently you have zero devices. You know you need a GPU to run Nova, right?";
+            NOVA_LOG(FATAL) << "Apparently you have zero devices. You know you need a GPU to run Nova, right?";
         }
 
         std::vector<gpu_info> gpus;
         gpus.resize(devices.size());
-        LOG(TRACE) << "Reserved " << devices.size() << " slots for devices";
+        NOVA_LOG(TRACE) << "Reserved " << devices.size() << " slots for devices";
         for(uint32_t i = 0; i < devices.size(); i++) {
             gpu_info gpu;
             gpu.device = devices[i];
 
             // get the queues the device supports
             gpu.queue_family_props = gpu.device.getQueueFamilyProperties();
-            LOG(TRACE) << "Got the physical device queue properties";
+            NOVA_LOG(TRACE) << "Got the physical device queue properties";
 
             // Get the extensions the device supports
             gpu.extention_props = gpu.device.enumerateDeviceExtensionProperties();
-            LOG(TRACE) << "Got the device extension properties";
+            NOVA_LOG(TRACE) << "Got the device extension properties";
 
             gpu.surface_capabilities = gpu.device.getSurfaceCapabilitiesKHR(surface);
-            LOG(TRACE) << "Got the physical device surface capabilities";
+            NOVA_LOG(TRACE) << "Got the physical device surface capabilities";
 
             gpu.surface_formats = gpu.device.getSurfaceFormatsKHR(surface);
-            LOG(TRACE) << "Got the physical device's surface formats";
+            NOVA_LOG(TRACE) << "Got the physical device's surface formats";
 
             gpu.present_modes = gpu.device.getSurfacePresentModesKHR(surface);
-            LOG(TRACE) << "Got the surface present modes";
+            NOVA_LOG(TRACE) << "Got the surface present modes";
 
             gpu.mem_props = gpu.device.getMemoryProperties();
             gpu.props = gpu.device.getProperties();
             gpu.supported_features = gpu.device.getFeatures();
 
             gpus.push_back(gpu);
-            LOG(TRACE) << "Got the memory properties and device properties for device " << (VkDevice)device;
+            NOVA_LOG(TRACE) << "Got the memory properties and device properties for device " << (VkDevice)device;
         }
 
         return gpus;
@@ -206,16 +206,16 @@ namespace nova {
 
                 timestamp_queries = std::make_unique<timestamp_query_pool>(timestamp_period, timestamp_valid_bits);
 
-                LOG(INFO) << "Selected graphics device " << gpu.props.deviceName;
-                LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageDimension2D << " texels in a 2D texture";
-                LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageArrayLayers << " array layers";
-                LOG(INFO) << "It takes " << timestamp_period << " nanoseconds to increment a timestamp query";
-                LOG(INFO) << timestamp_valid_bits << " bits are valid for a timestamp";
+                NOVA_LOG(INFO) << "Selected graphics device " << gpu.props.deviceName;
+                NOVA_LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageDimension2D << " texels in a 2D texture";
+                NOVA_LOG(INFO) << "It has a limit of " << gpu.props.limits.maxImageArrayLayers << " array layers";
+                NOVA_LOG(INFO) << "It takes " << timestamp_period << " nanoseconds to increment a timestamp query";
+                NOVA_LOG(INFO) << timestamp_valid_bits << " bits are valid for a timestamp";
                 return gpu;
             }
         }
 
-        LOG(FATAL) << "Could not find a device with both present and graphics queues";
+        NOVA_LOG(FATAL) << "Could not find a device with both present and graphics queues";
 
         return {};
     }
@@ -291,7 +291,7 @@ namespace nova {
         device.destroy();
         vk_instance.destroy();
 
-        LOG(TRACE) << "Destroyed the render context";
+        NOVA_LOG(TRACE) << "Destroyed the render context";
     }
 
     void vulkan_render_context::create_pipeline_cache() {
@@ -308,7 +308,7 @@ namespace nova {
         std::vector<const char *> extensions;
 
         for(uint32_t i = 0; i < glfw_extensions_count; i++) {
-            LOG(DEBUG) << "GLFW requires " << glfw_extensions[i];
+            NOVA_LOG(DEBUG) << "GLFW requires " << glfw_extensions[i];
             extensions.push_back(glfw_extensions[i]);
         }
 
@@ -323,20 +323,20 @@ namespace nova {
         auto available_layers = vk::enumerateInstanceLayerProperties();
 
         for(auto layer_name : validation_layers) {
-            LOG(TRACE) << "Checking for layer " << layer_name;
+            NOVA_LOG(TRACE) << "Checking for layer " << layer_name;
 
             bool layer_found = false;
 
             for(const auto &layer_propeties : available_layers) {
                 if(strcmp(layer_name, layer_propeties.layerName) == 0) {
-                    LOG(TRACE) << "Found it!";
+                    NOVA_LOG(TRACE) << "Found it!";
                     layer_found = true;
                     break;
                 }
             }
 
             if(!layer_found) {
-                LOG(ERROR) << "Could not find layer " << layer_name;
+                NOVA_LOG(ERROR) << "Could not find layer " << layer_name;
                 return false;
             }
         }
@@ -356,28 +356,28 @@ namespace nova {
 
         if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
         {
-            LOG(ERROR) << "ERROR: API: " << layer_prefix << " " << msg;
+            NOVA_LOG(ERROR) << "ERROR: API: " << layer_prefix << " " << msg;
         }
         // Warnings may hint at unexpected / non-spec API usage
         if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
         {
-            LOG(ERROR) << "WARNING: API: " << layer_prefix << " " << msg;
+            NOVA_LOG(ERROR) << "WARNING: API: " << layer_prefix << " " << msg;
         }
         // May indicate sub-optimal usage of the API
         if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
         {
-            LOG(ERROR) << "PERFORMANCE WARNING: API: " << layer_prefix << " " << msg;
+            NOVA_LOG(ERROR) << "PERFORMANCE WARNING: API: " << layer_prefix << " " << msg;
         }
         // Informal messages that may become handy during debugging
         if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
         {
-            LOG(ERROR) << "INFORMATION: API: " << layer_prefix << " " << msg;
+            NOVA_LOG(ERROR) << "INFORMATION: API: " << layer_prefix << " " << msg;
         }
         // Diagnostic info from the Vulkan loader and layers
         // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
         if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
         {
-            LOG(ERROR) << "DEBUG: API: " << layer_prefix << " " << msg;
+            NOVA_LOG(ERROR) << "DEBUG: API: " << layer_prefix << " " << msg;
         }
 #ifndef _WIN32
         if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
@@ -388,10 +388,10 @@ namespace nova {
             size = backtrace(array, 10);
 
             // print out all the frames to stderr
-            LOG(ERROR) << "Stacktrace: ";
+            NOVA_LOG(ERROR) << "Stacktrace: ";
             char **data = backtrace_symbols(array, size);
             for (int i = 0; i < size; i++) {
-                LOG(ERROR) << "\t" << data[i];
+                NOVA_LOG(ERROR) << "\t" << data[i];
             }
             free(data);
         }

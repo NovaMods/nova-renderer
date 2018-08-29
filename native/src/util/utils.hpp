@@ -19,10 +19,7 @@
 #include <glm/glm.hpp>
 #include <sstream>
 
-/*!
- * \brief Initializes the logging system
- */
-void initialize_logging();
+#include "macros.hpp"
 
 namespace nova {
     /*!
@@ -49,15 +46,9 @@ namespace nova {
     std::vector<std::string> split(const std::string &s, char delim);
 
     /*!
-     * \brief Simple exception to represent that a resouce can not be found
+     * \brief Simple exception to represent that a resource can not be found
      */
-    class resource_not_found : public std::exception {
-    public:
-        explicit resource_not_found(const std::string& msg);
-        const char * what() const noexcept override;
-    private:
-        std::string message;
-    };
+    NOVA_EXCEPTION(nova, resource_not_found)
 
     std::string print_color(unsigned int color);
 

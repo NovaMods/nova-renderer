@@ -14,7 +14,7 @@
 #include <sstream>
 
 namespace nova {
-    enum class log_level {
+    enum log_level {
         TRACE,
         DEBUG,
         INFO,
@@ -56,8 +56,7 @@ namespace nova {
         }
     };
 
-// easylogging++ like macros
-#define LOG(LEVEL) nova::logger::instance.log(nova::log_level::LEVEL)
+#define NOVA_LOG(LEVEL) nova::logger::instance.log(nova::log_level::LEVEL)
 }
 
 
