@@ -3,10 +3,12 @@
  * \date 20-Aug-18.
  */
 
+#include "glfw_window.hpp"
+
+#if SUPPORT_VULKAN
 
 #include <vulkan/vulkan.h>
 
-#include "glfw_window.hpp"
 #include "../util/utils.hpp"
 #include "../nova_renderer.hpp"
 #include "../util/logger.hpp"
@@ -188,3 +190,4 @@ namespace nova {
         return false;
     }
 }
+#endif
