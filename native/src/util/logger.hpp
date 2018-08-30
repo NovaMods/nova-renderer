@@ -13,8 +13,12 @@
 #include <unordered_map>
 #include <sstream>
 
+#ifdef ERROR
+    #undef ERROR
+#endif
+
 namespace nova {
-    enum class log_level {
+    enum log_level {
         TRACE,
         DEBUG,
         INFO,
@@ -49,15 +53,12 @@ namespace nova {
         const log_level level;
 
     public:
-        explicit __log_stream(logger logger, log_level level) : _logger(std::move(logger)), level(level) {}
+        explicit __log_stream(logger logger, log_level level);
 
-        ~__log_stream() {
-            _logger.log(level, str());
-        }
+        ~__log_stream();
     };
 
-// easylogging++ like macros
-#define LOG(LEVEL) nova::logger::instance.log(nova::log_level::LEVEL)
+#define NOVA_LOG(LEVEL) nova::logger::instance.log(nova::log_level::LEVEL)
 }
 
 

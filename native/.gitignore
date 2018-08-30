@@ -509,4 +509,3 @@ ASALocalRun/
 # End of https://www.gitignore.io/api/visualstudio
 
 cmake-build-release
-3rdparty/json

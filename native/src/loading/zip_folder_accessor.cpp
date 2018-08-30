@@ -62,7 +62,8 @@ namespace nova {
             throw resource_not_found_error(resource_string);
         }
 
-        std::vector<uint8_t> resource_buffer(file_stat.m_uncomp_size);
+        std::vector<uint8_t> resource_buffer;
+        resource_buffer.reserve(file_stat.m_uncomp_size);
 
         mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive, file_idx, resource_buffer.data(), resource_buffer.size(), 0);
         if(!file_extracted) {

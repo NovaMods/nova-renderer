@@ -18,7 +18,18 @@ namespace nova {
      * TODO: Abstract this so a shaderpack for example does only contain the data of the pack itself and compiled SPIR-V, but provide built-in methods to parse shaderpacks
      */
     struct settings_options {
+        /*!
+         * \brief Name of backend that is in use, set when nova is initialized
+         */
+        /*
+         * THAT HAS TO BE THE FIRST ATTRIBUTE
+         */
+        const std::string render_engine;
 
+        /*!
+         * \brief For future use
+         */
+        std::string application_name;
     };
 
     /*!
@@ -36,7 +47,7 @@ namespace nova {
          *
          * \param new_config The updated configuration
          */
-        virtual void on_config_change(settings_options &new_config) = 0;
+        virtual void on_config_change(const settings_options &new_config) = 0;
 
         /*!
          * \brief Tells listeners that the configuration has been loaded
@@ -52,7 +63,7 @@ namespace nova {
          *
          * \param config The configuration that was loaded
          */
-        virtual void on_config_loaded(settings_options &config) = 0;
+        virtual void on_config_loaded(const settings_options &config) = 0;
     };
 
     /*!

@@ -31,3 +31,6 @@
 [submodule "native/3rdparty/SPIRV-Headers"]
 	path = native/3rdparty/SPIRV-Headers
 	url = https://github.com/KhronosGroup/SPIRV-Headers
+[submodule "native/3rdparty/json"]
+	path = native/3rdparty/json
+	url = https://github.com/nlohmann/json.git

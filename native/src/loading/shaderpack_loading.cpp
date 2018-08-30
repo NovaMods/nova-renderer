@@ -29,6 +29,8 @@ namespace nova {
 
 
         delete folder_access;
+
+        return {};
     }
 
     folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name) {

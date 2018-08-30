@@ -16,6 +16,7 @@
 #include <optional>
 
 #include "../util/smart_enum.hpp"
+#include <nlohmann/json.hpp>
 
 namespace nova {
     /*!
@@ -283,8 +284,6 @@ namespace nova {
         std::optional<compare_op_enum> compare_op;
         std::optional<uint32_t> compare_mask;
         std::optional<uint32_t> write_mask;
-
-        vk::StencilOpState to_vk_stencil_op_state() const;
     };
 
     SMART_ENUM(pass_enum,
@@ -502,9 +501,9 @@ namespace nova {
 
         std::unordered_map<std::string, pipeline_data> pipelines;
 
-        std::unordered_map<std::string, material_data> materials;
+        //std::unordered_map<std::string, material_data> materials;
 
-        std::unordered_map<std::string, texture_data> textures;
+        //std::unordered_map<std::string, texture_data> textures;
     };
 }
 

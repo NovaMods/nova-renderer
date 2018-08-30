@@ -9,9 +9,16 @@
 
 #include <vulkan/vulkan.h>
 
+<<<<<<< HEAD:native/src/vulkan/glfw_window.cpp
 #include "../util/utils.hpp"
 #include "../nova_renderer.hpp"
 #include "../util/logger.hpp"
+=======
+#include "glfw_window.hpp"
+#include "../../util/utils.hpp"
+#include "../../nova_renderer.hpp"
+#include "../../util/logger.hpp"
+>>>>>>> 58c0147ec7b2aca0387f1ac95c24b1be62d4b0ab:native/src/render_engine/vulkan/glfw_window.cpp
 
 namespace nova {
     void error_callback(int error, const char *description) {
@@ -31,8 +38,12 @@ namespace nova {
         glfwSetErrorCallback(error_callback);
 
         if(glfwInit() == 0) {
+<<<<<<< HEAD:native/src/vulkan/glfw_window.cpp
             logger::instance.log(log_level::ERROR, "Could not initialize GLFW");
             exit(-1);
+=======
+            NOVA_LOG(FATAL) << "Could not initialize GLFW";
+>>>>>>> 58c0147ec7b2aca0387f1ac95c24b1be62d4b0ab:native/src/render_engine/vulkan/glfw_window.cpp
         }
 
         nlohmann::json &config = nova_renderer::get_render_settings().get_options();
@@ -41,16 +52,16 @@ namespace nova {
         float view_height = config["settings"]["viewHeight"];
 
         if(!glfwVulkanSupported()) {
-            LOG(FATAL) << "Your system does not support Vulkan. Nova will now exit";
+            NOVA_LOG(FATAL) << "Your system does not support Vulkan. Nova will now exit";
         }
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TODO: Deal with this later
         window = glfwCreateWindow((int)view_width, (int)view_height, "Minecraft Nova Renderer", nullptr, nullptr);
         if(window == nullptr) {
-            LOG(FATAL) << "Could not initialize window :(";
+            NOVA_LOG(FATAL) << "Could not initialize window :(";
         }
-        LOG(DEBUG) << "GLFW window created";
+        NOVA_LOG(DEBUG) << "GLFW window created";
 
         glfwGetWindowSize(window, &window_dimensions.x, &window_dimensions.y);
 
@@ -59,7 +70,7 @@ namespace nova {
             renderdoc_manager = std::make_unique<RenderDocManager>(window,
                                                                    R"(C:\Program Files\RenderDoc\renderdoc.dll)",
                                                                    "captures/nova");
-            LOG(INFO) << "Hooked into RenderDoc";
+            NOVA_LOG(INFO) << "Hooked into RenderDoc";
 #endif
         }
 
@@ -172,7 +183,7 @@ namespace nova {
     void glfw_vk_window::create_surface(vk::Instance instance, vk::SurfaceKHR surface) {
         auto err = glfwCreateWindowSurface((VkInstance)instance, window, nullptr, reinterpret_cast<VkSurfaceKHR *>(&surface));
         if(err != VK_SUCCESS) {
-            LOG(FATAL) << "Could not create surface";
+            NOVA_LOG(FATAL) << "Could not create surface";
         }
     }
 

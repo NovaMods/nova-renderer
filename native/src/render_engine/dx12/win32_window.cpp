@@ -1,11 +1,11 @@
 #include <string>
 #include "win32_window.hpp"
-#include "../util/logger.hpp"
+#include "../../util/logger.hpp"
 
 #if SUPPORT_DX12
 
 namespace nova {
-    win32_window::win32_window(const uint32_t width, const uint32_t height) :  window_class_name(const_cast<WCHAR *>(L"NovaWindowClass")) {
+    win32_window::win32_window(const uint32_t width, const uint32_t height) :  window_class_name(const_cast<WCHAR *>(L"NovaWindowClass")), window_should_close(false) {
         // Very strongly inspired by GLFW's Win32 variant of createNativeWindow - but GLFW is strictly geared towards
         // OpenGL/Vulkan so I don't want to try and fit it into here
 
@@ -25,9 +25,11 @@ namespace nova {
         DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP;
         DWORD extended_style = WS_EX_APPWINDOW | WS_EX_TOPMOST;
 
-        const WCHAR* title = L"Minecraft Nova Renderer";
+        auto* title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
 
-        handle = CreateWindowExW(extended_style, window_class_name, title, style, 100, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), nullptr);
+        handle = CreateWindowExW(extended_style, window_class_name, title, style, 100, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
+
+        free(title);
     }
 
     void win32_window::register_window_class() {
@@ -35,7 +37,7 @@ namespace nova {
         WNDCLASSEXW window_class = {};
         window_class.cbSize = sizeof(window_class);
         window_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-        window_class.lpfnWndProc = window_procedure;
+        window_class.lpfnWndProc = &window_procedure_wrapper;
         window_class.hInstance = GetModuleHandleW(nullptr);
         window_class.hCursor = LoadCursorW(nullptr, IDC_ARROW);
         window_class.lpszClassName = window_class_name;
@@ -46,7 +48,7 @@ namespace nova {
         ATOM result = RegisterClassExW(&window_class);
         if(result != 0) {
             std::string windows_err = get_last_windows_error();
-            logger::instance.log(log_level::FATAL) << "Could not register window class: " << windows_err;
+            logger::instance.log(FATAL) << "Could not register window class: " << windows_err;
 
             throw std::runtime_error("Could not register window class");
         }
@@ -56,8 +58,45 @@ namespace nova {
         UnregisterClassW(window_class_name, nullptr);
     }
 
-    LRESULT win32_window::window_procedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    LRESULT win32_window::window_procedure_wrapper(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+        win32_window *view;
+
+        if(message == WM_NCCREATE) {
+            CREATESTRUCT *cs = (CREATESTRUCT *) lParam;
+            view = (win32_window *) cs->lpCreateParams;
+
+            SetLastError(0);
+            if(SetWindowLongPtr(hWnd, GWL_USERDATA, (LONG_PTR) view) == 0) {
+                if(GetLastError() != 0)
+                    return FALSE;
+            }
+        } else {
+            view = (win32_window *) GetWindowLongPtr(hWnd, GWL_USERDATA);
+        }
+
+        if(view) {
+            return view->window_procedure(message, wParam, lParam);
+        }
+
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+
+    LRESULT win32_window::window_procedure(UINT message, WPARAM wParam, LPARAM lParam) {
+        window_should_close = false;
+
         // Handle window messages, passing input data to a theoretical input manager
+        switch(message) {
+            case WM_KEYDOWN:
+                // Pressed a key. We should save this somewhere I guess
+            case WM_DESTROY:
+                // DIE DIE DIE
+                window_should_close = true;
+                break;
+            default:
+                return DefWindowProc(handle, message, wParam, lParam);
+        }
+
+        return DefWindowProc(handle, message, wParam, lParam);
     }
 
     std::string win32_window::get_last_windows_error() {
@@ -72,7 +111,10 @@ namespace nova {
 
         return std::string(message);
     }
+
+    bool win32_window::should_close() const {
+        return window_should_close;
+    }
 }
 
 #endif
-

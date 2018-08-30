@@ -13,7 +13,15 @@ namespace nova {
     }
 
     void logger::log(const log_level level, const std::string &msg) const {
-        log_handlers.at(level)(msg);
+        if(log_handlers.at(level)) {
+            log_handlers.at(level)(msg);
+        }
+    }
+
+    explicit __log_stream::__log_stream(logger logger, log_level level) : _logger(std::move(logger)), level(level) {}
+
+    __log_stream::~__log_stream() {
+        _logger.log(level, str());
     }
 
     __log_stream logger::log(log_level level) const {

@@ -11,15 +11,14 @@
 #include <string>
 #include <memory>
 
-#include "vulkan/vulkan_render_device.hpp"
-#include "vulkan/glfw_window.hpp"
-#include "input/input_handler.hpp"
 #include "settings/settings.hpp"
+#include "render_engine/render_engine.hpp"
+#include "util/macros.hpp"
+
+NOVA_EXCEPTION(nova, already_initialized_exception)
+NOVA_EXCEPTION(nova, uninitialized_exception)
 
 namespace nova {
-    class texture_store;
-    class mesh_store;
-
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
      */
@@ -29,15 +28,17 @@ namespace nova {
          * \brief Initializes the Nova Renderer
          *
          * Instantiates an instance of the Nova Renderer and saves it to the singleton instance. If Nova has already
-         * been initialized, nothing is done
+         * been initialized, already_initialized_exception is thrown
+         *
+         * \param engine The render engine to use
          */
-        static void initialize();
+        static nova_renderer *initialize(render_engine *engine);
 
         /*!
-         * \brief Retrieves the Nova Renderer singleton. If the singleton hasn't been initialized, it get initialized
+         * \brief Retrieves the Nova Renderer singleton. If the singleton hasn't been initialized, an uninitialized_exception is thrown
          * \return The Nova Renderer singleton
          */
-        static nova_renderer* get_instance();
+        static nova_renderer *get_instance();
 
         /*!
          * \brief Deinitializes the Nova Renderer
@@ -46,8 +47,10 @@ namespace nova {
 
         /*!
          * \brief Initializes the Nova Renderer
+         *
+         * \param engine The render engine to use
          */
-        nova_renderer();
+        explicit nova_renderer(render_engine *engine);
 
         /*!
          * \brief Loads the shaderpack with the given name
@@ -65,36 +68,13 @@ namespace nova {
          */
         void execute_frame();
 
-        /*!
-         * \brief Returns the texture store where all the textures are stored
-         *
-         * \return Nova's texture store
-         */
-        texture_store& get_texture_store() const;
-
-        /*!
-         * \brief Returns the mesh store, where Nova stores all its meshes
-         *
-         * \return Nova's mesh store
-         */
-        mesh_store& get_mesh_store() const;
-
-        input_handler& get_input_handler() const;
-
         settings &get_settings();
 
     private:
         static std::unique_ptr<nova_renderer> instance;
 
         settings render_settings;
-
-#ifdef SUPPORT_VULKAN
-        glfw_vk_window window;
-
-        vulkan_render_context context;
-
-        void initialize_vulkan_backend();
-#endif
+        render_engine *engine;
     };
 }
 
