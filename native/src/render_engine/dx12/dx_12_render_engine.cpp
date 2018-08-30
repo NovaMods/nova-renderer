@@ -10,7 +10,7 @@ namespace nova {
         create_device();
     }
 
-    const std::string dx12_render_engine::get_engine_name() const {
+    const std::string dx12_render_engine::get_engine_name() {
         return "DirectX 12";
     }
 

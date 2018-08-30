@@ -13,6 +13,18 @@
 #include "../src/nova_renderer.hpp"
 #include "../src/util/logger.hpp"
 
+#include "../src/platform.hpp"
+
+#if SUPPORT_DX12
+    #include "../src/render_engine/dx12/dx_12_render_engine.hpp"
+    #define RenderEngineType nova::dx12_render_engine
+
+    #ifdef ERROR
+        // So glad Windows defines ERROR, a super specific and not commonly used token
+        #undef ERROR
+    #endif
+#endif
+
 /*!
  * \brief Initializes Nova
  *
@@ -114,7 +126,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_initialize
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_executeFrame
         (JNIEnv *, jclass) {
-    nova::nova_renderer::get_instance()->execute_frame();
+    nova::nova_renderer<RenderEngineType>::get_instance()->execute_frame();
 }
 
 /*
@@ -308,5 +320,5 @@ JNIEXPORT jstring JNICALL Java_com_continuum_nova_system_NovaNative_getMaterials
  */
 JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_destruct
         (JNIEnv *, jclass) {
-    nova::nova_renderer::deinitialize();
+    nova::nova_renderer<RenderEngineType>::deinitialize();
 }

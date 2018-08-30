@@ -26,7 +26,7 @@ namespace nova {
          */
         explicit dx12_render_engine(const settings& settings);
 
-        const std::string get_engine_name() const override;
+        static const std::string get_engine_name();
 
         void create_device();
     };

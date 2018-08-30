@@ -21,9 +21,13 @@ namespace nova {
          * \brief The engine name, for example "vulkan-1.1"
          * \attention Can be called before init(nova::settings)
          *
+         * C++ doesn't support static virtual methods, but if you don't provide this method then Nova won't compile so
+         * it's documented here
+         *
          * \return the engine name
+         *
+         * static const std::string get_engine_name() const;
          */
-        virtual const std::string get_engine_name() const = 0;
 
     protected:
         /*!

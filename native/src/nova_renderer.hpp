@@ -22,6 +22,7 @@ namespace nova {
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
      */
+    template <typename RenderEngine>
     class nova_renderer {
     public:
         /*!
@@ -32,7 +33,7 @@ namespace nova {
          *
          * \param engine The render engine to use
          */
-        static nova_renderer *initialize(render_engine *engine);
+        static nova_renderer *initialize();
 
         /*!
          * \brief Retrieves the Nova Renderer singleton. If the singleton hasn't been initialized, an uninitialized_exception is thrown
@@ -47,10 +48,10 @@ namespace nova {
 
         /*!
          * \brief Initializes the Nova Renderer
-         *
-         * \param engine The render engine to use
          */
-        explicit nova_renderer(render_engine *engine);
+        explicit nova_renderer() : render_settings(settings_options{RenderEngine::get_engine_name()}) {
+            engine = std::make_unique<RenderEngine>(render_settings);
+        };
 
         /*!
          * \brief Loads the shaderpack with the given name
@@ -71,10 +72,10 @@ namespace nova {
         settings &get_settings();
 
     private:
-        static std::unique_ptr<nova_renderer> instance;
+        static std::unique_ptr<nova_renderer<RenderEngine>> instance;
 
         settings render_settings;
-        render_engine *engine;
+        std::unique_ptr<RenderEngine> engine;
     };
 }
 
