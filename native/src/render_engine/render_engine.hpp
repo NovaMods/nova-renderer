@@ -18,20 +18,24 @@ namespace nova {
     class render_engine {
     public:
         /*!
-         * \brief Initializes the engine, does **NOT** open any window
-         * \param settings The settings passed to nova
-         *
-         * \attention Called by nova
-         */
-        virtual void init(settings settings) = 0;
-
-        /*!
          * \brief The engine name, for example "vulkan-1.1"
          * \attention Can be called before init(nova::settings)
          *
          * \return the engine name
          */
-        virtual std::string get_engine_name() = 0;
+        virtual const std::string get_engine_name() const = 0;
+
+    protected:
+        /*!
+         * \brief Initializes the engine, does **NOT** open any window
+         * \param settings The settings passed to nova
+         *
+         * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
+         * constructor that takes in some settings
+         *
+         * \attention Called by nova
+         */
+        explicit render_engine(const settings &settings) {};
     };
 }
 

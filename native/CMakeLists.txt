@@ -104,7 +104,7 @@ set(NOVA_SOURCE
         src/util/logger.cpp
         src/util/logger.hpp
         src/render_engine/render_engine.hpp
-        src/util/macros.hpp)
+        src/util/macros.hpp src/render_engine/dx12/dx_12_render_engine.cpp src/render_engine/dx12/dx_12_render_engine.hpp src/render_engine/dx12/d3dx12.h)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
@@ -169,7 +169,7 @@ target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 
 if(NOVA_TEST)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-    add_executable(nova-test tests/src/filesystem_test.cpp)
+    add_executable(nova-test tests/src/filesystem_test.cpp tests/src/end_to_end_runner.cpp)
     add_dependencies(nova-test nova-renderer)
     target_link_libraries(nova-test nova-renderer ${GTEST_BOTH_LIBRARIES} ${COMMON_LINK_LIBS})
     add_test(NovaTests nova-test)
