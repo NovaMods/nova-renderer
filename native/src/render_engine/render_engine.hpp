@@ -6,6 +6,9 @@
 #define NOVA_RENDERER_RENDER_ENGINE_HPP
 
 #include "../settings/settings.hpp"
+#include "../util/macros.hpp"
+
+NOVA_EXCEPTION(nova, render_engine_initialization_exception)
 
 namespace nova {
 /*!

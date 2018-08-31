@@ -27,27 +27,6 @@ namespace nova {
     public:
         /*!
          * \brief Initializes the Nova Renderer
-         *
-         * Instantiates an instance of the Nova Renderer and saves it to the singleton instance. If Nova has already
-         * been initialized, already_initialized_exception is thrown
-         *
-         * \param engine The render engine to use
-         */
-        static nova_renderer *initialize();
-
-        /*!
-         * \brief Retrieves the Nova Renderer singleton. If the singleton hasn't been initialized, an uninitialized_exception is thrown
-         * \return The Nova Renderer singleton
-         */
-        static nova_renderer *get_instance();
-
-        /*!
-         * \brief Deinitializes the Nova Renderer
-         */
-        static void deinitialize();
-
-        /*!
-         * \brief Initializes the Nova Renderer
          */
         explicit nova_renderer() : render_settings(settings_options{RenderEngine::get_engine_name()}) {
             engine = std::make_unique<RenderEngine>(render_settings);
@@ -71,12 +50,19 @@ namespace nova {
 
         settings &get_settings();
 
-    private:
-        static std::unique_ptr<nova_renderer<RenderEngine>> instance;
+        RenderEngine *get_engine();
 
+        static nova_renderer<RenderEngine> *initialize() {
+            return (instance = new nova_renderer<RenderEngine>());
+        }
+
+    private:
         settings render_settings;
         std::unique_ptr<RenderEngine> engine;
+
+        static nova_renderer<RenderEngine> *instance;
     };
 }
+
 
 #endif //NOVA_RENDERER_NOVA_RENDERER_H

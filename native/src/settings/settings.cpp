@@ -17,6 +17,10 @@ namespace nova {
         return options;
     }
 
+    settings_options settings::get_options() const {
+        return options;
+    }
+
     void settings::update_config_changed() {
         for(iconfig_listener *l : config_change_listeners) {
             l->on_config_change(options);

@@ -64,22 +64,14 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/miniz/miniz_zip.c
 
         src/platform.hpp
-        src/render_engine/vulkan/timestamp_query_pool.hpp
-        src/render_engine/vulkan/per_thread_data.hpp
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp
         src/loading/folder_accessor.hpp
-        src/render_engine/vulkan/vulkan_render_device.hpp
         src/nova_renderer.hpp
         src/nova_renderer.cpp
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
         src/loading/zip_folder_accessor.cpp
-        src/render_engine/vulkan/per_thread_data.cpp
-        src/render_engine/vulkan/timestamp_query_pool.cpp
-        src/render_engine/vulkan/vulkan_render_device.cpp
-        src/render_engine/vulkan/glfw_window.cpp
-        src/render_engine/vulkan/glfw_window.hpp
         src/util/utils.cpp
         src/util/utils.hpp
 
@@ -91,18 +83,31 @@ set(NOVA_SOURCE
         src/loading/shaderpack_data.hpp
         src/loading/shaderpack-data.cpp
 
-        src/render_engine/dx12/win32_window.hpp
-        src/render_engine/dx12/win32_window.cpp
         src/settings/settings.cpp
         src/settings/settings.hpp
         src/util/logger.cpp
         src/util/logger.hpp
         src/render_engine/render_engine.hpp
-        src/util/macros.hpp
-        src/render_engine/dx12/dx_12_render_engine.cpp
-        src/render_engine/dx12/dx_12_render_engine.hpp
-        src/render_engine/dx12/d3dx12.h)
+        src/util/macros.hpp)
 
+if(UNIX)
+    set(NOVA_SOURCE
+            ${NOVA_SOURCE}
+            src/render_engine/vulkan/vulkan_render_engine.hpp
+            src/render_engine/vulkan/vulkan_render_engine.cpp
+            src/render_engine/vulkan/vulkan_utils.hpp
+            )
+elseif(WIN32)
+    set(NOVA_SOURCE
+            ${NOVA_SOURCE}
+            src/render_engine/dx12/win32_window.hpp
+            src/render_engine/dx12/win32_window.cpp
+            src/render_engine/dx12/dx_12_render_engine.cpp
+            src/render_engine/dx12/dx_12_render_engine.hpp
+            src/render_engine/dx12/d3dx12.h)
+else()
+    message(FATAL_ERROR "Unsupported platform")
+endif()
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
 # built -_-
@@ -150,7 +155,7 @@ target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC ELPP_THREAD_SAFE)
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
+target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
 
 target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)

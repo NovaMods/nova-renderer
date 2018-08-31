@@ -11,6 +11,12 @@
 
 namespace nova {
 
+    struct semver {
+        uint32_t major;
+        uint32_t minor;
+        uint32_t patch;
+    };
+
     /*!
      * \brief Nova settings, this doc has to be filled. See the TODO's
      */
@@ -19,17 +25,14 @@ namespace nova {
      */
     struct settings_options {
         /*!
-         * \brief Name of backend that is in use, set when nova is initialized
-         */
-        /*
-         * THAT HAS TO BE THE FIRST ATTRIBUTE
-         */
-        const std::string render_engine;
-
-        /*!
-         * \brief For future use
+         * \brief Currently vulkan specific
          */
         std::string application_name;
+
+        /*!
+         * \brief Version of the application, currently vulkan specific
+         */
+        semver application_version;
     };
 
     /*!
@@ -87,6 +90,7 @@ namespace nova {
         void register_change_listener(iconfig_listener *new_listener);
 
         settings_options &get_options();
+        settings_options get_options() const;
 
         /*!
          * \brief Updates all the change listeners with the current state of the settings

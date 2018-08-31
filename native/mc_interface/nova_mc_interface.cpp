@@ -23,6 +23,9 @@
         // So glad Windows defines ERROR, a super specific and not commonly used token
         #undef ERROR
     #endif
+#elif SUPPORT_VULKAN
+#include "../src/render_engine/vulkan/vulkan_render_engine.hpp"
+#define RenderEngineType vulkan_render_engine
 #endif
 
 /*!
