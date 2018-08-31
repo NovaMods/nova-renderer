@@ -156,7 +156,7 @@ target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
-    set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler)
+    set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} d3d12 dxgi d3dcompiler nova-profiler)
 
 else(WIN32)
     set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler)
