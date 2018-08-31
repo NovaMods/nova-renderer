@@ -98,7 +98,10 @@ set(NOVA_SOURCE
         src/util/logger.cpp
         src/util/logger.hpp
         src/render_engine/render_engine.hpp
-        src/util/macros.hpp src/render_engine/dx12/dx_12_render_engine.cpp src/render_engine/dx12/dx_12_render_engine.hpp src/render_engine/dx12/d3dx12.h)
+        src/util/macros.hpp
+        src/render_engine/dx12/dx_12_render_engine.cpp
+        src/render_engine/dx12/dx_12_render_engine.hpp
+        src/render_engine/dx12/d3dx12.h)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
@@ -118,7 +121,6 @@ set(SPIRV_CROSS_HEADERS
 
 if (WIN32)
     set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
-    # set(CMAKE_CXX_FLAGS "-static-libstdc++ -static-libgcc ${CMAKE_CXX_FLAGS}")
 endif (WIN32)
 
 if (UNIX)
@@ -157,6 +159,9 @@ target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
     set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} d3d12 dxgi d3dcompiler nova-profiler)
+    target_include_directories(nova-renderer PRIVATE
+            "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\shared"
+            "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
 
 else(WIN32)
     set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler)

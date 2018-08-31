@@ -12,8 +12,10 @@
 #include <dxgi1_2.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <dxgi1_4.h>
 #include "d3dx12.h"
 #include "../../util/logger.hpp"
+#include "win32_window.hpp"
 
 namespace nova {
     /*!
@@ -39,11 +41,13 @@ namespace nova {
         const logger& LOG;
 
         // direct3d stuff
-        const int frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for triple buffering
+        const uint32_t frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for triple buffering
+
+        IDXGIFactory2* dxgi_factory;
 
         ID3D12Device* device; // direct3d device
 
-        IDXGISwapChain* swapChain; // swapchain used to switch between render targets
+        IDXGISwapChain3* swapchain; // swapchain used to switch between render targets
 
         ID3D12CommandQueue* direct_command_queue; // container for command lists
 
@@ -62,7 +66,7 @@ namespace nova {
 
         UINT64 fenceValue[frameBufferCount]; // this value is incremented each frame. each fence will have its own value
 
-        int frameIndex; // current rtv we are on
+        int frame_index; // current rtv we are on
 
         int rtvDescriptorSize; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
@@ -71,6 +75,11 @@ namespace nova {
 
         void create_rtv_command_queue();
 
+        /*!
+         * \brief Creates the swapchain from the size of the window
+         *
+         * This method has a precondition that the window must be initialized
+         */
         void create_swapchain();
 
         std::unique_ptr<win32_window> window;

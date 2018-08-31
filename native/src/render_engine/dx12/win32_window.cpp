@@ -14,8 +14,8 @@ namespace nova {
 
         create_window(width, height);
 
-        ShowWindow(handle, 1);
-        UpdateWindow(handle);
+        ShowWindow(window_handle, 1);
+        UpdateWindow(window_handle);
     }
 
     win32_window::~win32_window() {
@@ -28,7 +28,7 @@ namespace nova {
 
         auto* title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
 
-        handle = CreateWindowExW(extended_style, window_class_name, title, style, 100, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
+        window_handle = CreateWindowExW(extended_style, window_class_name, title, style, 100, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
 
         free(title);
     }
@@ -94,10 +94,10 @@ namespace nova {
                 window_should_close = true;
                 break;
             default:
-                return DefWindowProc(handle, message, wParam, lParam);
+                return DefWindowProc(window_handle, message, wParam, lParam);
         }
 
-        return DefWindowProc(handle, message, wParam, lParam);
+        return DefWindowProc(window_handle, message, wParam, lParam);
     }
 
     std::string win32_window::get_last_windows_error() {
@@ -117,8 +117,12 @@ namespace nova {
         return window_should_close;
     }
 
-    glm::uvec2 win32_window::get_size() const {
+    glm::uvec2& win32_window::get_size() const {
         return size;
+    }
+
+    HWND win32_window::get_window_handle() const {
+        return window_handle;
     }
 }
 

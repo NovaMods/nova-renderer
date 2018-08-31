@@ -41,14 +41,16 @@ namespace nova {
 
         bool should_close() const;
 
-        glm::uvec2 get_size() const;
+        glm::uvec2& get_size() const;
 
         /*
          * End platform-agnostic window interface
          */
 
+        HWND get_window_handle() const;
+
     private:
-        HWND handle;
+        HWND window_handle;
         WCHAR* window_class_name;
 
         bool window_should_close;

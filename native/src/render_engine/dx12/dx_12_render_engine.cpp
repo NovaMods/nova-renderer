@@ -22,16 +22,16 @@ namespace nova {
     }
 
     void dx12_render_engine::create_device() {
-        LOG.log(log_level::INFO) << "Creating DX12 device";
+        NOVA_LOG(TRACE) << "Creating DX12 device";
 
         HRESULT hr;
 
-        IDXGIFactory2* dxgi_factory;
         hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory));
         if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create DXGI Factory";
             throw std::runtime_error("Could not create DXGI Factory");
         }
-        LOG.log(log_level::INFO) << "Device created";
+        NOVA_LOG(TRACE) << "Device created";
 
         IDXGIAdapter1* adapter;
 
@@ -61,13 +61,15 @@ namespace nova {
         }
 
         if(!adapter_found) {
+            NOVA_LOG(FATAL) << "Could not find a GPU that supports DX12";
             throw std::runtime_error("Could not find a GPU that supports DX12");
         }
 
-        LOG.log(log_level::INFO) << "Adapter found";
+        NOVA_LOG(TRACE) << "Adapter found";
 
         hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
         if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create Dx12 device";
             throw std::runtime_error("Could not create Dx12 device");
         }
     }
@@ -77,12 +79,41 @@ namespace nova {
 
         HRESULT hr = device->CreateCommandQueue(&rtv_queue_desc, IID_PPV_ARGS(&direct_command_queue));
         if(FAILED(hr)) {
-            LOG.log(log_level::FATAL) << "Could not create main command queue";
+            NOVA_LOG(FATAL) << "Could not create main command queue";
             throw std::runtime_error("Could not create main command queue");
         }
     }
 
     void dx12_render_engine::create_swapchain() {
+        if(!window) {
+            NOVA_LOG(FATAL) << "Cannot initialize the swapchain before the window!";
+            throw std::runtime_error("Cannot initialize the swapchain before the window");
+        }
 
+        const auto& window_size = window->get_size();
+
+        DXGI_MODE_DESC backbuffer_description = {};
+        backbuffer_description.Width = window_size.x;
+        backbuffer_description.Height = window_size.y;
+        backbuffer_description.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+        DXGI_SAMPLE_DESC sample_desc = {};
+        sample_desc.Count = 1;
+
+        DXGI_SWAP_CHAIN_DESC swapchain_description {};
+        swapchain_description.BufferCount = frameBufferCount;
+        swapchain_description.BufferDesc = backbuffer_description;
+        swapchain_description.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        swapchain_description.OutputWindow = window->get_window_handle();
+        swapchain_description.SampleDesc = sample_desc;
+        swapchain_description.Windowed = true;
+
+        IDXGISwapChain* swapchain_uncast;
+        dxgi_factory->CreateSwapChain(direct_command_queue, &swapchain_description, &swapchain_uncast);
+
+        swapchain = dynamic_cast<IDXGISwapChain3*>(swapchain_uncast);
+
+        frame_index = swapchain->GetCurrentBackBufferIndex();
     }
 }
