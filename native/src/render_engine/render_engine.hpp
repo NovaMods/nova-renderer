@@ -29,6 +29,13 @@ namespace nova {
          * static const std::string get_engine_name() const;
          */
 
+        /*!
+         * \brief Initializes the window with the given size, and creates the swapchain for that window
+         * \param width The width, in pixels, of the desired window
+         * \param height The height, in pixels of the desired window
+         */
+        virtual void open_window(uint32_t width, uint32_t height) = 0;
+
     protected:
         /*!
          * \brief Initializes the engine, does **NOT** open any window

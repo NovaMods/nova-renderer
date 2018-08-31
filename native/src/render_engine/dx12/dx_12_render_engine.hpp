@@ -29,6 +29,12 @@ namespace nova {
 
         static const std::string get_engine_name();
 
+        /**
+         * render_engine overrides
+         */
+
+        void open_window(uint32_t width, uint32_t height) override;
+
     private:
         const logger& LOG;
 
@@ -66,6 +72,8 @@ namespace nova {
         void create_rtv_command_queue();
 
         void create_swapchain();
+
+        std::unique_ptr<win32_window> window;
     };
 }
 

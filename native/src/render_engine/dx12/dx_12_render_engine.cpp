@@ -4,11 +4,16 @@
  */
 
 #include "dx_12_render_engine.hpp"
+#include "win32_window.hpp"
 
 namespace nova {
     dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings), LOG(logger::instance) {
         create_device();
         create_rtv_command_queue();
+    }
+
+    void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
+        window = std::make_unique<win32_window>(width, height);
         create_swapchain();
     }
 
@@ -30,7 +35,7 @@ namespace nova {
 
         IDXGIAdapter1* adapter;
 
-        int adapter_index = 0;
+        uint32_t adapter_index = 0;
         bool adapter_found = false;
 
         while(dxgi_factory->EnumAdapters1(adapter_index, &adapter) != DXGI_ERROR_NOT_FOUND) {

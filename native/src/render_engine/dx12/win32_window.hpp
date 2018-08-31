@@ -22,6 +22,7 @@
 #include <dxgi1_2.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
+#include <glm/glm.hpp>
 
 namespace nova {
     /*!
@@ -38,8 +39,9 @@ namespace nova {
 
         void on_frame_end();
 
-
         bool should_close() const;
+
+        glm::uvec2 get_size() const;
 
         /*
          * End platform-agnostic window interface
@@ -50,6 +52,8 @@ namespace nova {
         WCHAR* window_class_name;
 
         bool window_should_close;
+
+        glm::uvec2 size;
 
         /*!
          * \brief Registers Nova's window class
