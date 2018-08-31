@@ -4,37 +4,30 @@
  */
 
 #include "nova_renderer.hpp"
+#include "loading/loading_utils.hpp"
+#include "loading/shaderpack_loading.hpp"
+
+#include <experimental/filesystem>
+
+#include "platform.hpp"
+namespace fs = std::experimental::filesystem;
 
 namespace nova {
-    std::unique_ptr<nova_renderer> nova_renderer::instance;
-
-    nova_renderer *nova_renderer::initialize(std::shared_ptr<render_engine> engine, settings_options &settings) {
-        if(!instance) {
-            instance = std::make_unique<nova_renderer>(engine, settings);
-        } else {
-            throw already_initialized_exception("Nova has already been initialized");
-        }
-    }
-
-    nova_renderer *nova_renderer::get_instance() {
-        if(!instance) {
-            throw uninitialized_exception("Nova has not been initialized yet");
-        }
-
-        return instance.get();
-    }
-
-    void nova_renderer::deinitialize() {
-        if(instance) {
-            instance.reset(nullptr);
-        }
-    }
-
-    nova_renderer::nova_renderer(std::shared_ptr<render_engine> engine, settings_options &settings) : render_settings(settings), engine(engine) {
-        engine->init(render_settings);
-    }
-
-    settings &nova_renderer::get_settings() {
+    template <typename RenderEngine>
+    settings &nova_renderer<RenderEngine>::get_settings() {
         return render_settings;
+    }
+
+    template <typename RenderEngine>
+    void nova_renderer<RenderEngine>::execute_frame() {}
+
+    template <typename RenderEngine>
+    void nova_renderer<RenderEngine>::load_shaderpack(const std::string &shaderpack_name) {
+        const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
+    }
+
+    template<typename RenderEngine>
+    RenderEngine *nova_renderer<RenderEngine>::get_engine() {
+        return engine.get();
     }
 }

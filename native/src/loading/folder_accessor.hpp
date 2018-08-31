@@ -10,6 +10,7 @@
 #include <vector>
 #include <experimental/filesystem>
 #include <unordered_map>
+#include <optional>
 
 namespace fs = std::experimental::filesystem;
 

@@ -13,6 +13,10 @@
 #include <unordered_map>
 #include <sstream>
 
+#ifdef ERROR
+    #undef ERROR
+#endif
+
 namespace nova {
     enum log_level {
         TRACE,
@@ -49,11 +53,11 @@ namespace nova {
         const log_level level;
 
     public:
-        explicit __log_stream(logger logger, log_level level) : _logger(std::move(logger)), level(level) {}
+        __log_stream(logger logger, log_level level);
 
-        ~__log_stream() {
-            _logger.log(level, str());
-        }
+        __log_stream(__log_stream&& other) noexcept;
+
+        ~__log_stream() override;
     };
 
 #define NOVA_LOG(LEVEL) nova::logger::instance.log(nova::log_level::LEVEL)

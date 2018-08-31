@@ -19,11 +19,12 @@ namespace nova {
         VkInstance vk_instance;
 
     public:
-        explicit vulkan_render_engine();
+        explicit vulkan_render_engine(const settings &settings);
         ~vulkan_render_engine();
 
-        void init(settings settings) override;
-        std::string get_engine_name() const override;
+        void open_window(uint32_t width, uint32_t height);
+
+        static const std::string get_engine_name();
     };
 }
 

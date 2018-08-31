@@ -21,20 +21,35 @@ namespace nova {
     class render_engine {
     public:
         /*!
-         * \brief Initializes the engine, does **NOT** open any window, may throw an nova::render_engine_initialization_exception
-         * \param settings The settings passed to nova
-         *
-         * \attention Called by nova
-         */
-        virtual void init(settings settings) = 0;
-
-        /*!
          * \brief The engine name, for example "vulkan-1.1"
          * \attention Can be called before init(nova::settings)
          *
+         * C++ doesn't support static virtual methods, but if you don't provide this method then Nova won't compile so
+         * it's documented here
+         *
          * \return the engine name
+         *
+         * static const std::string get_engine_name() const;
          */
-        virtual std::string get_engine_name() const = 0;
+
+        /*!
+         * \brief Initializes the window with the given size, and creates the swapchain for that window
+         * \param width The width, in pixels, of the desired window
+         * \param height The height, in pixels of the desired window
+         */
+        virtual void open_window(uint32_t width, uint32_t height) = 0;
+
+    protected:
+        /*!
+         * \brief Initializes the engine, does **NOT** open any window
+         * \param settings The settings passed to nova
+         *
+         * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
+         * constructor that takes in some settings
+         *
+         * \attention Called by nova
+         */
+        explicit render_engine(const settings &settings) {};
     };
 }
 

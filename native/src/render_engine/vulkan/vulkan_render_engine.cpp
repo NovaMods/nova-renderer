@@ -9,15 +9,7 @@
 #pragma clang diagnostic ignored "-Wreturn-stack-address"
 namespace nova {
 
-    vulkan_render_engine::vulkan_render_engine() {
-
-    }
-
-    vulkan_render_engine::~vulkan_render_engine() {
-
-    }
-
-    void vulkan_render_engine::init(settings settings) {
+    vulkan_render_engine::vulkan_render_engine(const settings &settings) : render_engine(settings) {
         settings_options options = settings.get_options();
 
         VkApplicationInfo application_info;
@@ -50,7 +42,11 @@ namespace nova {
         NOVA_THROW_IF_VK_ERROR(vkCreateInstance(&create_info, nullptr, &vk_instance), render_engine_initialization_exception);
     }
 
-    std::string vulkan_render_engine::get_engine_name() const {
+    vulkan_render_engine::~vulkan_render_engine() {
+
+    }
+
+    static const std::string get_engine_name() {
         return "vulkan-1.1";
     }
 }

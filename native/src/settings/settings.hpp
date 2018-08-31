@@ -90,6 +90,7 @@ namespace nova {
         void register_change_listener(iconfig_listener *new_listener);
 
         settings_options &get_options();
+        settings_options get_options() const;
 
         /*!
          * \brief Updates all the change listeners with the current state of the settings

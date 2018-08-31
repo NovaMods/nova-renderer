@@ -22,36 +22,15 @@ namespace nova {
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
      */
+    template <typename RenderEngine>
     class nova_renderer {
     public:
         /*!
          * \brief Initializes the Nova Renderer
-         *
-         * Instantiates an instance of the Nova Renderer and saves it to the singleton instance. If Nova has already
-         * been initialized, already_initialized_exception is thrown
-         *
-         * \param engine The render engine to use
-         * \param settings The render settings to use
          */
-        static nova_renderer *initialize(std::shared_ptr<render_engine> engine, settings_options &settings);
-
-        /*!
-         * \brief Retrieves the Nova Renderer singleton. If the singleton hasn't been initialized, an uninitialized_exception is thrown
-         * \return The Nova Renderer singleton
-         */
-        static nova_renderer *get_instance();
-
-        /*!
-         * \brief Deinitializes the Nova Renderer
-         */
-        static void deinitialize();
-
-        /*!
-         * \brief Initializes the Nova Renderer
-         *
-         * \param engine The render engine to use
-         */
-        nova_renderer(std::shared_ptr<render_engine> engine, settings_options &settings);
+        explicit nova_renderer() : render_settings(settings_options{RenderEngine::get_engine_name()}) {
+            engine = std::make_unique<RenderEngine>(render_settings);
+        };
 
         /*!
          * \brief Loads the shaderpack with the given name
@@ -64,14 +43,26 @@ namespace nova {
          */
         void load_shaderpack(const std::string& shaderpack_name);
 
+        /*!
+         * \brief Executes a single frame
+         */
+        void execute_frame();
+
         settings &get_settings();
 
-    private:
-        static std::unique_ptr<nova_renderer> instance;
+        RenderEngine *get_engine();
 
+        static nova_renderer<RenderEngine> *initialize() {
+            return (instance = new nova_renderer<RenderEngine>());
+        }
+
+    private:
         settings render_settings;
-        std::shared_ptr<render_engine> engine;
+        std::unique_ptr<RenderEngine> engine;
+
+        static nova_renderer<RenderEngine> *instance;
     };
 }
+
 
 #endif //NOVA_RENDERER_NOVA_RENDERER_H
