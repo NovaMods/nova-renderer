@@ -15,6 +15,7 @@ namespace nova {
     void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
         window = std::make_unique<win32_window>(width, height);
         create_swapchain();
+        create_render_target_descriptor_heap();
     }
 
     const std::string dx12_render_engine::get_engine_name() {
@@ -101,7 +102,7 @@ namespace nova {
         sample_desc.Count = 1;
 
         DXGI_SWAP_CHAIN_DESC swapchain_description {};
-        swapchain_description.BufferCount = frameBufferCount;
+        swapchain_description.BufferCount = frame_buffer_count;
         swapchain_description.BufferDesc = backbuffer_description;
         swapchain_description.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -115,5 +116,38 @@ namespace nova {
         swapchain = dynamic_cast<IDXGISwapChain3*>(swapchain_uncast);
 
         frame_index = swapchain->GetCurrentBackBufferIndex();
+    }
+
+    void dx12_render_engine::create_render_target_descriptor_heap() {
+        D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
+        rtv_heap_descriptor.NumDescriptors = frame_buffer_count;
+        rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+
+        // The heap isn't visible to shaders because shaders don't need to read the swapchain... but we still need a
+        // descriptor heap
+        rtv_heap_descriptor.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
+        if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV";
+            throw std::runtime_error("Could not create descriptor head for the RTV");
+        }
+
+        rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart());
+
+        for(uint32_t i = 0; i < frame_buffer_count; i++) {
+            hr = swapchain->GetBuffer(i, IID_PPV_ARGS(&rendertargets[i]));
+            if(FAILED(hr)) {
+                NOVA_LOG(FATAL) << "Could not create RTV for swapchain image " << i;
+                throw std::runtime_error("Could not create RTV for swapchain");
+            }
+
+            // Create the Render Target View, which binds the swapchain buffer to the RTV handle
+            device->CreateRenderTargetView(rendertargets[i], nullptr, rtv_handle);
+
+            // Increment the RTV handle
+            rtv_handle.Offset(1, rtv_descriptor_size);
+        }
     }
 }
