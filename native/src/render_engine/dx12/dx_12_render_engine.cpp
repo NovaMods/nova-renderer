@@ -6,7 +6,7 @@
 #include "dx_12_render_engine.hpp"
 
 namespace nova {
-    dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings) {
+    dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings), LOG(logger::instance) {
         create_device();
     }
 
@@ -15,6 +15,8 @@ namespace nova {
     }
 
     void dx12_render_engine::create_device() {
+        LOG.log(log_level::INFO) << "Creating DX12 device";
+
         HRESULT hr;
 
         IDXGIFactory2* dxgi_factory;
@@ -22,6 +24,7 @@ namespace nova {
         if(FAILED(hr)) {
             throw std::runtime_error("Could not create DXGI Factory");
         }
+        LOG.log(log_level::INFO) << "Device created";
 
         IDXGIAdapter1* adapter;
 
@@ -38,6 +41,9 @@ namespace nova {
                 continue;
             }
 
+            // Direct3D 12 is feature level 11.
+            //
+            // cool
             hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr);
             if(SUCCEEDED(hr)) {
                 adapter_found = true;
@@ -49,6 +55,13 @@ namespace nova {
 
         if(!adapter_found) {
             throw std::runtime_error("Could not find a GPU that supports DX12");
+        }
+
+        LOG.log(log_level::INFO) << "Adapter found";
+
+        hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+        if(FAILED(hr)) {
+            throw std::runtime_error("Could not create Dx12 device");
         }
     }
 }
