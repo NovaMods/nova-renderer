@@ -29,19 +29,17 @@ namespace nova {
 
         static const std::string get_engine_name();
 
-        void create_device();
-
     private:
         const logger& LOG;
 
         // direct3d stuff
-        const int frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for tripple buffering
+        const int frameBufferCount = 3; // number of buffers we want, 2 for double buffering, 3 for triple buffering
 
         ID3D12Device* device; // direct3d device
 
         IDXGISwapChain* swapChain; // swapchain used to switch between render targets
 
-        ID3D12CommandQueue* commandQueue; // container for command lists
+        ID3D12CommandQueue* direct_command_queue; // container for command lists
 
         ID3D12DescriptorHeap* rtvDescriptorHeap; // a descriptor heap to hold resources like the render targets
 
@@ -61,6 +59,13 @@ namespace nova {
         int frameIndex; // current rtv we are on
 
         int rtvDescriptorSize; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
+
+
+        void create_device();
+
+        void create_rtv_command_queue();
+
+        void create_swapchain();
     };
 }
 

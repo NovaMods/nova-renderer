@@ -8,6 +8,8 @@
 namespace nova {
     dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings), LOG(logger::instance) {
         create_device();
+        create_rtv_command_queue();
+        create_swapchain();
     }
 
     const std::string dx12_render_engine::get_engine_name() {
@@ -63,5 +65,19 @@ namespace nova {
         if(FAILED(hr)) {
             throw std::runtime_error("Could not create Dx12 device");
         }
+    }
+
+    void dx12_render_engine::create_rtv_command_queue() {
+        D3D12_COMMAND_QUEUE_DESC rtv_queue_desc = {};
+
+        HRESULT hr = device->CreateCommandQueue(&rtv_queue_desc, IID_PPV_ARGS(&direct_command_queue));
+        if(FAILED(hr)) {
+            LOG.log(log_level::FATAL) << "Could not create main command queue";
+            throw std::runtime_error("Could not create main command queue");
+        }
+    }
+
+    void dx12_render_engine::create_swapchain() {
+
     }
 }
