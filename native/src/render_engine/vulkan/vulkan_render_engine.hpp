@@ -1,0 +1,31 @@
+//
+// Created by jannis on 30.08.18.
+//
+
+#ifndef NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
+#define NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
+
+#ifdef __linux__
+#define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
+#define NOVA_VK_XLIB
+#endif
+#include <vulkan/vulkan.h>
+#include "../render_engine.hpp"
+#include "vulkan_utils.hpp"
+
+namespace nova {
+    class vulkan_render_engine : public render_engine {
+    private:
+        VkInstance vk_instance;
+
+    public:
+        explicit vulkan_render_engine();
+        ~vulkan_render_engine();
+
+        void init(settings settings) override;
+        std::string get_engine_name() const override;
+    };
+}
+
+
+#endif //NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP

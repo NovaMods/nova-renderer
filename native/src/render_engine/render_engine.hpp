@@ -6,6 +6,9 @@
 #define NOVA_RENDERER_RENDER_ENGINE_HPP
 
 #include "../settings/settings.hpp"
+#include "../util/macros.hpp"
+
+NOVA_EXCEPTION(nova, render_engine_initialization_exception)
 
 namespace nova {
 /*!
@@ -18,7 +21,7 @@ namespace nova {
     class render_engine {
     public:
         /*!
-         * \brief Initializes the engine, does **NOT** open any window
+         * \brief Initializes the engine, does **NOT** open any window, may throw an nova::render_engine_initialization_exception
          * \param settings The settings passed to nova
          *
          * \attention Called by nova
@@ -31,7 +34,7 @@ namespace nova {
          *
          * \return the engine name
          */
-        virtual std::string get_engine_name() = 0;
+        virtual std::string get_engine_name() const = 0;
     };
 }
 

@@ -65,30 +65,22 @@ set(NOVA_SOURCE
         ${3RD_PARTY_DIR}/miniz/miniz_zip.c
 
         src/platform.hpp
-        src/render_engine/vulkan/timestamp_query_pool.hpp
-        src/render_engine/vulkan/per_thread_data.hpp
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp
         src/loading/folder_accessor.hpp
-        src/render_engine/vulkan/vulkan_render_device.hpp
         src/nova_renderer.hpp
 
         src/nova_renderer.cpp
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
         src/loading/zip_folder_accessor.cpp
-        src/render_engine/vulkan/per_thread_data.cpp
-        src/render_engine/vulkan/timestamp_query_pool.cpp
-        src/render_engine/vulkan/vulkan_render_device.cpp
-        src/render_engine/vulkan/glfw_window.cpp
-        src/render_engine/vulkan/glfw_window.hpp
         src/util/utils.cpp
         src/util/utils.hpp
         src/settings/settings.cpp
         src/settings/settings.hpp
         src/util/logger.cpp
         src/util/logger.hpp src/render_engine/render_engine.hpp
-        src/util/macros.hpp)
+        src/util/macros.hpp src/render_engine/vulkan/vulkan_render_engine.cpp src/render_engine/vulkan/vulkan_render_engine.hpp)
 
 # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
 # instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
@@ -107,7 +99,7 @@ set(SPIRV_CROSS_HEADERS
         )
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp src/render_engine/vulkan/vulkan_utils.hpp)
     set(CMAKE_CXX_FLAGS "-static-libstdc++ -static-libgcc ${CMAKE_CXX_FLAGS}")
 endif (WIN32)
 
@@ -155,7 +147,7 @@ target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 
 if(NOVA_TEST)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-    add_executable(nova-test tests/src/filesystem_test.cpp)
+    add_executable(nova-test tests/src/filesystem_test.cpp tests/src/basic_vulkan_tests.cpp)
     add_dependencies(nova-test nova-renderer)
     target_link_libraries(nova-test nova-renderer ${GTEST_BOTH_LIBRARIES} ${COMMON_LINK_LIBS})
     add_test(NovaTests nova-test)
@@ -174,8 +166,8 @@ if(NOVA_MINECRAFT)
             mc_interface/jni/com_continuum_nova_system_NovaNative.h
             mc_interface/nova_mc_interface.cpp
             )
-    add_library(nova-minecraft ${NOVA_MC_SOURCE})
+    add_library(nova-minecraft SHARED ${NOVA_MC_SOURCE})
     add_dependencies(nova-minecraft nova-renderer)
     target_include_directories(nova-minecraft PUBLIC ${JNI_INCLUDE_DIRS})
-    target_link_libraries(nova-minecraft nova-render ${COMMON_LINK_LIBS} ${JNI_LIBRARIES})
+    target_link_libraries(nova-minecraft nova-renderer ${COMMON_LINK_LIBS} ${JNI_LIBRARIES})
 endif()

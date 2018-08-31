@@ -31,8 +31,9 @@ namespace nova {
          * been initialized, already_initialized_exception is thrown
          *
          * \param engine The render engine to use
+         * \param settings The render settings to use
          */
-        static nova_renderer *initialize(render_engine *engine);
+        static nova_renderer *initialize(std::shared_ptr<render_engine> engine, settings_options &settings);
 
         /*!
          * \brief Retrieves the Nova Renderer singleton. If the singleton hasn't been initialized, an uninitialized_exception is thrown
@@ -50,7 +51,7 @@ namespace nova {
          *
          * \param engine The render engine to use
          */
-        nova_renderer(render_engine *engine);
+        nova_renderer(std::shared_ptr<render_engine> engine, settings_options &settings);
 
         /*!
          * \brief Loads the shaderpack with the given name
@@ -69,7 +70,7 @@ namespace nova {
         static std::unique_ptr<nova_renderer> instance;
 
         settings render_settings;
-        render_engine *engine;
+        std::shared_ptr<render_engine> engine;
     };
 }
 

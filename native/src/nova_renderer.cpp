@@ -8,9 +8,9 @@
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer *nova_renderer::initialize(render_engine *engine) {
+    nova_renderer *nova_renderer::initialize(std::shared_ptr<render_engine> engine, settings_options &settings) {
         if(!instance) {
-            instance = std::make_unique<nova_renderer>(engine);
+            instance = std::make_unique<nova_renderer>(engine, settings);
         } else {
             throw already_initialized_exception("Nova has already been initialized");
         }
@@ -30,7 +30,7 @@ namespace nova {
         }
     }
 
-    nova_renderer::nova_renderer(render_engine *engine) : render_settings(settings_options{engine->get_engine_name()}), engine(engine) {
+    nova_renderer::nova_renderer(std::shared_ptr<render_engine> engine, settings_options &settings) : render_settings(settings), engine(engine) {
         engine->init(render_settings);
     }
 
