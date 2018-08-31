@@ -1,3 +1,6 @@
+#ifndef WIN32_WINDOW_H
+#define WIN32_WINDOW_H
+
 #include "../../platform.hpp"
 
 #if SUPPORT_DX12
@@ -41,7 +44,7 @@ namespace nova {
 
         bool should_close() const;
 
-        glm::uvec2& get_size() const;
+        const glm::uvec2& get_size() const;
 
         /*
          * End platform-agnostic window interface
@@ -104,4 +107,5 @@ namespace nova {
 
 }
 
+#endif
 #endif

@@ -102,7 +102,7 @@ namespace nova {
         sample_desc.Count = 1;
 
         DXGI_SWAP_CHAIN_DESC swapchain_description {};
-        swapchain_description.BufferCount = frame_buffer_count;
+        swapchain_description.BufferCount = FRAME_BUFFER_COUNT;
         swapchain_description.BufferDesc = backbuffer_description;
         swapchain_description.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
         swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
@@ -120,7 +120,7 @@ namespace nova {
 
     void dx12_render_engine::create_render_target_descriptor_heap() {
         D3D12_DESCRIPTOR_HEAP_DESC rtv_heap_descriptor = {};
-        rtv_heap_descriptor.NumDescriptors = frame_buffer_count;
+        rtv_heap_descriptor.NumDescriptors = FRAME_BUFFER_COUNT;
         rtv_heap_descriptor.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
         // The heap isn't visible to shaders because shaders don't need to read the swapchain... but we still need a
@@ -136,7 +136,7 @@ namespace nova {
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart());
 
-        for(uint32_t i = 0; i < frame_buffer_count; i++) {
+        for(uint32_t i = 0; i < FRAME_BUFFER_COUNT; i++) {
             hr = swapchain->GetBuffer(i, IID_PPV_ARGS(&rendertargets[i]));
             if(FAILED(hr)) {
                 NOVA_LOG(FATAL) << "Could not create RTV for swapchain image " << i;

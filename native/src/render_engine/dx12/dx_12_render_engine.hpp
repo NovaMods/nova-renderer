@@ -18,6 +18,8 @@
 #include "win32_window.hpp"
 
 namespace nova {
+#define FRAME_BUFFER_COUNT 3
+
     /*!
      * \brief Implements a render engine for DirectX 12
      */
@@ -41,8 +43,6 @@ namespace nova {
         const logger& LOG;
 
         // direct3d stuff
-        const uint32_t frame_buffer_count = 3; // number of buffers we want, 2 for double buffering, 3 for triple buffering
-
         IDXGIFactory2* dxgi_factory;
 
         ID3D12Device* device; // direct3d device
@@ -53,18 +53,18 @@ namespace nova {
 
         ID3D12DescriptorHeap* rtv_descriptor_heap; // a descriptor heap to hold resources like the render targets
 
-        ID3D12Resource* rendertargets[frame_buffer_count]; // number of render targets equal to buffer count
+        ID3D12Resource* rendertargets[FRAME_BUFFER_COUNT]; // number of render targets equal to buffer count
 
-        ID3D12CommandAllocator* commandAllocator[frame_buffer_count]; // we want enough allocators for each buffer * number of threads (we only have one thread)
+        ID3D12CommandAllocator* commandAllocator[FRAME_BUFFER_COUNT]; // we want enough allocators for each buffer * number of threads (we only have one thread)
 
         ID3D12GraphicsCommandList* commandList; // a command list we can record commands into, then execute them to render the frame
 
-        ID3D12Fence* fence[frame_buffer_count];    // an object that is locked while our command list is being executed by the gpu. We need as many
+        ID3D12Fence* fence[FRAME_BUFFER_COUNT];    // an object that is locked while our command list is being executed by the gpu. We need as many
         //as we have allocators (more if we want to know when the gpu is finished with an asset)
 
         HANDLE fenceEvent; // a handle to an event when our fence is unlocked by the gpu
 
-        UINT64 fenceValue[frame_buffer_count]; // this value is incremented each frame. each fence will have its own value
+        UINT64 fenceValue[FRAME_BUFFER_COUNT]; // this value is incremented each frame. each fence will have its own value
 
         int frame_index; // current rtv we are on
 

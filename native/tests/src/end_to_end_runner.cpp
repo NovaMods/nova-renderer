@@ -8,9 +8,10 @@
 #include "../../src/nova_renderer.hpp"
 
 #include "../../src/platform.hpp"
+#include "../../src/render_engine/dx12/dx_12_render_engine.hpp"
+#include "../../src/render_engine/vulkan/vulkan_render_engine.hpp"
 
 #include "../../src/util/logger.hpp"
-#include "../../src/render_engine/vulkan/vulkan_render_engine.hpp"
 
 int main(int num_args, const char** args) {
     // Add default logging handlers
@@ -32,6 +33,6 @@ int main(int num_args, const char** args) {
 #error Unsupported Platform
 #endif
 
-    system("PAUSE");
+    std::cin.get();
     return 0;
 }

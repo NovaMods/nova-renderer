@@ -117,7 +117,7 @@ namespace nova {
         return window_should_close;
     }
 
-    glm::uvec2& win32_window::get_size() const {
+    const glm::uvec2& win32_window::get_size() const {
         return size;
     }
 

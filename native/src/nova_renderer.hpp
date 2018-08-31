@@ -14,6 +14,7 @@
 #include "settings/settings.hpp"
 #include "render_engine/render_engine.hpp"
 #include "util/macros.hpp"
+#include "loading/shaderpack_loading.hpp"
 
 NOVA_EXCEPTION(nova, already_initialized_exception)
 NOVA_EXCEPTION(nova, uninitialized_exception)
@@ -56,12 +57,47 @@ namespace nova {
             return (instance = new nova_renderer<RenderEngine>());
         }
 
+        static nova_renderer<RenderEngine>* get_instance();
+
+        static void deinitialize();
+
     private:
         settings render_settings;
         std::unique_ptr<RenderEngine> engine;
 
         static nova_renderer<RenderEngine> *instance;
     };
+
+    template<typename RenderEngine>
+    nova_renderer<RenderEngine>* nova_renderer<RenderEngine>::instance;
+
+    template <typename RenderEngine>
+    settings &nova_renderer<RenderEngine>::get_settings() {
+        return render_settings;
+    }
+
+    template <typename RenderEngine>
+    void nova_renderer<RenderEngine>::execute_frame() {}
+
+    template <typename RenderEngine>
+    void nova_renderer<RenderEngine>::load_shaderpack(const std::string &shaderpack_name) {
+        const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
+    }
+
+    template<typename RenderEngine>
+    RenderEngine *nova_renderer<RenderEngine>::get_engine() {
+        return engine.get();
+    }
+
+    template <typename RenderEngine>
+    nova_renderer<RenderEngine>* nova_renderer<RenderEngine>::get_instance() {
+        return instance;
+    }
+
+    template <typename RenderEngine>
+    void nova_renderer<RenderEngine>::deinitialize() {
+
+    }
 }
 
 

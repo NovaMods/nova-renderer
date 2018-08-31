@@ -68,7 +68,6 @@ set(NOVA_SOURCE
         src/loading/regular_folder_accessor.hpp
         src/loading/folder_accessor.hpp
         src/nova_renderer.hpp
-        src/nova_renderer.cpp
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
         src/loading/zip_folder_accessor.cpp
