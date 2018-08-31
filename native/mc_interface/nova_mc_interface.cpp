@@ -117,6 +117,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_initialize
         });
     }
 
+    nova::nova_renderer<RenderEngineType>::initialize();
 }
 
 /*

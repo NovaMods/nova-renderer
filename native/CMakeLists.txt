@@ -17,12 +17,6 @@ set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
 find_package(Vulkan)
 
-if(NOVA_TEST)
-    enable_testing()
-    find_package(GTest REQUIRED)
-    include_directories(${GTEST_INCLUDE_DIRS})
-endif()
-
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -162,18 +156,21 @@ target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
+    set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler)
+
+else(WIN32)
+    set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler)
 endif (WIN32)
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler)
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 
+set(NOVA_TEST ON)
+
 if(NOVA_TEST)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-    add_executable(nova-test tests/src/filesystem_test.cpp tests/src/end_to_end_runner.cpp)
-    add_dependencies(nova-test nova-renderer)
-    target_link_libraries(nova-test nova-renderer ${GTEST_BOTH_LIBRARIES} ${COMMON_LINK_LIBS})
+    add_subdirectory(tests)
+
+    enable_testing()
     add_test(NovaTests nova-test)
-    set(CMAKE_CXX_FLAGS "${NOVA_CXX_FLAGS}")
 endif()
 
 ####################################
