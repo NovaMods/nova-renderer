@@ -30,6 +30,10 @@ namespace nova {
 
         void free_command_buffer(command_buffer* buf) override;
 
+        command_buffer* allocate_command_buffer();
+
+        void free_command_buffer(command_buffer* buf);
+
         static const std::string get_engine_name();
     };
 }

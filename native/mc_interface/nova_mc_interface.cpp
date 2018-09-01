@@ -25,7 +25,7 @@
     #endif
 #elif SUPPORT_VULKAN
 #include "../src/render_engine/vulkan/vulkan_render_engine.hpp"
-#define RenderEngineType vulkan_render_engine
+#define RenderEngineType nova::vulkan_render_engine
 #endif
 
 /*!
