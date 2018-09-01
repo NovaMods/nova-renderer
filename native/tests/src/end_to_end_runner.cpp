@@ -8,8 +8,12 @@
 #include "../../src/nova_renderer.hpp"
 
 #include "../../src/platform.hpp"
+
+#ifdef _WIN32
 #include "../../src/render_engine/dx12/dx_12_render_engine.hpp"
+#else
 #include "../../src/render_engine/vulkan/vulkan_render_engine.hpp"
+#endif
 
 #include "../../src/util/logger.hpp"
 
@@ -25,12 +29,10 @@ int main(int num_args, const char** args) {
     log.add_log_handler(nova::log_level::FATAL,     [] (auto msg) {std::cerr << "FATAL: " << msg << "\n";});
     log.add_log_handler(nova::log_level::MAX_LEVEL, [] (auto msg) {std::cerr << "MAX_LEVEL: " << msg << "\n";});
 
-#ifdef __linux__
-    auto renderer = nova::nova_renderer<nova::vulkan_render_engine>::initialize();
-#elif defined(_WIN32)
+#ifdef _WIN22
     auto renderer = nova::nova_renderer<nova::dx12_render_engine>::initialize();
 #else
-#error Unsupported Platform
+    auto renderer = nova::nova_renderer<nova::vulkan_render_engine>::initialize();
 #endif
 
     std::cin.get();

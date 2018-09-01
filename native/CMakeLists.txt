@@ -95,7 +95,7 @@ if(UNIX)
             src/render_engine/vulkan/vulkan_render_engine.hpp
             src/render_engine/vulkan/vulkan_render_engine.cpp
             src/render_engine/vulkan/vulkan_utils.hpp
-            )
+            src/render_engine/vulkan/x11_window.cpp src/render_engine/vulkan/x11_window.hpp)
 elseif(WIN32)
     set(NOVA_SOURCE
             ${NOVA_SOURCE}

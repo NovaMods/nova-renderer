@@ -46,8 +46,55 @@ namespace nova {
 
     }
 
-    static const std::string get_engine_name() {
+    void vulkan_render_engine::open_window(uint32_t width, uint32_t height) {
+
+    }
+
+    command_buffer *vulkan_render_engine::allocate_command_buffer() {
+            return nullptr;
+    }
+
+    void vulkan_render_engine::free_command_buffer(command_buffer *buf) {
+
+    }
+
+    const std::string vulkan_render_engine::get_engine_name() {
         return "vulkan-1.1";
+    }
+
+    void vulkan_render_engine::create_device() {
+
+        uint32_t device_count;
+        NOVA_THROW_IF_VK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, nullptr), render_engine_initialization_exception);
+        auto *physical_devices = new VkPhysicalDevice[device_count];
+        NOVA_THROW_IF_VK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, physical_devices), render_engine_initialization_exception);
+
+        VkPhysicalDevice choosen_device = nullptr;
+        for(int i = 0; i < device_count; i++) {
+            VkPhysicalDevice current_device = physical_devices[i];
+            VkPhysicalDeviceProperties properties;
+            vkGetPhysicalDeviceProperties(current_device, &properties);
+
+            if(properties.vendorID == 0x8086 && device_count - 1 > i) { // Intel GPU... they are not powerful and we have more available, so skip it
+                continue;
+            }
+
+            uint32_t queue_familiy_count;
+            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_familiy_count, nullptr);
+            auto *family_properties = new VkQueueFamilyProperties[queue_familiy_count];
+            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_familiy_count, family_properties);
+
+            for(int j = 0; j < queue_familiy_count; j++) {
+                VkQueueFamilyProperties current_properties = family_properties[i];
+                if(current_properties.queueCount < 1) {
+                    continue;
+                }
+            }
+
+            delete[] family_properties;
+        }
+
+        delete[] physical_devices;
     }
 }
 #pragma clang diagnostic pop
