@@ -5,6 +5,7 @@
 
 #include "dx_12_render_engine.hpp"
 #include "win32_window.hpp"
+#include "dx12_command_buffer.hpp"
 
 namespace nova {
     dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings), LOG(logger::instance) {
@@ -156,6 +157,17 @@ namespace nova {
         HRESULT hr;
         for(uint8_t i = 0; i < FRAME_BUFFER_COUNT; i++) {
             hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&command_allocators[i]));
+            if(FAILED(hr)) {
+                NOVA_LOG(FATAL) << "Could not create main command list idx " << i;
+                throw std::runtime_error("Could not create a main command list");
+            }
         }
+    }
+
+    command_buffer *dx12_render_engine::allocate_command_buffer(const command_buffer_type type) {
+        // TODO: The command lists and their allocators should be pooled, so we can avoid a ton of reallocation
+        // Not doing that right now, but will make that change once this code is more complete
+        // The Vulkan render engine should function the same way
+        return new dx12_command_buffer(device, type);
     }
 }

@@ -108,7 +108,7 @@ elseif(WIN32)
             src/render_engine/dx12/win32_window.cpp
             src/render_engine/dx12/dx_12_render_engine.cpp
             src/render_engine/dx12/dx_12_render_engine.hpp
-            src/render_engine/dx12/d3dx12.h)
+            src/render_engine/dx12/d3dx12.h src/render_engine/dx12/dx12_command_buffer.cpp src/render_engine/dx12/dx12_command_buffer.hpp)
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()

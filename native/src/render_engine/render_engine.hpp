@@ -44,7 +44,7 @@ namespace nova {
          * \brief Allocates a new command buffer from the underlying API
          * \return An interface to a command buffer
          */
-        virtual command_buffer* allocate_command_buffer() = 0;
+        virtual command_buffer* allocate_command_buffer(command_buffer_type type) = 0;
 
         /*!
          * \brief Frees a command buffer, making all of its resources available
