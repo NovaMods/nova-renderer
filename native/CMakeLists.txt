@@ -12,6 +12,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR})
 
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    # Update if necessary
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic -Wno-format-truncation")
+endif()
+
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
@@ -128,7 +133,7 @@ if (WIN32)
 endif (WIN32)
 
 if (UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_STACKTRACE_ON_CRASH -g -fno-omit-frame-pointer -fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-omit-frame-pointer -fPIC")
     set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer")
 endif (UNIX)
 
@@ -136,11 +141,6 @@ if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g -rdynamic")
     set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g -rdynamic")
     message("Enabling symbol output")
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    # Update if necessary
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
 endif()
 
 set(NOVA_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -189,6 +189,7 @@ endif()
 # Minecraft is the only variant for now so enable it by default for now
 option(NOVA_MINECRAFT "Build minecraft library." ON)
 if(NOVA_MINECRAFT)
+    set(JAVA_INCLUDE_PATH /usr/include/openjdk-8/)
     find_package(JNI REQUIRED)
     set(NOVA_MC_SOURCE
             mc_interface/jni/com_continuum_nova_system_NovaNative.h
@@ -199,3 +200,5 @@ if(NOVA_MINECRAFT)
     target_include_directories(nova-minecraft PUBLIC ${JNI_INCLUDE_DIRS})
     target_link_libraries(nova-minecraft nova-render ${COMMON_LINK_LIBS} ${JNI_LIBRARIES})
 endif()
+
+message(INFO "${CMAKE_CXX_FLAGS}")

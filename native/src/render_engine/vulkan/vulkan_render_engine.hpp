@@ -24,6 +24,10 @@ namespace nova {
 
         void open_window(uint32_t width, uint32_t height);
 
+        command_buffer* allocate_command_buffer();
+
+        void free_command_buffer(command_buffer* buf);
+
         static const std::string get_engine_name();
     };
 }
