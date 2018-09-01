@@ -153,6 +153,9 @@ namespace nova {
     }
 
     void dx12_render_engine::create_command_list_allocators() {
-
+        HRESULT hr;
+        for(uint8_t i = 0; i < FRAME_BUFFER_COUNT; i++) {
+            hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&command_allocators[i]));
+        }
     }
 }

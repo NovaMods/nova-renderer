@@ -59,7 +59,7 @@ namespace nova {
 
         ID3D12Resource* rendertargets[FRAME_BUFFER_COUNT]; // number of render targets equal to buffer count
 
-        ID3D12CommandAllocator* commandAllocator[FRAME_BUFFER_COUNT]; // we want enough allocators for each buffer * number of threads (we only have one thread)
+        ID3D12CommandAllocator* command_allocators[FRAME_BUFFER_COUNT]; // we want enough allocators for each buffer * number of threads (we only have one thread)
 
         ID3D12GraphicsCommandList* commandList; // a command list we can record commands into, then execute them to render the frame
 
