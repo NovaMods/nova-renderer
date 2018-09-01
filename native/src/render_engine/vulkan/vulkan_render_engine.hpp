@@ -12,13 +12,34 @@
 #include <vulkan/vulkan.h>
 #include "../render_engine.hpp"
 #include "vulkan_utils.hpp"
+#include "x11_window.hpp"
 
 namespace nova {
     class vulkan_render_engine : public render_engine {
     private:
+        std::vector<const char *> enabled_validation_layer_names;
+
         VkInstance vk_instance;
+#ifdef NOVA_VK_XLIB
+        x11_window *window = nullptr;
+#endif
+        VkSurfaceKHR surface;
+        VkDevice device;
+        VkQueue graphics_queue;
+        VkQueue present_queue;
 
         void create_device();
+
+#ifndef NDEBUG
+        PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
+        PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
+        PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
+
+        static VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT object_type, uint64_t object, size_t location, int32_t messageCode,
+                const char *layer_prefix, const char *message, void *user_data);
+
+        VkDebugReportCallbackEXT debug_callback;
+#endif
 
     public:
         explicit vulkan_render_engine(const settings &settings);
@@ -29,10 +50,6 @@ namespace nova {
         command_buffer* allocate_command_buffer() override;
 
         void free_command_buffer(command_buffer* buf) override;
-
-        command_buffer* allocate_command_buffer();
-
-        void free_command_buffer(command_buffer* buf);
 
         static const std::string get_engine_name();
     };

@@ -15,11 +15,16 @@ namespace nova {
     class x11_window {
     private:
         Window window;
+        Display *display;
 
     public:
         explicit x11_window(uint32_t width, uint32_t height);
+        ~x11_window();
 
         Window &get_x11_window();
+        Display *get_display();
+
+        void enter_loop();
     };
 }
 

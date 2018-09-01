@@ -35,6 +35,6 @@ int main(int num_args, const char** args) {
     auto renderer = nova::nova_renderer<nova::vulkan_render_engine>::initialize();
 #endif
 
-    std::cin.get();
+    renderer->get_engine()->open_window(200, 200);
     return 0;
 }
