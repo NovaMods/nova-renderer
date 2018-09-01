@@ -22,11 +22,11 @@ namespace nova {
         explicit vulkan_render_engine(const settings &settings);
         ~vulkan_render_engine();
 
-        void open_window(uint32_t width, uint32_t height);
+        void open_window(uint32_t width, uint32_t height) override;
 
-        command_buffer* allocate_command_buffer();
+        command_buffer* allocate_command_buffer() override;
 
-        void free_command_buffer(command_buffer* buf);
+        void free_command_buffer(command_buffer* buf) override;
 
         static const std::string get_engine_name();
     };

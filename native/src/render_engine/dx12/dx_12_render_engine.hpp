@@ -39,6 +39,10 @@ namespace nova {
 
         void open_window(uint32_t width, uint32_t height) override;
 
+        command_buffer* allocate_command_buffer() override;
+
+        void free_command_buffer(command_buffer* buf) override;
+
     private:
         const logger& LOG;
 
