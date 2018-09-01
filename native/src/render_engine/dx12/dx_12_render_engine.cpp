@@ -10,6 +10,7 @@ namespace nova {
     dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings), LOG(logger::instance) {
         create_device();
         create_rtv_command_queue();
+        create_command_list_allocators();
     }
 
     void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
@@ -149,5 +150,9 @@ namespace nova {
             // Increment the RTV handle
             rtv_handle.Offset(1, rtv_descriptor_size);
         }
+    }
+
+    void dx12_render_engine::create_command_list_allocators() {
+
     }
 }

@@ -7,6 +7,7 @@
 
 #include "../settings/settings.hpp"
 #include "../util/macros.hpp"
+#include "command_buffer.hpp"
 
 NOVA_EXCEPTION(nova, render_engine_initialization_exception)
 
@@ -38,6 +39,18 @@ namespace nova {
          * \param height The height, in pixels of the desired window
          */
         virtual void open_window(uint32_t width, uint32_t height) = 0;
+
+        /*!
+         * \brief Allocates a new command buffer from the underlying API
+         * \return An interface to a command buffer
+         */
+        virtual command_buffer* allocate_command_buffer() = 0;
+
+        /*!
+         * \brief Frees a command buffer, making all of its resources available
+         * \param buf The command buffer to free
+         */
+        virtual void free_command_buffer(command_buffer* buf) = 0;
 
     protected:
         /*!

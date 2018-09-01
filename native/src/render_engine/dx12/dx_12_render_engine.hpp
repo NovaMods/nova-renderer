@@ -88,6 +88,8 @@ namespace nova {
          * \brief Creates the descriptor heap for the swapchain
          */
         void create_render_target_descriptor_heap();
+
+        void create_command_list_allocators();
     };
 }
 
