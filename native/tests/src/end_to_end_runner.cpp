@@ -29,7 +29,7 @@ int main(int num_args, const char** args) {
     log.add_log_handler(nova::log_level::FATAL,     [] (auto msg) {std::cerr << "FATAL: " << msg << "\n";});
     log.add_log_handler(nova::log_level::MAX_LEVEL, [] (auto msg) {std::cerr << "MAX_LEVEL: " << msg << "\n";});
 
-#ifdef _WIN22
+#ifdef _WIN32
     auto renderer = nova::nova_renderer<nova::dx12_render_engine>::initialize();
 #else
     auto renderer = nova::nova_renderer<nova::vulkan_render_engine>::initialize();
