@@ -16,7 +16,10 @@ namespace nova {
 
         create_window(width, height);
 
-        ShowWindow(window_handle, 1);
+        ShowWindow(window_handle, SW_SHOWNA);
+        BringWindowToTop(window_handle);
+        SetForegroundWindow(window_handle);
+        SetFocus(window_handle);
         UpdateWindow(window_handle);
     }
 
@@ -30,8 +33,11 @@ namespace nova {
 
         auto* title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
 
-        window_handle = CreateWindowExW(extended_style, window_class_name, title, style, 100, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
-        if(window_handle == 0) {
+        window_handle = CreateWindowExW(extended_style, window_class_name,
+                                        title, style,
+                                        100, 100, width, height,
+                                        nullptr, nullptr, GetModuleHandleW(nullptr), this);
+        if(window_handle == nullptr) {
             NOVA_LOG(FATAL) << "Could not create window: " << get_last_windows_error();
         }
     }
@@ -97,7 +103,7 @@ namespace nova {
                 // Pressed a key. We should save this somewhere I guess
                 return 0;
 
-            case WM_DESTROY:
+            case WM_QUIT:
                 // DIE DIE DIE
                 window_should_close = true;
                 return 0;
@@ -126,6 +132,7 @@ namespace nova {
     }
 
     bool win32_window::should_close() const {
+        NOVA_LOG(TRACE) << "Should close? " << window_should_close;
         return window_should_close;
     }
 
@@ -139,14 +146,14 @@ namespace nova {
 
     void win32_window::on_frame_end() {
         MSG msg = {};
-        if(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+        if(PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
         {
             if(msg.message == WM_QUIT) {
                 window_should_close = true;
             }
 
             TranslateMessage(&msg);
-            DispatchMessage(&msg);
+            DispatchMessageW(&msg);
         }
     }
 }
