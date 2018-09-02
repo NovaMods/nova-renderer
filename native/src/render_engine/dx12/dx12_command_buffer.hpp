@@ -15,6 +15,7 @@
 #include "../icommand_buffer.hpp"
 #include "../../util/logger.hpp"
 #include "dx_12_framebuffer.hpp"
+#include "dx_12_resource_barrier_helpers.hpp"
 
 namespace nova {
 
@@ -100,8 +101,10 @@ namespace nova {
         dx12_barriers.reserve(barriers.size());
 
         for(const resource_barrier_data& barrier : barriers) {
-
-            dx12_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier, ))
+            D3D12_RESOURCE_STATES initial_state = to_dx12_resource_state(barrier.initial_layout);
+            D3D12_RESOURCE_STATES final_state = to_dx12_resource_state(barrier.final_layout);
+            dx12_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(
+                    reinterpret_cast<ID3D12Resource *>(barrier.resource_to_barrier), initial_state, final_state));
         }
     }
 
