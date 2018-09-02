@@ -48,6 +48,11 @@ namespace nova {
 
         command_buffer_type get_type() const;
 
+        /*!
+         * \brief Resets this command buffer, making its resources availabe for future use
+         */
+        virtual void reset() = 0;
+
     private:
         command_buffer_type type;
     };

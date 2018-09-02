@@ -173,7 +173,12 @@ namespace nova {
 
         auto& buffers = buffer_pool.at(type);
         if(buffers.empty()) {
-            buffer = new dx12_command_buffer(device, type);
+            if(type == command_buffer_type::GENERIC) {
+                buffer = new dx12_command_buffer<ID3D12GraphicsCommandList>(device, type);
+
+            } else {
+                buffer = new dx12_command_buffer<ID3D12CommandList>(device, type);
+            }
 
         } else {
             buffer = buffers.back();
@@ -184,7 +189,7 @@ namespace nova {
     }
 
     void dx12_render_engine::free_command_buffer(command_buffer *buf) {
-        // TODO: Reset the command buffer. I know that Vulkan needs this, not yet sure about DX12
+        buf->reset();
 
         auto type = buf->get_type();
 
