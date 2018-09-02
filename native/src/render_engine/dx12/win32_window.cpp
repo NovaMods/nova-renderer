@@ -25,7 +25,7 @@ namespace nova {
     }
 
     void win32_window::create_window(const uint32_t width, const uint32_t height) {
-        DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP;
+        DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;
         DWORD extended_style = WS_EX_APPWINDOW | WS_EX_TOPMOST;
 
         auto* title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
@@ -71,18 +71,21 @@ namespace nova {
 
             SetLastError(0);
             if(SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) view) == 0) {
-                if(GetLastError() != 0)
+                if(GetLastError() != 0) {
                     return FALSE;
+                }
             }
+
         } else {
             view = (win32_window *) GetWindowLongPtr(hWnd, GWLP_USERDATA);
         }
 
         if(view) {
             return view->window_procedure(hWnd, message, wParam, lParam);
-        }
 
-        return DefWindowProc(hWnd, message, wParam, lParam);
+        } else {
+            return DefWindowProc(hWnd, message, wParam, lParam);
+        }
     }
 
     LRESULT win32_window::window_procedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -92,32 +95,23 @@ namespace nova {
         switch(message) {
             case WM_KEYDOWN:
                 // Pressed a key. We should save this somewhere I guess
+                return 0;
+
             case WM_DESTROY:
                 // DIE DIE DIE
                 window_should_close = true;
-                break;
+                return 0;
+
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
         }
-
-        return DefWindowProc(hWnd, message, wParam, lParam);
     }
 
     std::string win32_window::get_last_windows_error() {
-        /*WCHAR buffer[1024];
-        char message[1024];
-
-        FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
-                nullptr, GetLastError() & 0xffff, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                buffer, sizeof(buffer), nullptr);
-
-        WideCharToMultiByte(CP_UTF8, 1, buffer, -1, message, sizeof(message), nullptr, nullptr);
-
-        return std::string(message);*/
-        //Get the error message, if any.
         DWORD errorMessageID = ::GetLastError();
-        if(errorMessageID == 0)
+        if(errorMessageID == 0) {
             return std::string(); //No error message has been recorded
+        }
 
         LPSTR messageBuffer = nullptr;
         size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,

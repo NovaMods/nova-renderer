@@ -221,4 +221,8 @@ namespace nova {
     dx12_render_engine::~dx12_render_engine() {
         delete window;
     }
+
+    void dx12_render_engine::present_swapchain_image() {
+        swapchain->Present(0, 0);
+    }
 }

@@ -55,6 +55,11 @@ namespace nova {
          */
         virtual void free_command_buffer(command_buffer* buf) = 0;
 
+        /*!
+         * \brief Presents the image in the swapchain to the users
+         */
+        virtual void present_swapchain_image() = 0;
+
     protected:
         /*!
          * \brief Initializes the engine, does **NOT** open any window

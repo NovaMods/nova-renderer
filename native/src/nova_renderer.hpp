@@ -77,7 +77,9 @@ namespace nova {
     }
 
     template <typename RenderEngine>
-    void nova_renderer<RenderEngine>::execute_frame() {}
+    void nova_renderer<RenderEngine>::execute_frame() {
+        engine->present_swapchain_image();
+    }
 
     template <typename RenderEngine>
     void nova_renderer<RenderEngine>::load_shaderpack(const std::string &shaderpack_name) {

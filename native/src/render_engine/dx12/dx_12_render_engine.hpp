@@ -47,6 +47,8 @@ namespace nova {
 
         void free_command_buffer(command_buffer* buf) override;
 
+        void present_swapchain_image() override;
+
     private:
         const logger& LOG;
 
