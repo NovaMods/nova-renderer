@@ -14,8 +14,11 @@
 #include <DirectXMath.h>
 #include <dxgi1_4.h>
 #include "d3dx12.h"
-#include "../../util/logger.hpp"
 #include "win32_window.hpp"
+
+#include <wrl.h>
+
+using Microsoft::WRL::ComPtr;
 
 namespace nova {
 #define FRAME_BUFFER_COUNT 3
@@ -50,22 +53,20 @@ namespace nova {
         void present_swapchain_image() override;
 
     private:
-        const logger& LOG;
-
         // direct3d stuff
-        IDXGIFactory2* dxgi_factory;
+        ComPtr<IDXGIFactory2> dxgi_factory;
 
-        ID3D12Device* device; // direct3d device
+        ComPtr<ID3D12Device> device; // direct3d device
 
-        IDXGISwapChain3* swapchain; // swapchain used to switch between render targets
+        ComPtr<IDXGISwapChain3> swapchain; // swapchain used to switch between render targets
 
-        ID3D12CommandQueue* direct_command_queue; // container for command lists
+        ComPtr<ID3D12CommandQueue> direct_command_queue; // container for command lists
 
-        ID3D12DescriptorHeap* rtv_descriptor_heap; // a descriptor heap to hold resources like the render targets
+        ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap; // a descriptor heap to hold resources like the render targets
 
-        ID3D12Resource* rendertargets[FRAME_BUFFER_COUNT]; // number of render targets equal to buffer count
+        ComPtr<ID3D12Resource> rendertargets[FRAME_BUFFER_COUNT]; // number of render targets equal to buffer count
 
-        ID3D12Fence* fence[FRAME_BUFFER_COUNT];    // an object that is locked while our command list is being executed by the gpu. We need as many
+        ComPtr<ID3D12Fence> fence[FRAME_BUFFER_COUNT];    // an object that is locked while our command list is being executed by the gpu. We need as many
         //as we have allocators (more if we want to know when the gpu is finished with an asset)
 
         HANDLE fenceEvent; // a handle to an event when our fence is unlocked by the gpu
@@ -90,7 +91,7 @@ namespace nova {
          */
         void create_swapchain();
 
-        win32_window* window;
+        ComPtr<win32_window> window;
 
         /*!
          * \brief Creates the descriptor heap for the swapchain

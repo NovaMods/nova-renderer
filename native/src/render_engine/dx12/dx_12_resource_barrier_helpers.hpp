@@ -16,7 +16,7 @@
 #include "../resource_barrier.hpp"
 
 namespace nova {
-    D3D12_RESOURCE_STATES to_dx12_resource_state(const resource_layout layout);
+    D3D12_RESOURCE_STATES to_dx12_resource_state(resource_layout layout);
 }
 
 #endif

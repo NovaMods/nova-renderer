@@ -22,7 +22,7 @@ namespace nova {
     template<typename CommandListType>
     class dx12_command_buffer : public command_buffer {
     public:
-        dx12_command_buffer(ID3D12Device* device, command_buffer_type type);
+        dx12_command_buffer(ComPtr<ID3D12Device> device, command_buffer_type type);
 
         dx12_command_buffer(dx12_command_buffer&& other) noexcept = default;
         dx12_command_buffer& operator=(dx12_command_buffer&& other) noexcept = default;
@@ -38,13 +38,13 @@ namespace nova {
         void on_completion(std::function<void(void)> completion_handler) override;
 
     private:
-        ID3D12CommandAllocator* allocator;
+        ComPtr<ID3D12CommandAllocator> allocator;
         CommandListType* command_list;
-        ID3D12Fence* fence;
+        ComPtr<ID3D12Fence> fence;
     };
 
     template<typename CommandBufferType>
-    dx12_command_buffer<CommandBufferType>::dx12_command_buffer(ID3D12Device* device, const command_buffer_type type) : command_buffer(type) {
+    dx12_command_buffer<CommandBufferType>::dx12_command_buffer(ComPtr<ID3D12Device> device, const command_buffer_type type) : command_buffer(type) {
         HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create command buffer";
@@ -67,7 +67,7 @@ namespace nova {
                 break;
         }
 
-        hr = device->CreateCommandList(0, command_list_type, allocator, nullptr, IID_PPV_ARGS(&command_list));
+        hr = device->CreateCommandList(0, command_list_type, allocator.Get(), nullptr, IID_PPV_ARGS(&command_list));
         if(FAILED(hr)) {
             NOVA_LOG(ERROR) << "Could not create a command list of type " << type.to_string();
             throw std::runtime_error("Could not create command list");
@@ -109,7 +109,7 @@ namespace nova {
             NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
         }
 
-        hr = command_list->Reset(allocator, nullptr);
+        hr = command_list->Reset(allocator.Get(), nullptr);
         if(FAILED(hr)) {
             NOVA_LOG(ERROR) << "Could not reset the command list";
         }

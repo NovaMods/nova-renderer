@@ -3,13 +3,14 @@
  * \date 30-Aug-18.
  */
 
+#include <windows.h>
+
 #include "dx_12_render_engine.hpp"
-#include "win32_window.hpp"
 #include "dx12_command_buffer.hpp"
 #include <d3d12sdklayers.h>
 
 namespace nova {
-    dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings), LOG(logger::instance) {
+    dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings) {
         create_device();
         create_rtv_command_queue();
 
@@ -38,7 +39,7 @@ namespace nova {
 
     void dx12_render_engine::create_device() {
 //#ifndef NDEBUG
-        ID3D12Debug* debug_controller;
+        ComPtr<ID3D12Debug> debug_controller;
         D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
         debug_controller->EnableDebugLayer();
 //#endif
@@ -54,7 +55,7 @@ namespace nova {
         }
         NOVA_LOG(TRACE) << "Device created";
 
-        IDXGIAdapter1* adapter;
+        ComPtr<IDXGIAdapter1> adapter;
 
         uint32_t adapter_index = 0;
         bool adapter_found = false;
@@ -88,7 +89,7 @@ namespace nova {
 
         NOVA_LOG(TRACE) << "Adapter found";
 
-        hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+        hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create Dx12 device";
             throw std::runtime_error("Could not create Dx12 device");
@@ -127,10 +128,9 @@ namespace nova {
 
         swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-        IDXGISwapChain1* swapchain_uncast;
-        IDXGISwapChain1** pswapchain_uncast = &swapchain_uncast;
+        ComPtr<IDXGISwapChain1> swapchain_uncast;
         // No target window specified in DXGI_SWAP_CHAIN_DESC, and no window associated with owning factory. [ MISCELLANEOUS ERROR #6: ]
-        HRESULT hr = dxgi_factory->CreateSwapChainForHwnd(direct_command_queue, window->get_window_handle(), &swapchain_description, nullptr, nullptr, pswapchain_uncast);
+        HRESULT hr = dxgi_factory->CreateSwapChainForHwnd(direct_command_queue.Get(), window->get_window_handle(), &swapchain_description, nullptr, nullptr, &swapchain_uncast);
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create swapchain";
             if(hr == DXGI_ERROR_INVALID_CALL) {
@@ -144,7 +144,7 @@ namespace nova {
             throw std::runtime_error("Could not create swapchain");
         }
 
-        swapchain = (IDXGISwapChain3*)swapchain_uncast;
+        swapchain_uncast->QueryInterface(IID_PPV_ARGS(&swapchain));
 
         frame_index = swapchain->GetCurrentBackBufferIndex();
     }
@@ -175,7 +175,7 @@ namespace nova {
             }
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
-            device->CreateRenderTargetView(rendertargets[i], nullptr, rtv_handle);
+            device->CreateRenderTargetView(rendertargets[i].Get(), nullptr, rtv_handle);
 
             // Increment the RTV handle
             rtv_handle.Offset(1, rtv_descriptor_size);
