@@ -6,6 +6,10 @@
 #ifndef NOVA_RENDERER_WINDOW_HPP
 #define NOVA_RENDERER_WINDOW_HPP
 
+#include "../util/macros.hpp"
+
+NOVA_EXCEPTION(nova, window_creation_error)
+
 namespace nova {
     /*!
      * \brief A platform-independent window interface

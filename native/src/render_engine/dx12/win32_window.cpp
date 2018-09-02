@@ -38,7 +38,9 @@ namespace nova {
                                         100, 100, width, height,
                                         nullptr, nullptr, GetModuleHandleW(nullptr), this);
         if(window_handle == nullptr) {
-            NOVA_LOG(FATAL) << "Could not create window: " << get_last_windows_error();
+            auto windows_error = get_last_windows_error();
+            NOVA_LOG(FATAL) << "Could not create window: " << windows_error;
+            throw window_creation_error("Could not create window: " + windows_error);
         }
     }
 
@@ -60,7 +62,7 @@ namespace nova {
             std::string windows_err = get_last_windows_error();
             logger::instance.log(FATAL) << "Could not register window class: " << windows_err;
 
-            throw std::runtime_error("Could not register window class");
+            throw window_creation_error("Could not register window class");
         }
     }
 
@@ -95,8 +97,6 @@ namespace nova {
     }
 
     LRESULT win32_window::window_procedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-        window_should_close = false;
-
         // Handle window messages, passing input data to a theoretical input manager
         switch(message) {
             case WM_KEYDOWN:
@@ -104,6 +104,7 @@ namespace nova {
                 return 0;
 
             case WM_QUIT:
+            case WM_CLOSE:
                 // DIE DIE DIE
                 window_should_close = true;
                 return 0;
@@ -132,7 +133,6 @@ namespace nova {
     }
 
     bool win32_window::should_close() const {
-        NOVA_LOG(TRACE) << "Should close? " << window_should_close;
         return window_should_close;
     }
 
