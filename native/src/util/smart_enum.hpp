@@ -37,7 +37,7 @@ private:                                                            \
             buf_1.clear(); buf_2.clear();                           \
             std::stringstream local_stream(str);                    \
             local_stream >> buf_1 >> buf_2;                         \
-            if(buf_2.size() > 0) {                                  \
+            if(buf_2.empty()) {                                     \
                 val = atoi(buf_2.c_str());                          \
             }                                                       \
             tmp[val++] = buf_1;                                     \

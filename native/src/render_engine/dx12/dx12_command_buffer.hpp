@@ -31,6 +31,8 @@ namespace nova {
         dx12_command_buffer(const dx12_command_buffer& other) = delete;
         dx12_command_buffer& operator=(const dx12_command_buffer& other) = delete;
 
+        void resource_barrier(const std::vector<resource_barrier_data>& barriers) override;
+
         void reset() override;
 
         void on_completion(std::function<void(void)> completion_handler) override;
@@ -86,6 +88,17 @@ namespace nova {
     template <typename CommandBufferType>
     void dx12_command_buffer<CommandBufferType>::on_completion(std::function<void(void)> completion_handler) {
 
+    }
+
+    template<typename CommandBufferType>
+    void dx12_command_buffer<CommandBufferType>::resource_barrier(const std::vector<resource_barrier_data>& barriers) {
+        std::vector<CD3DX12_RESOURCE_BARRIER> dx12_barriers;
+        dx12_barriers.reserve(barriers.size());
+
+        for(const resource_barrier_data& barrier : barriers) {
+
+            dx12_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier, ))
+        }
     }
 
     template <>

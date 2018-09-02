@@ -8,6 +8,7 @@
 
 #include <functional>
 #include "../util/smart_enum.hpp"
+#include "resource_barrier.hpp"
 
 namespace nova {
     /*!
@@ -41,17 +42,23 @@ namespace nova {
         explicit command_buffer(command_buffer_type type);
 
         /*!
+         * \brief Adds one or more resource barriers
+         * \param barriers The barriers to add
+         */
+        virtual void resource_barrier(const std::vector<resource_barrier_data>& barriers) = 0;
+
+        /*!
          * \brief Executes a provided function when this command buffer has finished executing
          * \param completion_handler The function to execute when this command buffer has finished executing
          */
         virtual void on_completion(std::function<void(void)> completion_handler) = 0;
 
-        command_buffer_type get_type() const;
-
         /*!
          * \brief Resets this command buffer, making its resources availabe for future use
          */
         virtual void reset() = 0;
+
+        command_buffer_type get_type() const;
 
     private:
         command_buffer_type type;
