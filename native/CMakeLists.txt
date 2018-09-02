@@ -92,7 +92,7 @@ set(NOVA_SOURCE
         src/util/logger.cpp
         src/util/logger.hpp
         src/render_engine/render_engine.hpp
-        src/util/macros.hpp src/render_engine/command_buffer.hpp src/render_engine/command_buffer.cpp)
+        src/util/macros.hpp src/render_engine/command_buffer.hpp src/render_engine/command_buffer.cpp src/render_engine/window.hpp)
 
 if(UNIX)
     set(NOVA_SOURCE

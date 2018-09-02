@@ -121,7 +121,7 @@ namespace nova {
 
         LPSTR messageBuffer = nullptr;
         size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+                                     nullptr, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, nullptr);
 
         std::string message(messageBuffer, size);
 
@@ -141,6 +141,19 @@ namespace nova {
 
     HWND win32_window::get_window_handle() const {
         return window_handle;
+    }
+
+    void win32_window::on_frame_end() {
+        MSG msg = {};
+        if(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+        {
+            if(msg.message == WM_QUIT) {
+                window_should_close = true;
+            }
+
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
     }
 }
 

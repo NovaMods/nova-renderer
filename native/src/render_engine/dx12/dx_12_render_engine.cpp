@@ -27,7 +27,7 @@ namespace nova {
     }
 
     void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
-        window = std::make_unique<win32_window>(width, height);
+        window = new win32_window(width, height);
         create_swapchain();
         create_render_target_descriptor_heap();
     }
@@ -212,5 +212,13 @@ namespace nova {
         auto type = buf->get_type();
 
         buffer_pool.at(static_cast<int>(type)).push_back(buf);
+    }
+
+    iwindow *dx12_render_engine::get_window() const {
+        return window;
+    }
+
+    dx12_render_engine::~dx12_render_engine() {
+        delete window;
     }
 }

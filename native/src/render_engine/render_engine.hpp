@@ -8,6 +8,7 @@
 #include "../settings/settings.hpp"
 #include "../util/macros.hpp"
 #include "command_buffer.hpp"
+#include "window.hpp"
 
 NOVA_EXCEPTION(nova, render_engine_initialization_exception)
 
@@ -39,6 +40,8 @@ namespace nova {
          * \param height The height, in pixels of the desired window
          */
         virtual void open_window(uint32_t width, uint32_t height) = 0;
+
+        virtual iwindow* get_window() const = 0;
 
         /*!
          * \brief Allocates a new command buffer from the underlying API

@@ -31,6 +31,8 @@ namespace nova {
          */
         explicit dx12_render_engine(const settings& settings);
 
+        ~dx12_render_engine();
+
         static const std::string get_engine_name();
 
         /**
@@ -38,6 +40,8 @@ namespace nova {
          */
 
         void open_window(uint32_t width, uint32_t height) override;
+
+        iwindow* get_window() const override;
 
         command_buffer* allocate_command_buffer(command_buffer_type type) override;
 
@@ -84,7 +88,7 @@ namespace nova {
          */
         void create_swapchain();
 
-        std::unique_ptr<win32_window> window;
+        win32_window* window;
 
         /*!
          * \brief Creates the descriptor heap for the swapchain

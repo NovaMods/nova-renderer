@@ -37,6 +37,11 @@ int main(int num_args, const char** args) {
 
     renderer->get_engine()->open_window(200, 200);
 
-    std::cin.get();
+    nova::iwindow* window = renderer->get_engine()->get_window();
+
+    while(!window->should_close()) {
+        renderer->execute_frame();
+    }
+
     return 0;
 }

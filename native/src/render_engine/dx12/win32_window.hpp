@@ -2,6 +2,7 @@
 #define WIN32_WINDOW_H
 
 #include "../../platform.hpp"
+#include "../window.hpp"
 
 #if SUPPORT_DX12
 
@@ -31,7 +32,7 @@ namespace nova {
     /*!
      * \brief A Win32 window for the DX12 variant of Nova
      */
-    class win32_window {
+    class win32_window : public iwindow {
     public:
         win32_window(uint32_t width, uint32_t height);
         ~win32_window();
@@ -40,9 +41,9 @@ namespace nova {
          * Platform-agnostic window interface
          */
 
-        void on_frame_end();
+        void on_frame_end() override;
 
-        bool should_close() const;
+        bool should_close() const override;
 
         const glm::uvec2& get_size() const;
 
