@@ -46,9 +46,11 @@ namespace nova {
 
         iwindow* get_window() const override;
 
-        command_buffer* allocate_command_buffer(command_buffer_type type) override;
+        iframebuffer* get_current_swapchain_framebuffer() const override;
 
-        void free_command_buffer(command_buffer* buf) override;
+        icommand_buffer* allocate_command_buffer(command_buffer_type type) override;
+
+        void free_command_buffer(icommand_buffer* buf) override;
 
         void present_swapchain_image() override;
 
@@ -77,7 +79,7 @@ namespace nova {
 
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
-        std::unordered_map<int, std::vector<command_buffer*>> buffer_pool;
+        std::unordered_map<int, std::vector<icommand_buffer*>> buffer_pool;
 
 
         void create_device();

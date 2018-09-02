@@ -7,19 +7,19 @@
 
 #include "../settings/settings.hpp"
 #include "../util/macros.hpp"
-#include "command_buffer.hpp"
+#include "icommand_buffer.hpp"
 #include "window.hpp"
 
 NOVA_EXCEPTION(nova, render_engine_initialization_exception)
 
 namespace nova {
-/*!
- * \brief Abstract class for render backends
- *
- * The constructor should not make any initialization
- * All functions must be called after init(nova::settings) has been called except
- *   explicitly marked in the documentation
- */
+    /*!
+     * \brief Abstract class for render backends
+     *
+     * The constructor should not make any initialization
+     * All functions must be called after init(nova::settings) has been called except
+     *   explicitly marked in the documentation
+     */
     class render_engine {
     public:
         /*!
@@ -44,16 +44,23 @@ namespace nova {
         virtual iwindow* get_window() const = 0;
 
         /*!
+         * \brief Retrieves the framebuffer associated with the current swapchain image
+         *
+         * \return The framebuffer associated with the current swapchain image
+         */
+        virtual iframebuffer* get_current_swapchain_framebuffer() const = 0;
+
+        /*!
          * \brief Allocates a new command buffer from the underlying API
          * \return An interface to a command buffer
          */
-        virtual command_buffer* allocate_command_buffer(command_buffer_type type) = 0;
+        virtual icommand_buffer* allocate_command_buffer(command_buffer_type type) = 0;
 
         /*!
          * \brief Frees a command buffer, making all of its resources available
          * \param buf The command buffer to free
          */
-        virtual void free_command_buffer(command_buffer* buf) = 0;
+        virtual void free_command_buffer(icommand_buffer* buf) = 0;
 
         /*!
          * \brief Presents the image in the swapchain to the users

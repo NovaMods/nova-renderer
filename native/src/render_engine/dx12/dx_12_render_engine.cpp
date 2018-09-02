@@ -7,6 +7,7 @@
 
 #include "dx_12_render_engine.hpp"
 #include "dx12_command_buffer.hpp"
+#include "dx_12_framebuffer.hpp"
 #include <d3d12sdklayers.h>
 
 namespace nova {
@@ -14,15 +15,15 @@ namespace nova {
         create_device();
         create_rtv_command_queue();
 
-        std::vector<command_buffer*> direct_buffers;
+        std::vector<icommand_buffer*> direct_buffers;
         direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
         buffer_pool.emplace(static_cast<int>(command_buffer_type::GENERIC), direct_buffers);
 
-        std::vector<command_buffer*> copy_buffers;
+        std::vector<icommand_buffer*> copy_buffers;
         copy_buffers.reserve(32);
         buffer_pool.emplace(static_cast<int>(command_buffer_type::COPY), copy_buffers);
 
-        std::vector<command_buffer*> compute_buffers;
+        std::vector<icommand_buffer*> compute_buffers;
         compute_buffers.reserve(32);
         buffer_pool.emplace(static_cast<int>(command_buffer_type::COMPUTE), compute_buffers);
     }
@@ -182,12 +183,12 @@ namespace nova {
         }
     }
 
-    command_buffer *dx12_render_engine::allocate_command_buffer(const command_buffer_type type) {
+    icommand_buffer *dx12_render_engine::allocate_command_buffer(const command_buffer_type type) {
         // TODO: The command lists and their allocators should be pooled, so we can avoid a ton of reallocation
         // Not doing that right now, but will make that change once this code is more complete
         // The Vulkan render engine should function the same way
 
-        command_buffer* buffer = nullptr;
+        icommand_buffer* buffer = nullptr;
 
         auto& buffers = buffer_pool.at(static_cast<int>(type));
         if(buffers.empty()) {
@@ -206,7 +207,7 @@ namespace nova {
         return buffer;
     }
 
-    void dx12_render_engine::free_command_buffer(command_buffer *buf) {
+    void dx12_render_engine::free_command_buffer(icommand_buffer *buf) {
         buf->reset();
 
         auto type = buf->get_type();
@@ -224,5 +225,12 @@ namespace nova {
 
     void dx12_render_engine::present_swapchain_image() {
         swapchain->Present(0, 0);
+    }
+
+    iframebuffer *dx12_render_engine::get_current_swapchain_framebuffer() const {
+        auto* framebuffer = new dx12_framebuffer;
+        CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), frame_index, rtv_descriptor_size);
+        framebuffer->color_attachments.push_back(current_framebuffer_rtv);
+        return framebuffer;
     }
 }

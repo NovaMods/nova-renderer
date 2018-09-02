@@ -12,15 +12,17 @@
 
 #include <d3d12.h>
 
-#include "../command_buffer.hpp"
+#include "../icommand_buffer.hpp"
 #include "../../util/logger.hpp"
+#include "dx_12_framebuffer.hpp"
 
 namespace nova {
+
     /*!
      * \brief The DirectX 12 implementation of a command buffer
      */
     template<typename CommandListType>
-    class dx12_command_buffer : public command_buffer {
+    class dx12_command_buffer : public icommand_buffer {
     public:
         dx12_command_buffer(ComPtr<ID3D12Device> device, command_buffer_type type);
 
@@ -33,6 +35,8 @@ namespace nova {
 
         void resource_barrier(const std::vector<resource_barrier_data>& barriers) override;
 
+        void set_render_target(const iframebuffer* render_target) override;
+
         void reset() override;
 
         void on_completion(std::function<void(void)> completion_handler) override;
@@ -44,7 +48,7 @@ namespace nova {
     };
 
     template<typename CommandBufferType>
-    dx12_command_buffer<CommandBufferType>::dx12_command_buffer(ComPtr<ID3D12Device> device, const command_buffer_type type) : command_buffer(type) {
+    dx12_command_buffer<CommandBufferType>::dx12_command_buffer(ComPtr<ID3D12Device> device, const command_buffer_type type) : icommand_buffer(type) {
         HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create command buffer";
@@ -99,6 +103,14 @@ namespace nova {
 
             dx12_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier, ))
         }
+    }
+
+    template<typename CommandBufferType>
+    void dx12_command_buffer<CommandBufferType>::set_render_target(const iframebuffer* render_target) {
+        dx12_framebuffer* framebuffer = (dx12_framebuffer*)render_target;
+
+        command_list->OMSetRenderTargets(framebuffer->color_attachments.size(), framebuffer->color_attachments.data(),
+                                         false, framebuffer->depth_stencil_descriptor);
     }
 
     template <>

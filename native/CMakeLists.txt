@@ -92,7 +92,7 @@ set(NOVA_SOURCE
         src/util/logger.cpp
         src/util/logger.hpp
         src/render_engine/render_engine.hpp
-        src/util/macros.hpp src/render_engine/command_buffer.hpp src/render_engine/command_buffer.cpp src/render_engine/window.hpp src/render_engine/resource_barrier.hpp)
+        src/util/macros.hpp src/render_engine/icommand_buffer.hpp src/render_engine/icommand_buffer.cpp src/render_engine/window.hpp src/render_engine/resource_barrier.hpp src/render_engine/dx12/dx_12_framebuffer.hpp)
 
 if(UNIX)
     set(NOVA_SOURCE
@@ -129,7 +129,7 @@ set(SPIRV_CROSS_HEADERS
         )
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp src/render_engine/dx12/dx_12_framebuffer.hpp)
 endif (WIN32)
 
 if (UNIX)
