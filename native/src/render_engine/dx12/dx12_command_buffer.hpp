@@ -41,8 +41,8 @@ namespace nova {
         ID3D12Fence* fence;
     };
 
-    template<>
-    dx12_command_buffer::dx12_command_buffer(ID3D12Device* device, const command_buffer_type type) : command_buffer(type) {
+    template<typename CommandBufferType>
+    dx12_command_buffer<CommandBufferType>::dx12_command_buffer(ID3D12Device* device, const command_buffer_type type) : command_buffer(type) {
         HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create command buffer";
@@ -83,24 +83,31 @@ namespace nova {
         }
     }
 
-    template <>
-    void dx12_command_buffer::on_completion(std::function<void(void)> completion_handler) {
+    template <typename CommandBufferType>
+    void dx12_command_buffer<CommandBufferType>::on_completion(std::function<void(void)> completion_handler) {
 
     }
 
-    template <typename CommandBufferType>
-    void dx12_command_buffer::reset() {
+    template <>
+    void dx12_command_buffer<ID3D12GraphicsCommandList>::reset() {
         HRESULT hr;
         hr = allocator->Reset();
         if(FAILED(hr)) {
             NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
         }
 
-        if(std::is_same<CommandBufferType, ID3D12GraphicsCommandList>::value) {
-            hr = command_list->Reset(allocator, nullptr);
-            if(FAILED(hr)) {
-                NOVA_LOG(ERROR) << "Could not reset the command list";
-            }
+        hr = command_list->Reset(allocator, nullptr);
+        if(FAILED(hr)) {
+            NOVA_LOG(ERROR) << "Could not reset the command list";
+        }
+    }
+
+    template <>
+    void dx12_command_buffer<ID3D12CommandList>::reset() {
+        HRESULT hr;
+        hr = allocator->Reset();
+        if(FAILED(hr)) {
+            NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
         }
     }
 }

@@ -14,15 +14,15 @@ namespace nova {
 
         std::vector<command_buffer*> direct_buffers;
         direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
-        buffer_pool.emplace(command_buffer_type::DIRECT, direct_buffers);
+        buffer_pool.emplace(static_cast<int>(command_buffer_type::GENERIC), direct_buffers);
 
         std::vector<command_buffer*> copy_buffers;
         copy_buffers.reserve(32);
-        buffer_pool.emplace(command_buffer_type::COPY, copy_buffers);
+        buffer_pool.emplace(static_cast<int>(command_buffer_type::COPY), copy_buffers);
 
         std::vector<command_buffer*> compute_buffers;
         compute_buffers.reserve(32);
-        buffer_pool.emplace(command_buffer_type::COMPUTE, compute_buffers);
+        buffer_pool.emplace(static_cast<int>(command_buffer_type::COMPUTE), compute_buffers);
     }
 
     void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
@@ -171,7 +171,7 @@ namespace nova {
 
         command_buffer* buffer = nullptr;
 
-        auto& buffers = buffer_pool.at(type);
+        auto& buffers = buffer_pool.at(static_cast<int>(type));
         if(buffers.empty()) {
             if(type == command_buffer_type::GENERIC) {
                 buffer = new dx12_command_buffer<ID3D12GraphicsCommandList>(device, type);
@@ -193,6 +193,6 @@ namespace nova {
 
         auto type = buf->get_type();
 
-        buffer_pool.at(type).push_back(buf);
+        buffer_pool.at(static_cast<int>(type)).push_back(buf);
     }
 }

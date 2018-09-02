@@ -70,7 +70,7 @@ namespace nova {
 
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
-        std::unordered_map<command_buffer_type, std::vector<command_buffer*>> buffer_pool;
+        std::unordered_map<int, std::vector<command_buffer*>> buffer_pool;
 
 
         void create_device();
