@@ -1,4 +1,6 @@
 #include <string>
+#include <strsafe.h>
+
 #include "win32_window.hpp"
 #include "../../util/logger.hpp"
 
@@ -29,6 +31,9 @@ namespace nova {
         auto* title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
 
         window_handle = CreateWindowExW(extended_style, window_class_name, title, style, 100, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
+        if(window_handle == 0) {
+            NOVA_LOG(FATAL) << "Could not create window: " << get_last_windows_error();
+        }
     }
 
     void win32_window::register_window_class() {
@@ -74,13 +79,13 @@ namespace nova {
         }
 
         if(view) {
-            return view->window_procedure(message, wParam, lParam);
+            return view->window_procedure(hWnd, message, wParam, lParam);
         }
 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
 
-    LRESULT win32_window::window_procedure(UINT message, WPARAM wParam, LPARAM lParam) {
+    LRESULT win32_window::window_procedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
         window_should_close = false;
 
         // Handle window messages, passing input data to a theoretical input manager
@@ -92,14 +97,14 @@ namespace nova {
                 window_should_close = true;
                 break;
             default:
-                return DefWindowProc(window_handle, message, wParam, lParam);
+                return DefWindowProc(hWnd, message, wParam, lParam);
         }
 
-        return DefWindowProc(window_handle, message, wParam, lParam);
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
 
     std::string win32_window::get_last_windows_error() {
-        WCHAR buffer[1024];
+        /*WCHAR buffer[1024];
         char message[1024];
 
         FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
@@ -108,7 +113,22 @@ namespace nova {
 
         WideCharToMultiByte(CP_UTF8, 1, buffer, -1, message, sizeof(message), nullptr, nullptr);
 
-        return std::string(message);
+        return std::string(message);*/
+        //Get the error message, if any.
+        DWORD errorMessageID = ::GetLastError();
+        if(errorMessageID == 0)
+            return std::string(); //No error message has been recorded
+
+        LPSTR messageBuffer = nullptr;
+        size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+        std::string message(messageBuffer, size);
+
+        //Free the buffer.
+        LocalFree(messageBuffer);
+
+        return message;
     }
 
     bool win32_window::should_close() const {

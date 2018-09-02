@@ -37,11 +37,17 @@ namespace nova {
     }
 
     void dx12_render_engine::create_device() {
+//#ifndef NDEBUG
+        ID3D12Debug* debug_controller;
+        D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
+        debug_controller->EnableDebugLayer();
+//#endif
+
         NOVA_LOG(TRACE) << "Creating DX12 device";
 
         HRESULT hr;
 
-        hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory));
+        hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&dxgi_factory));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create DXGI Factory";
             throw std::runtime_error("Could not create DXGI Factory");
@@ -81,12 +87,6 @@ namespace nova {
         }
 
         NOVA_LOG(TRACE) << "Adapter found";
-
-//#ifndef NDEBUG
-        ID3D12Debug* debug_controller;
-        D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
-        debug_controller->EnableDebugLayer();
-//#endif
 
         hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
         if(FAILED(hr)) {
@@ -129,6 +129,7 @@ namespace nova {
 
         IDXGISwapChain1* swapchain_uncast;
         IDXGISwapChain1** pswapchain_uncast = &swapchain_uncast;
+        // No target window specified in DXGI_SWAP_CHAIN_DESC, and no window associated with owning factory. [ MISCELLANEOUS ERROR #6: ]
         HRESULT hr = dxgi_factory->CreateSwapChainForHwnd(direct_command_queue, window->get_window_handle(), &swapchain_description, nullptr, nullptr, pswapchain_uncast);
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create swapchain";
@@ -143,7 +144,7 @@ namespace nova {
             throw std::runtime_error("Could not create swapchain");
         }
 
-        swapchain = dynamic_cast<IDXGISwapChain3*>(swapchain_uncast);
+        swapchain = (IDXGISwapChain3*)swapchain_uncast;
 
         frame_index = swapchain->GetCurrentBackBufferIndex();
     }

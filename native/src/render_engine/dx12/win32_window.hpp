@@ -88,12 +88,13 @@ namespace nova {
 
         /*!
          * \brief The actual message handler
+         * \param hWnd The handle to.. our window, maybe?
          * \param message The message to (maybe) handle
          * \param wParam
          * \param lParam
          * \return The result of the message handling
          */
-        LRESULT window_procedure(UINT message, WPARAM wParam, LPARAM lParam);
+        LRESULT window_procedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
         /*!
          * \brief Wraps the instance's Window Procedure, allowing me to use a member function as the window procedure
