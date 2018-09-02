@@ -58,6 +58,14 @@ namespace nova {
          */
         virtual void reset() = 0;
 
+        /*!
+         * \brief Retrieves the type of this command buffer
+         *
+         * This seems to be mainly useful for Vulkan knowing which queue to submit this command buffer to, but it'll
+         * also be at least a little useful for debugging
+         *
+         * \return The type of this command buffer
+         */
         command_buffer_type get_type() const;
 
     private:
