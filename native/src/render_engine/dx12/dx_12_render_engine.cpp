@@ -11,7 +11,18 @@ namespace nova {
     dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings), LOG(logger::instance) {
         create_device();
         create_rtv_command_queue();
-        create_command_list_allocators();
+
+        std::vector<command_buffer*> direct_buffers;
+        direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
+        buffer_pool.emplace(command_buffer_type::DIRECT, direct_buffers);
+
+        std::vector<command_buffer*> copy_buffers;
+        copy_buffers.reserve(32);
+        buffer_pool.emplace(command_buffer_type::COPY, copy_buffers);
+
+        std::vector<command_buffer*> compute_buffers;
+        compute_buffers.reserve(32);
+        buffer_pool.emplace(command_buffer_type::COMPUTE, compute_buffers);
     }
 
     void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
@@ -153,21 +164,30 @@ namespace nova {
         }
     }
 
-    void dx12_render_engine::create_command_list_allocators() {
-        HRESULT hr;
-        for(uint8_t i = 0; i < FRAME_BUFFER_COUNT; i++) {
-            hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&command_allocators[i]));
-            if(FAILED(hr)) {
-                NOVA_LOG(FATAL) << "Could not create main command list idx " << i;
-                throw std::runtime_error("Could not create a main command list");
-            }
-        }
-    }
-
     command_buffer *dx12_render_engine::allocate_command_buffer(const command_buffer_type type) {
         // TODO: The command lists and their allocators should be pooled, so we can avoid a ton of reallocation
         // Not doing that right now, but will make that change once this code is more complete
         // The Vulkan render engine should function the same way
-        return new dx12_command_buffer(device, type);
+
+        command_buffer* buffer = nullptr;
+
+        auto& buffers = buffer_pool.at(type);
+        if(buffers.empty()) {
+            buffer = new dx12_command_buffer(device, type);
+
+        } else {
+            buffer = buffers.back();
+            buffers.pop_back();
+        }
+
+        return buffer;
+    }
+
+    void dx12_render_engine::free_command_buffer(command_buffer *buf) {
+        // TODO: Reset the command buffer. I know that Vulkan needs this, not yet sure about DX12
+
+        auto type = buf->get_type();
+
+        buffer_pool.at(type).push_back(buf);
     }
 }

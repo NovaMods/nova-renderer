@@ -16,9 +16,10 @@ namespace nova {
      */
     SMART_ENUM(command_buffer_type,
         /*!
-         * \brief Command buffer will be directly executed by the GPU. Usually used for rendering things
+         * \brief Non-specialized command buffer. Can be used for any tasks, although a more specialized command buffer
+         * might be better for certain tasks
          */
-        DIRECT,
+        GENERIC,
 
         /*!
          * \brief Command buffer will be used for copying data from one buffer to another (e.g. from a staging buffer
@@ -36,11 +37,19 @@ namespace nova {
      * \brief Platform-independent interface for a command buffer
      */
     class command_buffer {
+    public:
+        explicit command_buffer(command_buffer_type type);
+
         /*!
          * \brief Executes a provided function when this command buffer has finished executing
          * \param completion_handler The function to execute when this command buffer has finished executing
          */
         virtual void on_completion(std::function<void(void)> completion_handler) = 0;
+
+        command_buffer_type get_type() const;
+
+    private:
+        command_buffer_type type;
     };
 }
 

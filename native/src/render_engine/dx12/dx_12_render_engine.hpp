@@ -59,10 +59,6 @@ namespace nova {
 
         ID3D12Resource* rendertargets[FRAME_BUFFER_COUNT]; // number of render targets equal to buffer count
 
-        ID3D12CommandAllocator* command_allocators[FRAME_BUFFER_COUNT]; // we want enough allocators for each buffer * number of threads (we only have one thread)
-
-        ID3D12GraphicsCommandList* commandList; // a command list we can record commands into, then execute them to render the frame
-
         ID3D12Fence* fence[FRAME_BUFFER_COUNT];    // an object that is locked while our command list is being executed by the gpu. We need as many
         //as we have allocators (more if we want to know when the gpu is finished with an asset)
 
@@ -73,6 +69,8 @@ namespace nova {
         int frame_index; // current rtv we are on
 
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
+
+        std::unordered_map<command_buffer_type, std::vector<command_buffer*>> buffer_pool;
 
 
         void create_device();
@@ -92,8 +90,6 @@ namespace nova {
          * \brief Creates the descriptor heap for the swapchain
          */
         void create_render_target_descriptor_heap();
-
-        void create_command_list_allocators();
     };
 }
 
