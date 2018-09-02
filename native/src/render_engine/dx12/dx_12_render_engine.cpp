@@ -51,7 +51,7 @@ namespace nova {
         hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&dxgi_factory));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create DXGI Factory";
-            throw std::runtime_error("Could not create DXGI Factory");
+            throw render_engine_initialization_exception("Could not create DXGI Factory");
         }
         NOVA_LOG(TRACE) << "Device created";
 
@@ -84,7 +84,7 @@ namespace nova {
 
         if(!adapter_found) {
             NOVA_LOG(FATAL) << "Could not find a GPU that supports DX12";
-            throw std::runtime_error("Could not find a GPU that supports DX12");
+            throw render_engine_initialization_exception("Could not find a GPU that supports DX12");
         }
 
         NOVA_LOG(TRACE) << "Adapter found";
@@ -92,7 +92,7 @@ namespace nova {
         hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create Dx12 device";
-            throw std::runtime_error("Could not create Dx12 device");
+            throw render_engine_initialization_exception("Could not create Dx12 device");
         }
     }
 
@@ -102,14 +102,14 @@ namespace nova {
         HRESULT hr = device->CreateCommandQueue(&rtv_queue_desc, IID_PPV_ARGS(&direct_command_queue));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create main command queue";
-            throw std::runtime_error("Could not create main command queue");
+            throw render_engine_initialization_exception("Could not create main command queue");
         }
     }
 
     void dx12_render_engine::create_swapchain() {
         if(!window) {
             NOVA_LOG(FATAL) << "Cannot initialize the swapchain before the window!";
-            throw std::runtime_error("Cannot initialize the swapchain before the window");
+            throw render_engine_initialization_exception("Cannot initialize the swapchain before the window");
         }
 
         const auto& window_size = window->get_size();
@@ -141,7 +141,7 @@ namespace nova {
                 NOVA_LOG(INFO) << "Out of memory. Soz bro :/";
             }
 
-            throw std::runtime_error("Could not create swapchain");
+            throw render_engine_initialization_exception("Could not create swapchain");
         }
 
         swapchain_uncast->QueryInterface(IID_PPV_ARGS(&swapchain));
@@ -160,7 +160,7 @@ namespace nova {
         HRESULT hr = device->CreateDescriptorHeap(&rtv_heap_descriptor, IID_PPV_ARGS(&rtv_descriptor_heap));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create descriptor heap for the RTV";
-            throw std::runtime_error("Could not create descriptor head for the RTV");
+            throw render_engine_initialization_exception("Could not create descriptor head for the RTV");
         }
 
         rtv_descriptor_size = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -171,7 +171,7 @@ namespace nova {
             hr = swapchain->GetBuffer(i, IID_PPV_ARGS(&rendertargets[i]));
             if(FAILED(hr)) {
                 NOVA_LOG(FATAL) << "Could not create RTV for swapchain image " << i;
-                throw std::runtime_error("Could not create RTV for swapchain");
+                throw render_engine_initialization_exception("Could not create RTV for swapchain");
             }
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
@@ -215,7 +215,7 @@ namespace nova {
     }
 
     iwindow *dx12_render_engine::get_window() const {
-        return window;
+        return window.Get();
     }
 
     dx12_render_engine::~dx12_render_engine() {
