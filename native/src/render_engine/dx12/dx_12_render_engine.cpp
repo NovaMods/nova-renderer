@@ -6,6 +6,7 @@
 #include "dx_12_render_engine.hpp"
 #include "win32_window.hpp"
 #include "dx12_command_buffer.hpp"
+#include <d3d12sdklayers.h>
 
 namespace nova {
     dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings), LOG(logger::instance) {
@@ -81,6 +82,12 @@ namespace nova {
 
         NOVA_LOG(TRACE) << "Adapter found";
 
+//#ifndef NDEBUG
+        ID3D12Debug* debug_controller;
+        D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
+        debug_controller->EnableDebugLayer();
+//#endif
+
         hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create Dx12 device";
@@ -106,25 +113,35 @@ namespace nova {
 
         const auto& window_size = window->get_size();
 
-        DXGI_MODE_DESC backbuffer_description = {};
-        backbuffer_description.Width = window_size.x;
-        backbuffer_description.Height = window_size.y;
-        backbuffer_description.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-
         DXGI_SAMPLE_DESC sample_desc = {};
         sample_desc.Count = 1;
 
-        DXGI_SWAP_CHAIN_DESC swapchain_description {};
-        swapchain_description.BufferCount = FRAME_BUFFER_COUNT;
-        swapchain_description.BufferDesc = backbuffer_description;
-        swapchain_description.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        swapchain_description.OutputWindow = window->get_window_handle();
-        swapchain_description.SampleDesc = sample_desc;
-        swapchain_description.Windowed = true;
+        DXGI_SWAP_CHAIN_DESC1 swapchain_description {};
+        swapchain_description.Width = window_size.x;
+        swapchain_description.Height = window_size.y;
+        swapchain_description.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-        IDXGISwapChain* swapchain_uncast;
-        dxgi_factory->CreateSwapChain(direct_command_queue, &swapchain_description, &swapchain_uncast);
+        swapchain_description.SampleDesc = sample_desc;
+        swapchain_description.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        swapchain_description.BufferCount = FRAME_BUFFER_COUNT;
+
+        swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
+        IDXGISwapChain1* swapchain_uncast;
+        IDXGISwapChain1** pswapchain_uncast = &swapchain_uncast;
+        HRESULT hr = dxgi_factory->CreateSwapChainForHwnd(direct_command_queue, window->get_window_handle(), &swapchain_description, nullptr, nullptr, pswapchain_uncast);
+        if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create swapchain";
+            if(hr == DXGI_ERROR_INVALID_CALL) {
+                NOVA_LOG(INFO) << "Invalid call - one or more of the parameters was wrong";
+            } else if(hr == DXGI_STATUS_OCCLUDED) {
+                NOVA_LOG(INFO) << "Fullscreen is unavaible";
+            } else if(hr == E_OUTOFMEMORY) {
+                NOVA_LOG(INFO) << "Out of memory. Soz bro :/";
+            }
+
+            throw std::runtime_error("Could not create swapchain");
+        }
 
         swapchain = dynamic_cast<IDXGISwapChain3*>(swapchain_uncast);
 

@@ -29,8 +29,6 @@ namespace nova {
         auto* title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
 
         window_handle = CreateWindowExW(extended_style, window_class_name, title, style, 100, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
-
-        free(title);
     }
 
     void win32_window::register_window_class() {
@@ -46,8 +44,8 @@ namespace nova {
         // We will one day have our own window icon, but for now the default icon will work
         window_class.hIcon = static_cast<HICON>(LoadImageW(nullptr, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
 
-        ATOM result = RegisterClassExW(&window_class);
-        if(result != 0) {
+        window_class_id = RegisterClassExW(&window_class);
+        if(window_class_id == 0) {
             std::string windows_err = get_last_windows_error();
             logger::instance.log(FATAL) << "Could not register window class: " << windows_err;
 
@@ -67,12 +65,12 @@ namespace nova {
             view = (win32_window *) cs->lpCreateParams;
 
             SetLastError(0);
-            if(SetWindowLongPtr(hWnd, GWL_USERDATA, (LONG_PTR) view) == 0) {
+            if(SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) view) == 0) {
                 if(GetLastError() != 0)
                     return FALSE;
             }
         } else {
-            view = (win32_window *) GetWindowLongPtr(hWnd, GWL_USERDATA);
+            view = (win32_window *) GetWindowLongPtr(hWnd, GWLP_USERDATA);
         }
 
         if(view) {

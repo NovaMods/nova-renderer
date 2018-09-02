@@ -36,5 +36,7 @@ int main(int num_args, const char** args) {
 #endif
 
     renderer->get_engine()->open_window(200, 200);
+
+    std::cin.get();
     return 0;
 }

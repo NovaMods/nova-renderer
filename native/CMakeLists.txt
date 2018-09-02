@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.10)
 project(nova-renderer)
 
 option(NOVA_TEST "Enable tests." OFF)
@@ -200,5 +200,3 @@ if(NOVA_MINECRAFT)
     target_include_directories(nova-minecraft PUBLIC ${JNI_INCLUDE_DIRS})
     target_link_libraries(nova-minecraft nova-render ${COMMON_LINK_LIBS} ${JNI_LIBRARIES})
 endif()
-
-message(INFO "${CMAKE_CXX_FLAGS}")

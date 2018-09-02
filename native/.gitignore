@@ -509,3 +509,6 @@ ASALocalRun/
 # End of https://www.gitignore.io/api/visualstudio
 
 cmake-build-release
+
+# Out-of-tree build
+../build
