@@ -23,15 +23,12 @@ namespace nova {
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
      */
-    template <typename RenderEngine>
     class nova_renderer {
     public:
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit nova_renderer() : render_settings(settings_options{RenderEngine::get_engine_name()}) {
-            engine = std::make_unique<RenderEngine>(render_settings);
-        };
+        explicit nova_renderer();
 
         /*!
          * \brief Loads the shaderpack with the given name
@@ -51,68 +48,22 @@ namespace nova {
 
         settings &get_settings();
 
-        RenderEngine *get_engine();
+        render_engine *get_engine();
 
-        static nova_renderer<RenderEngine> *initialize() {
-            return (instance = new nova_renderer<RenderEngine>());
+        static nova_renderer *initialize() {
+            return (instance = new nova_renderer());
         }
 
-        static nova_renderer<RenderEngine>* get_instance();
+        static nova_renderer* get_instance();
 
         static void deinitialize();
 
     private:
         settings render_settings;
-        std::unique_ptr<RenderEngine> engine;
+        std::unique_ptr<render_engine> engine;
 
-        static nova_renderer<RenderEngine> *instance;
+        static nova_renderer *instance;
     };
-
-    template<typename RenderEngine>
-    nova_renderer<RenderEngine>* nova_renderer<RenderEngine>::instance;
-
-    template <typename RenderEngine>
-    settings &nova_renderer<RenderEngine>::get_settings() {
-        return render_settings;
-    }
-
-    template <typename RenderEngine>
-    void nova_renderer<RenderEngine>::execute_frame() {
-        // Transition the swapchain image from being presentable to being writable from a shader
-        command_buffer_base* buffer = engine->allocate_command_buffer(command_buffer_type::GENERIC);
-        graphics_command_buffer_base* swapchain_image_command_buffer = dynamic_cast<graphics_command_buffer_base*>(buffer);
-
-        resource_barrier_data swapchain_image_to_shader_writable = {};
-        swapchain_image_to_shader_writable.initial_layout = resource_layout::PRESENT;
-        swapchain_image_to_shader_writable.final_layout = resource_layout::RENDER_TARGET;
-
-        std::vector<resource_barrier_data> barriers;
-        barriers.push_back(swapchain_image_to_shader_writable);
-
-        swapchain_image_command_buffer->resource_barrier(barriers);
-
-        engine->present_swapchain_image();
-    }
-
-    template <typename RenderEngine>
-    void nova_renderer<RenderEngine>::load_shaderpack(const std::string &shaderpack_name) {
-        const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
-    }
-
-    template<typename RenderEngine>
-    RenderEngine *nova_renderer<RenderEngine>::get_engine() {
-        return engine.get();
-    }
-
-    template <typename RenderEngine>
-    nova_renderer<RenderEngine>* nova_renderer<RenderEngine>::get_instance() {
-        return instance;
-    }
-
-    template <typename RenderEngine>
-    void nova_renderer<RenderEngine>::deinitialize() {
-
-    }
 }
 
 

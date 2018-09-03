@@ -55,6 +55,11 @@ namespace nova {
         virtual void on_completion(std::function<void(void)> completion_handler) = 0;
 
         /*!
+         * \brief Ends recording for this command buffer, letting the underlying graphics API know that we're done
+         */
+        virtual void end_recording() = 0;
+
+        /*!
          * \brief Resets this command buffer, making its resources availabe for future use
          */
         virtual void reset() = 0;
@@ -90,7 +95,7 @@ namespace nova {
          * \brief Clears the current render target to the provided clear color
          * \param clear_color The color to clear to
          */
-        virtual void clear_render_target(const std::vector<resource_ptr>& resources_to_clear, glm::vec4& clear_color) = 0;
+        virtual void clear_render_target(const iframebuffer* framebuffer_to_clear, glm::vec4& clear_color) = 0;
 
         /*!
          * \brief Sets the render target to render to

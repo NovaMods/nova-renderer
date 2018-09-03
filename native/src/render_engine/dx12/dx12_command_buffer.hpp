@@ -81,7 +81,9 @@ namespace nova {
         dx12_command_buffer(const dx12_command_buffer& other) = delete;
         dx12_command_buffer& operator=(const dx12_command_buffer& other) = delete;
 
-        virtual void reset() override {
+        void end_recording() override {};
+
+        void reset() override {
             HRESULT hr;
             hr = allocator->Reset();
             if(FAILED(hr)) {
@@ -111,9 +113,11 @@ namespace nova {
 
         void resource_barrier(const std::vector<resource_barrier_data>& barriers) override;
 
-        void clear_render_target(const std::vector<resource_ptr>& resources_to_clear, glm::vec4& clear_color) override;
+        void clear_render_target(const iframebuffer* framebuffer_to_clear, glm::vec4& clear_color) override;
 
         void set_render_target(framebuffer_ptr render_target) override;
+
+        void end_recording() override;
 
         void reset() override;
     };

@@ -13,10 +13,9 @@ namespace nova {
             : dx12_command_buffer<ID3D12GraphicsCommandList>(device, type), command_buffer_base(type) {
     }
 
-    void dx12_graphics_command_buffer::clear_render_target(const std::vector<resource_ptr> &resources_to_clear,
-                                                           glm::vec4 &clear_color)  {
-        for(resource_ptr resource : resources_to_clear) {
-            command_list->ClearRenderTargetView(resource->descriptor, reinterpret_cast<FLOAT*>(&clear_color), 0, nullptr);
+    void dx12_graphics_command_buffer::clear_render_target(const iframebuffer* framebuffer_to_clear, glm::vec4 &clear_color)  {
+        for(const D3D12_CPU_DESCRIPTOR_HANDLE& resource : framebuffer_to_clear->color_attachments) {
+            command_list->ClearRenderTargetView(resource, reinterpret_cast<FLOAT*>(&clear_color), 0, nullptr);
         }
     }
 
@@ -46,6 +45,10 @@ namespace nova {
         if(FAILED(hr)) {
             NOVA_LOG(ERROR) << "Could not reset the command list";
         }
+    }
+
+    void dx12_graphics_command_buffer::end_recording() {
+        command_list->Close();
     }
 }
 
