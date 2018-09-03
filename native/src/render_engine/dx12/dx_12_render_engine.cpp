@@ -15,21 +15,21 @@ namespace nova {
         create_device();
         create_rtv_command_queue();
 
-        std::vector<icommand_buffer*> direct_buffers;
+        std::vector<command_buffer_base*> direct_buffers;
         direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
         buffer_pool.emplace(static_cast<int>(command_buffer_type::GENERIC), direct_buffers);
 
-        std::vector<icommand_buffer*> copy_buffers;
+        std::vector<command_buffer_base*> copy_buffers;
         copy_buffers.reserve(32);
         buffer_pool.emplace(static_cast<int>(command_buffer_type::COPY), copy_buffers);
 
-        std::vector<icommand_buffer*> compute_buffers;
+        std::vector<command_buffer_base*> compute_buffers;
         compute_buffers.reserve(32);
         buffer_pool.emplace(static_cast<int>(command_buffer_type::COMPUTE), compute_buffers);
     }
 
     void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
-        window = new win32_window(width, height);
+        window = std::make_unique<win32_window>(width, height);
         create_swapchain();
         create_render_target_descriptor_heap();
     }
@@ -74,7 +74,7 @@ namespace nova {
             // Direct3D 12 is feature level 11.
             //
             // cool
-            hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr);
+            hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr);
             if(SUCCEEDED(hr)) {
                 adapter_found = true;
                 break;
@@ -183,17 +183,17 @@ namespace nova {
         }
     }
 
-    icommand_buffer *dx12_render_engine::allocate_command_buffer(const command_buffer_type type) {
+    command_buffer_base *dx12_render_engine::allocate_command_buffer(const command_buffer_type type) {
         // TODO: The command lists and their allocators should be pooled, so we can avoid a ton of reallocation
         // Not doing that right now, but will make that change once this code is more complete
         // The Vulkan render engine should function the same way
 
-        icommand_buffer* buffer = nullptr;
+        command_buffer_base* buffer = nullptr;
 
         auto& buffers = buffer_pool.at(static_cast<int>(type));
         if(buffers.empty()) {
             if(type == command_buffer_type::GENERIC) {
-                buffer = new dx12_command_buffer<ID3D12GraphicsCommandList>(device, type);
+                buffer = (dx12_command_buffer<ID3D12GraphicsCommandList>*)new dx12_graphics_command_buffer(device, type);
 
             } else {
                 buffer = new dx12_command_buffer<ID3D12CommandList>(device, type);
@@ -207,7 +207,7 @@ namespace nova {
         return buffer;
     }
 
-    void dx12_render_engine::free_command_buffer(icommand_buffer *buf) {
+    void dx12_render_engine::free_command_buffer(command_buffer_base *buf) {
         buf->reset();
 
         auto type = buf->get_type();
@@ -216,11 +216,7 @@ namespace nova {
     }
 
     iwindow *dx12_render_engine::get_window() const {
-        return window.Get();
-    }
-
-    dx12_render_engine::~dx12_render_engine() {
-        delete window;
+        return window.get();
     }
 
     void dx12_render_engine::present_swapchain_image() {
@@ -228,7 +224,7 @@ namespace nova {
     }
 
     iframebuffer *dx12_render_engine::get_current_swapchain_framebuffer() const {
-        auto* framebuffer = new dx12_framebuffer;
+        auto* framebuffer = new iframebuffer;
         CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), frame_index, rtv_descriptor_size);
         framebuffer->color_attachments.push_back(current_framebuffer_rtv);
         return framebuffer;

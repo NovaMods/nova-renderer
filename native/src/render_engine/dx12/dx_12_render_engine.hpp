@@ -34,8 +34,6 @@ namespace nova {
          */
         explicit dx12_render_engine(const settings& settings);
 
-        ~dx12_render_engine();
-
         static const std::string get_engine_name();
 
         /**
@@ -48,9 +46,9 @@ namespace nova {
 
         iframebuffer* get_current_swapchain_framebuffer() const override;
 
-        icommand_buffer* allocate_command_buffer(command_buffer_type type) override;
+        command_buffer_base* allocate_command_buffer(command_buffer_type type) override;
 
-        void free_command_buffer(icommand_buffer* buf) override;
+        void free_command_buffer(command_buffer_base* buf) override;
 
         void present_swapchain_image() override;
 
@@ -79,7 +77,7 @@ namespace nova {
 
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
-        std::unordered_map<int, std::vector<icommand_buffer*>> buffer_pool;
+        std::unordered_map<int, std::vector<command_buffer_base*>> buffer_pool;
 
 
         void create_device();
@@ -93,7 +91,7 @@ namespace nova {
          */
         void create_swapchain();
 
-        ComPtr<win32_window> window;
+        std::unique_ptr<win32_window> window;
 
         /*!
          * \brief Creates the descriptor heap for the swapchain

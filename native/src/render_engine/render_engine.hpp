@@ -7,7 +7,7 @@
 
 #include "../settings/settings.hpp"
 #include "../util/macros.hpp"
-#include "icommand_buffer.hpp"
+#include "command_buffer_base.hpp"
 #include "window.hpp"
 
 NOVA_EXCEPTION(nova, render_engine_initialization_exception)
@@ -54,13 +54,13 @@ namespace nova {
          * \brief Allocates a new command buffer from the underlying API
          * \return An interface to a command buffer
          */
-        virtual icommand_buffer* allocate_command_buffer(command_buffer_type type) = 0;
+        virtual command_buffer_base* allocate_command_buffer(command_buffer_type type) = 0;
 
         /*!
          * \brief Frees a command buffer, making all of its resources available
          * \param buf The command buffer to free
          */
-        virtual void free_command_buffer(icommand_buffer* buf) = 0;
+        virtual void free_command_buffer(command_buffer_base* buf) = 0;
 
         /*!
          * \brief Presents the image in the swapchain to the users

@@ -79,12 +79,17 @@ namespace nova {
     template <typename RenderEngine>
     void nova_renderer<RenderEngine>::execute_frame() {
         // Transition the swapchain image from being presentable to being writable from a shader
-        icommand_buffer* swapchain_image_command_buffer = engine->allocate_command_buffer(command_buffer_type::GENERIC);
+        command_buffer_base* buffer = engine->allocate_command_buffer(command_buffer_type::GENERIC);
+        graphics_command_buffer_base* swapchain_image_command_buffer = dynamic_cast<graphics_command_buffer_base*>(buffer);
 
         resource_barrier_data swapchain_image_to_shader_writable = {};
         swapchain_image_to_shader_writable.initial_layout = resource_layout::PRESENT;
         swapchain_image_to_shader_writable.final_layout = resource_layout::RENDER_TARGET;
-        swapchain_image_command_buffer->resource_barrier({swapchain_image_command_buffer});
+
+        std::vector<resource_barrier_data> barriers;
+        barriers.push_back(swapchain_image_to_shader_writable);
+
+        swapchain_image_command_buffer->resource_barrier(barriers);
 
         engine->present_swapchain_image();
     }
