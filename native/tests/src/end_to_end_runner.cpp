@@ -31,8 +31,6 @@ int main(int num_args, const char** args) {
 
     auto renderer = nova::nova_renderer::initialize();
 
-    renderer->get_engine()->open_window(200, 200);
-
     std::shared_ptr<nova::iwindow> window = renderer->get_engine()->get_window();
 
     while(!window->should_close()) {

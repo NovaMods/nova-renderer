@@ -27,6 +27,8 @@ namespace nova {
         engine = std::make_unique<vulkan_render_engine>(render_settings);
 #endif
 
+        // TODO: Get window size from config
+        engine->open_window(200, 200);
         frame_index = engine->get_current_swapchain_index();
     }
 
@@ -73,10 +75,12 @@ namespace nova {
 
         engine->present_swapchain_image();
 
+        swapchain_image_command_buffer->wait_until_completion();
+
         engine->free_command_buffer(std::move(buffer));
 
         frame_index++;
-        if(frame_index > FRAME_BUFFER_COUNT) {
+        if(frame_index >= FRAME_BUFFER_COUNT) {
             frame_index = 0;
         }
     }
