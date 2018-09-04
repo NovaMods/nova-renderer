@@ -48,8 +48,11 @@ namespace nova {
         void open_window(uint32_t width, uint32_t height) override;
 
         command_buffer* allocate_command_buffer(command_buffer_type type) override;
-
         void free_command_buffer(command_buffer* buf) override;
+
+        void present_swapchain_image() override;
+
+        iwindow* get_window() const override;
 
         static const std::string get_engine_name();
     };

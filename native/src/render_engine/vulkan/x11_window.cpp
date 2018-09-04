@@ -2,6 +2,7 @@
 // Created by jannis on 01.09.18.
 //
 
+#include <Common.h>
 #include "x11_window.hpp"
 
 namespace nova {
@@ -13,11 +14,17 @@ namespace nova {
 
         int screen = DefaultScreen(display);
         window = XCreateSimpleWindow(display, RootWindow(display, screen), 50, 50, width, height, 1, BlackPixel(display, screen), WhitePixel(display, screen));
+
+        wm_protocols = XInternAtom(display, "WM_PROTOCOLS", false);
+        wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
+        XSetWMProtocols(display, window, &wm_delete_window, 1);
+
         XSelectInput(display, window, ExposureMask | ButtonPressMask | KeyPressMask);
         XMapWindow(display, window);
     }
 
     x11_window::~x11_window() {
+        XUnmapWindow(display, window);
         XDestroyWindow(display, window);
         XCloseDisplay(display);
     }
@@ -30,15 +37,23 @@ namespace nova {
         return display;
     }
 
-    void x11_window::enter_loop() {
+    void x11_window::on_frame_end() {
         XEvent event;
-        while(true) {
-            XNextEvent(display, &event);
-            if(event.type == KeyPress) {
+        XNextEvent(display, &event);
+        switch (event.type) {
+            case ClientMessage: {
+                if(event.xclient.message_type == wm_protocols && event.xclient.data.l[0] == wm_delete_window) {
+                    should_window_close = true;
+                }
                 break;
             }
-        }
 
-        XUnmapWindow(display, window);
+            default:
+                break;
+        }
+    }
+
+    bool x11_window::should_close() const {
+        return should_window_close;
     }
 }

@@ -32,7 +32,7 @@ namespace nova {
          * \brief Command buffer will be used for compute tasks
          */
         COMPUTE
-    );
+    )
 
     /*!
      * \brief Platform-independent interface for a command buffer

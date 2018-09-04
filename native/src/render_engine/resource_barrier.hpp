@@ -34,7 +34,7 @@ namespace nova {
                 */
                PRESENT,
 
-    );
+    )
 
     /*!
      * \brief All the data needed for a resource barrier

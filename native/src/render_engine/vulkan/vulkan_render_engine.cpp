@@ -83,7 +83,6 @@ namespace nova {
         NOVA_THROW_IF_VK_ERROR(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface), x_window_creation_exception);
 #endif
         create_device();
-        window->enter_loop();
 }
 
     command_buffer *vulkan_render_engine::allocate_command_buffer(command_buffer_type type) {
@@ -130,10 +129,8 @@ namespace nova {
                     continue;
                 }
 
-                VkBool32 supports_present = VK_FALSE;
-                NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, j, surface, &supports_present), render_engine_initialization_exception);
-                if(supports_present == VK_TRUE) {
-                    present_familiy_idx = j;
+                if(current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                    graphics_family_idx = j;
                     break;
                 }
             }
@@ -144,15 +141,17 @@ namespace nova {
                     continue;
                 }
 
-                if(current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                    graphics_family_idx = j;
+                VkBool32 supports_present = VK_FALSE;
+                NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, j, surface, &supports_present), render_engine_initialization_exception);
+                if(supports_present == VK_TRUE) {
+                    present_familiy_idx = j;
                     break;
                 }
             }
 
             delete[] family_properties;
 
-            if(graphics_family_idx >= 0 && present_familiy_idx >= 0) {
+            if(graphics_family_idx != 0xFFFFFFFF && present_familiy_idx != 0xFFFFFFFF) {
                 NOVA_LOG(INFO) << "Selected GPU " << properties.deviceName;
                 choosen_device = current_device;
                 break;
@@ -204,7 +203,6 @@ namespace nova {
         }
 
         vkCreateDevice(choosen_device, &device_create_info, nullptr, &device);
-        // NOVA_THROW_IF_VK_ERROR(, render_engine_initialization_exception);
 
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
         vkGetDeviceQueue(device, present_familiy_idx, 0, &present_queue);
@@ -218,6 +216,14 @@ namespace nova {
         auto *self = reinterpret_cast<vulkan_render_engine *>(user_data);
         NOVA_LOG(TRACE) << __FILE__ << ":" << __LINE__ << " >> VK Debug: [" << layer_prefix << "] " << message;
         return VK_FALSE;
+    }
+
+    void vulkan_render_engine::present_swapchain_image() {
+
+    }
+
+    iwindow *vulkan_render_engine::get_window() const {
+        return window;
     }
 }
 #pragma clang diagnostic pop
