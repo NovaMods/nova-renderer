@@ -12,28 +12,23 @@ namespace nova {
 
     dx12_graphics_command_buffer::dx12_graphics_command_buffer(const ComPtr<ID3D12Device> &device, const nova::command_buffer_type &type)
             : dx12_command_buffer(device, type), command_buffer_base(type) {
+        command_list->QueryInterface(IID_PPV_ARGS(&gfx_cmd_list));
+        gfx_cmd_list->Close();
     }
 
     void dx12_graphics_command_buffer::clear_render_target(iframebuffer* framebuffer_to_clear, glm::vec4 &clear_color)  {
-        ComPtr<ID3D12GraphicsCommandList> gfx_cmd_list;
-        command_list->QueryInterface(IID_PPV_ARGS(&gfx_cmd_list));
         for(const D3D12_CPU_DESCRIPTOR_HANDLE& resource : framebuffer_to_clear->color_attachments) {
             gfx_cmd_list->ClearRenderTargetView(resource, reinterpret_cast<FLOAT*>(&clear_color), 0, nullptr);
         }
     }
 
     void dx12_graphics_command_buffer::set_render_target(iframebuffer* render_target) {
-        ComPtr<ID3D12GraphicsCommandList> gfx_cmd_list;
-        command_list->QueryInterface(IID_PPV_ARGS(&gfx_cmd_list));
         gfx_cmd_list->OMSetRenderTargets(render_target->color_attachments.size(),
                                                                        render_target->color_attachments.data(),
                                                                        false, render_target->depth_stencil_descriptor);
     }
 
     void dx12_graphics_command_buffer::resource_barrier(const std::vector<resource_barrier_data> &barriers) {
-        ComPtr<ID3D12GraphicsCommandList> gfx_cmd_list;
-        command_list->QueryInterface(IID_PPV_ARGS(&gfx_cmd_list));
-
         std::vector<CD3DX12_RESOURCE_BARRIER> dx12_barriers;
         dx12_barriers.reserve(barriers.size());
 
@@ -47,9 +42,6 @@ namespace nova {
     }
 
     void dx12_graphics_command_buffer::reset() {
-        ComPtr<ID3D12GraphicsCommandList> gfx_cmd_list;
-        command_list->QueryInterface(IID_PPV_ARGS(&gfx_cmd_list));
-
         dx12_command_buffer::reset();
 
         HRESULT hr = gfx_cmd_list->Reset(allocator.Get(), nullptr);
@@ -59,8 +51,6 @@ namespace nova {
     }
 
     void dx12_graphics_command_buffer::end_recording() {
-        ComPtr<ID3D12GraphicsCommandList> gfx_cmd_list;
-        command_list->QueryInterface(IID_PPV_ARGS(&gfx_cmd_list));
         gfx_cmd_list->Close();
     }
 
@@ -91,11 +81,6 @@ namespace nova {
         if(FAILED(hr)) {
             NOVA_LOG(ERROR) << "Could not create a command list of type " << type.to_string();
             throw std::runtime_error("Could not create command list");
-        }
-
-        if(type == command_buffer_type::GENERIC) {
-            // Get the command list out of the recording state
-            dynamic_cast<ID3D12GraphicsCommandList*>(command_list.Get())->Close();
         }
 
         hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));

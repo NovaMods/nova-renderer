@@ -56,7 +56,7 @@ namespace nova {
          * \brief Allocates a new command buffer from the underlying API
          * \return An interface to a command buffer
          */
-        virtual std::shared_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) = 0;
+        virtual std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) = 0;
 
         /*!
          * \brief Executes all the provided command buffers, signalling their fences when they're done

@@ -65,6 +65,9 @@ namespace nova {
         void end_recording() override;
 
         void reset() override;
+
+    private:
+        ComPtr<ID3D12GraphicsCommandList> gfx_cmd_list;
     };
 }
 
