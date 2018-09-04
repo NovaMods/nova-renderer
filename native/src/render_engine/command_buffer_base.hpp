@@ -64,6 +64,16 @@ namespace nova {
         virtual void reset() = 0;
 
         /*!
+         * \brief Checks if this command buffer has finished executing on the GPU
+         */
+        virtual bool is_finished() const = 0;
+
+        /*!
+         * \brief Blocks until this command buffer has finished executing
+         */
+        virtual void wait_until_completion() const = 0;
+
+        /*!
          * \brief Retrieves the type of this command buffer
          *
          * This seems to be mainly useful for Vulkan knowing which queue to submit this command buffer to, but it'll

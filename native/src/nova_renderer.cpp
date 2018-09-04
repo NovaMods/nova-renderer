@@ -26,6 +26,8 @@ namespace nova {
     : render_settings(settings_options{"vulkan-1.1"}) {
         engine = std::make_unique<vulkan_render_engine>(render_settings);
 #endif
+
+        frame_index = engine->get_current_swapchain_index();
     }
 
     settings &nova_renderer::get_settings() {
@@ -40,7 +42,7 @@ namespace nova {
         swapchain_image_command_buffer->reset();
 
         resource_barrier_data swapchain_image_to_shader_writable = {};
-        swapchain_image_to_shader_writable.resource_to_barrier = engine->get_current_swapchain_image();
+        swapchain_image_to_shader_writable.resource_to_barrier = engine->get_current_swapchain_image(frame_index);
         swapchain_image_to_shader_writable.initial_layout = resource_layout::PRESENT;
         swapchain_image_to_shader_writable.final_layout = resource_layout::RENDER_TARGET;
 
@@ -48,14 +50,14 @@ namespace nova {
         to_shader_barriers.push_back(swapchain_image_to_shader_writable);
         swapchain_image_command_buffer->resource_barrier(to_shader_barriers);
 
-        std::shared_ptr<iframebuffer> backbuffer_framebuffer = engine->get_current_swapchain_framebuffer();
+        std::shared_ptr<iframebuffer> backbuffer_framebuffer = engine->get_current_swapchain_framebuffer(frame_index);
         swapchain_image_command_buffer->set_render_target(backbuffer_framebuffer.get());
 
         glm::vec4 clear_color(0, 0.2f, 0.4f, 1.0f);
         swapchain_image_command_buffer->clear_render_target(backbuffer_framebuffer.get(), clear_color);
 
         resource_barrier_data swapchain_image_to_presentable = {};
-        swapchain_image_to_presentable.resource_to_barrier = engine->get_current_swapchain_image();
+        swapchain_image_to_presentable.resource_to_barrier = engine->get_current_swapchain_image(frame_index);
         swapchain_image_to_presentable.initial_layout = resource_layout::RENDER_TARGET;
         swapchain_image_to_presentable.final_layout = resource_layout::PRESENT;
 
@@ -72,6 +74,11 @@ namespace nova {
         engine->present_swapchain_image();
 
         engine->free_command_buffer(std::move(buffer));
+
+        frame_index++;
+        if(frame_index > FRAME_BUFFER_COUNT) {
+            frame_index = 0;
+        }
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {

@@ -146,8 +146,6 @@ namespace nova {
         }
 
         swapchain_uncast->QueryInterface(IID_PPV_ARGS(&swapchain));
-
-        frame_index = swapchain->GetCurrentBackBufferIndex();
     }
 
     void dx12_render_engine::create_render_target_descriptor_heap() {
@@ -223,7 +221,7 @@ namespace nova {
         swapchain->Present(0, 0);
     }
 
-    std::shared_ptr<iframebuffer> dx12_render_engine::get_current_swapchain_framebuffer() const {
+    std::shared_ptr<iframebuffer> dx12_render_engine::get_current_swapchain_framebuffer(const uint8_t frame_index) const {
         std::shared_ptr<iframebuffer> framebuffer = std::make_shared<iframebuffer>();
         CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), frame_index, rtv_descriptor_size);
         framebuffer->color_attachments.push_back(current_framebuffer_rtv);
@@ -245,12 +243,17 @@ namespace nova {
         for(auto* buffer : buffers) {
             auto* dx12_buffer = dynamic_cast<dx12_command_buffer*>(buffer);
             direct_command_queue->Signal(dx12_buffer->fence.Get(), dx12_buffer->fence_value);
+            dx12_buffer->fence_value++;
         }
     }
 
-    std::shared_ptr<iresource> dx12_render_engine::get_current_swapchain_image() const {
+    std::shared_ptr<iresource> dx12_render_engine::get_current_swapchain_image(const uint8_t frame_index) const {
         std::shared_ptr<iresource> resource = std::make_shared<iresource>();
         resource->descriptor = rendertargets[frame_index];
         return resource;
+    }
+
+    uint32_t dx12_render_engine::get_current_swapchain_index() const {
+        return swapchain->GetCurrentBackBufferIndex();
     }
 }

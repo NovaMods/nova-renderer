@@ -45,9 +45,11 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
 
-        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer() const override;
+        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer(uint8_t frame_index) const override;
 
-        std::shared_ptr<iresource> get_current_swapchain_image() const override;
+        uint32_t get_current_swapchain_index() const override;
+
+        std::shared_ptr<iresource> get_current_swapchain_image(uint8_t frame_index) const override;
 
         std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
 
@@ -70,15 +72,6 @@ namespace nova {
         ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap; // a descriptor heap to hold resources like the render targets
 
         ComPtr<ID3D12Resource> rendertargets[FRAME_BUFFER_COUNT]; // number of render targets equal to buffer count
-
-        ComPtr<ID3D12Fence> fence[FRAME_BUFFER_COUNT];    // an object that is locked while our command list is being executed by the gpu. We need as many
-        //as we have allocators (more if we want to know when the gpu is finished with an asset)
-
-        HANDLE fenceEvent; // a handle to an event when our fence is unlocked by the gpu
-
-        UINT64 fenceValue[FRAME_BUFFER_COUNT]; // this value is incremented each frame. each fence will have its own value
-
-        int frame_index; // current rtv we are on
 
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 

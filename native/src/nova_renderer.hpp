@@ -62,6 +62,8 @@ namespace nova {
         settings render_settings;
         std::unique_ptr<render_engine> engine;
 
+        uint32_t frame_index;
+
         static nova_renderer *instance;
     };
 }

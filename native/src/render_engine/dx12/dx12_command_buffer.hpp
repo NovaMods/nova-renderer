@@ -31,7 +31,8 @@ namespace nova {
     public:
         ComPtr<ID3D12CommandList> command_list;
         ComPtr<ID3D12Fence> fence;
-        uint64_t fence_value;
+        uint64_t fence_value = 0;
+        HANDLE fence_event;
 
         dx12_command_buffer(ComPtr<ID3D12Device> device, command_buffer_type type);
 
@@ -47,6 +48,10 @@ namespace nova {
         void reset() override;
 
         void on_completion(std::function<void(void)> completion_handler) override;
+
+        bool is_finished() const override;
+
+        void wait_until_completion() const override;
 
     protected:
         ComPtr<ID3D12CommandAllocator> allocator;

@@ -14,6 +14,7 @@ namespace nova {
             : dx12_command_buffer(device, type), command_buffer_base(type) {
         command_list->QueryInterface(IID_PPV_ARGS(&gfx_cmd_list));
         gfx_cmd_list->Close();
+        fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 
     void dx12_graphics_command_buffer::clear_render_target(iframebuffer* framebuffer_to_clear, glm::vec4 &clear_color)  {
@@ -106,6 +107,20 @@ namespace nova {
          * will be created that waits for this command lists's fence, then executes all handlers in the order they were
          * added
          */
+    }
+
+    bool dx12_command_buffer::is_finished() const {
+        return fence->GetCompletedValue() == fence_value;
+    }
+
+    void dx12_command_buffer::wait_until_completion() const {
+        HRESULT hr = fence->SetEventOnCompletion(fence_value, fence_event);
+        if(FAILED(hr)) {
+            NOVA_LOG(ERROR) << "Could not tell the fence to signal our event";
+            return;
+        }
+
+        WaitForSingleObject(fence_event, INFINITE);
     }
 }
 
