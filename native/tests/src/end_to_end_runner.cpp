@@ -10,7 +10,7 @@
 #include "../../src/platform.hpp"
 
 #ifdef _WIN32
-#include "../../src/render_engine/dx12/dx_12_render_engine.hpp"
+#include "../../src/render_engine/dx12/dx12_render_engine.hpp"
 #else
 #include "../../src/render_engine/vulkan/vulkan_render_engine.hpp"
 #endif

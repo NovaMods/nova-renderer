@@ -62,13 +62,13 @@ namespace nova {
          * \brief Executes all the provided command buffers, signalling their fences when they're done
          * \param buffers The command buffers to submit. These should all be of the same type
          */
-        virtual void execute_command_buffers(const std::vector<std::shared_ptr<command_buffer_base>>& buffers) = 0;
+        virtual void execute_command_buffers(const std::vector<command_buffer_base*>& buffers) = 0;
 
         /*!
          * \brief Frees a command buffer, making all of its resources available
          * \param buf The command buffer to free
          */
-        virtual void free_command_buffer(std::shared_ptr<command_buffer_base> buf) = 0;
+        virtual void free_command_buffer(std::unique_ptr<command_buffer_base> buf) = 0;
 
         /*!
          * \brief Presents the image in the swapchain to the users

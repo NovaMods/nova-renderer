@@ -92,7 +92,7 @@ set(NOVA_SOURCE
         src/util/logger.cpp
         src/util/logger.hpp
         src/render_engine/render_engine.hpp
-        src/util/macros.hpp src/render_engine/command_buffer_base.hpp src/render_engine/command_buffer_base.cpp src/render_engine/window.hpp src/render_engine/resource_barrier.hpp src/render_engine/dx12/dx_12_framebuffer.hpp src/nova_renderer.cpp)
+        src/util/macros.hpp src/render_engine/command_buffer_base.hpp src/render_engine/command_buffer_base.cpp src/render_engine/window.hpp src/render_engine/resource_barrier.hpp src/nova_renderer.cpp)
 
 if(UNIX)
     set(NOVA_SOURCE
@@ -106,9 +106,9 @@ elseif(WIN32)
             ${NOVA_SOURCE}
             src/render_engine/dx12/win32_window.hpp
             src/render_engine/dx12/win32_window.cpp
-            src/render_engine/dx12/dx_12_render_engine.cpp
-            src/render_engine/dx12/dx_12_render_engine.hpp
-            src/render_engine/dx12/d3dx12.h src/render_engine/dx12/dx12_command_buffer.hpp src/render_engine/dx12/dx_12_resource_barrier_helpers.cpp src/render_engine/dx12/dx_12_resource_barrier_helpers.hpp src/render_engine/dx12/dx12_command_buffer.cpp src/render_engine/dx12/opaque_types.hpp)
+            src/render_engine/dx12/dx12_render_engine.cpp
+            src/render_engine/dx12/dx12_render_engine.hpp
+            src/render_engine/dx12/d3dx12.h src/render_engine/dx12/dx12_command_buffer.hpp src/render_engine/dx12/dx12_resource_barrier_helpers.cpp src/render_engine/dx12/dx12_resource_barrier_helpers.hpp src/render_engine/dx12/dx12_command_buffer.cpp src/render_engine/dx12/dx12_opaque_types.hpp)
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
@@ -129,7 +129,7 @@ set(SPIRV_CROSS_HEADERS
         )
 
 if (WIN32)
-    set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp src/render_engine/dx12/dx_12_framebuffer.hpp)
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
 endif (WIN32)
 
 if (UNIX)
