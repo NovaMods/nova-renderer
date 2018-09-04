@@ -23,8 +23,7 @@
 using Microsoft::WRL::ComPtr;
 
 namespace nova {
-#define FRAME_BUFFER_COUNT 3
-
+#define FRAME_BUFFER_COUNT 3 
     /*!
      * \brief Implements a render engine for DirectX 12
      */
