@@ -15,15 +15,15 @@ namespace nova {
         create_device();
         create_rtv_command_queue();
 
-        std::vector<command_buffer_base*> direct_buffers;
+        std::vector<std::shared_ptr<command_buffer_base>> direct_buffers;
         direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
         buffer_pool.emplace(static_cast<int>(command_buffer_type::GENERIC), direct_buffers);
 
-        std::vector<command_buffer_base*> copy_buffers;
+        std::vector<std::shared_ptr<command_buffer_base>> copy_buffers;
         copy_buffers.reserve(32);
         buffer_pool.emplace(static_cast<int>(command_buffer_type::COPY), copy_buffers);
 
-        std::vector<command_buffer_base*> compute_buffers;
+        std::vector<std::shared_ptr<command_buffer_base>> compute_buffers;
         compute_buffers.reserve(32);
         buffer_pool.emplace(static_cast<int>(command_buffer_type::COMPUTE), compute_buffers);
     }
@@ -183,20 +183,20 @@ namespace nova {
         }
     }
 
-    command_buffer_base *dx12_render_engine::allocate_command_buffer(const command_buffer_type type) {
+    std::shared_ptr<command_buffer_base> dx12_render_engine::allocate_command_buffer(const command_buffer_type type) {
         // TODO: The command lists and their allocators should be pooled, so we can avoid a ton of reallocation
         // Not doing that right now, but will make that change once this code is more complete
         // The Vulkan render engine should function the same way
 
-        command_buffer_base* buffer = nullptr;
+        std::shared_ptr<command_buffer_base> buffer = nullptr;
 
         auto& buffers = buffer_pool.at(static_cast<int>(type));
         if(buffers.empty()) {
             if(type == command_buffer_type::GENERIC) {
-                buffer = (dx12_command_buffer<ID3D12GraphicsCommandList>*)new dx12_graphics_command_buffer(device, type);
+                buffer = std::make_shared<dx12_graphics_command_buffer>(device, type);
 
             } else {
-                buffer = new dx12_command_buffer<ID3D12CommandList>(device, type);
+                buffer = std::make_shared<dx12_command_buffer<ID3D12CommandList>>(device, type);
             }
 
         } else {
@@ -207,7 +207,7 @@ namespace nova {
         return buffer;
     }
 
-    void dx12_render_engine::free_command_buffer(command_buffer_base *buf) {
+    void dx12_render_engine::free_command_buffer(std::shared_ptr<command_buffer_base> buf) {
         buf->reset();
 
         auto type = buf->get_type();
@@ -215,18 +215,42 @@ namespace nova {
         buffer_pool.at(static_cast<int>(type)).push_back(buf);
     }
 
-    iwindow *dx12_render_engine::get_window() const {
-        return window.get();
+    std::shared_ptr<iwindow> dx12_render_engine::get_window() const {
+        return window;
     }
 
     void dx12_render_engine::present_swapchain_image() {
         swapchain->Present(0, 0);
     }
 
-    iframebuffer *dx12_render_engine::get_current_swapchain_framebuffer() const {
-        auto* framebuffer = new iframebuffer;
+    std::shared_ptr<iframebuffer> dx12_render_engine::get_current_swapchain_framebuffer() const {
+        std::shared_ptr<iframebuffer> framebuffer = std::make_shared<iframebuffer>();
         CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), frame_index, rtv_descriptor_size);
         framebuffer->color_attachments.push_back(current_framebuffer_rtv);
         return framebuffer;
+    }
+
+    void dx12_render_engine::execute_command_buffers(const std::vector<std::shared_ptr<command_buffer_base>> &buffers) {
+        std::vector<ID3D12CommandList*> lists;
+        lists.reserve(buffers.size());
+
+        for(const std::shared_ptr<command_buffer_base> &buffer : buffers) {
+            auto* dx12_buffer = reinterpret_cast<dx12_command_buffer<ID3D12CommandList>*>(buffer.get());
+            lists.push_back(dx12_buffer->command_list.Get());
+        }
+
+        direct_command_queue->ExecuteCommandLists(lists.size(), lists.data());
+
+        // We need to tell the queue to signal our fences after we tell it to execute our command lists
+        for(const std::shared_ptr<command_buffer_base>& buffer : buffers) {
+            auto* dx12_buffer = reinterpret_cast<dx12_command_buffer<ID3D12CommandList>*>(buffer.get());
+            direct_command_queue->Signal(dx12_buffer->fence.Get(), dx12_buffer->fence_value);
+        }
+    }
+
+    std::shared_ptr<iresource> dx12_render_engine::get_current_swapchain_image() const {
+        std::shared_ptr<iresource> resource = std::make_shared<iresource>();
+        resource->descriptor = rendertargets[frame_index];
+        return resource;
     }
 }

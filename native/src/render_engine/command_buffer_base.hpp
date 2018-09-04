@@ -14,9 +14,9 @@
 namespace nova {
     struct iframebuffer;
     struct iresource;
+    struct iqueue;
 
     typedef struct iframebuffer* framebuffer_ptr;
-    typedef struct iresource* resource_ptr;
 
     /*!
      * \brief The type of command list we want to create. This is important for DX12 but I don't think it's important
@@ -95,14 +95,14 @@ namespace nova {
          * \brief Clears the current render target to the provided clear color
          * \param clear_color The color to clear to
          */
-        virtual void clear_render_target(const iframebuffer* framebuffer_to_clear, glm::vec4& clear_color) = 0;
+        virtual void clear_render_target(std::shared_ptr<iframebuffer> framebuffer_to_clear, glm::vec4& clear_color) = 0;
 
         /*!
          * \brief Sets the render target to render to
          *
          * \param render_target A pointer to the render target to render to
          */
-        virtual void set_render_target(framebuffer_ptr render_target) = 0;
+        virtual void set_render_target(std::shared_ptr<iframebuffer> render_target) = 0;
     };
 }
 

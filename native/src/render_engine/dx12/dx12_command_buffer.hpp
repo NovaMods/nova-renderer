@@ -23,8 +23,8 @@
 using Microsoft::WRL::ComPtr;
 
 namespace nova {
-    struct iresource {
-        CD3DX12_CPU_DESCRIPTOR_HANDLE descriptor;
+    struct iqueue {
+        ID3D12CommandQueue* queue;
     };
 
     /*!
@@ -33,6 +33,10 @@ namespace nova {
     template<typename CommandListType>
     class dx12_command_buffer : public virtual command_buffer_base {
     public:
+        ComPtr<CommandListType> command_list;
+        ComPtr<ID3D12Fence> fence;
+        uint64_t fence_value;
+
         dx12_command_buffer(ComPtr<ID3D12Device> device, command_buffer_type type) : command_buffer_base(type) {
             HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator));
             if(FAILED(hr)) {
@@ -101,10 +105,12 @@ namespace nova {
              */
         };
 
+        ComPtr<CommandListType> get_command_list() const {
+            return command_list;
+        }
+
     protected:
         ComPtr<ID3D12CommandAllocator> allocator;
-        ComPtr<CommandListType> command_list;
-        ComPtr<ID3D12Fence> fence;
     };
 
     class dx12_graphics_command_buffer : public dx12_command_buffer<ID3D12GraphicsCommandList>, public virtual graphics_command_buffer_base {
@@ -113,9 +119,9 @@ namespace nova {
 
         void resource_barrier(const std::vector<resource_barrier_data>& barriers) override;
 
-        void clear_render_target(const iframebuffer* framebuffer_to_clear, glm::vec4& clear_color) override;
+        void clear_render_target(std::shared_ptr<iframebuffer> framebuffer_to_clear, glm::vec4& clear_color) override;
 
-        void set_render_target(framebuffer_ptr render_target) override;
+        void set_render_target(std::shared_ptr<iframebuffer> render_target) override;
 
         void end_recording() override;
 

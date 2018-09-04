@@ -33,7 +33,7 @@ int main(int num_args, const char** args) {
 
     renderer->get_engine()->open_window(200, 200);
 
-    nova::iwindow* window = renderer->get_engine()->get_window();
+    std::shared_ptr<nova::iwindow> window = renderer->get_engine()->get_window();
 
     while(!window->should_close()) {
         renderer->execute_frame();

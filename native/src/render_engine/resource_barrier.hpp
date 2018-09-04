@@ -9,9 +9,10 @@
 #define NOVA_RENDERER_RESOURCE_BARRIER_HPP
 
 #include "../util/smart_enum.hpp"
+#include <memory>
 
 namespace nova {
-    class resource;
+    struct iresource;
 
     /*!
      * \brief All the layouts that a resoruce may have
@@ -40,7 +41,7 @@ namespace nova {
      * \brief All the data needed for a resource barrier
      */
     struct resource_barrier_data {
-        resource* resource_to_barrier;
+        std::shared_ptr<iresource> resource_to_barrier;
         resource_layout initial_layout;
         resource_layout final_layout;
     };

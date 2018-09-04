@@ -13,13 +13,13 @@ namespace nova {
             : dx12_command_buffer<ID3D12GraphicsCommandList>(device, type), command_buffer_base(type) {
     }
 
-    void dx12_graphics_command_buffer::clear_render_target(const iframebuffer* framebuffer_to_clear, glm::vec4 &clear_color)  {
+    void dx12_graphics_command_buffer::clear_render_target(const std::shared_ptr<iframebuffer> framebuffer_to_clear, glm::vec4 &clear_color)  {
         for(const D3D12_CPU_DESCRIPTOR_HANDLE& resource : framebuffer_to_clear->color_attachments) {
             command_list->ClearRenderTargetView(resource, reinterpret_cast<FLOAT*>(&clear_color), 0, nullptr);
         }
     }
 
-    void dx12_graphics_command_buffer::set_render_target(framebuffer_ptr render_target) {
+    void dx12_graphics_command_buffer::set_render_target(std::shared_ptr<iframebuffer> render_target) {
         command_list->OMSetRenderTargets(render_target->color_attachments.size(), render_target->color_attachments.data(),
                                          false, render_target->depth_stencil_descriptor);
     }
@@ -32,7 +32,7 @@ namespace nova {
             D3D12_RESOURCE_STATES initial_state = to_dx12_resource_state(barrier.initial_layout);
             D3D12_RESOURCE_STATES final_state = to_dx12_resource_state(barrier.final_layout);
             dx12_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(
-                    reinterpret_cast<ID3D12Resource *>(barrier.resource_to_barrier), initial_state, final_state));
+                    reinterpret_cast<ID3D12Resource *>(barrier.resource_to_barrier.get()), initial_state, final_state));
         }
 
         command_list->ResourceBarrier(dx12_barriers.size(), dx12_barriers.data());

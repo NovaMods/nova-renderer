@@ -41,26 +41,34 @@ namespace nova {
          */
         virtual void open_window(uint32_t width, uint32_t height) = 0;
 
-        virtual iwindow* get_window() const = 0;
+        virtual std::shared_ptr<iwindow> get_window() const = 0;
 
         /*!
          * \brief Retrieves the framebuffer associated with the current swapchain image
          *
          * \return The framebuffer associated with the current swapchain image
          */
-        virtual iframebuffer* get_current_swapchain_framebuffer() const = 0;
+        virtual std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer() const = 0;
+
+        virtual std::shared_ptr<iresource> get_current_swapchain_image() const = 0;
 
         /*!
          * \brief Allocates a new command buffer from the underlying API
          * \return An interface to a command buffer
          */
-        virtual command_buffer_base* allocate_command_buffer(command_buffer_type type) = 0;
+        virtual std::shared_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) = 0;
+
+        /*!
+         * \brief Executes all the provided command buffers, signalling their fences when they're done
+         * \param buffers The command buffers to submit. These should all be of the same type
+         */
+        virtual void execute_command_buffers(const std::vector<std::shared_ptr<command_buffer_base>>& buffers) = 0;
 
         /*!
          * \brief Frees a command buffer, making all of its resources available
          * \param buf The command buffer to free
          */
-        virtual void free_command_buffer(command_buffer_base* buf) = 0;
+        virtual void free_command_buffer(std::shared_ptr<command_buffer_base> buf) = 0;
 
         /*!
          * \brief Presents the image in the swapchain to the users
