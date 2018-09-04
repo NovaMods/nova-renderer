@@ -16,7 +16,7 @@
 #include "../src/platform.hpp"
 
 #if SUPPORT_DX12
-    #include "../src/render_engine/dx12/dx_12_render_engine.hpp"
+    #include "../src/render_engine/dx12/dx12_render_engine.hpp"
     #define RenderEngineType nova::dx12_render_engine
 
     #ifdef ERROR

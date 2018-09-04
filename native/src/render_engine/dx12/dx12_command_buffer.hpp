@@ -11,17 +11,28 @@
 #if SUPPORT_DX12
 
 #include <d3d12.h>
+#include <wrl.h>
 
-#include "../command_buffer.hpp"
+#include "../command_buffer_base.hpp"
+#include "dx12_resource_barrier_helpers.hpp"
+#include "d3dx12.h"
+
+#include "dx12_opaque_types.hpp"
+
 #include "../../util/logger.hpp"
+
+using Microsoft::WRL::ComPtr;
 
 namespace nova {
     /*!
      * \brief The DirectX 12 implementation of a command buffer
      */
-    template<typename CommandListType>
-    class dx12_command_buffer : public command_buffer {
+    class dx12_command_buffer : public virtual command_buffer_base {
     public:
+        ComPtr<ID3D12CommandList> command_list;
+        ComPtr<ID3D12Fence> fence;
+        uint64_t fence_value;
+
         dx12_command_buffer(ComPtr<ID3D12Device> device, command_buffer_type type);
 
         dx12_command_buffer(dx12_command_buffer&& other) noexcept = default;
@@ -31,98 +42,33 @@ namespace nova {
         dx12_command_buffer(const dx12_command_buffer& other) = delete;
         dx12_command_buffer& operator=(const dx12_command_buffer& other) = delete;
 
-        void resource_barrier(const std::vector<resource_barrier_data>& barriers) override;
+        void end_recording() override {};
 
         void reset() override;
 
         void on_completion(std::function<void(void)> completion_handler) override;
 
-    private:
+    protected:
         ComPtr<ID3D12CommandAllocator> allocator;
-        CommandListType* command_list;
-        ComPtr<ID3D12Fence> fence;
     };
 
-    template<typename CommandBufferType>
-    dx12_command_buffer<CommandBufferType>::dx12_command_buffer(ComPtr<ID3D12Device> device, const command_buffer_type type) : command_buffer(type) {
-        HRESULT hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator));
-        if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create command buffer";
-            throw std::runtime_error("Could not create command buffer");
-        }
+    class dx12_graphics_command_buffer : public dx12_command_buffer, public virtual graphics_command_buffer_base {
+    public:
+        dx12_graphics_command_buffer(const ComPtr<ID3D12Device> &device, const command_buffer_type &type);
 
-        D3D12_COMMAND_LIST_TYPE command_list_type;
-        switch(type) {
-            case command_buffer_type::GENERIC:
-                command_list_type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-                break;
-            case command_buffer_type::COPY:
-                command_list_type = D3D12_COMMAND_LIST_TYPE_COPY;
-                break;
-            case command_buffer_type::COMPUTE:
-                command_list_type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-                break;
-            default:
-                command_list_type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-                break;
-        }
+        void resource_barrier(const std::vector<resource_barrier_data>& barriers) override;
 
-        hr = device->CreateCommandList(0, command_list_type, allocator.Get(), nullptr, IID_PPV_ARGS(&command_list));
-        if(FAILED(hr)) {
-            NOVA_LOG(ERROR) << "Could not create a command list of type " << type.to_string();
-            throw std::runtime_error("Could not create command list");
-        }
+        void clear_render_target(iframebuffer* framebuffer_to_clear, glm::vec4& clear_color) override;
 
-        if(type == command_buffer_type::GENERIC) {
-            // Get the command list out of the recording state
-            dynamic_cast<ID3D12GraphicsCommandList*>(command_list)->Close();
-        }
+        void set_render_target(iframebuffer* render_target) override;
 
-        hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-        if(FAILED(hr)) {
-            NOVA_LOG(ERROR) << "Could not create fence";
-            throw std::runtime_error("Could not create fence");
-        }
-    }
+        void end_recording() override;
 
-    template <typename CommandBufferType>
-    void dx12_command_buffer<CommandBufferType>::on_completion(std::function<void(void)> completion_handler) {
+        void reset() override;
 
-    }
-
-    template<typename CommandBufferType>
-    void dx12_command_buffer<CommandBufferType>::resource_barrier(const std::vector<resource_barrier_data>& barriers) {
-        std::vector<CD3DX12_RESOURCE_BARRIER> dx12_barriers;
-        dx12_barriers.reserve(barriers.size());
-
-        for(const resource_barrier_data& barrier : barriers) {
-
-            dx12_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier, ))
-        }
-    }
-
-    template <>
-    void dx12_command_buffer<ID3D12GraphicsCommandList>::reset() {
-        HRESULT hr;
-        hr = allocator->Reset();
-        if(FAILED(hr)) {
-            NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
-        }
-
-        hr = command_list->Reset(allocator.Get(), nullptr);
-        if(FAILED(hr)) {
-            NOVA_LOG(ERROR) << "Could not reset the command list";
-        }
-    }
-
-    template <>
-    void dx12_command_buffer<ID3D12CommandList>::reset() {
-        HRESULT hr;
-        hr = allocator->Reset();
-        if(FAILED(hr)) {
-            NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
-        }
-    }
+    private:
+        ComPtr<ID3D12GraphicsCommandList> gfx_cmd_list;
+    };
 }
 
 #endif

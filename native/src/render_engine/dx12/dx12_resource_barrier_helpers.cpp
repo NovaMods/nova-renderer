@@ -3,7 +3,7 @@
  * \date 02-Sep-18.
  */
 
-#include "dx_12_resource_barrier_helpers.hpp"
+#include "dx12_resource_barrier_helpers.hpp"
 #include "../../util/logger.hpp"
 
 #if SUPPORT_DX12

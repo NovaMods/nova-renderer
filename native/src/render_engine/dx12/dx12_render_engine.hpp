@@ -18,11 +18,12 @@
 
 #include <wrl.h>
 
+#include "dx12_opaque_types.hpp"
+
 using Microsoft::WRL::ComPtr;
 
 namespace nova {
-#define FRAME_BUFFER_COUNT 3
-
+#define FRAME_BUFFER_COUNT 3 
     /*!
      * \brief Implements a render engine for DirectX 12
      */
@@ -34,8 +35,6 @@ namespace nova {
          */
         explicit dx12_render_engine(const settings& settings);
 
-        ~dx12_render_engine();
-
         static const std::string get_engine_name();
 
         /**
@@ -44,11 +43,17 @@ namespace nova {
 
         void open_window(uint32_t width, uint32_t height) override;
 
-        iwindow* get_window() const override;
+        std::shared_ptr<iwindow> get_window() const override;
 
-        command_buffer* allocate_command_buffer(command_buffer_type type) override;
+        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer() const override;
 
-        void free_command_buffer(command_buffer* buf) override;
+        std::shared_ptr<iresource> get_current_swapchain_image() const override;
+
+        std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
+
+        void execute_command_buffers(const std::vector<command_buffer_base*>& buffers) override;
+
+        void free_command_buffer(std::unique_ptr<command_buffer_base> buf) override;
 
         void present_swapchain_image() override;
 
@@ -77,7 +82,7 @@ namespace nova {
 
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
-        std::unordered_map<int, std::vector<command_buffer*>> buffer_pool;
+        std::unordered_map<int, std::vector<command_buffer_base*>> buffer_pool;
 
 
         void create_device();
@@ -91,7 +96,7 @@ namespace nova {
          */
         void create_swapchain();
 
-        ComPtr<win32_window> window;
+        std::shared_ptr<win32_window> window;
 
         /*!
          * \brief Creates the descriptor heap for the swapchain
