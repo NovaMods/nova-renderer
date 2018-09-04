@@ -18,13 +18,12 @@
 
 #include <wrl.h>
 
+#include "opaque_types.hpp"
+
 using Microsoft::WRL::ComPtr;
 
 namespace nova {
 #define FRAME_BUFFER_COUNT 3
-    struct iresource {
-        ComPtr<ID3D12Resource> descriptor;
-    };
 
     /*!
      * \brief Implements a render engine for DirectX 12

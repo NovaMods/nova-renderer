@@ -7,7 +7,7 @@
 
 #include "dx_12_render_engine.hpp"
 #include "dx12_command_buffer.hpp"
-#include "dx_12_framebuffer.hpp"
+#include "opaque_types.hpp"
 #include <d3d12sdklayers.h>
 
 namespace nova {

@@ -4,6 +4,7 @@
  */
 
 #include "dx12_command_buffer.hpp"
+#include "opaque_types.hpp"
 
 #if SUPPORT_DX12
 
@@ -31,8 +32,7 @@ namespace nova {
         for(const resource_barrier_data& barrier : barriers) {
             D3D12_RESOURCE_STATES initial_state = to_dx12_resource_state(barrier.initial_layout);
             D3D12_RESOURCE_STATES final_state = to_dx12_resource_state(barrier.final_layout);
-            dx12_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(
-                    reinterpret_cast<ID3D12Resource *>(barrier.resource_to_barrier.get()), initial_state, final_state));
+            dx12_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier->descriptor.Get(), initial_state, final_state));
         }
 
         command_list->ResourceBarrier(dx12_barriers.size(), dx12_barriers.data());

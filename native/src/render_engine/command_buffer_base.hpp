@@ -14,7 +14,6 @@
 namespace nova {
     struct iframebuffer;
     struct iresource;
-    struct iqueue;
 
     typedef struct iframebuffer* framebuffer_ptr;
 

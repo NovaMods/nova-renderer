@@ -14,18 +14,16 @@
 #include <wrl.h>
 
 #include "../command_buffer_base.hpp"
-#include "dx_12_framebuffer.hpp"
 #include "dx_12_resource_barrier_helpers.hpp"
 #include "d3dx12.h"
+
+#include "opaque_types.hpp"
 
 #include "../../util/logger.hpp"
 
 using Microsoft::WRL::ComPtr;
 
 namespace nova {
-    struct iqueue {
-        ID3D12CommandQueue* queue;
-    };
 
     /*!
      * \brief The DirectX 12 implementation of a command buffer

@@ -13,10 +13,6 @@ namespace nova {
     /*!
      * \brief A framebuffer class for DirectX, since it doesn't seemto have one
      */
-    struct iframebuffer {
-        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> color_attachments;
-        D3D12_CPU_DESCRIPTOR_HANDLE* depth_stencil_descriptor = nullptr;
-    };
 }
 
 #endif //NOVA_RENDERER_DX_12_FRAMEBUFFER_HPP
