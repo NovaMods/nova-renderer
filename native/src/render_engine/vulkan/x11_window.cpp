@@ -39,7 +39,7 @@ namespace nova {
 
     void x11_window::on_frame_end() {
         XEvent event;
-        while(XEventsQueued(display, QueuedAlready) > 0) {
+        while(XPending(display)) {
             XNextEvent(display, &event);
             switch (event.type) {
                 case ClientMessage: {
@@ -57,5 +57,19 @@ namespace nova {
 
     bool x11_window::should_close() const {
         return should_window_close;
+    }
+
+    iwindow::window_size x11_window::get_window_size() const {
+        Window root_window;
+        int x_pos;
+        int y_pos;
+        uint32_t width;
+        uint32_t height;
+        uint32_t border_width;
+        uint32_t depth;
+
+        XGetGeometry(display, window, &root_window, &x_pos, &y_pos, &width, &height, &border_width, &depth);
+
+        return {width, height};
     }
 }
