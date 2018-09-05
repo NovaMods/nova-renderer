@@ -6,6 +6,7 @@
 #include "nova_renderer.hpp"
 
 #include "platform.hpp"
+#include "util/logger.hpp"
 
 #if SUPPORT_DX12
 #include "render_engine/dx12/dx12_render_engine.hpp"
@@ -87,6 +88,6 @@ namespace nova {
     }
 
     void nova_renderer::deinitialize() {
-
+        delete instance;
     }
 }

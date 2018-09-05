@@ -32,12 +32,15 @@ namespace nova {
         std::vector<VkImage> swapchain_images;
         VkFormat swapchain_format;
         VkExtent2D swapchain_extend;
+        std::vector<VkImageView> swapchain_image_views;
 
         void create_device();
         void destroy_device();
         bool does_device_support_extensions(VkPhysicalDevice device);
         void create_swapchain();
         void destroy_swapchain();
+        void create_image_views();
+        void destroy_image_views();
         VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
         VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
 
@@ -54,7 +57,7 @@ namespace nova {
 
     public:
         explicit vulkan_render_engine(const settings &settings);
-        ~vulkan_render_engine();
+        ~vulkan_render_engine() override;
 
         void open_window(uint32_t width, uint32_t height) override;
 

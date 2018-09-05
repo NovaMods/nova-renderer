@@ -65,6 +65,7 @@ namespace nova {
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
+        destroy_image_views();
         destroy_swapchain();
         destroy_device();
     }
@@ -292,6 +293,36 @@ namespace nova {
         }
 
         return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    void vulkan_render_engine::create_image_views() {
+        swapchain_image_views.resize(swapchain_images.size());
+
+        for(size_t i = 0; i < swapchain_images.size(); i++) {
+            VkImageViewCreateInfo image_view_create_info;
+            image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            image_view_create_info.pNext = nullptr;
+            image_view_create_info.flags = 0;
+            image_view_create_info.image = swapchain_images.at(i);
+            image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            image_view_create_info.subresourceRange.baseMipLevel = 0;
+            image_view_create_info.subresourceRange.levelCount = 1;
+            image_view_create_info.subresourceRange.baseArrayLayer = 0;
+            image_view_create_info.subresourceRange.layerCount = 1;
+
+            NOVA_THROW_IF_VK_ERROR(vkCreateImageView(device, &image_view_create_info, nullptr, &swapchain_image_views.at(i)), render_engine_initialization_exception);
+        }
+    }
+
+    void vulkan_render_engine::destroy_image_views() {
+        for(auto image_view : swapchain_image_views) {
+            vkDestroyImageView(device, image_view, nullptr);
+        }
     }
 
     void vulkan_render_engine::destroy_swapchain() {

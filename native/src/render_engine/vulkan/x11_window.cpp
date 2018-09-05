@@ -39,7 +39,7 @@ namespace nova {
 
     void x11_window::on_frame_end() {
         XEvent event;
-        while(XEventsQueued(display, QueuedAlready) > 0) {
+        while(XPending(display)) {
             XNextEvent(display, &event);
             switch (event.type) {
                 case ClientMessage: {

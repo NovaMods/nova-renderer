@@ -35,6 +35,11 @@ namespace nova {
          */
 
         /*!
+         * \brief Needed to make destructor of subclasses called
+         */
+        virtual ~render_engine() = default;
+
+        /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window
          * \param width The width, in pixels, of the desired window
          * \param height The height, in pixels of the desired window
