@@ -21,14 +21,25 @@ namespace nova {
 
         VkInstance vk_instance;
 #ifdef NOVA_VK_XLIB
-        x11_window *window = nullptr;
+        std::shared_ptr<x11_window> window;
 #endif
         VkSurfaceKHR surface;
+        VkPhysicalDevice physical_device;
         VkDevice device;
         VkQueue graphics_queue;
-        VkQueue present_queue;
+        VkSwapchainKHR swapchain;
+
+        std::vector<VkImage> swapchain_images;
+        VkFormat swapchain_format;
+        VkExtent2D swapchain_extend;
 
         void create_device();
+        void destroy_device();
+        bool does_device_support_extensions(VkPhysicalDevice device);
+        void create_swapchain();
+        void destroy_swapchain();
+        VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
+        VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
 
 #ifndef NDEBUG
         PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
@@ -47,12 +58,19 @@ namespace nova {
 
         void open_window(uint32_t width, uint32_t height) override;
 
-        command_buffer* allocate_command_buffer(command_buffer_type type) override;
-        void free_command_buffer(command_buffer* buf) override;
+        std::shared_ptr<iwindow> get_window() const override;
+
+        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer() const override;
+
+        std::shared_ptr<iresource> get_current_swapchain_image() const override;
+
+        std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
+
+        void execute_command_buffers(const std::vector<command_buffer_base*>& buffers) override;
+
+        void free_command_buffer(std::unique_ptr<command_buffer_base> buf) override;
 
         void present_swapchain_image() override;
-
-        iwindow* get_window() const override;
 
         static const std::string get_engine_name();
     };

@@ -16,6 +16,11 @@ namespace nova {
      */
     class iwindow {
     public:
+        struct window_size {
+            uint32_t width;
+            uint32_t height;
+        };
+
         /*!
          * \brief Handles what should happen when the frame is done. This includes telling the operating system that
          * we're still alive
@@ -29,6 +34,13 @@ namespace nova {
          * it's running in to know if the user has requested window closing. This method is that way
          */
         virtual bool should_close() const = 0;
+
+        /*!
+         * \brief Gets the current window size
+         *
+         * \return The current size of the window
+         */
+        virtual window_size get_window_size() const = 0;
     };
 }
 

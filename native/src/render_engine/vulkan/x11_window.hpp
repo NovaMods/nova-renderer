@@ -30,6 +30,8 @@ namespace nova {
 
         void on_frame_end() override;
         bool should_close() const override;
+
+        window_size get_window_size() const override;
     };
 }
 
