@@ -11,20 +11,22 @@
 
 namespace nova {
     enum class resource_type {
-        MEMORY,
         IMAGE,
         BUFFER
     };
 
     union vulkan_resource {
-        void* memory;
         VkImage image;
         VkBuffer buffer;
     };
 
     struct iresource {
         vulkan_resource resource;
+        resource_type type;
+    };
 
+    struct iframebuffer {
+        VkFramebuffer framebuffer;
     };
 }
 

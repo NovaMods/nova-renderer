@@ -9,8 +9,11 @@
 #include "../resource_barrier.hpp"
 
 namespace nova {
-    VkAccessFlags to_vk_access_flags(resource_layout layout);
-}
+    VkPipelineStageFlags to_vk_stage_flags(stage_flags flags);
 
+    VkAccessFlags to_vk_access_flags(stage_flags flags);
+
+    VkImageLayout to_vk_image_layout(image_layout layout);
+}
 
 #endif //NOVA_RENDERER_VULKAN_RESOURCE_BARRIER_HELPERS_H

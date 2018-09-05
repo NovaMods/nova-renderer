@@ -88,7 +88,10 @@ namespace nova {
          * \brief Adds one or more resource barriers
          * \param barriers The barriers to add
          */
-        virtual void resource_barrier(const std::vector<resource_barrier_data>& barriers) = 0;
+        virtual void resource_barrier(stage_flags source_stage_mask, stage_flags dest_state_mask,
+                                      const std::vector<resource_barrier_data>& memory_barriers,
+                                      const std::vector<buffer_barrier_data>& buffer_barriers,
+                                      const std::vector<image_barrier_data>& image_barriers) = 0;
 
         /*!
          * \brief Clears the current render target to the provided clear color

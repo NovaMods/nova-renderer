@@ -19,7 +19,10 @@ namespace nova {
 
         void reset() override;
 
-        void resource_barrier(const std::vector<resource_barrier_data>& barriers) override;
+        void resource_barrier(stage_flags source_stage_mask, stage_flags dest_state_mask,
+                              const std::vector<resource_barrier_data>& memory_barriers,
+                              const std::vector<buffer_barrier_data>& buffer_barriers,
+                              const std::vector<image_barrier_data>& image_barriers) override;
 
         void clear_render_target(iframebuffer* framebuffer_to_clear, glm::vec4& clear_color) override;
 
