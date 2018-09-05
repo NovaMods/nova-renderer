@@ -85,8 +85,34 @@ namespace nova {
         create_device();
 }
 
-    command_buffer *vulkan_render_engine::allocate_command_buffer(command_buffer_type type) {
-            return nullptr;
+    std::unique_ptr<command_buffer_base> vulkan_render_engine::allocate_command_buffer(command_buffer_type type) {
+        std::lock_guard<std::mutex> pools_lock(thread_local_pools_lock);
+        auto our_id = std::this_thread::get_id();
+
+        std::unique_ptr<command_buffer_base> buffer;
+
+        if(thread_local_pools.find(our_id) == thread_local_pools.end()) {
+            // There isn't already a command buffer pool for this thread, so let's make one!
+            VkCommandPoolCreateInfo pool_create_info = {};
+            pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            pool_create_info.pNext = nullptr;
+            pool_create_info.flags |= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+            pool_create_info.queueFamilyIndex = queues_per_type.at(type).queue_idx;
+
+            VkCommandPool new_pool;
+            vkCreateCommandPool(device, &pool_create_info, nullptr, &new_pool);
+
+            thread_local_pools.emplace(our_id, new_pool);
+        }
+
+        auto& buffers = thread_local_buffers.at(our_id);
+        if(buffers.empty()) {
+            VkCommandBuffer new_buffer;
+
+        } else {
+            buffer = std::move(buffers.back());
+            buffers.pop_back();
+        }
     }
 
     void vulkan_render_engine::free_command_buffer(command_buffer *buf) {
