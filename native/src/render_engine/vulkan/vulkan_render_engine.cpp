@@ -5,6 +5,7 @@
 #include "vulkan_render_engine.hpp"
 #include <vector>
 #include "../../util/logger.hpp"
+#include "vulkan_command_buffer.hpp"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreturn-stack-address"
@@ -105,17 +106,35 @@ namespace nova {
             thread_local_pools.emplace(our_id, new_pool);
         }
 
-        auto& buffers = thread_local_buffers.at(our_id);
+        VkCommandPool pool = thread_local_pools.at(our_id);
+
+        std::lock_guard<std::mutex> buffers_lock(thread_local_buffers_lock);
+
+        if(thread_local_buffers.find(our_id) == thread_local_buffers.end()) {
+            // No buffers are available for this thread - we need to create a new cache for this thread
+            thread_local_buffers.emplace(our_id, std::unordered_map<uint32_t, std::vector<std::unique_ptr<command_buffer_base>>>{});
+        }
+
+        auto& buffers_for_thread = thread_local_buffers.at(our_id);
+        if(buffers_for_thread.find(type.get_value()) == buffers_for_thread.end()) {
+            // No buffers for this type of command buffer - we can fix that
+            buffers_for_thread.emplace(type.get_value(), std::vector<std::unique_ptr<command_buffer_base>>{});
+        }
+
+        auto& buffers = buffers_for_thread.at(type.get_value());
+
         if(buffers.empty()) {
-            VkCommandBuffer new_buffer;
+            buffer = std::make_unique<command_buffer_base>(new vulkan_command_buffer(device, pool, type));
 
         } else {
             buffer = std::move(buffers.back());
             buffers.pop_back();
         }
+
+        return buffer;
     }
 
-    void vulkan_render_engine::free_command_buffer(command_buffer *buf) {
+    void vulkan_render_engine::free_command_buffer(std::unique_ptr<command_buffer_base> buf) {
 
     }
 

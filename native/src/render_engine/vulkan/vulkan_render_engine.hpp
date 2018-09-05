@@ -53,7 +53,7 @@ namespace nova {
         void open_window(uint32_t width, uint32_t height) override;
 
         std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
-        void free_command_buffer(command_buffer* buf) override;
+        void free_command_buffer(std::unique_ptr<command_buffer_base> buf) override;
 
         void present_swapchain_image() override;
 
@@ -72,7 +72,7 @@ namespace nova {
         /*!
          * \brief Same as above - a command buffer is tied to a command pool, so they need to be used in the same thread
          */
-        std::unordered_map<std::thread::id, std::vector<std::unique_ptr<command_buffer_base>>> thread_local_buffers;
+        std::unordered_map<std::thread::id, std::unordered_map<uint32_t, std::vector<std::unique_ptr<command_buffer_base>>>> thread_local_buffers;
         std::mutex thread_local_buffers_lock;
 
         /*!
