@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include "../../util/logger.hpp"
+#include <fstream>
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wreturn-stack-address"
@@ -65,6 +66,9 @@ namespace nova {
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
+        destroy_graphics_pipeline();
+        destroy_render_pass();
+        DEBUG_destroy_shaders();
         destroy_image_views();
         destroy_swapchain();
         destroy_device();
@@ -87,6 +91,10 @@ namespace nova {
 #endif
         create_device();
         create_swapchain();
+        create_image_views();
+        DEBUG_create_shaders();
+        create_render_pass();
+        create_graphics_pipeline();
 }
 
     const std::string vulkan_render_engine::get_engine_name() {
@@ -304,6 +312,7 @@ namespace nova {
             image_view_create_info.pNext = nullptr;
             image_view_create_info.flags = 0;
             image_view_create_info.image = swapchain_images.at(i);
+            image_view_create_info.format = swapchain_format;
             image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
             image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
             image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -331,6 +340,241 @@ namespace nova {
 
     void vulkan_render_engine::destroy_device() {
         vkDestroyDevice(device, nullptr);
+    }
+
+    void vulkan_render_engine::DEBUG_create_shaders() {
+        auto vert_shader_code = DEBUG_read_file("../tests/src/vert.spv");
+        auto frag_shader_code = DEBUG_read_file("../tests/src/frag.spv");
+
+        VkShaderModuleCreateInfo vert_shader_create_info;
+        vert_shader_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        vert_shader_create_info.pNext = nullptr;
+        vert_shader_create_info.flags = 0;
+        vert_shader_create_info.codeSize = vert_shader_code.size();
+        vert_shader_create_info.pCode = reinterpret_cast<const uint32_t *>(vert_shader_code.data());
+        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &vert_shader_create_info, nullptr, &vert_shader), render_engine_initialization_exception);
+
+        VkShaderModuleCreateInfo frag_shader_create_info;
+        frag_shader_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        frag_shader_create_info.pNext = nullptr;
+        frag_shader_create_info.flags = 0;
+        frag_shader_create_info.codeSize = frag_shader_code.size();
+        frag_shader_create_info.pCode = reinterpret_cast<const uint32_t *>(frag_shader_code.data());
+        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &frag_shader_create_info, nullptr, &frag_shader), render_engine_initialization_exception);
+    }
+
+    void vulkan_render_engine::create_render_pass() {
+        VkAttachmentDescription color_attachment;
+        color_attachment.flags = 0;
+        color_attachment.format = swapchain_format;
+        color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        VkAttachmentReference color_attachment_reference;
+        color_attachment_reference.attachment = 0;
+        color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription subpass_description;
+        subpass_description.flags = 0;
+        subpass_description.colorAttachmentCount = 1;
+        subpass_description.pColorAttachments = &color_attachment_reference;
+        subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass_description.inputAttachmentCount = 0;
+        subpass_description.pInputAttachments = nullptr;
+        subpass_description.preserveAttachmentCount = 0;
+        subpass_description.pPreserveAttachments = nullptr;
+        subpass_description.pResolveAttachments = nullptr;
+        subpass_description.pDepthStencilAttachment = nullptr;
+
+        VkRenderPassCreateInfo render_pass_create_info;
+        render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        render_pass_create_info.pNext = nullptr;
+        render_pass_create_info.flags = 0;
+        render_pass_create_info.attachmentCount = 1;
+        render_pass_create_info.pAttachments = &color_attachment;
+        render_pass_create_info.subpassCount = 1;
+        render_pass_create_info.pSubpasses = &subpass_description;
+        render_pass_create_info.dependencyCount = 0;
+        render_pass_create_info.pDependencies = nullptr;
+
+        NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
+    }
+
+    void vulkan_render_engine::create_graphics_pipeline() {
+        VkPipelineShaderStageCreateInfo vert_shader_create_info;
+        vert_shader_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        vert_shader_create_info.pNext = nullptr;
+        vert_shader_create_info.flags = 0;
+        vert_shader_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+        vert_shader_create_info.module = vert_shader;
+        vert_shader_create_info.pName = "main";
+        vert_shader_create_info.pSpecializationInfo = nullptr;
+
+        VkPipelineShaderStageCreateInfo frag_shader_create_info;
+        frag_shader_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        frag_shader_create_info.pNext = nullptr;
+        frag_shader_create_info.flags = 0;
+        frag_shader_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        frag_shader_create_info.module = frag_shader;
+        frag_shader_create_info.pName = "main";
+        frag_shader_create_info.pSpecializationInfo = nullptr;
+
+        VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_create_info, frag_shader_create_info};
+
+        VkPipelineVertexInputStateCreateInfo vertext_input_state_create_info;
+        vertext_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertext_input_state_create_info.pNext = nullptr;
+        vertext_input_state_create_info.flags = 0;
+        vertext_input_state_create_info.vertexBindingDescriptionCount = 0;
+        vertext_input_state_create_info.pVertexBindingDescriptions = nullptr;
+        vertext_input_state_create_info.vertexAttributeDescriptionCount = 0;
+        vertext_input_state_create_info.pVertexAttributeDescriptions = nullptr;
+
+        VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info;
+        input_assembly_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        input_assembly_create_info.pNext = nullptr;
+        input_assembly_create_info.flags = 0;
+        input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
+
+        VkViewport viewport;
+        viewport.x = 0;
+        viewport.y = 0;
+        viewport.width = swapchain_extend.width;
+        viewport.height = swapchain_extend.height;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+
+        VkRect2D scissor;
+        scissor.offset = {0, 0};
+        scissor.extent = swapchain_extend;
+
+        VkPipelineViewportStateCreateInfo viewport_state_create_info;
+        viewport_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        viewport_state_create_info.pNext = nullptr;
+        viewport_state_create_info.flags = 0;
+        viewport_state_create_info.viewportCount = 1;
+        viewport_state_create_info.pViewports = &viewport;
+        viewport_state_create_info.scissorCount = 1;
+        viewport_state_create_info.pScissors = &scissor;
+
+        VkPipelineRasterizationStateCreateInfo rasterizer_create_info;
+        rasterizer_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rasterizer_create_info.pNext = nullptr;
+        rasterizer_create_info.flags = 0;
+        rasterizer_create_info.depthClampEnable = VK_FALSE;
+        rasterizer_create_info.rasterizerDiscardEnable = VK_FALSE;
+        rasterizer_create_info.polygonMode = VK_POLYGON_MODE_FILL;
+        rasterizer_create_info.lineWidth = 1.0f;
+        rasterizer_create_info.cullMode = VK_CULL_MODE_BACK_BIT;
+        rasterizer_create_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        rasterizer_create_info.depthBiasEnable = VK_FALSE;
+        rasterizer_create_info.depthClampEnable = VK_FALSE;
+        rasterizer_create_info.depthBiasConstantFactor = 0.0f;
+        rasterizer_create_info.depthBiasClamp = VK_FALSE;
+        rasterizer_create_info.depthBiasSlopeFactor = 0.0f;
+
+        VkPipelineMultisampleStateCreateInfo multisample_create_info;
+        multisample_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        multisample_create_info.pNext = nullptr;
+        multisample_create_info.flags = 0;
+        multisample_create_info.sampleShadingEnable = VK_FALSE;
+        multisample_create_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+        multisample_create_info.minSampleShading = 1.0f;
+        multisample_create_info.pSampleMask = nullptr;
+        multisample_create_info.alphaToCoverageEnable = VK_FALSE;
+        multisample_create_info.alphaToOneEnable = VK_FALSE;
+
+        VkPipelineColorBlendAttachmentState color_blend_attachment;
+        color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        color_blend_attachment.blendEnable = VK_TRUE;
+        color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
+        color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+
+        VkPipelineColorBlendStateCreateInfo color_blend_create_info;
+        color_blend_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        color_blend_create_info.pNext = nullptr;
+        color_blend_create_info.flags = 0;
+        color_blend_create_info.logicOpEnable = VK_FALSE;
+        color_blend_create_info.logicOp = VK_LOGIC_OP_COPY;
+        color_blend_create_info.attachmentCount = 1;
+        color_blend_create_info.pAttachments = &color_blend_attachment;
+        color_blend_create_info.blendConstants[0] = 0.0f;
+        color_blend_create_info.blendConstants[1] = 0.0f;
+        color_blend_create_info.blendConstants[2] = 0.0f;
+        color_blend_create_info.blendConstants[3] = 0.0f;
+
+        VkPipelineLayoutCreateInfo pipeline_layout_create_info;
+        pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipeline_layout_create_info.pNext = nullptr;
+        pipeline_layout_create_info.flags = 0;
+        pipeline_layout_create_info.setLayoutCount = 0;
+        pipeline_layout_create_info.pSetLayouts = nullptr;
+        pipeline_layout_create_info.pushConstantRangeCount = 0;
+        pipeline_layout_create_info.pPushConstantRanges = nullptr;
+
+        NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &pipeline_layout), render_engine_initialization_exception);
+
+        VkGraphicsPipelineCreateInfo pipeline_create_info;
+        pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipeline_create_info.pNext = nullptr;
+        pipeline_create_info.flags = 0;
+        pipeline_create_info.stageCount = 2;
+        pipeline_create_info.pStages = shader_stages;
+        pipeline_create_info.pVertexInputState = &vertext_input_state_create_info;
+        pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
+        pipeline_create_info.pViewportState = &viewport_state_create_info;
+        pipeline_create_info.pRasterizationState = &rasterizer_create_info;
+        pipeline_create_info.pMultisampleState = &multisample_create_info;
+        pipeline_create_info.pDepthStencilState = nullptr;
+        pipeline_create_info.pColorBlendState = &color_blend_create_info;
+        pipeline_create_info.pDynamicState = nullptr;
+        pipeline_create_info.layout = pipeline_layout;
+        pipeline_create_info.renderPass = render_pass;
+        pipeline_create_info.subpass = 0;
+        pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+        pipeline_create_info.basePipelineIndex = -1;
+
+        NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline), render_engine_initialization_exception);
+    }
+
+    void vulkan_render_engine::destroy_graphics_pipeline() {
+        vkDestroyPipeline(device, pipeline, nullptr);
+        vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
+    }
+
+    void vulkan_render_engine::destroy_render_pass() {
+        vkDestroyRenderPass(device, render_pass, nullptr);
+    }
+
+    void vulkan_render_engine::DEBUG_destroy_shaders() {
+        vkDestroyShaderModule(device, frag_shader, nullptr);
+        vkDestroyShaderModule(device, vert_shader, nullptr);
+    }
+
+    std::vector<char> vulkan_render_engine::DEBUG_read_file(std::string path) {
+        std::ifstream file(path, std::ios::ate | std::ios::binary);
+
+        if(!file.is_open()) {
+            throw std::runtime_error("Failed to open file");
+        }
+
+        auto file_size = static_cast<size_t>(file.tellg());
+        std::vector<char> content(file_size);
+        file.seekg(0);
+        file.read(content.data(), file_size);
+        file.close();
+
+        return content;
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType,

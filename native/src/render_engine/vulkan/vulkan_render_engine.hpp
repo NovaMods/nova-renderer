@@ -28,11 +28,17 @@ namespace nova {
         VkDevice device;
         VkQueue graphics_queue;
         VkSwapchainKHR swapchain;
+        VkRenderPass render_pass;
+        VkPipelineLayout pipeline_layout;
+        VkPipeline pipeline;
 
         std::vector<VkImage> swapchain_images;
         VkFormat swapchain_format;
         VkExtent2D swapchain_extend;
         std::vector<VkImageView> swapchain_image_views;
+
+        VkShaderModule vert_shader;
+        VkShaderModule frag_shader;
 
         void create_device();
         void destroy_device();
@@ -41,8 +47,16 @@ namespace nova {
         void destroy_swapchain();
         void create_image_views();
         void destroy_image_views();
+        void create_render_pass();
+        void destroy_render_pass();
+        void create_graphics_pipeline();
+        void destroy_graphics_pipeline();
         VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
         VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
+
+        void DEBUG_create_shaders();
+        void DEBUG_destroy_shaders();
+        std::vector<char> DEBUG_read_file(std::string path);
 
 #ifndef NDEBUG
         PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
