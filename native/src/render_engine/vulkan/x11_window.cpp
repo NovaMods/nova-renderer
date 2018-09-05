@@ -39,17 +39,19 @@ namespace nova {
 
     void x11_window::on_frame_end() {
         XEvent event;
-        XNextEvent(display, &event);
-        switch (event.type) {
-            case ClientMessage: {
-                if(event.xclient.message_type == wm_protocols && event.xclient.data.l[0] == wm_delete_window) {
-                    should_window_close = true;
+        while(XEventsQueued(display, QueuedAlready) > 0) {
+            XNextEvent(display, &event);
+            switch (event.type) {
+                case ClientMessage: {
+                    if (event.xclient.message_type == wm_protocols && event.xclient.data.l[0] == wm_delete_window) {
+                        should_window_close = true;
+                    }
+                    break;
                 }
-                break;
-            }
 
-            default:
-                break;
+                default:
+                    break;
+            }
         }
     }
 
