@@ -54,7 +54,9 @@ ExternalProject_Add(profiler
         PREFIX ${3RD_PARTY_DIR}/profiler
         GIT_REPOSITORY https://github.com/NovaMods/profiler.git)
 
-add_subdirectory(${3RD_PARTY_DIR}/json)
+ExternalProject_Add(json
+        PREFIX ${3RD_PARTY_DIR}/json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git)
 
 set(ENKITS_BUILD_C_INTERFACE OFF)
 set(ENKITS_BUILD_EXAMPLES OFF)
