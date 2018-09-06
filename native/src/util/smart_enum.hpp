@@ -20,7 +20,7 @@ class EnumName                                                      \
 {                                                                   \
 public:                                                             \
     EnumName() : value(0) {}                                        \
-    EnumName(int x) : value(x) {}                                   \
+    explicit EnumName(int x) : value(x) {}                                   \
 public:                                                             \
     enum {__VA_ARGS__};                                             \
 private:                                                            \
@@ -72,7 +72,7 @@ public:                                                             \
     };                                                              \
     static std::unordered_map<int,std::string>& name_map() {        \
         static std::unordered_map<int,std::string> name_map_0;      \
-        if(name_map_0.size() == 0) {                                \
+        if(name_map_0.empty()) {                                \
             init_map(name_map_0);                                   \
         }                                                           \
         return name_map_0;                                          \

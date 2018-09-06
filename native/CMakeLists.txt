@@ -85,7 +85,7 @@ set(NOVA_SOURCE
         src/loading/loading_utils.cpp
         src/loading/loading_utils.hpp
         src/loading/shaderpack_data.hpp
-        src/loading/shaderpack-data.cpp
+        src/loading/shaderpack_data.cpp
 
         src/settings/settings.cpp
         src/settings/settings.hpp
