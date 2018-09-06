@@ -37,3 +37,6 @@
 [submodule "native/3rdparty/RenderDoc-Manager"]
 	path = native/3rdparty/RenderDoc-Manager
 	url = https://github.com/NovaMods/RenderDoc-Manager.git
+[submodule "native/3rdparty/miniz"]
+	path = native/3rdparty/miniz
+	url = https://github.com/richgel999/miniz.git

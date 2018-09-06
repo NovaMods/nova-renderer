@@ -3,8 +3,6 @@
  * \date 15-Aug-18.
  */
 
-#include <miniz_zip.h>
-
 #include "zip_folder_accessor.hpp"
 #include "../util/logger.hpp"
 
@@ -12,6 +10,7 @@ namespace nova {
     zip_folder_accessor::zip_folder_accessor(const std::experimental::filesystem::path &folder)
         : folder_accessor_base(folder) {
         const auto folder_string = folder.string();
+
         if(!mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0)) {
             logger::instance.log(log_level::DEBUG, "Could not open zip archive " + folder_string);
             throw resource_not_found_error(folder_string);
@@ -19,7 +18,7 @@ namespace nova {
     }
 
     zip_folder_accessor::~zip_folder_accessor() {
-        mz_zip_reader_end(&zip_archive);
+        gzclose(zip_archive);
     }
 
     bool zip_folder_accessor::does_resource_exist(const fs::path &resource_path) {

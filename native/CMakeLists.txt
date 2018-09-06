@@ -44,6 +44,8 @@ add_subdirectory(${3RD_PARTY_DIR}/enkiTS)
 option(CPPTOML_BUILD_EXAMPLES OFF)
 add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
 
+add_subdirectory(${3RD_PARTY_DIR}/miniz)
+
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     find_package(Vulkan)
 
@@ -69,6 +71,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/json/single_include
         ${3RD_PARTY_DIR}/enkiTS/src
         ${3RD_PARTY_DIR}/cpptoml/include
+        ${3RD_PARTY_DIR}/miniz
         )
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
@@ -192,7 +195,7 @@ target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)
 target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler enkiTS cpptoml)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler enkiTS cpptoml miniz)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
