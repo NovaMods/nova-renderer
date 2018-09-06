@@ -22,11 +22,9 @@ endif()
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
-##########################################
-##                                      ##
-##  Add dependencies as subdirectories  ##
-##                                      ##
-##########################################
+######################################
+# Add dependencies as subdirectories #
+######################################
 
 set(BUILD_DEMOS OFF)
 set(BUILD_ICD OFF)
@@ -57,11 +55,9 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 endif()
 
-##########################################
-##                                      ##
-##  Make dependencies' headers visible  ##
-##                                      ##
-##########################################
+######################################
+# Make dependencies' headers visible #
+######################################
 
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
@@ -81,11 +77,9 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
             )
 endif()
 
-##############################
-##                          ##
-##  Add Nova soruce code    ##
-##                          ##
-##############################
+########################
+# Add Nova soruce code #
+########################
 
 set(NOVA_SOURCE
         src/platform.hpp

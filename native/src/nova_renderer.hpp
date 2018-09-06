@@ -10,7 +10,7 @@
 
 #include <string>
 #include <memory>
-#include <enkiTS/TaskScheduler.h>
+#include <TaskScheduler.h>
 
 #include "settings/settings.hpp"
 #include "render_engine/render_engine.hpp"

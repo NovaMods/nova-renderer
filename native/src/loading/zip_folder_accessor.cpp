@@ -15,10 +15,12 @@ namespace nova {
             logger::instance.log(log_level::DEBUG, "Could not open zip archive " + folder_string);
             throw resource_not_found_error(folder_string);
         }
+
+        build_file_tree();
     }
 
     zip_folder_accessor::~zip_folder_accessor() {
-        gzclose(zip_archive);
+        //gzclose(zip_archive);
     }
 
     bool zip_folder_accessor::does_resource_exist(const fs::path &resource_path) {
@@ -79,5 +81,20 @@ namespace nova {
     std::vector<fs::path> zip_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
         // TODO
         return {};
+    }
+
+    void zip_folder_accessor::build_file_tree() {
+        uint32_t num_files = mz_zip_reader_get_num_files(&zip_archive);
+
+        std::vector<std::string> all_filenames;
+        all_filenames.resize(num_files);
+        auto * filename_buffer = new char[1024];
+
+        for(uint32_t i = 0; i < num_files; i++) {
+            uint32_t num_bytes_in_filename = mz_zip_reader_get_filename(&zip_archive, i, filename_buffer, 1024);
+            filename_buffer[num_bytes_in_filename] = '\0';
+            NOVA_LOG(INFO) << filename_buffer;
+            all_filenames.emplace_back(filename_buffer);
+        }
     }
 }

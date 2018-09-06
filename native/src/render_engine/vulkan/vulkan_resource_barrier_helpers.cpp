@@ -22,7 +22,7 @@ namespace nova {
                 return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
             default:
-                NOVA_LOG(ERROR) << "Unrecognized access flag " << flags.to_string();
+                NOVA_LOG(ERROR) << "Unrecognized access flag " << static_cast<uint32_t>(flags);
                 return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         }
     }

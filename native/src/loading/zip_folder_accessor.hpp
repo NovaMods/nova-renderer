@@ -6,7 +6,7 @@
 #ifndef NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
 #define NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
 
-#include <zlib.h>
+#include <miniz_zip.h>
 #include "folder_accessor.hpp"
 
 namespace fs = std::experimental::filesystem;
@@ -33,7 +33,9 @@ namespace nova {
          */
         std::unordered_map<std::string, uint32_t> resource_indexes;
 
-        gzFile zip_archive;
+        mz_zip_archive zip_archive;
+
+        void build_file_tree();
     };
 }
 
