@@ -42,19 +42,18 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 
     ExternalProject_Add(glfw
-            PREFIX 3rdparty/glfw
+            PREFIX ${3RD_PARTY_DIR}/glfw
             GIT_REPOSITORY https://github.com/glfw/glfw.git)
 endif()
 
 ExternalProject_Add(glm
-        PREFIX 3rdparty/glm
+        PREFIX ${3RD_PARTY_DIR}/glm
         GIT_REPOSITORY https://github.com/g-truc/glm.git)
 
 ExternalProject_Add(profiler
         PREFIX ${3RD_PARTY_DIR}/profiler
         GIT_REPOSITORY https://github.com/NovaMods/profiler.git)
 
-add_subdirectory(${3RD_PARTY_DIR}/miniz)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 
 set(ENKITS_BUILD_C_INTERFACE OFF)
@@ -75,7 +74,6 @@ endif()
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
         ${3RD_PARTY_DIR}/glm
-        ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/RenderDoc-Manager
         ${3RD_PARTY_DIR}/profiler/include
         ${3RD_PARTY_DIR}/json/single_include
@@ -84,12 +82,6 @@ include_directories(SYSTEM
         )
 
 set(NOVA_SOURCE
-        # Third party stuff that's too lame to have it's own CMakeLists.txt
-        ${3RD_PARTY_DIR}/miniz/miniz.c
-        ${3RD_PARTY_DIR}/miniz/miniz_tdef.c
-        ${3RD_PARTY_DIR}/miniz/miniz_tinfl.c
-        ${3RD_PARTY_DIR}/miniz/miniz_zip.c
-
         src/platform.hpp
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp

@@ -3,6 +3,7 @@ build/out
 Makefile
 glfw3-prefix/
 cmake-build-debug/
+3rdparty/
 
 # Created by https://www.gitignore.io/api/cmake,c++,python
 
