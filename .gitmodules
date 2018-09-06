@@ -4,9 +4,6 @@
 [submodule "native/3rdparty/glslang"]
 	path = native/3rdparty/glslang
 	url = https://github.com/KhronosGroup/glslang.git
-[submodule "native/3rdparty/RenderDoc-Manager"]
-	path = native/3rdparty/RenderDoc-Manager
-	url = https://github.com/NovaMods/RenderDoc-Manager.git
 [submodule "native/3rdparty/shaderc"]
 	path = native/3rdparty/shaderc
 	url = https://github.com/google/shaderc.git
