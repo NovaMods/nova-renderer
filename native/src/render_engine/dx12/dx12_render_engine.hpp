@@ -45,11 +45,11 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
 
-        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer(uint32_t frame_index) const override;
+        std::shared_ptr<iframebuffer> get_swapchain_framebuffer(uint32_t frame_index) const override;
 
         uint32_t get_current_swapchain_index() const override;
 
-        std::shared_ptr<iresource> get_current_swapchain_image(uint32_t frame_index) const override;
+        std::shared_ptr<iresource> get_swapchain_image(uint32_t frame_index) const override;
 
         std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
 

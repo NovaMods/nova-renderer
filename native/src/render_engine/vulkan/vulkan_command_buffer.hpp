@@ -28,6 +28,10 @@ namespace nova {
 
         void set_render_target(iframebuffer* render_target) override;
 
+        bool is_finished() const override;
+
+        void wait_until_completion() const override;
+
     private:
         VkDevice device;
         VkCommandBuffer buffer;

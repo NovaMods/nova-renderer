@@ -32,11 +32,11 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
 
-        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer(uint32_t frame_index) const override;
+        std::shared_ptr<iframebuffer> get_swapchain_framebuffer(uint32_t frame_index) const override;
 
         uint32_t get_current_swapchain_index() const override;
 
-        std::shared_ptr<iresource> get_current_swapchain_image(uint32_t frame_index) const override;
+        std::shared_ptr<iresource> get_swapchain_image(uint32_t frame_index) const override;
 
         std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
 
@@ -69,9 +69,13 @@ namespace nova {
         VkExtent2D swapchain_extend;
         std::vector<VkImageView> swapchain_image_views;
         std::vector<VkFramebuffer> swapchain_framebuffers;
+        uint32_t current_swapchain_index = 0;
 
         VkShaderModule vert_shader;
         VkShaderModule frag_shader;
+
+        VkSemaphore render_finished_semaphore;
+        VkSemaphore image_available_semaphore;
 
         void create_device();
         void destroy_device();
@@ -86,6 +90,8 @@ namespace nova {
         void destroy_graphics_pipeline();
         void create_framebuffers();
         void destroy_framebuffers();
+        void create_semaphores();
+        void destroy_semaphores();
         VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
         VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
 

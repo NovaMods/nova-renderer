@@ -53,11 +53,16 @@ namespace nova {
          *
          * \return The framebuffer associated with the current swapchain image
          */
-        virtual std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer(uint32_t frame_index) const = 0;
+        virtual std::shared_ptr<iframebuffer> get_swapchain_framebuffer(uint32_t frame_index) const = 0;
 
+        /*!
+         * \brief Retrieves the current swapchain index
+         *
+         * \return Current swapchain index
+         */
         virtual uint32_t get_current_swapchain_index() const = 0;
 
-        virtual std::shared_ptr<iresource> get_current_swapchain_image(uint32_t frame_index) const = 0;
+        virtual std::shared_ptr<iresource> get_swapchain_image(uint32_t frame_index) const = 0;
 
         /*!
          * \brief Allocates a new command buffer from the underlying API

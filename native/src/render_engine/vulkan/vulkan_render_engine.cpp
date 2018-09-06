@@ -68,6 +68,7 @@ namespace nova {
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
+        destroy_semaphores();
         destroy_framebuffers();
         destroy_graphics_pipeline();
         destroy_render_pass();
@@ -99,6 +100,8 @@ namespace nova {
         create_render_pass();
         create_graphics_pipeline();
         create_framebuffers();
+        create_semaphores();
+        vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphore, VK_NULL_HANDLE, &current_swapchain_index);
     }
 
     std::unique_ptr<command_buffer_base> vulkan_render_engine::allocate_command_buffer(command_buffer_type type) {
@@ -651,6 +654,21 @@ namespace nova {
         NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline), render_engine_initialization_exception);
     }
 
+    void vulkan_render_engine::create_semaphores() {
+        VkSemaphoreCreateInfo semaphore_create_info;
+        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        semaphore_create_info.pNext = nullptr;
+        semaphore_create_info.flags = 0;
+
+        NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_available_semaphore), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphore), render_engine_initialization_exception);
+    }
+
+    void vulkan_render_engine::destroy_semaphores() {
+        vkDestroySemaphore(device, image_available_semaphore, nullptr);
+        vkDestroySemaphore(device, render_finished_semaphore, nullptr);
+    }
+
     void vulkan_render_engine::destroy_graphics_pipeline() {
         vkDestroyPipeline(device, pipeline, nullptr);
         vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
@@ -681,6 +699,10 @@ namespace nova {
         return content;
     }
 
+    uint32_t vulkan_render_engine::get_current_swapchain_index() const {
+        return current_swapchain_index;
+    }
+
     VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType,
                                                 uint64_t object, size_t location, int32_t message_code,
                                                 const char *layer_prefix, const char *message, void *user_data) {
@@ -689,23 +711,49 @@ namespace nova {
         return VK_FALSE;
     }
 
+    void vulkan_render_engine::execute_command_buffers(const std::vector<command_buffer_base *> &buffers) {
+        std::unordered_map<command_buffer_type, std::vector<command_buffer_base *>> grouped_buffers;
+
+        for(command_buffer_base *buffer : buffers) {
+            if(grouped_buffers.find(buffer->get_type()) != grouped_buffers.end()) {
+                grouped_buffers.at(buffer->get_type()).push_back(buffer);
+            } else {
+                std::vector<command_buffer_base *> buffers_of_type(1);
+                buffers_of_type.push_back(buffer);
+                grouped_buffers.insert(std::make_pair(buffer->get_type(), buffers_of_type));
+            }
+        }
+
+        for(auto pair : grouped_buffers) {
+            command_buffer_type type = pair.first;
+            std::vector<command_buffer_base *> buffers_of_type = pair.second;
+            VkSubmitInfo submit_info;
+            submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submit_info.pNext = nullptr;
+
+            VkSemaphore semaphores[] = {image_available_semaphore};
+            VkPipelineStageFlags  wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+            submit_info.waitSemaphoreCount = 1;
+            submit_info.pWaitSemaphores = semaphores;
+            submit_info.pWaitDstStageMask = wait_stages;
+            submit_info.commandBufferCount = static_cast<uint32_t>(buffers_of_type.size());
+        }
+    }
+
     void vulkan_render_engine::present_swapchain_image() {
 
+        vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphore, VK_NULL_HANDLE, &current_swapchain_index);
     }
 
     std::shared_ptr<iwindow> vulkan_render_engine::get_window() const {
         return window;
     }
 
-    void vulkan_render_engine::execute_command_buffers(const std::vector<command_buffer_base *> &buffers) {
-
-    }
-
-    std::shared_ptr<iframebuffer> vulkan_render_engine::get_current_swapchain_framebuffer(uint32_t index) const {
+    std::shared_ptr<iframebuffer> vulkan_render_engine::get_swapchain_framebuffer(uint32_t index) const {
         return std::shared_ptr<iframebuffer>();
     }
 
-    std::shared_ptr<iresource> vulkan_render_engine::get_current_swapchain_image(uint32_t index) const {
+    std::shared_ptr<iresource> vulkan_render_engine::get_swapchain_image(uint32_t index) const {
         return std::shared_ptr<iresource>();
     }
 }

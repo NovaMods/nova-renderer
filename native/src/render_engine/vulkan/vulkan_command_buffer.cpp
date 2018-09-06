@@ -112,4 +112,12 @@ namespace nova {
     void vulkan_command_buffer::set_render_target(iframebuffer *render_target) {
 
     }
+
+    bool vulkan_command_buffer::is_finished() const {
+        return false;
+    }
+
+    void vulkan_command_buffer::wait_until_completion() const {
+
+    }
 }
