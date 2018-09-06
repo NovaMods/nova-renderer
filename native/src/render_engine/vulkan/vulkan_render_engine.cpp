@@ -14,12 +14,13 @@
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const settings &settings) : render_engine(settings) {
         settings_options options = settings.get_options();
+        const auto& version = options.api.vulkan.appliction_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = nullptr;
-        application_info.pApplicationName = options.application_name.c_str();
-        application_info.applicationVersion = VK_MAKE_VERSION(options.application_version.major, options.application_version.minor, options.application_version.patch);
+        application_info.pApplicationName = options.api.vulkan.application_name.c_str();
+        application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
         application_info.pEngineName = "Nova renderer 0.1";
         application_info.apiVersion = VK_API_VERSION_1_1;
 
