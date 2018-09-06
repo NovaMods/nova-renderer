@@ -22,96 +22,67 @@ endif()
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
+##########################################
+##                                      ##
+##  Add dependencies as subdirectories  ##
+##                                      ##
+##########################################
+
+set(BUILD_DEMOS OFF)
+set(BUILD_ICD OFF)
+
 set(BUILD_SHARED_LIBS OFF)
 
-# Dependsncies that are common to all platforms
-ExternalProject_Add(glm-proj
-        PREFIX ${3RD_PARTY_DIR}/glm
-        GIT_REPOSITORY https://github.com/g-truc/glm.git
-        GIT_TAG cf6504b
-        CMAKE_ARGS -DGLM_TEST_ENABLE=OFF -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
+add_subdirectory(${3RD_PARTY_DIR}/glm)
+add_subdirectory(${3RD_PARTY_DIR}/profiler)
+add_subdirectory(${3RD_PARTY_DIR}/json)
 
-ExternalProject_Add(profiler-proj
-        PREFIX ${3RD_PARTY_DIR}/profiler
-        GIT_REPOSITORY https://github.com/NovaMods/profiler.git
-        GIT_TAG 667d5de
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
+set(ENKITS_BUILD_C_INTERFACE OFF)
+set(ENKITS_BUILD_EXAMPLES OFF)
+add_subdirectory(${3RD_PARTY_DIR}/enkiTS)
 
-ExternalProject_Add(json-proj
-        PREFIX ${3RD_PARTY_DIR}/json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG eb30ff0
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DJSON_BuildTests=OFF)
+option(CPPTOML_BUILD_EXAMPLES OFF)
+add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
 
-# We use branch C++11
-ExternalProject_Add(enkiTS-proj
-        PREFIX ${3RD_PARTY_DIR}/enkiTS
-        GIT_REPOSITORY https://github.com/NovaMods/enkiTS.git
-        GIT_TAG 2225c13
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DENKITS_BUILD_C_INTERFACE=OFF -DENKITS_BUILD_EXAMPLES=OFF)
-
-ExternalProject_Add(cpptoml-proj
-        PREFIX ${3RD_PARTY_DIR}/cpptoml
-        GIT_REPOSITORY https://github.com/skystrife/cpptoml.git
-        GIT_TAG 13fb18e
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DCPPTOML_BUILD_EXAMPLES=OFF)
-
-# LINUX only
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     find_package(Vulkan)
 
-    set(BUILD_DEMOS OFF)
-    set(BUILD_ICD OFF)
+    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
+    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
+    add_subdirectory(${3RD_PARTY_DIR}/glslang)
 
-    ExternalProject_Add(vma-proj
-            PREFIX ${3RD_PARTY_DIR}/VulkanMemoryAllocator
-            GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-            GIT_TAG c7d1b58
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
-
-    ExternalProject_Add(SPIRV-Headers-proj
-            PREFIX ${3RD_PARTY_DIR}/SPIRV-Headers
-            GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
-            GIT_TAG dcf23bd
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
-
-    ExternalProject_Add(SPIRV-Tools-proj
-            PREFIX ${3RD_PARTY_DIR}/SPIRV-Tools
-            GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
-            GIT_TAG 21bcb9d
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
-
-    ExternalProject_Add(SPIRV-Cross-proj
-            PREFIX ${3RD_PARTY_DIR}/SPIRV_Cross
-            GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Cross.git
-            GIT_TAG 8c7282b
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
-
-    ExternalProject_Add(glalsng-proj
-            PREFIX ${3RD_PARTY_DIR}/glslang
-            GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
-            GIT_TAG 97068d8
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
-
-    ExternalProject_Add(shaderc-proj
-            PREFIX ${3RD_PARTY_DIR}/shaderc
-            GIT_REPOSITORY https://github.com/google/shaderc.git
-            GIT_TAG 30af9f9
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} -DSHADERC_SKIP_TESTS=ON)
+    set(SHADERC_SKIP_TESTS TRUE)
+    add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 endif()
 
-# Windows only
-if(WIN32)
-    ExternalProject_Add(RenderDoc-API-proj
-            PREFIX ${3RD_PARTY_DIR}/RenderDoc-Manager
-            GIT_REPOSITORY https://github.com/NovaMods/RenderDoc-Manager.git
-            GIT_TAG 1888256
-            CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
-endif()
+##########################################
+##                                      ##
+##  Make dependencies' headers visible  ##
+##                                      ##
+##########################################
 
 include_directories(SYSTEM
-        ${CMAKE_INSTALL_PREFIX}/include
+        $ENV{VULKAN_SDK}/include
+        ${3RD_PARTY_DIR}/glm
+        ${3RD_PARTY_DIR}/RenderDoc-Manager
+        ${3RD_PARTY_DIR}/profiler/include
+        ${3RD_PARTY_DIR}/json/single_include
+        ${3RD_PARTY_DIR}/enkiTS/src
+        ${3RD_PARTY_DIR}/cpptoml/include
         )
+
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    include_directories(SYSTEM
+            ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
+            ${3RD_PARTY_DIR}/shaderc/libshaderc/include
+            )
+endif()
+
+##############################
+##                          ##
+##  Add Nova soruce code    ##
+##                          ##
+##############################
 
 set(NOVA_SOURCE
         src/platform.hpp
@@ -146,6 +117,8 @@ set(NOVA_SOURCE
         src/render_engine/resource_barrier.hpp src/loading/utils.hpp)
 
 if(UNIX)
+    set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
+
     set(NOVA_SOURCE
             ${NOVA_SOURCE}
             src/render_engine/vulkan/vulkan_render_engine.hpp
@@ -157,7 +130,18 @@ if(UNIX)
             src/render_engine/vulkan/vulkan_command_buffer.cpp
             src/render_engine/vulkan/vulkan_resource_barrier_helpers.cpp
             src/render_engine/vulkan/vulkan_resource_barrier_helpers.hpp
-            src/render_engine/vulkan/vulkan_opaque_types.hpp)
+            src/render_engine/vulkan/vulkan_opaque_types.hpp
+
+            # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova.
+            # The instructions are like "yeah just copy over whatever files you want cause that's totally the way modern
+            # software is built -_-
+            # So here we are,
+            ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
+            ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
+            ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
+            ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp
+            )
+
 elseif(WIN32)
     set(NOVA_SOURCE
             ${NOVA_SOURCE}
@@ -171,27 +155,13 @@ elseif(WIN32)
             src/render_engine/dx12/dx12_resource_barrier_helpers.hpp
             src/render_engine/dx12/dx12_command_buffer.cpp
             src/render_engine/dx12/dx12_opaque_types.hpp)
+
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
-# SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova. The
-# instructions are like "yeah just copy over whatever files you want cause that's totally the way modern software is
-# built -_-
-# So here we are,
-set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
-set(SPIRV_CROSS_SOURCE
-        ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
-        ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
-        ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
-        ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp
-        )
-
-set(SPIRV_CROSS_HEADERS
-        ${SPIRV_CROSS_ROOT}/spirv_cross.hpp
-        )
 
 if (WIN32)
-   # set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
+   set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
 endif (WIN32)
 
 if (UNIX)
@@ -211,16 +181,13 @@ set(NOVA_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 # because there are several sub groups that would be extremely small
 source_group("nova" FILES ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 
-add_library(nova-renderer STATIC ${NOVA_SOURCE}) # ${SPIRV_CROSS_SOURCE})
+add_library(nova-renderer STATIC ${NOVA_SOURCE})
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC ELPP_THREAD_SAFE)
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
-
-add_dependencies(nova-renderer
-        glm-proj profiler-proj json-proj enkiTS-proj cpptoml-proj)
 
 target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)
 target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
@@ -234,14 +201,8 @@ if (WIN32)
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\shared"
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
 
-    add_dependencies(nova-renderer
-            RenderDoc-API-proj)
-
 else(WIN32)
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs)
-
-    add_dependencies(nova-renderer
-            vma-proj SPIRV-Headers-proj SPIRV-Tools-proj SPIRV-Cross-proj glslang-proj shaderc-proj)
 endif (WIN32)
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})

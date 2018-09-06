@@ -1,3 +1,39 @@
 [submodule "native/tests/3rdparty/googletest"]
 	path = native/tests/3rdparty/googletest
 	url = https://github.com/google/googletest.git
+[submodule "native/3rdparty/glm"]
+	path = native/3rdparty/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "native/3rdparty/profiler"]
+	path = native/3rdparty/profiler
+	url = https://github.com/NovaMods/profiler.git
+[submodule "native/3rdparty/json"]
+	path = native/3rdparty/json
+	url = https://github.com/nlohmann/json.git
+[submodule "native/3rdparty/enkiTS"]
+	path = native/3rdparty/enkiTS
+	url = https://github.com/NovaMods/enkiTS.git
+[submodule "native/3rdparty/cpptoml"]
+	path = native/3rdparty/cpptoml
+	url = https://github.com/skystrife/cpptoml.git
+[submodule "native/3rdparty/VulkanMemoryAllocator"]
+	path = native/3rdparty/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "native/3rdparty/SPIRV-Headers"]
+	path = native/3rdparty/SPIRV-Headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers.git
+[submodule "native/3rdparty/SPIRV-Tools"]
+	path = native/3rdparty/SPIRV-Tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git
+[submodule "native/3rdparty/SPIRV-Cross"]
+	path = native/3rdparty/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "native/3rdparty/glslang"]
+	path = native/3rdparty/glslang
+	url = https://github.com/KhronosGroup/glslang.git
+[submodule "native/3rdparty/shaderc"]
+	path = native/3rdparty/shaderc
+	url = https://github.com/google/shaderc.git
+[submodule "native/3rdparty/RenderDoc-Manager"]
+	path = native/3rdparty/RenderDoc-Manager
+	url = https://github.com/NovaMods/RenderDoc-Manager.git
