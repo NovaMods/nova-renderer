@@ -77,10 +77,6 @@ public:                                                             \
         }                                                           \
         return name_map_0;                                          \
     }                                                               \
-    static std::vector<EnumName> all_values() {                      \
-        std::vector<EnumName> x{ __VA_ARGS__ };                     \
-        return x;                                                   \
-    }                                                               \
     bool operator<(const EnumName a) const { return (int)*this < (int)a; } \
                                                                     \
     class Hasher {                                                  \

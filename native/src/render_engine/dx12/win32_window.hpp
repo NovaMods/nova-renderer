@@ -45,7 +45,7 @@ namespace nova {
 
         bool should_close() const override;
 
-        const glm::uvec2& get_size() const;
+        window_size get_window_size() const override;
 
         /*
          * End platform-agnostic window interface
@@ -60,7 +60,7 @@ namespace nova {
 
         bool window_should_close;
 
-        glm::uvec2 size;
+        window_size size;
 
         /*!
          * \brief Registers Nova's window class

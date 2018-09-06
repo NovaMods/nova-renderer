@@ -29,17 +29,20 @@ namespace nova {
                                                                        false, render_target->depth_stencil_descriptor);
     }
 
-    void dx12_graphics_command_buffer::resource_barrier(const std::vector<resource_barrier_data> &barriers) {
-        std::vector<CD3DX12_RESOURCE_BARRIER> dx12_barriers;
-        dx12_barriers.reserve(barriers.size());
+    void dx12_graphics_command_buffer::resource_barrier(stage_flags source_stage_mask, stage_flags dest_state_mask,
+                                                        const std::vector<resource_barrier_data>& memory_barriers,
+                                                        const std::vector<buffer_barrier_data>& buffer_barriers,
+                                                        const std::vector<image_barrier_data>& image_barriers) {
+        std::vector<CD3DX12_RESOURCE_BARRIER> dx12_image_barriers;
+        dx12_image_barriers.reserve(image_barriers.size());
 
-        for(const resource_barrier_data& barrier : barriers) {
+        for(const image_barrier_data& barrier : image_barriers) {
             D3D12_RESOURCE_STATES initial_state = to_dx12_resource_state(barrier.initial_layout);
             D3D12_RESOURCE_STATES final_state = to_dx12_resource_state(barrier.final_layout);
-            dx12_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier->descriptor.Get(), initial_state, final_state));
+            dx12_image_barriers.emplace_back(CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier->descriptor.Get(), initial_state, final_state));
         }
 
-        gfx_cmd_list->ResourceBarrier(dx12_barriers.size(), dx12_barriers.data());
+        gfx_cmd_list->ResourceBarrier(dx12_image_barriers.size(), dx12_image_barriers.data());
     }
 
     void dx12_graphics_command_buffer::reset() {
@@ -80,7 +83,7 @@ namespace nova {
 
         hr = device->CreateCommandList(0, command_list_type, allocator.Get(), nullptr, IID_PPV_ARGS(&command_list));
         if(FAILED(hr)) {
-            NOVA_LOG(ERROR) << "Could not create a command list of type " << type.to_string();
+            NOVA_LOG(ERROR) << "Could not create a command list of type " << (uint32_t)type;
             throw std::runtime_error("Could not create command list");
         }
 

@@ -54,16 +54,19 @@ add_subdirectory(${3RD_PARTY_DIR}/enkiTS)
 option(CPPTOML_BUILD_EXAMPLES OFF)
 add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
 
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    include_directories(SYSTEM
+        ${3RD_PARTY_DIR}/glfw/include
+        ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
+        ${3RD_PARTY_DIR}/shaderc/libshaderc/include
+        )
+endif()
+
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
-        ${3RD_PARTY_DIR}/glfw/include
-        ${3RD_PARTY_DIR}/easyloggingpp/src
-        ${3RD_PARTY_DIR}/glad/include
         ${3RD_PARTY_DIR}/glm
         ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/RenderDoc-Manager
-        ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
-        ${3RD_PARTY_DIR}/shaderc/libshaderc/include
         ${3RD_PARTY_DIR}/profiler/include
         ${3RD_PARTY_DIR}/json/single_include
         ${3RD_PARTY_DIR}/enkiTS/src
@@ -106,7 +109,7 @@ set(NOVA_SOURCE
         src/render_engine/command_buffer_base.hpp
         src/render_engine/command_buffer_base.cpp
         src/render_engine/window.hpp
-        src/render_engine/resource_barrier.hpp)
+        src/render_engine/resource_barrier.hpp src/loading/utils.hpp)
 
 if(UNIX)
     set(NOVA_SOURCE

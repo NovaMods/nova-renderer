@@ -113,14 +113,14 @@ namespace nova {
             throw render_engine_initialization_exception("Cannot initialize the swapchain before the window");
         }
 
-        const auto& window_size = window->get_size();
+        const auto& window_size = window->get_window_size();
 
         DXGI_SAMPLE_DESC sample_desc = {};
         sample_desc.Count = 1;
 
         DXGI_SWAP_CHAIN_DESC1 swapchain_description {};
-        swapchain_description.Width = window_size.x;
-        swapchain_description.Height = window_size.y;
+        swapchain_description.Width = window_size.width;
+        swapchain_description.Height = window_size.height;
         swapchain_description.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
         swapchain_description.SampleDesc = sample_desc;

@@ -9,6 +9,9 @@
 #include "zip_folder_accessor.hpp"
 #include "regular_folder_accessor.hpp"
 
+#include <TaskScheduler.h>
+#include <future>
+
 namespace nova {
     fs::path SHADERPACK_ROOT("shaderpacks");
     fs::path BEDROCK_SHADERPACK_ROOT("resourcepacks");
@@ -27,6 +30,13 @@ namespace nova {
         //
         // All these things are loaded from the filesystem
 
+        auto textures_promise = std::promise<shaderpack_resources>();
+        enki::TaskSet load_resources_task(1, [&](enki::TaskSetPartition range, uint32_t threadnum) {
+            auto resources_bytes = folder_access->read_resource("resources.json");
+            auto json_resource = nlohmann::json::parse(resources_bytes);
+            auto resources = shaderpack_resources(json_resource);
+            textures_promise.set_value(resources);
+        });
 
         delete folder_access;
 

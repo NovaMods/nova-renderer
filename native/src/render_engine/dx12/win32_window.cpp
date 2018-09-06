@@ -7,7 +7,7 @@
 #if SUPPORT_DX12
 
 namespace nova {
-    win32_window::win32_window(const uint32_t width, const uint32_t height) : size(width, height),
+    win32_window::win32_window(const uint32_t width, const uint32_t height) : size{width, height},
             window_class_name(const_cast<WCHAR *>(L"NovaWindowClass")), window_should_close(false) {
         // Very strongly inspired by GLFW's Win32 variant of createNativeWindow - but GLFW is strictly geared towards
         // OpenGL/Vulkan so I don't want to try and fit it into here
@@ -136,10 +136,6 @@ namespace nova {
         return window_should_close;
     }
 
-    const glm::uvec2& win32_window::get_size() const {
-        return size;
-    }
-
     HWND win32_window::get_window_handle() const {
         return window_handle;
     }
@@ -155,6 +151,10 @@ namespace nova {
             TranslateMessage(&msg);
             DispatchMessageW(&msg);
         }
+    }
+
+    iwindow::window_size win32_window::get_window_size() const {
+        return size;
     }
 }
 

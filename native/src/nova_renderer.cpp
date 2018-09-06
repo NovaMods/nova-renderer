@@ -18,13 +18,11 @@ namespace nova {
     nova_renderer* nova_renderer::instance;
 
 
-    nova_renderer::nova_renderer()
+    nova_renderer::nova_renderer() : render_settings("config/config.toml") {
 #if SUPPORT_DX12
-    : render_settings(settings_options{"directx-12"}) {
         engine = std::make_unique<dx12_render_engine>(render_settings);
 
 #elif SUPPORT_VULKAN
-    : render_settings(settings_options{"vulkan-1.1"}) {
         engine = std::make_unique<vulkan_render_engine>(render_settings);
 #endif
 

@@ -1,0 +1,20 @@
+title = "Nova settings"
+
+# Mess with these to make Nova more or less debuggable. Enabling things here may hurt performance, so use with caution
+[debug]
+enableRenderDoc = true
+
+# Settings that the user changed that the expect to be the same when they return
+[cache]
+loadedShaderpack = "DefaultShaderpack"
+
+# Settings that only apply to one rendering API
+[api]
+  [api.vulkan]
+  applicationName = "Minecraft Nova Renderer"
+    [api.vulkan.applicationVersion]
+    major = 0
+    minor = 8
+    patch = 0
+
+  [api.dx12]

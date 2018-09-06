@@ -20,25 +20,14 @@ namespace nova {
      * This enum covers both images and buffers, and not all layouts are valid for all types of resources. The user of
      * this enum is supposed to know what's useful for what
      */
-    SMART_ENUM(image_layout,
-               /*!
-                * \brief The resource is going to be used as a render target
-                *
-                * Only valid for images
-                */
-               RENDER_TARGET,
+    enum class image_layout {
+        RENDER_TARGET,
+        PRESENT,
+    };
 
-               /*!
-                * \brief The resource will be presented to the user's screen
-                *
-                * Only valid for images
-                */
-               PRESENT
-    );
-
-    SMART_ENUM(stage_flags,
+    enum class stage_flags {
         COLOR_ATTACHMENT_WRITE,
-    );
+    };
 
     /*!
      * \brief All the data needed for a resource barrier

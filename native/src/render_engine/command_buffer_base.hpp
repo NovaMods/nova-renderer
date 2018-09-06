@@ -21,24 +21,24 @@ namespace nova {
      * \brief The type of command list we want to create. This is important for DX12 but I don't think it's important
      * for Vulkan - but it needs to be part of the DX12 interface, so here we are
      */
-    SMART_ENUM(command_buffer_type,
+    enum class command_buffer_type {
         /*!
          * \brief Non-specialized command buffer. Can be used for any tasks, although a more specialized command buffer
          * might be better for certain tasks
          */
-        GENERIC,
+                GENERIC,
 
         /*!
          * \brief Command buffer will be used for copying data from one buffer to another (e.g. from a staging buffer
          * to a texture)
          */
-        COPY,
+                COPY,
 
         /*!
          * \brief Command buffer will be used for compute tasks
          */
-        COMPUTE
-    )
+                COMPUTE
+    };
 
     /*!
      * \brief Platform-independent interface for a command buffer
