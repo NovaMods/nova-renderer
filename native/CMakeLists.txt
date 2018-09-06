@@ -72,6 +72,10 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
             PREFIX ${3RD_PARTY_DIR}/SPIRV-Tools
             GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git)
 
+    ExternalProject_Add(SPIRV-Cross
+            PREFIX ${3RD_PARTY_DIR}/SPIRV_Cross
+            GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Cross.git)
+
     include_directories(SYSTEM
             ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
             ${3RD_PARTY_DIR}/shaderc/libshaderc/include
