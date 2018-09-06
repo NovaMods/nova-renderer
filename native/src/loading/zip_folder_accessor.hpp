@@ -25,6 +25,8 @@ namespace nova {
 
         std::vector<uint8_t> read_resource(const fs::path &resource_path) override;
 
+        std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override;
+
     private:
         mz_zip_archive zip_archive;
 

@@ -28,4 +28,21 @@ namespace nova {
     void from_json(const nlohmann::json& j, shaderpack_resources& res) {
         res.textures = get_json_array<texture_resource>(j, "textures");
     }
+
+    void from_json(const nlohmann::json& j, render_pass& pass) {
+        pass.dependencies = get_json_array<std::string>(j, "dependencies");
+        pass.texture_inputs = get_json_value<input_textures>(j, "textureInputs");
+        pass.texture_outputs = get_json_array<texture_attachment>(j, "textureOutputs");
+        pass.depth_texture = get_json_value<texture_attachment>(j, "depthTexture");
+    }
+
+    void from_json(const nlohmann::json& j, input_textures& inputs) {
+        inputs.bound_textures = get_json_array<std::string>(j, "boundTextures");
+        inputs.color_attachments = get_json_array<std::string>(j, "colorAttachments");
+    }
+
+    void from_json(const nlohmann::json& j, texture_attachment& tex) {
+        tex.name = get_json_value<std::string>(j, "name").value_or("NAME_MISSING");
+        tex.clear = get_json_value<bool>(j, "clear").value_or(false);
+    }
 }

@@ -53,4 +53,14 @@ namespace nova {
 
         return buf;
     }
+
+    std::vector<fs::path> regular_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
+        std::vector<fs::path> paths = {};
+
+        for(const fs::path& p : folder) {
+            NOVA_LOG(INFO) << p.string();
+        }
+
+        return paths;
+    }
 }

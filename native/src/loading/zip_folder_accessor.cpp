@@ -63,7 +63,7 @@ namespace nova {
         }
 
         std::vector<uint8_t> resource_buffer;
-        resource_buffer.reserve(file_stat.m_uncomp_size);
+        resource_buffer.reserve(static_cast<uint64_t>(file_stat.m_uncomp_size));
 
         mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive, file_idx, resource_buffer.data(), resource_buffer.size(), 0);
         if(!file_extracted) {
@@ -75,5 +75,10 @@ namespace nova {
         }
 
         return resource_buffer;
+    }
+
+    std::vector<fs::path> zip_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
+        // TODO
+        return {};
     }
 }

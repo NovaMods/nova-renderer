@@ -607,6 +607,8 @@ namespace nova {
         bool clear = false;
     };
 
+    void from_json(const nlohmann::json& j, texture_attachment& tex);
+
     /*!
      * \brief Holds all the lists of textures that this pass needs as input
      */
@@ -622,6 +624,8 @@ namespace nova {
          */
         std::vector<std::string> color_attachments;
     };
+
+    void from_json(const nlohmann::json& j, input_textures& inputs);
 
     /*!
      * \brief A pass over the scene
@@ -651,7 +655,7 @@ namespace nova {
         /*!
          * \brief The materials that MUST execute before this one
          */
-        std::optional<std::vector<std::string>> dependencies;
+        std::vector<std::string> dependencies;
 
         /*!
          * \brief The textures that this pass will read from
@@ -660,20 +664,16 @@ namespace nova {
         /*!
          * \brief The textures that this pass will write to
          */
-        std::optional<std::vector<texture_attachment>> texture_outputs;
+        std::vector<texture_attachment> texture_outputs;
         /*!
          * \brief The depth texture this pass will write to
          */
         std::optional<texture_attachment> depth_texture;
 
-        /*!
-         * \brief Parses the provided JSON into a render pass
-         * \param pass_json The JSON object that holds this pass
-         */
-        explicit render_pass(const nlohmann::json &pass_json);
-
         render_pass() = default;
     };
+
+    void from_json(const nlohmann::json& j, render_pass& pass);
 
     /*!
      * \brief All the data that can be in a shaderpack

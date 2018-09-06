@@ -16,6 +16,7 @@
 #endif
 
 #include "../../src/util/logger.hpp"
+#include "../../src/loading/regular_folder_accessor.hpp"
 
 int main(int num_args, const char** args) {
     // Add default logging handlers
@@ -28,6 +29,9 @@ int main(int num_args, const char** args) {
     log.add_log_handler(nova::log_level::ERROR,     [] (auto msg) {std::cerr << "ERROR: " << msg << "\n";});
     log.add_log_handler(nova::log_level::FATAL,     [] (auto msg) {std::cerr << "FATAL: " << msg << "\n";});
     log.add_log_handler(nova::log_level::MAX_LEVEL, [] (auto msg) {std::cerr << "MAX_LEVEL: " << msg << "\n";});
+
+    auto file_test = nova::regular_folder_accessor(fs::path{"shaderpacks/DefaultShaderpack"});
+    file_test.get_all_items_in_folder({"."});
 
     auto renderer = nova::nova_renderer::initialize();
 

@@ -89,7 +89,7 @@ namespace nova {
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
-        const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
+        const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), task_scheduler);
     }
 
     render_engine* nova_renderer::get_engine() {

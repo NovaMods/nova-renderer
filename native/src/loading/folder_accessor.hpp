@@ -49,7 +49,14 @@ namespace nova {
          * \param resource_path The path to the resource to load, relative to this resourcepack's root
          * \return All the bytes in the loaded resource
          */
-        virtual std::vector<uint8_t> read_resource(const fs::path &resource_path) = 0;
+        virtual std::vector<uint8_t> read_resource(const fs::path& resource_path) = 0;
+
+        /*!
+         * \brief Retrieves the paths of all the items in the specified folder
+         * \param folder The folder to get all items from
+         * \return A list of all the paths in the provided folder
+         */
+        virtual std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) = 0;
 
     protected:
         fs::path our_folder;

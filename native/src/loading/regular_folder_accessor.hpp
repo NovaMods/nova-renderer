@@ -14,11 +14,13 @@ namespace nova {
      */
     class regular_folder_accessor : public folder_accessor_base {
     public:
-        explicit regular_folder_accessor(const std::experimental::filesystem::path &folder);
+        explicit regular_folder_accessor(const fs::path &folder);
 
         bool does_resource_exist(const fs::path& resource_path) override;
 
         std::vector<uint8_t> read_resource(const fs::path &resource_path) override;
+
+        std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override;
     };
 }
 
