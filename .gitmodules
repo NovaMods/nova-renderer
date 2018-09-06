@@ -13,9 +13,6 @@
 [submodule "native/3rdparty/SPIRV-Cross"]
 	path = native/3rdparty/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
-[submodule "native/3rdparty/VulkanMemoryAllocator"]
-	path = native/3rdparty/VulkanMemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 [submodule "native/3rdparty/SPIRV-Tools"]
 	path = native/3rdparty/SPIRV-Tools
 	url = https://github.com/KhronosGroup/SPIRV-Tools

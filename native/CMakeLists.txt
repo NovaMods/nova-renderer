@@ -24,28 +24,7 @@ set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
 set(BUILD_SHARED_LIBS OFF)
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    find_package(Vulkan)
-
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
-    set(BUILD_DEMOS OFF)
-    set(BUILD_ICD OFF)
-
-    set(SHADERC_SKIP_TESTS TRUE)
-
-    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
-    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
-    add_subdirectory(${3RD_PARTY_DIR}/glslang)
-    add_subdirectory(${3RD_PARTY_DIR}/shaderc)
-
-    ExternalProject_Add(glfw
-            PREFIX ${3RD_PARTY_DIR}/glfw
-            GIT_REPOSITORY https://github.com/glfw/glfw.git)
-endif()
-
+# Dependsncies that are common to all platforms
 ExternalProject_Add(glm
         PREFIX ${3RD_PARTY_DIR}/glm
         GIT_REPOSITORY https://github.com/g-truc/glm.git)
@@ -69,14 +48,6 @@ ExternalProject_Add(cpptoml
         PREFIX ${2RD_PARTY_DIR}/cpptoml
         GIT_REPOSITORY https://github.com/skystrife/cpptoml.git)
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    include_directories(SYSTEM
-        ${3RD_PARTY_DIR}/glfw/include
-        ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
-        ${3RD_PARTY_DIR}/shaderc/libshaderc/include
-        )
-endif()
-
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
         ${3RD_PARTY_DIR}/glm
@@ -86,6 +57,55 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/enkiTS/src
         ${3RD_PARTY_DIR}/cpptoml/include
         )
+
+# LINUX only
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    ExternalProject_Add(vma
+            PREFIX ${3RD_PARTY_DIR}/VulkanMemoryAllocator
+            GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git)
+
+    ExternalProject_Add(SPIRV-Headers
+            PREFIX ${3RD_PARTY_DIR}/SPIRV-Headers
+            GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git)
+
+    ExternalProject_Add(SPIRV-Tools
+            PREFIX ${3RD_PARTY_DIR}/SPIRV-Tools
+            GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git)
+
+    include_directories(SYSTEM
+            ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
+            ${3RD_PARTY_DIR}/shaderc/libshaderc/include
+            )
+endif()
+
+# Windows only
+if(WIN32)
+    ExternalProject_Add(RenderDoc-APIO
+            PREFIX ${3RD_PARTY_DIR}/RenderDoc-Manager
+            GIT_REPOSITORY https://github.com/NovaMods/RenderDoc-Manager.git)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    find_package(Vulkan)
+
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+    set(BUILD_DEMOS OFF)
+    set(BUILD_ICD OFF)
+
+    set(SHADERC_SKIP_TESTS TRUE)
+
+    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
+    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
+    add_subdirectory(${3RD_PARTY_DIR}/glslang)
+    add_subdirectory(${3RD_PARTY_DIR}/shaderc)
+
+    ExternalProject_Add(glfw
+            PREFIX ${3RD_PARTY_DIR}/glfw
+            GIT_REPOSITORY https://github.com/glfw/glfw.git)
+endif()
 
 set(NOVA_SOURCE
         src/platform.hpp
