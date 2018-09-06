@@ -3,6 +3,8 @@ project(nova-renderer)
 
 option(NOVA_TEST "Enable tests." OFF)
 
+include(ExternalProject)
+
 # Initialize cmake options
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
@@ -35,14 +37,20 @@ set(EASY_PROFILER_NO_GUI ON)
 set(BUILD_SHARED_LIBS OFF)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    add_subdirectory(${3RD_PARTY_DIR}/glfw)
     add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
     add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
     add_subdirectory(${3RD_PARTY_DIR}/glslang)
     add_subdirectory(${3RD_PARTY_DIR}/shaderc)
+
+    ExternalProject_Add(glfw
+            PREFIX 3rdparty/glfw
+            GIT_REPOSITORY https://github.com/glfw/glfw.git)
 endif()
 
-add_subdirectory(${3RD_PARTY_DIR}/glm)
+ExternalProject_Add(glm
+        PREFIX 3rdparty/glm
+        GIT_REPOSITORY https://github.com/g-truc/glm.git)
+
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 add_subdirectory(${3RD_PARTY_DIR}/profiler)
 add_subdirectory(${3RD_PARTY_DIR}/json)
