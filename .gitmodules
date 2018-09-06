@@ -1,6 +1,3 @@
-[submodule "native/3rdparty/glfw"]
-	path = native/3rdparty/glfw
-	url = https://github.com/glfw/glfw.git
 [submodule "native/tests/3rdparty/googletest"]
 	path = native/tests/3rdparty/googletest
 	url = https://github.com/google/googletest.git
