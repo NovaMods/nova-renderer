@@ -20,7 +20,7 @@ namespace nova {
      * This enum covers both images and buffers, and not all layouts are valid for all types of resources. The user of
      * this enum is supposed to know what's useful for what
      */
-    SMART_ENUM(resource_layout,
+    SMART_ENUM(image_layout,
                /*!
                 * \brief The resource is going to be used as a render target
                 *
@@ -33,8 +33,11 @@ namespace nova {
                 *
                 * Only valid for images
                 */
-               PRESENT,
+               PRESENT
+    );
 
+    SMART_ENUM(stage_flags,
+        COLOR_ATTACHMENT_WRITE,
     );
 
     /*!
@@ -42,8 +45,18 @@ namespace nova {
      */
     struct resource_barrier_data {
         std::shared_ptr<iresource> resource_to_barrier;
-        resource_layout initial_layout;
-        resource_layout final_layout;
+        stage_flags source_access_flags;
+        stage_flags dest_access_flags;
+    };
+
+    struct buffer_barrier_data : public resource_barrier_data {
+        uint64_t offset;
+        uint64_t range;
+    };
+
+    struct image_barrier_data : public resource_barrier_data {
+        image_layout initial_layout;
+        image_layout final_layout;
     };
 }
 

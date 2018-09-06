@@ -6,16 +6,20 @@
 #define NOVA_RENDERER_X_11_WINDOW_HPP
 
 #include "../../util/macros.hpp"
+#include "../window.hpp"
 #include <X11/Xlib.h>
 #include <stdint.h>
 
 NOVA_EXCEPTION(nova, x_window_creation_exception)
 
 namespace nova {
-    class x11_window {
+    class x11_window : public iwindow {
     private:
         Window window;
         Display *display;
+        bool should_window_close;
+        Atom wm_protocols;
+        Atom wm_delete_window;
 
     public:
         explicit x11_window(uint32_t width, uint32_t height);
@@ -24,7 +28,10 @@ namespace nova {
         Window &get_x11_window();
         Display *get_display();
 
-        void enter_loop();
+        void on_frame_end() override;
+        bool should_close() const override;
+
+        window_size get_window_size() const override;
     };
 }
 
