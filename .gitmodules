@@ -10,9 +10,6 @@
 [submodule "native/3rdparty/SPIRV-Tools"]
 	path = native/3rdparty/SPIRV-Tools
 	url = https://github.com/KhronosGroup/SPIRV-Tools
-[submodule "native/3rdparty/SPIRV-Headers"]
-	path = native/3rdparty/SPIRV-Headers
-	url = https://github.com/KhronosGroup/SPIRV-Headers
 [submodule "native/tests/3rdparty/googletest"]
 	path = native/tests/3rdparty/googletest
 	url = https://github.com/google/googletest.git
