@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include "shaderpack_data.hpp"
 
-#include <TaskScheduler.h>
+#include <enkiTS/TaskScheduler.h>
 
 namespace fs = std::experimental::filesystem;
 
