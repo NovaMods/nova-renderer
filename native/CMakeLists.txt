@@ -80,6 +80,10 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
             PREFIX ${3RD_PARTY_DIR}/glslang
             GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git)
 
+    ExternalProject_Add(shaderc
+            PREFIX ${3RD_PARTY_DIR}/shaderc
+            GIT_REPOSITORY https://github.com/google/shaderc.git)
+
     include_directories(SYSTEM
             ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
             ${3RD_PARTY_DIR}/shaderc/libshaderc/include
