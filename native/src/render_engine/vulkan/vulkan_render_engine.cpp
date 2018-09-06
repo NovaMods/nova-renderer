@@ -68,6 +68,7 @@ namespace nova {
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
+        destroy_framebuffers();
         destroy_graphics_pipeline();
         destroy_render_pass();
         DEBUG_destroy_shaders();
@@ -97,6 +98,7 @@ namespace nova {
         DEBUG_create_shaders();
         create_render_pass();
         create_graphics_pipeline();
+        create_framebuffers();
     }
 
     std::unique_ptr<command_buffer_base> vulkan_render_engine::allocate_command_buffer(command_buffer_type type) {
@@ -129,12 +131,12 @@ namespace nova {
         }
 
         auto& buffers_for_thread = thread_local_buffers.at(our_id);
-        if(buffers_for_thread.find(type.get_value()) == buffers_for_thread.end()) {
+        if(buffers_for_thread.find(type) == buffers_for_thread.end()) {
             // No buffers for this type of command buffer - we can fix that
-            buffers_for_thread.emplace(type.get_value(), std::vector<std::unique_ptr<command_buffer_base>>{});
+            buffers_for_thread.emplace(type, std::vector<std::unique_ptr<command_buffer_base>>{});
         }
 
-        auto& buffers = buffers_for_thread.at(type.get_value());
+        auto& buffers = buffers_for_thread.at(type);
 
         if(buffers.empty()) {
             buffer = std::make_unique<vulkan_command_buffer>(device, pool, type);
@@ -204,7 +206,7 @@ namespace nova {
                 }
 
                 VkQueueFlags supports_copy = current_properties.queueFlags & VK_QUEUE_TRANSFER_BIT;
-                if(supports_compute && copy_family_idx == 0xFFFFFFFF) {
+                if(supports_copy && copy_family_idx == 0xFFFFFFFF) {
                     copy_family_idx = queue_idx;
                 }
             }
@@ -402,6 +404,31 @@ namespace nova {
             image_view_create_info.subresourceRange.layerCount = 1;
 
             NOVA_THROW_IF_VK_ERROR(vkCreateImageView(device, &image_view_create_info, nullptr, &swapchain_image_views.at(i)), render_engine_initialization_exception);
+        }
+    }
+
+    void vulkan_render_engine::create_framebuffers() {
+        swapchain_framebuffers.resize(swapchain_image_views.size());
+        for(size_t i = 0; i < swapchain_framebuffers.size(); i++) {
+            VkImageView attachments[] = {swapchain_image_views[i]};
+            VkFramebufferCreateInfo framebuffer_create_info;
+            framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebuffer_create_info.pNext = nullptr;
+            framebuffer_create_info.flags = 0;
+            framebuffer_create_info.renderPass = render_pass;
+            framebuffer_create_info.attachmentCount = 1;
+            framebuffer_create_info.pAttachments = attachments;
+            framebuffer_create_info.width = swapchain_extend.width;
+            framebuffer_create_info.height = swapchain_extend.height;
+            framebuffer_create_info.layers = 1;
+
+            NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers.at(i)), render_engine_initialization_exception);
+        }
+    }
+
+    void vulkan_render_engine::destroy_framebuffers() {
+        for(auto framebuffer : swapchain_framebuffers) {
+            vkDestroyFramebuffer(device, framebuffer, nullptr);
         }
     }
 
@@ -674,11 +701,11 @@ namespace nova {
 
     }
 
-    std::shared_ptr<iframebuffer> vulkan_render_engine::get_current_swapchain_framebuffer() const {
+    std::shared_ptr<iframebuffer> vulkan_render_engine::get_current_swapchain_framebuffer(uint32_t index) const {
         return std::shared_ptr<iframebuffer>();
     }
 
-    std::shared_ptr<iresource> vulkan_render_engine::get_current_swapchain_image() const {
+    std::shared_ptr<iresource> vulkan_render_engine::get_current_swapchain_image(uint32_t index) const {
         return std::shared_ptr<iresource>();
     }
 }

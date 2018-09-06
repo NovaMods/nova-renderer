@@ -19,7 +19,7 @@ namespace nova {
 
         void reset() override;
 
-        void resource_barrier(stage_flags source_stage_mask, stage_flags dest_state_mask,
+        void resource_barrier(stage_flags source_stage_mask, stage_flags dest_stage_mask,
                               const std::vector<resource_barrier_data>& memory_barriers,
                               const std::vector<buffer_barrier_data>& buffer_barriers,
                               const std::vector<image_barrier_data>& image_barriers) override;

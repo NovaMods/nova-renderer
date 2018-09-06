@@ -15,6 +15,7 @@
 #include "../render_engine.hpp"
 #include "vulkan_utils.hpp"
 #include "x11_window.hpp"
+#include "../command_buffer_base.hpp"
 
 namespace nova {
     struct vulkan_queue {
@@ -31,10 +32,11 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
 
+        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer(uint32_t frame_index) const override;
 
-        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer() const override;
+        uint32_t get_current_swapchain_index() const override;
 
-        std::shared_ptr<iresource> get_current_swapchain_image() const override;
+        std::shared_ptr<iresource> get_current_swapchain_image(uint32_t frame_index) const override;
 
         std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
 
@@ -66,6 +68,7 @@ namespace nova {
         VkFormat swapchain_format;
         VkExtent2D swapchain_extend;
         std::vector<VkImageView> swapchain_image_views;
+        std::vector<VkFramebuffer> swapchain_framebuffers;
 
         VkShaderModule vert_shader;
         VkShaderModule frag_shader;
@@ -81,6 +84,8 @@ namespace nova {
         void destroy_render_pass();
         void create_graphics_pipeline();
         void destroy_graphics_pipeline();
+        void create_framebuffers();
+        void destroy_framebuffers();
         VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
         VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
 
@@ -109,13 +114,13 @@ namespace nova {
         /*!
          * \brief Same as above - a command buffer is tied to a command pool, so they need to be used in the same thread
          */
-        std::unordered_map<std::thread::id, std::unordered_map<uint32_t, std::vector<std::unique_ptr<command_buffer_base>>>> thread_local_buffers;
+        std::unordered_map<std::thread::id, std::unordered_map<command_buffer_type, std::vector<std::unique_ptr<command_buffer_base>>>> thread_local_buffers;
         std::mutex thread_local_buffers_lock;
 
         /*!
          * \brief The queue that supports the operations that each command buffer type needs
          */
-        std::unordered_map<uint32_t, vulkan_queue> queues_per_type;
+        std::unordered_map<command_buffer_type, vulkan_queue> queues_per_type;
     };
 }
 
