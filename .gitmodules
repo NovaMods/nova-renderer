@@ -1,9 +1,6 @@
 [submodule "native/3rdparty/glfw"]
 	path = native/3rdparty/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "native/3rdparty/glslang"]
-	path = native/3rdparty/glslang
-	url = https://github.com/KhronosGroup/glslang.git
 [submodule "native/3rdparty/shaderc"]
 	path = native/3rdparty/shaderc
 	url = https://github.com/google/shaderc.git
