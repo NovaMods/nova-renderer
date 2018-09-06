@@ -10,6 +10,7 @@
 
 #include <string>
 #include <memory>
+#include <TaskScheduler.h>
 
 #include "settings/settings.hpp"
 #include "render_engine/render_engine.hpp"
@@ -50,6 +51,8 @@ namespace nova {
 
         render_engine *get_engine();
 
+        enki::TaskScheduler& get_task_scheduler();
+
         static nova_renderer *initialize() {
             return (instance = new nova_renderer());
         }
@@ -61,6 +64,8 @@ namespace nova {
     private:
         settings render_settings;
         std::unique_ptr<render_engine> engine;
+
+        enki::TaskScheduler task_scheduler;
 
         uint32_t frame_index;
 

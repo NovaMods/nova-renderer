@@ -24,15 +24,26 @@ namespace nova {
      * TODO: Abstract this so a shaderpack for example does only contain the data of the pack itself and compiled SPIR-V, but provide built-in methods to parse shaderpacks
      */
     struct settings_options {
-        /*!
-         * \brief Currently vulkan specific
-         */
-        std::string application_name;
+        struct {
+            bool enable_renderdoc;
+        } debug;
 
-        /*!
-         * \brief Version of the application, currently vulkan specific
-         */
-        semver application_version;
+        struct {
+            std::string loaded_shaderpack;
+        } cache;
+
+        struct {
+            struct {
+                struct {
+                    std::string application_name;
+                    semver appliction_version;
+                } vulkan;
+
+                struct {
+
+                } dx12;
+            };
+        } api;
     };
 
     /*!
@@ -82,7 +93,7 @@ namespace nova {
          *
          * \param filename The name of the file to load the config from
          */
-        explicit settings(settings_options options);
+        explicit settings(const std::string& filename);
 
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer

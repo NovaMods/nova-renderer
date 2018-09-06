@@ -47,6 +47,13 @@ add_subdirectory(${3RD_PARTY_DIR}/miniz)
 add_subdirectory(${3RD_PARTY_DIR}/profiler)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 
+set(ENKITS_BUILD_C_INTERFACE OFF)
+set(ENKITS_BUILD_EXAMPLES OFF)
+add_subdirectory(${3RD_PARTY_DIR}/enkiTS)
+
+option(CPPTOML_BUILD_EXAMPLES OFF)
+add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
+
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
         ${3RD_PARTY_DIR}/glfw/include
@@ -59,6 +66,8 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/shaderc/libshaderc/include
         ${3RD_PARTY_DIR}/profiler/include
         ${3RD_PARTY_DIR}/json/single_include
+        ${3RD_PARTY_DIR}/enkiTS/src
+        ${3RD_PARTY_DIR}/cpptoml/include
         )
 
 set(NOVA_SOURCE
@@ -73,6 +82,7 @@ set(NOVA_SOURCE
         src/loading/regular_folder_accessor.hpp
         src/loading/folder_accessor.hpp
         src/nova_renderer.hpp
+        src/nova_renderer.cpp
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
         src/loading/zip_folder_accessor.cpp
@@ -96,8 +106,7 @@ set(NOVA_SOURCE
         src/render_engine/command_buffer_base.hpp
         src/render_engine/command_buffer_base.cpp
         src/render_engine/window.hpp
-        src/render_engine/resource_barrier.hpp
-        src/nova_renderer.cpp)
+        src/render_engine/resource_barrier.hpp)
 
 if(UNIX)
     set(NOVA_SOURCE
@@ -108,7 +117,10 @@ if(UNIX)
             src/render_engine/vulkan/x11_window.cpp
             src/render_engine/vulkan/x11_window.hpp
             src/render_engine/vulkan/vulkan_command_buffer.hpp
-            src/render_engine/vulkan/vulkan_command_buffer.cpp src/render_engine/vulkan/vulkan_resource_barrier_helpers.cpp src/render_engine/vulkan/vulkan_resource_barrier_helpers.hpp src/render_engine/vulkan/vulkan_opaque_types.hpp)
+            src/render_engine/vulkan/vulkan_command_buffer.cpp
+            src/render_engine/vulkan/vulkan_resource_barrier_helpers.cpp
+            src/render_engine/vulkan/vulkan_resource_barrier_helpers.hpp
+            src/render_engine/vulkan/vulkan_opaque_types.hpp)
 elseif(WIN32)
     set(NOVA_SOURCE
             ${NOVA_SOURCE}
@@ -173,15 +185,17 @@ target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)
 target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
 
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler enkiTS cpptoml)
+
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
-    set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} d3d12 dxgi d3dcompiler nova-profiler)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler)
     target_include_directories(nova-renderer PRIVATE
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\shared"
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
 
 else(WIN32)
-    set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs nova-profiler)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs)
 endif (WIN32)
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
