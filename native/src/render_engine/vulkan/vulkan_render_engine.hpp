@@ -23,6 +23,29 @@ namespace nova {
     };
 
     class vulkan_render_engine : public render_engine {
+    public:
+        explicit vulkan_render_engine(const settings &settings);
+        ~vulkan_render_engine() override;
+
+        void open_window(uint32_t width, uint32_t height) override;
+
+        std::shared_ptr<iwindow> get_window() const override;
+
+
+        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer() const override;
+
+        std::shared_ptr<iresource> get_current_swapchain_image() const override;
+
+        std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
+
+        void execute_command_buffers(const std::vector<command_buffer_base*>& buffers) override;
+
+        void free_command_buffer(std::unique_ptr<command_buffer_base> buf) override;
+
+        void present_swapchain_image() override;
+
+        static const std::string get_engine_name();
+
     private:
         std::vector<const char *> enabled_validation_layer_names;
 
@@ -76,30 +99,6 @@ namespace nova {
         VkDebugReportCallbackEXT debug_callback;
 #endif
 
-    public:
-        explicit vulkan_render_engine(const settings &settings);
-        ~vulkan_render_engine() override;
-
-        void open_window(uint32_t width, uint32_t height) override;
-
-        std::shared_ptr<iwindow> get_window() const override;
-
-
-        std::shared_ptr<iframebuffer> get_current_swapchain_framebuffer() const override;
-
-        std::shared_ptr<iresource> get_current_swapchain_image() const override;
-
-        std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
-
-        void execute_command_buffers(const std::vector<command_buffer_base*>& buffers) override;
-
-        void free_command_buffer(std::unique_ptr<command_buffer_base> buf) override;
-
-        void present_swapchain_image() override;
-
-        static const std::string get_engine_name();
-
-    private:
         /*!
          * \brief A CommandPool can't be used from more than one thread at once, so we need to figure out what thread
          * the code requesting a command buffer is in and use the appropriate thread pool
