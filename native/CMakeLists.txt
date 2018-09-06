@@ -22,21 +22,20 @@ endif()
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
-find_package(Vulkan)
-
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
-set(BUILD_DEMOS OFF)
-set(BUILD_ICD OFF)
-
-set(SHADERC_SKIP_TESTS TRUE)
-
-set(EASY_PROFILER_NO_GUI ON)
 set(BUILD_SHARED_LIBS OFF)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    find_package(Vulkan)
+
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+    set(BUILD_DEMOS OFF)
+    set(BUILD_ICD OFF)
+
+    set(SHADERC_SKIP_TESTS TRUE)
+
     add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
     add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
     add_subdirectory(${3RD_PARTY_DIR}/glslang)
@@ -51,8 +50,11 @@ ExternalProject_Add(glm
         PREFIX 3rdparty/glm
         GIT_REPOSITORY https://github.com/g-truc/glm.git)
 
+ExternalProject_Add(profiler
+        PREFIX ${3RD_PARTY_DIR}/profiler
+        GIT_REPOSITORY https://github.com/NovaMods/profiler.git)
+
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
-add_subdirectory(${3RD_PARTY_DIR}/profiler)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 
 set(ENKITS_BUILD_C_INTERFACE OFF)

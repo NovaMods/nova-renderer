@@ -4,9 +4,6 @@
 [submodule "native/3rdparty/glslang"]
 	path = native/3rdparty/glslang
 	url = https://github.com/KhronosGroup/glslang.git
-[submodule "native/3rdparty/profiler"]
-	path = native/3rdparty/profiler
-	url = https://github.com/NovaMods/profiler.git
 [submodule "native/3rdparty/miniz"]
 	path = native/3rdparty/miniz
 	url = https://github.com/richgel999/miniz.git
