@@ -60,10 +60,14 @@ ExternalProject_Add(json
 
 set(ENKITS_BUILD_C_INTERFACE OFF)
 set(ENKITS_BUILD_EXAMPLES OFF)
-add_subdirectory(${3RD_PARTY_DIR}/enkiTS)
+ExternalProject_Add(enkiTS
+        PREFIX ${3RD_PARTY_DIR}/enkiTS
+        GIT_REPOSITORY https://github.com/dougbinks/enkiTS.git)
 
 option(CPPTOML_BUILD_EXAMPLES OFF)
-add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
+ExternalProject_Add(cpptoml
+        PREFIX ${2RD_PARTY_DIR}/cpptoml
+        GIT_REPOSITORY https://github.com/skystrife/cpptoml.git)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     include_directories(SYSTEM
