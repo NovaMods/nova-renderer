@@ -33,7 +33,6 @@ namespace nova {
         } cache;
 
         struct {
-            struct {
                 struct {
                     std::string application_name;
                     semver appliction_version;
@@ -42,7 +41,6 @@ namespace nova {
                 struct {
 
                 } dx12;
-            };
         } api;
     };
 

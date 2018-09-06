@@ -29,8 +29,6 @@ namespace nova {
         // TODO: Get window size from config
         engine->open_window(200, 200);
         frame_index = engine->get_current_swapchain_index();
-
-
     }
 
     settings &nova_renderer::get_settings() {
@@ -45,7 +43,7 @@ namespace nova {
         swapchain_image_command_buffer->reset();
 
         image_barrier_data swapchain_image_to_shader_writable = {};
-        swapchain_image_to_shader_writable.resource_to_barrier = engine->get_current_swapchain_image(frame_index);
+        swapchain_image_to_shader_writable.resource_to_barrier = engine->get_swapchain_image(frame_index);
         swapchain_image_to_shader_writable.initial_layout = image_layout::PRESENT;
         swapchain_image_to_shader_writable.final_layout = image_layout::RENDER_TARGET;
 
@@ -54,14 +52,14 @@ namespace nova {
         swapchain_image_command_buffer->resource_barrier(stage_flags::COLOR_ATTACHMENT_WRITE, stage_flags::COLOR_ATTACHMENT_WRITE,
                                                          {}, {}, to_shader_barriers);
 
-        std::shared_ptr<iframebuffer> backbuffer_framebuffer = engine->get_current_swapchain_framebuffer(frame_index);
+        std::shared_ptr<iframebuffer> backbuffer_framebuffer = engine->get_swapchain_framebuffer(frame_index);
         swapchain_image_command_buffer->set_render_target(backbuffer_framebuffer.get());
 
         glm::vec4 clear_color(0, 0.2f, 0.4f, 1.0f);
         swapchain_image_command_buffer->clear_render_target(backbuffer_framebuffer.get(), clear_color);
 
         image_barrier_data swapchain_image_to_presentable = {};
-        swapchain_image_to_presentable.resource_to_barrier = engine->get_current_swapchain_image(frame_index);
+        swapchain_image_to_presentable.resource_to_barrier = engine->get_swapchain_image(frame_index);
         swapchain_image_to_presentable.initial_layout = image_layout::RENDER_TARGET;
         swapchain_image_to_presentable.final_layout = image_layout::PRESENT;
 
@@ -82,10 +80,7 @@ namespace nova {
 
         engine->free_command_buffer(std::move(buffer));
 
-        frame_index++;
-        if(frame_index >= FRAME_BUFFER_COUNT) {
-            frame_index = 0;
-        }
+        frame_index = engine->get_current_swapchain_index();
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {

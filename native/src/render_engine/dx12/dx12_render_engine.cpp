@@ -221,7 +221,7 @@ namespace nova {
         swapchain->Present(0, 0);
     }
 
-    std::shared_ptr<iframebuffer> dx12_render_engine::get_current_swapchain_framebuffer(const uint32_t frame_index) const {
+    std::shared_ptr<iframebuffer> dx12_render_engine::get_swapchain_framebuffer(uint32_t frame_index) const {
         std::shared_ptr<iframebuffer> framebuffer = std::make_shared<iframebuffer>();
         CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), frame_index, rtv_descriptor_size);
         framebuffer->color_attachments.push_back(current_framebuffer_rtv);
@@ -247,7 +247,7 @@ namespace nova {
         }
     }
 
-    std::shared_ptr<iresource> dx12_render_engine::get_current_swapchain_image(const uint32_t frame_index) const {
+    std::shared_ptr<iresource> dx12_render_engine::get_swapchain_image(uint32_t frame_index) const {
         std::shared_ptr<iresource> resource = std::make_shared<iresource>();
         resource->descriptor = rendertargets[frame_index];
         return resource;

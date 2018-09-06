@@ -25,8 +25,8 @@ namespace nova {
         PRESENT,
     };
 
-    enum class stage_flags {
-        COLOR_ATTACHMENT_WRITE,
+    enum stage_flags {
+        COLOR_ATTACHMENT_WRITE
     };
 
     /*!

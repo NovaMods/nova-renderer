@@ -39,7 +39,7 @@ namespace nova {
         vkResetCommandBuffer(buffer, 0);
     }
 
-    void vulkan_command_buffer::resource_barrier(stage_flags source_stage_mask, stage_flags dest_state_mask,
+    void vulkan_command_buffer::resource_barrier(stage_flags source_stage_mask, stage_flags dest_stage_mask,
                                                  const std::vector<resource_barrier_data>& memory_barriers,
                                                  const std::vector<buffer_barrier_data>& buffer_barriers,
                                                  const std::vector<image_barrier_data>& image_barriers) {
@@ -47,7 +47,7 @@ namespace nova {
         vk_memory_barriers.reserve(memory_barriers.size());
 
         VkAccessFlags source_access_mask = to_vk_access_flags(source_stage_mask);
-        VkAccessFlags dest_access_mask = to_vk_access_flags(dest_state_mask);
+        VkAccessFlags dest_access_mask = to_vk_access_flags(dest_stage_mask);
 
         for(const resource_barrier_data& barrier_data : memory_barriers) {
 
@@ -97,7 +97,7 @@ namespace nova {
         }
 
         VkPipelineStageFlags source_pipeline_flags = to_vk_stage_flags(source_stage_mask);
-        VkPipelineStageFlags dest_pipeline_flags = to_vk_stage_flags(dest_access_mask);
+        VkPipelineStageFlags dest_pipeline_flags = to_vk_stage_flags(dest_stage_mask);
 
         vkCmdPipelineBarrier(buffer, source_pipeline_flags, dest_pipeline_flags, 0,
                              static_cast<uint32_t>(vk_memory_barriers.size()), vk_memory_barriers.data(),
@@ -110,6 +110,14 @@ namespace nova {
     }
 
     void vulkan_command_buffer::set_render_target(iframebuffer *render_target) {
+
+    }
+
+    bool vulkan_command_buffer::is_finished() const {
+        return false;
+    }
+
+    void vulkan_command_buffer::wait_until_completion() const {
 
     }
 }
