@@ -60,8 +60,8 @@ namespace nova {
         ~__log_stream() override;
     };
 
-#define NOVA_LOG(LEVEL) logger::instance.log(log_level::LEVEL)
 }
 
+#define NOVA_LOG(LEVEL) ::nova::logger::instance.log(::nova::log_level::LEVEL)
 
 #endif //NOVA_RENDERER_LOGGER_HPP

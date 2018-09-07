@@ -211,9 +211,6 @@ set(NOVA_TEST ON)
 
 if(NOVA_TEST)
     add_subdirectory(tests)
-
-    enable_testing()
-    add_test(NovaTests nova-test)
 endif()
 
 ####################################
@@ -223,7 +220,6 @@ endif()
 # Minecraft is the only variant for now so enable it by default for now
 option(NOVA_MINECRAFT "Build minecraft library." ON)
 if(NOVA_MINECRAFT)
-    set(JAVA_INCLUDE_PATH /usr/include/openjdk-8/)
     find_package(JNI REQUIRED)
     set(NOVA_MC_SOURCE
             mc_interface/jni/com_continuum_nova_system_NovaNative.h
