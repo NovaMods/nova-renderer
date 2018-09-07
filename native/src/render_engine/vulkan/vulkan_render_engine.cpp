@@ -9,8 +9,6 @@
 #include "vulkan_command_buffer.hpp"
 #include <fstream>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wreturn-stack-address"
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const settings &settings) : render_engine(settings) {
         settings_options options = settings.get_options();
@@ -96,7 +94,7 @@ namespace nova {
         create_device();
         create_swapchain();
         create_image_views();
-        DEBUG_create_shaders();
+        // DEBUG_create_shaders();
         create_render_pass();
         create_graphics_pipeline();
         create_framebuffers();
@@ -130,7 +128,7 @@ namespace nova {
 
         if(thread_local_buffers.find(our_id) == thread_local_buffers.end()) {
             // No buffers are available for this thread - we need to create a new cache for this thread
-            thread_local_buffers.emplace(our_id, std::unordered_map<uint32_t, std::vector<std::unique_ptr<command_buffer_base>>>{});
+            thread_local_buffers.emplace(our_id, std::unordered_map<command_buffer_type, std::vector<std::unique_ptr<command_buffer_base>>>{});
         }
 
         auto& buffers_for_thread = thread_local_buffers.at(our_id);
@@ -757,4 +755,3 @@ namespace nova {
         return std::shared_ptr<iresource>();
     }
 }
-#pragma clang diagnostic pop

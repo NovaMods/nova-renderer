@@ -12,6 +12,14 @@
 namespace fs = std::experimental::filesystem;
 
 namespace nova {
+    struct file_tree_node {
+        std::string name;
+        std::vector<file_tree_node*> children;
+        file_tree_node* parent = nullptr;
+
+        std::string get_full_path() const;
+    };
+
     /*!
      * \brief Allows access to a zip folder
      */
@@ -33,10 +41,17 @@ namespace nova {
          */
         std::unordered_map<std::string, uint32_t> resource_indexes;
 
-        mz_zip_archive zip_archive;
+        mz_zip_archive zip_archive = {};
+
+        file_tree_node* files = nullptr;
 
         void build_file_tree();
     };
+
+    /*!
+     * \brief Prints out the nodes in a depth-first fashion
+     */
+    void print_file_tree(const file_tree_node* folder, uint32_t depth);
 }
 
 

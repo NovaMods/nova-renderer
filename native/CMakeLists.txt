@@ -199,7 +199,7 @@ if (WIN32)
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
 
 else(WIN32)
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} glfw ${GLFW_LIBRARIES} ${Vulkan_LIBRARIES} shaderc stdc++fs)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${Vulkan_LIBRARIES} shaderc stdc++fs X11)
 endif (WIN32)
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
