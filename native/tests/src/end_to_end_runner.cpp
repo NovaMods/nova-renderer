@@ -21,6 +21,7 @@
 
 #include "../../src/util/logger.hpp"
 #include "../../src/loading/zip_folder_accessor.hpp"
+#include "../../src/settings/settings.hpp"
 
 namespace nova {
     int main() {
@@ -30,7 +31,8 @@ namespace nova {
         getcwd(buff, FILENAME_MAX);
         NOVA_LOG(DEBUG) << "Running in " << buff << std::flush;
 
-        auto renderer = nova::nova_renderer::initialize();
+        nova::settings settings;
+        auto renderer = nova::nova_renderer::initialize(settings);
 
         std::shared_ptr<nova::iwindow> window = renderer->get_engine()->get_window();
 

@@ -18,7 +18,7 @@ namespace nova {
     nova_renderer* nova_renderer::instance;
 
 
-    nova_renderer::nova_renderer() : render_settings("config/nova/config.toml") {
+    nova_renderer::nova_renderer(settings &settings) : render_settings(settings) {
 #if SUPPORT_DX12
         engine = std::make_unique<dx12_render_engine>(render_settings);
 

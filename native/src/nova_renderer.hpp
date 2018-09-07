@@ -29,7 +29,7 @@ namespace nova {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit nova_renderer();
+        explicit nova_renderer(settings &settings);
 
         /*!
          * \brief Loads the shaderpack with the given name
@@ -53,8 +53,8 @@ namespace nova {
 
         enki::TaskScheduler& get_task_scheduler();
 
-        static nova_renderer *initialize() {
-            return (instance = new nova_renderer());
+        static nova_renderer *initialize(settings &settings) {
+            return (instance = new nova_renderer(settings));
         }
 
         static nova_renderer* get_instance();

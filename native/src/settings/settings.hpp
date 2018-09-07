@@ -33,6 +33,10 @@ namespace nova {
         } cache;
 
         struct {
+            std::string title;
+        } window;
+
+        struct {
                 struct {
                     std::string application_name;
                     semver appliction_version;
@@ -86,13 +90,6 @@ namespace nova {
      */
     class settings {
     public:
-        /*!
-         * \brief Constructs this config from the given JSON document
-         *
-         * \param filename The name of the file to load the config from
-         */
-        explicit settings(const std::string& filename);
-
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer
          */

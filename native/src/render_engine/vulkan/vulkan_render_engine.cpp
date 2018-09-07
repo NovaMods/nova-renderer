@@ -94,7 +94,7 @@ namespace nova {
         create_device();
         create_swapchain();
         create_image_views();
-        // DEBUG_create_shaders();
+        DEBUG_create_shaders();
         create_render_pass();
         create_graphics_pipeline();
         create_framebuffers();
@@ -169,7 +169,7 @@ namespace nova {
         uint32_t copy_family_idx        = 0xFFFFFFFF;
 
         VkPhysicalDevice choosen_device = nullptr;
-        for(int device_idx = 0; device_idx < device_count; device_idx++) {
+        for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
             graphics_family_idx = 0xFFFFFFFF;
             VkPhysicalDevice current_device = physical_devices[device_idx];
             VkPhysicalDeviceProperties properties;
@@ -704,7 +704,6 @@ namespace nova {
     VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType,
                                                 uint64_t object, size_t location, int32_t message_code,
                                                 const char *layer_prefix, const char *message, void *user_data) {
-        auto *self = reinterpret_cast<vulkan_render_engine *>(user_data);
         NOVA_LOG(TRACE) << __FILE__ << ":" << __LINE__ << " >> VK Debug: [" << layer_prefix << "] " << message;
         return VK_FALSE;
     }
