@@ -81,7 +81,7 @@ namespace nova {
 
     std::vector<fs::path> zip_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
         std::string folder_stringname = folder.string();
-        std::vector<std::string> folder_path_parts = split(folder, '/');
+        std::vector<std::string> folder_path_parts = split(folder.string(), '/');
 
         file_tree_node* cur_node = files;
         // Get the node at this path
@@ -96,7 +96,7 @@ namespace nova {
             }
 
             if(!found_node) {
-                throw resource_not_found_error(folder);
+                throw resource_not_found_error(folder.string());
             }
         }
 

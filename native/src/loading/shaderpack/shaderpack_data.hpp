@@ -15,7 +15,7 @@
 
 #include <optional>
 
-#include "../util/smart_enum.hpp"
+#include "../../util/smart_enum.hpp"
 #include <nlohmann/json.hpp>
 
 namespace nova {
@@ -84,32 +84,6 @@ namespace nova {
             Repeat,
             Clamp
     )
-
-    /*!
-     * \brief Defines a sampler to use for a texture
-     *
-     * At the time of writing I'm not sure how this is corellated with a texture, but all well
-     */
-    struct sampler_state {
-        /*!
-         * \brief The index of the sampler. This might correspond directly with the texture but I hope not cause I don't
-         * want to write a number of sampler blocks
-         */
-        std::optional<uint32_t> sampler_index;
-
-        /*!
-         * \brief What kind of texture filter to use
-         *
-         * texel_aa does something that I don't want to figure out right now. Bilinear is your regular bilinear filter,
-         * and point is the point filter. Aniso isn't an option and I kinda hope it stays that way
-         */
-        std::optional<texture_filter_enum> filter;
-
-        /*!
-         * \brief How the texutre should wrap at the edges
-         */
-        std::optional<wrap_mode_enum> wrap_mode;
-    };
 
     /*!
      * \brief The kind of data in a vertex attribute
@@ -213,42 +187,6 @@ namespace nova {
             InAppPackage
     )
 
-    /*!
-     * \brief A texture definition in a material file
-     *
-     * This class simple describes where to get the texture data from.
-     */
-    struct texture {
-        /*!
-         * \brief Where Nova should look for the texture at
-         *
-         * The texture location currently has two values: Dynamic and InUserPackage.
-         *
-         * A Dynamic texture is generated at runtime, often as part of the rendering pipeline. There are a number of
-         * dynamic textures defined by Nova, which I don't feel like listing out here.
-         *
-         * A texture that's InUserPackage is not generated at runtime. Rather, it's supplied by the resourcepack. A
-         * InUserPackage texture can have a name that's the path, relative to the resourcepack, of where to find the
-         * texture, or it can refer to an atlas. Because of the way Nova handles megatextures there's actually always
-         * three atlases: color, normals, and data. Something like `atlas.terrain` or `atlas.gui` refer to the color
-         * atlas. Think of the texture name as more of a guideline then an actual rule
-         */
-        texture_location_enum texture_location;
-
-        /*!
-         * \brief The name of the texture
-         *
-         * If the texture name starts with `atlas` then the texture is one of the atlases. Nova sticks all the textures
-         * it can into the virtual texture atlas, so it doesn't really care what atlas you request.
-         */
-        std::string texture_name;
-
-        /*!
-         * \brief If true, calculates mipmaps for this texture before the shaders is drawn
-         */
-        std::optional<bool> calculate_mipmaps;
-    };
-
     SMART_ENUM(msaa_support_enum,
             MSAA,
             Both,
@@ -276,15 +214,6 @@ namespace nova {
             NotEqual,
             Always
     )
-
-    struct stencil_op_state {
-        std::optional<stencil_op_enum> fail_op;
-        std::optional<stencil_op_enum> pass_op;
-        std::optional<stencil_op_enum> depth_fail_op;
-        std::optional<compare_op_enum> compare_op;
-        std::optional<uint32_t> compare_mask;
-        std::optional<uint32_t> write_mask;
-    };
 
     SMART_ENUM(pass_enum,
             Shadow,
@@ -317,6 +246,57 @@ namespace nova {
             Opaque,
             Cutout
     )
+
+    SMART_ENUM(pixel_format_enum,
+               RGB8,
+               RGBA8,
+               RGB16F,
+               RGBA16F,
+               RGB32F,
+               RGBA32F,
+               Depth,
+               DepthStencil,
+    )
+
+    SMART_ENUM(texture_dimension_type_enum,
+               ScreenRelative,
+               Absolute
+    )
+
+    /*!
+     * \brief Defines a sampler to use for a texture
+     *
+     * At the time of writing I'm not sure how this is corellated with a texture, but all well
+     */
+    struct sampler_state {
+        /*!
+         * \brief The index of the sampler. This might correspond directly with the texture but I hope not cause I don't
+         * want to write a number of sampler blocks
+         */
+        std::optional<uint32_t> sampler_index;
+
+        /*!
+         * \brief What kind of texture filter to use
+         *
+         * texel_aa does something that I don't want to figure out right now. Bilinear is your regular bilinear filter,
+         * and point is the point filter. Aniso isn't an option and I kinda hope it stays that way
+         */
+        std::optional<texture_filter_enum> filter;
+
+        /*!
+         * \brief How the texutre should wrap at the edges
+         */
+        std::optional<wrap_mode_enum> wrap_mode;
+    };
+
+    struct stencil_op_state {
+        std::optional<stencil_op_enum> fail_op;
+        std::optional<stencil_op_enum> pass_op;
+        std::optional<stencil_op_enum> depth_fail_op;
+        std::optional<compare_op_enum> compare_op;
+        std::optional<uint32_t> compare_mask;
+        std::optional<uint32_t> write_mask;
+    };
 
     struct bound_resource {
         /*!
@@ -494,21 +474,6 @@ namespace nova {
         pipeline_data() = default;
     };
 
-    SMART_ENUM(pixel_format_enum,
-               RGB8,
-               RGBA8,
-               RGB16F,
-               RGBA16F,
-               RGB32F,
-               RGBA32F,
-               Depth,
-               DepthStencil,
-    )
-
-    SMART_ENUM(texture_dimension_type_enum,
-               ScreenRelative,
-               Absolute
-    )
 
     struct texture_format {
         /*!
@@ -530,12 +495,6 @@ namespace nova {
          */
         float height;
     };
-
-    void from_json(const nlohmann::json& j, texture_format& format);
-
-    bool operator==(const texture_format &rhs, const texture_format &lhs);
-
-    bool operator!=(const texture_format &rhs, const texture_format &lhs);
 
     /*!
      * \brief A texture that a pass can use
@@ -580,13 +539,9 @@ namespace nova {
         texture_format format;
     };
 
-    void from_json(const nlohmann::json& j, texture_resource& tex);
-
     struct shaderpack_resources {
         std::vector<texture_resource> textures;
     };
-
-    void from_json(const nlohmann::json& j, shaderpack_resources& res);
 
     /*!
      * \brief A description of a texture that a render pass outputs to
@@ -607,8 +562,6 @@ namespace nova {
         bool clear = false;
     };
 
-    void from_json(const nlohmann::json& j, texture_attachment& tex);
-
     /*!
      * \brief Holds all the lists of textures that this pass needs as input
      */
@@ -624,8 +577,6 @@ namespace nova {
          */
         std::vector<std::string> color_attachments;
     };
-
-    void from_json(const nlohmann::json& j, input_textures& inputs);
 
     /*!
      * \brief A pass over the scene
@@ -673,19 +624,22 @@ namespace nova {
         render_pass() = default;
     };
 
-    void from_json(const nlohmann::json& j, render_pass& pass);
-
     /*!
      * \brief All the data that can be in a shaderpack
      */
     struct shaderpack_data {
+        std::vector<pipeline_data> pipelines;
+        
+        std::vector<render_pass> passes;
 
-        std::unordered_map<std::string, pipeline_data> pipelines;
+        //std::vector<material_data> materials;
 
-        //std::unordered_map<std::string, material_data> materials;
-
-        //std::unordered_map<std::string, texture_data> textures;
+        shaderpack_resources resources;
     };
+
+    bool operator==(const texture_format &rhs, const texture_format &lhs);
+
+    bool operator!=(const texture_format &rhs, const texture_format &lhs);
 }
 
 #endif //NOVA_RENDERER_SHADERPACK_DATA_HPP

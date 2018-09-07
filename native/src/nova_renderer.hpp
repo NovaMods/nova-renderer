@@ -15,7 +15,7 @@
 #include "settings/settings.hpp"
 #include "render_engine/render_engine.hpp"
 #include "util/macros.hpp"
-#include "loading/shaderpack_loading.hpp"
+#include "loading/shaderpack/shaderpack_loading.hpp"
 
 NOVA_EXCEPTION(nova, already_initialized_exception)
 NOVA_EXCEPTION(nova, uninitialized_exception)

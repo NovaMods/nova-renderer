@@ -95,12 +95,12 @@ set(NOVA_SOURCE
         src/util/utils.hpp
 
         src/util/smart_enum.hpp
-        src/loading/shaderpack_loading.cpp
-        src/loading/shaderpack_loading.hpp
+        src/loading/shaderpack/shaderpack_loading.cpp
+        src/loading/shaderpack/shaderpack_loading.hpp
         src/loading/loading_utils.cpp
         src/loading/loading_utils.hpp
-        src/loading/shaderpack_data.hpp
-        src/loading/shaderpack_data.cpp
+        src/loading/shaderpack/shaderpack_data.hpp
+        src/loading/shaderpack/shaderpack_data.cpp
 
         src/settings/settings.cpp
         src/settings/settings.hpp
@@ -111,7 +111,10 @@ set(NOVA_SOURCE
         src/render_engine/command_buffer_base.hpp
         src/render_engine/command_buffer_base.cpp
         src/render_engine/window.hpp
-        src/render_engine/resource_barrier.hpp src/loading/utils.hpp)
+        src/render_engine/resource_barrier.hpp
+        src/loading/utils.hpp
+        src/loading/shaderpack/json_interop.cpp
+        src/loading/shaderpack/json_interop.hpp)
 
 if(UNIX)
     set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)

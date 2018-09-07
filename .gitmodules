@@ -39,4 +39,4 @@
 	url = https://github.com/NovaMods/RenderDoc-Manager.git
 [submodule "native/3rdparty/miniz"]
 	path = native/3rdparty/miniz
-	url = https://github.com/richgel999/miniz.git
+	url = https://github.com/richge1999/miniz.git
