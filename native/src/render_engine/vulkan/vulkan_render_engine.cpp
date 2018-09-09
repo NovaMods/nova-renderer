@@ -67,6 +67,7 @@ namespace nova {
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
+        cleanup_dynamic();
         destroy_semaphores();
         destroy_framebuffers();
         destroy_graphics_pipeline();
@@ -121,7 +122,6 @@ namespace nova {
             vkCreateCommandPool(device, &pool_create_info, nullptr, &new_pool);
 
             thread_local_pools.emplace(our_id, new_pool);
-            NOVA_LOG(DEBUG) << "Created a new command buffer pool for thread id " << our_id;
         }
 
         VkCommandPool pool = thread_local_pools.at(our_id);
@@ -131,26 +131,22 @@ namespace nova {
         if(thread_local_buffers.find(our_id) == thread_local_buffers.end()) {
             // No buffers are available for this thread - we need to create a new cache for this thread
             thread_local_buffers.emplace(our_id, std::unordered_map<command_buffer_type, std::vector<std::unique_ptr<command_buffer_base>>>{});
-            NOVA_LOG(DEBUG) << "Created a new map of command buffers for thread id " << our_id;
         }
 
         auto& buffers_for_thread = thread_local_buffers.at(our_id);
         if(buffers_for_thread.find(type) == buffers_for_thread.end()) {
             // No buffers for this type of command buffer - we can fix that
             buffers_for_thread.emplace(type, std::vector<std::unique_ptr<command_buffer_base>>{});
-            NOVA_LOG(DEBUG) << "Created a new list of command buffers for command buffer type " << static_cast<uint32_t>(type);
         }
 
         auto& buffers = buffers_for_thread.at(type);
 
         if(buffers.empty()) {
             buffer = std::make_unique<vulkan_command_buffer>(device, pool, type);
-            NOVA_LOG(DEBUG) << "Allocated a new command buffer for thread id " << our_id << " and type " << static_cast<uint32_t>(type);
 
         } else {
             buffer = std::move(buffers.back());
             buffers.pop_back();
-            NOVA_LOG(DEBUG) << "Popped a command buffer from the existing list. There are " << buffers.size() << " buffers left";
         }
 
         return buffer;
@@ -161,10 +157,6 @@ namespace nova {
         auto our_id = std::this_thread::get_id();
         auto buffer_type = buf->get_type();
         thread_local_buffers.at(our_id).at(buffer_type).push_back(std::move(buf));
-
-        NOVA_LOG(DEBUG) << "Returned a command buffer with thread id " << our_id << " and type "
-            << static_cast<uint32_t>(buffer_type) << " to the pool. There are now "
-            << thread_local_buffers.at(our_id).at(buffer_type).size() << " buffers in that pool";
     }
 
     const std::string vulkan_render_engine::get_engine_name() {
@@ -339,7 +331,6 @@ namespace nova {
         if(capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount) {
             image_count = capabilities.maxImageCount;
         }
-        NOVA_LOG(DEBUG) << "Creating swapchain with " << image_count << " images";
 
         VkSwapchainCreateInfoKHR swapchain_create_info;
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -362,7 +353,6 @@ namespace nova {
         swapchain_create_info.oldSwapchain = VK_NULL_HANDLE;
 
         NOVA_THROW_IF_VK_ERROR(vkCreateSwapchainKHR(device, &swapchain_create_info, nullptr, &swapchain), render_engine_initialization_exception);
-        NOVA_LOG(DEBUG) << "Swapchain created";
 
         swapchain_images.clear();
         vkGetSwapchainImagesKHR(device, swapchain, &image_count, nullptr);
@@ -437,6 +427,19 @@ namespace nova {
             framebuffer_create_info.layers = 1;
 
             NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers.at(i)), render_engine_initialization_exception);
+        }
+    }
+
+    void vulkan_render_engine::cleanup_dynamic() {
+        vkDeviceWaitIdle(device);
+
+        for(const auto &fence : fence_pool) {
+            vkDestroyFence(device, fence->fence, nullptr);
+        }
+
+        std::lock_guard<std::mutex> command_pool_lock(thread_local_pools_lock);
+        for(auto &[_, command_pool] : thread_local_pools) {
+            vkDestroyCommandPool(device, command_pool, nullptr);
         }
     }
 
@@ -768,9 +771,9 @@ namespace nova {
             submit_info.pSignalSemaphores = signal_semaphores;
 
             std::shared_ptr<ifence> fence = get_fence();
+            vkResetFences(device, 1, &(fence->fence));
 
             NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queues_per_type.at(type).queue, 1, &submit_info, fence->fence), command_buffer_exception);
-            NOVA_LOG(DEBUG) << "Submitted " << buffers_of_type.size() << " command buffers";
             fences[pair.first] = std::move(fence);
         }
 

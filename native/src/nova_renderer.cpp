@@ -71,7 +71,7 @@ namespace nova {
         swapchain_image_command_buffer->resource_barrier(stage_flags::COLOR_ATTACHMENT_WRITE, stage_flags::COLOR_ATTACHMENT_WRITE,
                                                          {}, {}, to_presentable_barriers);
 
-        // swapchain_image_command_buffer->end_recording(); // WEIRD: Done when executing command buffers
+        swapchain_image_command_buffer->end_recording();
 
         std::vector<command_buffer_base*> command_buffers;
         command_buffers.push_back(swapchain_image_command_buffer);
