@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 project(nova-renderer)
 
 option(NOVA_TEST "Enable tests." OFF)
+option(ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as well as in the CMake files" OFF)
+if(ENABLE_EXPERIMENTAL)
+    set(CMAKE_LINK_WHAT_YOU_USE TRUE) # Warn about unsued linked libraries
+endif()
 
 include(ExternalProject)
 
