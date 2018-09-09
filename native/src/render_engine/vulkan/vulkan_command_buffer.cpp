@@ -5,6 +5,8 @@
 #include "vulkan_command_buffer.hpp"
 #include "vulkan_resource_barrier_helpers.hpp"
 #include "vulkan_opaque_types.hpp"
+#include "../../util/logger.hpp"
+#include "vulkan_utils.hpp"
 
 namespace nova {
 
@@ -17,18 +19,28 @@ namespace nova {
         allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocate_info.commandBufferCount = 1;
 
-        vkAllocateCommandBuffers(device, &allocate_info, &buffer);
+        NOVA_THROW_IF_VK_ERROR(vkAllocateCommandBuffers(device, &allocate_info, &buffer), command_buffer_exception);
 
         VkFenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fence_create_info.pNext = nullptr;
         fence_create_info.flags = 0;
 
-        vkCreateFence(device, &fence_create_info, nullptr, &completion_fence);
+        NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_create_info, nullptr, &completion_fence), command_buffer_exception);
     }
 
     void vulkan_command_buffer::on_completion(std::function<void(void)> completion_handler) {
         // TODO: Figure out how to implement this
+    }
+
+    void vulkan_command_buffer::start_recording() {
+        VkCommandBufferBeginInfo begin_info;
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.pNext = nullptr;
+        begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+        begin_info.pInheritanceInfo = nullptr;
+
+        NOVA_THROW_IF_VK_ERROR(vkBeginCommandBuffer(buffer, &begin_info), command_buffer_exception);
     }
 
     void vulkan_command_buffer::end_recording() {
@@ -50,7 +62,6 @@ namespace nova {
         VkAccessFlags dest_access_mask = to_vk_access_flags(dest_stage_mask);
 
         for(const resource_barrier_data& barrier_data : memory_barriers) {
-
             VkMemoryBarrier memory_barrier = {};
             memory_barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             memory_barrier.pNext = nullptr;
@@ -63,7 +74,7 @@ namespace nova {
         std::vector<VkBufferMemoryBarrier> vk_buffer_barriers;
         vk_buffer_barriers.reserve(buffer_barriers.size());
 
-        for(const buffer_barrier_data& barrier_data : buffer_barriers) {
+        for(const buffer_barrier_data &barrier_data : buffer_barriers) {
             VkBufferMemoryBarrier buffer_barrier = {};
             buffer_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
             buffer_barrier.pNext = nullptr;
@@ -92,6 +103,11 @@ namespace nova {
             image_barrier.newLayout = to_vk_image_layout(barrier_data.final_layout);
             image_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             image_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            image_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            image_barrier.subresourceRange.baseMipLevel = 0;
+            image_barrier.subresourceRange.levelCount = 1;
+            image_barrier.subresourceRange.baseArrayLayer = 0;
+            image_barrier.subresourceRange.layerCount = 1;
 
             vk_image_barriers.push_back(image_barrier);
         }
@@ -119,5 +135,9 @@ namespace nova {
 
     void vulkan_command_buffer::wait_until_completion() const {
 
+    }
+
+    VkCommandBuffer vulkan_command_buffer::get_vk_buffer() {
+        return buffer;
     }
 }

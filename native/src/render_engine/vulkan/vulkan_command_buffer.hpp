@@ -15,6 +15,8 @@ namespace nova {
 
         void on_completion(std::function<void(void)> completion_handler) override;
 
+        void start_recording() override;
+
         void end_recording() override;
 
         void reset() override;
@@ -31,6 +33,8 @@ namespace nova {
         bool is_finished() const override;
 
         void wait_until_completion() const override;
+
+        VkCommandBuffer get_vk_buffer();
 
     private:
         VkDevice device;

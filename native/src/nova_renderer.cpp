@@ -41,6 +41,7 @@ namespace nova {
         auto* swapchain_image_command_buffer = dynamic_cast<graphics_command_buffer_base *>(buffer.get());
 
         swapchain_image_command_buffer->reset();
+        swapchain_image_command_buffer->start_recording();
 
         image_barrier_data swapchain_image_to_shader_writable = {};
         swapchain_image_to_shader_writable.resource_to_barrier = engine->get_swapchain_image(frame_index);
@@ -68,7 +69,7 @@ namespace nova {
         swapchain_image_command_buffer->resource_barrier(stage_flags::COLOR_ATTACHMENT_WRITE, stage_flags::COLOR_ATTACHMENT_WRITE,
                                                          {}, {}, to_presentable_barriers);
 
-        swapchain_image_command_buffer->end_recording();
+        // swapchain_image_command_buffer->end_recording(); // WEIRD: Done when executing command buffers
 
         std::vector<command_buffer_base*> command_buffers;
         command_buffers.push_back(swapchain_image_command_buffer);

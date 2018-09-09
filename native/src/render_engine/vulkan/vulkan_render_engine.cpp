@@ -8,6 +8,7 @@
 #include "../../util/logger.hpp"
 #include "vulkan_command_buffer.hpp"
 #include <fstream>
+#include "vulkan_opaque_types.hpp"
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const settings &settings) : render_engine(settings) {
@@ -151,7 +152,8 @@ namespace nova {
     }
 
     void vulkan_render_engine::free_command_buffer(std::unique_ptr<command_buffer_base> buf) {
-
+        std::lock_guard<std::mutex> pools_lock(thread_local_pools_lock);
+        buf.reset();
     }
 
     const std::string vulkan_render_engine::get_engine_name() {
@@ -496,6 +498,15 @@ namespace nova {
         subpass_description.pResolveAttachments = nullptr;
         subpass_description.pDepthStencilAttachment = nullptr;
 
+        VkSubpassDependency image_available_dependency;
+        image_available_dependency.dependencyFlags = 0;
+        image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        image_available_dependency.dstSubpass = 0;
+        image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        image_available_dependency.srcAccessMask = 0;
+        image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
         VkRenderPassCreateInfo render_pass_create_info;
         render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         render_pass_create_info.pNext = nullptr;
@@ -504,8 +515,8 @@ namespace nova {
         render_pass_create_info.pAttachments = &color_attachment;
         render_pass_create_info.subpassCount = 1;
         render_pass_create_info.pSubpasses = &subpass_description;
-        render_pass_create_info.dependencyCount = 0;
-        render_pass_create_info.pDependencies = nullptr;
+        render_pass_create_info.dependencyCount = 1;
+        render_pass_create_info.pDependencies = &image_available_dependency;
 
         NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
     }
@@ -704,40 +715,75 @@ namespace nova {
     VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType,
                                                 uint64_t object, size_t location, int32_t message_code,
                                                 const char *layer_prefix, const char *message, void *user_data) {
-        NOVA_LOG(TRACE) << __FILE__ << ":" << __LINE__ << " >> VK Debug: [" << layer_prefix << "] " << message;
+        NOVA_LOG(TRACE) << __FILE__ << ":" << __LINE__ << " >> VK Debug: [" << layer_prefix << "]" << message;
         return VK_FALSE;
     }
 
     void vulkan_render_engine::execute_command_buffers(const std::vector<command_buffer_base *> &buffers) {
-        std::unordered_map<command_buffer_type, std::vector<command_buffer_base *>> grouped_buffers;
+        VkRenderPassBeginInfo render_pass_begin_info;
+        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        render_pass_begin_info.pNext = nullptr;
+        render_pass_begin_info.renderPass = render_pass;
+        render_pass_begin_info.framebuffer = swapchain_framebuffers.at(current_swapchain_index);
+        render_pass_begin_info.renderArea.offset = {0, 0};
+        render_pass_begin_info.renderArea.extent = swapchain_extend;
+        VkClearValue clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
+        render_pass_begin_info.clearValueCount = 1;
+        render_pass_begin_info.pClearValues = &clear_value;
 
-        for(command_buffer_base *buffer : buffers) {
+        std::unordered_map<command_buffer_type, std::vector<VkCommandBuffer>> grouped_buffers;
+
+        for(command_buffer_base *base_buffer : buffers) {
+            auto buffer = dynamic_cast<vulkan_command_buffer *>(dynamic_cast<graphics_command_buffer_base *>(base_buffer));
             if(grouped_buffers.find(buffer->get_type()) != grouped_buffers.end()) {
-                grouped_buffers.at(buffer->get_type()).push_back(buffer);
+                grouped_buffers.at(buffer->get_type()).push_back(buffer->get_vk_buffer());
             } else {
-                std::vector<command_buffer_base *> buffers_of_type(1);
-                buffers_of_type.push_back(buffer);
+                std::vector<VkCommandBuffer > buffers_of_type = {buffer->get_vk_buffer()};
                 grouped_buffers.insert(std::make_pair(buffer->get_type(), buffers_of_type));
             }
         }
 
-        for(auto pair : grouped_buffers) {
+        for(const auto &pair : grouped_buffers) {
             command_buffer_type type = pair.first;
-            std::vector<command_buffer_base *> buffers_of_type = pair.second;
+            if(queues_per_type.find(type) == queues_per_type.end()) {
+                throw command_buffer_exception("No queue available for this command buffer type!");
+            }
+            std::vector<VkCommandBuffer> buffers_of_type = pair.second;
+            for(auto const &buffer : buffers_of_type) {
+                vkCmdBeginRenderPass(buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+                if(type != command_buffer_type::COMPUTE) {
+                    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+                } else {
+                    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+                }
+                vkCmdDraw(buffer, 3, 1, 0, 0);
+                vkCmdEndRenderPass(buffer);
+                NOVA_THROW_IF_VK_ERROR(vkEndCommandBuffer(buffer), command_buffer_exception);
+            }
+
             VkSubmitInfo submit_info;
             submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submit_info.pNext = nullptr;
 
-            VkSemaphore semaphores[] = {image_available_semaphore};
-            VkPipelineStageFlags  wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+            VkSemaphore wait_semaphores[] = {image_available_semaphore};
+            VkPipelineStageFlags  wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
             submit_info.waitSemaphoreCount = 1;
-            submit_info.pWaitSemaphores = semaphores;
-            submit_info.pWaitDstStageMask = wait_stages;
+            submit_info.pWaitSemaphores = wait_semaphores;
+            submit_info.pWaitDstStageMask = &wait_stage;
             submit_info.commandBufferCount = static_cast<uint32_t>(buffers_of_type.size());
+            submit_info.pCommandBuffers = buffers_of_type.data();
+
+            VkSemaphore signal_semaphores[] = {render_finished_semaphore};
+            submit_info.signalSemaphoreCount = 1;
+            submit_info.pSignalSemaphores = signal_semaphores;
+
+            NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queues_per_type.at(type).queue, 1, &submit_info, VK_NULL_HANDLE), command_buffer_exception);
         }
+
     }
 
     void vulkan_render_engine::present_swapchain_image() {
+
 
         vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphore, VK_NULL_HANDLE, &current_swapchain_index);
     }
@@ -747,10 +793,15 @@ namespace nova {
     }
 
     std::shared_ptr<iframebuffer> vulkan_render_engine::get_swapchain_framebuffer(uint32_t index) const {
-        return std::shared_ptr<iframebuffer>();
+        auto framebuffer = std::make_shared<iframebuffer>();
+        framebuffer->framebuffer = swapchain_framebuffers.at(index);
+        return framebuffer;
     }
 
     std::shared_ptr<iresource> vulkan_render_engine::get_swapchain_image(uint32_t index) const {
-        return std::shared_ptr<iresource>();
+        auto image_resource = std::make_shared<iresource>();
+        image_resource->resource = {swapchain_images.at(index)};
+        image_resource->type = resource_type::IMAGE;
+        return image_resource;
     }
 }

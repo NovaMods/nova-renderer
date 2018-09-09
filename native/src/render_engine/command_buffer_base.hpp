@@ -10,6 +10,9 @@
 #include <glm/glm.hpp>
 #include "../util/smart_enum.hpp"
 #include "resource_barrier.hpp"
+#include "../util/macros.hpp"
+
+NOVA_EXCEPTION(nova, command_buffer_exception)
 
 namespace nova {
     struct iframebuffer;
@@ -52,6 +55,11 @@ namespace nova {
          * \param completion_handler The function to execute when this command buffer has finished executing
          */
         virtual void on_completion(std::function<void(void)> completion_handler) = 0;
+
+        /*!
+         * \brief Starts recording this command buffer, commands can now be executed on it
+         */
+        virtual void start_recording() = 0;
 
         /*!
          * \brief Ends recording for this command buffer, letting the underlying graphics API know that we're done
