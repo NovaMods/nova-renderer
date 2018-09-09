@@ -40,11 +40,17 @@ namespace nova {
 
         std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
 
-        void execute_command_buffers(const std::vector<command_buffer_base*>& buffers) override;
+        std::unordered_map<command_buffer_type, std::shared_ptr<ifence>> execute_command_buffers(const std::vector<command_buffer_base*>& buffers) override;
 
         void free_command_buffer(std::unique_ptr<command_buffer_base> buf) override;
 
         void present_swapchain_image() override;
+
+        std::shared_ptr<ifence> get_fence() override;
+
+        void wait_for_fence(ifence* fence, uint64_t timeout) override;
+
+        void free_fence(std::shared_ptr<ifence> fence) override;
 
         static const std::string get_engine_name();
 
@@ -127,6 +133,11 @@ namespace nova {
          * \brief The queue that supports the operations that each command buffer type needs
          */
         std::unordered_map<command_buffer_type, vulkan_queue> queues_per_type;
+
+        /*!
+         * \brief Fences that can be waited on
+         */
+        std::vector<std::shared_ptr<ifence>> fence_pool;
     };
 }
 

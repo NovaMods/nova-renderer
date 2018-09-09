@@ -51,12 +51,6 @@ namespace nova {
         explicit command_buffer_base(command_buffer_type type);
 
         /*!
-         * \brief Executes a provided function when this command buffer has finished executing
-         * \param completion_handler The function to execute when this command buffer has finished executing
-         */
-        virtual void on_completion(std::function<void(void)> completion_handler) = 0;
-
-        /*!
          * \brief Starts recording this command buffer, commands can now be executed on it
          */
         virtual void start_recording() = 0;
@@ -70,16 +64,6 @@ namespace nova {
          * \brief Resets this command buffer, making its resources availabe for future use
          */
         virtual void reset() = 0;
-
-        /*!
-         * \brief Checks if this command buffer has finished executing on the GPU
-         */
-        virtual bool is_finished() const = 0;
-
-        /*!
-         * \brief Blocks until this command buffer has finished executing
-         */
-        virtual void wait_until_completion() const = 0;
 
         /*!
          * \brief Retrieves the type of this command buffer

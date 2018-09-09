@@ -13,6 +13,8 @@
 NOVA_EXCEPTION(nova, render_engine_initialization_exception)
 
 namespace nova {
+    struct ifence;
+
     /*!
      * \brief Abstract class for render backends
      *
@@ -73,8 +75,28 @@ namespace nova {
         /*!
          * \brief Executes all the provided command buffers, signalling their fences when they're done
          * \param buffers The command buffers to submit. These should all be of the same type
+         * \return A map from command buffer type to the fence that can be used to wait for the command buffers of that
+         * type to finish executing
          */
-        virtual void execute_command_buffers(const std::vector<command_buffer_base*>& buffers) = 0;
+        virtual std::unordered_map<command_buffer_type, std::shared_ptr<ifence>> execute_command_buffers(const std::vector<command_buffer_base*>& buffers) = 0;
+
+        /*!
+         * \brief Gets a fence
+         * \return A fence
+         */
+        virtual std::shared_ptr<ifence> get_fence() = 0;
+
+        /*!
+         * \brief Waits for the provided fence to become signalled
+         * \param fence The fence to wait for
+         */
+        virtual void wait_for_fence(ifence* fence, uint64_t timeout) = 0;
+
+        /*!
+         * \brief Frees the provided fence by returning it to the pool
+         * \param fence The fence to free
+         */
+        virtual void free_fence(std::shared_ptr<ifence> fence) = 0;
 
         /*!
          * \brief Frees a command buffer, making all of its resources available

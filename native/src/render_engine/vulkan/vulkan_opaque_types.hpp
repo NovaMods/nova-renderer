@@ -28,6 +28,10 @@ namespace nova {
     struct iframebuffer {
         VkFramebuffer framebuffer;
     };
+
+    struct ifence {
+        VkFence fence;
+    };
 }
 
 #endif //NOVA_RENDERER_VULKAN_OPAQUE_TYPES_HPP
