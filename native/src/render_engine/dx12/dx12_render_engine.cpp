@@ -14,6 +14,7 @@ namespace nova {
     dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings) {
         create_device();
         create_rtv_command_queue();
+        create_frame_end_fences();
 
         std::vector<command_buffer_base*> direct_buffers;
         direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
@@ -181,40 +182,81 @@ namespace nova {
         }
     }
 
-    std::unique_ptr<command_buffer_base> dx12_render_engine::allocate_command_buffer(const command_buffer_type type) {
-        // TODO: The command lists and their allocators should be pooled, so we can avoid a ton of reallocation
-        // Not doing that right now, but will make that change once this code is more complete
-        // The Vulkan render engine should function the same way
-
-        std::unique_ptr<command_buffer_base> buffer = nullptr;
-
-        auto& buffers = buffer_pool.at(static_cast<int>(type));
-        if(buffers.empty()) {
-            if(type == command_buffer_type::GENERIC) {
-                buffer = std::unique_ptr<command_buffer_base>(new dx12_graphics_command_buffer(device, type));
-
-            } else {
-                buffer = std::unique_ptr<command_buffer_base>(new dx12_command_buffer(device, type));
-            }
-
-        } else {
-            buffer = std::unique_ptr<command_buffer_base>(buffers.back());
-            buffers.pop_back();
-        }
-
-        return buffer;
-    }
-
-    void dx12_render_engine::free_command_buffer(std::unique_ptr<command_buffer_base> buf) {
-        buf->reset();
-
-        auto type = buf->get_type();
-
-        buffer_pool.at(static_cast<int>(type)).push_back(buf.release());
-    }
-
     std::shared_ptr<iwindow> dx12_render_engine::get_window() const {
         return window;
+    }
+
+    void dx12_render_engine::render_frame() {
+        gfx_command_list present_commands = get_graphics_command_list();
+
+        HRESULT hr = present_commands.allocator->Reset();
+        if(FAILED(hr)) {
+            NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
+        }
+
+        present_commands.list->Reset(present_commands.allocator.Get(), nullptr);
+
+        CD3DX12_RESOURCE_BARRIER to_render_target = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        present_commands.list->ResourceBarrier(1, &to_render_target);
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), frame_index, rtv_descriptor_size);
+        present_commands.list->OMSetRenderTargets(1, &current_framebuffer_rtv, false, nullptr);
+
+        glm::vec4 clear_color(0, 0.2f, 0.4f, 1.0f);
+        present_commands.list->ClearRenderTargetView(current_framebuffer_rtv, &clear_color.x, 0, nullptr);
+
+        CD3DX12_RESOURCE_BARRIER to_presentable = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+        present_commands.list->ResourceBarrier(1, &to_presentable);
+
+        present_commands.list->Close();
+
+        ID3D12CommandList* commands[] = {present_commands.list.Get()};
+        direct_command_queue->ExecuteCommandLists(1, commands);
+
+        engine->present_swapchain_image();
+
+        for(auto& typed_fence : fences) {
+            engine->wait_for_fence(typed_fence.second.get(), std::numeric_limits<uint64_t>::max());
+            engine->free_fence(std::move(typed_fence.second));
+        }
+
+        engine->free_command_buffer(std::move(buffer));
+
+        frame_index = engine->get_current_swapchain_index();
+    }
+
+    command_list dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) {
+        ComPtr<ID3D12CommandAllocator> allocator;
+        HRESULT hr = device->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&allocator));
+        if(FAILED(hr)) {
+            NOVA_LOG(FATAL) << "Could not create command buffer";
+            throw std::runtime_error("Could not create command buffer");
+        }
+
+        ComPtr<ID3D12CommandList> list;
+        hr = device->CreateCommandList(0, command_list_type, allocator.Get(), nullptr, IID_PPV_ARGS(&list));
+        if(FAILED(hr)) {
+            NOVA_LOG(ERROR) << "Could not create a command list of type " << (uint32_t)command_list_type;
+            throw std::runtime_error("Could not create command list");
+        }
+
+        return {list, allocator};
+    }
+
+    gfx_command_list dx12_render_engine::get_graphics_command_list() {
+        command_list new_list;
+        ComPtr<ID3D12GraphicsCommandList> graphics_list;
+        auto& buffers = buffer_pool.at(static_cast<int>(command_buffer_type::GENERIC));
+        if(buffers.empty()) {
+            new_list = allocate_command_list(D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+        } else {
+            new_list = buffers.back();
+            buffers.pop_back();
+        }
+        new_list.list->QueryInterface(IID_PPV_ARGS(&graphics_list));
+
+        return {graphics_list, new_list.allocator};
     }
 
     void dx12_render_engine::present_swapchain_image() {

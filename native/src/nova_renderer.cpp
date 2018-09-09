@@ -38,55 +38,6 @@ namespace nova {
     }
 
     void nova_renderer::execute_frame() {
-        // Transition the swapchain image from being presentable to being writable from a shader
-        std::unique_ptr<command_buffer_base> buffer = engine->allocate_command_buffer(command_buffer_type::GENERIC);
-        auto* swapchain_image_command_buffer = dynamic_cast<graphics_command_buffer_base *>(buffer.get());
-
-        swapchain_image_command_buffer->reset();
-        swapchain_image_command_buffer->start_recording();
-
-        image_barrier_data swapchain_image_to_shader_writable = {};
-        swapchain_image_to_shader_writable.resource_to_barrier = engine->get_swapchain_image(frame_index);
-        swapchain_image_to_shader_writable.initial_layout = image_layout::PRESENT;
-        swapchain_image_to_shader_writable.final_layout = image_layout::RENDER_TARGET;
-
-        std::vector<image_barrier_data> to_shader_barriers;
-        to_shader_barriers.push_back(swapchain_image_to_shader_writable);
-        swapchain_image_command_buffer->resource_barrier(stage_flags::COLOR_ATTACHMENT_WRITE, stage_flags::COLOR_ATTACHMENT_WRITE,
-                                                         {}, {}, to_shader_barriers);
-
-        std::shared_ptr<iframebuffer> backbuffer_framebuffer = engine->get_swapchain_framebuffer(frame_index);
-        swapchain_image_command_buffer->set_render_target(backbuffer_framebuffer.get());
-
-        glm::vec4 clear_color(0, 0.2f, 0.4f, 1.0f);
-        swapchain_image_command_buffer->clear_render_target(backbuffer_framebuffer.get(), clear_color);
-
-        image_barrier_data swapchain_image_to_presentable = {};
-        swapchain_image_to_presentable.resource_to_barrier = engine->get_swapchain_image(frame_index);
-        swapchain_image_to_presentable.initial_layout = image_layout::RENDER_TARGET;
-        swapchain_image_to_presentable.final_layout = image_layout::PRESENT;
-
-        std::vector<image_barrier_data> to_presentable_barriers;
-        to_presentable_barriers.push_back(swapchain_image_to_presentable);
-        swapchain_image_command_buffer->resource_barrier(stage_flags::COLOR_ATTACHMENT_WRITE, stage_flags::COLOR_ATTACHMENT_WRITE,
-                                                         {}, {}, to_presentable_barriers);
-
-        // swapchain_image_command_buffer->end_recording(); // WEIRD: Done when executing command buffers
-
-        std::vector<command_buffer_base*> command_buffers;
-        command_buffers.push_back(swapchain_image_command_buffer);
-        auto fences = engine->execute_command_buffers(command_buffers);
-
-        engine->present_swapchain_image();
-
-        for(auto& typed_fence : fences) {
-            engine->wait_for_fence(typed_fence.second.get(), std::numeric_limits<uint64_t>::max());
-            engine->free_fence(std::move(typed_fence.second));
-        }
-
-        engine->free_command_buffer(std::move(buffer));
-
-        frame_index = engine->get_current_swapchain_index();
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {

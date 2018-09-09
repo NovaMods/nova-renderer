@@ -270,49 +270,26 @@ namespace nova {
      */
     struct sampler_state {
         /*!
-         * \brief The index of the sampler. This might correspond directly with the texture but I hope not cause I don't
-         * want to write a number of sampler blocks
-         */
-        std::optional<uint32_t> sampler_index;
-
-        /*!
          * \brief What kind of texture filter to use
          *
          * texel_aa does something that I don't want to figure out right now. Bilinear is your regular bilinear filter,
          * and point is the point filter. Aniso isn't an option and I kinda hope it stays that way
          */
-        std::optional<texture_filter_enum> filter;
+        texture_filter_enum filter;
 
         /*!
          * \brief How the texutre should wrap at the edges
          */
-        std::optional<wrap_mode_enum> wrap_mode;
+        wrap_mode_enum wrap_mode;
     };
 
     struct stencil_op_state {
-        std::optional<stencil_op_enum> fail_op;
-        std::optional<stencil_op_enum> pass_op;
-        std::optional<stencil_op_enum> depth_fail_op;
-        std::optional<compare_op_enum> compare_op;
-        std::optional<uint32_t> compare_mask;
-        std::optional<uint32_t> write_mask;
-    };
-
-    struct bound_resource {
-        /*!
-         * \brief The name of the resource
-         */
-        std::string name;
-
-        /*!
-         * \brief Where to bind the resource
-         *
-         * For input textures, this is the texture binding unit to use
-         * For input buffers, the is the uniform location of the buffer
-         *
-         * For output textures, this is the framebuffer attachment slot to use
-         */
-        uint32_t binding;
+        stencil_op_enum fail_op;
+        stencil_op_enum pass_op;
+        stencil_op_enum depth_fail_op;
+        compare_op_enum compare_op;
+        uint32_t compare_mask;
+        uint32_t write_mask;
     };
 
     /*!
@@ -332,24 +309,24 @@ namespace nova {
         /*!
          * \brief The name of the pass that this pipeline belongs to
          */
-        std::optional<std::string> pass;
+        std::string pass;
 
         /*!
          * \brief All of the symbols in the shader that are defined by this state
          */
-        std::optional<std::vector<std::string>> defines;
+        std::vector<std::string> defines;
 
         /*!
          * \brief Defines the rasterizer state that's active for this pipeline
          */
-        std::optional<std::vector<state_enum>> states;
+        std::vector<state_enum> states;
 
         /*!
          * \brief Sets up the vertex fields that Nova will bind to this pipeline
          *
          * The index in the array is the attribute index that the vertex field is bound to
          */
-        std::optional<std::vector<vertex_field_enum>> vertex_fields;
+        std::vector<vertex_field_enum> vertex_fields;
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
@@ -362,26 +339,6 @@ namespace nova {
         std::optional<stencil_op_state> back_face;
 
         /*!
-         * \brief All the textures that this material reads from
-         */
-        std::optional<std::vector<bound_resource>> input_textures;
-
-        /*!
-         * \brief All the textures that this material writes to
-         */
-        std::optional<std::vector<bound_resource>> output_textures;
-
-        /*!
-         * \brief The depth texture to use for this material
-         */
-        std::optional<bound_resource> depth_texture;
-
-        /*!
-         * \brief The filter string used to get data for this material
-         */
-        std::optional<std::string> filters;
-
-        /*!
          * \brief The material to use if this one's shaders can't be found
          */
         std::optional<std::string> fallback;
@@ -389,89 +346,75 @@ namespace nova {
         /*!
          * \brief A bias to apply to the depth
          */
-        std::optional<float> depth_bias;
+        float depth_bias;
 
         /*!
          * \brief The depth bias, scaled by slope I guess?
          */
-        std::optional<float> slope_scaled_depth_bias;
+        float slope_scaled_depth_bias;
 
         /*!
          * \brief The reference value to use for the stencil test
          */
-        std::optional<uint32_t> stencil_ref;
+        uint32_t stencil_ref;
 
         /*!
          * \brief The mastk to use when reading from the stencil buffer
          */
-        std::optional<uint32_t> stencil_read_mask;
+        uint32_t stencil_read_mask;
 
         /*!
          * \brief The mask to use when writing to the stencil buffer
          */
-        std::optional<uint32_t> stencil_write_mask;
+        uint32_t stencil_write_mask;
 
         /*!
          * \brief How to handle MSAA for this state
          */
-        std::optional<msaa_support_enum> msaa_support;
+        msaa_support_enum msaa_support;
 
         /*!
          * \brief
          */
-        std::optional<primitive_topology_enum> primitive_mode;
+        primitive_topology_enum primitive_mode;
 
         /*!
          * \brief Where to get the blending factor for the soource
          */
-        std::optional<blend_factor_enum> source_blend_factor;
+        blend_factor_enum source_blend_factor;
 
         /*!
          * \brief Where to get the blending factor for the destination
          */
-        std::optional<blend_factor_enum> destination_blend_factor;
+        blend_factor_enum destination_blend_factor;
 
         /*!
          * \brief How to get the source alpha in a blend
          */
-        std::optional<blend_factor_enum> alpha_src;
+        blend_factor_enum alpha_src;
 
         /*!
          * \brief How to get the destination alpha in a blend
          */
-        std::optional<blend_factor_enum> alpha_dst;
+        blend_factor_enum alpha_dst;
 
         /*!
          * \brief The function to use for the depth test
          */
-        std::optional<compare_op_enum> depth_func;
+        compare_op_enum depth_func;
 
         /*!
          * \brief The render queue that this pass belongs to
          *
          * This may or may not be removed depending on what is actually needed by Nova
          */
-        std::optional<render_queue_enum> render_queue;
+        render_queue_enum render_queue;
 
         /*!
          * \brief Map from shader file name to compiled SPIR-V. All shaders are compiled to SPIR-V when they're loaded,
          * and each backend can do with them as it will
          */
         std::unordered_map<std::string, std::vector<uint32_t>> sources;
-
-        /*!
-         * \brief Constructs a new pipeline from the provided JSON
-         *
-         * This constructor simply reads in the data from the JSON object that represents it. It won't fill in any
-         * fields that are missing from the JSON - that happens at a later time
-         *
-         * \param pass_name The name of this pipeline
-         * \param parent_pass_name The name of the pipeline that this pipeline inherits from
-         * \param pass_json The JSON that this pipeline will be created from
-         */
-        pipeline_data(const std::string& pass_name, const std::optional<std::string>& parent_pass_name, const nlohmann::json& pass_json);
-
-        pipeline_data() = default;
     };
 
 
@@ -541,6 +484,7 @@ namespace nova {
 
     struct shaderpack_resources {
         std::vector<texture_resource> textures;
+        std::vector<sampler_state> samplers;
     };
 
     /*!
@@ -624,6 +568,18 @@ namespace nova {
         render_pass() = default;
     };
 
+    struct material_pass {
+        std::string material_name;
+        std::string pipeline;
+        std::unordered_map<std::string, std::string> bindings;
+    };
+
+    struct material_data {
+        std::string name;
+        std::vector<material_pass> passes;
+        std::string geometry_filter;
+    };
+
     /*!
      * \brief All the data that can be in a shaderpack
      */
@@ -632,7 +588,7 @@ namespace nova {
         
         std::vector<render_pass> passes;
 
-        //std::vector<material_data> materials;
+        std::vector<material_data> materials;
 
         shaderpack_resources resources;
     };

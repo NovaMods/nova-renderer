@@ -23,6 +23,16 @@
 using Microsoft::WRL::ComPtr;
 
 namespace nova {
+    struct command_list {
+        ComPtr<ID3D12CommandList> list;
+        ComPtr<ID3D12CommandAllocator> allocator;
+    };
+
+    struct gfx_command_list {
+        ComPtr<ID3D12GraphicsCommandList> list;
+        ComPtr<ID3D12CommandAllocator> allocator;
+    };
+
 #define FRAME_BUFFER_COUNT 3 
     /*!
      * \brief Implements a render engine for DirectX 12
@@ -45,19 +55,9 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
 
-        std::shared_ptr<iframebuffer> get_swapchain_framebuffer(uint32_t frame_index) const override;
+        void set_frame_graph() override;
 
-        uint32_t get_current_swapchain_index() const override;
-
-        std::shared_ptr<iresource> get_swapchain_image(uint32_t frame_index) const override;
-
-        std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
-
-        void execute_command_buffers(const std::vector<command_buffer_base*>& buffers) override;
-
-        void free_command_buffer(std::unique_ptr<command_buffer_base> buf) override;
-
-        void present_swapchain_image() override;
+        void render_frame() override;
 
     private:
         // direct3d stuff
@@ -75,7 +75,13 @@ namespace nova {
 
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
-        std::unordered_map<int, std::vector<command_buffer_base*>> buffer_pool;
+        // Maps from command buffer type to command buffer list
+        std::unordered_map<int, std::vector<command_list>> buffer_pool;
+
+        uint32_t frame_index = 0;
+
+        ComPtr<ID3D12Fence1> render_to_backbuffer_fence;
+        HANDLE render_to_backbuffer_fence_event;
 
 
         void create_device();
@@ -95,6 +101,10 @@ namespace nova {
          * \brief Creates the descriptor heap for the swapchain
          */
         void create_render_target_descriptor_heap();
+
+        command_list allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type);
+
+        gfx_command_list get_graphics_command_list();
     };
 }
 

@@ -8,7 +8,7 @@
 
 namespace nova {
     void from_json(const nlohmann::json& j, texture_format& format) {
-        format.pixel_format     = get_json_value<pixel_format_enum>(j, "format", pixel_format_enum::from_string).value();
+        format.pixel_format     = get_json_value<pixel_format_enum>(j, "format", pixel_format_enum::RGB8, pixel_format_enum::from_string);
         format.dimension_type   = get_json_value<texture_dimension_type_enum>(j, "dimensionType", texture_dimension_type_enum::from_string).value();
         format.width            = get_json_value<float>(j, "width").value_or(0);
         format.height           = get_json_value<float>(j, "height").value_or(0);
@@ -19,8 +19,14 @@ namespace nova {
         tex.format  = get_json_value<texture_format>(j, "format").value();
     }
 
+    void from_json(const nlohmann::json& j, sampler_state& sampler) {
+        sampler.filter = get_json_value<texture_filter_enum>(j, "filter", texture_filter_enum::from_string);
+        sampler.wrap_mode = get_json_value<wrap_mode_enum>(j, "wrapMode", wrap_mode_enum::from_string);
+    }
+
     void from_json(const nlohmann::json& j, shaderpack_resources& res) {
         res.textures = get_json_array<texture_resource>(j, "textures");
+        res.samplers = get_json_array<sampler_state>(j, "samplers");
     }
 
     void from_json(const nlohmann::json& j, render_pass& pass) {
@@ -52,10 +58,6 @@ namespace nova {
         pipeline.vertex_fields              = get_json_array<vertex_field_enum>(j, "vertexFields", vertex_field_enum::from_string);
         pipeline.front_face                 = get_json_value<stencil_op_state>(j, "frontFace");
         pipeline.back_face                  = get_json_value<stencil_op_state>(j, "backFace");
-        pipeline.input_textures             = get_json_array<bound_resource>(j, "inputTextures");
-        pipeline.output_textures            = get_json_array<bound_resource>(j, "outputTextures");
-        pipeline.depth_texture              = get_json_value<bound_resource>(j, "depthTexture");
-        pipeline.filters                    = get_json_value<std::string>(j, "filters");
         pipeline.fallback                   = get_json_value<std::string>(j, "fallback");
         pipeline.depth_bias                 = get_json_value<float>(j, "depthBias");
         pipeline.slope_scaled_depth_bias    = get_json_value<float>(j, "slopeScaledDepthBias");
@@ -72,9 +74,15 @@ namespace nova {
         pipeline.render_queue               = get_json_value<render_queue_enum>(j, "renderQueue", render_queue_enum::from_string);
     }
 
-    void from_json(const nlohmann::json& j, bound_resource& resource) {
-        resource.name       = get_json_value<std::string>(j, "name").value();
-        resource.binding    = get_json_value<uint32_t>(j, "binding").value();
+    void from_json(const nlohmann::json& j, material_pass& pass) {
+        pass.pipeline = get_json_value<std::string>(j, "pipeline").value();
+        pass.bindings = get_json_value<std::unordered_map<std::string, std::string>>(j, "bindings").value();
+    }
+
+    void from_json(const nlohmann::json& j, material_data& mat) {
+        mat.name            = get_json_value<std::string>(j, "name").value();
+        mat.passes          = get_json_array<material_pass>(j, "passes");
+        mat.geometry_filter = get_json_value<std::string>(j, "filter").value();
     }
 
     void from_json(const nlohmann::json& j, texture_attachment& tex) {

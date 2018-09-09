@@ -51,65 +51,18 @@ namespace nova {
         virtual std::shared_ptr<iwindow> get_window() const = 0;
 
         /*!
-         * \brief Retrieves the framebuffer associated with the current swapchain image
+         * \brief Sets the frame graph that should be used
          *
-         * \return The framebuffer associated with the current swapchain image
-         */
-        virtual std::shared_ptr<iframebuffer> get_swapchain_framebuffer(uint32_t frame_index) const = 0;
-
-        /*!
-         * \brief Retrieves the current swapchain index
+         * Thi method will build all the API-specific resources that are needed to render with the provided frame graph
          *
-         * \return Current swapchain index
+         * \param frame_graph The frame graph
          */
-        virtual uint32_t get_current_swapchain_index() const = 0;
-
-        virtual std::shared_ptr<iresource> get_swapchain_image(uint32_t frame_index) const = 0;
+        virtual void set_frame_graph() = 0;
 
         /*!
-         * \brief Allocates a new command buffer from the underlying API
-         * \return An interface to a command buffer
+         * \brief Renders a frame like so well, you guys
          */
-        virtual std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) = 0;
-
-        /*!
-         * \brief Executes all the provided command buffers, signalling their fences when they're done
-         * \param buffers The command buffers to submit. These should all be of the same type
-         * \return A map from command buffer type to the fence that can be used to wait for the command buffers of that
-         * type to finish executing
-         */
-        virtual std::unordered_map<command_buffer_type, std::shared_ptr<ifence>> execute_command_buffers(const std::vector<command_buffer_base*>& buffers) = 0;
-
-        /*!
-         * \brief Gets a fence
-         * \return A fence
-         */
-        virtual std::shared_ptr<ifence> get_fence() = 0;
-
-        /*!
-         * \brief Waits for the provided fence to become signalled
-         * \param fence The fence to wait for
-         */
-        virtual void wait_for_fence(ifence* fence, uint64_t timeout) = 0;
-
-        /*!
-         * \brief Frees the provided fence by returning it to the pool
-         * \param fence The fence to free
-         */
-        virtual void free_fence(std::shared_ptr<ifence> fence) = 0;
-
-        /*!
-         * \brief Frees a command buffer, making all of its resources available
-         * \param buf The command buffer to free
-         */
-        virtual void free_command_buffer(std::unique_ptr<command_buffer_base> buf) = 0;
-
-        /*!
-         * \brief Presents the image in the swapchain to the users
-         *
-         * \pre The swapchain image is in the presentable layout
-         */
-        virtual void present_swapchain_image() = 0;
+        virtual void render_frame() = 0;
 
     protected:
         /*!
