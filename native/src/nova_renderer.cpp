@@ -28,7 +28,9 @@ namespace nova {
 
         // TODO: Get window size from config
         engine->open_window(200, 200);
+        NOVA_LOG(DEBUG) << "Opened window";
         frame_index = engine->get_current_swapchain_index();
+        NOVA_LOG(DEBUG) << "We are using swapchain image " << frame_index;
     }
 
     settings &nova_renderer::get_settings() {

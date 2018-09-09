@@ -184,13 +184,10 @@ source_group("nova" FILES ${NOVA_NO_COMPILE} ${NOVA_SOURCE})
 add_library(nova-renderer STATIC ${NOVA_SOURCE})
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-target_compile_definitions(nova-renderer PUBLIC ELPP_THREAD_SAFE)
+
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
-
-target_compile_definitions(nova-renderer PRIVATE DLL_EXPORT ELPP_THREAD_SAFE)
-target_compile_definitions(nova-renderer PUBLIC DLL_EXPORT ELPP_THREAD_SAFE)
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler enkiTS cpptoml miniz)
 

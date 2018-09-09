@@ -121,6 +121,7 @@ namespace nova {
             vkCreateCommandPool(device, &pool_create_info, nullptr, &new_pool);
 
             thread_local_pools.emplace(our_id, new_pool);
+            NOVA_LOG(DEBUG) << "Created a new command buffer pool for thread id " << out_id;
         }
 
         VkCommandPool pool = thread_local_pools.at(our_id);
@@ -130,22 +131,26 @@ namespace nova {
         if(thread_local_buffers.find(our_id) == thread_local_buffers.end()) {
             // No buffers are available for this thread - we need to create a new cache for this thread
             thread_local_buffers.emplace(our_id, std::unordered_map<command_buffer_type, std::vector<std::unique_ptr<command_buffer_base>>>{});
+            NOVA_LOG(DEBUG) << "Created a new map of command buffers for thread id " << our_id;
         }
 
         auto& buffers_for_thread = thread_local_buffers.at(our_id);
         if(buffers_for_thread.find(type) == buffers_for_thread.end()) {
             // No buffers for this type of command buffer - we can fix that
             buffers_for_thread.emplace(type, std::vector<std::unique_ptr<command_buffer_base>>{});
+            NOVA_LOG(DEBUG) << "Created a new list of command buffers for command buffer type " << static_cast<uint32_t>(type);
         }
 
         auto& buffers = buffers_for_thread.at(type);
 
         if(buffers.empty()) {
             buffer = std::make_unique<vulkan_command_buffer>(device, pool, type);
+            NOVA_LOG(DEBUG) << "Allocated a new command buffer for thread id " << our_id << " and type " << static_cast<uint32_t>(type);
 
         } else {
             buffer = std::move(buffers.back());
             buffers.pop_back();
+            NOVA_LOG(DEBUG) << "Popped a command buffer from the existing list. There are " << buffers.size() << " buffers left";
         }
 
         return buffer;
@@ -153,7 +158,9 @@ namespace nova {
 
     void vulkan_render_engine::free_command_buffer(std::unique_ptr<command_buffer_base> buf) {
         std::lock_guard<std::mutex> pools_lock(thread_local_pools_lock);
-        buf.reset();
+        auto our_id = std::this_thread::get_id();
+        auto buffer_type = buf->get_type();
+        thread_local_buffers.at(our_id).at(buffer_type).push_back(std::move(buf));
     }
 
     const std::string vulkan_render_engine::get_engine_name() {
