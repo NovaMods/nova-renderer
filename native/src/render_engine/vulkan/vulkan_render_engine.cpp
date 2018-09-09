@@ -121,7 +121,7 @@ namespace nova {
             vkCreateCommandPool(device, &pool_create_info, nullptr, &new_pool);
 
             thread_local_pools.emplace(our_id, new_pool);
-            NOVA_LOG(DEBUG) << "Created a new command buffer pool for thread id " << out_id;
+            NOVA_LOG(DEBUG) << "Created a new command buffer pool for thread id " << our_id;
         }
 
         VkCommandPool pool = thread_local_pools.at(our_id);

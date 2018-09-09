@@ -2,7 +2,6 @@
 // Created by jannis on 01.09.18.
 //
 
-#include <Common.h>
 #include "x11_window.hpp"
 
 namespace nova {

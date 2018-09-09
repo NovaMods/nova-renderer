@@ -36,6 +36,8 @@ namespace nova {
 
         std::shared_ptr<nova::iwindow> window = renderer->get_engine()->get_window();
 
+        NOVA_LOG(DEBUG) << window->should_close();
+
         while (!window->should_close()) {
             NOVA_LOG(DEBUG) << "Executing a frame";
             renderer->execute_frame();
