@@ -39,12 +39,12 @@ set(ENKITS_BUILD_C_INTERFACE OFF)
 set(ENKITS_BUILD_EXAMPLES OFF)
 add_subdirectory(${3RD_PARTY_DIR}/enkiTS)
 
-option(CPPTOML_BUILD_EXAMPLES OFF)
-add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
+# option(CPPTOML_BUILD_EXAMPLES OFF)
+# add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+if(UNIX)
     find_package(Vulkan)
 
     add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
@@ -70,7 +70,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/miniz
         )
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+if(UNIX)
     include_directories(SYSTEM
             ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
             ${3RD_PARTY_DIR}/shaderc/libshaderc/include
@@ -189,7 +189,7 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler enkiTS cpptoml miniz)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler enkiTS miniz)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")

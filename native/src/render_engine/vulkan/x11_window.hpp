@@ -17,7 +17,7 @@ namespace nova {
     private:
         Window window;
         Display *display;
-        bool should_window_close;
+        bool should_window_close = false;
         Atom wm_protocols;
         Atom wm_delete_window;
 
