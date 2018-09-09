@@ -778,7 +778,19 @@ namespace nova {
     }
 
     void vulkan_render_engine::present_swapchain_image() {
+        VkResult present_result;
 
+        VkPresentInfoKHR present_info = {};
+        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        present_info.pNext = nullptr;
+        present_info.waitSemaphoreCount = 1;
+        present_info.pWaitSemaphores = &render_finished_semaphore;
+        present_info.swapchainCount = 1;
+        present_info.pSwapchains = &swapchain;
+        present_info.pImageIndices = &current_swapchain_index;
+        present_info.pResults = &present_result;
+
+        vkQueuePresentKHR(queues_per_type.at(command_buffer_type::GENERIC).queue, &present_info);
 
         vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphore, VK_NULL_HANDLE, &current_swapchain_index);
     }
