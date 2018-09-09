@@ -106,6 +106,8 @@ namespace nova {
 
         /*!
          * \brief Presents the image in the swapchain to the users
+         *
+         * \pre The swapchain image is in the presentable layout
          */
         virtual void present_swapchain_image() = 0;
 
