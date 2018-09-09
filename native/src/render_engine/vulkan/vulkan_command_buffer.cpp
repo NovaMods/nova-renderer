@@ -20,17 +20,6 @@ namespace nova {
         allocate_info.commandBufferCount = 1;
 
         NOVA_THROW_IF_VK_ERROR(vkAllocateCommandBuffers(device, &allocate_info, &buffer), command_buffer_exception);
-
-        VkFenceCreateInfo fence_create_info = {};
-        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fence_create_info.pNext = nullptr;
-        fence_create_info.flags = 0;
-
-        NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_create_info, nullptr, &completion_fence), command_buffer_exception);
-    }
-
-    void vulkan_command_buffer::on_completion(std::function<void(void)> completion_handler) {
-        // TODO: Figure out how to implement this
     }
 
     void vulkan_command_buffer::start_recording() {
@@ -126,14 +115,6 @@ namespace nova {
     }
 
     void vulkan_command_buffer::set_render_target(iframebuffer *render_target) {
-
-    }
-
-    bool vulkan_command_buffer::is_finished() const {
-        return false;
-    }
-
-    void vulkan_command_buffer::wait_until_completion() const {
 
     }
 

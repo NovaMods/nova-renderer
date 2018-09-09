@@ -161,6 +161,10 @@ namespace nova {
         auto our_id = std::this_thread::get_id();
         auto buffer_type = buf->get_type();
         thread_local_buffers.at(our_id).at(buffer_type).push_back(std::move(buf));
+
+        NOVA_LOG(DEBUG) << "Returned a command buffer with thread id " << our_id << " and type "
+            << static_cast<uint32_t>(buffer_type) << " to the pool. There are now "
+            << thread_local_buffers.at(our_id).at(buffer_type).size() << " buffers in that pool";
     }
 
     const std::string vulkan_render_engine::get_engine_name() {
@@ -726,18 +730,7 @@ namespace nova {
         return VK_FALSE;
     }
 
-    void vulkan_render_engine::execute_command_buffers(const std::vector<command_buffer_base *> &buffers) {
-        VkRenderPassBeginInfo render_pass_begin_info;
-        render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        render_pass_begin_info.pNext = nullptr;
-        render_pass_begin_info.renderPass = render_pass;
-        render_pass_begin_info.framebuffer = swapchain_framebuffers.at(current_swapchain_index);
-        render_pass_begin_info.renderArea.offset = {0, 0};
-        render_pass_begin_info.renderArea.extent = swapchain_extend;
-        VkClearValue clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
-        render_pass_begin_info.clearValueCount = 1;
-        render_pass_begin_info.pClearValues = &clear_value;
-
+    std::unordered_map<command_buffer_type, std::shared_ptr<ifence>> vulkan_render_engine::execute_command_buffers(const std::vector<command_buffer_base *> &buffers) {
         std::unordered_map<command_buffer_type, std::vector<VkCommandBuffer>> grouped_buffers;
 
         for(command_buffer_base *base_buffer : buffers) {
@@ -750,23 +743,13 @@ namespace nova {
             }
         }
 
+        std::unordered_map<command_buffer_type, std::shared_ptr<ifence>> fences;
         for(const auto &pair : grouped_buffers) {
             command_buffer_type type = pair.first;
             if(queues_per_type.find(type) == queues_per_type.end()) {
                 throw command_buffer_exception("No queue available for this command buffer type!");
             }
             std::vector<VkCommandBuffer> buffers_of_type = pair.second;
-            for(auto const &buffer : buffers_of_type) {
-                vkCmdBeginRenderPass(buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-                if(type != command_buffer_type::COMPUTE) {
-                    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-                } else {
-                    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
-                }
-                vkCmdDraw(buffer, 3, 1, 0, 0);
-                vkCmdEndRenderPass(buffer);
-                NOVA_THROW_IF_VK_ERROR(vkEndCommandBuffer(buffer), command_buffer_exception);
-            }
 
             VkSubmitInfo submit_info;
             submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -784,9 +767,14 @@ namespace nova {
             submit_info.signalSemaphoreCount = 1;
             submit_info.pSignalSemaphores = signal_semaphores;
 
-            NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queues_per_type.at(type).queue, 1, &submit_info, VK_NULL_HANDLE), command_buffer_exception);
+            std::shared_ptr<ifence> fence = get_fence();
+
+            NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queues_per_type.at(type).queue, 1, &submit_info, fence->fence), command_buffer_exception);
+            NOVA_LOG(DEBUG) << "Submitted " << buffers_of_type.size() << " command buffers";
+            fences[pair.first] = std::move(fence);
         }
 
+        return fences;
     }
 
     void vulkan_render_engine::present_swapchain_image() {
@@ -810,5 +798,37 @@ namespace nova {
         image_resource->resource = {swapchain_images.at(index)};
         image_resource->type = resource_type::IMAGE;
         return image_resource;
+    }
+
+    std::shared_ptr<ifence> vulkan_render_engine::get_fence() {
+        std::shared_ptr<ifence> fence;
+
+        if(fence_pool.empty()) {
+            fence = std::make_shared<ifence>();
+
+            VkFenceCreateInfo fence_create_info = {};
+            fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fence_create_info.pNext = nullptr;
+            fence_create_info.flags = 0;
+
+            VkFence vk_fence;
+            vkCreateFence(device, &fence_create_info, nullptr, &vk_fence);
+
+            fence->fence = vk_fence;
+
+        } else {
+            fence = std::move(fence_pool.back());
+            fence_pool.pop_back();
+        }
+
+        return std::move(fence);
+    }
+
+    void vulkan_render_engine::wait_for_fence(ifence *fence, uint64_t timeout) {
+        vkWaitForFences(device, 1, &fence->fence, VK_TRUE, timeout);
+    }
+
+    void vulkan_render_engine::free_fence(std::shared_ptr<ifence> fence) {
+        fence_pool.push_back(std::move(fence));
     }
 }

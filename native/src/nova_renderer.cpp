@@ -75,11 +75,14 @@ namespace nova {
 
         std::vector<command_buffer_base*> command_buffers;
         command_buffers.push_back(swapchain_image_command_buffer);
-        engine->execute_command_buffers(command_buffers);
+        auto fences = engine->execute_command_buffers(command_buffers);
 
         engine->present_swapchain_image();
 
-        swapchain_image_command_buffer->wait_until_completion();
+        for(auto& typed_fence : fences) {
+            engine->wait_for_fence(typed_fence.second.get(), std::numeric_limits<uint64_t>::max());
+            engine->free_fence(std::move(typed_fence.second));
+        }
 
         engine->free_command_buffer(std::move(buffer));
 
