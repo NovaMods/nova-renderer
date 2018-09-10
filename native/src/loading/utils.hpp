@@ -11,6 +11,9 @@
 #include "../util/logger.hpp"
 
 namespace nova {
+    // Keeps the compiler happy
+    std::string to_string(const std::string& str);
+
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
      * \tparam ValType The type of the value to retrieve
@@ -27,17 +30,6 @@ namespace nova {
         }
 
         return std::optional<ValType>{};
-    }
-
-    std::optional<std::string> get_json_string(const nlohmann::json& json_obj, const std::string& key) {
-        const auto& itr = json_obj.find(key);
-        if(itr != json_obj.end()) {
-            auto& json_node = json_obj.at(key);
-            return std::optional<std::string>(json_node.get<std::string>());
-        }
-
-        NOVA_LOG(WARN) << key << " not found";
-        return std::optional<std::string>{};
     }
 
     /*!

@@ -15,7 +15,7 @@ namespace nova {
     }
 
     void from_json(const nlohmann::json& j, texture_resource& tex) {
-        tex.name    = get_json_string(j, "name").value();
+        tex.name    = get_json_value<std::string>(j, "name").value();
         tex.format  = get_json_value<texture_format>(j, "format").value();
     }
 
@@ -51,14 +51,14 @@ namespace nova {
     }
 
     void from_json(const nlohmann::json& j, pipeline_data& pipeline) {
-        pipeline.parent_name                = get_json_string(j, "parent").value_or("");
-        pipeline.pass                       = get_json_string(j, "pass").value();
+        pipeline.parent_name                = get_json_value<std::string>(j, "parent").value_or("");
+        pipeline.pass                       = get_json_value<std::string>(j, "pass").value();
         pipeline.defines                    = get_json_array<std::string>(j, "defines");
         pipeline.states                     = get_json_array<state_enum>(j, "states", state_enum::from_string);
         pipeline.vertex_fields              = get_json_array<vertex_field_enum>(j, "vertexFields", vertex_field_enum::from_string);
         pipeline.front_face                 = get_json_value<stencil_op_state>(j, "frontFace");
         pipeline.back_face                  = get_json_value<stencil_op_state>(j, "backFace");
-        pipeline.fallback                   = get_json_string(j, "fallback").value_or("");
+        pipeline.fallback                   = get_json_value<std::string>(j, "fallback").value_or("");
         pipeline.depth_bias                 = get_json_value<float>(j, "depthBias", 0);
         pipeline.slope_scaled_depth_bias    = get_json_value<float>(j, "slopeScaledDepthBias", 0);
         pipeline.stencil_ref                = get_json_value<uint32_t>(j, "stencilRef", 0);
@@ -75,18 +75,18 @@ namespace nova {
     }
 
     void from_json(const nlohmann::json& j, material_pass& pass) {
-        pass.pipeline = get_json_string(j, "pipeline").value();
+        pass.pipeline = get_json_value<std::string>(j, "pipeline").value();
         pass.bindings = get_json_value<std::unordered_map<std::string, std::string>>(j, "bindings").value();
     }
 
     void from_json(const nlohmann::json& j, material_data& mat) {
-        mat.name            = get_json_string(j, "name").value();
+        mat.name            = get_json_value<std::string>(j, "name").value();
         mat.passes          = get_json_array<material_pass>(j, "passes");
-        mat.geometry_filter = get_json_string(j, "filter").value();
+        mat.geometry_filter = get_json_value<std::string>(j, "filter").value();
     }
 
     void from_json(const nlohmann::json& j, texture_attachment& tex) {
-        tex.name    = get_json_string(j, "name").value();
+        tex.name    = get_json_value<std::string>(j, "name").value();
         tex.clear   = get_json_value<bool>(j, "clear", false);
     }
 
