@@ -11,7 +11,7 @@
 #include "../../util/logger.hpp"
 
 namespace nova {
-    dx12_render_engine::dx12_render_engine(const nova_settings &settings) : render_engine(settings), 
+    dx12_render_engine::dx12_render_engine(const nova_settings &settings) : render_engine(settings),
             num_in_flight_frames(settings.get_options().max_in_flight_frames) {
         create_device();
         create_rtv_command_queue();
@@ -289,8 +289,8 @@ namespace nova {
         return new_list;
     }
 
-    void release_command_list(command_list_base* list) {
-
+    void dx12_render_engine::release_command_list(command_list_base *list) {
+        // TODO
     }
 
     void dx12_render_engine::create_full_frame_fences() {

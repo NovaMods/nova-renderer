@@ -106,7 +106,7 @@ namespace nova {
 
         uint32_t num_in_flight_frames = 3;
 
-        std::vector<ComPtr<ID3D12Fence*>> frame_fences;
+        std::vector<ComPtr<ID3D12Fence>> frame_fences;
         std::vector<uint32_t> frame_fence_values;
         HANDLE full_frame_fence_event;
 
