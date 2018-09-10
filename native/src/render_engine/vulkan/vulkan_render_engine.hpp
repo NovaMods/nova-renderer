@@ -101,6 +101,8 @@ namespace nova {
         VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
         VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
 
+        void cleanup_dynamic(); // Cleanup objects that have been created on the fly
+
         void DEBUG_create_shaders();
         void DEBUG_destroy_shaders();
         std::vector<char> DEBUG_read_file(std::string path);

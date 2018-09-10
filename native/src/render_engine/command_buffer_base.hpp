@@ -49,6 +49,7 @@ namespace nova {
     class command_buffer_base {
     public:
         explicit command_buffer_base(command_buffer_type type);
+        virtual ~command_buffer_base() = default;
 
         /*!
          * \brief Starts recording this command buffer, commands can now be executed on it

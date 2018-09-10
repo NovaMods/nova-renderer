@@ -67,8 +67,6 @@ namespace nova {
 
         enki::TaskScheduler task_scheduler;
 
-        uint32_t frame_index;
-
         static nova_renderer *instance;
     };
 }
