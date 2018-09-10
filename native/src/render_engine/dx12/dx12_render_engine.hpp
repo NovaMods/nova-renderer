@@ -50,7 +50,7 @@ namespace nova {
          * \brief Initializes DX12
          * \param settings The settings that may or may not influence initialization
          */
-        explicit dx12_render_engine(const settings& settings);
+        explicit dx12_render_engine(const nova_settings& settings);
 
         static const std::string get_engine_name();
 

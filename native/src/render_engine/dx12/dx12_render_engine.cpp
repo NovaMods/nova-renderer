@@ -11,7 +11,8 @@
 #include "../../util/logger.hpp"
 
 namespace nova {
-    dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings) {
+    dx12_render_engine::dx12_render_engine(const nova_settings &settings) : render_engine(settings), 
+            num_in_flight_frames(settings.get_options().max_in_flight_frames) {
         create_device();
         create_rtv_command_queue();
         create_full_frame_fences();
@@ -168,11 +169,14 @@ namespace nova {
         CD3DX12_CPU_DESCRIPTOR_HANDLE rtv_handle(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart());
 
         for(uint32_t i = 0; i < FRAME_BUFFER_COUNT; i++) {
-            hr = swapchain->GetBuffer(i, IID_PPV_ARGS(&rendertargets[i]));
+            ComPtr<ID3D12Resource> rendertarget;
+            hr = swapchain->GetBuffer(i, IID_PPV_ARGS(&rendertarget));
             if(FAILED(hr)) {
                 NOVA_LOG(FATAL) << "Could not create RTV for swapchain image " << i;
                 throw render_engine_initialization_exception("Could not create RTV for swapchain");
             }
+
+            rendertargets[i] = rendertarget;
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
             device->CreateRenderTargetView(rendertargets[i].Get(), nullptr, rtv_handle);

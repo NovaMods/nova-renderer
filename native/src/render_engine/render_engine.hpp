@@ -6,7 +6,7 @@
 #define NOVA_RENDERER_RENDER_ENGINE_HPP
 
 #include <memory>
-#include "../settings/settings.hpp"
+#include "../settings/nova_settings.hpp"
 #include "../util/macros.hpp"
 #include "window.hpp"
 
@@ -74,7 +74,7 @@ namespace nova {
          *
          * \attention Called by nova
          */
-        explicit render_engine(const settings &settings) {};
+        explicit render_engine(const nova_settings &settings) {};
     };
 }
 

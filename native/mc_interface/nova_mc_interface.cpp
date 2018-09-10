@@ -106,7 +106,7 @@ JNIEXPORT void JNICALL Java_com_continuum_nova_system_NovaNative_initialize
     }
 
     // TODO: Figure out how to pass this in
-    nova::settings sets = {};
+    nova::nova_settings sets = {};
 
     nova::nova_renderer::initialize(sets);
 }

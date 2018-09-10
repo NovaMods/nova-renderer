@@ -106,8 +106,8 @@ set(NOVA_SOURCE
         src/loading/shaderpack/shaderpack_data.hpp
         src/loading/shaderpack/shaderpack_data.cpp
 
-        src/settings/settings.cpp
-        src/settings/settings.hpp
+        src/settings/nova_settings.cpp
+        src/settings/nova_settings.hpp
         src/util/logger.cpp
         src/util/logger.hpp
         src/render_engine/render_engine.hpp

@@ -12,7 +12,7 @@
 #include <memory>
 #include <TaskScheduler.h>
 
-#include "settings/settings.hpp"
+#include "settings/nova_settings.hpp"
 #include "render_engine/render_engine.hpp"
 #include "util/macros.hpp"
 #include "loading/shaderpack/shaderpack_loading.hpp"
@@ -29,7 +29,7 @@ namespace nova {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit nova_renderer(settings &settings);
+        explicit nova_renderer(nova_settings &settings);
 
         /*!
          * \brief Loads the shaderpack with the given name
@@ -47,13 +47,13 @@ namespace nova {
          */
         void execute_frame();
 
-        settings &get_settings();
+        nova_settings &get_settings();
 
         render_engine *get_engine();
 
         enki::TaskScheduler& get_task_scheduler();
 
-        static nova_renderer *initialize(settings &settings) {
+        static nova_renderer *initialize(nova_settings &settings) {
             return (instance = new nova_renderer(settings));
         }
 
@@ -62,7 +62,7 @@ namespace nova {
         static void deinitialize();
 
     private:
-        settings render_settings;
+        nova_settings render_settings;
         std::unique_ptr<render_engine> engine;
 
         enki::TaskScheduler task_scheduler;

@@ -18,7 +18,7 @@ namespace nova {
     nova_renderer* nova_renderer::instance;
 
 
-    nova_renderer::nova_renderer(settings &settings) : render_settings(settings) {
+    nova_renderer::nova_renderer(nova_settings &settings) : render_settings(settings) {
 #if SUPPORT_DX12
         engine = std::make_unique<dx12_render_engine>(render_settings);
 
@@ -31,7 +31,7 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Opened window";
     }
 
-    settings &nova_renderer::get_settings() {
+    nova_settings &nova_renderer::get_settings() {
         return render_settings;
     }
 
