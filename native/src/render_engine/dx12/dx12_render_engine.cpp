@@ -284,4 +284,8 @@ namespace nova {
     void dx12_render_engine::create_fence_wait_event() {
         full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
+
+    void dx12_render_engine::set_frame_graph() {
+
+    }
 }
