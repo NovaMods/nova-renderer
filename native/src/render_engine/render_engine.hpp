@@ -5,9 +5,9 @@
 #ifndef NOVA_RENDERER_RENDER_ENGINE_HPP
 #define NOVA_RENDERER_RENDER_ENGINE_HPP
 
+#include <memory>
 #include "../settings/settings.hpp"
 #include "../util/macros.hpp"
-#include "command_buffer_base.hpp"
 #include "window.hpp"
 
 NOVA_EXCEPTION(nova, render_engine_initialization_exception)

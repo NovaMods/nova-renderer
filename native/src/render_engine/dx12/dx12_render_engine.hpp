@@ -17,6 +17,8 @@
 #include "win32_window.hpp"
 
 #include <wrl.h>
+#include <memory>
+#include <unordered_map>
 
 #include "dx12_opaque_types.hpp"
 
@@ -80,7 +82,7 @@ namespace nova {
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
         // Maps from command buffer type to command buffer list
-        std::unordered_map<int, std::vector<command_list>> buffer_pool;
+        std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<command_list>> buffer_pool;
 
         uint32_t frame_index = 0;
 

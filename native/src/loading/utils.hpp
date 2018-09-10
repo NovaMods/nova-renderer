@@ -29,6 +29,17 @@ namespace nova {
         return std::optional<ValType>{};
     }
 
+    std::optional<std::string> get_json_string(const nlohmann::json& json_obj, const std::string& key) {
+        const auto& itr = json_obj.find(key);
+        if(itr != json_obj.end()) {
+            auto& json_node = json_obj.at(key);
+            return std::optional<std::string>(json_node.get<std::string>());
+        }
+
+        NOVA_LOG(WARN) << key << " not found";
+        return std::optional<std::string>{};
+    }
+
     /*!
      * \brief Retrieves an individual value from the provided JSON structure
      * \tparam ValType The type of the value to retrieve
@@ -87,7 +98,8 @@ namespace nova {
             return value;
         }
 
-        NOVA_LOG(WARN) << key << " not found - defaulting to " << std::to_string(default_value);
+        using namespace std;
+        NOVA_LOG(WARN) << key << " not found - defaulting to " << to_string(default_value);
         return default_value;
     }
 

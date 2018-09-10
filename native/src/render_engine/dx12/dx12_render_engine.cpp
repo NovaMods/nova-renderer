@@ -16,17 +16,17 @@ namespace nova {
         create_rtv_command_queue();
         create_fence_wait_event();
 
-        std::vector<command_buffer_base*> direct_buffers;
+        std::vector<command_list> direct_buffers;
         direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
-        buffer_pool.emplace(static_cast<int>(command_buffer_type::GENERIC), direct_buffers);
+        buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_DIRECT, direct_buffers);
 
-        std::vector<command_buffer_base*> copy_buffers;
+        std::vector<command_list> copy_buffers;
         copy_buffers.reserve(32);
-        buffer_pool.emplace(static_cast<int>(command_buffer_type::COPY), copy_buffers);
+        buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COPY, copy_buffers);
 
-        std::vector<command_buffer_base*> compute_buffers;
+        std::vector<command_list> compute_buffers;
         compute_buffers.reserve(32);
-        buffer_pool.emplace(static_cast<int>(command_buffer_type::COMPUTE), compute_buffers);
+        buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COMPUTE, compute_buffers);
     }
 
     void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
@@ -259,7 +259,7 @@ namespace nova {
     gfx_command_list dx12_render_engine::get_graphics_command_list() {
         command_list new_list = {};
         ComPtr<ID3D12GraphicsCommandList> graphics_list;
-        auto& buffers = buffer_pool.at(static_cast<int>(command_buffer_type::GENERIC));
+        auto& buffers = buffer_pool.at(D3D12_COMMAND_LIST_TYPE_DIRECT);
         if(buffers.empty()) {
             new_list = allocate_command_list(D3D12_COMMAND_LIST_TYPE_DIRECT);
 

@@ -18,9 +18,11 @@
 #include "../../util/smart_enum.hpp"
 #include <nlohmann/json.hpp>
 
-NOVA_EXCEPTION(nova, parse_failed)
-
 namespace nova {
+    class parse_failed : public std::runtime_error {
+    public:
+        explicit parse_failed(const std::string& msg);
+    };
 
     /*!
      * \brief Controlls the rasterizer's state
@@ -77,16 +79,16 @@ namespace nova {
             DisableAlphaWrite,
     )
 
-    SMART_ENUM(texture_filter_enum,
-            TexelAA,
-            Bilinear,
-            Point
-    )
+    enum class texture_filter_enum {
+        TexelAA,
+        Bilinear,
+        Point
+    };
 
-    SMART_ENUM(wrap_mode_enum,
-            Repeat,
-            Clamp
-    )
+    enum class wrap_mode_enum {
+        Repeat,
+        Clamp
+    };
 
     /*!
      * \brief The kind of data in a vertex attribute
@@ -190,65 +192,57 @@ namespace nova {
             InAppPackage
     )
 
-    SMART_ENUM(msaa_support_enum,
-            MSAA,
-            Both,
-            None
-    )
+    enum class msaa_support_enum {
+        MSAA,
+        Both,
+        None
+    };
 
-    SMART_ENUM(stencil_op_enum,
-            Keep,
-            Zero,
-            Replace,
-            Incr,
-            IncrWrap,
-            Decr,
-            DecrWrap,
-            Invert
-    )
+    enum class stencil_op_enum {
+        Keep,
+        Zero,
+        Replace,
+        Incr,
+        IncrWrap,
+        Decr,
+        DecrWrap,
+        Invert
+    };
 
-    SMART_ENUM(compare_op_enum,
-            Never,
-            Less,
-            LessEqual,
-            Greater,
-            GreaterEqual,
-            Equal,
-            NotEqual,
-            Always
-    )
+    enum class compare_op_enum {
+        Never,
+        Less,
+        LessEqual,
+        Greater,
+        GreaterEqual,
+        Equal,
+        NotEqual,
+        Always
+    };
 
-    SMART_ENUM(pass_enum,
-            Shadow,
-            Gbuffer,
-            Transparent,
-            DeferredLight,
-            Fullscreen
-    )
+    enum class primitive_topology_enum {
+        Triangles,
+        Lines
+    };
 
-    SMART_ENUM(primitive_topology_enum,
-            Triangles,
-            Lines
-    )
+    enum class blend_factor_enum {
+        One,
+        Zero,
+        SrcColor,
+        DstColor,
+        OneMinusSrcColor,
+        OneMinusDstColor,
+        SrcAlpha,
+        DstAlpha,
+        OneMinusSrcAlpha,
+        OneMinusDstAlpha
+    };
 
-    SMART_ENUM(blend_factor_enum,
-            One,
-            Zero,
-            SrcColor,
-            DstColor,
-            OneMinusSrcColor,
-            OneMinusDstColor,
-            SrcAlpha,
-            DstAlpha,
-            OneMinusSrcAlpha,
-            OneMinusDstAlpha
-    )
-
-    SMART_ENUM(render_queue_enum,
-            Transparent,
-            Opaque,
-            Cutout
-    )
+    enum class render_queue_enum {
+        Transparent,
+        Opaque,
+        Cutout
+    };
 
     enum class pixel_format_enum {
         RGB8,
@@ -261,12 +255,10 @@ namespace nova {
         DepthStencil,
     };
 
-    pixel_format_enum pixel_format_enum_from_string(const std::string& str);
-
-    SMART_ENUM(texture_dimension_type_enum,
-               ScreenRelative,
-               Absolute
-    )
+    enum class texture_dimension_type_enum {
+        ScreenRelative,
+        Absolute
+    };
 
     /*!
      * \brief Defines a sampler to use for a texture
@@ -601,6 +593,38 @@ namespace nova {
     bool operator==(const texture_format &rhs, const texture_format &lhs);
 
     bool operator!=(const texture_format &rhs, const texture_format &lhs);
+
+
+    pixel_format_enum pixel_format_enum_from_string(const std::string& str);
+
+    texture_dimension_type_enum texture_dimension_type_enum_from_string(const std::string& str);
+
+    texture_filter_enum texture_filter_enum_from_string(const std::string& str);
+
+    wrap_mode_enum wrap_mode_enum_from_string(const std::string& str);
+
+    stencil_op_enum stencil_op_enum_from_string(const std::string& str);
+
+    compare_op_enum compare_op_enum_from_string(const std::string& str);
+
+    msaa_support_enum msaa_support_enum_from_string(const std::string& str);
+
+    primitive_topology_enum primitive_topology_enum_from_string(const std::string& str);
+
+    blend_factor_enum blend_factor_enum_from_string(const std::string& str);
+
+    render_queue_enum render_queue_enum_from_string(const std::string& str);
+
+    std::string to_string(const pixel_format_enum val);
+    std::string to_string(const texture_dimension_type_enum val);
+    std::string to_string(const texture_filter_enum val);
+    std::string to_string(const wrap_mode_enum val);
+    std::string to_string(const stencil_op_enum val);
+    std::string to_string(const compare_op_enum val);
+    std::string to_string(const msaa_support_enum val);
+    std::string to_string(const primitive_topology_enum val);
+    std::string to_string(const blend_factor_enum val);
+    std::string to_string(const render_queue_enum val);
 }
 
 #endif //NOVA_RENDERER_SHADERPACK_DATA_HPP
