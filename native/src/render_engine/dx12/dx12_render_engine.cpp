@@ -14,17 +14,17 @@ namespace nova {
     dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings) {
         create_device();
         create_rtv_command_queue();
-        create_fence_wait_event();
+        create_full_frame_fences();
 
-        std::vector<command_list> direct_buffers;
+        std::vector<command_list_base*> direct_buffers;
         direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
         buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_DIRECT, direct_buffers);
 
-        std::vector<command_list> copy_buffers;
+        std::vector<command_list_base*> copy_buffers;
         copy_buffers.reserve(32);
         buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COPY, copy_buffers);
 
-        std::vector<command_list> compute_buffers;
+        std::vector<command_list_base*> compute_buffers;
         compute_buffers.reserve(32);
         buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COMPUTE, compute_buffers);
     }
@@ -187,42 +187,43 @@ namespace nova {
     }
 
     void dx12_render_engine::render_frame() {
-        gfx_command_list present_commands = get_graphics_command_list();
-
         // Wait for the previous frame at our index to finish
         frame_index = swapchain->GetCurrentBackBufferIndex();
-        if(present_commands.submission_fence->GetCompletedValue() < present_commands.fence_value) {
-            present_commands.submission_fence->SetEventOnCompletion(present_commands.fence_value, full_frame_fence_event);
+        if(frame_fences.at(frame_index)->GetCompletedValue() < frame_fence_values.at(frame_index)) {
+            frame_fences.at(frame_index)->SetEventOnCompletion(frame_fence_values.at(frame_index), full_frame_fence_event);
             WaitForSingleObject(full_frame_fence_event, INFINITE);
         }
         // There is enough space in a 32-bit integer to run Nova at 60 fps for almost three years. Running Nova
         // continuously for more than one year is not supported
-        present_commands.fence_value++;
+        frame_fence_values[frame_index]++;
 
-        HRESULT hr = present_commands.allocator->Reset();
+        gfx_command_list* present_commands = get_graphics_command_list();
+        HRESULT hr = present_commands->allocator->Reset();
         if(FAILED(hr)) {
             NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
         }
 
-        present_commands.list->Reset(present_commands.allocator.Get(), nullptr);
+        present_commands->list->Reset(present_commands->allocator.Get(), nullptr);
 
         CD3DX12_RESOURCE_BARRIER to_render_target = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-        present_commands.list->ResourceBarrier(1, &to_render_target);
+        present_commands->list->ResourceBarrier(1, &to_render_target);
 
         CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), frame_index, rtv_descriptor_size);
-        present_commands.list->OMSetRenderTargets(1, &current_framebuffer_rtv, false, nullptr);
+        present_commands->list->OMSetRenderTargets(1, &current_framebuffer_rtv, false, nullptr);
 
         glm::vec4 clear_color(0, 0.2f, 0.4f, 1.0f);
-        present_commands.list->ClearRenderTargetView(current_framebuffer_rtv, &clear_color.x, 0, nullptr);
+        present_commands->list->ClearRenderTargetView(current_framebuffer_rtv, &clear_color.x, 0, nullptr);
 
         CD3DX12_RESOURCE_BARRIER to_presentable = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-        present_commands.list->ResourceBarrier(1, &to_presentable);
+        present_commands->list->ResourceBarrier(1, &to_presentable);
 
-        present_commands.list->Close();
+        present_commands->list->Close();
 
-        ID3D12CommandList* commands[] = {present_commands.list.Get()};
+        ID3D12CommandList* commands[] = {present_commands->list.Get()};
         direct_command_queue->ExecuteCommandLists(1, commands);
-        direct_command_queue->Signal(present_commands.submission_fence.Get(), present_commands.fence_value);
+        direct_command_queue->Signal(present_commands->submission_fence.Get(), present_commands->fence_value);
+
+        direct_command_queue->Signal(frame_fences.at(frame_index).Get(), frame_fence_values.at(frame_index));
 
         swapchain->Present(0, 0);
 
@@ -230,7 +231,7 @@ namespace nova {
 
     }
 
-    command_list dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) {
+    command_list* dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) {
         ComPtr<ID3D12CommandAllocator> allocator;
         HRESULT hr = device->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&allocator));
         if(FAILED(hr)) {
@@ -248,40 +249,57 @@ namespace nova {
         ComPtr<ID3D12Fence> fence;
         device->CreateFence(1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 
-        command_list cmd_list = {};
-        cmd_list.list = list;
-        cmd_list.allocator = allocator;
-        cmd_list.submission_fence = fence;
+        auto* cmd_list = new command_list;
+        cmd_list->list = list;
+        cmd_list->allocator = allocator;
+        cmd_list->submission_fence = fence;
+        cmd_list->type = command_list_type;
 
         return cmd_list;
     }
 
-    gfx_command_list dx12_render_engine::get_graphics_command_list() {
-        command_list new_list = {};
-        ComPtr<ID3D12GraphicsCommandList> graphics_list;
+    gfx_command_list* dx12_render_engine::get_graphics_command_list() {
+        gfx_command_list* new_list;
         auto& buffers = buffer_pool.at(D3D12_COMMAND_LIST_TYPE_DIRECT);
         if(buffers.empty()) {
-            new_list = allocate_command_list(D3D12_COMMAND_LIST_TYPE_DIRECT);
+            command_list* alloc_list = allocate_command_list(D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+            ComPtr<ID3D12GraphicsCommandList> graphics_list;
+            alloc_list->list->QueryInterface(IID_PPV_ARGS(&graphics_list));
+
+            new_list = new gfx_command_list;
+            new_list->list = graphics_list;
+            new_list->allocator = alloc_list->allocator;
+            new_list->submission_fence = alloc_list->submission_fence;
+            new_list->fence_value = alloc_list->fence_value;
 
         } else {
-            new_list = buffers.back();
+            command_list_base* pool_list = buffers.back();
             buffers.pop_back();
+
+            // CLion complains about the static cast but dynasmic_cast doesn't work since gfx_command_list doesn't have
+            // a vtable
+            new_list = static_cast<gfx_command_list*>(pool_list);
         }
-        new_list.list->QueryInterface(IID_PPV_ARGS(&graphics_list));
 
-        gfx_command_list gfx_list = {};
-        gfx_list.list = graphics_list;
-        gfx_list.allocator = new_list.allocator;
-        gfx_list.submission_fence = new_list.submission_fence;
-
-        return gfx_list;
+        return new_list;
     }
 
-    void dx12_render_engine::release_command_list(gfx_command_list list) {
+    void release_command_list(command_list_base* list) {
 
     }
 
-    void dx12_render_engine::create_fence_wait_event() {
+    void dx12_render_engine::create_full_frame_fences() {
+        frame_fences.resize(num_in_flight_frames);
+        frame_fence_values.resize(num_in_flight_frames);
+
+        for(uint32_t i = 0; i < num_in_flight_frames; i++) {
+            ComPtr<ID3D12Fence> fence;
+            device->CreateFence(num_in_flight_frames, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+            frame_fences[i] = fence;
+            frame_fence_values[i] = 0;
+        }
+
         full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 
