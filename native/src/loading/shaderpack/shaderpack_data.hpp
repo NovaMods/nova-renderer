@@ -18,7 +18,10 @@
 #include "../../util/smart_enum.hpp"
 #include <nlohmann/json.hpp>
 
+NOVA_EXCEPTION(nova, parse_failed)
+
 namespace nova {
+
     /*!
      * \brief Controlls the rasterizer's state
      */
@@ -247,16 +250,18 @@ namespace nova {
             Cutout
     )
 
-    SMART_ENUM(pixel_format_enum,
-               RGB8,
-               RGBA8,
-               RGB16F,
-               RGBA16F,
-               RGB32F,
-               RGBA32F,
-               Depth,
-               DepthStencil,
-    )
+    enum class pixel_format_enum {
+        RGB8,
+        RGBA8,
+        RGB16F,
+        RGBA16F,
+        RGB32F,
+        RGBA32F,
+        Depth,
+        DepthStencil,
+    };
+
+    pixel_format_enum pixel_format_enum_from_string(const std::string& str);
 
     SMART_ENUM(texture_dimension_type_enum,
                ScreenRelative,

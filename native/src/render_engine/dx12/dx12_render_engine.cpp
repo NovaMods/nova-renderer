@@ -6,15 +6,15 @@
 #include <windows.h>
 
 #include "dx12_render_engine.hpp"
-#include "dx12_command_buffer.hpp"
 #include "dx12_opaque_types.hpp"
 #include <d3d12sdklayers.h>
+#include "../../util/logger.hpp"
 
 namespace nova {
     dx12_render_engine::dx12_render_engine(const settings &settings) : render_engine(settings) {
         create_device();
         create_rtv_command_queue();
-        create_frame_end_fences();
+        create_fence_wait_event();
 
         std::vector<command_buffer_base*> direct_buffers;
         direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
@@ -189,6 +189,16 @@ namespace nova {
     void dx12_render_engine::render_frame() {
         gfx_command_list present_commands = get_graphics_command_list();
 
+        // Wait for the previous frame at our index to finish
+        frame_index = swapchain->GetCurrentBackBufferIndex();
+        if(present_commands.submission_fence->GetCompletedValue() < present_commands.fence_value) {
+            present_commands.submission_fence->SetEventOnCompletion(present_commands.fence_value, full_frame_fence_event);
+            WaitForSingleObject(full_frame_fence_event, INFINITE);
+        }
+        // There is enough space in a 32-bit integer to run Nova at 60 fps for almost three years. Running Nova
+        // continuously for more than one year is not supported
+        present_commands.fence_value++;
+
         HRESULT hr = present_commands.allocator->Reset();
         if(FAILED(hr)) {
             NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
@@ -212,17 +222,12 @@ namespace nova {
 
         ID3D12CommandList* commands[] = {present_commands.list.Get()};
         direct_command_queue->ExecuteCommandLists(1, commands);
+        direct_command_queue->Signal(present_commands.submission_fence.Get(), present_commands.fence_value);
 
-        engine->present_swapchain_image();
+        swapchain->Present(0, 0);
 
-        for(auto& typed_fence : fences) {
-            engine->wait_for_fence(typed_fence.second.get(), std::numeric_limits<uint64_t>::max());
-            engine->free_fence(std::move(typed_fence.second));
-        }
+        release_command_list(present_commands);
 
-        engine->free_command_buffer(std::move(buffer));
-
-        frame_index = engine->get_current_swapchain_index();
     }
 
     command_list dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) {
@@ -240,11 +245,19 @@ namespace nova {
             throw std::runtime_error("Could not create command list");
         }
 
-        return {list, allocator};
+        ComPtr<ID3D12Fence> fence;
+        device->CreateFence(1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+
+        command_list cmd_list = {};
+        cmd_list.list = list;
+        cmd_list.allocator = allocator;
+        cmd_list.submission_fence = fence;
+
+        return cmd_list;
     }
 
     gfx_command_list dx12_render_engine::get_graphics_command_list() {
-        command_list new_list;
+        command_list new_list = {};
         ComPtr<ID3D12GraphicsCommandList> graphics_list;
         auto& buffers = buffer_pool.at(static_cast<int>(command_buffer_type::GENERIC));
         if(buffers.empty()) {
@@ -256,46 +269,19 @@ namespace nova {
         }
         new_list.list->QueryInterface(IID_PPV_ARGS(&graphics_list));
 
-        return {graphics_list, new_list.allocator};
+        gfx_command_list gfx_list = {};
+        gfx_list.list = graphics_list;
+        gfx_list.allocator = new_list.allocator;
+        gfx_list.submission_fence = new_list.submission_fence;
+
+        return gfx_list;
     }
 
-    void dx12_render_engine::present_swapchain_image() {
-        swapchain->Present(0, 0);
+    void dx12_render_engine::release_command_list(gfx_command_list list) {
+
     }
 
-    std::shared_ptr<iframebuffer> dx12_render_engine::get_swapchain_framebuffer(uint32_t frame_index) const {
-        std::shared_ptr<iframebuffer> framebuffer = std::make_shared<iframebuffer>();
-        CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), frame_index, rtv_descriptor_size);
-        framebuffer->color_attachments.push_back(current_framebuffer_rtv);
-        return framebuffer;
-    }
-
-    void dx12_render_engine::execute_command_buffers(const std::vector<command_buffer_base*> &buffers) {
-        std::vector<ID3D12CommandList*> lists;
-        lists.reserve(buffers.size());
-
-        for(command_buffer_base* buffer : buffers) {
-            auto* dx12_buffer = dynamic_cast<dx12_command_buffer*>(buffer);
-            lists.push_back(dx12_buffer->command_list.Get());
-        }
-
-        direct_command_queue->ExecuteCommandLists(lists.size(), lists.data());
-
-        // We need to tell the queue to signal our fences after we tell it to execute our command lists
-        for(auto* buffer : buffers) {
-            auto* dx12_buffer = dynamic_cast<dx12_command_buffer*>(buffer);
-            direct_command_queue->Signal(dx12_buffer->fence.Get(), dx12_buffer->fence_value);
-            dx12_buffer->fence_value++;
-        }
-    }
-
-    std::shared_ptr<iresource> dx12_render_engine::get_swapchain_image(uint32_t frame_index) const {
-        std::shared_ptr<iresource> resource = std::make_shared<iresource>();
-        resource->descriptor = rendertargets[frame_index];
-        return resource;
-    }
-
-    uint32_t dx12_render_engine::get_current_swapchain_index() const {
-        return swapchain->GetCurrentBackBufferIndex();
+    void dx12_render_engine::create_fence_wait_event() {
+        full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 }

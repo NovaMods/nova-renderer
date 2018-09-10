@@ -38,7 +38,7 @@ namespace nova {
      * \return The value from the JSON if the key exists in the JSON, or `default_value` if it does not
      */
     template <typename ValType>
-    std::optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string& key, ValType default_value) {
+    ValType get_json_value(const nlohmann::json& json_obj, const std::string& key, ValType default_value) {
         const auto& itr = json_obj.find(key);
         if(itr != json_obj.end()) {
             auto& json_node = json_obj.at(key);
@@ -79,7 +79,7 @@ namespace nova {
      * \return The value from the JSON if the key exists in the JSON, or `default_value` if it does not
      */
     template <typename ValType>
-    std::optional<ValType> get_json_value(const nlohmann::json& json_obj, const std::string& key, ValType default_value, std::function<ValType(const nlohmann::json&)> deserializer) {
+    ValType get_json_value(const nlohmann::json& json_obj, const std::string& key, ValType default_value, std::function<ValType(const nlohmann::json&)> deserializer) {
         const auto& itr = json_obj.find(key);
         if(itr != json_obj.end()) {
             auto& json_node = json_obj.at(key);

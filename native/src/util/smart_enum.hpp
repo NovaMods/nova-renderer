@@ -22,7 +22,7 @@ public:                                                             \
     EnumName() : value(0) {}                                        \
     explicit EnumName(int x) : value(x) {}                                   \
 public:                                                             \
-    enum {__VA_ARGS__};                                             \
+    enum item {__VA_ARGS__};                                             \
 private:                                                            \
     static void init_map(std::unordered_map<int, std::string>& tmp) { \
         int val = 0;                                                \

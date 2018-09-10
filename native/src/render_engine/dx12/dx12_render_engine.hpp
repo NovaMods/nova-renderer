@@ -23,14 +23,18 @@
 using Microsoft::WRL::ComPtr;
 
 namespace nova {
-    struct command_list {
-        ComPtr<ID3D12CommandList> list;
+    struct command_list_base {
         ComPtr<ID3D12CommandAllocator> allocator;
+        ComPtr<ID3D12Fence> submission_fence;
+        uint32_t fence_value = 0;
     };
 
-    struct gfx_command_list {
+    struct command_list : public command_list_base {
+        ComPtr<ID3D12CommandList> list;
+    };
+
+    struct gfx_command_list : public command_list_base {
         ComPtr<ID3D12GraphicsCommandList> list;
-        ComPtr<ID3D12CommandAllocator> allocator;
     };
 
 #define FRAME_BUFFER_COUNT 3 
@@ -80,9 +84,7 @@ namespace nova {
 
         uint32_t frame_index = 0;
 
-        ComPtr<ID3D12Fence1> render_to_backbuffer_fence;
-        HANDLE render_to_backbuffer_fence_event;
-
+        HANDLE full_frame_fence_event;
 
         void create_device();
 
@@ -105,6 +107,10 @@ namespace nova {
         command_list allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type);
 
         gfx_command_list get_graphics_command_list();
+
+        void release_command_list(gfx_command_list list);
+
+        void create_fence_wait_event();
     };
 }
 
