@@ -8,7 +8,6 @@
 
 #include "../../src/nova_renderer.hpp"
 #include "../../src/platform.hpp"
-#include "general_test_setup.hpp"
 
 #ifdef _WIN32
 #include <direct.h>
@@ -22,6 +21,7 @@
 #include "../../src/util/logger.hpp"
 #include "../../src/loading/zip_folder_accessor.hpp"
 #include "../../src/settings/settings.hpp"
+#include "general_test_setup.hpp"
 
 namespace nova {
     int main() {
