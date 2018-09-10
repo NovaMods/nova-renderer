@@ -15,7 +15,6 @@
 #include "../render_engine.hpp"
 #include "vulkan_utils.hpp"
 #include "x11_window.hpp"
-#include "../command_buffer_base.hpp"
 
 namespace nova {
     struct vulkan_queue {
@@ -52,7 +51,7 @@ namespace nova {
         VkSwapchainKHR swapchain;
         VkRenderPass render_pass;
         VkPipelineLayout pipeline_layout;
-        VkPipeline pipeline;
+        VkPipeline graphics_pipeline;
 
         std::vector<VkImage> swapchain_images;
         VkFormat swapchain_format;
@@ -60,15 +59,21 @@ namespace nova {
         std::vector<VkImageView> swapchain_image_views;
         std::vector<VkFramebuffer> swapchain_framebuffers;
         uint32_t current_swapchain_index = 0;
+        VkCommandPool command_pool;
+        std::vector<VkCommandBuffer> command_buffers;
 
         VkShaderModule vert_shader;
         VkShaderModule frag_shader;
 
-        VkSemaphore render_finished_semaphore;
-        VkSemaphore image_available_semaphore;
+        std::vector<VkSemaphore> render_finished_semaphores;
+        std::vector<VkSemaphore> image_available_semaphores;
+        std::vector<VkFence> submit_fences;
 
+        uint32_t graphics_queue_index;
         VkQueue graphics_queue;
+        uint32_t compute_queue_index;
         VkQueue compute_queue;
+        uint32_t copy_queue_index;
         VkQueue copy_queue;
 
         void create_device();
@@ -84,16 +89,25 @@ namespace nova {
         void destroy_graphics_pipeline();
         void create_framebuffers();
         void destroy_framebuffers();
-        void create_semaphores();
-        void destroy_semaphores();
+        void create_command_pool();
+        void destroy_command_pool();
+        void create_command_buffers();
+        void create_synchronization_objects();
+        void destroy_synchronization_objects();
         VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
         VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
+        VkExtent2D choose_swapchain_extend();
+        void recreate_swapchain();
 
         void cleanup_dynamic(); // Cleanup objects that have been created on the fly
 
         void DEBUG_create_shaders();
         void DEBUG_destroy_shaders();
         std::vector<char> DEBUG_read_file(std::string path);
+        void DEBUG_record_command_buffers();
+
+        const uint MAX_FRAMES_IN_QUEUE = 3;
+        uint current_frame = 0;
 
 #ifndef NDEBUG
         PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;

@@ -66,8 +66,10 @@ namespace nova {
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
+        vkDeviceWaitIdle(device);
         cleanup_dynamic();
-        destroy_semaphores();
+        destroy_synchronization_objects();
+        destroy_command_pool();
         destroy_framebuffers();
         destroy_graphics_pipeline();
         destroy_render_pass();
@@ -99,8 +101,10 @@ namespace nova {
         create_render_pass();
         create_graphics_pipeline();
         create_framebuffers();
-        create_semaphores();
-        vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphore, VK_NULL_HANDLE, &current_swapchain_index);
+        create_command_pool();
+        create_command_buffers();
+        DEBUG_record_command_buffers();
+        create_synchronization_objects();
     }
 
     const std::string vulkan_render_engine::get_engine_name() {
@@ -208,8 +212,11 @@ namespace nova {
 
         NOVA_THROW_IF_VK_ERROR(vkCreateDevice(choosen_device, &device_create_info, nullptr, &device), render_engine_initialization_exception);
 
+        graphics_queue_index = graphics_family_idx;
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
+        compute_queue_index = compute_family_idx;
         vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
+        copy_queue_index = copy_family_idx;
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
 
         delete[] physical_devices;
@@ -251,13 +258,6 @@ namespace nova {
 
         VkSurfaceFormatKHR surface_format = choose_swapchain_format(formats);
         VkPresentModeKHR present_mode = choose_present_mode(present_modes);
-        VkExtent2D extend;
-
-        {
-            auto window_size = window->get_window_size();
-            extend.width = window_size.width;
-            extend.height = window_size.height;
-        }
 
         VkSurfaceCapabilitiesKHR capabilities;
         NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &capabilities), render_engine_initialization_exception);
@@ -266,6 +266,8 @@ namespace nova {
         if(capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount) {
             image_count = capabilities.maxImageCount;
         }
+
+        VkExtent2D extend = choose_swapchain_extend();
 
         VkSwapchainCreateInfoKHR swapchain_create_info;
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -321,6 +323,13 @@ namespace nova {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
+    VkExtent2D vulkan_render_engine::choose_swapchain_extend() {
+        VkExtent2D extend;
+        extend.width = window->get_window_size().width;
+        extend.height = window->get_window_size().height;
+        return extend;
+    }
+
     void vulkan_render_engine::create_image_views() {
         swapchain_image_views.resize(swapchain_images.size());
 
@@ -346,23 +355,55 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::create_framebuffers() {
-        swapchain_framebuffers.resize(swapchain_image_views.size());
-        for(size_t i = 0; i < swapchain_framebuffers.size(); i++) {
-            VkImageView attachments[] = {swapchain_image_views[i]};
-            VkFramebufferCreateInfo framebuffer_create_info;
-            framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebuffer_create_info.pNext = nullptr;
-            framebuffer_create_info.flags = 0;
-            framebuffer_create_info.renderPass = render_pass;
-            framebuffer_create_info.attachmentCount = 1;
-            framebuffer_create_info.pAttachments = attachments;
-            framebuffer_create_info.width = swapchain_extend.width;
-            framebuffer_create_info.height = swapchain_extend.height;
-            framebuffer_create_info.layers = 1;
+    void vulkan_render_engine::create_render_pass() {
+        VkAttachmentDescription color_attachment;
+        color_attachment.flags = 0;
+        color_attachment.format = swapchain_format;
+        color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-            NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers.at(i)), render_engine_initialization_exception);
-        }
+        VkAttachmentReference color_attachment_reference;
+        color_attachment_reference.attachment = 0;
+        color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription subpass_description;
+        subpass_description.flags = 0;
+        subpass_description.colorAttachmentCount = 1;
+        subpass_description.pColorAttachments = &color_attachment_reference;
+        subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass_description.inputAttachmentCount = 0;
+        subpass_description.pInputAttachments = nullptr;
+        subpass_description.preserveAttachmentCount = 0;
+        subpass_description.pPreserveAttachments = nullptr;
+        subpass_description.pResolveAttachments = nullptr;
+        subpass_description.pDepthStencilAttachment = nullptr;
+
+        VkSubpassDependency image_available_dependency;
+        image_available_dependency.dependencyFlags = 0;
+        image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        image_available_dependency.dstSubpass = 0;
+        image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        image_available_dependency.srcAccessMask = 0;
+        image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        VkRenderPassCreateInfo render_pass_create_info;
+        render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        render_pass_create_info.pNext = nullptr;
+        render_pass_create_info.flags = 0;
+        render_pass_create_info.attachmentCount = 1;
+        render_pass_create_info.pAttachments = &color_attachment;
+        render_pass_create_info.subpassCount = 1;
+        render_pass_create_info.pSubpasses = &subpass_description;
+        render_pass_create_info.dependencyCount = 1;
+        render_pass_create_info.pDependencies = &image_available_dependency;
+
+        NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
     }
 
     void vulkan_render_engine::create_graphics_pipeline() {
@@ -504,77 +545,98 @@ namespace nova {
         pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
         pipeline_create_info.basePipelineIndex = -1;
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &graphics_pipeline), render_engine_initialization_exception);
     }
 
-    void vulkan_render_engine::create_render_pass() {
-        VkAttachmentDescription color_attachment;
-        color_attachment.flags = 0;
-        color_attachment.format = swapchain_format;
-        color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    void vulkan_render_engine::create_framebuffers() {
+        swapchain_framebuffers.resize(swapchain_image_views.size());
+        for(size_t i = 0; i < swapchain_framebuffers.size(); i++) {
+            VkImageView attachments[] = {swapchain_image_views[i]};
+            VkFramebufferCreateInfo framebuffer_create_info;
+            framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebuffer_create_info.pNext = nullptr;
+            framebuffer_create_info.flags = 0;
+            framebuffer_create_info.renderPass = render_pass;
+            framebuffer_create_info.attachmentCount = 1;
+            framebuffer_create_info.pAttachments = attachments;
+            framebuffer_create_info.width = swapchain_extend.width;
+            framebuffer_create_info.height = swapchain_extend.height;
+            framebuffer_create_info.layers = 1;
 
-        VkAttachmentReference color_attachment_reference;
-        color_attachment_reference.attachment = 0;
-        color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        VkSubpassDescription subpass_description;
-        subpass_description.flags = 0;
-        subpass_description.colorAttachmentCount = 1;
-        subpass_description.pColorAttachments = &color_attachment_reference;
-        subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass_description.inputAttachmentCount = 0;
-        subpass_description.pInputAttachments = nullptr;
-        subpass_description.preserveAttachmentCount = 0;
-        subpass_description.pPreserveAttachments = nullptr;
-        subpass_description.pResolveAttachments = nullptr;
-        subpass_description.pDepthStencilAttachment = nullptr;
-
-        VkSubpassDependency image_available_dependency;
-        image_available_dependency.dependencyFlags = 0;
-        image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        image_available_dependency.dstSubpass = 0;
-        image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        image_available_dependency.srcAccessMask = 0;
-        image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        VkRenderPassCreateInfo render_pass_create_info;
-        render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        render_pass_create_info.pNext = nullptr;
-        render_pass_create_info.flags = 0;
-        render_pass_create_info.attachmentCount = 1;
-        render_pass_create_info.pAttachments = &color_attachment;
-        render_pass_create_info.subpassCount = 1;
-        render_pass_create_info.pSubpasses = &subpass_description;
-        render_pass_create_info.dependencyCount = 1;
-        render_pass_create_info.pDependencies = &image_available_dependency;
-
-        NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers.at(i)), render_engine_initialization_exception);
+        }
     }
 
-    void vulkan_render_engine::create_semaphores() {
+    void vulkan_render_engine::create_command_pool() {
+        VkCommandPoolCreateInfo command_pool_create_info;
+        command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        command_pool_create_info.pNext = nullptr;
+        command_pool_create_info.flags = 0;
+        command_pool_create_info.queueFamilyIndex = graphics_queue_index;
+
+        NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
+    }
+
+    void vulkan_render_engine::create_command_buffers() {
+        command_buffers.resize(swapchain_framebuffers.size());
+
+        VkCommandBufferAllocateInfo buffer_allocate_info;
+        buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        buffer_allocate_info.pNext = nullptr;
+        buffer_allocate_info.commandPool = command_pool;
+        buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        buffer_allocate_info.commandBufferCount = static_cast<uint32_t>(command_buffers.size());
+
+        NOVA_THROW_IF_VK_ERROR(vkAllocateCommandBuffers(device, &buffer_allocate_info, command_buffers.data()), render_engine_initialization_exception);
+    }
+
+    void vulkan_render_engine::create_synchronization_objects() {
+        image_available_semaphores.resize(MAX_FRAMES_IN_QUEUE);
+        render_finished_semaphores.resize(MAX_FRAMES_IN_QUEUE);
+        submit_fences.resize(MAX_FRAMES_IN_QUEUE);
+
         VkSemaphoreCreateInfo semaphore_create_info;
         semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
         semaphore_create_info.pNext = nullptr;
         semaphore_create_info.flags = 0;
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_available_semaphore), render_engine_initialization_exception);
-        NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphore), render_engine_initialization_exception);
+        VkFenceCreateInfo fence_create_info;
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fence_create_info.pNext = nullptr;
+        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        for(uint8_t i = 0; i < MAX_FRAMES_IN_QUEUE; i++) {
+            NOVA_THROW_IF_VK_ERROR(
+                    vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_available_semaphores.at(i)),
+                    render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(
+                    vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphores.at(i)),
+                    render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_create_info, nullptr, &submit_fences.at(i)),
+                    render_engine_rendering_exception);
+        }
     }
 
-    void vulkan_render_engine::destroy_semaphores() {
-        vkDestroySemaphore(device, image_available_semaphore, nullptr);
-        vkDestroySemaphore(device, render_finished_semaphore, nullptr);
+    void vulkan_render_engine::destroy_synchronization_objects() {
+        for(uint8_t i = 0; i < MAX_FRAMES_IN_QUEUE; i++) {
+            vkDestroySemaphore(device, image_available_semaphores.at(i), nullptr);
+            vkDestroySemaphore(device, render_finished_semaphores.at(i), nullptr);
+            vkDestroyFence(device, submit_fences.at(i), nullptr);
+        }
+    }
+
+    void vulkan_render_engine::destroy_command_pool() {
+        vkDestroyCommandPool(device, command_pool, nullptr);
+    }
+
+    void vulkan_render_engine::destroy_framebuffers() {
+        for(auto framebuffer : swapchain_framebuffers) {
+            vkDestroyFramebuffer(device, framebuffer, nullptr);
+        }
     }
 
     void vulkan_render_engine::destroy_graphics_pipeline() {
-        vkDestroyPipeline(device, pipeline, nullptr);
+        vkDestroyPipeline(device, graphics_pipeline, nullptr);
         vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
     }
 
@@ -584,12 +646,6 @@ namespace nova {
 
     void vulkan_render_engine::cleanup_dynamic() {
 
-    }
-
-    void vulkan_render_engine::destroy_framebuffers() {
-        for(auto framebuffer : swapchain_framebuffers) {
-            vkDestroyFramebuffer(device, framebuffer, nullptr);
-        }
     }
 
     void vulkan_render_engine::destroy_image_views() {
@@ -648,6 +704,37 @@ namespace nova {
         return content;
     }
 
+    void vulkan_render_engine::DEBUG_record_command_buffers() {
+        for(size_t i = 0; i < command_buffers.size(); i++) {
+            VkCommandBufferBeginInfo buffer_begin_info;
+            buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            buffer_begin_info.pNext = nullptr;
+            buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            buffer_begin_info.pInheritanceInfo = nullptr;
+
+            NOVA_THROW_IF_VK_ERROR(vkBeginCommandBuffer(command_buffers.at(i), &buffer_begin_info), render_engine_initialization_exception);
+
+            VkRenderPassBeginInfo render_pass_begin_info;
+            render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            render_pass_begin_info.pNext = nullptr;
+            render_pass_begin_info.renderPass = render_pass;
+            render_pass_begin_info.framebuffer = swapchain_framebuffers.at(i);
+            render_pass_begin_info.renderArea.offset = {0, 0};
+            render_pass_begin_info.renderArea.extent = swapchain_extend;
+
+            VkClearValue clear_value;
+            clear_value.color = {0.0f, 0.0f, 0.0f, 0.0f};
+            render_pass_begin_info.clearValueCount = 1;
+            render_pass_begin_info.pClearValues = &clear_value;
+
+            vkCmdBeginRenderPass(command_buffers.at(i), &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBindPipeline(command_buffers.at(i), VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
+            vkCmdDraw(command_buffers.at(i), 3, 1, 0, 0);
+            vkCmdEndRenderPass(command_buffers.at(i));
+            NOVA_THROW_IF_VK_ERROR(vkEndCommandBuffer(command_buffers.at(i)), render_engine_initialization_exception);
+        }
+    }
+
     VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType,
                                                 uint64_t object, size_t location, int32_t message_code,
                                                 const char *layer_prefix, const char *message, void *user_data) {
@@ -660,10 +747,67 @@ namespace nova {
     }
 
     void vulkan_render_engine::render_frame() {
+        vkWaitForFences(device, 1, &submit_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
 
+        auto acquire_result = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphores.at(current_frame), VK_NULL_HANDLE,
+                &current_swapchain_index);
+        if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
+            recreate_swapchain();
+            return;
+        } else if(acquire_result != VK_SUCCESS) {
+            throw render_engine_rendering_exception(
+                    std::string(__FILE__) + ":" + std::to_string(__LINE__) +  "=> " + nova::vulkan::vulkan_utils::vk_result_to_string(acquire_result)); \
+        }
+
+        vkResetFences(device, 1, &submit_fences.at(current_frame));
+
+        VkSubmitInfo submit_info;
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.pNext = nullptr;
+        submit_info.waitSemaphoreCount = 1;
+        submit_info.pWaitSemaphores = &image_available_semaphores.at(current_frame);
+        VkPipelineStageFlags wait_stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        submit_info.pWaitDstStageMask = &wait_stages;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &command_buffers.at(current_swapchain_index);
+        submit_info.signalSemaphoreCount = 1;
+        submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_frame);
+        NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(graphics_queue, 1, &submit_info, submit_fences.at(current_frame)), render_engine_rendering_exception);
+
+        VkPresentInfoKHR present_info;
+        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        present_info.pNext = nullptr;
+        present_info.waitSemaphoreCount = 1;
+        present_info.pWaitSemaphores = &render_finished_semaphores.at(current_frame);
+        present_info.swapchainCount = 1;
+        present_info.pSwapchains = &swapchain;
+        present_info.pImageIndices = &current_swapchain_index;
+        present_info.pResults = nullptr;
+        vkQueuePresentKHR(graphics_queue, &present_info);
+
+        current_frame = (current_frame + 1) % MAX_FRAMES_IN_QUEUE;
+    }
+
+    void vulkan_render_engine::recreate_swapchain() {
+        vkDeviceWaitIdle(device);
+        destroy_framebuffers();
+        vkFreeCommandBuffers(device, command_pool, static_cast<uint32_t>(command_buffers.size()), command_buffers.data());
+        destroy_graphics_pipeline();
+        destroy_render_pass();
+        destroy_image_views();
+        destroy_swapchain();
+
+        create_swapchain();
+        create_image_views();
+        create_render_pass();
+        create_graphics_pipeline();
+        create_framebuffers();
+        create_command_buffers();
+        DEBUG_record_command_buffers();
     }
 
     void vulkan_render_engine::set_frame_graph() {
 
     }
+
 }
