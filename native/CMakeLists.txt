@@ -95,8 +95,6 @@ set(NOVA_SOURCE
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
         src/loading/zip_folder_accessor.cpp
-        src/util/utils.cpp
-        src/util/utils.hpp
 
         src/util/smart_enum.hpp
         src/loading/shaderpack/shaderpack_loading.cpp
@@ -116,9 +114,11 @@ set(NOVA_SOURCE
         src/render_engine/command_buffer_base.cpp
         src/render_engine/window.hpp
         src/render_engine/resource_barrier.hpp
-        src/loading/utils.hpp
         src/loading/shaderpack/json_interop.cpp
-        src/loading/shaderpack/json_interop.hpp src/loading/utils.cpp)
+        src/loading/shaderpack/json_interop.hpp
+        src/loading/utils.hpp
+        src/util/utils.hpp
+        src/util/utils.cpp)
 
 if(UNIX)
     set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
@@ -130,8 +130,6 @@ if(UNIX)
             src/render_engine/vulkan/vulkan_utils.hpp
             src/render_engine/vulkan/x11_window.cpp
             src/render_engine/vulkan/x11_window.hpp
-            src/render_engine/vulkan/vulkan_command_buffer.hpp
-            src/render_engine/vulkan/vulkan_command_buffer.cpp
             src/render_engine/vulkan/vulkan_resource_barrier_helpers.cpp
             src/render_engine/vulkan/vulkan_resource_barrier_helpers.hpp
             src/render_engine/vulkan/vulkan_opaque_types.hpp

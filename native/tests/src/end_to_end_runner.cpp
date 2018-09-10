@@ -6,6 +6,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
+<<<<<<< HEAD
 #include "../../src/nova_renderer.hpp"
 #include "../../src/platform.hpp"
 
@@ -23,6 +24,10 @@
 #include "../../src/settings/nova_settings.hpp"
 #include "general_test_setup.hpp"
 
+=======
+#include "general_test_setup.hpp"
+
+>>>>>>> 1eca937042bdc8d3f8a2e09758ae8db1c37beef6
 namespace nova {
     int main() {
         TEST_SETUP_LOGGER();

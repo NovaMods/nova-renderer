@@ -11,6 +11,7 @@
 #include "window.hpp"
 
 NOVA_EXCEPTION(nova, render_engine_initialization_exception)
+NOVA_EXCEPTION(nova, render_engine_rendering_exception)
 
 namespace nova {
     struct ifence;
