@@ -3,7 +3,6 @@
 //
 
 #include <gtest/gtest.h>
-#include "../../src/loading/zip_folder_accessor.hpp"
 #include "general_test_setup.hpp"
 
 TEST(nova_filesystem, zip_reading) {

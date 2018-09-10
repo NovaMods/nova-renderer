@@ -28,29 +28,13 @@ namespace nova {
         explicit vulkan_render_engine(const settings &settings);
         ~vulkan_render_engine() override;
 
+        void render_frame() override;
+
+        void set_frame_graph() override;
+
         void open_window(uint32_t width, uint32_t height) override;
 
         std::shared_ptr<iwindow> get_window() const override;
-
-        std::shared_ptr<iframebuffer> get_swapchain_framebuffer(uint32_t frame_index) const override;
-
-        uint32_t get_current_swapchain_index() const override;
-
-        std::shared_ptr<iresource> get_swapchain_image(uint32_t frame_index) const override;
-
-        std::unique_ptr<command_buffer_base> allocate_command_buffer(command_buffer_type type) override;
-
-        std::unordered_map<command_buffer_type, std::shared_ptr<ifence>> execute_command_buffers(const std::vector<command_buffer_base*>& buffers) override;
-
-        void free_command_buffer(std::unique_ptr<command_buffer_base> buf) override;
-
-        void present_swapchain_image() override;
-
-        std::shared_ptr<ifence> get_fence() override;
-
-        void wait_for_fence(ifence* fence, uint64_t timeout) override;
-
-        void free_fence(std::shared_ptr<ifence> fence) override;
 
         static const std::string get_engine_name();
 
@@ -82,6 +66,10 @@ namespace nova {
 
         VkSemaphore render_finished_semaphore;
         VkSemaphore image_available_semaphore;
+
+        VkQueue graphics_queue;
+        VkQueue compute_queue;
+        VkQueue copy_queue;
 
         void create_device();
         void destroy_device();
@@ -117,29 +105,6 @@ namespace nova {
 
         VkDebugReportCallbackEXT debug_callback;
 #endif
-
-        /*!
-         * \brief A CommandPool can't be used from more than one thread at once, so we need to figure out what thread
-         * the code requesting a command buffer is in and use the appropriate thread pool
-         */
-        std::unordered_map<std::thread::id, VkCommandPool> thread_local_pools;
-        std::mutex thread_local_pools_lock;
-
-        /*!
-         * \brief Same as above - a command buffer is tied to a command pool, so they need to be used in the same thread
-         */
-        std::unordered_map<std::thread::id, std::unordered_map<command_buffer_type, std::vector<std::unique_ptr<command_buffer_base>>>> thread_local_buffers;
-        std::mutex thread_local_buffers_lock;
-
-        /*!
-         * \brief The queue that supports the operations that each command buffer type needs
-         */
-        std::unordered_map<command_buffer_type, vulkan_queue> queues_per_type;
-
-        /*!
-         * \brief Fences that can be waited on
-         */
-        std::vector<std::shared_ptr<ifence>> fence_pool;
     };
 }
 

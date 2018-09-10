@@ -130,8 +130,6 @@ if(UNIX)
             src/render_engine/vulkan/vulkan_utils.hpp
             src/render_engine/vulkan/x11_window.cpp
             src/render_engine/vulkan/x11_window.hpp
-            src/render_engine/vulkan/vulkan_command_buffer.hpp
-            src/render_engine/vulkan/vulkan_command_buffer.cpp
             src/render_engine/vulkan/vulkan_resource_barrier_helpers.cpp
             src/render_engine/vulkan/vulkan_resource_barrier_helpers.hpp
             src/render_engine/vulkan/vulkan_opaque_types.hpp
