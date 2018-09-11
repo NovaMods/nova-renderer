@@ -47,7 +47,7 @@ namespace nova {
                 } dx12;
         } api;
 
-        uint32_t max_in_flight_frames = 33;
+        uint32_t max_in_flight_frames = 3;
     };
 
     /*!

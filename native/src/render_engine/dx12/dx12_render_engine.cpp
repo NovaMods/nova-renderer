@@ -8,6 +8,7 @@
 #include "dx12_render_engine.hpp"
 #include "dx12_opaque_types.hpp"
 #include <d3d12sdklayers.h>
+#include <algorithm>
 #include "../../util/logger.hpp"
 
 namespace nova {
@@ -176,7 +177,7 @@ namespace nova {
                 throw render_engine_initialization_exception("Could not create RTV for swapchain");
             }
 
-            rendertargets[i] = rendertarget;
+            rendertargets.push_back(rendertarget);
 
             // Create the Render Target View, which binds the swapchain buffer to the RTV handle
             device->CreateRenderTargetView(rendertargets[i].Get(), nullptr, rtv_handle);
@@ -191,15 +192,9 @@ namespace nova {
     }
 
     void dx12_render_engine::render_frame() {
-        // Wait for the previous frame at our index to finish
-        frame_index = swapchain->GetCurrentBackBufferIndex();
-        if(frame_fences.at(frame_index)->GetCompletedValue() < frame_fence_values.at(frame_index)) {
-            frame_fences.at(frame_index)->SetEventOnCompletion(frame_fence_values.at(frame_index), full_frame_fence_event);
-            WaitForSingleObject(full_frame_fence_event, INFINITE);
-        }
-        // There is enough space in a 32-bit integer to run Nova at 60 fps for almost three years. Running Nova
-        // continuously for more than one year is not supported
-        frame_fence_values[frame_index]++;
+        wait_for_previous_frame();
+
+        try_to_free_command_lists();
 
         gfx_command_list* present_commands = get_graphics_command_list();
         HRESULT hr = present_commands->allocator->Reset();
@@ -235,6 +230,18 @@ namespace nova {
 
     }
 
+    void dx12_render_engine::wait_for_previous_frame() {// Wait for the previous frame at our index to finish
+        frame_index = swapchain->GetCurrentBackBufferIndex();
+        if(frame_fences.at(frame_index)->GetCompletedValue() < frame_fence_values.at(frame_index)) {
+            frame_fences.at(frame_index)->SetEventOnCompletion(frame_fence_values.at(frame_index),
+                                                               full_frame_fence_event);
+            WaitForSingleObject(full_frame_fence_event, INFINITE);
+        }
+        // There is enough space in a 32-bit integer to run Nova at 60 fps for almost three years. Running Nova
+        // continuously for more than one year is not supported
+        frame_fence_values[frame_index]++;
+    }
+
     command_list* dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) {
         ComPtr<ID3D12CommandAllocator> allocator;
         HRESULT hr = device->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&allocator));
@@ -263,6 +270,7 @@ namespace nova {
     }
 
     gfx_command_list* dx12_render_engine::get_graphics_command_list() {
+        std::lock_guard<std::mutex> lock(buffer_pool_mutex);
         gfx_command_list* new_list;
         auto& buffers = buffer_pool.at(D3D12_COMMAND_LIST_TYPE_DIRECT);
         if(buffers.empty()) {
@@ -279,6 +287,7 @@ namespace nova {
 
         } else {
             command_list_base* pool_list = buffers.back();
+            pool_list->is_done = false;
             buffers.pop_back();
 
             // CLion complains about the static cast but dynasmic_cast doesn't work since gfx_command_list doesn't have
@@ -290,24 +299,49 @@ namespace nova {
     }
 
     void dx12_render_engine::release_command_list(command_list_base *list) {
-        // TODO
+        std::lock_guard<std::mutex> lock(lists_to_free_mutex);
+        lists_to_free.push_back(list);
     }
 
     void dx12_render_engine::create_full_frame_fences() {
-        frame_fences.resize(num_in_flight_frames);
         frame_fence_values.resize(num_in_flight_frames);
+
+        frame_fences.resize(num_in_flight_frames);
+
+        HRESULT hr;
 
         for(uint32_t i = 0; i < num_in_flight_frames; i++) {
             ComPtr<ID3D12Fence> fence;
-            device->CreateFence(num_in_flight_frames, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-            frame_fences[i] = fence;
-            frame_fence_values[i] = 0;
+            hr = device->CreateFence(1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+            if(SUCCEEDED(hr)) {
+                frame_fences[i] = fence;
+            } else {
+                NOVA_LOG(FATAL) << "Could not create fence for from index " << frame_index;
+                throw render_engine_initialization_exception("Could not create fence for from index " + std::to_string(frame_index));
+            }
         }
+        NOVA_LOG(TRACE) << "Created full-frame fences";
 
         full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 
     void dx12_render_engine::set_frame_graph() {
 
+    }
+
+    void dx12_render_engine::try_to_free_command_lists() {
+        std::lock_guard<std::mutex> lock(lists_to_free_mutex);
+
+        for(command_list_base* list : lists_to_free) {
+            if(list->submission_fence->GetCompletedValue() == list->fence_value) {
+                // Command list is done!
+                std::lock_guard<std::mutex> pool_lock(buffer_pool_mutex);
+                list->is_done = true;
+                buffer_pool.at(list->type).push_back(list);
+            }
+        }
+
+        auto erase_itr = std::remove_if(lists_to_free.begin(), lists_to_free.end(), [](const command_list_base* list) {return list->is_done;});
+        lists_to_free.erase(erase_itr, lists_to_free.end());
     }
 }

@@ -19,6 +19,7 @@
 #include <wrl.h>
 #include <memory>
 #include <unordered_map>
+#include <mutex>
 
 #include "dx12_opaque_types.hpp"
 
@@ -27,9 +28,10 @@ using Microsoft::WRL::ComPtr;
 namespace nova {
     struct command_list_base {
         ComPtr<ID3D12CommandAllocator> allocator;
+        D3D12_COMMAND_LIST_TYPE type;
         ComPtr<ID3D12Fence> submission_fence;
         uint32_t fence_value = 0;
-        D3D12_COMMAND_LIST_TYPE type;
+        bool is_done = false;
     };
 
     struct command_list : public command_list_base {
@@ -84,6 +86,7 @@ namespace nova {
 
         // Maps from command buffer type to command buffer list
         std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<command_list_base*>> buffer_pool;
+        std::mutex buffer_pool_mutex;
 
         /*
          * Synchronization is hard
@@ -100,7 +103,8 @@ namespace nova {
          * Now we get to the fourth frame. Nova has a maximum number of in-flight frames, which defaults to three. The
          * fourth frame has to wait for the first frame to finish
          */
-        std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<command_list_base*>> lists_to_free;
+        std::vector<command_list_base*> lists_to_free;
+        std::mutex lists_to_free_mutex;
 
         uint32_t frame_index = 0;
 
@@ -135,6 +139,10 @@ namespace nova {
         void release_command_list(command_list_base* list);
 
         void create_full_frame_fences();
+
+        void wait_for_previous_frame();
+
+        void try_to_free_command_lists();
     };
 }
 
