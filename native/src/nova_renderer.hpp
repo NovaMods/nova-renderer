@@ -10,7 +10,7 @@
 
 #include <string>
 #include <memory>
-#include <TaskScheduler.h>
+#include <ftl/task_scheduler.h>
 
 #include "settings/nova_settings.hpp"
 #include "render_engine/render_engine.hpp"
@@ -51,7 +51,7 @@ namespace nova {
 
         render_engine *get_engine();
 
-        enki::TaskScheduler& get_task_scheduler();
+        ftl::TaskScheduler& get_task_scheduler();
 
         static nova_renderer *initialize(nova_settings &settings) {
             return (instance = new nova_renderer(settings));
@@ -65,7 +65,7 @@ namespace nova {
         nova_settings render_settings;
         std::unique_ptr<render_engine> engine;
 
-        enki::TaskScheduler task_scheduler;
+        ftl::TaskScheduler task_scheduler;
 
         static nova_renderer *instance;
     };

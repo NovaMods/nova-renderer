@@ -8,14 +8,13 @@
 
 #include <experimental/filesystem>
 #include <unordered_map>
+#include <ftl/task_scheduler.h>
 #include "shaderpack_data.hpp"
-
-#include <TaskScheduler.h>
 
 namespace fs = std::experimental::filesystem;
 
 namespace nova {
-    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name, enki::TaskScheduler& task_scheduler);
+    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name, ftl::TaskScheduler& task_scheduler);
 }
 
 #endif //NOVA_RENDERER_SHADERPACK_LOADING_HPP

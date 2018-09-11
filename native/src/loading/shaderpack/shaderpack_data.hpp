@@ -479,7 +479,7 @@ namespace nova {
         texture_format format;
     };
 
-    struct shaderpack_resources {
+    struct shaderpack_resources_data {
         std::vector<texture_resource> textures;
         std::vector<sampler_state> samplers;
     };
@@ -538,7 +538,7 @@ namespace nova {
      * resources.json file sets up sixteen framebuffer color attachments for ping-pong buffers, a depth attachment,
      * some shadow maps, etc
      */
-    struct render_pass {
+    struct render_pass_data {
         /*!
          * \brief The name of thie render pass
          */
@@ -562,7 +562,7 @@ namespace nova {
          */
         std::optional<texture_attachment> depth_texture;
 
-        render_pass() = default;
+        render_pass_data() = default;
     };
 
     struct material_pass {
@@ -583,11 +583,11 @@ namespace nova {
     struct shaderpack_data {
         std::vector<pipeline_data> pipelines;
         
-        std::vector<render_pass> passes;
+        std::vector<render_pass_data> passes;
 
         std::vector<material_data> materials;
 
-        shaderpack_resources resources;
+        shaderpack_resources_data resources;
     };
 
     bool operator==(const texture_format &rhs, const texture_format &lhs);

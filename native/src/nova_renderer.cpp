@@ -55,7 +55,7 @@ namespace nova {
         delete instance;
     }
 
-    enki::TaskScheduler &nova_renderer::get_task_scheduler() {
+    ftl::TaskScheduler &nova_renderer::get_task_scheduler() {
         return task_scheduler;
     }
 }

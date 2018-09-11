@@ -39,9 +39,9 @@ add_subdirectory(${3RD_PARTY_DIR}/glm)
 add_subdirectory(${3RD_PARTY_DIR}/profiler)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 
-set(ENKITS_BUILD_C_INTERFACE OFF)
-set(ENKITS_BUILD_EXAMPLES OFF)
-add_subdirectory(${3RD_PARTY_DIR}/enkiTS)
+set(FTL_BUILD_TESTS OFF)
+set(FTL_BUILD_BENCHMARKS OFF)
+add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
 
 # option(CPPTOML_BUILD_EXAMPLES OFF)
 # add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
@@ -69,7 +69,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/RenderDoc-Manager
         ${3RD_PARTY_DIR}/profiler/include
         ${3RD_PARTY_DIR}/json/single_include
-        ${3RD_PARTY_DIR}/enkiTS/src
+        ${3RD_PARTY_DIR}/FiberTaskingLib/include
         ${3RD_PARTY_DIR}/cpptoml/include
         ${3RD_PARTY_DIR}/miniz
         )
@@ -188,7 +188,7 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler enkiTS miniz)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")

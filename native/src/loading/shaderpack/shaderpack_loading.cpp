@@ -19,7 +19,19 @@ namespace nova {
 
     folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name);
 
-    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name, enki::TaskScheduler& task_scheduler) {
+    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, void *arg);
+    void load_passes_file(ftl::TaskScheduler *task_scheduler, void *arg);
+    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, void *arg);
+    void load_single_pipeline(ftl::TaskScheduler *task_scheduler, void *arg);
+    void load_material_files(ftl::TaskScheduler *task_scheduler, void *arg);
+
+    template<typename DataType>
+    struct load_data_args {
+        folder_accessor_base* folder_access;
+        std::promise<DataType> promise;
+    };
+
+    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name, ftl::TaskScheduler& task_scheduler) {
         folder_accessor_base* folder_access = get_shaderpack_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
@@ -32,67 +44,21 @@ namespace nova {
         // All these things are loaded from the filesystem
 
         // Load resource definitions
-        auto resources_promise = std::promise<shaderpack_resources>();
-        enki::TaskSet load_resources_task(1, [&](enki::TaskSetPartition range, uint32_t threadnum) {
-            auto resources_bytes = folder_access->read_resource("resources.json");
-            auto json_resource = nlohmann::json::parse(resources_bytes);
-            auto resources = json_resource.get<shaderpack_resources>();
-            resources_promise.set_value(resources);
-        });
-        task_scheduler.AddTaskSetToPipe(&load_resources_task);
+        auto load_resources_data = load_data_args<shaderpack_resources_data>{folder_access, std::promise<shaderpack_resources_data>()};
+        task_scheduler.Run(1, load_dynamic_resources_file, &load_resources_data);
 
         // Load pass definitions
-        auto passes_promise = std::promise<std::vector<render_pass>>();
-        enki::TaskSet load_passes_task(1, [&](enki::TaskSetPartition range, uint32_t threadnum) {
-            auto passes_bytes = folder_access->read_resource("passes.json");
-            auto json_passes = nlohmann::json::parse(passes_bytes);
-            auto passes = json_passes.get<std::vector<render_pass>>();
-            passes_promise.set_value(passes);
-        });
-        task_scheduler.AddTaskSetToPipe(&load_passes_task);
+        auto load_passes_data = load_data_args<std::vector<render_pass_data>>{folder_access, std::promise<std::vector<render_pass_data>>()};
+        task_scheduler.Run(1, load_passes_file, &load_passes_data);
 
         // Load pipeline definitions
-        auto pipelines_promise = std::promise<std::vector<pipeline_data>>();
-        enki::TaskSet load_pipelines_task(1, [&](enki::TaskSetPartition range, uint32_t threadnum) {
-            auto potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
-
-            // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
-            // so I'm into it
-            std::vector<std::promise<pipeline_data>> pipeline_data_promises;
-            pipeline_data_promises.resize(potential_pipeline_files.size());
-            size_t cur_promise = 0;
-            std::mutex promises_mutex;
-
-            uint32_t num_pipelines = 0;
-
-            for(const fs::path& potential_file : potential_pipeline_files) {
-                if(potential_file.extension() == ".pipeline") {
-                    // Pipeline file!
-                    enki::TaskSet load_pipeline_task(1, [&](enki::TaskSetPartition range, uint32_t threadnum) {
-                        auto pipeline_bytes = folder_access->read_resource(potential_file);
-                        auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
-                        auto pipeline = json_pipeline.get<pipeline_data>();
-                        std::lock_guard<std::mutex> promises_lock(promises_mutex);
-                        pipeline_data_promises.at(cur_promise).set_value(pipeline);
-                        cur_promise++;
-                    });
-                    task_scheduler.AddTaskSetToPipe(&load_pipeline_task);
-                }
-            }
-
-            std::vector<pipeline_data> pipelines;
-            pipelines.resize(num_pipelines);
-            for(uint32_t i = 0; i < num_pipelines; i++) {
-                pipelines.push_back(pipeline_data_promises.at(i).get_future().get());
-            }
-            pipelines_promise.set_value(pipelines);
-        });
-        task_scheduler.AddTaskSetToPipe(&load_pipelines_task);
+        auto load_pipelines_data = load_data_args<std::vector<pipeline_data>>{folder_access, std::promise<std::vector<pipeline_data>>()};
+        task_scheduler.Run(1, load_pipeline_files, &load_pipelines_data);
 
         shaderpack_data data;
-        data.pipelines = pipelines_promise.get_future().get();
-        data.passes = passes_promise.get_future().get();
-        data.resources = resources_promise.get_future().get();
+        data.pipelines = load_pipelines_data.promise.get_future().get();
+        data.passes = load_passes_data.promise.get_future().get();
+        data.resources = load_resources_data.promise.get_future().get();
 
         delete folder_access;
 
@@ -131,5 +97,76 @@ namespace nova {
         }
 
         return folder_access;
+    }
+
+    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, void *arg) {
+        auto* args = reinterpret_cast<load_data_args<shaderpack_resources_data>*>(arg);
+        try {
+            auto resources_bytes = args->folder_access->read_resource("resources.json");
+            auto json_resource = nlohmann::json::parse(resources_bytes);
+            auto resources = json_resource.get<shaderpack_resources_data>();
+            args->promise.set_value(resources);
+
+        } catch(resource_not_found_error& err) {
+            // No resources defined.. I guess they think they don't need any?
+            args->promise.set_value({});
+        }
+    }
+
+    void load_passes_file(ftl::TaskScheduler *task_scheduler, void *arg) {
+        auto* args = reinterpret_cast<load_data_args<std::vector<render_pass_data>>*>(arg);
+        auto passes_bytes = args->folder_access->read_resource("passes.json");
+        auto json_passes = nlohmann::json::parse(passes_bytes);
+        auto passes = json_passes.get<std::vector<render_pass_data>>();
+        args->promise.set_value(passes);
+    }
+
+    struct load_pipeline_data {
+        folder_accessor_base* folder_access;
+        std::mutex& mut;
+        std::vector<std::promise<pipeline_data>>& output;
+        size_t& cur_promise;
+        const fs::path& pipeline_path;
+    };
+
+    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, void *arg) {
+        auto* args = reinterpret_cast<load_data_args<std::vector<pipeline_data>>*>(arg);
+
+        auto potential_pipeline_files = args->folder_access->get_all_items_in_folder("materials");
+
+        // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
+        // so I'm into it
+        std::vector<std::promise<pipeline_data>> pipeline_data_promises;
+        pipeline_data_promises.resize(potential_pipeline_files.size());
+        size_t cur_promise = 0;
+        std::mutex promises_mutex;
+
+        uint32_t num_pipelines = 0;
+
+        for(const fs::path& potential_file : potential_pipeline_files) {
+            if(potential_file.extension() == ".pipeline") {
+                // Pipeline file!
+                auto data_for_loading_pipeline = load_pipeline_data{args->folder_access, promises_mutex, pipeline_data_promises,
+                                                                    cur_promise, potential_file};
+                task_scheduler->Run(1, load_single_pipeline, &data_for_loading_pipeline);
+            }
+        }
+
+        std::vector<pipeline_data> pipelines;
+        pipelines.resize(num_pipelines);
+        for(uint32_t i = 0; i < num_pipelines; i++) {
+            pipelines.push_back(pipeline_data_promises.at(i).get_future().get());
+        }
+        args->promise.set_value(pipelines);
+    }
+
+    void load_single_pipeline(ftl::TaskScheduler *task_scheduler, void *arg){
+        auto* args = reinterpret_cast<load_pipeline_data*>(arg);
+        auto pipeline_bytes = args->folder_access->read_resource(args->pipeline_path);
+        auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
+        auto pipeline = json_pipeline.get<pipeline_data>();
+        std::lock_guard<std::mutex> promises_lock(args->mut);
+        args->output.at(args->cur_promise).set_value(pipeline);
+        args->cur_promise++;
     }
 }

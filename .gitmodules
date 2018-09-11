@@ -40,3 +40,6 @@
 [submodule "native/3rdparty/glfw"]
 	path = native/3rdparty/glfw
 	url = https://github.com/glfw/glfw
+[submodule "native/3rdparty/FiberTaskingLib"]
+	path = native/3rdparty/FiberTaskingLib
+	url = https://github.com/RichieSams/FiberTaskingLib.git

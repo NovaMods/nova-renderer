@@ -24,12 +24,12 @@ namespace nova {
         sampler.wrap_mode = get_json_value<wrap_mode_enum>(j, "wrapMode", wrap_mode_enum::Clamp, wrap_mode_enum_from_string);
     }
 
-    void from_json(const nlohmann::json& j, shaderpack_resources& res) {
+    void from_json(const nlohmann::json& j, shaderpack_resources_data& res) {
         res.textures = get_json_array<texture_resource>(j, "textures");
         res.samplers = get_json_array<sampler_state>(j, "samplers");
     }
 
-    void from_json(const nlohmann::json& j, render_pass& pass) {
+    void from_json(const nlohmann::json& j, render_pass_data& pass) {
         pass.dependencies       = get_json_array<std::string>(j, "dependencies");
         pass.texture_inputs     = get_json_value<input_textures>(j, "textureInputs", {});
         pass.texture_outputs    = get_json_array<texture_attachment>(j, "textureOutputs");
@@ -90,9 +90,9 @@ namespace nova {
         tex.clear   = get_json_value<bool>(j, "clear", false);
     }
 
-    void from_json(const nlohmann::json& j, std::vector<render_pass>& passes) {
+    void from_json(const nlohmann::json& j, std::vector<render_pass_data>& passes) {
         for(const auto& node : j) {
-            passes.push_back(node.get<render_pass>());
+            passes.push_back(node.get<render_pass_data>());
         }
     }
 }
