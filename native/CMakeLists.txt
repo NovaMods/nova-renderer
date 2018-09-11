@@ -125,7 +125,7 @@ set(NOVA_SOURCE
         src/loading/shaderpack/json_interop.hpp
         src/loading/utils.hpp
         src/util/utils.hpp
-        src/util/utils.cpp)
+        src/util/utils.cpp src/render_objects/render_object.cpp src/render_objects/render_object.hpp)
 
 if(UNIX)
     set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
