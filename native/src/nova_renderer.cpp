@@ -3,6 +3,8 @@
  * \date 03-Sep-18.
  */
 
+#include <future>
+
 #include "nova_renderer.hpp"
 
 #include "platform.hpp"
@@ -36,11 +38,26 @@ namespace nova {
     }
 
     void nova_renderer::execute_frame() {
-        engine->render_frame();
+        task_scheduler.Run(200, [](ftl::TaskScheduler* task_scheduler, void* arg) {
+            reinterpret_cast<render_engine*>(arg)->render_frame();
+        },
+        engine.get());
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
-        const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), task_scheduler);
+        struct load_shaderpack_args {
+            const std::string& shaderpack_name;
+            std::promise<shaderpack_data> output;
+        };
+
+        auto data = load_shaderpack_args{ shaderpack_name, std::promise<shaderpack_data>() };
+
+        task_scheduler.Run(200, [](ftl::TaskScheduler* task_scheduler, void* arg) {
+            auto* args = reinterpret_cast<load_shaderpack_args*>(arg);
+
+            const auto shaderpack_data = load_shaderpack_data(fs::path(args->shaderpack_name), *task_scheduler);
+            args->output.set_value(shaderpack_data);
+        }, &data);
     }
 
     render_engine* nova_renderer::get_engine() {

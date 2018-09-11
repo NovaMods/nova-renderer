@@ -70,6 +70,10 @@ namespace nova {
         std::unordered_map<std::string, bool> resource_existance;
 
         std::optional<bool> does_resource_exist_in_map(const std::string& resource_path) const;
+
+        bool is_path_relative_to_our_root(const fs::path& resource_path);
+
+        fs::path get_full_path(const fs::path path);
     };
 }
 

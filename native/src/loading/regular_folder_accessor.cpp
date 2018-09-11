@@ -29,16 +29,19 @@ namespace nova {
     }
 
     std::vector<uint8_t> regular_folder_accessor::read_resource(const fs::path &resource_path) {
-        if(!does_resource_exist(resource_path)) {
-            logger::instance.log(log_level::DEBUG, "Resource at path " + resource_path.string() + " does not exist");
-            throw resource_not_found_error(resource_path.string());
+        fs::path full_resource_path = get_full_path(resource_path);
+
+
+        if(!does_resource_exist(full_resource_path)) {
+            logger::instance.log(log_level::DEBUG, "Resource at path " + full_resource_path.string() + " does not exist");
+            throw resource_not_found_error(full_resource_path.string());
         }
 
         std::vector<uint8_t> buf;
-        std::ifstream resource_stream(resource_path.string());
+        std::ifstream resource_stream(full_resource_path.string());
         if(!resource_stream.good()) {
             // Error reading this file - it can't be read again in the future
-            const auto resource_string = resource_path.string();
+            const auto resource_string = full_resource_path.string();
 
             resource_existance.emplace(resource_string, false);
             logger::instance.log(log_level::DEBUG, "Could not load resource at path " + resource_string);
