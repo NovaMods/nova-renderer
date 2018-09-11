@@ -47,9 +47,6 @@ set(FTL_BUILD_TESTS OFF CACHE BOOL "Disable FTL tests" FORCE)
 set(FTL_BUILD_BENCHMARKS OFF CACHE BOOL "Disable FTL benchmarks" FORCE)
 add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
 
-# set(CPPTOML_BUILD_EXAMPLES OFF CACHE BOOL "Disable TOML tests" FORCE)
-# add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
-
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
 if(UNIX)
@@ -86,7 +83,7 @@ if(UNIX)
 endif()
 
 ########################
-# Add Nova soruce code #
+# Add Nova source code #
 ########################
 
 set(NOVA_SOURCE

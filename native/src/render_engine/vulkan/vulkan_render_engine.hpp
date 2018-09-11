@@ -26,7 +26,7 @@ namespace nova {
 
     class vulkan_render_engine : public render_engine {
     public:
-        explicit vulkan_render_engine(const settings &settings);
+        explicit vulkan_render_engine(const nova_settings &settings);
         ~vulkan_render_engine() override;
 
         void render_frame() override;
