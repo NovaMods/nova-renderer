@@ -59,7 +59,7 @@ if(UNIX)
     add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
     add_subdirectory(${3RD_PARTY_DIR}/glslang)
 
-	set(SHADERC_SKIP_TESTS OFF CACHE BOOL "Shaderc tests go away" FORCE)
+    set(SHADERC_SKIP_TESTS TRUE CACHE BOOL "Shaderc tests go away" FORCE)
     add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 endif()
 
