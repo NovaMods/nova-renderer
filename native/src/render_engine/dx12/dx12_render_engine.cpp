@@ -278,9 +278,11 @@ namespace nova {
 
             ComPtr<ID3D12GraphicsCommandList> graphics_list;
             alloc_list->list->QueryInterface(IID_PPV_ARGS(&graphics_list));
+            graphics_list->Close();
 
             new_list = new gfx_command_list;
             new_list->list = graphics_list;
+            new_list->type = alloc_list->type;
             new_list->allocator = alloc_list->allocator;
             new_list->submission_fence = alloc_list->submission_fence;
             new_list->fence_value = alloc_list->fence_value;

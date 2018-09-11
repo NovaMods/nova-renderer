@@ -10,9 +10,6 @@
 [submodule "native/3rdparty/json"]
 	path = native/3rdparty/json
 	url = https://github.com/nlohmann/json.git
-[submodule "native/3rdparty/enkiTS"]
-	path = native/3rdparty/enkiTS
-	url = https://github.com/NovaMods/enkiTS.git
 [submodule "native/3rdparty/cpptoml"]
 	path = native/3rdparty/cpptoml
 	url = https://github.com/skystrife/cpptoml.git
