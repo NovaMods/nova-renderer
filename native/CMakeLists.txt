@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 project(nova-renderer)
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+    message(STATUS "Enabling CCache at ${CCACHE_PROGRAM}")
+endif()
+
 option(NOVA_TEST "Enable tests." OFF)
 option(ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as well as in the CMake files" OFF)
 if(ENABLE_EXPERIMENTAL)
