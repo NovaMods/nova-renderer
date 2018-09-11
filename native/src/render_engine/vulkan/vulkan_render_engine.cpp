@@ -8,6 +8,9 @@
 #include "../../util/logger.hpp"
 #include <fstream>
 #include "vulkan_opaque_types.hpp"
+#include <cstring>
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const settings &settings) : render_engine(settings) {
@@ -69,6 +72,7 @@ namespace nova {
         vkDeviceWaitIdle(device);
         cleanup_dynamic();
         destroy_synchronization_objects();
+        destroy_vertex_buffer();
         destroy_command_pool();
         destroy_framebuffers();
         destroy_graphics_pipeline();
@@ -76,6 +80,7 @@ namespace nova {
         DEBUG_destroy_shaders();
         destroy_image_views();
         destroy_swapchain();
+        destroy_memory_allocator();
         destroy_device();
     }
 
@@ -95,6 +100,7 @@ namespace nova {
 #error Unsuported window system
 #endif
         create_device();
+        create_memory_allocator();
         create_swapchain();
         create_image_views();
         DEBUG_create_shaders();
@@ -102,6 +108,7 @@ namespace nova {
         create_graphics_pipeline();
         create_framebuffers();
         create_command_pool();
+        create_vertex_buffer();
         create_command_buffers();
         DEBUG_record_command_buffers();
         create_synchronization_objects();
@@ -236,6 +243,21 @@ namespace nova {
         }
 
         return required.empty();
+    }
+
+    void vulkan_render_engine::create_memory_allocator() {
+        VmaAllocatorCreateInfo allocator_create_info;
+        allocator_create_info.physicalDevice = physical_device;
+        allocator_create_info.device = device;
+        allocator_create_info.flags = 0;
+        allocator_create_info.frameInUseCount = 0;
+        allocator_create_info.pAllocationCallbacks = nullptr;
+        allocator_create_info.pDeviceMemoryCallbacks = nullptr;
+        allocator_create_info.pHeapSizeLimit = nullptr;
+        allocator_create_info.preferredLargeHeapBlockSize = 0;
+        allocator_create_info.pVulkanFunctions = nullptr;
+
+        NOVA_THROW_IF_VK_ERROR(vmaCreateAllocator(&allocator_create_info, &memory_allocator), render_engine_initialization_exception);
     }
 
     void vulkan_render_engine::create_swapchain() {
@@ -427,14 +449,17 @@ namespace nova {
 
         VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_create_info, frag_shader_create_info};
 
+        auto vertex_binding_description = vulkan::vulkan_vertex::get_binding_description();
+        auto vertex_attribute_description = vulkan::vulkan_vertex::get_attribute_description();
+
         VkPipelineVertexInputStateCreateInfo vertext_input_state_create_info;
         vertext_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertext_input_state_create_info.pNext = nullptr;
         vertext_input_state_create_info.flags = 0;
-        vertext_input_state_create_info.vertexBindingDescriptionCount = 0;
-        vertext_input_state_create_info.pVertexBindingDescriptions = nullptr;
-        vertext_input_state_create_info.vertexAttributeDescriptionCount = 0;
-        vertext_input_state_create_info.pVertexAttributeDescriptions = nullptr;
+        vertext_input_state_create_info.vertexBindingDescriptionCount = 1;
+        vertext_input_state_create_info.pVertexBindingDescriptions = &vertex_binding_description;
+        vertext_input_state_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_attribute_description.size());
+        vertext_input_state_create_info.pVertexAttributeDescriptions = vertex_attribute_description.data();
 
         VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info;
         input_assembly_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -577,6 +602,37 @@ namespace nova {
         NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
     }
 
+    void vulkan_render_engine::create_vertex_buffer() {
+        VkBufferCreateInfo buffer_create_info;
+        buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_create_info.pNext = nullptr;
+        buffer_create_info.flags = 0;
+        buffer_create_info.size = sizeof(verticies[0]) * verticies.size();
+        buffer_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_create_info.queueFamilyIndexCount = 0;
+        buffer_create_info.pQueueFamilyIndices = nullptr;
+
+        VmaAllocationCreateInfo allocation_create_info;
+        allocation_create_info.flags = 0;
+        allocation_create_info.usage = VMA_MEMORY_USAGE_UNKNOWN;
+        allocation_create_info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+        allocation_create_info.preferredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        allocation_create_info.memoryTypeBits = 0;
+        allocation_create_info.pUserData = nullptr;
+        allocation_create_info.pool = VK_NULL_HANDLE;
+
+        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(memory_allocator, &buffer_create_info, &allocation_create_info, &vertex_buffer, &vertex_buffer_allocation,
+                        nullptr), render_engine_initialization_exception);
+
+        // vmaBindBufferMemory(memory_allocator, vertex_buffer_allocation, vertex_buffer);
+
+        void *data;
+        vmaMapMemory(memory_allocator, vertex_buffer_allocation, &data);
+        std::memcpy(data, verticies.data(), (size_t) buffer_create_info.size);
+        vmaUnmapMemory(memory_allocator, vertex_buffer_allocation);
+    }
+
     void vulkan_render_engine::create_command_buffers() {
         command_buffers.resize(swapchain_framebuffers.size());
 
@@ -625,6 +681,11 @@ namespace nova {
         }
     }
 
+    void vulkan_render_engine::destroy_vertex_buffer() {
+        vmaFreeMemory(memory_allocator, vertex_buffer_allocation);
+        vmaDestroyBuffer(memory_allocator, vertex_buffer, vertex_buffer_allocation);
+    }
+
     void vulkan_render_engine::destroy_command_pool() {
         vkDestroyCommandPool(device, command_pool, nullptr);
     }
@@ -656,6 +717,10 @@ namespace nova {
 
     void vulkan_render_engine::destroy_swapchain() {
         vkDestroySwapchainKHR(device, swapchain, nullptr);
+    }
+
+    void vulkan_render_engine::destroy_memory_allocator() {
+        vmaDestroyAllocator(memory_allocator);
     }
 
     void vulkan_render_engine::destroy_device() {
@@ -729,7 +794,11 @@ namespace nova {
 
             vkCmdBeginRenderPass(command_buffers.at(i), &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
             vkCmdBindPipeline(command_buffers.at(i), VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
-            vkCmdDraw(command_buffers.at(i), 3, 1, 0, 0);
+
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(command_buffers.at(i), 0, 1, &vertex_buffer, offsets);
+
+            vkCmdDraw(command_buffers.at(i), static_cast<uint32_t>(verticies.size()), 1, 0, 0);
             vkCmdEndRenderPass(command_buffers.at(i));
             NOVA_THROW_IF_VK_ERROR(vkEndCommandBuffer(command_buffers.at(i)), render_engine_initialization_exception);
         }

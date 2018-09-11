@@ -141,8 +141,7 @@ if(UNIX)
             ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
             ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
             ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
-            ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp
-            )
+            ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp)
 
 elseif(WIN32)
     set(NOVA_SOURCE

@@ -5,8 +5,10 @@
 #ifndef NOVA_RENDERER_VULKAN_UTILS_HPP
 #define NOVA_RENDERER_VULKAN_UTILS_HPP
 
+#include <array>
 #include <string>
 #include <vulkan/vulkan.h>
+#include <glm/glm.hpp>
 
 namespace nova::vulkan {
     class vulkan_utils {
@@ -28,6 +30,33 @@ namespace nova::vulkan {
                     return std::string("UNKNOWN_ERROR");
             }
 #undef ERROR_CASE
+        }
+    };
+
+    struct vulkan_vertex {
+        glm::vec2 pos;
+        glm::vec3 color;
+
+        static VkVertexInputBindingDescription get_binding_description() {
+            VkVertexInputBindingDescription description;
+            description.binding = 0;
+            description.stride = sizeof(vulkan_vertex);
+            description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+            return description;
+        }
+
+        static std::array<VkVertexInputAttributeDescription, 2> get_attribute_description() {
+            std::array<VkVertexInputAttributeDescription, 2> descriptions = {};
+            descriptions[0].binding = 0;
+            descriptions[0].location = 0;
+            descriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+            descriptions[0].offset = static_cast<uint32_t>(offsetof(vulkan_vertex, pos));
+
+            descriptions[1].binding = 0;
+            descriptions[1].location = 1;
+            descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+            descriptions[1].offset = static_cast<uint32_t>(offsetof(vulkan_vertex, color));
+            return descriptions;
         }
     };
 }

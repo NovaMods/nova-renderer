@@ -16,6 +16,8 @@
 #include "vulkan_utils.hpp"
 #include "x11_window.hpp"
 
+#include <vk_mem_alloc.h>
+
 namespace nova {
     struct vulkan_queue {
         VkQueue queue;
@@ -48,6 +50,8 @@ namespace nova {
         VkPhysicalDevice physical_device;
         VkDevice device;
 
+        VmaAllocator memory_allocator;
+
         VkSwapchainKHR swapchain;
         VkRenderPass render_pass;
         VkPipelineLayout pipeline_layout;
@@ -76,8 +80,13 @@ namespace nova {
         uint32_t copy_queue_index;
         VkQueue copy_queue;
 
+        VkBuffer vertex_buffer;
+        VmaAllocation vertex_buffer_allocation;
+
         void create_device();
         void destroy_device();
+        void create_memory_allocator();
+        void destroy_memory_allocator();
         bool does_device_support_extensions(VkPhysicalDevice device);
         void create_swapchain();
         void destroy_swapchain();
@@ -91,6 +100,8 @@ namespace nova {
         void destroy_framebuffers();
         void create_command_pool();
         void destroy_command_pool();
+        void create_vertex_buffer();
+        void destroy_vertex_buffer();
         void create_command_buffers();
         void create_synchronization_objects();
         void destroy_synchronization_objects();
@@ -108,6 +119,12 @@ namespace nova {
 
         const uint MAX_FRAMES_IN_QUEUE = 3;
         uint current_frame = 0;
+
+        const std::vector<vulkan::vulkan_vertex> verticies = {
+                {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+                {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+                {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+        };
 
 #ifndef NDEBUG
         PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
