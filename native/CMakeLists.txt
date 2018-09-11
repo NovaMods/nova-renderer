@@ -23,6 +23,8 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic -Wno-format-truncation")
 endif()
 
+set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
+
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
@@ -30,20 +32,22 @@ set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 # Add dependencies as subdirectories #
 ######################################
 
-set(BUILD_DEMOS OFF)
-set(BUILD_ICD OFF)
+set(BUILD_DEMOS OFF CACHE BOOL "Disable demos" FORCE)
+set(BUILD_ICD OFF CACHE BOOL "Disable ICD" FORCE)
 
 set(BUILD_SHARED_LIBS OFF)
 
 add_subdirectory(${3RD_PARTY_DIR}/glm)
 add_subdirectory(${3RD_PARTY_DIR}/profiler)
+		
+set(JSON_BuildTests OFF CACHE BOOL "JSON tests go away" FORCE)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 
-set(FTL_BUILD_TESTS OFF)
-set(FTL_BUILD_BENCHMARKS OFF)
+set(FTL_BUILD_TESTS OFF CACHE BOOL "Disable FTL tests" FORCE)
+set(FTL_BUILD_BENCHMARKS OFF CACHE BOOL "Disable FTL benchmarks" FORCE)
 add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
 
-# option(CPPTOML_BUILD_EXAMPLES OFF)
+# set(CPPTOML_BUILD_EXAMPLES OFF CACHE BOOL "Disable TOML tests" FORCE)
 # add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
@@ -55,7 +59,7 @@ if(UNIX)
     add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
     add_subdirectory(${3RD_PARTY_DIR}/glslang)
 
-    set(SHADERC_SKIP_TESTS TRUE)
+	set(SHADERC_SKIP_TESTS OFF CACHE BOOL "Shaderc tests go away" FORCE)
     add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 endif()
 
