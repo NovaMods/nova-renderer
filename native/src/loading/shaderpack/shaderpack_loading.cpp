@@ -10,7 +10,7 @@
 #include "../regular_folder_accessor.hpp"
 #include "../utils.hpp"
 #include "json_interop.hpp"
-#include <ftl\atomic_counter.h>
+#include <ftl/atomic_counter.h>
 
 namespace nova {
     fs::path SHADERPACK_ROOT("shaderpacks");
