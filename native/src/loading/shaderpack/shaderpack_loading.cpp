@@ -123,7 +123,7 @@ namespace nova {
 
         } catch(resource_not_found_error&) {
             // No resources defined.. I guess they think they don't need any?
-            NOVA_LOG(DEBUG) << "No resources file found for shaderpack";
+            NOVA_LOG(WARN) << "No resources file found for shaderpack";
 
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's resources.json: " << err.what();

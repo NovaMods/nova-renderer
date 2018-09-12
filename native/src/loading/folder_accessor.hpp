@@ -52,6 +52,9 @@ namespace nova {
          */
         explicit folder_accessor_base(const fs::path& folder);
 
+        // Else freeing could cause errors
+        virtual ~folder_accessor_base() = default;
+
         /*!
          * \brief Checks if the given resource exists
          * \param resource_path The path to the resource you want to know the existence of, relative to this
