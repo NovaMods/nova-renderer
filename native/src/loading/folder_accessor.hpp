@@ -42,7 +42,7 @@ namespace nova {
          * resourcepack's root
          * \return True if the resource exists, false if it does not
          */
-        virtual bool does_resource_exist(const fs::path& resource_path) = 0;
+        bool does_resource_exist(const fs::path& resource_path);
 
         /*!
          * \brief Loads the resource with the given path
@@ -70,10 +70,13 @@ namespace nova {
         std::unordered_map<std::string, bool> resource_existance;
 
         std::optional<bool> does_resource_exist_in_map(const std::string& resource_path) const;
-
-        bool is_path_relative_to_our_root(const fs::path& resource_path);
-
-        fs::path get_full_path(const fs::path path);
+        
+        /*!
+         * \brief Like the non-internal one, but does not add the folder's root to resource_path
+         * 
+         * \param resource_path The path to the resource, with `our_root` already appended
+         */
+        virtual bool does_resource_exist_internal(const fs::path& resource_path) = 0;
     };
 }
 

@@ -24,30 +24,11 @@ namespace nova {
         delete files;
     }
 
-    bool zip_folder_accessor::does_resource_exist(const fs::path &resource_path) {
-        const auto resource_string = resource_path.string();
-        const auto existence_maybe = does_resource_exist_in_map(resource_string);
-        if(existence_maybe) {
-            return existence_maybe.value();
-        }
-
-        int32_t ret_val = mz_zip_reader_locate_file(&zip_archive, resource_string.c_str(), "", 0);
-        if(ret_val != -1) {
-            // resource found!
-            resource_indexes.emplace(resource_string, ret_val);
-            resource_existance.emplace(resource_string, true);
-            return true;
-
-        } else {
-            // resource not found
-            resource_existance.emplace(resource_string, false);
-            return false;
-        }
-    }
-
     std::vector<uint8_t> zip_folder_accessor::read_resource(const fs::path &resource_path) {
-        std::string resource_string = resource_path.string();
-        if(!does_resource_exist(resource_path)) {
+        auto full_path = our_folder / resource_path;
+
+        std::string resource_string = full_path.string();
+        if(!does_resource_exist_internal(full_path)) {
             logger::instance.log(log_level::DEBUG, "Resource at path " + resource_string + " does not exist");
             throw resource_not_found_error(resource_string);
         }
@@ -154,6 +135,27 @@ namespace nova {
 
                 continue;
             }
+        }
+    }
+
+    bool zip_folder_accessor::does_resource_exist_internal(const fs::path & resource_path) {
+        const auto resource_string = resource_path.string();
+        const auto existence_maybe = does_resource_exist_in_map(resource_string);
+        if(existence_maybe) {
+            return existence_maybe.value();
+        }
+
+        int32_t ret_val = mz_zip_reader_locate_file(&zip_archive, resource_string.c_str(), "", 0);
+        if(ret_val != -1) {
+            // resource found!
+            resource_indexes.emplace(resource_string, ret_val);
+            resource_existance.emplace(resource_string, true);
+            return true;
+
+        } else {
+            // resource not found
+            resource_existance.emplace(resource_string, false);
+            return false;
         }
     }
 

@@ -28,14 +28,11 @@ namespace nova {
         explicit zip_folder_accessor(const fs::path &folder);
         ~zip_folder_accessor();
 
-        bool does_resource_exist(const fs::path& resource_path) override;
-
         std::vector<uint8_t> read_resource(const fs::path &resource_path) override;
 
         std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override;
 
     private:
-
         /*!
          * \brief Map from filename to its index in the zip folder. Miniz seems to like indexes
          */
@@ -46,6 +43,8 @@ namespace nova {
         file_tree_node* files = nullptr;
 
         void build_file_tree();
+
+        bool does_resource_exist_internal(const fs::path& resource_path) override;
     };
 
     /*!
