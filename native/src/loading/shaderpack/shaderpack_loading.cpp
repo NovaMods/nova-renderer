@@ -42,25 +42,29 @@ namespace nova {
         
         ftl::AtomicCounter loading_tasks_remaining(&task_scheduler);
 
+        // TODO: Make this not synchronous when the fibers are working reasonably
+
         // Load resource definitions
         auto *load_resources_data = new load_data_args<shaderpack_resources_data>{folder_access, shaderpack_resources_data()};
         ftl::Task load_dynamic_resource_task = { load_dynamic_resources_file, load_resources_data };
         task_scheduler.AddTask(load_dynamic_resource_task, &loading_tasks_remaining);
+        task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
         // Load pass definitions
         auto *load_passes_data = new load_data_args<std::vector<render_pass_data>>{folder_access, std::vector<render_pass_data>()};
         ftl::Task load_passes_task = { load_passes_file, load_passes_data };
         task_scheduler.AddTask(load_passes_task, &loading_tasks_remaining);
+        task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
         // Load pipeline definitions
         auto *load_pipelines_data = new load_data_args<std::vector<pipeline_data>>{folder_access, std::vector<pipeline_data>()};
         ftl::Task load_pipelines_task = { load_pipeline_files, load_pipelines_data };
         task_scheduler.AddTask(load_pipelines_task, &loading_tasks_remaining);
+        task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
         auto *load_materials_data = new load_data_args<std::vector<material_data>>{ folder_access, std::vector<material_data>() };
         ftl::Task load_materials_task = { load_material_files, load_materials_data };
         task_scheduler.AddTask(load_materials_task, &loading_tasks_remaining);
-
         task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
         shaderpack_data data;
@@ -100,7 +104,7 @@ namespace nova {
                 path_to_shaderpack.replace_extension(".zip");
                 folder_access = new zip_folder_accessor(path_to_shaderpack);
 
-            } else if(std::experimental::filesystem::v1::exists(path_to_shaderpack)) {
+            } else if(fs::exists(path_to_shaderpack)) {
                 folder_access = new regular_folder_accessor(path_to_shaderpack);
             }
         }
@@ -141,6 +145,9 @@ namespace nova {
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's passes.json: " << err.what();
         }
+
+        // Don't check for a resources_not_found exception because a shaderpack _needs_ a passes.json and if the 
+        // shaderpack doesn't provide one then it can't be loaded
     }
 
     struct load_pipeline_data {
@@ -156,14 +163,15 @@ namespace nova {
         std::vector<fs::path> potential_pipeline_files;
         try {
             potential_pipeline_files = args->folder_access->get_all_items_in_folder("materials");
-        } catch (const filesystem_exception &exception) {
+        } catch (filesystem_exception &exception) {
+            NOVA_LOG(ERROR) << "Materials fodler does not exist: " << exception.what();
             return;
         }
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
         std::vector<pipeline_data> pipeline_data_promises;
-        pipeline_data_promises.resize(potential_pipeline_files.size());
+        pipeline_data_promises.reserve(potential_pipeline_files.size());
 
         uint32_t num_pipelines = 0;
 
@@ -190,7 +198,7 @@ namespace nova {
 
         task_scheduler->WaitForCounter(&pipeline_load_tasks_remaining, 0);
 
-        args->output.resize(num_pipelines);
+        args->output.reserve(num_pipelines);
         for(uint32_t i = 0; i < num_pipelines; i++) {
             args->output.push_back(pipeline_data_promises.at(i));
         }
@@ -224,7 +232,9 @@ namespace nova {
         std::vector<fs::path> potential_material_files;
         try {
             potential_material_files = args->folder_access->get_all_items_in_folder("materials");
-        } catch (const filesystem_exception &exception) {
+
+        } catch (filesystem_exception &exception) {
+            NOVA_LOG(ERROR) << "Materials folder does not exist: " << exception.what();
             return;
         }
 

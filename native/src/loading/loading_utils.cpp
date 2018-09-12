@@ -7,8 +7,7 @@
 
 namespace nova {
     bool is_zip_folder(const fs::path& path_to_folder) {
-        fs::path zip_path = path_to_folder;
-        zip_path.replace_extension(".zip");
-        return !fs::exists(zip_path);
+        auto extension = path_to_folder.extension();
+        return path_to_folder.has_extension() && extension == ".zip";
     }
 }
