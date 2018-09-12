@@ -20,7 +20,7 @@ namespace nova {
     void load_pipeline_files(ftl::TaskScheduler *task_scheduler, void *arg);
     void load_single_pipeline(ftl::TaskScheduler *task_scheduler, void *arg);
     void load_material_files(ftl::TaskScheduler *task_scheduler, void *arg);
-    void load_single_material(ftl::TaskScheduler *task_scheduler, void *arg);
+    void load_single_material(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, uint32_t out_idx, std::vector<material_data>& output);
 
     template<typename DataType>
     struct load_data_args {
@@ -245,17 +245,7 @@ namespace nova {
 
         for(const fs::path& potential_file : potential_material_files) {
             if(potential_file.extension() == ".mat") {
-                // Material file!
-                load_material_data data_for_loading_material;
-                data_for_loading_material.folder_access = args->folder_access;
-                data_for_loading_material.material_path = &potential_file;
-                data_for_loading_material.out_idx = num_materials;
-                data_for_loading_material.output = &loaded_material_data;
-
-                datas.emplace_back(data_for_loading_material);
-
-                ftl::Task load_single_material_task = { load_single_material, &datas[num_materials] };
-                task_scheduler->AddTask(load_single_material_task, &material_load_tasks_remaining);
+                task_scheduler->AddTask(&material_load_tasks_remaining, load_single_material, args->folder_access, potential_file, num_materials, loaded_material_data);
 
                 num_materials++;
             }
@@ -269,17 +259,16 @@ namespace nova {
         }
     }
 
-    void load_single_material(ftl::TaskScheduler * task_scheduler, void * arg) {
-        auto* args = static_cast<load_material_data*>(arg);
-        auto material_bytes = args->folder_access->read_text_file(*args->material_path);
+    void load_single_material(ftl::TaskScheduler * task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, uint32_t out_idx, std::vector<material_data>& output) {
+        const auto material_bytes = folder_access->read_text_file(material_path);
         try {
             auto json_material = nlohmann::json::parse(material_bytes);
             auto material = json_material.get<material_data>();
-            material.name = args->material_path->stem().string();
-            args->output->emplace(args->output->begin() + args->out_idx, material);
+            material.name = material_path.stem().string();
+            output[out_idx] = material;
 
         } catch(nlohmann::json::parse_error& err) {
-            NOVA_LOG(ERROR) << "Could not parse material file " << args->material_path->string() << ": " << err.what();
+            NOVA_LOG(ERROR) << "Could not parse material file " << material_path.string() << ": " << err.what();
         }
     }
 }
