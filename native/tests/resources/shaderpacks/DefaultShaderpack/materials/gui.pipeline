@@ -1,20 +1,24 @@
 {
-    "gui": {
-        "pass": "Forward",
-        "depthFunc": "LessEqual",
-
-        "states": [
-            "DisableAlphaWrite"
-        ],
-
-        "vertexShader": "shaders/gui",
-        "fragmentShader": "shaders/gui",
-
-        "vertexFields": [
-            {"field": "Position"},
-            {"field": "UV0"},
-            {"field": "Color"},
-            {"field": "VirtualTextureId"}
-        ]
-    }
+    "name": "gui",
+    "pass": "Forward",
+    "depthFunc": "LessEqual",
+    "states": [
+        "DisableAlphaWrite"
+    ],
+    "vertexShader": "shaders/gui",
+    "fragmentShader": "shaders/gui",
+    "vertexFields": [
+        {
+            "field": "Position"
+        },
+        {
+            "field": "UV0"
+        },
+        {
+            "field": "Color"
+        },
+        {
+            "field": "VirtualTextureId"
+        }
+    ]
 }

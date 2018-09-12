@@ -45,39 +45,33 @@ namespace nova {
         // TODO: Make this not synchronous when the fibers are working reasonably
 
         // Load resource definitions
-        auto *load_resources_data = new load_data_args<shaderpack_resources_data>{folder_access, shaderpack_resources_data()};
-        ftl::Task load_dynamic_resource_task = { load_dynamic_resources_file, load_resources_data };
+        auto load_resources_data = load_data_args<shaderpack_resources_data>{folder_access, shaderpack_resources_data()};
+        const ftl::Task load_dynamic_resource_task = { load_dynamic_resources_file, &load_resources_data };
         task_scheduler.AddTask(load_dynamic_resource_task, &loading_tasks_remaining);
-        task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
         // Load pass definitions
-        auto *load_passes_data = new load_data_args<std::vector<render_pass_data>>{folder_access, std::vector<render_pass_data>()};
-        ftl::Task load_passes_task = { load_passes_file, load_passes_data };
+        auto load_passes_data = load_data_args<std::vector<render_pass_data>>{folder_access, std::vector<render_pass_data>()};
+        const ftl::Task load_passes_task = { load_passes_file, &load_passes_data };
         task_scheduler.AddTask(load_passes_task, &loading_tasks_remaining);
-        task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
         // Load pipeline definitions
-        auto *load_pipelines_data = new load_data_args<std::vector<pipeline_data>>{folder_access, std::vector<pipeline_data>()};
-        ftl::Task load_pipelines_task = { load_pipeline_files, load_pipelines_data };
+        auto load_pipelines_data = load_data_args<std::vector<pipeline_data>>{folder_access, std::vector<pipeline_data>()};
+        const ftl::Task load_pipelines_task = { load_pipeline_files, &load_pipelines_data };
         task_scheduler.AddTask(load_pipelines_task, &loading_tasks_remaining);
-        task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
-        auto *load_materials_data = new load_data_args<std::vector<material_data>>{ folder_access, std::vector<material_data>() };
-        ftl::Task load_materials_task = { load_material_files, load_materials_data };
+        auto load_materials_data = load_data_args<std::vector<material_data>>{ folder_access, std::vector<material_data>() };
+        const ftl::Task load_materials_task = { load_material_files, &load_materials_data };
         task_scheduler.AddTask(load_materials_task, &loading_tasks_remaining);
+
         task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
         shaderpack_data data;
-        data.pipelines = load_pipelines_data->output;
-        data.passes = load_passes_data->output;
-        data.resources = load_resources_data->output;
-        data.materials = load_materials_data->output;
+        data.pipelines = load_pipelines_data.output;
+        data.passes = load_passes_data.output;
+        data.resources = load_resources_data.output;
+        data.materials = load_materials_data.output;
 
         delete folder_access;
-        delete load_resources_data;
-        delete load_passes_data;
-        delete load_pipelines_data;
-        delete load_materials_data;
 
         return data;
     }
@@ -281,6 +275,7 @@ namespace nova {
         try {
             auto json_material = nlohmann::json::parse(material_bytes);
             auto material = json_material.get<material_data>();
+            material.name = args->material_path->stem().string();
             args->output->emplace(args->output->begin() + args->out_idx, material);
 
         } catch(nlohmann::json::parse_error& err) {

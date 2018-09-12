@@ -1,19 +1,19 @@
 {
-    "Final": {
-        "pass": "Final",
-
-        "states": [
-            "DisableAlphaWrite",
-            "DisableDepthWrite",
-            "DisableDepthTest"
-        ],
-
-        "vertexShader": "shaders/textured_unlit",
-        "fragmentShader": "shaders/image_passthrough",
-
-        "vertexFields": [
-            {"field": "Position"},
-            {"field": "UV0"}
-        ]
-    }
+    "name": "Final",
+    "pass": "Final",
+    "states": [
+        "DisableAlphaWrite",
+        "DisableDepthWrite",
+        "DisableDepthTest"
+    ],
+    "vertexShader": "shaders/textured_unlit",
+    "fragmentShader": "shaders/image_passthrough",
+    "vertexFields": [
+        {
+            "field": "Position"
+        },
+        {
+            "field": "UV0"
+        }
+    ]
 }

@@ -12,10 +12,16 @@ namespace nova {
             : folder_accessor_base(folder) {}
     
     std::string regular_folder_accessor::read_text_file(const fs::path &resource_path) {
-        fs::path full_resource_path = our_folder / resource_path;
+        fs::path full_resource_path;
+        if(has_root(resource_path, our_folder)) {
+            full_resource_path = resource_path;
+
+        } else {
+            full_resource_path = our_folder / resource_path;
+        }
 
         if(!does_resource_exist_internal(full_resource_path)) {
-            logger::instance.log(log_level::DEBUG, "Resource at path " + full_resource_path.string() + " does not exist");
+            NOVA_LOG(DEBUG) << "Resource at path " << full_resource_path.string() << " does not exist";
             throw resource_not_found_error(full_resource_path.string());
         }
 
@@ -26,7 +32,7 @@ namespace nova {
             const auto resource_string = full_resource_path.string();
 
             resource_existance.emplace(resource_string, false);
-            logger::instance.log(log_level::DEBUG, "Could not load resource at path " + resource_string);
+            NOVA_LOG(DEBUG) << "Could not load resource at path " << resource_string;
             throw resource_not_found_error(resource_string);
         }
 
@@ -46,12 +52,12 @@ namespace nova {
     }
 
     std::vector<fs::path> regular_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
-        fs::path full_path = our_folder / folder;
+        const fs::path full_path = our_folder / folder;
         std::vector<fs::path> paths = {};
 
         try {
-            fs::directory_iterator folder_iter(full_path);
-            for(const fs::directory_entry& entry : folder_iter) {
+            fs::directory_iterator folder_itr(full_path);
+            for(const fs::directory_entry& entry : folder_itr) {
                 NOVA_LOG(INFO) << entry.path().string();
                 paths.push_back(entry.path());
             }
@@ -64,9 +70,9 @@ namespace nova {
 
     bool regular_folder_accessor::does_resource_exist_internal(const fs::path & resource_path) {
         const auto resource_string = resource_path.string();
-        const auto existance_maybe = does_resource_exist_in_map(resource_string);
-        if(existance_maybe) {
-            return existance_maybe.value();
+        const auto existence_maybe = does_resource_exist_in_map(resource_string);
+        if(existence_maybe) {
+            return existence_maybe.value();
         }
 
         if(fs::exists(resource_path)) {

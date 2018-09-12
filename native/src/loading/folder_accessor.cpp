@@ -22,5 +22,27 @@ namespace nova {
         return {};
     }
 
+    bool has_root(const fs::path& path, const fs::path& root) {
+        if(std::distance(path.begin(), path.end()) < std::distance(root.begin(), root.end())) {
+            // The path is shorter than the root path - the root can't possible be contained in the path
+            return false;
+        }
+
+        auto path_itr = path.begin();
+        auto root_itr = root.begin();
+        while(root_itr != root.end()) {
+            // Don't need to check path_itr - The if statement at the beginning ensures that the path has more members
+            // than the root
+            if(*root_itr != *path_itr) {
+                return false;
+            }
+
+            ++root_itr;
+            ++path_itr;
+        }
+
+        return true;
+    }
+
     resource_not_found_error::resource_not_found_error(const std::string &resource_name) : runtime_error(resource_name) {}
 }

@@ -1,24 +1,38 @@
 {
-    "gbuffers_terrain": {
-        "pass": "Forward",
-
-        "states": [
-            "DisableAlphaWrite"
-        ],
-
-        "vertexShader": "shaders/gbuffers_terrain",
-        "fragmentShader": "shaders/gbuffers_terrain",
-
-        "vertexFields": [
-            {"field": "Position"},
-            {"field": "Color"},
-            {"field": "UV0"},
-            {"field": "UV1"},
-            {"field": "Normal"},
-            {"field": "Tangent"},
-            {"field": "MidTexCoord"},
-            {"field": "VirtualTextureId"},
-            {"field": "McEntityId"}
-        ]
-    }
+    "name": "gbuffers_terrain",
+    "pass": "Forward",
+    "states": [
+        "DisableAlphaWrite"
+    ],
+    "vertexShader": "shaders/gbuffers_terrain",
+    "fragmentShader": "shaders/gbuffers_terrain",
+    "vertexFields": [
+        {
+            "field": "Position"
+        },
+        {
+            "field": "Color"
+        },
+        {
+            "field": "UV0"
+        },
+        {
+            "field": "UV1"
+        },
+        {
+            "field": "Normal"
+        },
+        {
+            "field": "Tangent"
+        },
+        {
+            "field": "MidTexCoord"
+        },
+        {
+            "field": "VirtualTextureId"
+        },
+        {
+            "field": "McEntityId"
+        }
+    ]
 }

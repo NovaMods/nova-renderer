@@ -51,6 +51,7 @@ namespace nova {
     }
 
     void from_json(const nlohmann::json& j, pipeline_data& pipeline) {
+        pipeline.name                       = get_json_value<std::string>(j, "name").value();
         pipeline.parent_name                = get_json_value<std::string>(j, "parent").value_or("");
         pipeline.pass                       = get_json_value<std::string>(j, "pass").value();
         pipeline.defines                    = get_json_array<std::string>(j, "defines");
@@ -80,7 +81,6 @@ namespace nova {
     }
 
     void from_json(const nlohmann::json& j, material_data& mat) {
-        mat.name            = get_json_value<std::string>(j, "name").value();
         mat.passes          = get_json_array<material_pass>(j, "passes");
         mat.geometry_filter = get_json_value<std::string>(j, "filter").value();
     }

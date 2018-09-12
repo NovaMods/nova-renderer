@@ -97,6 +97,14 @@ namespace nova {
          */
         virtual bool does_resource_exist_internal(const fs::path& resource_path) = 0;
     };
+
+    /*!
+     * \brief Checks if the given path has the other path as its root
+     * \param path The path to check if it has the root
+     * \param root The potential root path of the file
+     * \return True if `path` has `root` as its root, false otherwise
+     */
+    bool has_root(const fs::path& path, const fs::path& root);
 }
 
 #endif //NOVA_RENDERER_RESOURCEPACK_H
