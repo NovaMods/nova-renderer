@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 project(nova-renderer)
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+    message(STATUS "Enabling CCache at ${CCACHE_PROGRAM}")
+endif()
+
 option(NOVA_TEST "Enable tests." OFF)
 option(ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as well as in the CMake files" OFF)
 if(ENABLE_EXPERIMENTAL)
@@ -48,9 +54,6 @@ set(FTL_BUILD_TESTS OFF CACHE BOOL "Disable FTL tests" FORCE)
 set(FTL_BUILD_BENCHMARKS OFF CACHE BOOL "Disable FTL benchmarks" FORCE)
 add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
 
-# set(CPPTOML_BUILD_EXAMPLES OFF CACHE BOOL "Disable TOML tests" FORCE)
-# add_subdirectory(${3RD_PARTY_DIR}/cpptoml)
-
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
 if(UNIX)
@@ -60,7 +63,7 @@ if(UNIX)
     add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
     add_subdirectory(${3RD_PARTY_DIR}/glslang)
 
-	set(SHADERC_SKIP_TESTS OFF CACHE BOOL "Shaderc tests go away" FORCE)
+    set(SHADERC_SKIP_TESTS TRUE CACHE BOOL "Shaderc tests go away" FORCE)
     add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 endif()
 
@@ -87,7 +90,7 @@ if(UNIX)
 endif()
 
 ########################
-# Add Nova soruce code #
+# Add Nova source code #
 ########################
 
 set(NOVA_SOURCE
@@ -123,7 +126,7 @@ set(NOVA_SOURCE
         src/loading/shaderpack/json_interop.hpp
         src/loading/utils.hpp
         src/util/utils.hpp
-        src/util/utils.cpp)
+        src/util/utils.cpp src/render_objects/render_object.cpp src/render_objects/render_object.hpp)
 
 if(UNIX)
     set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)

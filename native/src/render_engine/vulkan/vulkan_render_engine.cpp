@@ -13,7 +13,7 @@
 #include <vk_mem_alloc.h>
 
 namespace nova {
-    vulkan_render_engine::vulkan_render_engine(const settings &settings) : render_engine(settings) {
+    vulkan_render_engine::vulkan_render_engine(const nova_settings &settings) : render_engine(settings) {
         settings_options options = settings.get_options();
         const auto& version = options.api.vulkan.appliction_version;
 
