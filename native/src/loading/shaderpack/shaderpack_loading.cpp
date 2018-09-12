@@ -13,9 +13,6 @@
 #include <ftl/atomic_counter.h>
 
 namespace nova {
-    fs::path SHADERPACK_ROOT("shaderpacks");
-    fs::path BEDROCK_SHADERPACK_ROOT("resourcepacks");
-
     folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name);
 
     void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, void *arg);
@@ -78,7 +75,7 @@ namespace nova {
 
     folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name) {
         folder_accessor_base* folder_access = nullptr;
-        fs::path path_to_shaderpack = SHADERPACK_ROOT / shaderpack_name;
+        fs::path path_to_shaderpack =  shaderpack_name;
 
         // Where is the shaderpack, and what kind of folder is it in?
         if(is_zip_folder(path_to_shaderpack)) {
@@ -91,7 +88,7 @@ namespace nova {
             folder_access = new regular_folder_accessor(path_to_shaderpack);
 
         } else {
-            path_to_shaderpack = BEDROCK_SHADERPACK_ROOT / shaderpack_name;
+            path_to_shaderpack = shaderpack_name;
 
             if(is_zip_folder(path_to_shaderpack)) {
                 // zip folder in the resourcepacks folder

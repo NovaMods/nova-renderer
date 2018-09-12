@@ -12,6 +12,7 @@
 #include <functional>
 #include <unordered_map>
 #include <sstream>
+#include <mutex>
 
 #ifdef ERROR
     #undef ERROR
@@ -36,24 +37,26 @@ namespace nova {
     public:
         static logger instance;
 
+        explicit logger() = default;
+
         void add_log_handler(log_level level, const std::function<void(std::string)> &log_handler);
 
-        void log(log_level level, const std::string &msg) const;
+        void log(log_level level, const std::string &msg);
 
         __log_stream log(log_level level) const;
 
     private:
         std::unordered_map<log_level, std::function<void(std::string)>> log_handlers;
+        std::mutex log_lock;
     };
 
     // Allow stream logging
     class __log_stream : public std::stringstream {
     private:
-        const logger _logger;
         const log_level level;
 
     public:
-        __log_stream(logger logger, log_level level);
+        __log_stream(log_level level);
 
         __log_stream(__log_stream&& other) noexcept;
 
