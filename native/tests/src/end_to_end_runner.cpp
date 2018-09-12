@@ -19,7 +19,7 @@ namespace nova {
         nova::nova_settings settings;
         auto renderer = nova::nova_renderer::initialize(settings);
 
-        renderer->load_shaderpack("DefaultShaderpack");
+        renderer->load_shaderpack("../tests/resources/shaderpacks/DefaultShaderpack");
 
         std::shared_ptr<nova::iwindow> window = renderer->get_engine()->get_window();
 

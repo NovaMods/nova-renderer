@@ -18,7 +18,23 @@ namespace nova {
     class resource_not_found_error : public std::runtime_error {
     public:
         explicit resource_not_found_error(const std::string &resource_name);
+    };
 
+    class filesystem_exception : public std::exception { // Convert fs::filesystem_error into a nova class
+    private:
+        const std::string message;
+        const std::error_code error_code;
+
+    public:
+        explicit filesystem_exception(const fs::filesystem_error &error) : message(error.what()), error_code(error.code()){}
+
+        const char *what() const noexcept override {
+            return message.c_str();
+        }
+
+        const std::error_code code() const noexcept {
+            return error_code;
+        }
     };
 
     /*!
@@ -35,6 +51,9 @@ namespace nova {
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
         explicit folder_accessor_base(const fs::path& folder);
+
+        // Else freeing could cause errors
+        virtual ~folder_accessor_base() = default;
 
         /*!
          * \brief Checks if the given resource exists

@@ -48,11 +48,14 @@ namespace nova {
     std::vector<fs::path> regular_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
         std::vector<fs::path> paths = {};
 
-        fs::directory_iterator folder_iter(folder);
-
-        for(const fs::directory_entry& entry : folder_iter) {
-            NOVA_LOG(INFO) << entry.path().string();
-            paths.push_back(entry.path());
+        try {
+            fs::directory_iterator folder_iter(folder);
+            for(const fs::directory_entry& entry : folder_iter) {
+                NOVA_LOG(INFO) << entry.path().string();
+                paths.push_back(entry.path());
+            }
+        } catch (const fs::filesystem_error &error) {
+            throw filesystem_exception(error);
         }
 
         return paths;

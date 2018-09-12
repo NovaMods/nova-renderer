@@ -12,21 +12,22 @@ namespace nova {
         log_handlers.emplace(level, log_handler);
     }
 
-    void logger::log(const log_level level, const std::string &msg) const {
+    void logger::log(const log_level level, const std::string &msg) {
         if(log_handlers.at(level)) {
+            std::lock_guard<std::mutex> lock(log_lock);
             log_handlers.at(level)(msg);
         }
     }
 
-    __log_stream::__log_stream(logger logger, log_level level) : _logger(std::move(logger)), level(level) {}
+    __log_stream::__log_stream(log_level level) : level(level) {}
 
     __log_stream::__log_stream(__log_stream &&other) noexcept : level(other.level), std::stringstream(std::move(other)) {}
 
     __log_stream::~__log_stream() {
-        _logger.log(level, str());
+        logger::instance.log(level, str());
     }
 
     __log_stream logger::log(log_level level) const {
-        return __log_stream(*this, level);
+        return __log_stream(level);
     }
 }
