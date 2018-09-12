@@ -55,8 +55,8 @@ namespace nova {
         pipeline.parent_name                = get_json_value<std::string>(j, "parent").value_or("");
         pipeline.pass                       = get_json_value<std::string>(j, "pass").value();
         pipeline.defines                    = get_json_array<std::string>(j, "defines");
-        pipeline.states                     = get_json_array<state_enum>(j, "states", state_enum::from_string);
-        pipeline.vertex_fields              = get_json_array<vertex_field_enum>(j, "vertexFields", vertex_field_enum::from_string);
+        pipeline.states                     = get_json_array<state_enum>(j, "states", state_enum_from_string);
+        pipeline.vertex_fields              = get_json_array<vertex_field_enum>(j, "vertexFields", vertex_field_enum_from_string);
         pipeline.front_face                 = get_json_value<stencil_op_state>(j, "frontFace");
         pipeline.back_face                  = get_json_value<stencil_op_state>(j, "backFace");
         pipeline.fallback                   = get_json_value<std::string>(j, "fallback").value_or("");

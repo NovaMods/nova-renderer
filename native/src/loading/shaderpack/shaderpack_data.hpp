@@ -15,7 +15,6 @@
 
 #include <optional>
 
-#include "../../util/smart_enum.hpp"
 #include <nlohmann/json.hpp>
 
 namespace nova {
@@ -25,59 +24,59 @@ namespace nova {
     };
 
     /*!
-     * \brief Controlls the rasterizer's state
+     * \brief Controls the rasterizer's state
      */
-    SMART_ENUM(state_enum,
-    /*!
-     * \brief Enable blending for this material state
-     */
-            Blending,
+    enum class state_enum {
+        /*!
+         * \brief Enable blending for this material state
+         */
+        Blending,
 
-    /*!
-     * \brief Render backfaces and cull frontfaces
-     */
-            InvertCuling,
+        /*!
+         * \brief Render backfaces and cull frontfaces
+         */
+        InvertCulling,
 
-    /*!
-     * \brief Don't cull backfaces or frontfaces
-     */
-            DisableCulling,
+        /*!
+         * \brief Don't cull backfaces or frontfaces
+         */
+        DisableCulling,
 
-    /*!
-     * \brief Don't write to the depth buffer
-     */
-            DisableDepthWrite,
+        /*!
+         * \brief Don't write to the depth buffer
+         */
+        DisableDepthWrite,
 
-    /*!
-     * \brief Don't perform a depth test
-     */
-            DisableDepthTest,
+        /*!
+         * \brief Don't perform a depth test
+         */
+        DisableDepthTest,
 
-    /*!
-     * \brief Perform the stencil test
-     */
-            EnableStencilTest,
+        /*!
+         * \brief Perform the stencil test
+         */
+        EnableStencilTest,
 
-    /*!
-     * \brief Write to the stencil buffer
-     */
-            StencilWrite,
+        /*!
+         * \brief Write to the stencil buffer
+         */
+        StencilWrite,
 
-    /*!
-     * \brief Don't write to the color buffer
-     */
-            DisableColorWrite,
+        /*!
+         * \brief Don't write to the color buffer
+         */
+        DisableColorWrite,
 
-    /*!
-     * \brief Enable alpha to coverage
-     */
-            EnableAlphaToCoverage,
+        /*!
+         * \brief Enable alpha to coverage
+         */
+        EnableAlphaToCoverage,
 
-    /*!
-     * \brief Don't write alpha
-     */
-            DisableAlphaWrite,
-    )
+        /*!
+         * \brief Don't write alpha
+         */
+        DisableAlphaWrite,
+    };
 
     enum class texture_filter_enum {
         TexelAA,
@@ -93,84 +92,84 @@ namespace nova {
     /*!
      * \brief The kind of data in a vertex attribute
      */
-    SMART_ENUM(vertex_field_enum,
-    /*!
-     * \brief The vertex position
-     *
-     * 12 bytes
-     */
-            Position,
+    enum class vertex_field_enum {
+        /*!
+         * \brief The vertex position
+         *
+         * 12 bytes
+         */
+        Position,
 
-    /*!
-     * \brief The vertex color
-     *
-     * 4 bytes
-     */
-            Color,
+        /*!
+         * \brief The vertex color
+         *
+         * 4 bytes
+         */
+        Color,
 
-    /*!
-     * \brief The UV coordinate of this object
-     *
-     * Except not really, because Nova's virtual textures means that the UVs for a block or entity or whatever
-     * could change on the fly, so this is kinda more of a preprocessor define that replaces the UV with a lookup
-     * in the UV table
-     *
-     * 8 bytes (might try 4)
-     */
-            UV0,
+        /*!
+         * \brief The UV coordinate of this object
+         *
+         * Except not really, because Nova's virtual textures means that the UVs for a block or entity or whatever
+         * could change on the fly, so this is kinda more of a preprocessor define that replaces the UV with a lookup
+         * in the UV table
+         *
+         * 8 bytes (might try 4)
+         */
+        UV0,
 
-    /*!
-     * \brief The UV coordinate in the lightmap texture
-     *
-     * This is a real UV and it doesn't change for no good reason
-     *
-     * 2 bytes
-     */
-            UV1,
+        /*!
+         * \brief The UV coordinate in the lightmap texture
+         *
+         * This is a real UV and it doesn't change for no good reason
+         *
+         * 2 bytes
+         */
+        UV1,
 
-    /*!
-     * \brief Vertex normal
-     *
-     * 12 bytes
-     */
-            Normal,
+        /*!
+         * \brief Vertex normal
+         *
+         * 12 bytes
+         */
+        Normal,
 
-    /*!
-     * \brief Vertex tangents
-     *
-     * 12 bytes
-     */
-            Tangent,
+        /*!
+         * \brief Vertex tangents
+         *
+         * 12 bytes
+         */
+        Tangent,
 
-    /*!
-     * \brief The texture coordinate of the middle of the quad
-     *
-     * 8 bytes
-     */
-            MidTexCoord,
+        /*!
+         * \brief The texture coordinate of the middle of the quad
+         *
+         * 8 bytes
+         */
+        MidTexCoord,
 
-    /*!
-     * \brief A uint32_t that's a unique identifier for the texture that this vertex uses
-     *
-     * This is generated at runtime by Nova, so it may change a lot depending on what resourcepacks are loaded and
-     * if they use CTM or random detail textures or whatever
-     *
-     * 4 bytes
-     */
-            VirtualTextureId,
+        /*!
+         * \brief A uint32_t that's a unique identifier for the texture that this vertex uses
+         *
+         * This is generated at runtime by Nova, so it may change a lot depending on what resourcepacks are loaded and
+         * if they use CTM or random detail textures or whatever
+         *
+         * 4 bytes
+         */
+        VirtualTextureId,
 
-    /*!
-     * \brief Some information about the current block/entity/whatever
-     *
-     * 12 bytes
-     */
-            McEntityId,
+        /*!
+         * \brief Some information about the current block/entity/whatever
+         *
+         * 12 bytes
+         */
+        McEntityId,
 
-    /*!
-     * \brief Useful if you want to skip a vertex attribute
-     */
-            Empty,
-    )
+        /*!
+         * \brief Useful if you want to skip a vertex attribute
+         */
+        Empty,
+    };
 
     /*!
      * \brief Where the texture comes from
@@ -596,24 +595,17 @@ namespace nova {
 
 
     pixel_format_enum pixel_format_enum_from_string(const std::string& str);
-
     texture_dimension_type_enum texture_dimension_type_enum_from_string(const std::string& str);
-
-    texture_filter_enum texture_filter_enum_from_string(const std::string& str);
-
+    texture_filter_enum texture_filter_enum_from_string(const std::string& str);       
     wrap_mode_enum wrap_mode_enum_from_string(const std::string& str);
-
     stencil_op_enum stencil_op_enum_from_string(const std::string& str);
-
     compare_op_enum compare_op_enum_from_string(const std::string& str);
-
     msaa_support_enum msaa_support_enum_from_string(const std::string& str);
-
     primitive_topology_enum primitive_topology_enum_from_string(const std::string& str);
-
     blend_factor_enum blend_factor_enum_from_string(const std::string& str);
-
     render_queue_enum render_queue_enum_from_string(const std::string& str);
+    state_enum state_enum_from_string(const std::string& str);
+    vertex_field_enum vertex_field_enum_from_string(const std::string& str);
 
     std::string to_string(const pixel_format_enum val);
     std::string to_string(const texture_dimension_type_enum val);
@@ -625,6 +617,8 @@ namespace nova {
     std::string to_string(const primitive_topology_enum val);
     std::string to_string(const blend_factor_enum val);
     std::string to_string(const render_queue_enum val);
+    std::string to_string(const state_enum val);
+    std::string to_string(const vertex_field_enum val);
 }
 
 #endif //NOVA_RENDERER_SHADERPACK_DATA_HPP

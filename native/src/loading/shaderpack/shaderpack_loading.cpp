@@ -15,11 +15,11 @@
 namespace nova {
     folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name);
 
-    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, void *arg);
-    void load_passes_file(ftl::TaskScheduler *task_scheduler, void *arg);
-    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, void *arg);
-    void load_single_pipeline(ftl::TaskScheduler *task_scheduler, void *arg);
-    void load_material_files(ftl::TaskScheduler *task_scheduler, void *arg);
+    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, shaderpack_resources_data& output);
+    void load_passes_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, std::vector<render_pass_data>& output);
+    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, std::vector<pipeline_data>& output);
+    void load_single_pipeline(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, const fs::path& pipeline_path, uint32_t out_idx, std::vector<pipeline_data>& output);
+    void load_material_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, std::vector<material_data>& output);
     void load_single_material(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, uint32_t out_idx, std::vector<material_data>& output);
 
     template<typename DataType>
@@ -42,35 +42,25 @@ namespace nova {
         
         ftl::AtomicCounter loading_tasks_remaining(&task_scheduler);
 
-        // TODO: Make this not synchronous when the fibers are working reasonably
+        shaderpack_data data;
 
         // Load resource definitions
-        auto load_resources_data = load_data_args<shaderpack_resources_data>{folder_access, shaderpack_resources_data()};
-        const ftl::Task load_dynamic_resource_task = { load_dynamic_resources_file, &load_resources_data };
-        task_scheduler.AddTask(load_dynamic_resource_task, &loading_tasks_remaining);
+        shaderpack_resources_data loaded_resources;
+        task_scheduler.AddTask(&loading_tasks_remaining, load_dynamic_resources_file, folder_access, data.resources);
 
         // Load pass definitions
-        auto load_passes_data = load_data_args<std::vector<render_pass_data>>{folder_access, std::vector<render_pass_data>()};
-        const ftl::Task load_passes_task = { load_passes_file, &load_passes_data };
-        task_scheduler.AddTask(load_passes_task, &loading_tasks_remaining);
+        std::vector<render_pass_data> loaded_passes;
+        task_scheduler.AddTask(&loading_tasks_remaining, load_passes_file, folder_access, data.passes);
 
         // Load pipeline definitions
-        auto load_pipelines_data = load_data_args<std::vector<pipeline_data>>{folder_access, std::vector<pipeline_data>()};
-        const ftl::Task load_pipelines_task = { load_pipeline_files, &load_pipelines_data };
-        task_scheduler.AddTask(load_pipelines_task, &loading_tasks_remaining);
+        std::vector<pipeline_data> loaded_pipelines;
+        task_scheduler.AddTask(&loading_tasks_remaining, load_pipeline_files, folder_access, data.pipelines);
 
-        auto load_materials_data = load_data_args<std::vector<material_data>>{ folder_access, std::vector<material_data>() };
-        const ftl::Task load_materials_task = { load_material_files, &load_materials_data };
-        task_scheduler.AddTask(load_materials_task, &loading_tasks_remaining);
+        std::vector<material_data> loaded_materials;
+        task_scheduler.AddTask(&loading_tasks_remaining, load_material_files, folder_access, data.materials);
 
         task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
-
-        shaderpack_data data;
-        data.pipelines = load_pipelines_data.output;
-        data.passes = load_passes_data.output;
-        data.resources = load_resources_data.output;
-        data.materials = load_materials_data.output;
-
+        
         delete folder_access;
 
         return data;
@@ -110,14 +100,13 @@ namespace nova {
         return folder_access;
     }
 
-    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, void *arg) {
-        auto* args = static_cast<load_data_args<shaderpack_resources_data>*>(arg);
+    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, shaderpack_resources_data& output) {
+        std::string resources_string = folder_access->read_text_file("resources.json");
         try {
-            std::string resources_string = args->folder_access->read_text_file("resources.json");
             auto json_resource = nlohmann::json::parse(resources_string.c_str());
             auto resources = json_resource.get<shaderpack_resources_data>();
-            args->output.samplers = std::move(resources.samplers);
-            args->output.textures = std::move(resources.textures);
+            output.samplers = std::move(resources.samplers);
+            output.textures = std::move(resources.textures);
 
         } catch(resource_not_found_error&) {
             // No resources defined.. I guess they think they don't need any?
@@ -128,13 +117,12 @@ namespace nova {
         }
     }
 
-    void load_passes_file(ftl::TaskScheduler *task_scheduler, void *arg) {
-        auto* args = static_cast<load_data_args<std::vector<render_pass_data>>*>(arg);
-        auto passes_bytes = args->folder_access->read_text_file("passes.json");
+    void load_passes_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, std::vector<render_pass_data>& output) {
+        const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
             auto json_passes = nlohmann::json::parse(passes_bytes);
             auto passes = json_passes.get<std::vector<render_pass_data>>();
-            args->output = std::move(passes);
+            output = std::move(passes);
 
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's passes.json: " << err.what();
@@ -144,88 +132,47 @@ namespace nova {
         // shaderpack doesn't provide one then it can't be loaded
     }
 
-    struct load_pipeline_data {
-        folder_accessor_base* folder_access;
-        size_t out_idx;
-        std::vector<pipeline_data>* output;
-        const fs::path* pipeline_path;
-    };
-
-    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, void *arg) {
-        auto* args = static_cast<load_data_args<std::vector<pipeline_data>>*>(arg);
-
+    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, std::vector<pipeline_data>& output) {
         std::vector<fs::path> potential_pipeline_files;
         try {
-            potential_pipeline_files = args->folder_access->get_all_items_in_folder("materials");
+            potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
         } catch (filesystem_exception &exception) {
-            NOVA_LOG(ERROR) << "Materials fodler does not exist: " << exception.what();
+            NOVA_LOG(ERROR) << "Materials folder does not exist: " << exception.what();
             return;
         }
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        std::vector<pipeline_data> pipeline_data_promises;
-        pipeline_data_promises.reserve(potential_pipeline_files.size());
-
+        output.resize(potential_pipeline_files.size());
         uint32_t num_pipelines = 0;
-
         ftl::AtomicCounter pipeline_load_tasks_remaining(task_scheduler);
-
-        std::vector<load_pipeline_data> datas;
 
         for(const fs::path& potential_file : potential_pipeline_files) {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
-                load_pipeline_data data_for_loading_pipeline{};
-                data_for_loading_pipeline.folder_access = args->folder_access;
-                data_for_loading_pipeline.out_idx = num_pipelines;
-                data_for_loading_pipeline.output = &pipeline_data_promises;
-                data_for_loading_pipeline.pipeline_path = &potential_file;
-
-                datas.emplace_back(data_for_loading_pipeline);
-
-                ftl::Task load_single_pipeline_task = { load_single_pipeline, &datas[num_pipelines] };
-                task_scheduler->AddTask(load_single_pipeline_task, &pipeline_load_tasks_remaining);
+                task_scheduler->AddTask(&pipeline_load_tasks_remaining, load_single_pipeline, folder_access, potential_file, num_pipelines, output);
                 num_pipelines++;
             }
         }
 
         task_scheduler->WaitForCounter(&pipeline_load_tasks_remaining, 0);
-
-        args->output.reserve(num_pipelines);
-        for(uint32_t i = 0; i < num_pipelines; i++) {
-            args->output.push_back(pipeline_data_promises.at(i));
-        }
     }
 
-    void load_single_pipeline(ftl::TaskScheduler *task_scheduler, void *arg) {
-        auto* args = static_cast<load_pipeline_data*>(arg);
-        auto pipeline_bytes = args->folder_access->read_text_file(*args->pipeline_path);
+    void load_single_pipeline(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, const fs::path& pipeline_path, uint32_t out_idx, std::vector<pipeline_data>& output) {
+        const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
         try {
             auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
-            auto pipeline = json_pipeline.get<pipeline_data>();
-
-            args->output->emplace(args->output->begin() + args->out_idx, pipeline);
+            output[out_idx] = json_pipeline.get<pipeline_data>();
 
         } catch(nlohmann::json::parse_error& err) {
-            NOVA_LOG(ERROR) << "Could not parse pipeline file " << args->pipeline_path->string() << ": " << err.what();
+            NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
         }
     }
 
-    struct load_material_data {
-        folder_accessor_base* folder_access;
-        size_t out_idx;
-        std::vector<material_data>* output;
-        const fs::path* material_path;
-    };
-
-    void load_material_files(ftl::TaskScheduler * task_scheduler, void * arg) {
-        auto* args = static_cast<load_data_args<std::vector<material_data>>*>(arg);
-
-
+    void load_material_files(ftl::TaskScheduler * task_scheduler, folder_accessor_base* folder_access, std::vector<material_data>& output) {
         std::vector<fs::path> potential_material_files;
         try {
-            potential_material_files = args->folder_access->get_all_items_in_folder("materials");
+            potential_material_files = folder_access->get_all_items_in_folder("materials");
 
         } catch (filesystem_exception &exception) {
             NOVA_LOG(ERROR) << "Materials folder does not exist: " << exception.what();
@@ -234,29 +181,19 @@ namespace nova {
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        std::vector<material_data> loaded_material_data;
-        loaded_material_data.resize(potential_material_files.size());
-        size_t cur_promise = 0;
+        output.resize(potential_material_files.size());
         ftl::AtomicCounter material_load_tasks_remaining(task_scheduler);
 
         uint32_t num_materials = 0;
 
-        std::vector<load_material_data> datas;
-
         for(const fs::path& potential_file : potential_material_files) {
             if(potential_file.extension() == ".mat") {
-                task_scheduler->AddTask(&material_load_tasks_remaining, load_single_material, args->folder_access, potential_file, num_materials, loaded_material_data);
-
+                task_scheduler->AddTask(&material_load_tasks_remaining, load_single_material, folder_access, potential_file, num_materials, output);
                 num_materials++;
             }
         }
 
-        task_scheduler->WaitForCounter(&material_load_tasks_remaining, 0);
-
-        args->output.resize(num_materials);
-        for(uint32_t i = 0; i < num_materials; i++) {
-            args->output.push_back(loaded_material_data.at(i));
-        }
+        task_scheduler->WaitForCounter(&material_load_tasks_remaining, 0);\
     }
 
     void load_single_material(ftl::TaskScheduler * task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, uint32_t out_idx, std::vector<material_data>& output) {

@@ -232,6 +232,80 @@ namespace nova {
         }
     }
 
+    state_enum state_enum_from_string(const std::string& str) {
+        if(str == "Blending") {
+            return state_enum::Blending;
+
+        } else if(str == "InvertCulling") {
+            return state_enum::InvertCulling;
+
+        } else if(str == "DisableCulling") {
+            return state_enum::DisableCulling;
+
+        } else if(str == "DisableDepthWrite") {
+            return state_enum::DisableDepthWrite;
+
+        } else if(str == "DisableDepthTest") {
+            return state_enum::DisableDepthTest;
+
+        } else if(str == "EnableStencilTest") {
+            return state_enum::EnableStencilTest;
+
+        } else if(str == "StencilWrite") {
+            return state_enum::StencilWrite;
+
+        } else if(str == "DisableColorWrite") {
+            return state_enum::DisableColorWrite;
+
+        } else if(str == "EnableAlphaToCoverage") {
+            return state_enum::EnableAlphaToCoverage;
+
+        } else if(str == "DisableAlphaWrite") {
+            return state_enum::DisableAlphaWrite;
+
+        } else {
+            NOVA_LOG(ERROR) << "Unsupported state enum " << str;
+            throw parse_failed("Unsupported state enum " + str);
+        }
+    }
+
+    vertex_field_enum vertex_field_enum_from_string(const std::string& str){
+        if(str == "Position") {
+            return vertex_field_enum::Position;
+
+        } else if(str == "Color") {
+            return vertex_field_enum::Color;
+
+        } else if(str == "UV0") {
+            return vertex_field_enum::UV0;
+
+        } else if(str == "UV1") {
+            return vertex_field_enum::UV1;
+
+        } else if(str == "Normal") {
+            return vertex_field_enum::Normal;
+
+        } else if(str == "Tangent") {
+            return vertex_field_enum::Tangent;
+
+        } else if(str == "MidTexCoord") {
+            return vertex_field_enum::MidTexCoord;
+
+        } else if(str == "VirtualTextureId") {
+            return vertex_field_enum::VirtualTextureId;
+
+        } else if(str == "McEntityId") {
+            return vertex_field_enum::McEntityId;
+
+        } else if(str == "Empty") {
+            return vertex_field_enum::Empty;
+
+        } else {
+            NOVA_LOG(ERROR) << "Unsupported vertex field " << str;
+            throw parse_failed("Unsupported vertex field " + str);            
+        }
+    }
+
     std::string to_string(const pixel_format_enum val) {
         switch(val) {
             case pixel_format_enum::RGB8:
@@ -259,7 +333,7 @@ namespace nova {
                 return "DepthStencil";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
     std::string to_string(const texture_dimension_type_enum val) {
@@ -271,7 +345,7 @@ namespace nova {
                 return "Absolute";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
     std::string to_string(const texture_filter_enum val) {
@@ -286,7 +360,7 @@ namespace nova {
                 return "Point";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
     std::string to_string(const wrap_mode_enum val) {
@@ -298,7 +372,7 @@ namespace nova {
                 return "Clamp";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
     std::string to_string(const stencil_op_enum val) {
@@ -328,7 +402,7 @@ namespace nova {
                 return "Invert";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
     std::string to_string(const compare_op_enum val) {
@@ -358,7 +432,7 @@ namespace nova {
                 return "Always";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
     std::string to_string(const msaa_support_enum val) {
@@ -373,7 +447,7 @@ namespace nova {
                 return "None";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
     std::string to_string(const primitive_topology_enum val) {
@@ -385,7 +459,7 @@ namespace nova {
                 return "Lines";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
     std::string to_string(const blend_factor_enum val) {
@@ -421,7 +495,7 @@ namespace nova {
                 return "OneMinusDstAlpha";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
     std::string to_string(const render_queue_enum val) {
@@ -436,7 +510,79 @@ namespace nova {
                 return "Cutout";
         }
 
-        return "Unkonwn value";
+        return "Unknown value";
     }
 
+    std::string to_string(const state_enum val) {
+        switch(val) {
+            case state_enum::Blending:
+                return "Blending";
+
+            case state_enum::InvertCulling:
+                return "InvertCulling";
+
+            case state_enum::DisableCulling:
+                return "DisableCulling";
+
+            case state_enum::DisableDepthWrite:
+                return "DisableDepthWrite";
+
+            case state_enum::DisableDepthTest:
+                return "DisableDepthTest";
+
+            case state_enum::EnableStencilTest:
+                return "EnableStencilTest";
+
+            case state_enum::StencilWrite:
+                return "StencilWrite";
+
+            case state_enum::DisableColorWrite:
+                return "DisableColorWrite";
+
+            case state_enum::EnableAlphaToCoverage:
+                return "EnableAlphaToCoverage";
+
+            case state_enum::DisableAlphaWrite:
+                return "DisableAlphaWrite";
+        }
+
+        return "Unknown value";
+    }
+
+    std::string to_string(const vertex_field_enum val) {
+        switch(val)
+        {
+            case vertex_field_enum::Position:
+                return "Position";
+
+            case vertex_field_enum::Color:
+                return "Color";
+
+            case vertex_field_enum::UV0:
+                return "UV0";
+
+            case vertex_field_enum::UV1:
+                return "UV1";
+
+            case vertex_field_enum::Normal:
+                return "Normal";
+
+            case vertex_field_enum::Tangent:
+                return "Tangent";
+
+            case vertex_field_enum::MidTexCoord:
+                return "MidTexCoord";
+
+            case vertex_field_enum::VirtualTextureId:
+                return "VirtualTextureId";
+
+            case vertex_field_enum::McEntityId:
+                return "McEntityId";
+
+            case vertex_field_enum::Empty:
+                return "Empty";
+        }
+
+        return "Unknown value";
+    }
 }

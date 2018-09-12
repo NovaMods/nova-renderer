@@ -104,7 +104,6 @@ set(NOVA_SOURCE
         src/loading/regular_folder_accessor.cpp
         src/loading/zip_folder_accessor.cpp
 
-        src/util/smart_enum.hpp
         src/loading/shaderpack/shaderpack_loading.cpp
         src/loading/shaderpack/shaderpack_loading.hpp
         src/loading/loading_utils.cpp

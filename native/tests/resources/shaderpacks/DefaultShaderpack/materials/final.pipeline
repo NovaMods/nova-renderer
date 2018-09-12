@@ -9,11 +9,7 @@
     "vertexShader": "shaders/textured_unlit",
     "fragmentShader": "shaders/image_passthrough",
     "vertexFields": [
-        {
-            "field": "Position"
-        },
-        {
-            "field": "UV0"
-        }
+        "Position",
+        "UV0"
     ]
 }

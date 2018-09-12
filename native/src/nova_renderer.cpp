@@ -38,8 +38,8 @@ namespace nova {
     }
 
     void nova_renderer::execute_frame() {
-        task_scheduler.Run(200, [](ftl::TaskScheduler* task_scheduler, void* arg) {
-            reinterpret_cast<render_engine*>(arg)->render_frame();
+        task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [](ftl::TaskScheduler* task_scheduler, render_engine* engine) {
+            engine->render_frame();
         },
         engine.get());
     }
@@ -50,14 +50,12 @@ namespace nova {
             std::promise<shaderpack_data> output;
         };
 
-        auto data = load_shaderpack_args{ shaderpack_name, std::promise<shaderpack_data>() };
+        shaderpack_data loaded_data;
 
-        task_scheduler.Run(200, [](ftl::TaskScheduler* task_scheduler, void* arg) {
-            auto* args = reinterpret_cast<load_shaderpack_args*>(arg);
-
-            const auto shaderpack_data = load_shaderpack_data(fs::path(args->shaderpack_name), *task_scheduler);
-            args->output.set_value(shaderpack_data);
-        }, &data);
+        task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [](ftl::TaskScheduler* task_scheduler, const std::string& shaderpack_name, shaderpack_data& output) {
+            const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
+            output = std::move(shaderpack_data);
+        }, shaderpack_name, loaded_data);
     }
 
     render_engine* nova_renderer::get_engine() {

@@ -8,7 +8,6 @@
 #ifndef NOVA_RENDERER_RESOURCE_BARRIER_HPP
 #define NOVA_RENDERER_RESOURCE_BARRIER_HPP
 
-#include "../util/smart_enum.hpp"
 #include <memory>
 
 namespace nova {

@@ -8,7 +8,6 @@
 
 #include <functional>
 #include <glm/glm.hpp>
-#include "../util/smart_enum.hpp"
 #include "resource_barrier.hpp"
 #include "../util/macros.hpp"
 
