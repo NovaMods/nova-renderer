@@ -174,22 +174,22 @@ namespace nova {
     /*!
      * \brief Where the texture comes from
      */
-    SMART_ENUM(texture_location_enum,
-            /*!
-             * \brief The texture is written to by a shader
-             */
-            Dynamic,
+    enum class texture_location_enum {
+        /*!
+         * \brief The texture is written to by a shader
+         */
+        Dynamic,
 
-            /*!
-             * \brief The texture is loaded from the textures/ folder in the current shaderpack
-             */
-            InUserPackage,
+        /*!
+         * \brief The texture is loaded from the textures/ folder in the current shaderpack
+         */
+        InUserPackage,
 
-            /*!
-             * \brief The texture is provided by Nova or by Minecraft
-             */
-            InAppPackage
-    )
+        /*!
+         * \brief The texture is provided by Nova or by Minecraft
+         */
+        InAppPackage
+    };
 
     enum class msaa_support_enum {
         MSAA,
