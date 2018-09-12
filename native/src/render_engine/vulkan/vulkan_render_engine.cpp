@@ -682,7 +682,6 @@ namespace nova {
     }
 
     void vulkan_render_engine::destroy_vertex_buffer() {
-        vmaFreeMemory(memory_allocator, vertex_buffer_allocation);
         vmaDestroyBuffer(memory_allocator, vertex_buffer, vertex_buffer_allocation);
     }
 
