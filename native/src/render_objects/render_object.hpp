@@ -19,7 +19,7 @@ namespace nova {
         std::shared_ptr<render_object> get_parent() const;
         const std::list<std::shared_ptr<render_object>> &get_children() const;
 
-        constexpr render_object &pos(const glm::vec3 &pos);
+        render_object &pos(const glm::vec3 &pos);
 
     private:
         std::weak_ptr<render_object> parent;

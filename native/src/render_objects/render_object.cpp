@@ -27,7 +27,7 @@ namespace nova {
         return children;
     }
 
-    constexpr render_object &render_object::pos(const glm::vec3 &pos) {
+    render_object &render_object::pos(const glm::vec3 &pos) {
         _pos = pos;
         return *this;
     }

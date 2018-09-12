@@ -48,7 +48,7 @@ namespace nova {
             return json_node.get<ValType>();
         }
 
-        NOVA_LOG(WARN) << key << " not found - defaulting to " << std::to_string(default_value);
+        NOVA_LOG(DEBUG) << key << " not found - using a default value";
         return default_value;
     }
 
@@ -91,7 +91,7 @@ namespace nova {
         }
 
         using namespace std;
-        NOVA_LOG(WARN) << key << " not found - defaulting to " << to_string(default_value);
+        NOVA_LOG(DEBUG) << key << " not found - defaulting to " << to_string(default_value);
         return default_value;
     }
 

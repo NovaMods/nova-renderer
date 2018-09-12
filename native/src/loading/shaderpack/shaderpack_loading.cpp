@@ -58,11 +58,11 @@ namespace nova {
         // Load pipeline definitions
         auto load_pipelines_data = load_data_args<std::vector<pipeline_data>>{folder_access, std::vector<pipeline_data>()};
         ftl::Task load_pipelines_task = { load_pipeline_files, &load_pipelines_data };
-        task_scheduler.AddTask(load_pipelines_task, &loading_tasks_remaining);
+        //task_scheduler.AddTask(load_pipelines_task, &loading_tasks_remaining);
 
         auto load_materials_data = load_data_args<std::vector<material_data>>{ folder_access, std::vector<material_data>() };
         ftl::Task load_materials_task = { load_material_files, &load_materials_data };
-        task_scheduler.AddTask(load_materials_task, &loading_tasks_remaining);
+        //task_scheduler.AddTask(load_materials_task, &loading_tasks_remaining);
 
         task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
@@ -111,25 +111,34 @@ namespace nova {
     }
 
     void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, void *arg) {
-        auto* args = reinterpret_cast<load_data_args<shaderpack_resources_data>*>(arg);
+        auto* args = static_cast<load_data_args<shaderpack_resources_data>*>(arg);
         try {
-            auto resources_bytes = args->folder_access->read_resource("resources.json");
-            auto json_resource = nlohmann::json::parse(resources_bytes);
+            std::string resources_string = args->folder_access->read_text_file("resources.json");
+            auto json_resource = nlohmann::json::parse(resources_string.c_str());
             auto resources = json_resource.get<shaderpack_resources_data>();
-            args->output = resources;
+            args->output.samplers = std::move(resources.samplers);
+            args->output.textures = std::move(resources.textures);
 
         } catch(resource_not_found_error&) {
             // No resources defined.. I guess they think they don't need any?
             NOVA_LOG(DEBUG) << "No resources file found for shaderpack";
+
+        } catch(nlohmann::json::parse_error& err) {
+            NOVA_LOG(ERROR) << "Could not parse your shaderpack's resources.json: " << err.what();
         }
     }
 
     void load_passes_file(ftl::TaskScheduler *task_scheduler, void *arg) {
-        auto* args = reinterpret_cast<load_data_args<std::vector<render_pass_data>>*>(arg);
-        auto passes_bytes = args->folder_access->read_resource("passes.json");
-        auto json_passes = nlohmann::json::parse(passes_bytes);
-        auto passes = json_passes.get<std::vector<render_pass_data>>();
-        args->output = passes;
+        auto* args = static_cast<load_data_args<std::vector<render_pass_data>>*>(arg);
+        auto passes_bytes = args->folder_access->read_text_file("passes.json");
+        try {
+            auto json_passes = nlohmann::json::parse(passes_bytes);
+            auto passes = json_passes.get<std::vector<render_pass_data>>();
+            args->output = std::move(passes);
+
+        } catch(nlohmann::json::parse_error& err) {
+            NOVA_LOG(ERROR) << "Could not parse your shaderpack's passes.json: " << err.what();
+        }
     }
 
     struct load_pipeline_data {
@@ -153,6 +162,8 @@ namespace nova {
 
         ftl::AtomicCounter pipeline_load_tasks_remaining(task_scheduler);
 
+        std::vector<load_pipeline_data> datas;
+
         for(const fs::path& potential_file : potential_pipeline_files) {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
@@ -162,7 +173,9 @@ namespace nova {
                 data_for_loading_pipeline.output = &pipeline_data_promises;
                 data_for_loading_pipeline.pipeline_path = &potential_file;
 
-                ftl::Task load_single_pipeline_task = { load_single_pipeline, &data_for_loading_pipeline };
+                datas.emplace_back(data_for_loading_pipeline);
+
+                ftl::Task load_single_pipeline_task = { load_single_pipeline, &datas[num_pipelines] };
                 task_scheduler->AddTask(load_single_pipeline_task, &pipeline_load_tasks_remaining);
                 num_pipelines++;
             }
@@ -170,21 +183,24 @@ namespace nova {
 
         task_scheduler->WaitForCounter(&pipeline_load_tasks_remaining, 0);
 
-        std::vector<pipeline_data> pipelines;
-        pipelines.resize(num_pipelines);
+        args->output.resize(num_pipelines);
         for(uint32_t i = 0; i < num_pipelines; i++) {
-            pipelines.push_back(pipeline_data_promises.at(i));
+            args->output.push_back(pipeline_data_promises.at(i));
         }
-        args->output = pipelines;
     }
 
     void load_single_pipeline(ftl::TaskScheduler *task_scheduler, void *arg) {
         auto* args = static_cast<load_pipeline_data*>(arg);
-        auto pipeline_bytes = args->folder_access->read_resource(*args->pipeline_path);
-        auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
-        auto pipeline = json_pipeline.get<pipeline_data>();
-        
-        args->output->emplace(args->output->begin() + args->out_idx, pipeline);
+        auto pipeline_bytes = args->folder_access->read_text_file(*args->pipeline_path);
+        try {
+            auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
+            auto pipeline = json_pipeline.get<pipeline_data>();
+
+            args->output->emplace(args->output->begin() + args->out_idx, pipeline);
+
+        } catch(nlohmann::json::parse_error& err) {
+            NOVA_LOG(ERROR) << "Could not parse pipeline file " << args->pipeline_path->string() << ": " << err.what();
+        }
     }
 
     struct load_material_data {
@@ -195,7 +211,7 @@ namespace nova {
     };
 
     void load_material_files(ftl::TaskScheduler * task_scheduler, void * arg) {
-        auto* args = reinterpret_cast<load_data_args<std::vector<material_data>>*>(arg);
+        auto* args = static_cast<load_data_args<std::vector<material_data>>*>(arg);
 
         auto potential_material_files = args->folder_access->get_all_items_in_folder("materials");
 
@@ -208,6 +224,8 @@ namespace nova {
 
         uint32_t num_materials = 0;
 
+        std::vector<load_material_data> datas;
+
         for(const fs::path& potential_file : potential_material_files) {
             if(potential_file.extension() == ".mat") {
                 // Material file!
@@ -216,7 +234,10 @@ namespace nova {
                 data_for_loading_material.material_path = &potential_file;
                 data_for_loading_material.out_idx = num_materials;
                 data_for_loading_material.output = &loaded_material_data;
-                ftl::Task load_single_material_task = { load_single_material, &data_for_loading_material };
+
+                datas.emplace_back(data_for_loading_material);
+
+                ftl::Task load_single_material_task = { load_single_material, &datas[num_materials] };
                 task_scheduler->AddTask(load_single_material_task, &material_load_tasks_remaining);
 
                 num_materials++;
@@ -225,19 +246,22 @@ namespace nova {
 
         task_scheduler->WaitForCounter(&material_load_tasks_remaining, 0);
 
-        std::vector<material_data> materials;
-        materials.resize(num_materials);
+        args->output.resize(num_materials);
         for(uint32_t i = 0; i < num_materials; i++) {
-            materials.push_back(loaded_material_data.at(i));
+            args->output.push_back(loaded_material_data.at(i));
         }
-        args->output = materials;
     }
 
     void load_single_material(ftl::TaskScheduler * task_scheduler, void * arg) {
-        auto* args = reinterpret_cast<load_material_data*>(arg);
-        auto material_bytes = args->folder_access->read_resource(*args->material_path);
-        auto json_material = nlohmann::json::parse(material_bytes);
-        auto material = json_material.get<material_data>();
-        args->output->emplace(args->output->begin() + args->out_idx, material);
+        auto* args = static_cast<load_material_data*>(arg);
+        auto material_bytes = args->folder_access->read_text_file(*args->material_path);
+        try {
+            auto json_material = nlohmann::json::parse(material_bytes);
+            auto material = json_material.get<material_data>();
+            args->output->emplace(args->output->begin() + args->out_idx, material);
+
+        } catch(nlohmann::json::parse_error& err) {
+            NOVA_LOG(ERROR) << "Could not parse material file " << args->material_path->string() << ": " << err.what();
+        }
     }
 }

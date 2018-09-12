@@ -24,7 +24,7 @@ namespace nova {
         delete files;
     }
 
-    std::vector<uint8_t> zip_folder_accessor::read_resource(const fs::path &resource_path) {
+    std::string zip_folder_accessor::read_text_file(const fs::path &resource_path) {
         auto full_path = our_folder / resource_path;
 
         std::string resource_string = full_path.string();
@@ -45,7 +45,7 @@ namespace nova {
             throw resource_not_found_error(resource_string);
         }
 
-        std::vector<uint8_t> resource_buffer;
+        std::vector<char> resource_buffer;
         resource_buffer.reserve(static_cast<uint64_t>(file_stat.m_uncomp_size));
 
         mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive, file_idx, resource_buffer.data(), resource_buffer.size(), 0);
@@ -57,7 +57,7 @@ namespace nova {
             throw resource_not_found_error(resource_string);
         }
 
-        return resource_buffer;
+        return std::string{ resource_buffer.data() };
     }
 
     std::vector<fs::path> zip_folder_accessor::get_all_items_in_folder(const fs::path &folder) {

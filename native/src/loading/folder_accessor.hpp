@@ -49,7 +49,7 @@ namespace nova {
          * \param resource_path The path to the resource to load, relative to this resourcepack's root
          * \return All the bytes in the loaded resource
          */
-        virtual std::vector<uint8_t> read_resource(const fs::path& resource_path) = 0;
+        virtual std::string read_text_file(const fs::path& resource_path) = 0;
 
         /*!
          * \brief Retrieves the paths of all the items in the specified folder

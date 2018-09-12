@@ -11,7 +11,7 @@ namespace nova {
     regular_folder_accessor::regular_folder_accessor(const std::experimental::filesystem::path &folder)
             : folder_accessor_base(folder) {}
     
-    std::vector<uint8_t> regular_folder_accessor::read_resource(const fs::path &resource_path) {
+    std::string regular_folder_accessor::read_text_file(const fs::path &resource_path) {
         fs::path full_resource_path = our_folder / resource_path;
 
         if(!does_resource_exist_internal(full_resource_path)) {
@@ -19,7 +19,7 @@ namespace nova {
             throw resource_not_found_error(full_resource_path.string());
         }
 
-        std::vector<uint8_t> buf;
+        //std::vector<uint8_t> buf;
         std::ifstream resource_stream(full_resource_path.string());
         if(!resource_stream.good()) {
             // Error reading this file - it can't be read again in the future
@@ -30,21 +30,29 @@ namespace nova {
             throw resource_not_found_error(resource_string);
         }
 
-        while(!resource_stream.eof()) {
-            uint8_t val;
-            resource_stream >> val;
-            buf.push_back(val);
+        std::string buf;
+        std::string file_string;
+
+        while(getline(resource_stream, buf)) {
+            //uint8_t val;
+            //resource_stream >> val;
+            //buf.push_back(val);
+            file_string += buf;
         }
 
-        return buf;
+        //buf.push_back(0);
+
+        return file_string;
     }
 
     std::vector<fs::path> regular_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
         std::vector<fs::path> paths = {};
 
-        for(const fs::path& p : folder) {
-            NOVA_LOG(INFO) << p.string();
-            paths.push_back(p);
+        fs::directory_iterator folder_iter(folder);
+
+        for(const fs::directory_entry& entry : folder_iter) {
+            NOVA_LOG(INFO) << entry.path().string();
+            paths.push_back(entry.path());
         }
 
         return paths;

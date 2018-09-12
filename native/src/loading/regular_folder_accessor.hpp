@@ -16,7 +16,7 @@ namespace nova {
     public:
         explicit regular_folder_accessor(const fs::path &folder);
 
-        std::vector<uint8_t> read_resource(const fs::path &resource_path) override;
+        std::string read_text_file(const fs::path &resource_path) override;
 
         std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override;
 

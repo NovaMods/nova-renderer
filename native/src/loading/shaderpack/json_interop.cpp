@@ -31,9 +31,9 @@ namespace nova {
 
     void from_json(const nlohmann::json& j, render_pass_data& pass) {
         pass.dependencies       = get_json_array<std::string>(j, "dependencies");
-        pass.texture_inputs     = get_json_value<input_textures>(j, "textureInputs", {});
+        pass.texture_inputs     = get_json_value<input_textures>(j, "textureInputs", input_textures{});
         pass.texture_outputs    = get_json_array<texture_attachment>(j, "textureOutputs");
-        pass.depth_texture      = get_json_value<texture_attachment>(j, "depthTexture", {});
+        pass.depth_texture      = get_json_value<texture_attachment>(j, "depthTexture", texture_attachment{});
     }
 
     void from_json(const nlohmann::json& j, input_textures& inputs) {
