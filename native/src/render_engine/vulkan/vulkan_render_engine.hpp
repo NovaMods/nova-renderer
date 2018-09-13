@@ -66,8 +66,8 @@ namespace nova {
         VkCommandPool command_pool;
         std::vector<VkCommandBuffer> command_buffers;
 
-        VkShaderModule vert_shader;
-        VkShaderModule frag_shader;
+        VkShaderModule vert_shader = VK_NULL_HANDLE;
+        VkShaderModule frag_shader = VK_NULL_HANDLE;
 
         std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
@@ -94,6 +94,8 @@ namespace nova {
         void destroy_image_views();
         void create_render_pass();
         void destroy_render_pass();
+        void create_shader_modules();
+        void destroy_shader_modules();
         void create_graphics_pipeline();
         void destroy_graphics_pipeline();
         void create_framebuffers();
@@ -112,9 +114,6 @@ namespace nova {
 
         void cleanup_dynamic(); // Cleanup objects that have been created on the fly
 
-        void DEBUG_create_shaders();
-        void DEBUG_destroy_shaders();
-        std::vector<char> DEBUG_read_file(std::string path);
         void DEBUG_record_command_buffers();
 
         const uint MAX_FRAMES_IN_QUEUE = 3;

@@ -76,8 +76,8 @@ namespace nova {
         destroy_command_pool();
         destroy_framebuffers();
         destroy_graphics_pipeline();
+        destroy_shader_modules();
         destroy_render_pass();
-        DEBUG_destroy_shaders();
         destroy_image_views();
         destroy_swapchain();
         destroy_memory_allocator();
@@ -103,8 +103,8 @@ namespace nova {
         create_memory_allocator();
         create_swapchain();
         create_image_views();
-        DEBUG_create_shaders();
         create_render_pass();
+        create_shader_modules();
         create_graphics_pipeline();
         create_framebuffers();
         create_command_pool();
@@ -428,26 +428,52 @@ namespace nova {
         NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
     }
 
+    void vulkan_render_engine::create_shader_modules() {
+        VkShaderModuleCreateInfo vert_module_create_info;
+        vert_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        vert_module_create_info.pNext = nullptr;
+        vert_module_create_info.flags = 0;
+        vert_module_create_info.codeSize = 0;
+        vert_module_create_info.pCode = nullptr;
+        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &vert_module_create_info, nullptr, &vert_shader), render_engine_initialization_exception);
+
+        VkShaderModuleCreateInfo frag_module_create_info;
+        frag_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        frag_module_create_info.pNext = nullptr;
+        frag_module_create_info.flags = 0;
+        frag_module_create_info.codeSize = 0;
+        frag_module_create_info.pCode = nullptr;
+        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &frag_module_create_info, nullptr, &vert_shader), render_engine_initialization_exception);
+    }
+
     void vulkan_render_engine::create_graphics_pipeline() {
-        VkPipelineShaderStageCreateInfo vert_shader_create_info;
-        vert_shader_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vert_shader_create_info.pNext = nullptr;
-        vert_shader_create_info.flags = 0;
-        vert_shader_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vert_shader_create_info.module = vert_shader;
-        vert_shader_create_info.pName = "main";
-        vert_shader_create_info.pSpecializationInfo = nullptr;
+        std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
 
-        VkPipelineShaderStageCreateInfo frag_shader_create_info;
-        frag_shader_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        frag_shader_create_info.pNext = nullptr;
-        frag_shader_create_info.flags = 0;
-        frag_shader_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        frag_shader_create_info.module = frag_shader;
-        frag_shader_create_info.pName = "main";
-        frag_shader_create_info.pSpecializationInfo = nullptr;
+        if(vert_shader != VK_NULL_HANDLE) {
+            VkPipelineShaderStageCreateInfo vert_shader_create_info;
+            vert_shader_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            vert_shader_create_info.pNext = nullptr;
+            vert_shader_create_info.flags = 0;
+            vert_shader_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+            vert_shader_create_info.module = vert_shader;
+            vert_shader_create_info.pName = "main";
+            vert_shader_create_info.pSpecializationInfo = nullptr;
 
-        VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_create_info, frag_shader_create_info};
+            shader_stages.push_back(vert_shader_create_info);
+        }
+
+        if(frag_shader != VK_NULL_HANDLE) {
+            VkPipelineShaderStageCreateInfo frag_shader_create_info;
+            frag_shader_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            frag_shader_create_info.pNext = nullptr;
+            frag_shader_create_info.flags = 0;
+            frag_shader_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+            frag_shader_create_info.module = frag_shader;
+            frag_shader_create_info.pName = "main";
+            frag_shader_create_info.pSpecializationInfo = nullptr;
+
+            shader_stages.push_back(frag_shader_create_info);
+        }
 
         auto vertex_binding_description = vulkan::vulkan_vertex::get_binding_description();
         auto vertex_attribute_description = vulkan::vulkan_vertex::get_attribute_description();
@@ -554,8 +580,8 @@ namespace nova {
         pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipeline_create_info.pNext = nullptr;
         pipeline_create_info.flags = 0;
-        pipeline_create_info.stageCount = 2;
-        pipeline_create_info.pStages = shader_stages;
+        pipeline_create_info.stageCount = static_cast<uint32_t>(shader_stages.size());
+        pipeline_create_info.pStages = shader_stages.data();
         pipeline_create_info.pVertexInputState = &vertext_input_state_create_info;
         pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
         pipeline_create_info.pViewportState = &viewport_state_create_info;
@@ -700,6 +726,11 @@ namespace nova {
         vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
     }
 
+    void vulkan_render_engine::destroy_shader_modules() {
+        vkDestroyShaderModule(device, frag_shader, nullptr);
+        vkDestroyShaderModule(device, vert_shader, nullptr);
+    }
+
     void vulkan_render_engine::destroy_render_pass() {
         vkDestroyRenderPass(device, render_pass, nullptr);
     }
@@ -724,48 +755,6 @@ namespace nova {
 
     void vulkan_render_engine::destroy_device() {
         vkDestroyDevice(device, nullptr);
-    }
-
-    void vulkan_render_engine::DEBUG_create_shaders() {
-        auto vert_shader_code = DEBUG_read_file("../tests/src/vert.spv");
-        auto frag_shader_code = DEBUG_read_file("../tests/src/frag.spv");
-
-        VkShaderModuleCreateInfo vert_shader_create_info;
-        vert_shader_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        vert_shader_create_info.pNext = nullptr;
-        vert_shader_create_info.flags = 0;
-        vert_shader_create_info.codeSize = vert_shader_code.size();
-        vert_shader_create_info.pCode = reinterpret_cast<const uint32_t *>(vert_shader_code.data());
-        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &vert_shader_create_info, nullptr, &vert_shader), render_engine_initialization_exception);
-
-        VkShaderModuleCreateInfo frag_shader_create_info;
-        frag_shader_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        frag_shader_create_info.pNext = nullptr;
-        frag_shader_create_info.flags = 0;
-        frag_shader_create_info.codeSize = frag_shader_code.size();
-        frag_shader_create_info.pCode = reinterpret_cast<const uint32_t *>(frag_shader_code.data());
-        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &frag_shader_create_info, nullptr, &frag_shader), render_engine_initialization_exception);
-    }
-
-    void vulkan_render_engine::DEBUG_destroy_shaders() {
-        vkDestroyShaderModule(device, frag_shader, nullptr);
-        vkDestroyShaderModule(device, vert_shader, nullptr);
-    }
-
-    std::vector<char> vulkan_render_engine::DEBUG_read_file(std::string path) {
-        std::ifstream file(path, std::ios::ate | std::ios::binary);
-
-        if(!file.is_open()) {
-            throw std::runtime_error("Failed to open file");
-        }
-
-        auto file_size = static_cast<size_t>(file.tellg());
-        std::vector<char> content(file_size);
-        file.seekg(0);
-        file.read(content.data(), file_size);
-        file.close();
-
-        return content;
     }
 
     void vulkan_render_engine::DEBUG_record_command_buffers() {
@@ -861,6 +850,7 @@ namespace nova {
         destroy_framebuffers();
         vkFreeCommandBuffers(device, command_pool, static_cast<uint32_t>(command_buffers.size()), command_buffers.data());
         destroy_graphics_pipeline();
+        destroy_shader_modules(); // TODO: This might not be needed, a window resize doesn't require a shader reload
         destroy_render_pass();
         destroy_image_views();
         destroy_swapchain();
@@ -868,6 +858,7 @@ namespace nova {
         create_swapchain();
         create_image_views();
         create_render_pass();
+        create_shader_modules(); // TODO: This might not be needed, a window resize doesn't require a shader reload
         create_graphics_pipeline();
         create_framebuffers();
         create_command_buffers();
