@@ -20,6 +20,10 @@
     #include "../../src/render_engine/vulkan/vulkan_render_engine.hpp"
 #endif
 
+#ifndef CMAKE_DEFINED_RESOURCES_PREFIX
+    #define CMAKE_DEFINED_RESOURCES_PREFIX ""
+#endif
+
 #include "../../src/util/logger.hpp"
 
 #ifndef TEST_SETUP_LOGGER // Tests are weird... this is done to avoid some linking errors
