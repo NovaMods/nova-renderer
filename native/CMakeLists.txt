@@ -52,7 +52,7 @@ add_subdirectory(${3RD_PARTY_DIR}/json)
 
 set(FTL_BUILD_TESTS OFF CACHE BOOL "Disable FTL tests" FORCE)
 set(FTL_BUILD_BENCHMARKS OFF CACHE BOOL "Disable FTL benchmarks" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
+add_subdirectory(${3RD_PARTY_DIR}/fiber-tasking-lib)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
