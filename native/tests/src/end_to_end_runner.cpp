@@ -15,11 +15,12 @@ namespace nova {
         char buff[FILENAME_MAX];
         getcwd(buff, FILENAME_MAX);
         NOVA_LOG(DEBUG) << "Running in " << buff << std::flush;
+        NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
         nova::nova_settings settings;
         auto renderer = nova::nova_renderer::initialize(settings);
 
-        renderer->load_shaderpack("shaderpacks/DefaultShaderpack");
+        renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
         std::shared_ptr<nova::iwindow> window = renderer->get_engine()->get_window();
 

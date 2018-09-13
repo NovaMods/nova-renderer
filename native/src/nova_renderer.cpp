@@ -45,17 +45,14 @@ namespace nova {
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
-        struct load_shaderpack_args {
-            const std::string& shaderpack_name;
-            std::promise<shaderpack_data> output;
-        };
-
         shaderpack_data loaded_data;
 
         task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [](ftl::TaskScheduler* task_scheduler, const std::string& shaderpack_name, shaderpack_data& output) {
             const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
-            output = std::move(shaderpack_data);
+            output = shaderpack_data;
         }, shaderpack_name, loaded_data);
+
+        engine->load_shaderpack(loaded_data);
     }
 
     render_engine* nova_renderer::get_engine() {

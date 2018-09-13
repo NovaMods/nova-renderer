@@ -22,12 +22,6 @@ namespace nova {
     void load_material_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, std::vector<material_data>& output);
     void load_single_material(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, uint32_t out_idx, std::vector<material_data>& output);
 
-    template<typename DataType>
-    struct load_data_args {
-        folder_accessor_base* folder_access;
-        DataType output;
-    };
-
     shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name, ftl::TaskScheduler& task_scheduler) {
         folder_accessor_base* folder_access = get_shaderpack_accessor(shaderpack_name);
 
@@ -203,7 +197,6 @@ namespace nova {
             auto material = json_material.get<material_data>();
             material.name = material_path.stem().string();
             output[out_idx] = material;
-
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse material file " << material_path.string() << ": " << err.what();
         }
