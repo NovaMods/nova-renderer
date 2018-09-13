@@ -103,15 +103,6 @@ namespace nova {
         create_memory_allocator();
         create_swapchain();
         create_image_views();
-        create_render_pass();
-        create_shader_modules();
-        create_graphics_pipeline();
-        create_framebuffers();
-        create_command_pool();
-        create_vertex_buffer();
-        create_command_buffers();
-        DEBUG_record_command_buffers();
-        create_synchronization_objects();
     }
 
     const std::string vulkan_render_engine::get_engine_name() {
@@ -727,8 +718,13 @@ namespace nova {
     }
 
     void vulkan_render_engine::destroy_shader_modules() {
-        vkDestroyShaderModule(device, frag_shader, nullptr);
-        vkDestroyShaderModule(device, vert_shader, nullptr);
+        if(frag_shader != VK_NULL_HANDLE) {
+            vkDestroyShaderModule(device, frag_shader, nullptr);
+        }
+
+        if(vert_shader != VK_NULL_HANDLE) {
+            vkDestroyShaderModule(device, vert_shader, nullptr);
+        }
     }
 
     void vulkan_render_engine::destroy_render_pass() {
@@ -850,7 +846,6 @@ namespace nova {
         destroy_framebuffers();
         vkFreeCommandBuffers(device, command_pool, static_cast<uint32_t>(command_buffers.size()), command_buffers.data());
         destroy_graphics_pipeline();
-        destroy_shader_modules(); // TODO: This might not be needed, a window resize doesn't require a shader reload
         destroy_render_pass();
         destroy_image_views();
         destroy_swapchain();
@@ -858,7 +853,6 @@ namespace nova {
         create_swapchain();
         create_image_views();
         create_render_pass();
-        create_shader_modules(); // TODO: This might not be needed, a window resize doesn't require a shader reload
         create_graphics_pipeline();
         create_framebuffers();
         create_command_buffers();
@@ -867,6 +861,30 @@ namespace nova {
 
     void vulkan_render_engine::set_frame_graph() {
 
+    }
+
+    void vulkan_render_engine::load_shaderpack(shaderpack_data data) {
+        if(shaderpack_loaded) {
+            destroy_synchronization_objects();
+            destroy_vertex_buffer();
+            destroy_command_pool();
+            destroy_framebuffers();
+            destroy_graphics_pipeline();
+            destroy_shader_modules();
+        } else {
+            create_render_pass();
+            create_shader_modules();
+        }
+
+        create_graphics_pipeline();
+        create_framebuffers();
+        create_command_pool();
+        create_vertex_buffer();
+        create_command_buffers();
+        DEBUG_record_command_buffers();
+        create_synchronization_objects();
+
+        shaderpack_loaded = true;
     }
 
 }

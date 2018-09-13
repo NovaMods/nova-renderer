@@ -5,6 +5,7 @@
 #ifndef NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 #define NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 
+#include "../render_engine.hpp"
 #ifdef __linux__
 #define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB
@@ -12,7 +13,6 @@
 #include <vulkan/vulkan.h>
 #include <thread>
 #include <mutex>
-#include "../render_engine.hpp"
 #include "vulkan_utils.hpp"
 #include "x11_window.hpp"
 
@@ -38,6 +38,8 @@ namespace nova {
         std::shared_ptr<iwindow> get_window() const override;
 
         static const std::string get_engine_name();
+
+        void load_shaderpack(shaderpack_data data) override;
 
     private:
         std::vector<const char *> enabled_validation_layer_names;
@@ -82,6 +84,9 @@ namespace nova {
 
         VkBuffer vertex_buffer;
         VmaAllocation vertex_buffer_allocation;
+
+        bool shaderpack_loaded = false;
+        shaderpack_data shaderpack;
 
         void create_device();
         void destroy_device();

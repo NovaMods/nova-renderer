@@ -9,6 +9,7 @@
 #include "../settings/nova_settings.hpp"
 #include "../util/macros.hpp"
 #include "window.hpp"
+#include "../loading/shaderpack/shaderpack_data.hpp"
 
 NOVA_EXCEPTION(nova, render_engine_initialization_exception)
 NOVA_EXCEPTION(nova, render_engine_rendering_exception)
@@ -64,6 +65,13 @@ namespace nova {
          * \brief Renders a frame like so well, you guys
          */
         virtual void render_frame() = 0;
+
+        /*!
+         * \brief Loads the specified shaderpack
+         *
+         * \param data The shaderpack to load
+         */
+        virtual void load_shaderpack(shaderpack_data data) = 0;
 
     protected:
         /*!
