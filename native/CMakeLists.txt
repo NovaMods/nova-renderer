@@ -52,7 +52,7 @@ add_subdirectory(${3RD_PARTY_DIR}/json)
 
 set(FTL_BUILD_TESTS OFF CACHE BOOL "Disable FTL tests" FORCE)
 set(FTL_BUILD_BENCHMARKS OFF CACHE BOOL "Disable FTL benchmarks" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/fiber-tasking-lib)
+add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
@@ -125,7 +125,11 @@ set(NOVA_SOURCE
         src/loading/shaderpack/json_interop.hpp
         src/loading/utils.hpp
         src/util/utils.hpp
-        src/util/utils.cpp src/render_objects/render_object.cpp src/render_objects/render_object.hpp src/loading/shaderpack/shaderpack_validator.cpp src/loading/shaderpack/shaderpack_validator.hpp)
+        src/util/utils.cpp
+		src/render_objects/render_object.cpp
+		src/render_objects/render_object.hpp 
+		src/loading/shaderpack/shaderpack_validator.cpp 
+		src/loading/shaderpack/shaderpack_validator.hpp)
 
 if(UNIX)
     set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
@@ -164,6 +168,7 @@ elseif(WIN32)
 
 else()
     message(FATAL_ERROR "Unsupported platform")
+
 endif()
 
 if (WIN32)
