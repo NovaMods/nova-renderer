@@ -242,7 +242,7 @@ namespace nova {
         frame_fence_values[frame_index]++;
     }
 
-    command_list* dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) {
+    command_list* dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const {
         ComPtr<ID3D12CommandAllocator> allocator;
         HRESULT hr = device->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&allocator));
         if(FAILED(hr)) {
@@ -327,8 +327,15 @@ namespace nova {
         full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 
-    void dx12_render_engine::set_frame_graph() {
+    void dx12_render_engine::set_shaderpack(shaderpack_data data) {
+        // Let's build our data from the ground up!
+        // To load a new shaderpack, we need to first clear out all the data from the old shaderpack. Then, we can 
+        // make the new dynamic textures and samplers, then the PSOs, then the material definitions, then the 
+        // renderpasses
+        // Except DX12 doesn't have a renderpass - but that's fine. We can put the necessary data together and pretend
 
+        // Clear out the old shaderpack's data, including samplers
+        dynamic_textures.clear();
     }
 
     void dx12_render_engine::try_to_free_command_lists() {

@@ -14,19 +14,19 @@ namespace nova {
         format.height           = get_json_value<float>(j, "height").value_or(0);
     }
 
-    void from_json(const nlohmann::json& j, texture_resource& tex) {
+    void from_json(const nlohmann::json& j, texture_resource_data& tex) {
         tex.name    = get_json_value<std::string>(j, "name").value();
         tex.format  = get_json_value<texture_format>(j, "format").value();
     }
 
-    void from_json(const nlohmann::json& j, sampler_state& sampler) {
+    void from_json(const nlohmann::json& j, sampler_state_data& sampler) {
         sampler.filter = get_json_value<texture_filter_enum>(j, "filter", texture_filter_enum::Point, texture_filter_enum_from_string);
         sampler.wrap_mode = get_json_value<wrap_mode_enum>(j, "wrapMode", wrap_mode_enum::Clamp, wrap_mode_enum_from_string);
     }
 
     void from_json(const nlohmann::json& j, shaderpack_resources_data& res) {
-        res.textures = get_json_array<texture_resource>(j, "textures");
-        res.samplers = get_json_array<sampler_state>(j, "samplers");
+        res.textures = get_json_array<texture_resource_data>(j, "textures");
+        res.samplers = get_json_array<sampler_state_data>(j, "samplers");
     }
 
     void from_json(const nlohmann::json& j, render_pass_data& pass) {

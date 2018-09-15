@@ -11,9 +11,9 @@
 namespace nova {
     void from_json(const nlohmann::json& j, texture_format& format);
 
-    void from_json(const nlohmann::json& j, texture_resource& tex);
+    void from_json(const nlohmann::json& j, texture_resource_data& tex);
 
-    void from_json(const nlohmann::json& j, sampler_state& sampler);
+    void from_json(const nlohmann::json& j, sampler_state_data& sampler);
 
     void from_json(const nlohmann::json& j, shaderpack_resources_data& res);
 

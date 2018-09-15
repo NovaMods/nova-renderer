@@ -52,7 +52,7 @@ namespace nova {
             output = shaderpack_data;
         }, shaderpack_name, loaded_data);
 
-        engine->load_shaderpack(loaded_data);
+        engine->set_shaderpack(loaded_data);
     }
 
     render_engine* nova_renderer::get_engine() {

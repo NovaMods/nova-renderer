@@ -31,15 +31,13 @@ namespace nova {
 
         void render_frame() override;
 
-        void set_frame_graph() override;
-
         void open_window(uint32_t width, uint32_t height) override;
 
         std::shared_ptr<iwindow> get_window() const override;
 
         static const std::string get_engine_name();
 
-        void load_shaderpack(shaderpack_data data) override;
+        void set_shaderpack(shaderpack_data data) override;
 
     private:
         std::vector<const char *> enabled_validation_layer_names;

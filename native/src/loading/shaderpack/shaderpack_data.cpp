@@ -7,7 +7,7 @@
 #include "../utils.hpp"
 
 namespace nova {
-    parse_failed::parse_failed(const std::string &msg) : runtime_error(msg) {}
+    validation_failed::validation_failed(const std::string &msg) : runtime_error(msg) {}
 
     /*!
     * \brief If a data member isn't in the JSON (which is fully supported and is 100% fine) then we use this to fill in
@@ -42,7 +42,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported pixel format " << str;
-            throw parse_failed("Unsupported pixel format " + str);
+            throw validation_failed("Unsupported pixel format " + str);
         }
     }
 
@@ -55,7 +55,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported texture dimension type " << str;
-            throw parse_failed("Unsupported texture dimension type " + str);
+            throw validation_failed("Unsupported texture dimension type " + str);
         }
     }
 
@@ -71,7 +71,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported texture filter " << str;
-            throw parse_failed("Unsupported texture filter " + str);
+            throw validation_failed("Unsupported texture filter " + str);
         }
     }
 
@@ -84,7 +84,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported wrap mode " << str;
-            throw parse_failed("Unsupported wrap mode " + str);
+            throw validation_failed("Unsupported wrap mode " + str);
         }
     }
 
@@ -115,7 +115,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported stencil op " << str;
-            throw parse_failed("Unsupported stencil op " + str);
+            throw validation_failed("Unsupported stencil op " + str);
         }
     }
 
@@ -146,7 +146,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported compare op " << str;
-            throw parse_failed("Unsupported compare op " + str);
+            throw validation_failed("Unsupported compare op " + str);
         }
     }
 
@@ -162,7 +162,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported antialiasing mode " << str;
-            throw parse_failed("Unsupported antialiasing mode " + str);
+            throw validation_failed("Unsupported antialiasing mode " + str);
         }
     }
 
@@ -175,7 +175,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported primitive mode " << str;
-            throw parse_failed("Unsupported primitive mode " + str);
+            throw validation_failed("Unsupported primitive mode " + str);
         }
     }
 
@@ -212,7 +212,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported blend factor " << str;
-            throw parse_failed("Unsupported blend factor " + str);
+            throw validation_failed("Unsupported blend factor " + str);
         }
     }
 
@@ -228,7 +228,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported render queue " << str;
-            throw parse_failed("Unsupported render queue " + str);
+            throw validation_failed("Unsupported render queue " + str);
         }
     }
 
@@ -265,7 +265,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported state enum " << str;
-            throw parse_failed("Unsupported state enum " + str);
+            throw validation_failed("Unsupported state enum " + str);
         }
     }
 
@@ -302,7 +302,7 @@ namespace nova {
 
         } else {
             NOVA_LOG(ERROR) << "Unsupported vertex field " << str;
-            throw parse_failed("Unsupported vertex field " + str);            
+            throw validation_failed("Unsupported vertex field " + str);            
         }
     }
 

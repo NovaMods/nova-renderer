@@ -53,25 +53,16 @@ namespace nova {
         virtual std::shared_ptr<iwindow> get_window() const = 0;
 
         /*!
-         * \brief Sets the frame graph that should be used
-         *
-         * Thi method will build all the API-specific resources that are needed to render with the provided frame graph
-         *
-         * \param frame_graph The frame graph
-         */
-        virtual void set_frame_graph() = 0;
+        * \brief Loads the specified shaderpack, building API-specific data structures
+        *
+        * \param data The shaderpack to load
+        */
+        virtual void set_shaderpack(shaderpack_data data) = 0;
 
         /*!
          * \brief Renders a frame like so well, you guys
          */
         virtual void render_frame() = 0;
-
-        /*!
-         * \brief Loads the specified shaderpack
-         *
-         * \param data The shaderpack to load
-         */
-        virtual void load_shaderpack(shaderpack_data data) = 0;
 
     protected:
         /*!

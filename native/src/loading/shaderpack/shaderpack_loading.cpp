@@ -11,6 +11,7 @@
 #include "../utils.hpp"
 #include "json_interop.hpp"
 #include <ftl/atomic_counter.h>
+#include "shaderpack_validator.hpp"
 
 namespace nova {
     folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name);
@@ -97,8 +98,9 @@ namespace nova {
     void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, shaderpack_resources_data& output) {
         std::string resources_string = folder_access->read_text_file("resources.json");
         try {
-            auto json_resource = nlohmann::json::parse(resources_string.c_str());
-            auto resources = json_resource.get<shaderpack_resources_data>();
+            auto json_resources = nlohmann::json::parse(resources_string.c_str());
+            validate_shaderpack_resources_data(json_resources);
+            auto resources = json_resources.get<shaderpack_resources_data>();
             output.samplers = std::move(resources.samplers);
             output.textures = std::move(resources.textures);
 
@@ -108,6 +110,9 @@ namespace nova {
 
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's resources.json: " << err.what();
+
+        } catch(validation_failed& err) {
+            NOVA_LOG(ERROR) << "Could not validate resources.json: " << err.what();
         }
     }
 
@@ -156,10 +161,14 @@ namespace nova {
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
         try {
             auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
+            validate_graphics_pipeline(json_pipeline);
             output[out_idx] = json_pipeline.get<pipeline_data>();
 
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
+
+        } catch(validation_failed& err) {
+            NOVA_LOG(ERROR) << "Could not validate pipeline file " << pipeline_path.string() << ": " << err.what();
         }
     }
 

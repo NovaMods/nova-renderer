@@ -18,9 +18,9 @@
 #include <nlohmann/json.hpp>
 
 namespace nova {
-    class parse_failed : public std::runtime_error {
+    class validation_failed : public std::runtime_error {
     public:
-        explicit parse_failed(const std::string& msg);
+        explicit validation_failed(const std::string& msg);
     };
 
     /*!
@@ -264,7 +264,9 @@ namespace nova {
      *
      * At the time of writing I'm not sure how this is corellated with a texture, but all well
      */
-    struct sampler_state {
+    struct sampler_state_data {
+        std::string name;
+
         /*!
          * \brief What kind of texture filter to use
          *
@@ -274,7 +276,7 @@ namespace nova {
         texture_filter_enum filter;
 
         /*!
-         * \brief How the texutre should wrap at the edges
+         * \brief How the texture should wrap at the edges
          */
         wrap_mode_enum wrap_mode;
     };
@@ -438,7 +440,7 @@ namespace nova {
     /*!
      * \brief A texture that a pass can use
      */
-    struct texture_resource {
+    struct texture_resource_data {
         /*!
          * \brief The name of the texture
          *
@@ -479,8 +481,8 @@ namespace nova {
     };
 
     struct shaderpack_resources_data {
-        std::vector<texture_resource> textures;
-        std::vector<sampler_state> samplers;
+        std::vector<texture_resource_data> textures;
+        std::vector<sampler_state_data> samplers;
     };
 
     /*!

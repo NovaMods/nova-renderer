@@ -859,11 +859,7 @@ namespace nova {
         DEBUG_record_command_buffers();
     }
 
-    void vulkan_render_engine::set_frame_graph() {
-
-    }
-
-    void vulkan_render_engine::load_shaderpack(shaderpack_data data) {
+    void vulkan_render_engine::set_shaderpack(shaderpack_data data) {
         if(shaderpack_loaded) {
             destroy_synchronization_objects();
             destroy_vertex_buffer();

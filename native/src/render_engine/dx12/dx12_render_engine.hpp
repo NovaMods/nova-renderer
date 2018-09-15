@@ -64,7 +64,7 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
 
-        void set_frame_graph() override;
+        void set_shaderpack(shaderpack_data data) override;
 
         void render_frame() override;
 
@@ -114,6 +114,11 @@ namespace nova {
         std::vector<uint32_t> frame_fence_values;
         HANDLE full_frame_fence_event;
 
+        /*!
+         * \brief All the textures that the loaded shaderpack has created
+         */
+        std::unordered_map<std::string, ComPtr<ID3D12Resource>> dynamic_textures;
+
         void create_device();
 
         void create_rtv_command_queue();
@@ -132,7 +137,7 @@ namespace nova {
          */
         void create_render_target_descriptor_heap();
 
-        command_list* allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type);
+        command_list* allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const;
 
         gfx_command_list* get_graphics_command_list();
 
