@@ -15,8 +15,8 @@ namespace nova {
     }
 
     std::optional<bool> folder_accessor_base::does_resource_exist_in_map(const std::string &resource_string) const {
-        if(resource_existance.find(resource_string) != resource_existance.end()) {
-            return std::make_optional<bool>(resource_existance.at(resource_string));
+        if(resource_existence.find(resource_string) != resource_existence.end()) {
+            return std::make_optional<bool>(resource_existence.at(resource_string));
         }
 
         return {};

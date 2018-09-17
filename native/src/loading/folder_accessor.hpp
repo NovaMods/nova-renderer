@@ -53,7 +53,7 @@ namespace nova {
         explicit folder_accessor_base(const fs::path& folder);
 
         // Else freeing could cause errors
-        virtual ~folder_accessor_base() = default;
+        virtual ~folder_accessor_base() {};
 
         /*!
          * \brief Checks if the given resource exists
@@ -86,9 +86,9 @@ namespace nova {
          * requested and we don't know if it exists. However, if a path has been checked before, we can now save an IO
          * call!
          */
-        std::unordered_map<std::string, bool> resource_existance;
+        std::unordered_map<std::string, bool> resource_existence;
 
-        std::optional<bool> does_resource_exist_in_map(const std::string& resource_path) const;
+        std::optional<bool> does_resource_exist_in_map(const std::string& resource_string) const;
         
         /*!
          * \brief Like the non-internal one, but does not add the folder's root to resource_path

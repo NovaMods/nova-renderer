@@ -167,6 +167,9 @@ namespace nova {
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
 
+        //} catch(nlohmann::json::type_error& err) {
+        //    NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
+
         } catch(validation_failed& err) {
             NOVA_LOG(ERROR) << "Could not validate pipeline file " << pipeline_path.string() << ": " << err.what();
         }

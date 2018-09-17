@@ -21,7 +21,7 @@ namespace nova {
         { "states", {} },
         { "frontFace", {} },
         { "backFace", {} },
-        { "fallback", {} },
+        { "fallback", "" },
         { "depthBias", 0 },
         { "slopeScaledDepthBias", 0 },
         { "stencilRef", 0 },
@@ -198,7 +198,7 @@ namespace nova {
         const auto& itr = j.find(field_name);
         if(itr == j.end()) {
             NOVA_LOG(DEBUG) << context << ": Missing field " << field_name << ". Filling in default";
-            j[field_name] = default_value;
+            j[field_name] = default_value[field_name];
         }
     }
 }

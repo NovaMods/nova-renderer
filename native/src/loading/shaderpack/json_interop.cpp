@@ -70,7 +70,7 @@ namespace nova {
         pipeline.source_blend_factor        = get_json_value<blend_factor_enum>(j, "sourceBlendFactor", blend_factor_enum::One, blend_factor_enum_from_string);
         pipeline.destination_blend_factor   = get_json_value<blend_factor_enum>(j, "destBlendFactor", blend_factor_enum::Zero, blend_factor_enum_from_string);
         pipeline.alpha_src                  = get_json_value<blend_factor_enum>(j, "alphaSrc", blend_factor_enum::One, blend_factor_enum_from_string);
-        pipeline.alpha_dst                  = get_json_value<blend_factor_enum>(j, "alphsDest", blend_factor_enum::Zero, blend_factor_enum_from_string);
+        pipeline.alpha_dst                  = get_json_value<blend_factor_enum>(j, "alphaDest", blend_factor_enum::Zero, blend_factor_enum_from_string);
         pipeline.depth_func                 = get_json_value<compare_op_enum>(j, "depthFunc", compare_op_enum::Less, compare_op_enum_from_string);
         pipeline.render_queue               = get_json_value<render_queue_enum>(j, "renderQueue", render_queue_enum::Opaque, render_queue_enum_from_string);
     }

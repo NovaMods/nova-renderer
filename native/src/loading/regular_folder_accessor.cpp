@@ -31,7 +31,7 @@ namespace nova {
             // Error reading this file - it can't be read again in the future
             const auto resource_string = full_resource_path.string();
 
-            resource_existance.emplace(resource_string, false);
+            resource_existence.emplace(resource_string, false);
             NOVA_LOG(DEBUG) << "Could not load resource at path " << resource_string;
             throw resource_not_found_error(resource_string);
         }
@@ -76,11 +76,11 @@ namespace nova {
         }
 
         if(fs::exists(resource_path)) {
-            resource_existance.emplace(resource_string, true);
+            resource_existence.emplace(resource_string, true);
             return true;
 
         } else {
-            resource_existance.emplace(resource_string, false);
+            resource_existence.emplace(resource_string, false);
             return false;
         }
     }

@@ -13,7 +13,7 @@ namespace nova {
         const auto folder_string = folder.string();
 
         if(!mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0)) {
-            logger::instance.log(log_level::DEBUG, "Could not open zip archive " + folder_string);
+            NOVA_LOG(DEBUG) << "Could not open zip archive " << folder_string;
             throw resource_not_found_error(folder_string);
         }
 
@@ -27,33 +27,33 @@ namespace nova {
     std::string zip_folder_accessor::read_text_file(const fs::path &resource_path) {
         auto full_path = our_folder / resource_path;
 
-        std::string resource_string = full_path.string();
+        const std::string resource_string = full_path.string();
         if(!does_resource_exist_internal(full_path)) {
-            logger::instance.log(log_level::DEBUG, "Resource at path " + resource_string + " does not exist");
+            NOVA_LOG(DEBUG) << "Resource at path " << resource_string << " does not exist";
             throw resource_not_found_error(resource_string);
         }
 
-        uint32_t file_idx = resource_indexes.at(resource_string);
+        const uint32_t file_idx = resource_indexes.at(resource_string);
 
         mz_zip_archive_file_stat file_stat = {};
-        mz_bool has_file_stat = mz_zip_reader_file_stat(&zip_archive, file_idx, &file_stat);
+        const mz_bool has_file_stat = mz_zip_reader_file_stat(&zip_archive, file_idx, &file_stat);
         if(!has_file_stat) {
-            mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
-            std::string err = mz_zip_get_error_string(err_code);
+            const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
+            const std::string err = mz_zip_get_error_string(err_code);
 
-            logger::instance.log(log_level::DEBUG, "Could not get information for file " + resource_string + ": " + err);
+            NOVA_LOG(DEBUG) << "Could not get information for file " << resource_string << ": " << err;
             throw resource_not_found_error(resource_string);
         }
 
         std::vector<char> resource_buffer;
         resource_buffer.reserve(static_cast<uint64_t>(file_stat.m_uncomp_size));
 
-        mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive, file_idx, resource_buffer.data(), resource_buffer.size(), 0);
+        const mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive, file_idx, resource_buffer.data(), resource_buffer.size(), 0);
         if(!file_extracted) {
-            mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
-            std::string err = mz_zip_get_error_string(err_code);
+            const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
+            const std::string err = mz_zip_get_error_string(err_code);
 
-            logger::instance.log(log_level::DEBUG, "Could not extract file " + resource_string + ": " + err);
+            NOVA_LOG(DEBUG) << "Could not extract file " << resource_string << ": " << err;
             throw resource_not_found_error(resource_string);
         }
 
@@ -149,12 +149,12 @@ namespace nova {
         if(ret_val != -1) {
             // resource found!
             resource_indexes.emplace(resource_string, ret_val);
-            resource_existance.emplace(resource_string, true);
+            resource_existence.emplace(resource_string, true);
             return true;
 
         } else {
             // resource not found
-            resource_existance.emplace(resource_string, false);
+            resource_existence.emplace(resource_string, false);
             return false;
         }
     }
