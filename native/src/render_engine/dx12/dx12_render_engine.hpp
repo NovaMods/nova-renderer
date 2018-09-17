@@ -21,8 +21,6 @@
 #include <unordered_map>
 #include <mutex>
 
-#include "dx12_opaque_types.hpp"
-
 using Microsoft::WRL::ComPtr;
 
 namespace nova {
@@ -148,6 +146,8 @@ namespace nova {
         void wait_for_previous_frame();
 
         void try_to_free_command_lists();
+
+        void create_dynamic_textures(const std::vector<texture_resource_data>& vector);
     };
 }
 

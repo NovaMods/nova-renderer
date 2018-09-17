@@ -78,7 +78,7 @@ namespace nova {
         virtual std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) = 0;
 
     protected:
-        fs::path our_folder;
+        fs::path root_folder;
 
         /*!
          * \brief I expect certain resources, like textures, to be requested a lot as Nova streams them in and out of

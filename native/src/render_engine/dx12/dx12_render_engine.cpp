@@ -336,6 +336,9 @@ namespace nova {
 
         // Clear out the old shaderpack's data, including samplers
         dynamic_textures.clear();
+
+        // Build up E V E R Y T H I N G
+        create_dynamic_textures(data.resources.textures);
     }
 
     void dx12_render_engine::try_to_free_command_lists() {
@@ -350,7 +353,11 @@ namespace nova {
             }
         }
 
-        auto erase_itr = std::remove_if(lists_to_free.begin(), lists_to_free.end(), [](const command_list_base* list) {return list->is_done;});
+        const auto erase_itr = std::remove_if(lists_to_free.begin(), lists_to_free.end(), [](const command_list_base* list) {return list->is_done;});
         lists_to_free.erase(erase_itr, lists_to_free.end());
+    }
+
+    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_resource_data>& vector) {
+
     }
 }

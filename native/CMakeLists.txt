@@ -129,7 +129,7 @@ set(NOVA_SOURCE
 		src/render_objects/render_object.cpp
 		src/render_objects/render_object.hpp 
 		src/loading/shaderpack/shaderpack_validator.cpp 
-		src/loading/shaderpack/shaderpack_validator.hpp)
+		src/loading/shaderpack/shaderpack_validator.hpp src/loading/shaderpack/render_graph_builder.cpp src/loading/shaderpack/render_graph_builder.hpp)
 
 if(UNIX)
     set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
