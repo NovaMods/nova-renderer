@@ -357,7 +357,7 @@ namespace nova {
         uint32_t stencil_ref;
 
         /*!
-         * \brief The mastk to use when reading from the stencil buffer
+         * \brief The mask to use when reading from the stencil buffer
          */
         uint32_t stencil_read_mask;
 

@@ -152,7 +152,7 @@ if(UNIX)
             ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
             ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
             ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
-            ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp)
+            ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp src/render_engine/vulkan/vulkan_type_converters.hpp)
 
 elseif(WIN32)
     set(NOVA_SOURCE

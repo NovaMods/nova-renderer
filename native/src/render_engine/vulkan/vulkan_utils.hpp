@@ -65,7 +65,7 @@ namespace nova::vulkan {
         do { \
             VkResult val = (expr); \
             if(val != VK_SUCCESS) { \
-                throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) +  "=> " + nova::vulkan::vulkan_utils::vk_result_to_string(val)); \
+                throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) +  "=> " + ::nova::vulkan::vulkan_utils::vk_result_to_string(val)); \
             } \
         } while(false); \
 

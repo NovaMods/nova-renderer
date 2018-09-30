@@ -51,4 +51,12 @@ namespace nova {
 
         return ss.str();
     }
+
+    bool ends_with(const std::string &string, const std::string &ending) {
+        if(string.length() >= ending.length()) {
+            return (0 == string.compare(string.length() - ending.length(), ending.length(), ending));
+        } else {
+            return false;
+        }
+    }
 }
