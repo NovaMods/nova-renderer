@@ -8,6 +8,75 @@
 
 #include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
 
+/****************************************
+ *      Pipeline validator tests        *
+ ****************************************/
+
+/*!
+ * \brief Tests the happy path for the pipelin validator
+ */
+TEST(pipeline_validator, no_warnings_or_errors) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "ParentOfTestPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+                {"failOp", "Keep"},
+                {"passOp", "Keep"},
+                {"depthFailOp", "Replace"},
+                {"compareOp", "Less"},
+                {"compareMask", 0xFF},
+                {"writeMask", 0xFF}
+            }
+        },
+        {"backFace",
+            {
+                {"failOp", "Keep"},
+                {"passOp", "Keep"},
+                {"depthFailOp", "Replace"},
+                {"compareOp", "Less"},
+                {"compareMask", 0xFF},
+                {"writeMask", 0xFF}
+            }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.warnings.size(), 0);
+    EXPECT_EQ(report.errors.size(), 0);
+}
+
 /************************************************
  *      Dynamic resources validator tests       *
  ************************************************/
