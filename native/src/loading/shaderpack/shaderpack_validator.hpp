@@ -13,55 +13,57 @@
 #include <nlohmann/json.hpp>
 
 namespace nova {
-    struct validation_report {
-        std::vector<std::string> missing_required_fields;
-        std::vector<std::string> missing_optional_fields;
-    };
 
     /*!
-     * \brief Checks if the pipeline_json has all the properties that a full pipeline should have, returning a report on
-     * which fields are missing from the input JSON
+     * \brief Checks if the pipeline_json has all the properties that a full pipeline should have, printing a debug
+     * message if it doesn't. Missing fields that can be filled in with a default value are filled in (pipeline_json is
+     * modified) and a debug message is logged, but if a missing field is required then a `json_validation_error`
+     * exception is thrown
      * 
      * \param pipeline_json The JSON pipeline to validate and possibly fill in
      */
-    validation_report validate_graphics_pipeline(nlohmann::json& pipeline_json);
+    void validate_graphics_pipeline(nlohmann::json& pipeline_json);
 
     /*!
-     * \brief Validates the dynamic resources that the given JSON file contains, returning a report on which fields are missing from the input JSON
+     * \brief Validates the dynamic resources that the given JSON file contains. Any warnings about missing fields with
+     * default values are sent to the warning logger, while information about missing required fields is sent out as an
+     * exception
      * 
      * \param resources_json The JSON dynamic resources to validate
      */
-    validation_report validate_shaderpack_resources_data(nlohmann::json& resources_json);
+    void validate_shaderpack_resources_data(nlohmann::json& resources_json);
 
     /*!
-     * \brief Validates a single texture's JSON, returning a report on which fields are missing from the input JSON
+     * \brief Validates a single texture's JSON, printing warnings to the warning logger and throwing an exception with
+     * any missing required fields
      * 
      * \param texture_json The JSON of the texture to validate
      */
-    validation_report validate_texture_data(nlohmann::json& texture_json);
+    void validate_texture_data(nlohmann::json& texture_json);
 
     /*!
-     * \brief Validates a texture format, returning a report on which fields are missing from the input JSON
+     * \brief Validates a texture format, printing warnings to the warning logger and throwing an exception with any
+     * missing required fields
      * 
      * \param format_json The JSON to validate
      */
-    validation_report validate_texture_format(nlohmann::json& format_json);
+    void validate_texture_format(nlohmann::json& format_json);
 
     /*!
-     * \brief Validates that the provided JSON has all the fields it needed, returning a report on which fields are
-     * missing from the input JSON
+     * \brief Validates that the provided JSON has all the fields it needed. Warnings about optional fields are
+     * printed to the warning logger, errors are thrown together in an exception
      * 
      * \param sampler_json The JSON to validate
      */
-    validation_report validate_sampler_data(nlohmann::json& sampler_json);
+    void validate_sampler_data(nlohmann::json& sampler_json);
 
     /*!
-     * \brief Validates that the provided JSON for has all the fields it needs, returning a report on which fields are
-     * missing from the input JSON
+     * \brief Validates that the provided JSON for has all the fields it needs. Optional fields that are missing
+     * generate a warning, required fields that are missing generate an exception
      *
      * \param material_json The JSON to validate
      */
-    validation_report validate_material(nlohmann::json& material_json);
+    void validate_material(nlohmann::json& material_json);
 }
 
 #endif //NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP

@@ -47,15 +47,14 @@ namespace nova {
         "geometryShader"
     };
     
-    void check_if_field_exists(nlohmann::json& j, const std::string& field_name, const std::string& context, const nlohmann::json& default_value);
+    void check_if_field_exists(nlohmann::json& j, const std::string& field_name, const std::string& context, const nlohmann::json& default_value, validation_report& report);
 
-    validation_report validate_graphics_pipeline(nlohmann::json& pipeline_json) {
-        validation_report report;
+    void validate_graphics_pipeline(nlohmann::json& pipeline_json) {
         const std::string name = get_json_value<std::string>(pipeline_json, "name", "<NAME_MISSING>");
 
         // Check non-required fields first 
         for(const auto& str : default_graphics_pipeline.items()) {
-            check_if_field_exists(pipeline_json, str.key(), name, default_graphics_pipeline);
+            check_if_field_exists(pipeline_json, str.key(), name, default_graphics_pipeline, report);
         }
 
         // Check required items. Collect all the missing fields so we can tell them to the user at the same time
@@ -64,13 +63,18 @@ namespace nova {
         for(const std::string& field_name : required_graphics_pipeline_fields) {
             const auto& itr = pipeline_json.find(field_name);
             if(itr == pipeline_json.end()) {
-                report.missing_required_fields.push_back(field_name);
+                missing_required_fields.emplace_back("pipeline", context, field_name);
             }
+        }
+
+        if(!missing_required_fields.empty()) {
+            const auto jonied_fields = join(missing_required_fields, ", ");
+            throw validation_failed("Pipeline " + name + " is missing the following required fields: " + joined_fields);
         }
     }
 
 
-    validation_report validate_shaderpack_resources_data(nlohmann::json& resources_json) {
+    void validate_shaderpack_resources_data(nlohmann::json& resources_json) {
         bool missing_textures = false;
 
         const auto& textures_itr = resources_json.find("textures");
@@ -107,20 +111,18 @@ namespace nova {
     }
 
 
-    validation_report validate_texture_data(nlohmann::json& texture_json) {
+    void validate_texture_data(nlohmann::json& texture_json) {
         const auto name_maybe = get_json_value<std::string>(texture_json, "name");
         std::string name;
-        bool missing_name = false;
         if(name_maybe) {
             name = name_maybe.value();
 
         } else {
             name = "<NAME MISSING>";
             texture_json["name"] = name;
-            missing_name = true;
+            report.missing_required_fields.emplace_back("texture", name, "name");
         }
 
-        bool missing_format = false;
         const auto format_itr = texture_json.find("format");
         if(format_itr == texture_json.end()) {
             missing_format = true;
@@ -138,7 +140,7 @@ namespace nova {
         validate_texture_format(*format_itr);
     }
 
-    validation_report validate_texture_format(nlohmann::json& format_json) {
+    void validate_texture_format(nlohmann::json& format_json) {
         const std::string pixel_format = get_json_value<std::string>(format_json, "pixelFormat", "RGBA8");
         format_json["pixelFormat"] = pixel_format;
 
@@ -166,7 +168,7 @@ namespace nova {
         }
     }
 
-    validation_report validate_sampler_data(nlohmann::json& sampler_json) {
+    void validate_sampler_data(nlohmann::json& sampler_json) {
         const std::string name = get_json_value<std::string>(sampler_json, "name", "<NAME MISSING>");
 
         const bool missing_filter = sampler_json.find("filter") == sampler_json.end();
@@ -190,10 +192,10 @@ namespace nova {
         }
     }
 
-    void check_if_field_exists(nlohmann::json& j, const std::string& field_name, const std::string& context, const nlohmann::json& default_value) {
+    void check_if_field_exists(nlohmann::json& j, const std::string& field_name, const std::string& context, const nlohmann::json& default_value, validation_report& report) {
         const auto& itr = j.find(field_name);
         if(itr == j.end()) {
-            NOVA_LOG(DEBUG) << context << ": Missing field " << field_name << ". Filling in default";
+            report.missing_optional_fields.push_back(field_name);
             j[field_name] = default_value[field_name];
         }
     }
