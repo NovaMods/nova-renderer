@@ -583,7 +583,10 @@ namespace nova {
      */
     struct shaderpack_data {
         std::vector<pipeline_data> pipelines;
-        
+
+        /*!
+         * \brief All the renderpasses that this shaderpack needs, in submission order
+         */
         std::vector<render_pass_data> passes;
 
         std::vector<material_data> materials;

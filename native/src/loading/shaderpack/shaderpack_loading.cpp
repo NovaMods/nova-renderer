@@ -12,6 +12,7 @@
 #include "json_interop.hpp"
 #include <ftl/atomic_counter.h>
 #include "shaderpack_validator.hpp"
+#include "render_graph_builder.hpp"
 
 namespace nova {
     folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name);
@@ -121,6 +122,19 @@ namespace nova {
         try {
             auto json_passes = nlohmann::json::parse(passes_bytes);
             auto passes = json_passes.get<std::vector<render_pass_data>>();
+
+            std::unordered_map<std::string, render_pass_data> passes_by_name;
+            passes_by_name.reserve(passes.size());
+            for(const auto& pass : passes) {
+                passes_by_name[pass.name] = pass;
+            }
+
+            const auto ordered_pass_names = order_passes(passes_by_name);
+            passes.clear();
+            for(const auto named_pass : ordered_pass_names) {
+                passes.push_back(passes_by_name.at(named_pass));
+            }
+
             output = std::move(passes);
 
         } catch(nlohmann::json::parse_error& err) {
