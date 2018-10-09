@@ -8,6 +8,32 @@
 
 #include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
 
+/************************************
+ *      Texture validator tests     *
+ ************************************/
+
+/*!
+ * \brief Tests that the texture format validator correctly handles the happy path
+ */
+TEST(texture_validator, no_warnings_or_errors) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json texture = {
+            {"name", "TestTexture"},
+            {"format", {
+                               {"pixelFormat", "RGBA8"},
+                               {"dimensionType", "Absolute"},
+                               {"width", 1920},
+                               {"heignt", 1080}
+                       }}
+    };
+
+    validation_report report = validate_texture_data(texture);
+
+    EXPECT_EQ(report.warnings.size(), 0);
+    EXPECT_EQ(report.errors.size(), 0);
+}
+
 /********************************************
  *      Texture format validation tests     *
  ********************************************/
@@ -18,18 +44,101 @@
 TEST(texture_format_validator, no_errors_or_warnings) {
     TEST_SETUP_LOGGER();
 
-    nlohmann::json sampler = {
-            {"name", "TestSampler"},
-            {"filter", "Bilinear"},
-            {"wrapMode", "Clamp"}
+    nlohmann::json texture_format = {
+            {"pixelFormat", "RGBA8"},
+            {"dimensionType", "Absolute"},
+            {"width", 1920},
+            {"heignt", 1080}
     };
 
-    const validation_report report = validate_sampler(sampler);
+    const validation_report report = validate_texture_format(texture_format, "TestTexture");
+
+    EXPECT_EQ(report.warnings.size(), 0);
+    EXPECT_EQ(report.errors.size(), 0);
+}
+
+/*!
+ * \brief Tests that the texture format validator gives the right warning for a missing pixel format
+ */
+TEST(texture_format_validator, pixel_format_missing) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json texture_format = {
+            {"dimensionType", "Absolute"},
+            {"width", 1920},
+            {"heignt", 1080}
+    };
+
+    const validation_report report = validate_texture_format(texture_format, "TestTexture");
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default of RGBA8 was used");
+
+    EXPECT_EQ(texture_format.at("pixelFormat").get<std::string>(), "RGBA8");
+}
+
+/*!
+ * \brief Tests that the texture format validator gives the right warning for a missing dimension type
+ */
+TEST(texture_format_validator, dimension_type_missing) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json texture_format = {
+            {"pixelFormat", "RGBA8"},
+            {"width", 1920},
+            {"heignt", 1080}
+    };
+
+    const validation_report report = validate_texture_format(texture_format, "TestTexture");
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field dimensionType. A default value of Absolute was used");
+
+    EXPECT_EQ(texture_format.at("dimensionType").get<std::string>(), "Absolute");
+}
+
+/*!
+ * \brief Tests that the texture format validator correctly checks for a missing width
+ */
+TEST(texture_format_validator, width_missing) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json texture_format = {
+            {"pixelFormat", "RGBA8"},
+            {"dimensionType", "Absolute"},
+            {"heignt", 1080}
+    };
+
+    const validation_report report = validate_texture_format(texture_format, "TestTexture");
 
     EXPECT_EQ(report.warnings.size(), 0);
 
     ASSERT_EQ(report.errors.size(), 1);
+    EXPECT_EQ(report.errors[0], "Format of texture TestTexture: Missing field width");
+}
 
+/*!
+ * \brief Tests that the texture format validator correctly checks for a missing height
+ */
+TEST(texture_format_validator, height_missing) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json texture_format = {
+            {"pixelFormat", "RGBA8"},
+            {"dimensionType", "Absolute"},
+            {"width", 1920}
+    };
+
+    const validation_report report = validate_texture_format(texture_format, "TestTexture");
+
+    EXPECT_EQ(report.warnings.size(), 0);
+
+    ASSERT_EQ(report.errors.size(), 1);
+    EXPECT_EQ(report.errors[0], "Format of texture TestTexture: Missing field height");
 }
 
 /****************************************

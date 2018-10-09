@@ -46,6 +46,11 @@ namespace nova {
         "fragmentShader",
         "geometryShader"
     };
+
+    nlohmann::json default_texture_format = {
+            { "pixelFormat", "RGBA8" },
+            { "dimensionType", "Absolute"}
+    };
     
     void ensure_field_exists(nlohmann::json &j, const std::string &field_name, const std::string &context, const nlohmann::json &default_value, validation_report &report);
 
@@ -138,10 +143,12 @@ namespace nova {
         const auto format_itr = texture_json.find("format");
         if(format_itr == texture_json.end()) {
             report.errors.emplace_back(TEXTURE_MSG(name, "Missing field format"));
+
+        } else {
+            const validation_report format_report = validate_texture_format(*format_itr, name);
+            report.merge_in(format_report);
         }
 
-        const validation_report format_report = validate_texture_format(*format_itr, name);
-        report.merge_in(format_report);
         return report;
     }
 
@@ -150,8 +157,8 @@ namespace nova {
     validation_report validate_texture_format(nlohmann::json& format_json, const std::string& texture_name) {
         validation_report report;
 
-        ensure_field_exists(format_json, "pixelFormat", "Format of texture " + texture_name, {"RGBA8"}, report);
-        ensure_field_exists(format_json, "dimensionType:", "Format of texture " + texture_name, {"Absolute"}, report);
+        ensure_field_exists(format_json, "pixelFormat", "Format of texture " + texture_name, default_texture_format, report);
+        ensure_field_exists(format_json, "dimensionType", "Format of texture " + texture_name, default_texture_format, report);
 
         const bool missing_width = format_json.find("width") == format_json.end();
         if(missing_width) {
@@ -243,8 +250,8 @@ namespace nova {
 
     void ensure_field_exists(nlohmann::json& j, const std::string& field_name, const std::string& context, const nlohmann::json& default_value, validation_report& report) {
         if(j.find(field_name) == j.end()) {
-            report.warnings.emplace_back(context + ": Missing field " + field_name);
             j[field_name] = default_value[field_name];
+            report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value of " + j[field_name].get<std::string>() + " was used");
         }
     }
 
