@@ -21,7 +21,7 @@ target_link_libraries(nova-test-end-to-end nova-renderer gtest gtest_main)
 add_test(NAME nova-end-to-end-test COMMAND nova-test-end-to-end)
 
 # Unit tests
-add_executable(nova-test-unit unit_tests/loading/filesystem_test.cpp src/general_test_setup.hpp unit_tests/loading/shaderpack/material_validation_tests.cpp)
+add_executable(nova-test-unit unit_tests/loading/filesystem_test.cpp src/general_test_setup.hpp unit_tests/loading/shaderpack/shaderpack_validator_tests.cpp)
 add_definitions(nova-test-unit nova-renderer)
 target_include_directories(nova-test-unit PRIVATE ${CMAKE_CURRENT_LIST_DIR}/3rdparty/googletest/googletest/include)
 target_compile_definitions(nova-test-unit PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources/")
