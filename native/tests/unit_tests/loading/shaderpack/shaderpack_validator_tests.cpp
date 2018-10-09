@@ -8,6 +8,30 @@
 
 #include "../../../../src/loading/shaderpack/shaderpack_validator.hpp"
 
+/********************************************
+ *      Texture format validation tests     *
+ ********************************************/
+
+/*!
+ * \brief Tests that the texture format validator doesn't give any errors for a well-formed texture format
+ */
+TEST(texture_format_validator, no_errors_or_warnings) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json sampler = {
+            {"name", "TestSampler"},
+            {"filter", "Bilinear"},
+            {"wrapMode", "Clamp"}
+    };
+
+    const validation_report report = validate_sampler(sampler);
+
+    EXPECT_EQ(report.warnings.size(), 0);
+
+    ASSERT_EQ(report.errors.size(), 1);
+
+}
+
 /****************************************
  *      Sampler validation tests        *
  ****************************************/
@@ -15,7 +39,7 @@
 /*!
  * \brief Tests that the sampler validator doesn't give any errors or warnings for well-formed sampler data
  */
-TEST(nova_shaderpack_validator, sampler_validator_no_errors_or_warnings) {
+TEST(sampler_validator, no_errors_or_warnings) {
     TEST_SETUP_LOGGER();
     
     nlohmann::json sampler = {
@@ -33,7 +57,7 @@ TEST(nova_shaderpack_validator, sampler_validator_no_errors_or_warnings) {
 /*!
  * \brief Tests that the sampler validator correctly checks for a missing name
  */
-TEST(nova_shaderpack_validator, sampler_validator_missing_name) {
+TEST(sampler_validator, missing_name) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json sampler = {
@@ -52,7 +76,7 @@ TEST(nova_shaderpack_validator, sampler_validator_missing_name) {
 /*!
  * \brief Tests that the sampler validator correctly checks for a missing filter
  */
-TEST(nova_shaderpack_validator, sampler_validator_missing_filter) {
+TEST(sampler_validator, missing_filter) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json sampler = {
@@ -71,7 +95,7 @@ TEST(nova_shaderpack_validator, sampler_validator_missing_filter) {
 /*!
  * \brief Tests that the sampler validator correctly checks for a missing wrapMode
  */
-TEST(nova_shaderpack_validator, sampler_validator_missing_wrap_mode) {
+TEST(sampler_validator, missing_wrap_mode) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json sampler = {
@@ -94,7 +118,7 @@ TEST(nova_shaderpack_validator, sampler_validator_missing_wrap_mode) {
 /*!
  * \brief Happy path test. The material JSON is well-formed and filled with the most wonderful data
  */
-TEST(nova_shaderpack_validator, material_validation_no_errors_or_warnings) {
+TEST(material_validator, no_errors_or_warnings) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
@@ -118,7 +142,7 @@ TEST(nova_shaderpack_validator, material_validation_no_errors_or_warnings) {
 /*!
  * \brief Tests the material validator's warning about missing bindings
  */
-TEST(nova_shaderpack_validator, material_bindings_warning) {
+TEST(material_validator, bindings_missing) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
@@ -140,7 +164,7 @@ TEST(nova_shaderpack_validator, material_bindings_warning) {
 /*!
  * \brief Tests the material validator's error about a missing filter
  */
-TEST(nova_shaderpack_validator, material_filter_error) {
+TEST(material_validator, filter_missing) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
@@ -165,7 +189,7 @@ TEST(nova_shaderpack_validator, material_filter_error) {
 /*!
  * \brief Tests that the material validator correctly checks for a missing name
  */
-TEST(nova_shaderpack_validator, material_name_missing) {
+TEST(material_validator, name_missing) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
@@ -190,7 +214,7 @@ TEST(nova_shaderpack_validator, material_name_missing) {
 /*!
  * \brief Tests that the material validator correctly checks for missing passes
  */
-TEST(nova_shaderpack_validator, material_passes_missing) {
+TEST(material_validator, passes_missing) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
@@ -209,7 +233,7 @@ TEST(nova_shaderpack_validator, material_passes_missing) {
 /*!
  * \brief Tests that the material validator correctly checks for the passes field being the wrong type
  */
-TEST(nova_shaderpack_validator, material_passes_wrong_type) {
+TEST(material_validator, passes_wrong_type) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
@@ -229,7 +253,7 @@ TEST(nova_shaderpack_validator, material_passes_wrong_type) {
 /*!
  * \brief Tests that the material validator correctly checks for the passes field being an empty array
  */
-TEST(nova_shaderpack_validator, material_passes_empty_array) {
+TEST(material_validator, passes_empty_array) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
@@ -249,7 +273,7 @@ TEST(nova_shaderpack_validator, material_passes_empty_array) {
 /*!
  * \brief Tests that the material validator correctly checks if a material pass doesn't have a pipeline
  */
-TEST(nova_shaderpack_validator, material_pass_no_pipeline) {
+TEST(material_validator, pass_no_pipeline) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
@@ -274,7 +298,7 @@ TEST(nova_shaderpack_validator, material_pass_no_pipeline) {
 /*!
  * \brief Tests that the material validator correctly checks is a material pass doesn't have a name
  */
-TEST(nova_shaderpack_validator, material_pass_no_name) {
+TEST(material_validator, pass_no_name) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
