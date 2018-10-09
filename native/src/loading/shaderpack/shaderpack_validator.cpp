@@ -49,7 +49,8 @@ namespace nova {
     
     void check_if_field_exists(nlohmann::json& j, const std::string& field_name, const std::string& context, const nlohmann::json& default_value);
 
-    void validate_graphics_pipeline(nlohmann::json& pipeline_json) {
+    validation_report validate_graphics_pipeline(nlohmann::json& pipeline_json) {
+        validation_report report;
         const std::string name = get_json_value<std::string>(pipeline_json, "name", "<NAME_MISSING>");
 
         // Check non-required fields first 
@@ -63,18 +64,13 @@ namespace nova {
         for(const std::string& field_name : required_graphics_pipeline_fields) {
             const auto& itr = pipeline_json.find(field_name);
             if(itr == pipeline_json.end()) {
-                missing_required_fields.push_back(field_name);
+                report.missing_required_fields.push_back(field_name);
             }
-        }
-
-        if(!missing_required_fields.empty()) {
-            const std::string all_fields = join(missing_required_fields, ", ");
-            throw validation_failed(all_fields);
         }
     }
 
 
-    void validate_shaderpack_resources_data(nlohmann::json& resources_json) {
+    validation_report validate_shaderpack_resources_data(nlohmann::json& resources_json) {
         bool missing_textures = false;
 
         const auto& textures_itr = resources_json.find("textures");
@@ -111,7 +107,7 @@ namespace nova {
     }
 
 
-    void validate_texture_data(nlohmann::json& texture_json) {
+    validation_report validate_texture_data(nlohmann::json& texture_json) {
         const auto name_maybe = get_json_value<std::string>(texture_json, "name");
         std::string name;
         bool missing_name = false;
@@ -142,7 +138,7 @@ namespace nova {
         validate_texture_format(*format_itr);
     }
 
-    void validate_texture_format(nlohmann::json& format_json) {
+    validation_report validate_texture_format(nlohmann::json& format_json) {
         const std::string pixel_format = get_json_value<std::string>(format_json, "pixelFormat", "RGBA8");
         format_json["pixelFormat"] = pixel_format;
 
@@ -162,7 +158,7 @@ namespace nova {
             } else if(missing_height) {
                 ss << " height";
 
-            } else if(missing_width) {
+            } else {
                 ss << " width";
             }
 
@@ -170,7 +166,7 @@ namespace nova {
         }
     }
 
-    void validate_sampler_data(nlohmann::json& sampler_json) {
+    validation_report validate_sampler_data(nlohmann::json& sampler_json) {
         const std::string name = get_json_value<std::string>(sampler_json, "name", "<NAME MISSING>");
 
         const bool missing_filter = sampler_json.find("filter") == sampler_json.end();
@@ -186,7 +182,7 @@ namespace nova {
             } else if(missing_filter) {
                 ss << " filter";
 
-            } else if(missing_wrap_mode) {
+            } else {
                 ss << " wrap mode";
             }
 

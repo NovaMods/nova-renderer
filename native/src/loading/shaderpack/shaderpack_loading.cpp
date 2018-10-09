@@ -51,6 +51,7 @@ namespace nova {
         std::vector<pipeline_data> loaded_pipelines;
         task_scheduler.AddTask(&loading_tasks_remaining, load_pipeline_files, folder_access, data.pipelines);
 
+        // Load materials
         std::vector<material_data> loaded_materials;
         task_scheduler.AddTask(&loading_tasks_remaining, load_material_files, folder_access, data.materials);
 
@@ -199,13 +200,14 @@ namespace nova {
             }
         }
 
-        task_scheduler->WaitForCounter(&material_load_tasks_remaining, 0);\
+        task_scheduler->WaitForCounter(&material_load_tasks_remaining, 0);
     }
 
     void load_single_material(ftl::TaskScheduler * task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, uint32_t out_idx, std::vector<material_data>& output) {
         const auto material_bytes = folder_access->read_text_file(material_path);
         try {
             auto json_material = nlohmann::json::parse(material_bytes);
+            validate_material(json_material);
             auto material = json_material.get<material_data>();
             material.name = material_path.stem().string();
             output[out_idx] = material;
