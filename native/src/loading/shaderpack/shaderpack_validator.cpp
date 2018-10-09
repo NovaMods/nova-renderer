@@ -26,6 +26,7 @@ namespace nova {
         { "slopeScaledDepthBias", 0 },
         { "stencilRef", 0 },
         { "stencilReadMask", 0 },
+        { "stencilWriteMask", 0 },
         { "msaaSupport", "None" },
         { "primitiveMode", "Triangles" },
         { "sourceBlendFactor", "One" },
@@ -36,15 +37,15 @@ namespace nova {
         { "renderQueue", "Opaque" },
         { "tessellationControlShader", "" },
         { "tessellationEvaluationShader", "" },
-        { "geometryShader", "" }
+        { "geometryShader", "" },
+        { "fragmentShader", "" }
     };
 
     std::vector<std::string> required_graphics_pipeline_fields = {
         "name",
         "pass",
         "vertexFields",
-        "fragmentShader",
-        "geometryShader"
+        "vertexShader"
     };
 
     nlohmann::json default_texture_format = {
@@ -60,13 +61,13 @@ namespace nova {
         validation_report report;
         const std::string name = get_json_value<std::string>(pipeline_json, "name", "<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
-            report.errors.emplace_back(PIPELINE_MSG(name, "name"));
+            report.errors.emplace_back(PIPELINE_MSG(name, "Missing field name"));
         }
 
         const std::string pipeline_context = "Pipeline " + name;
         // Check non-required fields first 
         for(const auto& str : default_graphics_pipeline.items()) {
-            check_if_field_exists(pipeline_json, str.key(), pipeline_context, default_graphics_pipeline, report);
+            ensure_field_exists(pipeline_json, str.key(), pipeline_context, default_graphics_pipeline, report);
         }
 
         // Check required items
@@ -74,7 +75,7 @@ namespace nova {
         for(const std::string& field_name : required_graphics_pipeline_fields) {
             const auto& itr = pipeline_json.find(field_name);
             if(itr == pipeline_json.end()) {
-                report.errors.emplace_back(PIPELINE_MSG(name, field_name));
+                report.errors.emplace_back(PIPELINE_MSG(name, "Missing field " + field_name));
             }
         }
 
@@ -251,7 +252,7 @@ namespace nova {
     void ensure_field_exists(nlohmann::json& j, const std::string& field_name, const std::string& context, const nlohmann::json& default_value, validation_report& report) {
         if(j.find(field_name) == j.end()) {
             j[field_name] = default_value[field_name];
-            report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value of " + j[field_name].get<std::string>() + " was used");
+            report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value of '" + j[field_name].get<std::string>() + "' will be used");
         }
     }
 
