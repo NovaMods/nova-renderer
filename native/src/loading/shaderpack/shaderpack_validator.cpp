@@ -135,7 +135,7 @@ namespace nova {
             name = name_maybe.value();
 
         } else {
-            name = "<NAME MISSING>";
+            name = "<NAME_MISSING>";
             texture_json["name"] = name;
             report.errors.emplace_back(TEXTURE_MSG(name, "Missing field name"));
         }
