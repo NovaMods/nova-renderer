@@ -106,7 +106,7 @@ namespace nova {
 
     void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, shaderpack_resources_data& output) {
         std::string resources_string = folder_access->read_text_file("resources.json");
-        try {void merge_in(const validation_report& other)
+        try {
             auto json_resources = nlohmann::json::parse(resources_string.c_str());
             const validation_report report = validate_shaderpack_resources_data(json_resources);
             print(report);

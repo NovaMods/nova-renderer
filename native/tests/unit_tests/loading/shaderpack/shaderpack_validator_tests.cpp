@@ -885,7 +885,7 @@ TEST(graphics_pipeline_validator, missing_stencil_ref) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilRef. A default value of '0' will be used");
 }
 
-TEST(graphics_pipeline_test, missing_stencil_read_mask) {
+TEST(graphics_pipeline_validator, missing_stencil_read_mask) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json pipeline = {
@@ -945,7 +945,766 @@ TEST(graphics_pipeline_test, missing_stencil_read_mask) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilReadMask. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilReadMask. A default value of '0' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_stencil_write_mask) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilWriteMask. A default value of '0' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_msaa_support) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field msaaSupport. A default value of 'None' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_source_blend_factor) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        { "name",                         "TestPipeline" },
+        { "parentName",                   "TestParentPipeline" },
+        { "pass",                         "TestPass" },
+        { "defines",
+                                          { "USE_NORMALMAP", "USE_SPECULAR" }
+        },
+        { "states",
+                                          { "DisableDepthTest" }
+        },
+        { "vertexFields",
+                                          { "Position",      "UV0", "Normal", "Tangent" }
+        },
+        { "frontFace",
+                                          {
+                                            { "failOp", "Keep" },
+                                                             { "passOp", "Keep" },
+                                                                    { "depthFailOp", "Replace" },
+                                                                              { "compareOp", "Less" },
+                                              { "compareMask", 0xFF },
+                                              { "writeMask", 0xFF }
+                                          }
+        },
+        { "backFace",
+                                          {
+                                            { "failOp", "Keep" },
+                                                             { "passOp", "Keep" },
+                                                                    { "depthFailOp", "Replace" },
+                                                                              { "compareOp", "Less" },
+                                              { "compareMask", 0xFF },
+                                              { "writeMask", 0xFF }
+                                          }
+        },
+        { "depthBias",                    0 },
+        { "slopeScaledDepthBias",         0.01 },
+        { "stencilRef",                   0 },
+        { "stencilReadMask",              0xFF },
+        { "stencilWriteMask",             0xFF },
+        { "msaaSupport",                  "None" },
+        { "primitiveMode",                "Triangles" },
+        { "dstBlendFactor",               "Zero" },
+        { "alphaSrc",                     "One" },
+        { "alphaDst",                     "Zero" },
+        { "depthFunc",                    "Less" },
+        { "renderQueue",                  "Opaque" },
+        { "vertexShader",                 "TestVertexShader" },
+        { "geometryShader",               "TestGeometryShader" },
+        { "tessellationControlShader",    "TestTessellationControlShader" },
+        { "tessellationEvaluationShader", "TestTessellationEvaluationShader" },
+        { "fragmentShader",               "TestFragmentShader" },
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0],
+              "Pipeline TestPipeline: Missing field srcBlendFactor. A default value of 'One' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_destination_blend_factor) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field dstBlendFactor. A default value of 'One' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_alpha_src) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaSrc. A default value of 'One' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_alpha_dst) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaDst. A default value of 'Zero' will be used");
+
+}
+
+TEST(graphics_pipeline_validator, missing_depth_func) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field depthFunc. A default value of 'Less' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_render_queue) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field renderQueue. A default value of 'Opaque' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_tessellation_control_shader) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationControlShader. A default value of '' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_tessellation_evaluation_shader) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationEvaluationShader. A default value of '' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_geometry_shader) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+        {"fragmentShader", "TestFragmentShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field geometryShader. A default value of '' will be used");
+}
+
+TEST(graphics_pipeline_validator, missing_fragment_shader) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json pipeline = {
+        {"name", "TestPipeline"},
+        {"parentName", "TestParentPipeline"},
+        {"pass", "TestPass"},
+        {"defines",
+            {"USE_NORMALMAP", "USE_SPECULAR"}
+        },
+        { "states",
+            {"DisableDepthTest"}
+        },
+        { "vertexFields",
+            {"Position", "UV0", "Normal", "Tangent"}
+        },
+        {"frontFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"backFace",
+            {
+             {"failOp", "Keep"},
+                              {"passOp", "Keep"},
+                                {"depthFailOp", "Replace"},
+                                          {"compareOp", "Less"},
+                     {"compareMask", 0xFF},
+                     {"writeMask", 0xFF}
+                 }
+        },
+        {"depthBias", 0},
+        {"slopeScaledDepthBias", 0.01},
+        {"stencilRef", 0},
+        {"stencilReadMask", 0xFF},
+        {"stencilWriteMask", 0xFF},
+        {"msaaSupport", "None"},
+        {"primitiveMode", "Triangles"},
+        {"sourceBlendFactor", "One"},
+        {"dstBlendFactor", "Zero"},
+        {"alphaSrc", "One"},
+        {"alphaDst", "Zero"},
+        {"depthFunc", "Less"},
+        {"renderQueue", "Opaque"},
+        {"vertexShader", "TestVertexShader"},
+        {"geometryShader", "TestGeometryShader"},
+        {"tessellationControlShader", "TestTessellationControlShader"},
+        {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
+    };
+
+    const validation_report report = validate_graphics_pipeline(pipeline);
+
+    EXPECT_EQ(report.errors.size(), 0);
+
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field fragmentShader. A default value of '' will be used");
 }
 
 /************************************************

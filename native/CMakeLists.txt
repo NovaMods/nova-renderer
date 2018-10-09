@@ -220,21 +220,3 @@ set(NOVA_TEST ON)
 if(NOVA_TEST)
     add_subdirectory(tests)
 endif()
-
-####################################
-# Game Specific variants from here #
-####################################
-
-# Minecraft is the only variant for now so enable it by default for now
-option(NOVA_MINECRAFT "Build minecraft library." ON)
-if(NOVA_MINECRAFT)
-    find_package(JNI REQUIRED)
-    set(NOVA_MC_SOURCE
-            mc_interface/jni/com_continuum_nova_system_NovaNative.h
-            mc_interface/nova_mc_interface.cpp
-            )
-    add_library(nova-minecraft ${NOVA_MC_SOURCE})
-    add_dependencies(nova-minecraft nova-renderer)
-    target_include_directories(nova-minecraft PUBLIC ${JNI_INCLUDE_DIRS})
-    target_link_libraries(nova-minecraft nova-render ${COMMON_LINK_LIBS} ${JNI_LIBRARIES})
-endif()

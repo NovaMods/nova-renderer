@@ -83,9 +83,9 @@ namespace nova {
     }
 
 
-#define RESOURCES_MSG(msg) "Resources file: " + msg
+#define RESOURCES_MSG(msg) (std::string("Resources file: ") + msg)
 
-    void validate_shaderpack_resources_data(nlohmann::json& resources_json) {
+    validation_report validate_shaderpack_resources_data(nlohmann::json& resources_json) {
         validation_report report;
         bool missing_textures = false;
 
