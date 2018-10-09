@@ -2224,7 +2224,32 @@ TEST(material_validator, bindings_missing) {
 
     EXPECT_EQ(report.errors.size(), 0);
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Material pass main in material TestMaterial: No bindings defined");
+    EXPECT_EQ(report.warnings[0], "Material pass main in material TestMaterial: Missing field bindings");
+}
+
+TEST(material_validator, bindings_empty) {
+    TEST_SETUP_LOGGER();
+
+    nlohmann::json material = {
+        { "name", "TestMaterial" },
+        { "passes",
+            {
+                {
+                    { "name", "main" },
+                    { "pipeline", "TexturedLit" }
+                }
+            }
+        },
+        { "bindings", {} },
+        { "filter", "geometry_type::block" }
+    };
+
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
+
+    EXPECT_EQ(report.errors.size(), 0);
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Material pass main in material TestMaterial: Field bindings exists but it's empty");
 }
 
 TEST(material_validator, filter_missing) {

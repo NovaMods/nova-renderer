@@ -247,9 +247,15 @@ namespace nova {
                     report.errors.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "Missing field pipeline"));
                 }
                 
-                const auto bindings = get_json_array<std::unordered_map<std::string, std::string>>(pass_json, "bindings");
-                if(bindings.empty()) {
-                    report.warnings.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "No bindings defined"));
+                const auto bindings_itr = pass_json.find("bindings");
+                if(bindings_itr == pass_json.end()) {
+                    report.warnings.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "Missing field bindings"));
+
+                } else {
+                    const nlohmann::json& bindings = *bindings_itr;
+                    if(bindings.empty()) {
+                        report.warnings.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "Field bindings exists but it's empty"));
+                    }
                 }
             }
         }

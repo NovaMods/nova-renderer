@@ -246,9 +246,9 @@ namespace nova {
     }
 
     void load_single_material(ftl::TaskScheduler * task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, const uint32_t out_idx, std::vector<material_data>& output) {
-        const auto material_bytes = folder_access->read_text_file(material_path);
+        const std::string material_text = folder_access->read_text_file(material_path);
         try {
-            auto json_material = nlohmann::json::parse(material_bytes);
+            auto json_material = nlohmann::json::parse(material_text);
             const auto report = validate_material(json_material);
             print(report);
             if(!report.errors.empty()) {
