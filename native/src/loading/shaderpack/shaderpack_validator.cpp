@@ -222,6 +222,10 @@ namespace nova {
             
             for(const auto& pass_json : passes_json) {
                 const std::string pass_name = get_json_value<std::string>(pass_json, "name", "<NAME_MISSING>");
+                if(pass_name == "<NAME_MISSING>") {
+                    report.errors.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "Missing field name"));
+                }
+
                 const auto pipeline_maybe = get_json_value<std::string>(pass_json, "pipeline");
                 if(!pipeline_maybe) {
                     report.errors.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "Missing field pipeline"));
