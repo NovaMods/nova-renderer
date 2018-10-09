@@ -40,7 +40,7 @@
 [submodule "native/3rdparty/miniz"]
 	path = native/3rdparty/miniz
 	url = https://github.com/richgel999/miniz.git
-[submodule "native/3rdparty/fiber-tasking-lib"]
-	path = native/3rdparty/fiber-tasking-lib
+[submodule "native/3rdparty/FiberTaskingLib"]
+	path = native/3rdparty/FiberTaskingLib
 	url = https://github.com/BVE-Reborn/fiber-tasking-lib
 	branch = type-safe-interface

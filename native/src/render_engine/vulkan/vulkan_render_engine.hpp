@@ -54,8 +54,13 @@ namespace nova {
 
         VkSwapchainKHR swapchain;
         VkRenderPass render_pass;
-        VkPipelineLayout pipeline_layout;
-        VkPipeline graphics_pipeline;
+
+        struct vk_pipeline {
+            VkPipeline vulkan_pipeline;
+            VkPipelineLayout vulkan_layout;
+            pipeline_data nova_data;
+        };
+        std::unordered_map<std::string, vk_pipeline> pipelines;
 
         std::vector<VkImage> swapchain_images;
         VkFormat swapchain_format;
@@ -66,8 +71,7 @@ namespace nova {
         VkCommandPool command_pool;
         std::vector<VkCommandBuffer> command_buffers;
 
-        VkShaderModule vert_shader = VK_NULL_HANDLE;
-        VkShaderModule frag_shader = VK_NULL_HANDLE;
+        std::vector<VkShaderModule> all_shader_modules;
 
         std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
@@ -97,10 +101,8 @@ namespace nova {
         void destroy_image_views();
         void create_render_pass();
         void destroy_render_pass();
-        void create_shader_modules();
-        void destroy_shader_modules();
-        void create_graphics_pipeline();
-        void destroy_graphics_pipeline();
+        void create_graphics_pipelines();
+        void destroy_graphics_pipelines();
         void create_framebuffers();
         void destroy_framebuffers();
         void create_command_pool();

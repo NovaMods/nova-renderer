@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include "general_test_setup.hpp"
+#include "../../src/general_test_setup.hpp"
 
 TEST(nova_filesystem, zip_reading) {
     TEST_SETUP_LOGGER();

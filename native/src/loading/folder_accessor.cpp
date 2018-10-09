@@ -22,6 +22,10 @@ namespace nova {
         return {};
     }
 
+    const fs::path &folder_accessor_base::get_root() {
+        return root_folder;
+    }
+
     bool has_root(const fs::path& path, const fs::path& root) {
         if(std::distance(path.begin(), path.end()) < std::distance(root.begin(), root.end())) {
             // The path is shorter than the root path - the root can't possible be contained in the path
