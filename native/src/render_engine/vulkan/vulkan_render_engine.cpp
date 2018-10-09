@@ -474,6 +474,8 @@ namespace nova {
                     shader_stage_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
                 } else if(ends_with(pair.first, ".frag")) {
                     shader_stage_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+                } else {
+                    throw render_engine_initialization_exception("Failed to determine shadertype for file extension " + pair.first);
                 }
                 shader_stage_create_info.module = pair.second;
                 shader_stage_create_info.pName = "main";
@@ -553,11 +555,11 @@ namespace nova {
                     VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                     VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachment.blendEnable = VK_TRUE;
-            color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-            color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+            color_blend_attachment.srcColorBlendFactor = vulkan::type_converters::blend_factor(data.source_blend_factor);
+            color_blend_attachment.dstColorBlendFactor = vulkan::type_converters::blend_factor(data.destination_blend_factor);
             color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-            color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+            color_blend_attachment.srcAlphaBlendFactor = vulkan::type_converters::blend_factor(data.alpha_src);
+            color_blend_attachment.dstAlphaBlendFactor = vulkan::type_converters::blend_factor(data.alpha_dst);
             color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_create_info;
@@ -601,7 +603,7 @@ namespace nova {
             pipeline_create_info.pColorBlendState = &color_blend_create_info;
             pipeline_create_info.pDynamicState = nullptr;
             pipeline_create_info.layout = nova_pipeline.vulkan_layout;
-            pipeline_create_info.renderPass = render_pass;
+            pipeline_create_info.renderPass = /* TODO */;
             pipeline_create_info.subpass = 0;
             if(data.parent_name) {
                 pipeline_create_info.basePipelineHandle = pipelines.at(data.parent_name.value()).vulkan_pipeline;
@@ -740,8 +742,10 @@ namespace nova {
     }
 
     void vulkan_render_engine::destroy_graphics_pipelines() {
-        vkDestroyPipeline(device, graphics_pipeline, nullptr);
-        vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
+        for (const auto &[_, pipeline] : pipelines) {
+            vkDestroyPipeline(device, pipeline.vulkan_pipeline, nullptr);
+            vkDestroyPipelineLayout(device, pipeline.vulkan_layout, nullptr);
+        }
     }
 
     void vulkan_render_engine::destroy_render_pass() {
