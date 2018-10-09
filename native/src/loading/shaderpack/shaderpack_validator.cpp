@@ -8,6 +8,10 @@
 #include "../../util/utils.hpp"
 #include "../../../tests/src/general_test_setup.hpp"
 
+#ifdef ERROR
+#undef ERROR
+#endif
+
 namespace nova {
     /*!
      * \brief All the default values for a JSON pipeline
@@ -60,9 +64,7 @@ namespace nova {
     validation_report validate_graphics_pipeline(nlohmann::json& pipeline_json) {
         validation_report report;
         const std::string name = get_json_value<std::string>(pipeline_json, "name", "<NAME_MISSING>");
-        if(name == "<NAME_MISSING>") {
-            report.errors.emplace_back(PIPELINE_MSG(name, "Missing field name"));
-        }
+        // Don't need to check for the name's existence here, it'll be checked with the rest of the required fields
 
         const std::string pipeline_context = "Pipeline " + name;
         // Check non-required fields first 
@@ -110,16 +112,22 @@ namespace nova {
             report.warnings.emplace_back(RESOURCES_MSG("Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message"));
         }
 
-        const auto& samplers_itr = resources_json.find("samplers");
+        const nlohmann::json::iterator& samplers_itr = resources_json.find("samplers");
         if(samplers_itr == resources_json.end()) {
             if(!missing_textures) {
                 report.errors.emplace_back(RESOURCES_MSG("No samplers defined, but dynamic textures are defined. You need to define your own samplers to access a texture with"));
             }
 
         } else {
-            for(auto& sampler : *samplers_itr) {
-                const validation_report sampler_report = validate_sampler_data(sampler);
-                report.merge_in(validation_report);
+            nlohmann::json& all_samplers = *samplers_itr;
+            if(!all_samplers.is_array()) {
+                report.errors.emplace_back(RESOURCES_MSG("Samplers array must be an array, but like it isn't"));
+
+            } else {
+                for(nlohmann::json& sampler : all_samplers) {
+                    const validation_report sampler_report = validate_sampler_data(sampler);
+                    report.merge_in(sampler_report);
+                }
             }
         }
 
@@ -178,7 +186,7 @@ namespace nova {
 
     validation_report validate_sampler_data(nlohmann::json& sampler_json) {
         validation_report report;
-        const std::string name = get_json_value<std::string>(sampler_json, "name", "<NAME MISSING>");
+        const std::string name = get_json_value<std::string>(sampler_json, "name", "<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
             report.errors.emplace_back(SAMPLER_MSG(name, "Missing field name"));
         }
@@ -200,7 +208,7 @@ namespace nova {
 #define MATERIAL_MSG(name, error) "Material " + name + ": " + error
 #define MATERIAL_PASS_MSG(mat_name, pass_name, error) "Material pass " + pass_name + " in material " + mat_name + ": " + error
     
-    std::vector<std::string> validate_material(nlohmann::json& material_json) {
+    validation_report validate_material(nlohmann::json& material_json) {
         validation_report report;
         
         const std::string name = get_json_value<std::string>(material_json, "name", "<NAME_MISSING>");
@@ -213,19 +221,19 @@ namespace nova {
             report.errors.emplace_back(MATERIAL_MSG(name, "Missing geometry filter"));
         }
         
-        const auto passes_maybe = get_json_value(material_json, "passes");
-        bool missing_passes = !passes_maybe;
+        bool missing_passes = material_json.find("passes") == material_json.end();
         if(missing_passes) {
             report.errors.emplace_back(MATERIAL_MSG(name, "Missing material passes"));
-        }
-        
-        if(passes_maybe) {
-            const nlohmann::json& passes_json = passes_maybe.value();
+
+        } else {
+            const nlohmann::json& passes_json = material_json.at("passes");
             if(!passes_json.is_array()) {
                 report.errors.emplace_back(MATERIAL_MSG(name, "Passes field must be an array"));
+                return report;
                 
             } else if(passes_json.empty()) {
                 report.errors.emplace_back(MATERIAL_MSG(name, "Passes field must have at least one item"));
+                return report;
             }
             
             for(const auto& pass_json : passes_json) {
@@ -246,7 +254,7 @@ namespace nova {
             }
         }
         
-        return validation_errors;
+        return report;
     }
 
     void ensure_field_exists(nlohmann::json& j, const std::string& field_name, const std::string& context, const nlohmann::json& default_value, validation_report& report) {

@@ -59,7 +59,8 @@ TEST(graphics_pipeline_validator, no_warnings_or_errors) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        {"destinationBlendFactor", "Zero"},
+        {"fallback", ""},
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -71,7 +72,8 @@ TEST(graphics_pipeline_validator, no_warnings_or_errors) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -123,7 +125,8 @@ TEST(graphics_pipeline_validator, missing_name) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -135,7 +138,8 @@ TEST(graphics_pipeline_validator, missing_name) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -189,7 +193,8 @@ TEST(graphics_pipeline_validator, missing_pass) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -201,12 +206,13 @@ TEST(graphics_pipeline_validator, missing_pass) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
     ASSERT_EQ(report.errors.size(), 1);
-    EXPEXT_EQ(report.errors[0], "Pipeline TestPipeline: Missing field pass");
+    EXPECT_EQ(report.errors[0], "Pipeline TestPipeline: Missing field pass");
 }
 
 /*!
@@ -253,7 +259,8 @@ TEST(graphics_pipeline_validator, missing_vertex_fields) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -265,7 +272,8 @@ TEST(graphics_pipeline_validator, missing_vertex_fields) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -320,7 +328,8 @@ TEST(graphics_pipeline_validator, missing_vertex_shader) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -331,7 +340,8 @@ TEST(graphics_pipeline_validator, missing_vertex_shader) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -382,7 +392,8 @@ TEST(graphics_pipeline_validator, missing_parent_name) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -394,7 +405,8 @@ TEST(graphics_pipeline_validator, missing_parent_name) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -443,7 +455,8 @@ TEST(graphics_pipeline_validator, missing_defines) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -455,7 +468,8 @@ TEST(graphics_pipeline_validator, missing_defines) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -504,7 +518,8 @@ TEST(graphics_pipeline_validator, missing_states) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -516,7 +531,8 @@ TEST(graphics_pipeline_validator, missing_states) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -558,7 +574,8 @@ TEST(graphics_pipeline_validator, missing_front_face) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -570,7 +587,8 @@ TEST(graphics_pipeline_validator, missing_front_face) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -612,7 +630,8 @@ TEST(graphics_pipeline_validator, missing_back_face) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -624,7 +643,8 @@ TEST(graphics_pipeline_validator, missing_back_face) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -676,7 +696,7 @@ TEST(graphics_pipeline_validator, missing_fallback) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -688,7 +708,8 @@ TEST(graphics_pipeline_validator, missing_fallback) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -739,7 +760,8 @@ TEST(graphics_pipeline_validator, missing_depth_bias) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -751,7 +773,8 @@ TEST(graphics_pipeline_validator, missing_depth_bias) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -802,7 +825,8 @@ TEST(graphics_pipeline_validator, missing_slope_scaled_depth_bias) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -814,7 +838,8 @@ TEST(graphics_pipeline_validator, missing_slope_scaled_depth_bias) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -865,7 +890,8 @@ TEST(graphics_pipeline_validator, missing_stencil_ref) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -877,7 +903,8 @@ TEST(graphics_pipeline_validator, missing_stencil_ref) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -928,7 +955,8 @@ TEST(graphics_pipeline_validator, missing_stencil_read_mask) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -940,7 +968,8 @@ TEST(graphics_pipeline_validator, missing_stencil_read_mask) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -988,11 +1017,11 @@ TEST(graphics_pipeline_validator, missing_stencil_write_mask) {
         {"slopeScaledDepthBias", 0.01},
         {"stencilRef", 0},
         {"stencilReadMask", 0xFF},
-        {"stencilWriteMask", 0xFF},
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -1004,7 +1033,8 @@ TEST(graphics_pipeline_validator, missing_stencil_write_mask) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1055,7 +1085,8 @@ TEST(graphics_pipeline_validator, missing_msaa_support) {
         {"stencilWriteMask", 0xFF},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -1067,7 +1098,8 @@ TEST(graphics_pipeline_validator, missing_msaa_support) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1118,7 +1150,8 @@ TEST(graphics_pipeline_validator, missing_source_blend_factor) {
         { "stencilWriteMask",             0xFF },
         { "msaaSupport",                  "None" },
         { "primitiveMode",                "Triangles" },
-        { "dstBlendFactor",               "Zero" },
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         { "alphaSrc",                     "One" },
         { "alphaDst",                     "Zero" },
         { "depthFunc",                    "Less" },
@@ -1130,13 +1163,14 @@ TEST(graphics_pipeline_validator, missing_source_blend_factor) {
         { "fragmentShader",               "TestFragmentShader" },
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0],
-              "Pipeline TestPipeline: Missing field srcBlendFactor. A default value of 'One' will be used");
+              "Pipeline TestPipeline: Missing field sourceBlendFactor. A default value of 'One' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_destination_blend_factor) {
@@ -1183,6 +1217,7 @@ TEST(graphics_pipeline_validator, missing_destination_blend_factor) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -1194,12 +1229,13 @@ TEST(graphics_pipeline_validator, missing_destination_blend_factor) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field dstBlendFactor. A default value of 'One' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field destinationBlendFactor. A default value of 'Zero' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_alpha_src) {
@@ -1246,7 +1282,8 @@ TEST(graphics_pipeline_validator, missing_alpha_src) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
         {"renderQueue", "Opaque"},
@@ -1257,7 +1294,8 @@ TEST(graphics_pipeline_validator, missing_alpha_src) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1309,7 +1347,8 @@ TEST(graphics_pipeline_validator, missing_alpha_dst) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"depthFunc", "Less"},
         {"renderQueue", "Opaque"},
@@ -1320,7 +1359,8 @@ TEST(graphics_pipeline_validator, missing_alpha_dst) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1373,7 +1413,8 @@ TEST(graphics_pipeline_validator, missing_depth_func) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"renderQueue", "Opaque"},
@@ -1384,7 +1425,8 @@ TEST(graphics_pipeline_validator, missing_depth_func) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1436,7 +1478,8 @@ TEST(graphics_pipeline_validator, missing_render_queue) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -1447,7 +1490,8 @@ TEST(graphics_pipeline_validator, missing_render_queue) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1499,7 +1543,8 @@ TEST(graphics_pipeline_validator, missing_tessellation_control_shader) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -1510,7 +1555,8 @@ TEST(graphics_pipeline_validator, missing_tessellation_control_shader) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1562,7 +1608,8 @@ TEST(graphics_pipeline_validator, missing_tessellation_evaluation_shader) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -1573,7 +1620,8 @@ TEST(graphics_pipeline_validator, missing_tessellation_evaluation_shader) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1625,7 +1673,8 @@ TEST(graphics_pipeline_validator, missing_geometry_shader) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -1636,7 +1685,8 @@ TEST(graphics_pipeline_validator, missing_geometry_shader) {
         {"fragmentShader", "TestFragmentShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1688,7 +1738,8 @@ TEST(graphics_pipeline_validator, missing_fragment_shader) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        {"dstBlendFactor", "Zero"},
+        { "destinationBlendFactor", "Zero" },
+        { "fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -1699,7 +1750,8 @@ TEST(graphics_pipeline_validator, missing_fragment_shader) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
     };
 
-    const validation_report report = validate_graphics_pipeline(pipeline);
+    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1719,7 +1771,7 @@ TEST(resources_validator, no_errors_or_warnings) {
 
     nlohmann::json resources = {
         { "textures",
-            {
+            nlohmann::json::array(
                 {
                     { "name", "TestTexture" },
                     { "format",
@@ -1727,22 +1779,25 @@ TEST(resources_validator, no_errors_or_warnings) {
                             { "pixelFormat", "RGBA8" },
                             { "dimensionType", "Absolute" },
                             { "width", 1920 },
-                            { "heignt", 1080 }
+                            { "height", 1080 }
                         }
                     }
                 }
-            }
+                )
         },
         { "samplers",
-            {
-                { "name",     "TestSampler" },
-                { "filter",   "Bilinear" },
-                { "wrapMode", "Clamp" }
-            }
+            nlohmann::json::array(
+                {
+                    { "name",     "TestSampler" },
+                    { "filter",   "Bilinear" },
+                    { "wrapMode", "Clamp" }
+                }
+                )
         }
     };
 
-    validation_report report = validate_shaderpack_resources_data(resources);
+    const nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -1754,17 +1809,18 @@ TEST(resources_validator, no_errors_or_warnings) {
 TEST(resources_validator, texture_missing) {
     TEST_SETUP_LOGGER();
 
-    nlohmann::json resources = {
-        { "samplers",
-            {
-                { "name",     "TestSampler" },
-                { "filter",   "Bilinear" },
-                { "wrapMode", "Clamp" }
-            }
-        }
+    nlohmann::json sampler = {
+        { "name",     "TestSampler" },
+        { "filter",   "Bilinear" },
+        { "wrapMode", "Clamp" }
     };
 
-    validation_report report = validate_shaderpack_resources_data(resources);
+
+    nlohmann::json resources;
+    resources["samplers"] = nlohmann::json::array({sampler});
+    
+    nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
     
@@ -1788,7 +1844,7 @@ TEST(resources_validator, samplers_missing) {
                             { "pixelFormat", "RGBA8" },
                             { "dimensionType", "Absolute" },
                             { "width", 1920 },
-                            { "heignt", 1080 }
+                            { "height", 1080 }
                         }
                     }
                 }
@@ -1796,7 +1852,8 @@ TEST(resources_validator, samplers_missing) {
         }
     };
 
-    validation_report report = validate_shaderpack_resources_data(resources);
+    nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     
@@ -1827,19 +1884,22 @@ TEST(resources_validator, texture_warnings_propagate) {
         },
         { "samplers",
             {
-                { "name",     "TestSampler" },
-                { "filter",   "Bilinear" },
-                { "wrapMode", "Clamp" }
+                {
+                    { "name",     "TestSampler" },
+                    { "filter",   "Bilinear" },
+                    { "wrapMode", "Clamp" }
+                }
             }
         }
     };
 
-    validation_report report = validate_shaderpack_resources_data(resources);
+    nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
+    nova::print(report);
 
-    EXPECT_EQ(report.warnings.size(), 0);
+    EXPECT_EQ(report.errors.size(), 0);
     
-    ASSERT_EQ(report.errors.size(), 1);
-    EXPECT_EQ(report.errors[0], "Format of texture TestTexture: Missing field pixelFormat. A default of RGBA8 was used");
+    ASSERT_EQ(report.warnings.size(), 1);
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of 'RGBA8' will be used");
     
     EXPECT_EQ(resources.at("textures").at(0).at("format").at("pixelFormat"), "RGBA8");
 }
@@ -1860,7 +1920,7 @@ TEST(resources_validator, sampler_errors_propagate) {
                                       { "pixelFormat", "RGBA8" },
                                       { "dimensionType", "Absolute" },
                                       { "width", 1920 },
-                                      { "heignt", 1080 }
+                                      { "height", 1080 }
                                   }
                               }
                 }
@@ -1868,13 +1928,16 @@ TEST(resources_validator, sampler_errors_propagate) {
         },
         { "samplers",
             {
-                { "name",     "TestSampler" },
-                { "wrapMode", "Clamp" }
+                {
+                    { "name",     "TestSampler" },
+                    { "wrapMode", "Clamp" }
+                }
             }
         }
     };
 
-    validation_report report = validate_shaderpack_resources_data(resources);
+    nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1899,12 +1962,13 @@ TEST(texture_validator, no_errors_or_warnings) {
                  { "pixelFormat", "RGBA8" },
                  { "dimensionType", "Absolute" },
                  { "width", 1920 },
-                 { "heignt", 1080 }
+                 { "height", 1080 }
              }
         }
     };
 
-    validation_report report = validate_texture_data(texture);
+    const nova::validation_report report = nova::validate_texture_data(texture);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -1921,11 +1985,12 @@ TEST(texture_validator, name_missing) {
                              {"pixelFormat", "RGBA8"},
                              {"dimensionType", "Absolute"},
                              {"width", 1920},
-                             {"heignt", 1080}
+                             {"height", 1080}
                      }}
     };
 
-    validation_report report = validate_texture_data(texture);
+    nova::validation_report report = nova::validate_texture_data(texture);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1943,7 +2008,8 @@ TEST(texture_validator, format_missing) {
             {"name", "TestTexture"}
     };
 
-    validation_report report = validate_texture_data(texture);
+    nova::validation_report report = nova::validate_texture_data(texture);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1966,12 +2032,13 @@ TEST(texture_validator, texture_format_warnings_propagate) {
                      }}
     };
 
-    validation_report report = validate_texture_data(texture);
+    nova::validation_report report = nova::validate_texture_data(texture);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default of RGBA8 was used");
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of 'RGBA8' will be used");
 
     EXPECT_EQ(texture.at("format").at("pixelFormat").get<std::string>(), "RGBA8");
 }
@@ -1990,10 +2057,11 @@ TEST(texture_format_validator, no_errors_or_warnings) {
             {"pixelFormat", "RGBA8"},
             {"dimensionType", "Absolute"},
             {"width", 1920},
-            {"heignt", 1080}
+            {"height", 1080}
     };
 
-    const validation_report report = validate_texture_format(texture_format, "TestTexture");
+    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -2008,15 +2076,16 @@ TEST(texture_format_validator, pixel_format_missing) {
     nlohmann::json texture_format = {
             {"dimensionType", "Absolute"},
             {"width", 1920},
-            {"heignt", 1080}
+            {"height", 1080}
     };
 
-    const validation_report report = validate_texture_format(texture_format, "TestTexture");
+    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default of RGBA8 was used");
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of 'RGBA8' will be used");
 
     EXPECT_EQ(texture_format.at("pixelFormat").get<std::string>(), "RGBA8");
 }
@@ -2030,15 +2099,16 @@ TEST(texture_format_validator, dimension_type_missing) {
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
             {"width", 1920},
-            {"heignt", 1080}
+            {"height", 1080}
     };
 
-    const validation_report report = validate_texture_format(texture_format, "TestTexture");
+    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field dimensionType. A default value of Absolute was used");
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field dimensionType. A default value of 'Absolute' will be used");
 
     EXPECT_EQ(texture_format.at("dimensionType").get<std::string>(), "Absolute");
 }
@@ -2052,10 +2122,11 @@ TEST(texture_format_validator, width_missing) {
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
             {"dimensionType", "Absolute"},
-            {"heignt", 1080}
+            {"height", 1080}
     };
 
-    const validation_report report = validate_texture_format(texture_format, "TestTexture");
+    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2075,7 +2146,8 @@ TEST(texture_format_validator, height_missing) {
             {"width", 1920}
     };
 
-    const validation_report report = validate_texture_format(texture_format, "TestTexture");
+    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2099,7 +2171,8 @@ TEST(sampler_validator, no_errors_or_warnings) {
         { "wrapMode", "Clamp" }
     };
 
-    const validation_report report = validate_sampler(sampler);
+    const nova::validation_report report = nova::validate_sampler_data(sampler);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -2116,7 +2189,8 @@ TEST(sampler_validator, missing_name) {
             {"wrapMode", "Clamp"}
     };
 
-    const validation_report report = validate_sampler(sampler);
+    const nova::validation_report report = nova::validate_sampler_data(sampler);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2135,7 +2209,8 @@ TEST(sampler_validator, missing_filter) {
             {"wrapMode", "Clamp"}
     };
 
-    const validation_report report = validate_sampler(sampler);
+    const nova::validation_report report = nova::validate_sampler_data(sampler);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2154,7 +2229,8 @@ TEST(sampler_validator, missing_wrap_mode) {
             {"filter", "Bilinear"}
     };
 
-    const validation_report report = validate_sampler(sampler);
+    const nova::validation_report report = nova::validate_sampler_data(sampler);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2174,17 +2250,24 @@ TEST(material_validator, no_errors_or_warnings) {
 
     nlohmann::json material = {
         {"name", "TestMaterial"},
-        {"passes", {
-            {"name", "main"},
-            {"pipeline", "TexturedLit"},
-            {"bindings", {
-                {"ModelMatrix", "NovaPerModelUBO"}
-            }}
-        }},
+        {"passes", 
+            {
+                {
+                    {"name", "main"},
+                    {"pipeline", "TexturedLit"},
+                    {"bindings",
+                        {
+                            {"ModelMatrix", "NovaPerModelUBO"}
+                        }
+                    }
+                }
+            }
+        },
         {"filter", "geometry_type::block"}
     };
 
-    const validation_report report = validate_material(material);
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
@@ -2197,19 +2280,24 @@ TEST(material_validator, bindings_missing) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
-            {"name", "TestMaterial"},
-            {"passes", {
-                             {"name", "main"},
-                             {"pipeline", "TexturedLit"}
-                     }},
-            {"filter", "geometry_type::block"}
+        {"name", "TestMaterial"},
+        {"passes",
+            {
+                {
+                    {"name", "main"},
+                    {"pipeline", "TexturedLit"}
+                }
+            }
+        },
+        {"filter", "geometry_type::block"}
     };
 
-    const validation_report report = validate_material(material);
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Material TestMaterial: No bindings defined");
+    EXPECT_EQ(report.warnings[0], "Material pass main in material TestMaterial: No bindings defined");
 }
 
 /*!
@@ -2219,17 +2307,26 @@ TEST(material_validator, filter_missing) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
-            {"name", "TestMaterial"},
-            {"passes", {
-                             {"name", "main"},
-                             {"pipeline", "TexturedLit"},
-                             {"bindings", {
-                                                  {"ModelMatrix", "NovaPerModelUBO"}
-                                          }}
-                     }}
+        {"name", "TestMaterial"},
+        {"passes",
+            {
+                {
+                    {"name", "main"},
+                    {"pipeline", "TexturedLit"},
+                    {"bindings",
+                        {
+                            {
+                                {"ModelMatrix", "NovaPerModelUBO"}
+                            }
+                        }
+                    }
+                }
+            }
+        }
     };
 
-    const validation_report report = validate_material(material);
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2244,17 +2341,26 @@ TEST(material_validator, name_missing) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
-            {"passes", {
-                             {"name", "main"},
-                             {"pipeline", "TexturedLit"},
-                             {"bindings", {
-                                                  {"ModelMatrix", "NovaPerModelUBO"}
-                                          }}
-                     }},
-            {"filter", "geometry_type::block"}
+        {"passes",
+            {
+                {
+                    {"name", "main"},
+                    {"pipeline", "TexturedLit"},
+                    {"bindings",
+                        {
+                            {
+                                 {"ModelMatrix", "NovaPerModelUBO"}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {"filter", "geometry_type::block"}
     };
 
-    const validation_report report = validate_material(material);
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2273,7 +2379,8 @@ TEST(material_validator, passes_missing) {
             {"filter", "geometry_type::block"}
     };
 
-    const validation_report report = validate_material(material);
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2288,12 +2395,13 @@ TEST(material_validator, passes_wrong_type) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
-            {"name", "TestMaterial"},
-            {"passes", 42},
-            {"filter", "geometry_type::block"}
+        {"name", "TestMaterial"},
+        {"passes", 42},
+        {"filter", "geometry_type::block"}
     };
 
-    const validation_report report = validate_material(material);
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2313,7 +2421,8 @@ TEST(material_validator, passes_empty_array) {
             {"filter", "geometry_type::block"}
     };
 
-    const validation_report report = validate_material(material);
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2328,17 +2437,26 @@ TEST(material_validator, pass_no_pipeline) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
-            {"name", "TestMaterial"},
-            {"passes", {
-                             {"name", "main"},
-                             {"bindings", {
-                                                  {"ModelMatrix", "NovaPerModelUBO"}
-                                          }}
-                     }},
-            {"filter", "geometry_type::block"}
+        {"name", "TestMaterial"},
+        {"passes",
+            {
+                {
+                    {"name", "main"},
+                    {"bindings",
+                        {
+                            {
+                                {"ModelMatrix", "NovaPerModelUBO"}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {"filter", "geometry_type::block"}
     };
 
-    const validation_report report = validate_material(material);
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2353,17 +2471,26 @@ TEST(material_validator, pass_no_name) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json material = {
-            {"name", "TestMaterial"},
-            {"passes", {
-                             {"pipeline", "TexturedLit"},
-                             {"bindings", {
-                                                  {"ModelMatrix", "NovaPerModelUBO"}
-                                          }}
-                     }},
-            {"filter", "geometry_type::block"}
+        {"name", "TestMaterial"},
+        {"passes",
+            {
+                {
+                    {"pipeline", "TexturedLit"},
+                    {"bindings",
+                        {
+                            {
+                                {"ModelMatrix", "NovaPerModelUBO"}
+                            }
+                        }
+                     }
+                }
+            }
+        },
+        {"filter", "geometry_type::block"}
     };
 
-    const validation_report report = validate_material(material);
+    const nova::validation_report report = nova::validate_material(material);
+    nova::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
