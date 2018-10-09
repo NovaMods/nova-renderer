@@ -37,10 +37,10 @@ namespace nova {
         
         ftl::AtomicCounter loading_tasks_remaining(&task_scheduler);
 
-        shaderpack_data data;
+        shaderpack_data data = {};
 
         // Load resource definitions
-        shaderpack_resources_data loaded_resources;
+        shaderpack_resources_data loaded_resources = {};
         task_scheduler.AddTask(&loading_tasks_remaining, load_dynamic_resources_file, folder_access, data.resources);
 
         // Load pass definitions
@@ -129,7 +129,7 @@ namespace nova {
         }
 
         // Don't check for a resources_not_found exception because a shaderpack _needs_ a passes.json and if the 
-        // shaderpack doesn't provide one then it can't be loaded
+        // shaderpack doesn't provide one then it can't be loaded, so we'll catch that exception later on
     }
 
     void load_pipeline_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, std::vector<pipeline_data>& output) {
@@ -211,8 +211,12 @@ namespace nova {
             auto material = json_material.get<material_data>();
             material.name = material_path.stem().string();
             output[out_idx] = material;
+
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse material file " << material_path.string() << ": " << err.what();
+
+        } catch(validation_failed& err) {
+            NOVA_LOG(ERROR) << "Could not validate material file " << material_path.string() << ": " << err.what();
         }
     }
 }
