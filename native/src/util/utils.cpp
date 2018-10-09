@@ -18,7 +18,7 @@ namespace nova {
         return tokens;
     }
 
-    std::string join(const std::vector<std::string>& strings, const std::string& joiner) {
+    std::string join(const std::vector<std::string>& strings, const std::string& joiner = ", ") {
         std::stringstream ss;
         for(size_t i = 0; i < strings.size(); i++) {
             ss << strings[i];

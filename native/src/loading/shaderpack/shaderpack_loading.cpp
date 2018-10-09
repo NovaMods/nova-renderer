@@ -23,7 +23,10 @@ namespace nova {
     void load_material_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, std::vector<material_data>& output);
     void load_single_material(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, uint32_t out_idx, std::vector<material_data>& output);
 
-    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name, ftl::TaskScheduler& task_scheduler) {
+    bool loading_failed = false;
+
+    std::optional<shaderpack_data> load_shaderpack_data(const fs::path& shaderpack_name, ftl::TaskScheduler& task_scheduler) {
+        loading_failed = false;
         folder_accessor_base* folder_access = get_shaderpack_accessor(shaderpack_name);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
@@ -59,7 +62,12 @@ namespace nova {
         
         delete folder_access;
 
-        return data;
+        if(loading_failed) {
+            return {};
+
+        } else {
+            return std::make_optional(data);
+        }
     }
 
     folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name) {
@@ -98,22 +106,31 @@ namespace nova {
 
     void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, shaderpack_resources_data& output) {
         std::string resources_string = folder_access->read_text_file("resources.json");
-        try {
+        try {void merge_in(const validation_report& other)
             auto json_resources = nlohmann::json::parse(resources_string.c_str());
-            validate_shaderpack_resources_data(json_resources);
+            const validation_report report = validate_shaderpack_resources_data(json_resources);
+            print(report);
+            if(!report.errors.empty()) {
+                loading_failed = true;
+                return;
+            }
+
             auto resources = json_resources.get<shaderpack_resources_data>();
             output.samplers = std::move(resources.samplers);
             output.textures = std::move(resources.textures);
 
         } catch(resource_not_found_error&) {
             // No resources defined.. I guess they think they don't need any?
-            NOVA_LOG(WARN) << "No resources file found for shaderpack";
+            NOVA_LOG(WARN) << "No resources file found for shaderpack at " << folder_access->get_root();
+            loading_failed = true;
 
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's resources.json: " << err.what();
+            loading_failed = true;
 
         } catch(validation_failed& err) {
             NOVA_LOG(ERROR) << "Could not validate resources.json: " << err.what();
+            loading_failed = true;
         }
     }
 
@@ -126,6 +143,7 @@ namespace nova {
 
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's passes.json: " << err.what();
+            loading_failed = true;
         }
 
         // Don't check for a resources_not_found exception because a shaderpack _needs_ a passes.json and if the 
@@ -138,6 +156,7 @@ namespace nova {
             potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
         } catch (filesystem_exception &exception) {
             NOVA_LOG(ERROR) << "Materials folder does not exist: " << exception.what();
+            loading_failed = true;
             return;
         }
 
@@ -162,17 +181,25 @@ namespace nova {
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
         try {
             auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
-            validate_graphics_pipeline(json_pipeline);
+            const validation_report report = validate_graphics_pipeline(json_pipeline);
+            print(report);
+            if(!report.errors.empty()) {
+                loading_failed = true;
+                return;
+            }
+
             output[out_idx] = json_pipeline.get<pipeline_data>();
 
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
+            loading_failed = true;
 
         //} catch(nlohmann::json::type_error& err) {
         //    NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
 
         } catch(validation_failed& err) {
             NOVA_LOG(ERROR) << "Could not validate pipeline file " << pipeline_path.string() << ": " << err.what();
+            loading_failed = true;
         }
     }
 
@@ -183,6 +210,7 @@ namespace nova {
 
         } catch (filesystem_exception &exception) {
             NOVA_LOG(ERROR) << "Materials folder does not exist: " << exception.what();
+            loading_failed = true;
             return;
         }
 
@@ -203,20 +231,26 @@ namespace nova {
         task_scheduler->WaitForCounter(&material_load_tasks_remaining, 0);
     }
 
-    void load_single_material(ftl::TaskScheduler * task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, uint32_t out_idx, std::vector<material_data>& output) {
+    void load_single_material(ftl::TaskScheduler * task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, const uint32_t out_idx, std::vector<material_data>& output) {
         const auto material_bytes = folder_access->read_text_file(material_path);
         try {
             auto json_material = nlohmann::json::parse(material_bytes);
-            validate_material(json_material);
+            const auto report = validate_material(json_material);
+            print(report);
+            if(!report.errors.empty()) {
+                // There were errors, this material can't be loaded
+                loading_failed = true;
+                return;
+            }
+
             auto material = json_material.get<material_data>();
             material.name = material_path.stem().string();
             output[out_idx] = material;
 
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse material file " << material_path.string() << ": " << err.what();
+            loading_failed = true;
 
-        } catch(validation_failed& err) {
-            NOVA_LOG(ERROR) << "Could not validate material file " << material_path.string() << ": " << err.what();
         }
     }
 }

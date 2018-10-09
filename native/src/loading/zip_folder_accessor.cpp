@@ -25,7 +25,7 @@ namespace nova {
     }
 
     std::string zip_folder_accessor::read_text_file(const fs::path &resource_path) {
-        auto full_path = our_folder / resource_path;
+        auto full_path = root_folder / resource_path;
 
         const std::string resource_string = full_path.string();
         if(!does_resource_exist_internal(full_path)) {

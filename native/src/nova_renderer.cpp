@@ -45,14 +45,15 @@ namespace nova {
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
-        shaderpack_data loaded_data;
-
-        task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [](ftl::TaskScheduler* task_scheduler, const std::string& shaderpack_name, shaderpack_data& output) {
+        task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [](ftl::TaskScheduler* task_scheduler, const std::string& shaderpack_name) {
             const auto shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
-            output = shaderpack_data;
-        }, shaderpack_name, loaded_data);
+            if(shaderpack_data) {
+                engine->set_shaderpack(*shaderpack_data);
 
-        engine->set_shaderpack(loaded_data);
+            } else {
+                NOVA_LOG(ERROR) << "Shaderpack " << shaderpack_name << " could not be loaded. Check the logs for more information";
+            }
+        }, shaderpack_name);
     }
 
     render_engine* nova_renderer::get_engine() {
