@@ -14,7 +14,7 @@ namespace nova {
     struct iresource;
 
     /*!
-     * \brief All the layouts that a resoruce may have
+     * \brief All the layouts that a resource may have
      *
      * This enum covers both images and buffers, and not all layouts are valid for all types of resources. The user of
      * this enum is supposed to know what's useful for what
