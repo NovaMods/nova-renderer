@@ -220,8 +220,8 @@ namespace nova {
         if(missing_geometry_filter) {
             report.errors.emplace_back(MATERIAL_MSG(name, "Missing geometry filter"));
         }
-        
-        bool missing_passes = material_json.find("passes") == material_json.end();
+
+        const bool missing_passes = material_json.find("passes") == material_json.end();
         if(missing_passes) {
             report.errors.emplace_back(MATERIAL_MSG(name, "Missing material passes"));
 
@@ -247,8 +247,8 @@ namespace nova {
                     report.errors.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "Missing field pipeline"));
                 }
                 
-                const auto bindings_maybe = get_json_value<std::unordered_map<std::string, std::string>>(pass_json, "bindings");
-                if(!bindings_maybe) {
+                const auto bindings = get_json_array<std::unordered_map<std::string, std::string>>(pass_json, "bindings");
+                if(bindings.empty()) {
                     report.warnings.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "No bindings defined"));
                 }
             }
@@ -260,7 +260,7 @@ namespace nova {
     void ensure_field_exists(nlohmann::json& j, const std::string& field_name, const std::string& context, const nlohmann::json& default_value, validation_report& report) {
         if(j.find(field_name) == j.end()) {
             j[field_name] = default_value[field_name];
-            report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value of '" + j[field_name].get<std::string>() + "' will be used");
+            report.warnings.emplace_back(context + ": Missing field " + field_name + ". A default value of '" + j[field_name].dump() + "' will be used");
         }
     }
 

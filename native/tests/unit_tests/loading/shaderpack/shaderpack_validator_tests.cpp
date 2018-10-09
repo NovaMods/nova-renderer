@@ -12,9 +12,6 @@
  *      Pipeline validator tests        *
  ****************************************/
 
-/*!
- * \brief Tests the happy path for the pipeline validator
- */
 TEST(graphics_pipeline_validator, no_warnings_or_errors) {
     TEST_SETUP_LOGGER();
 
@@ -79,9 +76,6 @@ TEST(graphics_pipeline_validator, no_warnings_or_errors) {
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-/*!
- * \brief Tests that the graphics pipeline validator handles a missing name
- */
 TEST(graphics_pipeline_validator, missing_name) {
     TEST_SETUP_LOGGER();
 
@@ -147,9 +141,6 @@ TEST(graphics_pipeline_validator, missing_name) {
     EXPECT_EQ(report.errors[0], "Pipeline <NAME_MISSING>: Missing field name");
 }
 
-/*!
- * \brief Tests that the graphics pipeline validator handles a missing pass
- */
 TEST(graphics_pipeline_validator, missing_pass) {
     TEST_SETUP_LOGGER();
 
@@ -215,9 +206,6 @@ TEST(graphics_pipeline_validator, missing_pass) {
     EXPECT_EQ(report.errors[0], "Pipeline TestPipeline: Missing field pass");
 }
 
-/*!
- * \brief Tests that the graphics pipeline validator can handle missing vertex fields
- */
 TEST(graphics_pipeline_validator, missing_vertex_fields) {
     TEST_SETUP_LOGGER();
 
@@ -281,9 +269,6 @@ TEST(graphics_pipeline_validator, missing_vertex_fields) {
     EXPECT_EQ(report.errors[0], "Pipeline TestPipeline: Missing field vertexFields");
 }
 
-/*!
- * \brief Tests that the graphics pipeline validator can handle a missing vertex shader
- */
 TEST(graphics_pipeline_validator, missing_vertex_shader) {
     TEST_SETUP_LOGGER();
 
@@ -411,7 +396,7 @@ TEST(graphics_pipeline_validator, missing_parent_name) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field parentName. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field parentName. A default value of '\"\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_defines) {
@@ -474,7 +459,7 @@ TEST(graphics_pipeline_validator, missing_defines) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field defines. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field defines. A default value of 'null' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_states) {
@@ -537,7 +522,7 @@ TEST(graphics_pipeline_validator, missing_states) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field states. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field states. A default value of 'null' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_front_face) {
@@ -593,7 +578,7 @@ TEST(graphics_pipeline_validator, missing_front_face) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field frontFace. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field frontFace. A default value of 'null' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_back_face) {
@@ -649,7 +634,7 @@ TEST(graphics_pipeline_validator, missing_back_face) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field backFace. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field backFace. A default value of 'null' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_fallback) {
@@ -714,7 +699,7 @@ TEST(graphics_pipeline_validator, missing_fallback) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field fallback. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field fallback. A default value of '\"\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_depth_bias) {
@@ -1104,7 +1089,7 @@ TEST(graphics_pipeline_validator, missing_msaa_support) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field msaaSupport. A default value of 'None' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field msaaSupport. A default value of '\"None\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_source_blend_factor) {
@@ -1170,7 +1155,7 @@ TEST(graphics_pipeline_validator, missing_source_blend_factor) {
 
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0],
-              "Pipeline TestPipeline: Missing field sourceBlendFactor. A default value of 'One' will be used");
+              "Pipeline TestPipeline: Missing field sourceBlendFactor. A default value of '\"One\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_destination_blend_factor) {
@@ -1235,7 +1220,7 @@ TEST(graphics_pipeline_validator, missing_destination_blend_factor) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field destinationBlendFactor. A default value of 'Zero' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field destinationBlendFactor. A default value of '\"Zero\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_alpha_src) {
@@ -1300,7 +1285,7 @@ TEST(graphics_pipeline_validator, missing_alpha_src) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaSrc. A default value of 'One' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaSrc. A default value of '\"One\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_alpha_dst) {
@@ -1365,7 +1350,7 @@ TEST(graphics_pipeline_validator, missing_alpha_dst) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaDst. A default value of 'Zero' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaDst. A default value of '\"Zero\"' will be used");
 
 }
 
@@ -1431,7 +1416,7 @@ TEST(graphics_pipeline_validator, missing_depth_func) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field depthFunc. A default value of 'Less' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field depthFunc. A default value of '\"Less\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_render_queue) {
@@ -1496,7 +1481,7 @@ TEST(graphics_pipeline_validator, missing_render_queue) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field renderQueue. A default value of 'Opaque' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field renderQueue. A default value of '\"Opaque\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_tessellation_control_shader) {
@@ -1561,7 +1546,7 @@ TEST(graphics_pipeline_validator, missing_tessellation_control_shader) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationControlShader. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationControlShader. A default value of '\"\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_tessellation_evaluation_shader) {
@@ -1626,7 +1611,7 @@ TEST(graphics_pipeline_validator, missing_tessellation_evaluation_shader) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationEvaluationShader. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationEvaluationShader. A default value of '\"\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_geometry_shader) {
@@ -1691,7 +1676,7 @@ TEST(graphics_pipeline_validator, missing_geometry_shader) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field geometryShader. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field geometryShader. A default value of '\"\"' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_fragment_shader) {
@@ -1756,22 +1741,19 @@ TEST(graphics_pipeline_validator, missing_fragment_shader) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field fragmentShader. A default value of '' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field fragmentShader. A default value of '\"\"' will be used");
 }
 
 /************************************************
  *      Dynamic resources validator tests       *
  ************************************************/
 
-/*!
- * \brief Tests the happy path for the dynamic resources validator
- */
 TEST(resources_validator, no_errors_or_warnings) {
     TEST_SETUP_LOGGER();
 
     nlohmann::json resources = {
         { "textures",
-            nlohmann::json::array(
+            {
                 {
                     { "name", "TestTexture" },
                     { "format",
@@ -1783,16 +1765,16 @@ TEST(resources_validator, no_errors_or_warnings) {
                         }
                     }
                 }
-                )
+            }
         },
         { "samplers",
-            nlohmann::json::array(
+            {
                 {
                     { "name",     "TestSampler" },
                     { "filter",   "Bilinear" },
                     { "wrapMode", "Clamp" }
                 }
-                )
+            }
         }
     };
 
@@ -1803,9 +1785,6 @@ TEST(resources_validator, no_errors_or_warnings) {
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-/*!
- * \brief Tests that the resources validator can handle missing textures
- */
 TEST(resources_validator, texture_missing) {
     TEST_SETUP_LOGGER();
 
@@ -1828,9 +1807,6 @@ TEST(resources_validator, texture_missing) {
     EXPECT_EQ(report.warnings[0], "Resources file: Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message");
 }
 
-/*!
- * \brief Tests that the resources validator can handle missing samplers
- */
 TEST(resources_validator, samplers_missing) {
     TEST_SETUP_LOGGER();
 
@@ -1861,9 +1837,6 @@ TEST(resources_validator, samplers_missing) {
     EXPECT_EQ(report.errors[0], "Resources file: No samplers defined, but dynamic textures are defined. You need to define your own samplers to access a texture with");
 }
 
-/*!
- * \brief Tests that texture validator warnings propagate to the resources validator
- */
 TEST(resources_validator, texture_warnings_propagate) {
     TEST_SETUP_LOGGER();
 
@@ -1899,14 +1872,11 @@ TEST(resources_validator, texture_warnings_propagate) {
     EXPECT_EQ(report.errors.size(), 0);
     
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of 'RGBA8' will be used");
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
     
     EXPECT_EQ(resources.at("textures").at(0).at("format").at("pixelFormat"), "RGBA8");
 }
 
-/*!
- * \brief Tests that sampler validator errors properly propagate to the resources validator
- */
 TEST(resources_validator, sampler_errors_propagate) {
     TEST_SETUP_LOGGER();
 
@@ -1949,9 +1919,6 @@ TEST(resources_validator, sampler_errors_propagate) {
  *      Texture validator tests     *
  ************************************/
 
-/*!
- * \brief Tests that the texture format validator correctly handles the happy path
- */
 TEST(texture_validator, no_errors_or_warnings) {
     TEST_SETUP_LOGGER();
 
@@ -1974,9 +1941,6 @@ TEST(texture_validator, no_errors_or_warnings) {
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-/*!
- * \brief Tests that the texture validator handles a missing name
- */
 TEST(texture_validator, name_missing) {
     TEST_SETUP_LOGGER();
 
@@ -1998,9 +1962,6 @@ TEST(texture_validator, name_missing) {
     EXPECT_EQ(report.errors[0], "Texture <NAME_MISSING>: Missing field name");
 }
 
-/*!
- * \brief Tests that the texture format validator handles a missing filter
- */
 TEST(texture_validator, format_missing) {
     TEST_SETUP_LOGGER();
 
@@ -2017,9 +1978,6 @@ TEST(texture_validator, format_missing) {
     EXPECT_EQ(report.errors[0], "Texture TestTexture: Missing field format");
 }
 
-/*!
- * \brief Tests that a warning in the format validator propagates to the texture validator
- */
 TEST(texture_validator, texture_format_warnings_propagate) {
     TEST_SETUP_LOGGER();
 
@@ -2038,7 +1996,7 @@ TEST(texture_validator, texture_format_warnings_propagate) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of 'RGBA8' will be used");
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
 
     EXPECT_EQ(texture.at("format").at("pixelFormat").get<std::string>(), "RGBA8");
 }
@@ -2047,9 +2005,6 @@ TEST(texture_validator, texture_format_warnings_propagate) {
  *      Texture format validation tests     *
  ********************************************/
 
-/*!
- * \brief Tests that the texture format validator doesn't give any errors for a well-formed texture format
- */
 TEST(texture_format_validator, no_errors_or_warnings) {
     TEST_SETUP_LOGGER();
 
@@ -2067,9 +2022,6 @@ TEST(texture_format_validator, no_errors_or_warnings) {
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-/*!
- * \brief Tests that the texture format validator gives the right warning for a missing pixel format
- */
 TEST(texture_format_validator, pixel_format_missing) {
     TEST_SETUP_LOGGER();
 
@@ -2085,14 +2037,11 @@ TEST(texture_format_validator, pixel_format_missing) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of 'RGBA8' will be used");
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
 
     EXPECT_EQ(texture_format.at("pixelFormat").get<std::string>(), "RGBA8");
 }
 
-/*!
- * \brief Tests that the texture format validator gives the right warning for a missing dimension type
- */
 TEST(texture_format_validator, dimension_type_missing) {
     TEST_SETUP_LOGGER();
 
@@ -2108,14 +2057,11 @@ TEST(texture_format_validator, dimension_type_missing) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field dimensionType. A default value of 'Absolute' will be used");
+    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field dimensionType. A default value of '\"Absolute\"' will be used");
 
     EXPECT_EQ(texture_format.at("dimensionType").get<std::string>(), "Absolute");
 }
 
-/*!
- * \brief Tests that the texture format validator correctly checks for a missing width
- */
 TEST(texture_format_validator, width_missing) {
     TEST_SETUP_LOGGER();
 
@@ -2134,9 +2080,6 @@ TEST(texture_format_validator, width_missing) {
     EXPECT_EQ(report.errors[0], "Format of texture TestTexture: Missing field width");
 }
 
-/*!
- * \brief Tests that the texture format validator correctly checks for a missing height
- */
 TEST(texture_format_validator, height_missing) {
     TEST_SETUP_LOGGER();
 
@@ -2159,9 +2102,6 @@ TEST(texture_format_validator, height_missing) {
  *      Sampler validation tests        *
  ****************************************/
  
-/*!
- * \brief Tests that the sampler validator doesn't give any errors or warnings for well-formed sampler data
- */
 TEST(sampler_validator, no_errors_or_warnings) {
     TEST_SETUP_LOGGER();
     
@@ -2178,9 +2118,6 @@ TEST(sampler_validator, no_errors_or_warnings) {
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-/*!
- * \brief Tests that the sampler validator correctly checks for a missing name
- */
 TEST(sampler_validator, missing_name) {
     TEST_SETUP_LOGGER();
 
@@ -2198,9 +2135,6 @@ TEST(sampler_validator, missing_name) {
     EXPECT_EQ(report.errors[0], "Sampler <NAME_MISSING>: Missing field name");
 }
 
-/*!
- * \brief Tests that the sampler validator correctly checks for a missing filter
- */
 TEST(sampler_validator, missing_filter) {
     TEST_SETUP_LOGGER();
 
@@ -2218,9 +2152,6 @@ TEST(sampler_validator, missing_filter) {
     EXPECT_EQ(report.errors[0], "Sampler TestSampler: Missing field filter");
 }
 
-/*!
- * \brief Tests that the sampler validator correctly checks for a missing wrapMode
- */
 TEST(sampler_validator, missing_wrap_mode) {
     TEST_SETUP_LOGGER();
 
@@ -2242,9 +2173,6 @@ TEST(sampler_validator, missing_wrap_mode) {
  *      Material validation tests       *
  ****************************************/
 
-/*!
- * \brief Happy path test. The material JSON is well-formed and filled with the most wonderful data
- */
 TEST(material_validator, no_errors_or_warnings) {
     TEST_SETUP_LOGGER();
 
@@ -2257,7 +2185,9 @@ TEST(material_validator, no_errors_or_warnings) {
                     {"pipeline", "TexturedLit"},
                     {"bindings",
                         {
-                            {"ModelMatrix", "NovaPerModelUBO"}
+                            {
+                                {"ModelMatrix", "NovaPerModelUBO"}
+                            }
                         }
                     }
                 }
@@ -2273,9 +2203,6 @@ TEST(material_validator, no_errors_or_warnings) {
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-/*!
- * \brief Tests the material validator's warning about missing bindings
- */
 TEST(material_validator, bindings_missing) {
     TEST_SETUP_LOGGER();
 
@@ -2300,9 +2227,6 @@ TEST(material_validator, bindings_missing) {
     EXPECT_EQ(report.warnings[0], "Material pass main in material TestMaterial: No bindings defined");
 }
 
-/*!
- * \brief Tests the material validator's error about a missing filter
- */
 TEST(material_validator, filter_missing) {
     TEST_SETUP_LOGGER();
 
@@ -2334,9 +2258,6 @@ TEST(material_validator, filter_missing) {
     EXPECT_EQ(report.errors[0], "Material TestMaterial: Missing geometry filter");
 }
 
-/*!
- * \brief Tests that the material validator correctly checks for a missing name
- */
 TEST(material_validator, name_missing) {
     TEST_SETUP_LOGGER();
 
@@ -2368,9 +2289,6 @@ TEST(material_validator, name_missing) {
     EXPECT_EQ(report.errors[0], "Material <NAME_MISSING>: Missing material name");
 }
 
-/*!
- * \brief Tests that the material validator correctly checks for missing passes
- */
 TEST(material_validator, passes_missing) {
     TEST_SETUP_LOGGER();
 
@@ -2388,9 +2306,6 @@ TEST(material_validator, passes_missing) {
     EXPECT_EQ(report.errors[0], "Material TestMaterial: Missing material passes");
 }
 
-/*!
- * \brief Tests that the material validator correctly checks for the passes field being the wrong type
- */
 TEST(material_validator, passes_wrong_type) {
     TEST_SETUP_LOGGER();
 
@@ -2409,9 +2324,6 @@ TEST(material_validator, passes_wrong_type) {
     EXPECT_EQ(report.errors[0], "Material TestMaterial: Passes field must be an array");
 }
 
-/*!
- * \brief Tests that the material validator correctly checks for the passes field being an empty array
- */
 TEST(material_validator, passes_empty_array) {
     TEST_SETUP_LOGGER();
 
@@ -2430,9 +2342,6 @@ TEST(material_validator, passes_empty_array) {
     EXPECT_EQ(report.errors[0], "Material TestMaterial: Passes field must have at least one item");
 }
 
-/*!
- * \brief Tests that the material validator correctly checks if a material pass doesn't have a pipeline
- */
 TEST(material_validator, pass_no_pipeline) {
     TEST_SETUP_LOGGER();
 
@@ -2464,9 +2373,6 @@ TEST(material_validator, pass_no_pipeline) {
     EXPECT_EQ(report.errors[0], "Material pass main in material TestMaterial: Missing field pipeline");
 }
 
-/*!
- * \brief Tests that the material validator correctly checks is a material pass doesn't have a name
- */
 TEST(material_validator, pass_no_name) {
     TEST_SETUP_LOGGER();
 
@@ -2495,5 +2401,5 @@ TEST(material_validator, pass_no_name) {
     EXPECT_EQ(report.warnings.size(), 0);
 
     ASSERT_EQ(report.errors.size(), 1);
-    EXPECT_EQ(report.errors[0], "Material pass <NAME_MISSING> for material TestMaterial: Missing field name");
+    EXPECT_EQ(report.errors[0], "Material pass <NAME_MISSING> in material TestMaterial: Missing field name");
 }
