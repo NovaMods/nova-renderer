@@ -11,14 +11,13 @@
 #include <experimental/filesystem>
 #include <unordered_map>
 #include <optional>
+#include "../util/utils.hpp"
+
 
 namespace fs = std::experimental::filesystem;
 
 namespace nova {
-    class resource_not_found_error : public std::runtime_error {
-    public:
-        explicit resource_not_found_error(const std::string &resource_name);
-    };
+    NOVA_EXCEPTION(resource_not_found_exception);
 
     class filesystem_exception : public std::exception { // Convert fs::filesystem_error into a nova class
     private:

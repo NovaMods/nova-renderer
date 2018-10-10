@@ -26,7 +26,7 @@ namespace nova {
     class zip_folder_accessor : public folder_accessor_base {
     public:
         explicit zip_folder_accessor(const fs::path &folder);
-        ~zip_folder_accessor();
+        ~zip_folder_accessor() override;
 
         std::string read_text_file(const fs::path &resource_path) override;
 

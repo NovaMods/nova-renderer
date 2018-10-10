@@ -11,6 +11,9 @@
 #include "shaderpack_data.hpp"
 
 namespace nova {
+    NOVA_EXCEPTION(pass_ordering_exception);
+    NOVA_EXCEPTION(circular_rendergraph_exception);
+
     /*!
      * \brief Orders the provided render passes to satisfy both their implicit and explicit dependencies
      *

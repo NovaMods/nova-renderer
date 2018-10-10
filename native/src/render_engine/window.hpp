@@ -6,11 +6,11 @@
 #ifndef NOVA_RENDERER_WINDOW_HPP
 #define NOVA_RENDERER_WINDOW_HPP
 
-#include "../util/macros.hpp"
-
-NOVA_EXCEPTION(nova, window_creation_error)
+#include "../util/utils.hpp"
 
 namespace nova {
+    NOVA_EXCEPTION(window_creation_exception);
+
     /*!
      * \brief A platform-independent window interface
      */

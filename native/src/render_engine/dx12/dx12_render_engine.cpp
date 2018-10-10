@@ -247,14 +247,14 @@ namespace nova {
         HRESULT hr = device->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&allocator));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create command buffer";
-            throw std::runtime_error("Could not create command buffer");
+            throw render_engine_initialization_exception("Could not create command buffer");
         }
 
         ComPtr<ID3D12CommandList> list;
         hr = device->CreateCommandList(0, command_list_type, allocator.Get(), nullptr, IID_PPV_ARGS(&list));
         if(FAILED(hr)) {
             NOVA_LOG(ERROR) << "Could not create a command list of type " << (uint32_t)command_list_type;
-            throw std::runtime_error("Could not create command list");
+            throw render_engine_initialization_exception("Could not create command list");
         }
 
         ComPtr<ID3D12Fence> fence;

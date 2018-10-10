@@ -7,14 +7,14 @@
 
 #include <memory>
 #include "../settings/nova_settings.hpp"
-#include "../util/macros.hpp"
+#include "../util/utils.hpp"
 #include "window.hpp"
 #include "../loading/shaderpack/shaderpack_data.hpp"
 
-NOVA_EXCEPTION(nova, render_engine_initialization_exception)
-NOVA_EXCEPTION(nova, render_engine_rendering_exception)
-
 namespace nova {
+    NOVA_EXCEPTION(render_engine_initialization_exception);
+    NOVA_EXCEPTION(render_engine_rendering_exception);
+
     struct ifence;
 
     /*!

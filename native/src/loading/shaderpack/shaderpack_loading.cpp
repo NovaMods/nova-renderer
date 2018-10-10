@@ -99,7 +99,7 @@ namespace nova {
         }
 
         if(folder_access == nullptr) {
-            throw resource_not_found_error(shaderpack_name.string());
+            throw resource_not_found_exception(shaderpack_name.string());
         }
 
         return folder_access;
@@ -120,7 +120,7 @@ namespace nova {
             output.samplers = std::move(resources.samplers);
             output.textures = std::move(resources.textures);
 
-        } catch(resource_not_found_error&) {
+        } catch(resource_not_found_exception&) {
             // No resources defined.. I guess they think they don't need any?
             NOVA_LOG(WARN) << "No resources file found for shaderpack at " << folder_access->get_root();
             loading_failed = true;
@@ -129,7 +129,7 @@ namespace nova {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's resources.json: " << err.what();
             loading_failed = true;
 
-        } catch(validation_failed& err) {
+        } catch(validation_failure_exception& err) {
             NOVA_LOG(ERROR) << "Could not validate resources.json: " << err.what();
             loading_failed = true;
         }
@@ -211,7 +211,7 @@ namespace nova {
         //} catch(nlohmann::json::type_error& err) {
         //    NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
 
-        } catch(validation_failed& err) {
+        } catch(validation_failure_exception& err) {
             NOVA_LOG(ERROR) << "Could not validate pipeline file " << pipeline_path.string() << ": " << err.what();
             loading_failed = true;
         }

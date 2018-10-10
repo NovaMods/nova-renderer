@@ -3,6 +3,7 @@
  * \date 18-May-16.
  */
 
+#include <cstring>
 #include "utils.hpp"
 #include "logger.hpp"
 
@@ -59,4 +60,7 @@ namespace nova {
             return false;
         }
     }
+
+    nova_exception::nova_exception(std::string msg) : msg(std::move(msg)) {}
+    const char *nova_exception::what() const noexcept { return msg.c_str(); }
 }

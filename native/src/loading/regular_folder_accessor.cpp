@@ -22,7 +22,7 @@ namespace nova {
 
         if(!does_resource_exist_internal(full_resource_path)) {
             NOVA_LOG(DEBUG) << "Resource at path " << full_resource_path.string() << " does not exist";
-            throw resource_not_found_error(full_resource_path.string());
+            throw resource_not_found_exception(full_resource_path.string());
         }
 
         //std::vector<uint8_t> buf;
@@ -33,7 +33,7 @@ namespace nova {
 
             resource_existence.emplace(resource_string, false);
             NOVA_LOG(DEBUG) << "Could not load resource at path " << resource_string;
-            throw resource_not_found_error(resource_string);
+            throw resource_not_found_exception(resource_string);
         }
 
         std::string buf;

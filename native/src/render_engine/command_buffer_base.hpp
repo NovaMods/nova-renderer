@@ -9,11 +9,11 @@
 #include <functional>
 #include <glm/glm.hpp>
 #include "resource_barrier.hpp"
-#include "../util/macros.hpp"
-
-NOVA_EXCEPTION(nova, command_buffer_exception)
+#include "../util/utils.hpp"
 
 namespace nova {
+    NOVA_EXCEPTION(command_buffer_exception);
+
     struct iframebuffer;
     struct iresource;
 
