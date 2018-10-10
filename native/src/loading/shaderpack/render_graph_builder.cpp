@@ -31,6 +31,52 @@ namespace nova {
                               const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
                               uint32_t depth);
 
+    bool range::has_writer() const {
+        return first_write_pass <= last_write_pass;
+    }
+
+    bool range::has_reader() const {
+        return first_read_pass <= last_read_pass;
+    }
+
+    bool range::is_used() const {
+        return has_writer() || has_reader();
+    }
+
+    bool range::can_alias() const {
+        // If we read before we have completely written to a resource we need to preserve it, so no alias is possible.
+        return !(has_reader() && has_writer() && first_read_pass <= first_write_pass);
+    }
+
+    unsigned range::last_used_pass() const {
+        unsigned last_pass = 0;
+        if(has_writer())
+            last_pass = std::max(last_pass, last_write_pass);
+        if(has_reader())
+            last_pass = std::max(last_pass, last_read_pass);
+        return last_pass;
+    }
+
+    unsigned range::first_used_pass() const {
+        unsigned first_pass = ~0u;
+        if(has_writer())
+            first_pass = std::min(first_pass, first_write_pass);
+        if(has_reader())
+            first_pass = std::min(first_pass, first_read_pass);
+        return first_pass;
+    }
+
+    bool range::is_disjoint_with(const range& other) const {
+        if(!is_used() || !other.is_used())
+            return false;
+        if(!can_alias() || !other.can_alias())
+            return false;
+
+        const bool left = last_used_pass() < other.first_used_pass();
+        const bool right = other.last_used_pass() < first_used_pass();
+        return left || right;
+    }
+
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_data> &passes) {
         NOVA_PROFILER_SCOPE;
         NOVA_LOG(INFO) << "Executing Pass Schedule";
@@ -152,5 +198,97 @@ namespace nova {
             }
         }
     }
+
+
+    void determine_usage_order_of_textures(const std::vector<render_pass_data>& passes, std::unordered_map<std::string, range>& resource_used_range, std::vector<std::string>& resources_in_order) {
+        uint32_t pass_idx = 0;
+        for(const auto& pass : passes) {
+            if(pass.texture_inputs) {
+                const input_textures& all_inputs = pass.texture_inputs.value();
+                // color attachments
+                for(const auto &input : all_inputs.color_attachments) {
+                    auto& tex_range = resource_used_range[input];
+
+                    if(pass_idx < tex_range.first_write_pass) {
+                        tex_range.first_write_pass = pass_idx;
+
+                    } else if(pass_idx > tex_range.last_write_pass) {
+                        tex_range.last_write_pass = pass_idx;
+                    }
+
+                    if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
+                        resources_in_order.push_back(input);
+                    }
+                }
+
+                // shader-only textures
+                for(const auto &input : all_inputs.bound_textures) {
+                    auto& tex_range = resource_used_range[input];
+
+                    if(pass_idx < tex_range.first_write_pass) {
+                        tex_range.first_write_pass = pass_idx;
+
+                    } else if(pass_idx > tex_range.last_write_pass) {
+                        tex_range.last_write_pass = pass_idx;
+                    }
+
+                    if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
+                        resources_in_order.push_back(input);
+                    }
+                }
+            }
+
+            if(!pass.texture_outputs.empty()) {
+                for(const auto &output : pass.texture_outputs) {
+                    auto& tex_range = resource_used_range[output.name];
+
+                    if(pass_idx < tex_range.first_write_pass) {
+                        tex_range.first_write_pass = pass_idx;
+
+                    } else if(pass_idx > tex_range.last_write_pass) {
+                        tex_range.last_write_pass = pass_idx;
+                    }
+
+                    if(std::find(resources_in_order.begin(), resources_in_order.end(), output.name) == resources_in_order.end()) {
+                        resources_in_order.push_back(output.name);
+                    }
+                }
+            }
+
+            pass_idx++;
+        }
+    }
+
+    std::unordered_map<std::string, std::string> determine_aliasing_of_textures(const std::unordered_map<std::string, texture_resource_data>& textures, const std::unordered_map<std::string, range>& resource_used_range, const std::vector<std::string>& resources_in_order) {
+        std::unordered_map<std::string, std::string> aliases;
+        aliases.reserve(resources_in_order.size());
+
+        for(size_t i = 0; i < resources_in_order.size(); i++) {
+            const auto& to_alias_name = resources_in_order[i];
+            NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name << "`. Does it exist? " << (textures.find(to_alias_name) != textures.end());
+            if(to_alias_name == "Backbuffer" || to_alias_name == "backbuffer") {
+                // Yay special cases!
+                continue;
+            }
+
+            const auto& to_alias_format = textures.at(to_alias_name).format;
+
+            // Only try to alias with lower-indexed resources
+            for(size_t j = 0; j < i; j++) {
+                NOVA_LOG(TRACE) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
+                const auto& try_alias_name = resources_in_order[j];
+                if(resource_used_range[to_alias_name].is_disjoint_with(resource_used_range[try_alias_name])) {
+                    // They can be aliased if they have the same format
+                    const auto& try_alias_format = textures.at(try_alias_name).format;
+                    if(to_alias_format == try_alias_format) {
+                        aliases[to_alias_name] = try_alias_name;
+                    }
+                }
+            }
+        }
+
+        return aliases;
+    }
+
 }
 

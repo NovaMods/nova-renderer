@@ -20,6 +20,7 @@
 #include <memory>
 #include <unordered_map>
 #include <mutex>
+#include "../../loading/shaderpack/render_graph_builder.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -152,7 +153,7 @@ namespace nova {
 
         std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data>& passes);
 
-        void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> ordered_passes);
+        void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> passes);
 
         /*!
          * \brief Creates a timestamp query heap with enough space to time every render pass
