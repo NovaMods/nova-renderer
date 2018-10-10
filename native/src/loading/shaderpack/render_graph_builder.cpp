@@ -95,9 +95,8 @@ namespace nova {
             ordered_passes.erase(output_itr, ordered_passes.end());
         }
 
-        // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. While
-        // doing that may be useful in the future, the fact that I'm using OpenGL means I'm not going to worry about
-        // that for noe
+        // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. Not
+        // gonna worry about that now
 
         return ordered_passes;
     }

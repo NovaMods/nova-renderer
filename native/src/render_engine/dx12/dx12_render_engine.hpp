@@ -80,6 +80,8 @@ namespace nova {
 
         std::vector<ComPtr<ID3D12Resource>> rendertargets; // number of render targets equal to buffer count
 
+        ComPtr<ID3D12QueryHeap> renderpass_timestamp_query_heap;
+
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
         // Maps from command buffer type to command buffer list
@@ -116,6 +118,7 @@ namespace nova {
          * \brief All the textures that the loaded shaderpack has created
          */
         std::unordered_map<std::string, ComPtr<ID3D12Resource>> dynamic_textures;
+        std::unordered_map<std::string, uint32_t> dynamic_tex_name_to_idx;
 
         void create_device();
 
@@ -147,7 +150,16 @@ namespace nova {
 
         void try_to_free_command_lists();
 
-        void create_dynamic_textures(const std::vector<texture_resource_data>& vector);
+        std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data>& passes);
+
+        void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> ordered_passes);
+
+        /*!
+         * \brief Creates a timestamp query heap with enough space to time every render pass
+         * 
+         * \param num_queries The number of queries the heap needs to support
+         */
+        void create_gpu_query_heap(size_t num_queries);
     };
 }
 

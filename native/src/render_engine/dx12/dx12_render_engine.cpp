@@ -10,8 +10,12 @@
 #include <d3d12sdklayers.h>
 #include <algorithm>
 #include "../../util/logger.hpp"
+#include "../../loading/shaderpack/render_graph_builder.hpp"
 
 namespace nova {
+    DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format);
+
+
     dx12_render_engine::dx12_render_engine(const nova_settings &settings) : render_engine(settings),
             num_in_flight_frames(settings.get_options().max_in_flight_frames) {
         create_device();
@@ -334,11 +338,39 @@ namespace nova {
         // renderpasses
         // Except DX12 doesn't have a renderpass - but that's fine. We can put the necessary data together and pretend
 
+        NOVA_LOG(DEBUG) << "DX12 render engine loading a new shaderpack";
+
         // Clear out the old shaderpack's data, including samplers
         dynamic_textures.clear();
 
+        NOVA_LOG(DEBUG) << "Cleared data from old shaderpack";
+
         // Build up E V E R Y T H I N G
-        create_dynamic_textures(data.resources.textures);
+        std::vector<render_pass_data> ordered_passes = flatten_frame_graph(data.passes);
+
+        NOVA_LOG(DEBUG) << "Flattened frame graph";
+
+        create_gpu_query_heap(ordered_passes.size());
+
+        create_dynamic_textures(data.resources.textures, ordered_passes);
+    }
+
+    std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data>& passes) {
+        std::unordered_map<std::string, render_pass_data> passes_by_name;
+        passes_by_name.reserve(passes.size());
+        for(const render_pass_data& pass_data : passes) {
+            passes_by_name[pass_data.name] = pass_data;
+        }
+
+        std::vector<render_pass_data> ordered_passes;
+
+        std::vector<std::string> ordered_pass_names = order_passes(passes_by_name);
+        ordered_passes.reserve(ordered_pass_names.size());
+        for(const std::string& pass_name : ordered_pass_names) {
+            ordered_passes.push_back(passes_by_name.at(pass_name));
+        }
+
+        return ordered_passes;
     }
 
     void dx12_render_engine::try_to_free_command_lists() {
@@ -357,7 +389,252 @@ namespace nova {
         lists_to_free.erase(erase_itr, lists_to_free.end());
     }
 
-    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_resource_data>& vector) {
+    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> passes) {
+        std::unordered_map<std::string, texture_resource_data> textures;
+        for(const texture_resource_data& data : texture_datas) {
+            textures[data.name] = data;
+        }
 
+        struct range {
+            uint32_t first_write_pass = ~0u;
+            uint32_t last_write_pass = 0;
+            uint32_t first_read_pass = ~0u;
+            uint32_t last_read_pass = 0;
+
+            bool has_writer() const {
+                return first_write_pass <= last_write_pass;
+            }
+
+            bool has_reader() const {
+                return first_read_pass <= last_read_pass;
+            }
+
+            bool is_used() const {
+                return has_writer() || has_reader();
+            }
+
+            bool can_alias() const {
+                // If we read before we have completely written to a resource we need to preserve it, so no alias is possible.
+                return !(has_reader() && has_writer() && first_read_pass <= first_write_pass);
+            }
+
+            unsigned last_used_pass() const {
+                unsigned last_pass = 0;
+                if(has_writer())
+                    last_pass = std::max(last_pass, last_write_pass);
+                if(has_reader())
+                    last_pass = std::max(last_pass, last_read_pass);
+                return last_pass;
+            }
+
+            unsigned first_used_pass() const {
+                unsigned first_pass = ~0u;
+                if(has_writer())
+                    first_pass = std::min(first_pass, first_write_pass);
+                if(has_reader())
+                    first_pass = std::min(first_pass, first_read_pass);
+                return first_pass;
+            }
+
+            bool is_disjoint_with(const range& other) const {
+                if(!is_used() || !other.is_used())
+                    return false;
+                if(!can_alias() || !other.can_alias())
+                    return false;
+
+                bool left = last_used_pass() < other.first_used_pass();
+                bool right = other.last_used_pass() < first_used_pass();
+                return left || right;
+            }
+        };
+
+        // Look at what range of render passes each resource is used in
+        std::unordered_map<std::string, range> resource_used_range;
+        std::vector<std::string> resources_in_order;
+
+        uint32_t pass_idx = 0;
+        for(const auto& pass : passes) {
+            if(pass.texture_inputs) {
+                const input_textures& all_inputs = pass.texture_inputs.value();
+                // color attachments
+                for(const auto &input : all_inputs.color_attachments) {
+                    auto& tex_range = resource_used_range[input];
+
+                    if(pass_idx < tex_range.first_write_pass) {
+                        tex_range.first_write_pass = pass_idx;
+
+                    } else if(pass_idx > tex_range.last_write_pass) {
+                        tex_range.last_write_pass = pass_idx;
+                    }
+
+                    if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
+                        resources_in_order.push_back(input);
+                    }
+                }
+
+                // shader-only textures
+                for(const auto &input : all_inputs.bound_textures) {
+                    auto& tex_range = resource_used_range[input];
+
+                    if(pass_idx < tex_range.first_write_pass) {
+                        tex_range.first_write_pass = pass_idx;
+
+                    } else if(pass_idx > tex_range.last_write_pass) {
+                        tex_range.last_write_pass = pass_idx;
+                    }
+
+                    if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
+                        resources_in_order.push_back(input);
+                    }
+                }
+            }
+
+            if(!pass.texture_outputs.empty()) {
+                for(const auto &output : pass.texture_outputs) {
+                    auto& tex_range = resource_used_range[output.name];
+
+                    if(pass_idx < tex_range.first_write_pass) {
+                        tex_range.first_write_pass = pass_idx;
+
+                    } else if(pass_idx > tex_range.last_write_pass) {
+                        tex_range.last_write_pass = pass_idx;
+                    }
+
+                    if(std::find(resources_in_order.begin(), resources_in_order.end(), output.name) == resources_in_order.end()) {
+                        resources_in_order.push_back(output.name);
+                    }
+                }
+            }
+
+            pass_idx++;
+        }
+
+        NOVA_LOG(TRACE) << "Ordered resources";
+
+        // Figure out which resources can be aliased
+        std::unordered_map<std::string, std::string> aliases;
+
+        for(size_t i = 0; i < resources_in_order.size(); i++) {
+            const auto& to_alias_name = resources_in_order[i];
+            NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name << "`. Does it exist? " << (textures.find(to_alias_name) != textures.end());
+            if(to_alias_name == "Backbuffer" || to_alias_name == "backbuffer") {
+                // Yay special cases!
+                continue;
+            }
+
+            const auto& to_alias_format = textures.at(to_alias_name).format;
+
+            // Only try to alias with lower-indexed resources
+            for(size_t j = 0; j < i; j++) {
+                NOVA_LOG(TRACE) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
+                const auto& try_alias_name = resources_in_order[j];
+                if(resource_used_range[to_alias_name].is_disjoint_with(resource_used_range[try_alias_name])) {
+                    // They can be aliased if they have the same format
+                    const auto& try_alias_format = textures.at(try_alias_name).format;
+                    if(to_alias_format == try_alias_format) {
+                        aliases[to_alias_name] = try_alias_name;
+                    }
+                }
+            }
+        }
+
+        NOVA_LOG(TRACE) << "Figured out which resources can be aliased";
+
+        glm::uvec2 swapchain_dimensions;
+        swapchain->GetSourceSize(&swapchain_dimensions.x, &swapchain_dimensions.y);
+
+        // For each texture:
+        //  - If it isn't in the aliases map, create a new texture with its format and add it to the textures map
+        //  - If it is in the aliases map, follow its chain of aliases
+
+        for(const auto& named_texture : textures) {
+            std::string texture_name = named_texture.first;
+            while(aliases.find(texture_name) != aliases.end()) {
+                NOVA_LOG(TRACE) << "Resource " << texture_name << " is aliased with " << aliases[texture_name];
+                texture_name = aliases[texture_name];
+            }
+
+            // We've found the first texture in this alias chain - let's create an actual texture for it if needed
+            if(dynamic_tex_name_to_idx.find(texture_name) == dynamic_tex_name_to_idx.end()) {
+                NOVA_LOG(TRACE) << "Need to create it";
+                // The texture we're all aliasing doesn't have a real texture yet. Let's fix that
+                const texture_format& format = textures.at(texture_name).format;
+
+                glm::uvec2 dimensions;
+                if(format.dimension_type == texture_dimension_type_enum::Absolute) {
+                    dimensions.x = static_cast<uint32_t>(format.width);
+                    dimensions.y = static_cast<uint32_t>(format.height);
+
+                } else {
+                    dimensions = swapchain_dimensions;
+                    dimensions.x *= format.width;
+                    dimensions.y *= format.height;
+                }
+
+                DXGI_FORMAT dx12_format = get_dx12_format_from_pixel_format(format.pixel_format);
+
+                D3D12_RESOURCE_DESC texture_desc = {};
+                texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+                texture_desc.Alignment = 0;
+                texture_desc.Width = dimensions.x;
+                texture_desc.Height = dimensions.y;
+                texture_desc.DepthOrArraySize = 1;
+                texture_desc.MipLevels = 1;
+                texture_desc.Format = dx12_format;
+                texture_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+                texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+                if(format.pixel_format == pixel_format_enum::Depth || format.pixel_format == pixel_format_enum::DepthStencil) {
+                    texture_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+                }
+
+                auto pixel_format = get_vk_format_from_pixel_format(format.pixel_format);
+                NOVA_LOG(DEBUG) << "Creating a texture with nova format " << pixel_format_enum::to_string(format.pixel_format) << " and Vulkan format " << vk::to_string(pixel_format) << ". It's being created for texture " << texture_name;
+                auto tex = texture2D(std::to_string(dynamic_textures.size()), dimensions, pixel_format, usage, context);
+
+                auto new_tex_index = dynamic_textures.size();
+                dynamic_textures.emplace_back(std::move(tex));
+                dynamic_tex_name_to_idx.emplace(texture_name, new_tex_index);
+
+                NOVA_LOG(TRACE) << "Added texture " << tex.get_name() << " to the dynamic textures";
+                NOVA_LOG(TRACE) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
+
+            } else {
+                NOVA_LOG(TRACE) << "The physical resource already exists, so we're just gonna use that";
+                // The texture we're aliasing already has a real texture behind it - so let's use that
+                dynamic_tex_name_to_idx[named_texture.first] = dynamic_tex_name_to_idx[texture_name];
+            }
+        }
+    }
+
+    void dx12_render_engine::create_gpu_query_heap(size_t num_queries) {
+        D3D12_QUERY_HEAP_DESC heap_desc = {};
+        heap_desc.Count = num_queries;
+        heap_desc.NodeMask = 0;
+        heap_desc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+
+        device->CreateQueryHeap(&heap_desc, IID_PPV_ARGS(&renderpass_timestamp_query_heap));
+    }
+
+    DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format) {
+        switch(pixel_format) {
+            case pixel_format_enum::RGB8: 
+            case pixel_format_enum::RGBA8:
+                return DXGI_FORMAT_R8G8B8A8_SNORM;
+
+            case pixel_format_enum::RGB16F:
+            case pixel_format_enum::RGBA16F:
+                return DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+            case pixel_format_enum::RGB32F:
+            case pixel_format_enum::RGBA32F: 
+                return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+            case pixel_format_enum::Depth: 
+                return DXGI_FORMAT_D32_FLOAT;
+
+            case pixel_format_enum::DepthStencil: 
+                return DXGI_FORMAT_D24_UNORM_S8_UINT;
+        }
     }
 }
