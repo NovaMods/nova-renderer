@@ -5,12 +5,9 @@
 #ifndef NOVA_RENDERER_X_11_WINDOW_HPP
 #define NOVA_RENDERER_X_11_WINDOW_HPP
 
-#include "../../util/macros.hpp"
 #include "../window.hpp"
 #include <X11/Xlib.h>
 #include <stdint.h>
-
-NOVA_EXCEPTION(nova, x_window_creation_exception)
 
 namespace nova {
     class x11_window : public iwindow {

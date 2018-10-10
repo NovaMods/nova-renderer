@@ -14,7 +14,7 @@ namespace nova {
 
         if(!mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0)) {
             NOVA_LOG(DEBUG) << "Could not open zip archive " << folder_string;
-            throw resource_not_found_error(folder_string);
+            throw resource_not_found_exception(folder_string);
         }
 
         build_file_tree();
@@ -30,7 +30,7 @@ namespace nova {
         const std::string resource_string = full_path.string();
         if(!does_resource_exist_internal(full_path)) {
             NOVA_LOG(DEBUG) << "Resource at path " << resource_string << " does not exist";
-            throw resource_not_found_error(resource_string);
+            throw resource_not_found_exception(resource_string);
         }
 
         const uint32_t file_idx = resource_indexes.at(resource_string);
@@ -42,7 +42,7 @@ namespace nova {
             const std::string err = mz_zip_get_error_string(err_code);
 
             NOVA_LOG(DEBUG) << "Could not get information for file " << resource_string << ": " << err;
-            throw resource_not_found_error(resource_string);
+            throw resource_not_found_exception(resource_string);
         }
 
         std::vector<char> resource_buffer;
@@ -54,7 +54,7 @@ namespace nova {
             const std::string err = mz_zip_get_error_string(err_code);
 
             NOVA_LOG(DEBUG) << "Could not extract file " << resource_string << ": " << err;
-            throw resource_not_found_error(resource_string);
+            throw resource_not_found_exception(resource_string);
         }
 
         return std::string{ resource_buffer.data() };
@@ -77,7 +77,7 @@ namespace nova {
             }
 
             if(!found_node) {
-                throw resource_not_found_error(folder.string());
+                throw resource_not_found_exception(folder.string());
             }
         }
 

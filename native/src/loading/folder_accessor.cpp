@@ -4,7 +4,6 @@
  */
 
 #include "folder_accessor.hpp"
-#include "../util/utils.hpp"
 
 namespace nova {
     folder_accessor_base::folder_accessor_base(const fs::path &folder) : root_folder(folder) {}
@@ -47,6 +46,4 @@ namespace nova {
 
         return true;
     }
-
-    resource_not_found_error::resource_not_found_error(const std::string &resource_name) : runtime_error(resource_name) {}
 }

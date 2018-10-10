@@ -14,13 +14,13 @@
 
 #include "settings/nova_settings.hpp"
 #include "render_engine/render_engine.hpp"
-#include "util/macros.hpp"
 #include "loading/shaderpack/shaderpack_loading.hpp"
-
-NOVA_EXCEPTION(nova, already_initialized_exception)
-NOVA_EXCEPTION(nova, uninitialized_exception)
+#include "util/utils.hpp"
 
 namespace nova {
+    NOVA_EXCEPTION(already_initialized_exception);
+    NOVA_EXCEPTION(uninitialized_exception);
+
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
      */

@@ -116,14 +116,13 @@ set(NOVA_SOURCE
         src/util/logger.cpp
         src/util/logger.hpp
         src/render_engine/render_engine.hpp
-        src/util/macros.hpp
         src/render_engine/command_buffer_base.hpp
         src/render_engine/command_buffer_base.cpp
         src/render_engine/window.hpp
         src/render_engine/resource_barrier.hpp
         src/loading/shaderpack/json_interop.cpp
         src/loading/shaderpack/json_interop.hpp
-        src/loading/utils.hpp
+        src/loading/json_utils.hpp
         src/util/utils.hpp
         src/util/utils.cpp
 		src/render_objects/render_object.cpp

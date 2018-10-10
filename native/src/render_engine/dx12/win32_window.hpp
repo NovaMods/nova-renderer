@@ -65,7 +65,7 @@ namespace nova {
         /*!
          * \brief Registers Nova's window class
          *
-         * If the window class cannot be registered, this method will log an error and throw a runtime_error
+         * If the window class cannot be registered, this method will log an error and throw a nova_exception
          */
         void register_window_class();
 

@@ -12,16 +12,12 @@
 #include <vector>
 #include <unordered_map>
 #include <cstdint>
-
 #include <optional>
-
 #include <nlohmann/json.hpp>
+#include "../../util/utils.hpp"
 
 namespace nova {
-    class validation_failed : public std::runtime_error {
-    public:
-        explicit validation_failed(const std::string& msg);
-    };
+    NOVA_EXCEPTION(validation_failure_exception);
 
     /*!
      * \brief Controls the rasterizer's state

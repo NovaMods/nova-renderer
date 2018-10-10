@@ -4,7 +4,7 @@
  */
 
 #include "json_interop.hpp"
-#include "../utils.hpp"
+#include "../json_utils.hpp"
 
 namespace nova {
     void from_json(const nlohmann::json& j, texture_format& format) {

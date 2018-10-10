@@ -37,16 +37,31 @@ namespace nova {
 
     std::string join(const std::vector<std::string>& strings, const std::string& joiner);
 
-    /*!
-     * \brief Simple exception to represent that a resource can not be found
-     */
-    NOVA_EXCEPTION(nova, resource_not_found)
-
     std::string print_color(unsigned int color);
 
     std::string print_array(int data[], int num_elements);
 
     bool ends_with(const std::string &string, const std::string &ending);
+
+    class nova_exception : public std::exception {
+    private:
+        std::string msg;
+
+    public:
+        explicit nova_exception(std::string msg);
+        const char *what() const noexcept override;
+    };
+
+
+#define NOVA_EXCEPTION(name) \
+    class name : public ::nova::nova_exception { \
+    public: \
+        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)) {}; \
+    }
+
+    /*!
+     * \brief Simple exception to represent that a resource can not be found
+     */
 }
 
 #endif //RENDERER_UTILS_H

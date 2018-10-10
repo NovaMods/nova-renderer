@@ -11,6 +11,9 @@
 #include "shaderpack_data.hpp"
 
 namespace nova {
+    NOVA_EXCEPTION(pass_ordering_exception);
+    NOVA_EXCEPTION(circular_rendergraph_exception);
+
     struct range {
         uint32_t first_write_pass = ~0u;
         uint32_t last_write_pass = 0;

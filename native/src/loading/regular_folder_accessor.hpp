@@ -7,7 +7,6 @@
 #define NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H
 
 #include "folder_accessor.hpp"
-#include "../util/macros.hpp"
 
 namespace nova {
     /*!
