@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 10-Oct-18.
  */
 
@@ -10,10 +10,10 @@
 
 /*!
  * \brief Converts a string to a wide string because Windows
- * 
+ *
  * \param s The string to convert
  * \return The converted string
  */
-std::wstring s2ws(const std::string& s);
+std::wstring s2ws(const std::string &s);
 
-#endif //NOVA_RENDERER_WINDOWS_UTILS_HPP
+#endif  // NOVA_RENDERER_WINDOWS_UTILS_HPP

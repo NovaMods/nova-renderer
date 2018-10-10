@@ -53,10 +53,10 @@ namespace nova {
         virtual std::shared_ptr<iwindow> get_window() const = 0;
 
         /*!
-        * \brief Loads the specified shaderpack, building API-specific data structures
-        *
-        * \param data The shaderpack to load
-        */
+         * \brief Loads the specified shaderpack, building API-specific data structures
+         *
+         * \param data The shaderpack to load
+         */
         virtual void set_shaderpack(shaderpack_data data) = 0;
 
         /*!
@@ -74,8 +74,8 @@ namespace nova {
          *
          * \attention Called by nova
          */
-        explicit render_engine(const nova_settings &settings) {};
+        explicit render_engine(const nova_settings &settings){};
     };
-}
+}  // namespace nova
 
-#endif //NOVA_RENDERER_RENDER_ENGINE_HPP
+#endif  // NOVA_RENDERER_RENDER_ENGINE_HPP

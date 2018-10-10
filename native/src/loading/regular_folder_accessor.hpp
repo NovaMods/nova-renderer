@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 14-Aug-18.
  */
 
@@ -18,12 +18,11 @@ namespace nova {
 
         std::string read_text_file(const fs::path &resource_path) override;
 
-        std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override;
+        std::vector<fs::path> get_all_items_in_folder(const fs::path &folder) override;
 
     protected:
-        bool does_resource_exist_internal(const fs::path& resource_path) override;
+        bool does_resource_exist_internal(const fs::path &resource_path) override;
     };
-}
+}  // namespace nova
 
-
-#endif //NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H
+#endif  // NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H

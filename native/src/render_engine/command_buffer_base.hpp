@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 01-Sep-18.
  */
 
@@ -17,7 +17,7 @@ namespace nova {
     struct iframebuffer;
     struct iresource;
 
-    typedef struct iframebuffer* framebuffer_ptr;
+    typedef struct iframebuffer *framebuffer_ptr;
 
     /*!
      * \brief The type of command list we want to create. This is important for DX12 but I don't think it's important
@@ -90,24 +90,25 @@ namespace nova {
          * \brief Adds one or more resource barriers
          * \param barriers The barriers to add
          */
-        virtual void resource_barrier(stage_flags source_stage_mask, stage_flags dest_state_mask,
-                                      const std::vector<resource_barrier_data>& memory_barriers,
-                                      const std::vector<buffer_barrier_data>& buffer_barriers,
-                                      const std::vector<image_barrier_data>& image_barriers) = 0;
+        virtual void resource_barrier(stage_flags source_stage_mask,
+            stage_flags dest_state_mask,
+            const std::vector<resource_barrier_data> &memory_barriers,
+            const std::vector<buffer_barrier_data> &buffer_barriers,
+            const std::vector<image_barrier_data> &image_barriers) = 0;
 
         /*!
          * \brief Clears the current render target to the provided clear color
          * \param clear_color The color to clear to
          */
-        virtual void clear_render_target(iframebuffer* framebuffer_to_clear, glm::vec4& clear_color) = 0;
+        virtual void clear_render_target(iframebuffer *framebuffer_to_clear, glm::vec4 &clear_color) = 0;
 
         /*!
          * \brief Sets the render target to render to
          *
          * \param render_target A pointer to the render target to render to
          */
-        virtual void set_render_target(iframebuffer* render_target) = 0;
+        virtual void set_render_target(iframebuffer *render_target) = 0;
     };
-}
+}  // namespace nova
 
-#endif //NOVA_RENDERER_COMMAND_BUFFER_HPP
+#endif  // NOVA_RENDERER_COMMAND_BUFFER_HPP

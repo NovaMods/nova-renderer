@@ -7,7 +7,7 @@
 
 #include "../render_engine.hpp"
 #ifdef __linux__
-#define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
+#define VK_USE_PLATFORM_XLIB_KHR  // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB
 #endif
 #include <vulkan/vulkan.h>
@@ -117,31 +117,26 @@ namespace nova {
         VkExtent2D choose_swapchain_extend();
         void recreate_swapchain();
 
-        void cleanup_dynamic(); // Cleanup objects that have been created on the fly
+        void cleanup_dynamic();  // Cleanup objects that have been created on the fly
 
         void DEBUG_record_command_buffers();
 
         const uint MAX_FRAMES_IN_QUEUE = 3;
         uint current_frame = 0;
 
-        const std::vector<vulkan::vulkan_vertex> verticies = {
-                {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-                {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-                {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
-        };
+        const std::vector<vulkan::vulkan_vertex> verticies = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}}, {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}, {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
 
 #ifndef NDEBUG
         PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
         PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 
-        static VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT object_type, uint64_t object, size_t location, int32_t messageCode,
-                const char *layer_prefix, const char *message, void *user_data);
+        static VkBool32 debug_report_callback(
+            VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT object_type, uint64_t object, size_t location, int32_t messageCode, const char *layer_prefix, const char *message, void *user_data);
 
         VkDebugReportCallbackEXT debug_callback;
 #endif
     };
-}
+}  // namespace nova
 
-
-#endif //NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
+#endif  // NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP

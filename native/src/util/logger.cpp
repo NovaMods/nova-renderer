@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 21-Aug-18.
  */
 
@@ -30,4 +30,4 @@ namespace nova {
     __log_stream logger::log(log_level level) const {
         return __log_stream(level);
     }
-}
+}  // namespace nova

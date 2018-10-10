@@ -30,7 +30,6 @@ namespace nova {
 
         window_size get_window_size() const override;
     };
-}
+}  // namespace nova
 
-
-#endif //NOVA_RENDERER_X_11_WINDOW_HPP
+#endif  // NOVA_RENDERER_X_11_WINDOW_HPP

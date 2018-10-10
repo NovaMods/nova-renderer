@@ -33,7 +33,7 @@ namespace nova {
 
     std::vector<std::string> split(const std::string &s, char delim);
 
-    std::string join(const std::vector<std::string>& strings, const std::string& joiner);
+    std::string join(const std::vector<std::string> &strings, const std::string &joiner);
 
     std::string print_color(unsigned int color);
 
@@ -50,12 +50,11 @@ namespace nova {
         const char *what() const noexcept override;
     };
 
-
-#define NOVA_EXCEPTION(name) \
-    class name : public ::nova::nova_exception { \
-    public: \
-        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)) {}; \
+#define NOVA_EXCEPTION(name)                                                                                                                                                                           \
+    class name : public ::nova::nova_exception {                                                                                                                                                       \
+    public:                                                                                                                                                                                            \
+        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)){};                                                                                                                     \
     }
-}
+}  // namespace nova
 
-#endif //RENDERER_UTILS_H
+#endif  // RENDERER_UTILS_H

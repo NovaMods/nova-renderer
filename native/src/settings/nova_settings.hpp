@@ -37,14 +37,13 @@ namespace nova {
         } window;
 
         struct {
-                struct {
-                    std::string application_name;
-                    semver appliction_version;
-                } vulkan;
+            struct {
+                std::string application_name;
+                semver appliction_version;
+            } vulkan;
 
-                struct {
-
-                } dx12;
+            struct {
+            } dx12;
         } api;
 
         uint32_t max_in_flight_frames = 3;
@@ -119,6 +118,6 @@ namespace nova {
         settings_options options;
         std::vector<iconfig_listener *> config_change_listeners;
     };
-}
+}  // namespace nova
 
-#endif //RENDERER_CONFIG_H
+#endif  // RENDERER_CONFIG_H

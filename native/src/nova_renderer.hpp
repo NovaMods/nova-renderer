@@ -1,7 +1,7 @@
 /*!
  * \brief Main class for Nova. This class exists as a singleton so it's always available
  *
- * \author ddubois 
+ * \author ddubois
  * \date 14-Aug-18.
  */
 
@@ -40,7 +40,7 @@ namespace nova {
          *
          * \param shaderpack_name The name of the shaderpack to load
          */
-        void load_shaderpack(const std::string& shaderpack_name);
+        void load_shaderpack(const std::string &shaderpack_name);
 
         /*!
          * \brief Executes a single frame
@@ -51,13 +51,13 @@ namespace nova {
 
         render_engine *get_engine();
 
-        ftl::TaskScheduler& get_task_scheduler();
+        ftl::TaskScheduler &get_task_scheduler();
 
         static nova_renderer *initialize(nova_settings &settings) {
             return (instance = new nova_renderer(settings));
         }
 
-        static nova_renderer* get_instance();
+        static nova_renderer *get_instance();
 
         static void deinitialize();
 
@@ -69,7 +69,6 @@ namespace nova {
 
         static nova_renderer *instance;
     };
-}
+}  // namespace nova
 
-
-#endif //NOVA_RENDERER_NOVA_RENDERER_H
+#endif  // NOVA_RENDERER_NOVA_RENDERER_H

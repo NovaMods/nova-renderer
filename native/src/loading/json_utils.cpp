@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 10-Sep-18.
  */
 
@@ -9,4 +9,4 @@ namespace nova {
     std::string to_string(const std::string &str) {
         return str;
     }
-}
+}  // namespace nova

@@ -27,7 +27,6 @@ namespace nova {
 
         glm::vec3 _pos;
     };
-}
+}  // namespace nova
 
-
-#endif //NOVA_RENDERER_RENDER_OBJECT_HPP
+#endif  // NOVA_RENDERER_RENDER_OBJECT_HPP

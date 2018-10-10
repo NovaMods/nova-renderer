@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 15-Aug-18.
  */
 
@@ -8,8 +8,7 @@
 #include "../util/utils.hpp"
 
 namespace nova {
-    zip_folder_accessor::zip_folder_accessor(const std::experimental::filesystem::path &folder)
-        : folder_accessor_base(folder), files(new file_tree_node) {
+    zip_folder_accessor::zip_folder_accessor(const std::experimental::filesystem::path &folder) : folder_accessor_base(folder), files(new file_tree_node) {
         const auto folder_string = folder.string();
 
         if(!mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0)) {
@@ -57,18 +56,18 @@ namespace nova {
             throw resource_not_found_exception(resource_string);
         }
 
-        return std::string{ resource_buffer.data() };
+        return std::string{resource_buffer.data()};
     }
 
     std::vector<fs::path> zip_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
         std::string folder_stringname = folder.string();
         std::vector<std::string> folder_path_parts = split(folder.string(), '/');
 
-        file_tree_node* cur_node = files;
+        file_tree_node *cur_node = files;
         // Get the node at this path
-        for(const std::string& part : folder_path_parts) {
+        for(const std::string &part : folder_path_parts) {
             bool found_node = false;
-            for(file_tree_node* child : cur_node->children) {
+            for(file_tree_node *child : cur_node->children) {
                 if(child->name == part) {
                     cur_node = child;
                     found_node = true;
@@ -83,7 +82,7 @@ namespace nova {
 
         std::vector<fs::path> children_paths;
         children_paths.reserve(cur_node->children.size());
-        for(const file_tree_node* child : cur_node->children) {
+        for(const file_tree_node *child : cur_node->children) {
             std::string s = child->get_full_path();
             children_paths.emplace_back(s);
         }
@@ -96,7 +95,7 @@ namespace nova {
 
         std::vector<std::string> all_filenames;
         all_filenames.resize(num_files);
-        auto * filename_buffer = new char[1024];
+        auto *filename_buffer = new char[1024];
 
         for(uint32_t i = 0; i < num_files; i++) {
             uint32_t num_bytes_in_filename = mz_zip_reader_get_filename(&zip_archive, i, filename_buffer, 1024);
@@ -105,12 +104,12 @@ namespace nova {
         }
 
         // Build a tree from all the files
-        for(const std::string& filename : all_filenames) {
+        for(const std::string &filename : all_filenames) {
             auto filename_parts = split(filename, '/');
-            auto* cur_node = files;
-            for(const auto& part : filename_parts) {
+            auto *cur_node = files;
+            for(const auto &part : filename_parts) {
                 bool node_found = false;
-                for(auto* child : cur_node->children) {
+                for(auto *child : cur_node->children) {
                     if(child->name == part) {
                         // We already have a node for the current folder. Set this node as the current one and go to the
                         // next iteration of the loop
@@ -125,7 +124,7 @@ namespace nova {
                 }
 
                 // We didn't find a node for the current part of the path, so let's add one
-                auto* new_node = new file_tree_node;
+                auto *new_node = new file_tree_node;
                 new_node->name = part;
                 new_node->parent = cur_node;
 
@@ -138,7 +137,7 @@ namespace nova {
         }
     }
 
-    bool zip_folder_accessor::does_resource_exist_internal(const fs::path & resource_path) {
+    bool zip_folder_accessor::does_resource_exist_internal(const fs::path &resource_path) {
         const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
@@ -159,7 +158,7 @@ namespace nova {
         }
     }
 
-    void print_file_tree(const file_tree_node* folder, uint32_t depth) {
+    void print_file_tree(const file_tree_node *folder, uint32_t depth) {
         if(folder == nullptr) {
             return;
         }
@@ -172,14 +171,14 @@ namespace nova {
         ss << folder->name;
         NOVA_LOG(INFO) << ss.str();
 
-        for(const auto* child : folder->children) {
+        for(const auto *child : folder->children) {
             print_file_tree(child, depth + 1);
         }
     }
 
     std::string file_tree_node::get_full_path() const {
         std::vector<std::string> names;
-        const file_tree_node* cur_node = this;
+        const file_tree_node *cur_node = this;
         while(cur_node != nullptr) {
             names.push_back(cur_node->name);
             cur_node = cur_node->parent;
@@ -188,4 +187,4 @@ namespace nova {
         // Skip the last string in the vector, since it's the resourcepack root node
         return join({++names.rbegin(), names.rend()}, "/");
     }
-}
+}  // namespace nova

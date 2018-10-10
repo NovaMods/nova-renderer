@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 30-Aug-18.
  */
 
@@ -16,22 +16,20 @@
 namespace nova {
     DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format);
 
-
-    dx12_render_engine::dx12_render_engine(const nova_settings &settings) : render_engine(settings),
-            num_in_flight_frames(settings.get_options().max_in_flight_frames) {
+    dx12_render_engine::dx12_render_engine(const nova_settings &settings) : render_engine(settings), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
         create_device();
         create_rtv_command_queue();
         create_full_frame_fences();
 
-        std::vector<command_list_base*> direct_buffers;
-        direct_buffers.reserve(32);    // Not sure how many we need, this should be enough
+        std::vector<command_list_base *> direct_buffers;
+        direct_buffers.reserve(32);  // Not sure how many we need, this should be enough
         buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_DIRECT, direct_buffers);
 
-        std::vector<command_list_base*> copy_buffers;
+        std::vector<command_list_base *> copy_buffers;
         copy_buffers.reserve(32);
         buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COPY, copy_buffers);
 
-        std::vector<command_list_base*> compute_buffers;
+        std::vector<command_list_base *> compute_buffers;
         compute_buffers.reserve(32);
         buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COMPUTE, compute_buffers);
     }
@@ -47,11 +45,11 @@ namespace nova {
     }
 
     void dx12_render_engine::create_device() {
-//#ifndef NDEBUG
+        //#ifndef NDEBUG
         ComPtr<ID3D12Debug> debug_controller;
         D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
         debug_controller->EnableDebugLayer();
-//#endif
+        //#endif
 
         NOVA_LOG(TRACE) << "Creating DX12 device";
 
@@ -121,12 +119,12 @@ namespace nova {
             throw render_engine_initialization_exception("Cannot initialize the swapchain before the window");
         }
 
-        const auto& window_size = window->get_window_size();
+        const auto &window_size = window->get_window_size();
 
         DXGI_SAMPLE_DESC sample_desc = {};
         sample_desc.Count = 1;
 
-        DXGI_SWAP_CHAIN_DESC1 swapchain_description {};
+        DXGI_SWAP_CHAIN_DESC1 swapchain_description{};
         swapchain_description.Width = window_size.width;
         swapchain_description.Height = window_size.height;
         swapchain_description.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -201,7 +199,7 @@ namespace nova {
 
         try_to_free_command_lists();
 
-        gfx_command_list* present_commands = get_graphics_command_list();
+        gfx_command_list *present_commands = get_graphics_command_list();
         HRESULT hr = present_commands->allocator->Reset();
         if(FAILED(hr)) {
             NOVA_LOG(WARN) << "Could not reset command list allocator, memory usage will likely increase dramatically";
@@ -223,7 +221,7 @@ namespace nova {
 
         present_commands->list->Close();
 
-        ID3D12CommandList* commands[] = {present_commands->list.Get()};
+        ID3D12CommandList *commands[] = {present_commands->list.Get()};
         direct_command_queue->ExecuteCommandLists(1, commands);
         direct_command_queue->Signal(present_commands->submission_fence.Get(), present_commands->fence_value);
 
@@ -232,14 +230,12 @@ namespace nova {
         swapchain->Present(0, 0);
 
         release_command_list(present_commands);
-
     }
 
-    void dx12_render_engine::wait_for_previous_frame() {// Wait for the previous frame at our index to finish
+    void dx12_render_engine::wait_for_previous_frame() {  // Wait for the previous frame at our index to finish
         frame_index = swapchain->GetCurrentBackBufferIndex();
         if(frame_fences.at(frame_index)->GetCompletedValue() < frame_fence_values.at(frame_index)) {
-            frame_fences.at(frame_index)->SetEventOnCompletion(frame_fence_values.at(frame_index),
-                                                               full_frame_fence_event);
+            frame_fences.at(frame_index)->SetEventOnCompletion(frame_fence_values.at(frame_index), full_frame_fence_event);
             WaitForSingleObject(full_frame_fence_event, INFINITE);
         }
         // There is enough space in a 32-bit integer to run Nova at 60 fps for almost three years. Running Nova
@@ -247,7 +243,7 @@ namespace nova {
         frame_fence_values[frame_index]++;
     }
 
-    command_list* dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const {
+    command_list *dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const {
         ComPtr<ID3D12CommandAllocator> allocator;
         HRESULT hr = device->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&allocator));
         if(FAILED(hr)) {
@@ -258,14 +254,14 @@ namespace nova {
         ComPtr<ID3D12CommandList> list;
         hr = device->CreateCommandList(0, command_list_type, allocator.Get(), nullptr, IID_PPV_ARGS(&list));
         if(FAILED(hr)) {
-            NOVA_LOG(ERROR) << "Could not create a command list of type " << (uint32_t)command_list_type;
+            NOVA_LOG(ERROR) << "Could not create a command list of type " << (uint32_t) command_list_type;
             throw render_engine_initialization_exception("Could not create command list");
         }
 
         ComPtr<ID3D12Fence> fence;
         device->CreateFence(1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 
-        auto* cmd_list = new command_list;
+        auto *cmd_list = new command_list;
         cmd_list->list = list;
         cmd_list->allocator = allocator;
         cmd_list->submission_fence = fence;
@@ -274,12 +270,12 @@ namespace nova {
         return cmd_list;
     }
 
-    gfx_command_list* dx12_render_engine::get_graphics_command_list() {
+    gfx_command_list *dx12_render_engine::get_graphics_command_list() {
         std::lock_guard<std::mutex> lock(buffer_pool_mutex);
-        gfx_command_list* new_list;
-        auto& buffers = buffer_pool.at(D3D12_COMMAND_LIST_TYPE_DIRECT);
+        gfx_command_list *new_list;
+        auto &buffers = buffer_pool.at(D3D12_COMMAND_LIST_TYPE_DIRECT);
         if(buffers.empty()) {
-            command_list* alloc_list = allocate_command_list(D3D12_COMMAND_LIST_TYPE_DIRECT);
+            command_list *alloc_list = allocate_command_list(D3D12_COMMAND_LIST_TYPE_DIRECT);
 
             ComPtr<ID3D12GraphicsCommandList> graphics_list;
             alloc_list->list->QueryInterface(IID_PPV_ARGS(&graphics_list));
@@ -293,13 +289,13 @@ namespace nova {
             new_list->fence_value = alloc_list->fence_value;
 
         } else {
-            command_list_base* pool_list = buffers.back();
+            command_list_base *pool_list = buffers.back();
             pool_list->is_done = false;
             buffers.pop_back();
 
             // CLion complains about the static cast but dynasmic_cast doesn't work since gfx_command_list doesn't have
             // a vtable
-            new_list = static_cast<gfx_command_list*>(pool_list);
+            new_list = static_cast<gfx_command_list *>(pool_list);
         }
 
         return new_list;
@@ -334,8 +330,8 @@ namespace nova {
 
     void dx12_render_engine::set_shaderpack(shaderpack_data data) {
         // Let's build our data from the ground up!
-        // To load a new shaderpack, we need to first clear out all the data from the old shaderpack. Then, we can 
-        // make the new dynamic textures and samplers, then the PSOs, then the material definitions, then the 
+        // To load a new shaderpack, we need to first clear out all the data from the old shaderpack. Then, we can
+        // make the new dynamic textures and samplers, then the PSOs, then the material definitions, then the
         // renderpasses
         // Except DX12 doesn't have a renderpass - but that's fine. We can put the necessary data together and pretend
 
@@ -356,10 +352,10 @@ namespace nova {
         create_dynamic_textures(data.resources.textures, ordered_passes);
     }
 
-    std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data>& passes) {
+    std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data> &passes) {
         std::unordered_map<std::string, render_pass_data> passes_by_name;
         passes_by_name.reserve(passes.size());
-        for(const render_pass_data& pass_data : passes) {
+        for(const render_pass_data &pass_data : passes) {
             passes_by_name[pass_data.name] = pass_data;
         }
 
@@ -367,7 +363,7 @@ namespace nova {
 
         std::vector<std::string> ordered_pass_names = order_passes(passes_by_name);
         ordered_passes.reserve(ordered_pass_names.size());
-        for(const std::string& pass_name : ordered_pass_names) {
+        for(const std::string &pass_name : ordered_pass_names) {
             ordered_passes.push_back(passes_by_name.at(pass_name));
         }
 
@@ -377,7 +373,7 @@ namespace nova {
     void dx12_render_engine::try_to_free_command_lists() {
         std::lock_guard<std::mutex> lock(lists_to_free_mutex);
 
-        for(command_list_base* list : lists_to_free) {
+        for(command_list_base *list : lists_to_free) {
             if(list->submission_fence->GetCompletedValue() == list->fence_value) {
                 // Command list is done!
                 std::lock_guard<std::mutex> pool_lock(buffer_pool_mutex);
@@ -386,13 +382,13 @@ namespace nova {
             }
         }
 
-        const auto erase_itr = std::remove_if(lists_to_free.begin(), lists_to_free.end(), [](const command_list_base* list) {return list->is_done;});
+        const auto erase_itr = std::remove_if(lists_to_free.begin(), lists_to_free.end(), [](const command_list_base *list) { return list->is_done; });
         lists_to_free.erase(erase_itr, lists_to_free.end());
     }
 
-    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> passes) {
+    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_resource_data> &texture_datas, std::vector<render_pass_data> passes) {
         std::unordered_map<std::string, texture_resource_data> textures;
-        for(const texture_resource_data& data : texture_datas) {
+        for(const texture_resource_data &data : texture_datas) {
             textures[data.name] = data;
         }
 
@@ -412,7 +408,7 @@ namespace nova {
         //  - If it isn't in the aliases map, create a new texture with its format and add it to the textures map
         //  - If it is in the aliases map, follow its chain of aliases
 
-        for(const auto& named_texture : textures) {
+        for(const auto &named_texture : textures) {
             std::string texture_name = named_texture.first;
             while(aliases.find(texture_name) != aliases.end()) {
                 NOVA_LOG(TRACE) << "Resource " << texture_name << " is aliased with " << aliases.at(texture_name);
@@ -423,7 +419,7 @@ namespace nova {
             if(dynamic_tex_name_to_idx.find(texture_name) == dynamic_tex_name_to_idx.end()) {
                 NOVA_LOG(TRACE) << "Need to create it";
                 // The texture we're all aliasing doesn't have a real texture yet. Let's fix that
-                const texture_format& format = textures.at(texture_name).format;
+                const texture_format &format = textures.at(texture_name).format;
 
                 glm::uvec2 dimensions;
                 if(format.dimension_type == texture_dimension_type_enum::Absolute) {
@@ -454,7 +450,8 @@ namespace nova {
                 }
 
                 ComPtr<ID3D12Resource> texture;
-                HRESULT hr = device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &texture_desc, D3D12_RESOURCE_STATE_RENDER_TARGET, nullptr, IID_PPV_ARGS(&texture));
+                HRESULT hr = device->CreateCommittedResource(
+                    &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &texture_desc, D3D12_RESOURCE_STATE_RENDER_TARGET, nullptr, IID_PPV_ARGS(&texture));
 
                 if(FAILED(hr)) {
                     NOVA_LOG(ERROR) << "Could not create texture " << texture_name << ": " << get_last_windows_error();
@@ -488,25 +485,20 @@ namespace nova {
 
     DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format) {
         switch(pixel_format) {
-            case pixel_format_enum::RGB8: 
-            case pixel_format_enum::RGBA8:
-                return DXGI_FORMAT_R8G8B8A8_SNORM;
+            case pixel_format_enum::RGB8:
+            case pixel_format_enum::RGBA8: return DXGI_FORMAT_R8G8B8A8_SNORM;
 
             case pixel_format_enum::RGB16F:
-            case pixel_format_enum::RGBA16F:
-                return DXGI_FORMAT_R16G16B16A16_FLOAT;
+            case pixel_format_enum::RGBA16F: return DXGI_FORMAT_R16G16B16A16_FLOAT;
 
             case pixel_format_enum::RGB32F:
-            case pixel_format_enum::RGBA32F: 
-                return DXGI_FORMAT_R32G32B32A32_FLOAT;
+            case pixel_format_enum::RGBA32F: return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
-            case pixel_format_enum::Depth: 
-                return DXGI_FORMAT_D32_FLOAT;
+            case pixel_format_enum::Depth: return DXGI_FORMAT_D32_FLOAT;
 
-            case pixel_format_enum::DepthStencil: 
-                return DXGI_FORMAT_D24_UNORM_S8_UINT;
+            case pixel_format_enum::DepthStencil: return DXGI_FORMAT_D24_UNORM_S8_UINT;
         }
 
         return DXGI_FORMAT_R8G8B8A8_SNORM;
     }
-}
+}  // namespace nova
