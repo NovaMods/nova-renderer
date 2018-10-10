@@ -1,7 +1,9 @@
 {
+    "name": "gui_background",
     "filter": "geometry_type::gui_background",
     "passes": [
         {
+            "name": "main",
             "pipeline": "gui",
             "bindings": {
                 "per_frame_uniforms": "NovaPerFrameUBO",
