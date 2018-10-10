@@ -19,8 +19,6 @@
 #include <glm/glm.hpp>
 #include <sstream>
 
-#include "macros.hpp"
-
 namespace nova {
     /*!
      * \brief Calls the function once for every element in the provided container
@@ -58,10 +56,6 @@ namespace nova {
     public: \
         explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)) {}; \
     }
-
-    /*!
-     * \brief Simple exception to represent that a resource can not be found
-     */
 }
 
 #endif //RENDERER_UTILS_H

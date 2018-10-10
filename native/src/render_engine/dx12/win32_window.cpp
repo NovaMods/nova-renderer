@@ -28,8 +28,8 @@ namespace nova {
     }
 
     void win32_window::create_window(const uint32_t width, const uint32_t height) {
-        DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;
-        DWORD extended_style = WS_EX_APPWINDOW | WS_EX_TOPMOST;
+        const DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;
+        const DWORD extended_style = WS_EX_APPWINDOW | WS_EX_TOPMOST;
 
         auto* title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
 
@@ -38,7 +38,7 @@ namespace nova {
                                         100, 100, width, height,
                                         nullptr, nullptr, GetModuleHandleW(nullptr), this);
         if(window_handle == nullptr) {
-            auto windows_error = get_last_windows_error();
+            const auto windows_error = get_last_windows_error();
             NOVA_LOG(FATAL) << "Could not create window: " << windows_error;
             throw window_creation_error("Could not create window: " + windows_error);
         }
@@ -59,14 +59,14 @@ namespace nova {
 
         window_class_id = RegisterClassExW(&window_class);
         if(window_class_id == 0) {
-            std::string windows_err = get_last_windows_error();
+            const std::string windows_err = get_last_windows_error();
             logger::instance.log(FATAL) << "Could not register window class: " << windows_err;
 
             throw window_creation_error("Could not register window class");
         }
     }
 
-    void win32_window::unregister_window_class() {
+    void win32_window::unregister_window_class() const {
         UnregisterClassW(window_class_name, nullptr);
     }
 
@@ -74,18 +74,18 @@ namespace nova {
         win32_window *view;
 
         if(message == WM_NCCREATE) {
-            CREATESTRUCT *cs = (CREATESTRUCT *) lParam;
-            view = (win32_window *) cs->lpCreateParams;
+            auto *cs = reinterpret_cast<CREATESTRUCT *>(lParam);
+            view = static_cast<win32_window *>(cs->lpCreateParams);
 
             SetLastError(0);
-            if(SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) view) == 0) {
+            if(SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(view)) == 0) {
                 if(GetLastError() != 0) {
                     return FALSE;
                 }
             }
 
         } else {
-            view = (win32_window *) GetWindowLongPtr(hWnd, GWLP_USERDATA);
+            view = reinterpret_cast<win32_window *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
         }
 
         if(view) {
@@ -115,14 +115,14 @@ namespace nova {
     }
 
     std::string get_last_windows_error() {
-        DWORD errorMessageID = ::GetLastError();
+        const DWORD errorMessageID = GetLastError();
         if(errorMessageID == 0) {
             return std::string(); //No error message has been recorded
         }
 
         LPSTR messageBuffer = nullptr;
-        size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                     nullptr, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, nullptr);
+        const size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                     nullptr, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&messageBuffer), 0, nullptr);
 
         std::string message(messageBuffer, size);
 

@@ -29,6 +29,8 @@
 #include <glm/glm.hpp>
 
 namespace nova {
+    NOVA_EXCEPTION(window_creation_error);
+
     /*!
      * \brief A Win32 window for the DX12 variant of Nova
      */
@@ -69,7 +71,7 @@ namespace nova {
          */
         void register_window_class();
 
-        void unregister_window_class();
+        void unregister_window_class() const;
         
         /*!
          * \brief Creates the actual window, setting the value of handle in the process
