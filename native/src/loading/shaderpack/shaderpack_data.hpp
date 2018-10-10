@@ -435,6 +435,9 @@ namespace nova {
          * \brief The height, in pixels, of the texture
          */
         float height;
+
+        bool operator==(const texture_format& other) const;
+        bool operator!=(const texture_format& other) const;
     };
 
     /*!
@@ -593,10 +596,6 @@ namespace nova {
 
         shaderpack_resources_data resources;
     };
-
-    bool operator==(const texture_format &rhs, const texture_format &lhs);
-
-    bool operator!=(const texture_format &rhs, const texture_format &lhs);
 
 
     pixel_format_enum pixel_format_enum_from_string(const std::string& str);

@@ -415,8 +415,8 @@ namespace nova {
         for(const auto& named_texture : textures) {
             std::string texture_name = named_texture.first;
             while(aliases.find(texture_name) != aliases.end()) {
-                NOVA_LOG(TRACE) << "Resource " << texture_name << " is aliased with " << aliases[texture_name];
-                texture_name = aliases[texture_name];
+                NOVA_LOG(TRACE) << "Resource " << texture_name << " is aliased with " << aliases.at(texture_name);
+                texture_name = aliases.at(texture_name);
             }
 
             // We've found the first texture in this alias chain - let's create an actual texture for it if needed

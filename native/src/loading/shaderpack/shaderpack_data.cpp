@@ -15,6 +15,17 @@ namespace nova {
     */
     pipeline_data default_pipeline;
 
+    bool texture_format::operator==(const texture_format& other) const {
+        return pixel_format == other.pixel_format &&
+            dimension_type == other.dimension_type &&
+            width == other.width &&
+            height == other.height;
+    }
+
+    bool texture_format::operator!=(const texture_format& other) const {
+        return !(*this == other);
+    }
+
     pixel_format_enum pixel_format_enum_from_string(const std::string& str) {
         if(str == "RGB8") {
             return pixel_format_enum::RGB8;

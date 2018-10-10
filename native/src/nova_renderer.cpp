@@ -56,7 +56,7 @@ namespace nova {
         }, shaderpack_name);
     }
 
-    render_engine* nova_renderer::get_engine() const {
+    render_engine* nova_renderer::get_engine() {
         return engine.get();
     }
 

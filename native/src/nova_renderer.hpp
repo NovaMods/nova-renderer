@@ -49,7 +49,7 @@ namespace nova {
 
         nova_settings &get_settings();
 
-        render_engine *get_engine() const;
+        render_engine *get_engine();
 
         ftl::TaskScheduler& get_task_scheduler();
 

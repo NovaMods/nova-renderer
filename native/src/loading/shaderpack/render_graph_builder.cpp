@@ -276,8 +276,8 @@ namespace nova {
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
                 NOVA_LOG(TRACE) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
-                const auto& try_alias_name = resources_in_order[j];
-                if(resource_used_range[to_alias_name].is_disjoint_with(resource_used_range[try_alias_name])) {
+                const std::string& try_alias_name = resources_in_order[j];
+                if(resource_used_range.at(to_alias_name).is_disjoint_with(resource_used_range.at(try_alias_name))) {
                     // They can be aliased if they have the same format
                     const auto& try_alias_format = textures.at(try_alias_name).format;
                     if(to_alias_format == try_alias_format) {
