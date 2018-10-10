@@ -122,7 +122,7 @@ set(NOVA_SOURCE
         src/render_engine/resource_barrier.hpp
         src/loading/shaderpack/json_interop.cpp
         src/loading/shaderpack/json_interop.hpp
-        src/loading/utils.hpp
+        src/loading/json_utils.hpp
         src/util/utils.hpp
         src/util/utils.cpp
 		src/render_objects/render_object.cpp

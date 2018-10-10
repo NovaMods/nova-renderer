@@ -4,7 +4,7 @@
  */
 
 #include "shaderpack_data.hpp"
-#include "../utils.hpp"
+#include "../json_utils.hpp"
 
 namespace nova {
     /*!

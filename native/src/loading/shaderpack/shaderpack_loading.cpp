@@ -8,7 +8,7 @@
 #include "../loading_utils.hpp"
 #include "../zip_folder_accessor.hpp"
 #include "../regular_folder_accessor.hpp"
-#include "../utils.hpp"
+#include "../json_utils.hpp"
 #include "json_interop.hpp"
 #include <ftl/atomic_counter.h>
 #include "shaderpack_validator.hpp"
