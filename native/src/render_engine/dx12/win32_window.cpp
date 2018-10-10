@@ -114,7 +114,7 @@ namespace nova {
         }
     }
 
-    std::string win32_window::get_last_windows_error() {
+    std::string get_last_windows_error() {
         DWORD errorMessageID = ::GetLastError();
         if(errorMessageID == 0) {
             return std::string(); //No error message has been recorded

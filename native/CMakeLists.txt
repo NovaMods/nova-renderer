@@ -172,7 +172,7 @@ else()
 endif()
 
 if (WIN32)
-   set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp)
+   set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp src/util/windows_utils.cpp src/util/windows_utils.hpp)
 endif (WIN32)
 
 if (UNIX)

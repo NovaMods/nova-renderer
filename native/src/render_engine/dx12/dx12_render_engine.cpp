@@ -11,6 +11,7 @@
 #include <algorithm>
 #include "../../util/logger.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
+#include "../../util/windows_utils.hpp"
 
 namespace nova {
     DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format);
@@ -452,15 +453,20 @@ namespace nova {
                     texture_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
                 }
 
-                auto pixel_format = get_vk_format_from_pixel_format(format.pixel_format);
-                NOVA_LOG(DEBUG) << "Creating a texture with nova format " << pixel_format_enum::to_string(format.pixel_format) << " and Vulkan format " << vk::to_string(pixel_format) << ". It's being created for texture " << texture_name;
-                auto tex = texture2D(std::to_string(dynamic_textures.size()), dimensions, pixel_format, usage, context);
+                ComPtr<ID3D12Resource> texture;
+                HRESULT hr = device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &texture_desc, D3D12_RESOURCE_STATE_RENDER_TARGET, nullptr, IID_PPV_ARGS(&texture));
+
+                if(FAILED(hr)) {
+                    NOVA_LOG(ERROR) << "Could not create texture " << texture_name << ": " << get_last_windows_error();
+                    continue;
+                }
+                texture->SetName(s2ws(texture_name).c_str());
 
                 auto new_tex_index = dynamic_textures.size();
-                dynamic_textures.emplace_back(std::move(tex));
+                dynamic_textures[texture_name] = texture;
                 dynamic_tex_name_to_idx.emplace(texture_name, new_tex_index);
 
-                NOVA_LOG(TRACE) << "Added texture " << tex.get_name() << " to the dynamic textures";
+                NOVA_LOG(TRACE) << "Added texture " << texture_name << " to the dynamic textures";
                 NOVA_LOG(TRACE) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
 
             } else {
