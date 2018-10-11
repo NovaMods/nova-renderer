@@ -329,18 +329,21 @@ namespace nova {
                 return folder_access->read_spirv_file(full_filename);
 
             } else if(extension.string().find(".hlsl") != std::string::npos) {
-                // HLSL file! Let's convert
                 options.SetSourceLanguage(shaderc_source_language_hlsl);
 
-                std::string hlsl_source = folder_access->read_text_file(full_filename);
-                shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(hlsl_source, stage, full_filename.string().data(), options);
-
-                if(result.GetCompilationStatus() != shaderc_compilation_status_success) {
-                    throw shader_compilation_failed(result.GetErrorMessage());
-                }
-
-                return { result.cbegin(), result.cend() };
+            } else {
+                // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
+                options.SetSourceLanguage(shaderc_source_language_glsl);
             }
+
+            const std::string shader_source = folder_access->read_text_file(full_filename);
+            shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(shader_source, stage, full_filename.string().data(), options);
+
+            if(result.GetCompilationStatus() != shaderc_compilation_status_success) {
+                throw shader_compilation_failed(result.GetErrorMessage());
+            }
+
+            return { result.cbegin(), result.cend() };
         }
     }
 
