@@ -202,7 +202,9 @@ namespace nova {
                 return;
             }
 
-            output[out_idx] = json_pipeline.get<pipeline_data>();
+            pipeline_data new_pipeline = json_pipeline.get<pipeline_data>();
+
+            output[out_idx] = new_pipeline;
 
         } catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();

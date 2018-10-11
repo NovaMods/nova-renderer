@@ -37,7 +37,7 @@ namespace nova {
 
         static const std::string get_engine_name();
 
-        void set_shaderpack(shaderpack_data data) override;
+        void set_shaderpack(shaderpack_data data, ftl::TaskScheduler& scheduler) override;
 
     private:
         std::vector<const char *> enabled_validation_layer_names;

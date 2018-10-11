@@ -48,7 +48,7 @@ namespace nova {
         task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [&](ftl::TaskScheduler* task_scheduler, const std::string& shaderpack_name) {
             const std::optional<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
             if(shaderpack_data) {
-                engine->set_shaderpack(*shaderpack_data);
+                engine->set_shaderpack(*shaderpack_data, task_scheduler);
 
             } else {
                 NOVA_LOG(ERROR) << "Shaderpack " << shaderpack_name << " could not be loaded. Check the logs for more information";

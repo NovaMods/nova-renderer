@@ -286,6 +286,11 @@ namespace nova {
         uint32_t write_mask;
     };
 
+    struct shader_source {
+        std::string filename;
+        std::vector<uint32_t> source;
+    };
+
     /*!
      * \brief All the data that Nova uses to build a pipeline
      */
@@ -404,13 +409,13 @@ namespace nova {
          */
         render_queue_enum render_queue;
 
-        /*!
-         * \brief Map from shader file name to compiled SPIR-V. All shaders are compiled to SPIR-V when they're loaded,
-         * and each backend can do with them as it will
-         */
-        std::unordered_map<std::string, std::vector<uint32_t>> sources;
-    };
+        shader_source vertex_shader;
 
+        std::optional<shader_source> geometry_shader;
+        std::optional<shader_source> tessellation_control_shader;
+        std::optional<shader_source> tessellation_evaluation_shader;
+        std::optional<shader_source> fragment_shader;
+    };
 
     struct texture_format {
         /*!

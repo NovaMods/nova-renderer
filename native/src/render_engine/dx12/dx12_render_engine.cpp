@@ -9,6 +9,9 @@
 #include "dx12_opaque_types.hpp"
 #include <d3d12sdklayers.h>
 #include <algorithm>
+#include <unordered_set>
+#include <ftl/atomic_counter.h>
+
 #include "../../util/logger.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../util/windows_utils.hpp"
@@ -195,7 +198,7 @@ namespace nova {
     std::shared_ptr<iwindow> dx12_render_engine::get_window() const {
         return window;
     }
-
+    
     void dx12_render_engine::render_frame() {
         wait_for_previous_frame();
 
@@ -332,7 +335,7 @@ namespace nova {
         full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 
-    void dx12_render_engine::set_shaderpack(shaderpack_data data) {
+    void dx12_render_engine::set_shaderpack(shaderpack_data data, ftl::TaskScheduler& scheduler) {
         // Let's build our data from the ground up!
         // To load a new shaderpack, we need to first clear out all the data from the old shaderpack. Then, we can 
         // make the new dynamic textures and samplers, then the PSOs, then the material definitions, then the 
@@ -347,13 +350,15 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Cleared data from old shaderpack";
 
         // Build up E V E R Y T H I N G
-        std::vector<render_pass_data> ordered_passes = flatten_frame_graph(data.passes);
+        ordered_passes = flatten_frame_graph(data.passes);
 
         NOVA_LOG(DEBUG) << "Flattened frame graph";
 
         create_gpu_query_heap(ordered_passes.size());
 
         create_dynamic_textures(data.resources.textures, ordered_passes);
+
+        make_pipeline_state_objects(data.pipelines, scheduler);
     }
 
     std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data>& passes) {
@@ -484,6 +489,28 @@ namespace nova {
         heap_desc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
 
         device->CreateQueryHeap(&heap_desc, IID_PPV_ARGS(&renderpass_timestamp_query_heap));
+    }
+
+    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler& scheduler) {
+        ftl::AtomicCounter pipelines_created_counter(&scheduler);
+
+        std::vector<pipeline> dx12_pipelines(pipelines.size());
+        std::size_t write_pipeline = 0;
+
+        for(const pipeline_data& data : pipelines) {
+            scheduler.AddTask(&pipelines_created_counter, &dx12_render_engine::make_single_pso, data, dx12_pipelines, write_pipeline);
+        }
+
+        scheduler.WaitForCounter(&pipelines_created_counter, pipelines.size());
+    }
+
+    void dx12_render_engine::make_single_pso(const pipeline_data& input, std::vector<pipeline>& output, const size_t out_idx) {
+        D3D12_ROOT_SIGNATURE_DESC1 root_signature = {};
+
+        //std::unordered_set<D3D12_ROOT_PARAMETER1> vertex_shader_parameters = get_root_signature_of_shader(input.sources.);
+
+
+
     }
 
     DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format) {

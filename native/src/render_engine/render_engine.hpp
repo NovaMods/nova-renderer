@@ -10,6 +10,7 @@
 #include "../util/utils.hpp"
 #include "window.hpp"
 #include "../loading/shaderpack/shaderpack_data.hpp"
+#include "ftl/task_scheduler.h"
 
 namespace nova {
     NOVA_EXCEPTION(render_engine_initialization_exception);
@@ -57,7 +58,7 @@ namespace nova {
         *
         * \param data The shaderpack to load
         */
-        virtual void set_shaderpack(shaderpack_data data) = 0;
+        virtual void set_shaderpack(shaderpack_data data, ftl::TaskScheduler& scheduler) = 0;
 
         /*!
          * \brief Renders a frame like so well, you guys

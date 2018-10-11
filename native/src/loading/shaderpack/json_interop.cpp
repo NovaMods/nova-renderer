@@ -73,6 +73,32 @@ namespace nova {
         pipeline.alpha_dst                  = get_json_value<blend_factor_enum>(j, "alphaDest", blend_factor_enum::Zero, blend_factor_enum_from_string);
         pipeline.depth_func                 = get_json_value<compare_op_enum>(j, "depthFunc", compare_op_enum::Less, compare_op_enum_from_string);
         pipeline.render_queue               = get_json_value<render_queue_enum>(j, "renderQueue", render_queue_enum::Opaque, render_queue_enum_from_string);
+
+        pipeline.vertex_shader.filename     = get_json_value<std::string>(j, "vertexShader", "<SHADER_MISSING>");
+
+        std::optional<std::string> geometry_shader_name = get_json_value<std::string>(j, "geometryShader");
+        if(geometry_shader_name) {
+            pipeline.geometry_shader = std::make_optional<shader_source>();
+            (*pipeline.geometry_shader).filename = *geometry_shader_name;
+        }
+
+        std::optional<std::string> tess_control_shader_name = get_json_value<std::string>(j, "tessellationControlShader");
+        if(tess_control_shader_name) {
+            pipeline.tessellation_control_shader = std::make_optional<shader_source>();
+            (*pipeline.tessellation_control_shader).filename = *tess_control_shader_name;
+        }
+
+        std::optional<std::string> tess_eval_shader_name = get_json_value<std::string>(j, "tessellationEvalShader");
+        if(tess_eval_shader_name) {
+            pipeline.tessellation_evaluation_shader = std::make_optional<shader_source>();
+            (*pipeline.tessellation_evaluation_shader).filename = *tess_eval_shader_name;
+        }
+
+        std::optional<std::string> fragment_shader_name = get_json_value<std::string>(j, "fragmentShader");
+        if(fragment_shader_name) {
+            pipeline.fragment_shader = std::make_optional<shader_source>();
+            (*pipeline.fragment_shader).filename = *geometry_shader_name;
+        }
     }
 
     void from_json(const nlohmann::json& j, material_pass& pass) {

@@ -41,6 +41,11 @@ namespace nova {
         ComPtr<ID3D12GraphicsCommandList> list;
     };
 
+    struct pipeline {
+        ComPtr<ID3D12PipelineState> pso;
+        ComPtr<ID3D12RootSignature> root_signature;
+    };
+
 #define FRAME_BUFFER_COUNT 3 
     /*!
      * \brief Implements a render engine for DirectX 12
@@ -62,8 +67,8 @@ namespace nova {
         void open_window(uint32_t width, uint32_t height) override;
 
         std::shared_ptr<iwindow> get_window() const override;
-
-        void set_shaderpack(shaderpack_data data) override;
+        
+        void set_shaderpack(shaderpack_data data, ftl::TaskScheduler& scheduler) override;
 
         void render_frame() override;
 
@@ -121,6 +126,11 @@ namespace nova {
         std::unordered_map<std::string, ComPtr<ID3D12Resource>> dynamic_textures;
         std::unordered_map<std::string, uint32_t> dynamic_tex_name_to_idx;
 
+        /*!
+         * \brief The passes in the current frame graph, in submission order
+         */
+        std::vector<render_pass_data> ordered_passes;
+
         void create_device();
 
         void create_rtv_command_queue();
@@ -155,12 +165,17 @@ namespace nova {
 
         void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> passes);
 
+        void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler& scheduler);
+
+        void make_single_pso(const pipeline_data& input, std::vector<pipeline>& output, size_t out_idx);
+
         /*!
          * \brief Creates a timestamp query heap with enough space to time every render pass
          * 
          * \param num_queries The number of queries the heap needs to support
          */
         void create_gpu_query_heap(size_t num_queries);
+
     };
 }
 

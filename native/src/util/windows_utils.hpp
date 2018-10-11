@@ -1,4 +1,6 @@
 /*!
+ * \brief Utility functions for handling Windows
+ *
  * \author ddubois 
  * \date 10-Oct-18.
  */
