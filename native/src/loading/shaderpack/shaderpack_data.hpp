@@ -13,8 +13,11 @@
 #include <unordered_map>
 #include <cstdint>
 #include <optional>
+#include <filesystem>
 #include <nlohmann/json.hpp>
 #include "../../util/utils.hpp"
+
+namespace fs = std::experimental::filesystem;
 
 namespace nova {
     NOVA_EXCEPTION(validation_failure_exception);
@@ -287,7 +290,7 @@ namespace nova {
     };
 
     struct shader_source {
-        std::string filename;
+        fs::path filename;
         std::vector<uint32_t> source;
     };
 

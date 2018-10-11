@@ -13,6 +13,7 @@
 #include <ftl/atomic_counter.h>
 #include "shaderpack_validator.hpp"
 #include "render_graph_builder.hpp"
+#include <shaderc/shaderc.hpp>
 
 namespace nova {
     folder_accessor_base* get_shaderpack_accessor(const fs::path &shaderpack_name);
@@ -23,6 +24,8 @@ namespace nova {
     void load_single_pipeline(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, const fs::path& pipeline_path, uint32_t out_idx, std::vector<pipeline_data>& output);
     void load_material_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, std::vector<material_data>& output);
     void load_single_material(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, const fs::path& material_path, uint32_t out_idx, std::vector<material_data>& output);
+
+    std::vector<uint32_t> load_shader_file(const std::string& filename, folder_accessor_base* folder_access, shaderc_shader_kind stage);
 
     bool loading_failed = false;
 
@@ -190,7 +193,7 @@ namespace nova {
 
         task_scheduler->WaitForCounter(&pipeline_load_tasks_remaining, 0);
     }
-
+    
     void load_single_pipeline(ftl::TaskScheduler *task_scheduler, folder_accessor_base* folder_access, const fs::path& pipeline_path, uint32_t out_idx, std::vector<pipeline_data>& output) {
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
         try {
@@ -203,6 +206,7 @@ namespace nova {
             }
 
             pipeline_data new_pipeline = json_pipeline.get<pipeline_data>();
+            new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access);
 
             output[out_idx] = new_pipeline;
 
@@ -210,13 +214,97 @@ namespace nova {
             NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
             loading_failed = true;
 
-        //} catch(nlohmann::json::type_error& err) {
-        //    NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
+            //} catch(nlohmann::json::type_error& err) {
+            //    NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
 
         } catch(validation_failure_exception& err) {
             NOVA_LOG(ERROR) << "Could not validate pipeline file " << pipeline_path.string() << ": " << err.what();
             loading_failed = true;
         }
+    }
+
+    std::vector<uint32_t> load_shader_file(const std::string& filename, folder_accessor_base* folder_access, const shaderc_shader_kind stage) {
+        static std::unordered_map<shaderc_shader_kind, std::vector<fs::path>>
+
+        // TODO: Expand with Bedrock names
+        static std::vector<std::string> vertex_extensions = {
+            ".vert.spirv",
+            ".vsh.spirv",
+            ".vertex.spirv",
+
+            ".vert",
+            ".vsh",
+
+            ".vertex",
+
+            ".vert.hlsl",
+            ".vsh.hlsl",
+            ".vertex.hlsl",
+        };
+
+        // TODO: Expand with Bedrock names
+        static std::vector<std::string> fragment_extensions = {
+            ".frag.spirv",
+            ".fsh.spirv",
+            ".fragment.spirv",
+
+            ".frag",
+            ".fsh",
+
+            ".fragment",
+
+            ".frag.hlsl",
+            ".fsh.hlsl",
+            ".fragment.hlsl",
+        };
+
+        // TODO: Expand with Bedrock names
+        static std::vector<std::string> geometry_extensions = {
+            ".geom.spirv",
+            ".geo.spirv",
+            ".geometry.spirv",
+
+            ".geom",
+            ".geo",
+
+            ".geometry",
+
+            ".geom.hlsl",
+            ".geo.hlsl",
+            ".geometry.hlsl",
+        };
+
+        // TODO: Expand with Bedrock names
+        static std::vector<std::string> tess_eval_extensions = {
+            ".tese.spirv",
+            ".tse.spirv",
+            ".tess_eval.spirv",
+
+            ".tese",
+            ".tse",
+
+            ".tess_eval",
+
+            ".tese.hlsl",
+            ".tse.hlsl",
+            ".tess_eval.hlsl",
+        };
+
+        // TODO: Expand with Bedrock names
+        static std::vector<std::string> tess_control_extensions = {
+            ".tesc.spirv",
+            ".tsc.spirv",
+            ".tess_control.spirv",
+
+            ".tesc",
+            ".tsc",
+
+            ".tess_control",
+
+            ".tesc.hlsl",
+            ".tsc.hlsl",
+            ".tess_control.hlsl",
+        };
     }
 
     void load_material_files(ftl::TaskScheduler * task_scheduler, folder_accessor_base* folder_access, std::vector<material_data>& output) {

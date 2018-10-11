@@ -56,15 +56,15 @@ add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
+add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
+add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
+add_subdirectory(${3RD_PARTY_DIR}/glslang)
+
+set(SHADERC_SKIP_TESTS TRUE CACHE BOOL "Shaderc tests go away" FORCE)
+add_subdirectory(${3RD_PARTY_DIR}/shaderc)
+
 if(UNIX)
     find_package(Vulkan)
-
-    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
-    add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
-    add_subdirectory(${3RD_PARTY_DIR}/glslang)
-
-    set(SHADERC_SKIP_TESTS TRUE CACHE BOOL "Shaderc tests go away" FORCE)
-    add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 endif()
 
 ######################################
@@ -80,12 +80,12 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/FiberTaskingLib/include
         ${3RD_PARTY_DIR}/cpptoml/include
         ${3RD_PARTY_DIR}/miniz
+        ${3RD_PARTY_DIR}/shaderc/libshaderc/include
         )
 
 if(UNIX)
     include_directories(SYSTEM
             ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
-            ${3RD_PARTY_DIR}/shaderc/libshaderc/include
             )
 endif()
 
@@ -93,7 +93,18 @@ endif()
 # Add Nova source code #
 ########################
 
+set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
+
 set(NOVA_SOURCE
+        # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova.
+        # The instructions are like "yeah just copy over whatever files you want cause that's totally the way modern
+        # software is built -_-
+        # So here we are,
+        ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
+        ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
+        ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
+        ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp 
+
         src/platform.hpp
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp
@@ -128,11 +139,11 @@ set(NOVA_SOURCE
 		src/render_objects/render_object.cpp
 		src/render_objects/render_object.hpp 
 		src/loading/shaderpack/shaderpack_validator.cpp 
-		src/loading/shaderpack/shaderpack_validator.hpp src/loading/shaderpack/render_graph_builder.cpp src/loading/shaderpack/render_graph_builder.hpp)
+		src/loading/shaderpack/shaderpack_validator.hpp 
+		src/loading/shaderpack/render_graph_builder.cpp 
+		src/loading/shaderpack/render_graph_builder.hpp)
 
 if(UNIX)
-    set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
-
     set(NOVA_SOURCE
             ${NOVA_SOURCE}
             src/render_engine/vulkan/vulkan_render_engine.hpp
@@ -143,15 +154,7 @@ if(UNIX)
             src/render_engine/vulkan/vulkan_resource_barrier_helpers.cpp
             src/render_engine/vulkan/vulkan_resource_barrier_helpers.hpp
             src/render_engine/vulkan/vulkan_opaque_types.hpp
-
-            # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova.
-            # The instructions are like "yeah just copy over whatever files you want cause that's totally the way modern
-            # software is built -_-
-            # So here we are,
-            ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
-            ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
-            ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
-            ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp src/render_engine/vulkan/vulkan_type_converters.hpp)
+			src/render_engine/vulkan/vulkan_type_converters.hpp)
 
 elseif(WIN32)
     set(NOVA_SOURCE
@@ -199,7 +202,7 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz shaderc)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
@@ -209,7 +212,7 @@ if (WIN32)
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
 
 else(WIN32)
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${Vulkan_LIBRARIES} shaderc stdc++fs X11)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${Vulkan_LIBRARIES} stdc++fs X11)
 endif (WIN32)
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
