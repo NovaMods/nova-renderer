@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <optional>
 #include "../util/utils.hpp"
+#include "../../3rdparty/shaderc/glslc/src/file_compiler.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -51,7 +52,7 @@ namespace nova {
         explicit folder_accessor_base(const fs::path &folder);
 
         // Else freeing could cause errors
-        virtual ~folder_accessor_base(){};
+        virtual ~folder_accessor_base() {};
 
         /*!
          * \brief Checks if the given resource exists
@@ -69,13 +70,21 @@ namespace nova {
         virtual std::string read_text_file(const fs::path &resource_path) = 0;
 
         /*!
+         * \brief Loads the file at the provided path as a series of 32-bit numbers
+         * 
+         * \param resource_path The path to the SPIR-V file to load, relative to this resourcepack's root
+         * \return All the 32-bit numbers in the SPIR-V file
+         */
+        std::vector<uint32_t> read_spirv_file(fs::path& resource_path);
+
+        /*!
          * \brief Retrieves the paths of all the items in the specified folder
          * \param folder The folder to get all items from
          * \return A list of all the paths in the provided folder
          */
         virtual std::vector<fs::path> get_all_items_in_folder(const fs::path &folder) = 0;
 
-        const fs::path &get_root();
+        const fs::path &get_root() const;
 
     protected:
         fs::path root_folder;
@@ -96,6 +105,21 @@ namespace nova {
          * \param resource_path The path to the resource, with `our_root` already appended
          */
         virtual bool does_resource_exist_internal(const fs::path &resource_path) = 0;
+    };
+
+    class shader_includer : public shaderc::CompileOptions::IncluderInterface {
+    public:
+        shader_includer(folder_accessor_base& folder_access);
+
+        shaderc_include_result* GetInclude(const char* requested_source, shaderc_include_type type, 
+            const char* requesting_source, size_t include_depth) override;
+
+        void ReleaseInclude(shaderc_include_result* data) override;
+
+    private:
+        folder_accessor_base& folder_access;
+
+        std::unordered_map<fs::path, std::string> loaded_files;
     };
 
     /*!

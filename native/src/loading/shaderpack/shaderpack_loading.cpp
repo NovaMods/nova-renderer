@@ -25,7 +25,7 @@ namespace nova {
     void load_material_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::vector<material_data> &output);
     void load_single_material(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, const fs::path &material_path, uint32_t out_idx, std::vector<material_data> &output);
 
-    std::vector<uint32_t> load_shader_file(const std::string& filename, folder_accessor_base* folder_access, shaderc_shader_kind stage);
+    std::vector<uint32_t> load_shader_file(const fs::path& filename, folder_accessor_base* folder_access, shaderc_shader_kind stage, const std::vector<std::string>& defines);
 
     bool loading_failed = false;
 
@@ -206,7 +206,7 @@ namespace nova {
             }
 
             pipeline_data new_pipeline = json_pipeline.get<pipeline_data>();
-            new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access);
+            new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access, shaderc_vertex_shader, new_pipeline.defines);
 
             output[out_idx] = new_pipeline;
 
@@ -223,88 +223,125 @@ namespace nova {
         }
     }
 
-    std::vector<uint32_t> load_shader_file(const std::string& filename, folder_accessor_base* folder_access, const shaderc_shader_kind stage) {
-        static std::unordered_map<shaderc_shader_kind, std::vector<fs::path>>
+    std::vector<uint32_t> load_shader_file(const fs::path& filename, folder_accessor_base* folder_access, const shaderc_shader_kind stage, const std::vector<std::string>& defines) {
+        static std::unordered_map<shaderc_shader_kind, std::vector<fs::path>> extensions_by_shader_stage = {
+            {shaderc_vertex_shader,  {
+                ".vert.spirv",
+                ".vsh.spirv",
+                ".vertex.spirv",
 
-        // TODO: Expand with Bedrock names
-        static std::vector<std::string> vertex_extensions = {
-            ".vert.spirv",
-            ".vsh.spirv",
-            ".vertex.spirv",
+                ".vert",
+                ".vsh",
 
-            ".vert",
-            ".vsh",
+                ".vertex",
 
-            ".vertex",
+                ".vert.hlsl",
+                ".vsh.hlsl",
+                ".vertex.hlsl",
+            }},
+            {shaderc_fragment_shader, {
+                ".frag.spirv",
+                ".fsh.spirv",
+                ".fragment.spirv",
 
-            ".vert.hlsl",
-            ".vsh.hlsl",
-            ".vertex.hlsl",
+                ".frag",
+                ".fsh",
+
+                ".fragment",
+
+                ".frag.hlsl",
+                ".fsh.hlsl",
+                ".fragment.hlsl",
+            }},
+
+            {shaderc_geometry_shader, {
+                ".geom.spirv",
+                ".geo.spirv",
+                ".geometry.spirv",
+
+                ".geom",
+                ".geo",
+
+                ".geometry",
+
+                ".geom.hlsl",
+                ".geo.hlsl",
+                ".geometry.hlsl",
+            }},
+            {shaderc_tess_evaluation_shader, {
+                ".tese.spirv",
+                ".tse.spirv",
+                ".tess_eval.spirv",
+
+                ".tese",
+                ".tse",
+
+                ".tess_eval",
+
+                ".tese.hlsl",
+                ".tse.hlsl",
+                ".tess_eval.hlsl",
+            }},
+            {shaderc_tess_control_shader, {
+                ".tesc.spirv",
+                ".tsc.spirv",
+                ".tess_control.spirv",
+
+                ".tesc",
+                ".tsc",
+
+                ".tess_control",
+
+                ".tesc.hlsl",
+                ".tsc.hlsl",
+                ".tess_control.hlsl",
+            }}
         };
 
-        // TODO: Expand with Bedrock names
-        static std::vector<std::string> fragment_extensions = {
-            ".frag.spirv",
-            ".fsh.spirv",
-            ".fragment.spirv",
+        std::vector<fs::path> extensions_for_current_stage = extensions_by_shader_stage.at(stage);
 
-            ".frag",
-            ".fsh",
+        for(const fs::path& extension : extensions_for_current_stage) {
+            fs::path full_filename = filename;
+            full_filename.replace_extension(extension);
 
-            ".fragment",
+            if(!folder_access->does_resource_exist(full_filename)) {
+                continue;
+            }
 
-            ".frag.hlsl",
-            ".fsh.hlsl",
-            ".fragment.hlsl",
-        };
+            std::unique_ptr<shader_includer> includer = std::make_unique<shader_includer>(*folder_access);
+            shaderc::Compiler compiler;
+            shaderc::CompileOptions options;
+            options.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
+            options.SetWarningsAsErrors();
+            options.SetGenerateDebugInfo();
 
-        // TODO: Expand with Bedrock names
-        static std::vector<std::string> geometry_extensions = {
-            ".geom.spirv",
-            ".geo.spirv",
-            ".geometry.spirv",
+            // TODO: Figure out how to handle shader options
+            for(const std::string& define : defines) {
+                options.AddMacroDefinition(define);
+            }
 
-            ".geom",
-            ".geo",
+            options.SetIncluder(std::move(includer));
 
-            ".geometry",
+            // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded 
+            // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
+            if(extension.string().find(".spirv") != std::string::npos) {
+                // SPIR-V file!
+                return folder_access->read_spirv_file(full_filename);
 
-            ".geom.hlsl",
-            ".geo.hlsl",
-            ".geometry.hlsl",
-        };
+            } else if(extension.string().find(".hlsl") != std::string::npos) {
+                // HLSL file! Let's convert
+                options.SetSourceLanguage(shaderc_source_language_hlsl);
 
-        // TODO: Expand with Bedrock names
-        static std::vector<std::string> tess_eval_extensions = {
-            ".tese.spirv",
-            ".tse.spirv",
-            ".tess_eval.spirv",
+                std::string hlsl_source = folder_access->read_text_file(full_filename);
+                shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(hlsl_source, stage, full_filename.string().data(), options);
 
-            ".tese",
-            ".tse",
+                if(result.GetCompilationStatus() != shaderc_compilation_status_success) {
+                    throw shader_compilation_failed(result.GetErrorMessage());
+                }
 
-            ".tess_eval",
-
-            ".tese.hlsl",
-            ".tse.hlsl",
-            ".tess_eval.hlsl",
-        };
-
-        // TODO: Expand with Bedrock names
-        static std::vector<std::string> tess_control_extensions = {
-            ".tesc.spirv",
-            ".tsc.spirv",
-            ".tess_control.spirv",
-
-            ".tesc",
-            ".tsc",
-
-            ".tess_control",
-
-            ".tesc.hlsl",
-            ".tsc.hlsl",
-            ".tess_control.hlsl",
-        };
+                return { result.cbegin(), result.cend() };
+            }
+        }
     }
 
     void load_material_files(ftl::TaskScheduler* task_scheduler, folder_accessor_base* folder_access, std::vector<material_data>& output) {
