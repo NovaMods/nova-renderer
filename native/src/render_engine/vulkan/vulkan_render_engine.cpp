@@ -18,7 +18,7 @@
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings &settings) : render_engine(settings) {
         settings_options options = settings.get_options();
-        const auto& version = options.api.vulkan.appliction_version;
+        const auto &version = options.api.vulkan.appliction_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -118,9 +118,9 @@ namespace nova {
         auto *physical_devices = new VkPhysicalDevice[device_count];
         NOVA_THROW_IF_VK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, physical_devices), render_engine_initialization_exception);
 
-        uint32_t graphics_family_idx    = 0xFFFFFFFF;
-        uint32_t compute_family_idx     = 0xFFFFFFFF;
-        uint32_t copy_family_idx        = 0xFFFFFFFF;
+        uint32_t graphics_family_idx = 0xFFFFFFFF;
+        uint32_t compute_family_idx = 0xFFFFFFFF;
+        uint32_t copy_family_idx = 0xFFFFFFFF;
 
         VkPhysicalDevice choosen_device = nullptr;
         for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
@@ -129,7 +129,7 @@ namespace nova {
             VkPhysicalDeviceProperties properties;
             vkGetPhysicalDeviceProperties(current_device, &properties);
 
-            if(properties.vendorID == 0x8086 && device_count - 1 > device_idx) { // Intel GPU... they are not powerful and we have more available, so skip it
+            if(properties.vendorID == 0x8086 && device_count - 1 > device_idx) {  // Intel GPU... they are not powerful and we have more available, so skip it
                 continue;
             }
 
@@ -264,8 +264,7 @@ namespace nova {
         vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, formats.data());
 
         uint32_t present_mode_count;
-        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count,
-                                                                         nullptr), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, nullptr), render_engine_initialization_exception);
         if(present_mode_count == 0) {
             throw render_engine_initialization_exception("No supported present modes... something went really wrong");
         }
@@ -426,14 +425,14 @@ namespace nova {
         std::queue<pipeline_data> queued_data(std::deque(shaderpack.pipelines.begin(), shaderpack.pipelines.end()));
 
         uint64_t noop_count = 0;
-        while (!queued_data.empty()) {
+        while(!queued_data.empty()) {
             // TODO: Ugliest sorting ever, but I have no idea how to improve this right now
             pipeline_data data = queued_data.front();
             queued_data.pop();
             if(!(data.parent_name && std::find(pipelines.begin(), pipelines.end(), data.parent_name.value()) != pipelines.end())) {
                 if(noop_count >= queued_data.size()) {
                     NOVA_LOG(ERROR) << "Unresolved parent '" << data.parent_name.value() << " for pipeline " << data.name;
-                    while (!queued_data.empty()) {
+                    while(!queued_data.empty()) {
                         NOVA_LOG(ERROR) << "Unresolved parent '" << data.parent_name.value() << " for pipeline " << data.name;
                     }
                     throw render_engine_initialization_exception("Pipelines with unresolved parents left over!");
@@ -470,7 +469,7 @@ namespace nova {
                 shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 shader_stage_create_info.pNext = nullptr;
                 shader_stage_create_info.flags = 0;
-                if(ends_with(pair.first, ".vert")) { // TODO: Maybe more endings?
+                if(ends_with(pair.first, ".vert")) {  // TODO: Maybe more endings?
                     shader_stage_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
                 } else if(ends_with(pair.first, ".frag")) {
                     shader_stage_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -551,9 +550,7 @@ namespace nova {
             multisample_create_info.alphaToOneEnable = VK_FALSE;
 
             VkPipelineColorBlendAttachmentState color_blend_attachment;
-            color_blend_attachment.colorWriteMask =
-                    VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-                    VK_COLOR_COMPONENT_A_BIT;
+            color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachment.blendEnable = VK_TRUE;
             color_blend_attachment.srcColorBlendFactor = vulkan::type_converters::blend_factor(data.source_blend_factor);
             color_blend_attachment.dstColorBlendFactor = vulkan::type_converters::blend_factor(data.destination_blend_factor);
@@ -584,9 +581,7 @@ namespace nova {
             pipeline_layout_create_info.pushConstantRangeCount = 0;
             pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
-            NOVA_THROW_IF_VK_ERROR(
-                    vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &nova_pipeline.vulkan_layout),
-                    render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &nova_pipeline.vulkan_layout), render_engine_initialization_exception);
 
             VkGraphicsPipelineCreateInfo pipeline_create_info;
             pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -612,9 +607,7 @@ namespace nova {
             }
             pipeline_create_info.basePipelineIndex = -1;
 
-            NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr,
-                                                             &nova_pipeline.vulkan_pipeline),
-                                   render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.vulkan_pipeline), render_engine_initialization_exception);
             pipelines.insert(std::make_pair(data.name, nova_pipeline));
         }
     }
@@ -668,8 +661,8 @@ namespace nova {
         allocation_create_info.pUserData = nullptr;
         allocation_create_info.pool = VK_NULL_HANDLE;
 
-        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(memory_allocator, &buffer_create_info, &allocation_create_info, &vertex_buffer, &vertex_buffer_allocation,
-                        nullptr), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(
+            vmaCreateBuffer(memory_allocator, &buffer_create_info, &allocation_create_info, &vertex_buffer, &vertex_buffer_allocation, nullptr), render_engine_initialization_exception);
 
         // vmaBindBufferMemory(memory_allocator, vertex_buffer_allocation, vertex_buffer);
 
@@ -708,14 +701,9 @@ namespace nova {
         fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         for(uint8_t i = 0; i < MAX_FRAMES_IN_QUEUE; i++) {
-            NOVA_THROW_IF_VK_ERROR(
-                    vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_available_semaphores.at(i)),
-                    render_engine_initialization_exception);
-            NOVA_THROW_IF_VK_ERROR(
-                    vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphores.at(i)),
-                    render_engine_initialization_exception);
-            NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_create_info, nullptr, &submit_fences.at(i)),
-                    render_engine_rendering_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_available_semaphores.at(i)), render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphores.at(i)), render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_create_info, nullptr, &submit_fences.at(i)), render_engine_rendering_exception);
         }
     }
 
@@ -742,7 +730,7 @@ namespace nova {
     }
 
     void vulkan_render_engine::destroy_graphics_pipelines() {
-        for (const auto &[_, pipeline] : pipelines) {
+        for(const auto &[_, pipeline] : pipelines) {
             vkDestroyPipeline(device, pipeline.vulkan_pipeline, nullptr);
             vkDestroyPipelineLayout(device, pipeline.vulkan_layout, nullptr);
         }
@@ -752,9 +740,7 @@ namespace nova {
         vkDestroyRenderPass(device, render_pass, nullptr);
     }
 
-    void vulkan_render_engine::cleanup_dynamic() {
-
-    }
+    void vulkan_render_engine::cleanup_dynamic() {}
 
     void vulkan_render_engine::destroy_image_views() {
         for(auto image_view : swapchain_image_views) {
@@ -809,9 +795,8 @@ namespace nova {
         }
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType,
-                                                uint64_t object, size_t location, int32_t message_code,
-                                                const char *layer_prefix, const char *message, void *user_data) {
+    VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(
+        VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char *layer_prefix, const char *message, void *user_data) {
         NOVA_LOG(TRACE) << __FILE__ << ":" << __LINE__ << " >> VK Debug: [" << layer_prefix << "]" << message;
         return VK_FALSE;
     }
@@ -823,14 +808,12 @@ namespace nova {
     void vulkan_render_engine::render_frame() {
         vkWaitForFences(device, 1, &submit_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
 
-        auto acquire_result = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphores.at(current_frame), VK_NULL_HANDLE,
-                &current_swapchain_index);
+        auto acquire_result = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphores.at(current_frame), VK_NULL_HANDLE, &current_swapchain_index);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
             recreate_swapchain();
             return;
         } else if(acquire_result != VK_SUCCESS) {
-            throw render_engine_rendering_exception(
-                    std::string(__FILE__) + ":" + std::to_string(__LINE__) +  "=> " + nova::vulkan::vulkan_utils::vk_result_to_string(acquire_result)); \
+            throw render_engine_rendering_exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " + nova::vulkan::vulkan_utils::vk_result_to_string(acquire_result));
         }
 
         vkResetFences(device, 1, &submit_fences.at(current_frame));
@@ -904,4 +887,4 @@ namespace nova {
         shaderpack_loaded = true;
     }
 
-}
+}  // namespace nova

@@ -7,12 +7,12 @@
 #if SUPPORT_DX12
 
 #ifndef UNICODE
-  #define UNICODE
+#define UNICODE
 #endif
 
 #include <SDKDDKVer.h>
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN  // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
 
@@ -57,7 +57,7 @@ namespace nova {
 
     private:
         HWND window_handle;
-        WCHAR* window_class_name;
+        WCHAR *window_class_name;
         ATOM window_class_id;
 
         bool window_should_close;
@@ -72,7 +72,7 @@ namespace nova {
         void register_window_class();
 
         void unregister_window_class() const;
-        
+
         /*!
          * \brief Creates the actual window, setting the value of handle in the process
          *
@@ -105,11 +105,11 @@ namespace nova {
     };
 
     /*!
-    * \brief Retrieves the most recent Windows error and returns it to the user
-    * \return The error string of the most recent Windows error
-    */
+     * \brief Retrieves the most recent Windows error and returns it to the user
+     * \return The error string of the most recent Windows error
+     */
     std::string get_last_windows_error();
-}
+}  // namespace nova
 
 #endif
 #endif

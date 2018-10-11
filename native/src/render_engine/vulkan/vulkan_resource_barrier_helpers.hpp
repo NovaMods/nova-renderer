@@ -14,6 +14,6 @@ namespace nova {
     VkAccessFlags to_vk_access_flags(stage_flags flags);
 
     VkImageLayout to_vk_image_layout(image_layout layout);
-}
+}  // namespace nova
 
-#endif //NOVA_RENDERER_VULKAN_RESOURCE_BARRIER_HELPERS_H
+#endif  // NOVA_RENDERER_VULKAN_RESOURCE_BARRIER_HELPERS_H

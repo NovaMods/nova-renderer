@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 17-Sep-18.
  */
 
@@ -7,7 +7,6 @@
 #include "nova/profiler.h"
 #include "../../util/logger.hpp"
 #include <unordered_set>
-
 
 namespace nova {
     /*!
@@ -26,10 +25,10 @@ namespace nova {
      * passes, there's a circular dependency somewhere in the render graph. This is Bad and we hate it
      */
     void add_dependent_passes(const std::string &pass_name,
-                              const std::unordered_map<std::string, render_pass_data>& passes,
-                              std::vector<std::string>& ordered_passes,
-                              const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
-                              uint32_t depth);
+        const std::unordered_map<std::string, render_pass_data> &passes,
+        std::vector<std::string> &ordered_passes,
+        const std::unordered_map<std::string, std::vector<std::string>> &resource_to_write_pass,
+        uint32_t depth);
 
     bool range::has_writer() const {
         return first_write_pass <= last_write_pass;
@@ -66,7 +65,7 @@ namespace nova {
         return first_pass;
     }
 
-    bool range::is_disjoint_with(const range& other) const {
+    bool range::is_disjoint_with(const range &other) const {
         if(!is_used() || !other.is_used())
             return false;
         if(!can_alias() || !other.can_alias())
@@ -91,10 +90,10 @@ namespace nova {
         // that resource
         auto resource_to_write_pass = std::unordered_map<std::string, std::vector<std::string>>{};
 
-        for(const auto& item : passes) {
-            const render_pass_data& pass = item.second;
+        for(const auto &item : passes) {
+            const render_pass_data &pass = item.second;
 
-            for(const auto& output : pass.texture_outputs) {
+            for(const auto &output : pass.texture_outputs) {
                 resource_to_write_pass[output.name].push_back(pass.name);
             }
         }
@@ -109,11 +108,11 @@ namespace nova {
             NOVA_LOG(ERROR) << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
             throw pass_ordering_exception("Failed to order passes because no backbuffer was found");
 
-        } else {    // While the throw should make it clear that this is a separate branch, I forgot so here's an else
+        } else {  // While the throw should make it clear that this is a separate branch, I forgot so here's an else
             auto backbuffer_writes = resource_to_write_pass["Backbuffer"];
             ordered_passes.insert(ordered_passes.end(), backbuffer_writes.begin(), backbuffer_writes.end());
 
-            for(const auto& pass : backbuffer_writes) {
+            for(const auto &pass : backbuffer_writes) {
                 add_dependent_passes(pass, passes, ordered_passes, resource_to_write_pass, 1);
             }
 
@@ -129,10 +128,8 @@ namespace nova {
             std::unordered_set<std::string> seen;
 
             auto output_itr = ordered_passes.begin();
-            for (const auto& pass : ordered_passes)
-            {
-                if (!seen.count(pass))
-                {
+            for(const auto &pass : ordered_passes) {
+                if(!seen.count(pass)) {
                     *output_itr = pass;
                     seen.insert(pass);
                     ++output_itr;
@@ -148,26 +145,26 @@ namespace nova {
     }
 
     void add_dependent_passes(const std::string &pass_name,
-                              const std::unordered_map<std::string, render_pass_data>& passes,
-                              std::vector<std::string>& ordered_passes,
-                              const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
-                              const uint32_t depth) {
+        const std::unordered_map<std::string, render_pass_data> &passes,
+        std::vector<std::string> &ordered_passes,
+        const std::unordered_map<std::string, std::vector<std::string>> &resource_to_write_pass,
+        const uint32_t depth) {
         if(depth > passes.size()) {
             NOVA_LOG(ERROR) << "Circular render graph detected! Please fix your render graph to not have circular dependencies";
             throw circular_rendergraph_exception("Render graph has circular dependencies");
         }
 
-        const auto& pass = passes.at(pass_name);
+        const auto &pass = passes.at(pass_name);
 
         // Add all the passes that this pass is dependent on
-        for(const auto& dependency : pass.dependencies) {
+        for(const auto &dependency : pass.dependencies) {
             ordered_passes.push_back(dependency);
             add_dependent_passes(dependency, passes, ordered_passes, resource_to_write_pass, depth + 1);
         }
 
         if(pass.texture_inputs) {
-            const input_textures& all_inputs = pass.texture_inputs.value();
-            for(const auto& texture_name : all_inputs.bound_textures) {
+            const input_textures &all_inputs = pass.texture_inputs.value();
+            for(const auto &texture_name : all_inputs.bound_textures) {
                 if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
                     // TODO: Ignore the implicitly defined resources
                     NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";
@@ -176,13 +173,13 @@ namespace nova {
                     const auto &write_passes = resource_to_write_pass.at(texture_name);
                     ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
 
-                    for(const auto& write_pass : write_passes) {
+                    for(const auto &write_pass : write_passes) {
                         add_dependent_passes(write_pass, passes, ordered_passes, resource_to_write_pass, depth + 1);
                     }
                 }
             }
 
-            for(const auto& texture_name : all_inputs.color_attachments) {
+            for(const auto &texture_name : all_inputs.color_attachments) {
                 if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
                     // TODO: Ignore the implicitly defined resources
                     NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";
@@ -191,7 +188,7 @@ namespace nova {
                     const auto &write_passes = resource_to_write_pass.at(texture_name);
                     ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
 
-                    for(const auto& write_pass : write_passes) {
+                    for(const auto &write_pass : write_passes) {
                         add_dependent_passes(write_pass, passes, ordered_passes, resource_to_write_pass, depth + 1);
                     }
                 }
@@ -199,15 +196,14 @@ namespace nova {
         }
     }
 
-
-    void determine_usage_order_of_textures(const std::vector<render_pass_data>& passes, std::unordered_map<std::string, range>& resource_used_range, std::vector<std::string>& resources_in_order) {
+    void determine_usage_order_of_textures(const std::vector<render_pass_data> &passes, std::unordered_map<std::string, range> &resource_used_range, std::vector<std::string> &resources_in_order) {
         uint32_t pass_idx = 0;
-        for(const auto& pass : passes) {
+        for(const auto &pass : passes) {
             if(pass.texture_inputs) {
-                const input_textures& all_inputs = pass.texture_inputs.value();
+                const input_textures &all_inputs = pass.texture_inputs.value();
                 // color attachments
                 for(const auto &input : all_inputs.color_attachments) {
-                    auto& tex_range = resource_used_range[input];
+                    auto &tex_range = resource_used_range[input];
 
                     if(pass_idx < tex_range.first_write_pass) {
                         tex_range.first_write_pass = pass_idx;
@@ -223,7 +219,7 @@ namespace nova {
 
                 // shader-only textures
                 for(const auto &input : all_inputs.bound_textures) {
-                    auto& tex_range = resource_used_range[input];
+                    auto &tex_range = resource_used_range[input];
 
                     if(pass_idx < tex_range.first_write_pass) {
                         tex_range.first_write_pass = pass_idx;
@@ -240,7 +236,7 @@ namespace nova {
 
             if(!pass.texture_outputs.empty()) {
                 for(const auto &output : pass.texture_outputs) {
-                    auto& tex_range = resource_used_range[output.name];
+                    auto &tex_range = resource_used_range[output.name];
 
                     if(pass_idx < tex_range.first_write_pass) {
                         tex_range.first_write_pass = pass_idx;
@@ -259,27 +255,28 @@ namespace nova {
         }
     }
 
-    std::unordered_map<std::string, std::string> determine_aliasing_of_textures(const std::unordered_map<std::string, texture_resource_data>& textures, const std::unordered_map<std::string, range>& resource_used_range, const std::vector<std::string>& resources_in_order) {
+    std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
+        const std::unordered_map<std::string, texture_resource_data> &textures, const std::unordered_map<std::string, range> &resource_used_range, const std::vector<std::string> &resources_in_order) {
         std::unordered_map<std::string, std::string> aliases;
         aliases.reserve(resources_in_order.size());
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
-            const auto& to_alias_name = resources_in_order[i];
+            const auto &to_alias_name = resources_in_order[i];
             NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name << "`. Does it exist? " << (textures.find(to_alias_name) != textures.end());
             if(to_alias_name == "Backbuffer" || to_alias_name == "backbuffer") {
                 // Yay special cases!
                 continue;
             }
 
-            const auto& to_alias_format = textures.at(to_alias_name).format;
+            const auto &to_alias_format = textures.at(to_alias_name).format;
 
             // Only try to alias with lower-indexed resources
             for(size_t j = 0; j < i; j++) {
                 NOVA_LOG(TRACE) << "Trying to alias it with resource at index " << j << " out of " << resources_in_order.size();
-                const std::string& try_alias_name = resources_in_order[j];
+                const std::string &try_alias_name = resources_in_order[j];
                 if(resource_used_range.at(to_alias_name).is_disjoint_with(resource_used_range.at(try_alias_name))) {
                     // They can be aliased if they have the same format
-                    const auto& try_alias_format = textures.at(try_alias_name).format;
+                    const auto &try_alias_format = textures.at(try_alias_name).format;
                     if(to_alias_format == try_alias_format) {
                         aliases[to_alias_name] = try_alias_name;
                     }
@@ -290,5 +287,4 @@ namespace nova {
         return aliases;
     }
 
-}
-
+}  // namespace nova

@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 14-Aug-18.
  */
 
@@ -8,9 +8,8 @@
 #include "../util/logger.hpp"
 
 namespace nova {
-    regular_folder_accessor::regular_folder_accessor(const std::experimental::filesystem::path &folder)
-            : folder_accessor_base(folder) {}
-    
+    regular_folder_accessor::regular_folder_accessor(const std::experimental::filesystem::path &folder) : folder_accessor_base(folder) {}
+
     std::string regular_folder_accessor::read_text_file(const fs::path &resource_path) {
         fs::path full_resource_path;
         if(has_root(resource_path, root_folder)) {
@@ -25,7 +24,7 @@ namespace nova {
             throw resource_not_found_exception(full_resource_path.string());
         }
 
-        //std::vector<uint8_t> buf;
+        // std::vector<uint8_t> buf;
         std::ifstream resource_stream(full_resource_path.string());
         if(!resource_stream.good()) {
             // Error reading this file - it can't be read again in the future
@@ -40,13 +39,13 @@ namespace nova {
         std::string file_string;
 
         while(getline(resource_stream, buf)) {
-            //uint8_t val;
-            //resource_stream >> val;
-            //buf.push_back(val);
+            // uint8_t val;
+            // resource_stream >> val;
+            // buf.push_back(val);
             file_string += buf;
         }
 
-        //buf.push_back(0);
+        // buf.push_back(0);
 
         return file_string;
     }
@@ -57,18 +56,18 @@ namespace nova {
 
         try {
             fs::directory_iterator folder_itr(full_path);
-            for(const fs::directory_entry& entry : folder_itr) {
+            for(const fs::directory_entry &entry : folder_itr) {
                 NOVA_LOG(INFO) << entry.path().string();
                 paths.push_back(entry.path());
             }
-        } catch (const fs::filesystem_error &error) {
+        } catch(const fs::filesystem_error &error) {
             throw filesystem_exception(error);
         }
 
         return paths;
     }
 
-    bool regular_folder_accessor::does_resource_exist_internal(const fs::path & resource_path) {
+    bool regular_folder_accessor::does_resource_exist_internal(const fs::path &resource_path) {
         const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
@@ -84,4 +83,4 @@ namespace nova {
             return false;
         }
     }
-}
+}  // namespace nova

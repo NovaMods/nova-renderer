@@ -75,8 +75,8 @@ namespace nova {
          *
          * \attention Called by nova
          */
-        explicit render_engine(const nova_settings &settings) {};
+        explicit render_engine(const nova_settings &settings){};
     };
-}
+}  // namespace nova
 
-#endif //NOVA_RENDERER_RENDER_ENGINE_HPP
+#endif  // NOVA_RENDERER_RENDER_ENGINE_HPP

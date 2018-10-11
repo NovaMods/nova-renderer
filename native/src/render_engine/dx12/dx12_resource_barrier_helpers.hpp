@@ -1,7 +1,7 @@
 /*!
  * \brief Helper functions for converting resource barrier data from platform-independent to DX12
  *
- * \author ddubois 
+ * \author ddubois
  * \date 02-Sep-18.
  */
 
@@ -21,4 +21,4 @@ namespace nova {
 
 #endif
 
-#endif //NOVA_RENDERER_DX_12_RESOURCE_BARRIER_HELPERS_HPP
+#endif  // NOVA_RENDERER_DX_12_RESOURCE_BARRIER_HELPERS_HPP

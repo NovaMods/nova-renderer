@@ -7,8 +7,7 @@
 #if SUPPORT_DX12
 
 namespace nova {
-    win32_window::win32_window(const uint32_t width, const uint32_t height) : size{width, height},
-            window_class_name(const_cast<WCHAR *>(L"NovaWindowClass")), window_should_close(false) {
+    win32_window::win32_window(const uint32_t width, const uint32_t height) : size{width, height}, window_class_name(const_cast<WCHAR *>(L"NovaWindowClass")), window_should_close(false) {
         // Very strongly inspired by GLFW's Win32 variant of createNativeWindow - but GLFW is strictly geared towards
         // OpenGL/Vulkan so I don't want to try and fit it into here
 
@@ -31,12 +30,9 @@ namespace nova {
         const DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;
         const DWORD extended_style = WS_EX_APPWINDOW | WS_EX_TOPMOST;
 
-        auto* title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
+        auto *title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
 
-        window_handle = CreateWindowExW(extended_style, window_class_name,
-                                        title, style,
-                                        100, 100, width, height,
-                                        nullptr, nullptr, GetModuleHandleW(nullptr), this);
+        window_handle = CreateWindowExW(extended_style, window_class_name, title, style, 100, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
         if(window_handle == nullptr) {
             const auto windows_error = get_last_windows_error();
             NOVA_LOG(FATAL) << "Could not create window: " << windows_error;
@@ -109,24 +105,28 @@ namespace nova {
                 window_should_close = true;
                 return 0;
 
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
+            default: return DefWindowProc(hWnd, message, wParam, lParam);
         }
     }
 
     std::string get_last_windows_error() {
         const DWORD errorMessageID = GetLastError();
         if(errorMessageID == 0) {
-            return std::string(); //No error message has been recorded
+            return std::string();  // No error message has been recorded
         }
 
         LPSTR messageBuffer = nullptr;
         const size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                     nullptr, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPSTR>(&messageBuffer), 0, nullptr);
+            nullptr,
+            errorMessageID,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            reinterpret_cast<LPSTR>(&messageBuffer),
+            0,
+            nullptr);
 
         std::string message(messageBuffer, size);
 
-        //Free the buffer.
+        // Free the buffer.
         LocalFree(messageBuffer);
 
         return message;
@@ -142,8 +142,7 @@ namespace nova {
 
     void win32_window::on_frame_end() {
         MSG msg = {};
-        if(PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
-        {
+        if(PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
             if(msg.message == WM_QUIT) {
                 window_should_close = true;
             }
@@ -156,6 +155,6 @@ namespace nova {
     iwindow::window_size win32_window::get_window_size() const {
         return size;
     }
-}
+}  // namespace nova
 
 #endif

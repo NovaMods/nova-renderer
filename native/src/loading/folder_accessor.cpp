@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 14-Aug-18.
  */
 
@@ -8,7 +8,7 @@
 namespace nova {
     folder_accessor_base::folder_accessor_base(const fs::path &folder) : root_folder(folder) {}
 
-    bool folder_accessor_base::does_resource_exist(const fs::path & resource_path) {
+    bool folder_accessor_base::does_resource_exist(const fs::path &resource_path) {
         auto full_path = root_folder / resource_path;
         return does_resource_exist_internal(full_path);
     }
@@ -25,7 +25,7 @@ namespace nova {
         return root_folder;
     }
 
-    bool has_root(const fs::path& path, const fs::path& root) {
+    bool has_root(const fs::path &path, const fs::path &root) {
         if(std::distance(path.begin(), path.end()) < std::distance(root.begin(), root.end())) {
             // The path is shorter than the root path - the root can't possible be contained in the path
             return false;
@@ -46,4 +46,4 @@ namespace nova {
 
         return true;
     }
-}
+}  // namespace nova

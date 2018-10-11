@@ -31,4 +31,4 @@ namespace nova {
             l->on_config_loaded(options);
         }
     }
-}
+}  // namespace nova

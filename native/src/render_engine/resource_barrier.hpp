@@ -1,7 +1,7 @@
 /*!
  * \brief Structs and enums and helper functions to use resource barriers
  *
- * \author ddubois 
+ * \author ddubois
  * \date 01-Sep-18.
  */
 
@@ -24,9 +24,7 @@ namespace nova {
         PRESENT,
     };
 
-    enum stage_flags {
-        COLOR_ATTACHMENT_WRITE
-    };
+    enum stage_flags { COLOR_ATTACHMENT_WRITE };
 
     /*!
      * \brief All the data needed for a resource barrier
@@ -46,6 +44,6 @@ namespace nova {
         image_layout initial_layout;
         image_layout final_layout;
     };
-}
+}  // namespace nova
 
-#endif //NOVA_RENDERER_RESOURCE_BARRIER_HPP
+#endif  // NOVA_RENDERER_RESOURCE_BARRIER_HPP

@@ -32,4 +32,4 @@ namespace nova {
         return *this;
     }
 
-}
+}  // namespace nova

@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 21-Aug-18.
  */
 
@@ -31,7 +31,7 @@ namespace nova {
      * \param task_scheduler The task scheduler to use when kicking off tasks to process all of the shaderpack data
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    std::optional<shaderpack_data> load_shaderpack_data(const fs::path& shaderpack_name, ftl::TaskScheduler& task_scheduler);
-}
+    std::optional<shaderpack_data> load_shaderpack_data(const fs::path &shaderpack_name, ftl::TaskScheduler &task_scheduler);
+}  // namespace nova
 
-#endif //NOVA_RENDERER_SHADERPACK_LOADING_HPP
+#endif  // NOVA_RENDERER_SHADERPACK_LOADING_HPP

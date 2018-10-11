@@ -1,7 +1,7 @@
 #include <utility>
 
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 21-Aug-18.
  */
 
@@ -15,19 +15,11 @@
 #include <mutex>
 
 #ifdef ERROR
-    #undef ERROR
+#undef ERROR
 #endif
 
 namespace nova {
-    enum log_level {
-        TRACE,
-        DEBUG,
-        INFO,
-        WARN,
-        ERROR,
-        FATAL,
-        MAX_LEVEL
-    };
+    enum log_level { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, MAX_LEVEL };
 
     class __log_stream;
     /*!
@@ -58,13 +50,13 @@ namespace nova {
     public:
         __log_stream(log_level level);
 
-        __log_stream(__log_stream&& other) noexcept;
+        __log_stream(__log_stream &&other) noexcept;
 
         ~__log_stream() override;
     };
 
-}
+}  // namespace nova
 
 #define NOVA_LOG(LEVEL) ::nova::logger::instance.log(::nova::log_level::LEVEL)
 
-#endif //NOVA_RENDERER_LOGGER_HPP
+#endif  // NOVA_RENDERER_LOGGER_HPP

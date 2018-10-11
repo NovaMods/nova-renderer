@@ -10,10 +10,7 @@
 #include <vulkan/vulkan.h>
 
 namespace nova {
-    enum class resource_type {
-        IMAGE,
-        BUFFER
-    };
+    enum class resource_type { IMAGE, BUFFER };
 
     union vulkan_resource {
         VkImage image;
@@ -32,6 +29,6 @@ namespace nova {
     struct ifence {
         VkFence fence;
     };
-}
+}  // namespace nova
 
-#endif //NOVA_RENDERER_VULKAN_OPAQUE_TYPES_HPP
+#endif  // NOVA_RENDERER_VULKAN_OPAQUE_TYPES_HPP

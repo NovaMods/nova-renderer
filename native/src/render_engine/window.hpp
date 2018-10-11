@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 01-Sep-18.
  */
 
@@ -42,6 +42,6 @@ namespace nova {
          */
         virtual window_size get_window_size() const = 0;
     };
-}
+}  // namespace nova
 
-#endif //NOVA_RENDERER_WINDOW_HPP
+#endif  // NOVA_RENDERER_WINDOW_HPP

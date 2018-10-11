@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 30-Aug-18.
  */
 
@@ -56,7 +56,7 @@ namespace nova {
          * \brief Initializes DX12
          * \param settings The settings that may or may not influence initialization
          */
-        explicit dx12_render_engine(const nova_settings& settings);
+        explicit dx12_render_engine(const nova_settings &settings);
 
         static const std::string get_engine_name();
 
@@ -76,22 +76,22 @@ namespace nova {
         // direct3d stuff
         ComPtr<IDXGIFactory2> dxgi_factory;
 
-        ComPtr<ID3D12Device> device; // direct3d device
+        ComPtr<ID3D12Device> device;  // direct3d device
 
-        ComPtr<IDXGISwapChain3> swapchain; // swapchain used to switch between render targets
+        ComPtr<IDXGISwapChain3> swapchain;  // swapchain used to switch between render targets
 
-        ComPtr<ID3D12CommandQueue> direct_command_queue; // container for command lists
+        ComPtr<ID3D12CommandQueue> direct_command_queue;  // container for command lists
 
-        ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap; // a descriptor heap to hold resources like the render targets
+        ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap;  // a descriptor heap to hold resources like the render targets
 
-        std::vector<ComPtr<ID3D12Resource>> rendertargets; // number of render targets equal to buffer count
+        std::vector<ComPtr<ID3D12Resource>> rendertargets;  // number of render targets equal to buffer count
 
         ComPtr<ID3D12QueryHeap> renderpass_timestamp_query_heap;
 
-        uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
+        uint32_t rtv_descriptor_size;  // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
         // Maps from command buffer type to command buffer list
-        std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<command_list_base*>> buffer_pool;
+        std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<command_list_base *>> buffer_pool;
         std::mutex buffer_pool_mutex;
 
         /*
@@ -109,7 +109,7 @@ namespace nova {
          * Now we get to the fourth frame. Nova has a maximum number of in-flight frames, which defaults to three. The
          * fourth frame has to wait for the first frame to finish
          */
-        std::vector<command_list_base*> lists_to_free;
+        std::vector<command_list_base *> lists_to_free;
         std::mutex lists_to_free_mutex;
 
         uint32_t frame_index = 0;
@@ -149,11 +149,11 @@ namespace nova {
          */
         void create_render_target_descriptor_heap();
 
-        command_list* allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const;
+        command_list *allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const;
 
-        gfx_command_list* get_graphics_command_list();
+        gfx_command_list *get_graphics_command_list();
 
-        void release_command_list(command_list_base* list);
+        void release_command_list(command_list_base *list);
 
         void create_full_frame_fences();
 
@@ -161,9 +161,9 @@ namespace nova {
 
         void try_to_free_command_lists();
 
-        std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data>& passes);
+        std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data> &passes);
 
-        void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> passes);
+        void create_dynamic_textures(const std::vector<texture_resource_data> &texture_datas, std::vector<render_pass_data> passes);
 
         void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler& scheduler);
 
@@ -171,12 +171,12 @@ namespace nova {
 
         /*!
          * \brief Creates a timestamp query heap with enough space to time every render pass
-         * 
+         *
          * \param num_queries The number of queries the heap needs to support
          */
         void create_gpu_query_heap(size_t num_queries);
 
     };
-}
+}  // namespace nova
 
-#endif //NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP
+#endif  // NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP

@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 03-Sep-18.
  */
 
@@ -17,8 +17,7 @@
 #endif
 
 namespace nova {
-    nova_renderer* nova_renderer::instance;
-
+    nova_renderer *nova_renderer::instance;
 
     nova_renderer::nova_renderer(nova_settings &settings) : render_settings(settings) {
 #if SUPPORT_DX12
@@ -38,29 +37,30 @@ namespace nova {
     }
 
     void nova_renderer::execute_frame() {
-        task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [](ftl::TaskScheduler* task_scheduler, render_engine* engine) {
-            engine->render_frame();
-        },
-        engine.get());
+        task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [](ftl::TaskScheduler *task_scheduler, render_engine *engine) { engine->render_frame(); }, engine.get());
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
-        task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [&](ftl::TaskScheduler* task_scheduler, const std::string& shaderpack_name) {
-            const std::optional<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
-            if(shaderpack_data) {
-                engine->set_shaderpack(*shaderpack_data, *task_scheduler);
+        task_scheduler.Run(200,
+            0,
+            ftl::EmptyQueueBehavior::Yield,
+            [&](ftl::TaskScheduler *task_scheduler, const std::string &shaderpack_name) {
+                const std::optional<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
+                if(shaderpack_data) {
+                    engine->set_shaderpack(*shaderpack_data, *task_scheduler);
 
-            } else {
-                NOVA_LOG(ERROR) << "Shaderpack " << shaderpack_name << " could not be loaded. Check the logs for more information";
-            }
-        }, shaderpack_name);
+                } else {
+                    NOVA_LOG(ERROR) << "Shaderpack " << shaderpack_name << " could not be loaded. Check the logs for more information";
+                }
+            },
+            shaderpack_name);
     }
 
-    render_engine* nova_renderer::get_engine() {
+    render_engine *nova_renderer::get_engine() {
         return engine.get();
     }
 
-    nova_renderer* nova_renderer::get_instance() {
+    nova_renderer *nova_renderer::get_instance() {
         return instance;
     }
 
@@ -71,4 +71,4 @@ namespace nova {
     ftl::TaskScheduler &nova_renderer::get_task_scheduler() {
         return task_scheduler;
     }
-}
+}  // namespace nova
