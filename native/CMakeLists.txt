@@ -56,15 +56,16 @@ add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
-
-set(SHADERC_SKIP_TESTS TRUE CACHE BOOL "Shaderc tests go away" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 
 if(UNIX)
     find_package(Vulkan)
+
+	add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
+	add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
+
+	set(SHADERC_SKIP_TESTS TRUE CACHE BOOL "Shaderc tests go away" FORCE)
+	add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 endif()
 
 ######################################
@@ -80,7 +81,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/FiberTaskingLib/include
         ${3RD_PARTY_DIR}/cpptoml/include
         ${3RD_PARTY_DIR}/miniz
-        ${3RD_PARTY_DIR}/shaderc/libshaderc/include
+        ${3RD_PARTY_DIR}/glslang
         )
 
 if(UNIX)
@@ -104,6 +105,8 @@ set(NOVA_SOURCE
         ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
         ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
         ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp 
+
+		${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp
 
         src/platform.hpp
         src/loading/zip_folder_accessor.hpp
@@ -202,7 +205,7 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz shaderc)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz glslang SPIRV)
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
@@ -210,6 +213,7 @@ if (WIN32)
     target_include_directories(nova-renderer PRIVATE
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\shared"
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
+    target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
 
 else(WIN32)
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${Vulkan_LIBRARIES} stdc++fs X11)

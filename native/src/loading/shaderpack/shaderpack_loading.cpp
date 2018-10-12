@@ -13,7 +13,9 @@
 #include <ftl/atomic_counter.h>
 #include "shaderpack_validator.hpp"
 #include "render_graph_builder.hpp"
-#include <shaderc/shaderc.hpp>
+#include <glslang/Public/ShaderLang.h>
+#include <StandAlone/ResourceLimits.h>
+#include "SPIRV/GlslangToSpv.h"
 
 namespace nova {
     folder_accessor_base *get_shaderpack_accessor(const fs::path &shaderpack_name);
@@ -25,7 +27,7 @@ namespace nova {
     void load_material_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::vector<material_data> &output);
     void load_single_material(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, const fs::path &material_path, uint32_t out_idx, std::vector<material_data> &output);
 
-    std::vector<uint32_t> load_shader_file(const fs::path& filename, folder_accessor_base* folder_access, shaderc_shader_kind stage, const std::vector<std::string>& defines);
+    std::vector<uint32_t> load_shader_file(const fs::path& filename, folder_accessor_base* folder_access, EShLanguage stage, const std::vector<std::string>& defines);
 
     bool loading_failed = false;
 
@@ -183,6 +185,8 @@ namespace nova {
         uint32_t num_pipelines = 0;
         ftl::AtomicCounter pipeline_load_tasks_remaining(task_scheduler);
 
+        glslang::InitializeProcess();
+
         for(const fs::path &potential_file : potential_pipeline_files) {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
@@ -206,7 +210,7 @@ namespace nova {
             }
 
             pipeline_data new_pipeline = json_pipeline.get<pipeline_data>();
-            new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access, shaderc_vertex_shader, new_pipeline.defines);
+            new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access, EShLangVertex, new_pipeline.defines);
 
             output[out_idx] = new_pipeline;
 
@@ -223,9 +227,9 @@ namespace nova {
         }
     }
 
-    std::vector<uint32_t> load_shader_file(const fs::path& filename, folder_accessor_base* folder_access, const shaderc_shader_kind stage, const std::vector<std::string>& defines) {
-        static std::unordered_map<shaderc_shader_kind, std::vector<fs::path>> extensions_by_shader_stage = {
-            {shaderc_vertex_shader,  {
+    std::vector<uint32_t> load_shader_file(const fs::path& filename, folder_accessor_base* folder_access, const EShLanguage stage, const std::vector<std::string>& defines) {
+        static std::unordered_map<EShLanguage, std::vector<fs::path>> extensions_by_shader_stage = {
+            {EShLangVertex,  {
                 ".vert.spirv",
                 ".vsh.spirv",
                 ".vertex.spirv",
@@ -239,7 +243,7 @@ namespace nova {
                 ".vsh.hlsl",
                 ".vertex.hlsl",
             }},
-            {shaderc_fragment_shader, {
+            { EShLangFragment, {
                 ".frag.spirv",
                 ".fsh.spirv",
                 ".fragment.spirv",
@@ -253,8 +257,7 @@ namespace nova {
                 ".fsh.hlsl",
                 ".fragment.hlsl",
             }},
-
-            {shaderc_geometry_shader, {
+            { EShLangGeometry, {
                 ".geom.spirv",
                 ".geo.spirv",
                 ".geometry.spirv",
@@ -268,7 +271,7 @@ namespace nova {
                 ".geo.hlsl",
                 ".geometry.hlsl",
             }},
-            {shaderc_tess_evaluation_shader, {
+            { EShLangTessEvaluation, {
                 ".tese.spirv",
                 ".tse.spirv",
                 ".tess_eval.spirv",
@@ -282,7 +285,7 @@ namespace nova {
                 ".tse.hlsl",
                 ".tess_eval.hlsl",
             }},
-            {shaderc_tess_control_shader, {
+            { EShLangTessControl, {
                 ".tesc.spirv",
                 ".tsc.spirv",
                 ".tess_control.spirv",
@@ -308,19 +311,9 @@ namespace nova {
                 continue;
             }
 
-            std::unique_ptr<shader_includer> includer = std::make_unique<shader_includer>(*folder_access);
-            shaderc::Compiler compiler;
-            shaderc::CompileOptions options;
-            options.SetTargetEnvironment(shaderc_target_env_vulkan, 0);
-            options.SetWarningsAsErrors();
-            options.SetGenerateDebugInfo();
-
+            glslang::TShader shader(stage);
+            
             // TODO: Figure out how to handle shader options
-            for(const std::string& define : defines) {
-                options.AddMacroDefinition(define);
-            }
-
-            options.SetIncluder(std::move(includer));
 
             // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded 
             // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
@@ -329,21 +322,25 @@ namespace nova {
                 return folder_access->read_spirv_file(full_filename);
 
             } else if(extension.string().find(".hlsl") != std::string::npos) {
-                options.SetSourceLanguage(shaderc_source_language_hlsl);
+                shader.setEnvInput(glslang::EShSourceHlsl, stage, glslang::EShClientVulkan, 0);
 
             } else {
                 // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
-                options.SetSourceLanguage(shaderc_source_language_glsl);
+                shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, 0);
             }
 
             const std::string shader_source = folder_access->read_text_file(full_filename);
-            shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(shader_source, stage, full_filename.string().data(), options);
+            auto* shader_source_data = shader_source.data();
+            shader.setStrings(&shader_source_data, 1);
+            shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMsgSpvRules);
 
-            if(result.GetCompilationStatus() != shaderc_compilation_status_success) {
-                throw shader_compilation_failed(result.GetErrorMessage());
-            }
+            const char* info_log = shader.getInfoLog();
+            NOVA_LOG(INFO) << full_filename.string() << " compilation messages:\n" << info_log;
 
-            return { result.cbegin(), result.cend() };
+            std::vector<uint32_t> spirv;
+            glslang::GlslangToSpv(*shader.getIntermediate(), spirv);
+
+            return spirv;
         }
     }
 

@@ -264,7 +264,7 @@ namespace nova {
         }
 
         for(const auto &warning : report.warnings) {
-            NOVA_LOG(WARN) << warning;
+            NOVA_LOG(DEBUG) << warning;
         }
     }
 

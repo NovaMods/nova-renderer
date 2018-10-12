@@ -12,7 +12,6 @@
 #include <unordered_map>
 #include <optional>
 #include "../util/utils.hpp"
-#include "../../3rdparty/shaderc/glslc/src/file_compiler.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -105,21 +104,6 @@ namespace nova {
          * \param resource_path The path to the resource, with `our_root` already appended
          */
         virtual bool does_resource_exist_internal(const fs::path &resource_path) = 0;
-    };
-
-    class shader_includer : public shaderc::CompileOptions::IncluderInterface {
-    public:
-        shader_includer(folder_accessor_base& folder_access);
-
-        shaderc_include_result* GetInclude(const char* requested_source, shaderc_include_type type, 
-            const char* requesting_source, size_t include_depth) override;
-
-        void ReleaseInclude(shaderc_include_result* data) override;
-
-    private:
-        folder_accessor_base& folder_access;
-
-        std::unordered_map<fs::path, std::string> loaded_files;
     };
 
     /*!

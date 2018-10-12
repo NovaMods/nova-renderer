@@ -15,7 +15,7 @@
 namespace fs = std::experimental::filesystem;
 
 namespace nova {
-    NOVA_EXCEPTION(shader_compilation_failed)
+    NOVA_EXCEPTION(shader_compilation_failed);
 
     /*!
      * \brief Loads all the data for a single shaderpack

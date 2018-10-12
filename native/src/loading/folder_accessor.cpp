@@ -32,45 +32,7 @@ namespace nova {
 
         return {};
     }
-
-    shader_includer::shader_includer(folder_accessor_base& folder_access) : folder_access(folder_access) {}
-
-    shaderc_include_result* shader_includer::GetInclude(const char* requested_source, shaderc_include_type type, const char* requesting_source, size_t include_depth) {
-        const fs::path source_path = requested_source;
-        auto* result = new shaderc_include_result;
-        result->source_name = requested_source;
-        result->source_name_length = std::strlen(requested_source);
-
-        if(loaded_files.find(source_path) != loaded_files.end()) {
-            result->content = loaded_files.at(source_path).data();
-            result->content_length = std::strlen(result->content);
-
-            return result;
-        }
-        
-        try {
-            const std::string full_text = folder_access.read_text_file(source_path);
-            loaded_files[source_path] = full_text;
-
-            result->content = loaded_files.at(source_path).data();
-            result->content_length = std::strlen(result->content);
-
-            return result;
-
-        } catch(resource_not_found_exception& e) {
-            NOVA_LOG(ERROR) << "Could not include file " << source_path.string() << " requested by " << requesting_source << ": " << e.what();
-
-            result->content = e.what();
-            result->content_length = std::strlen(result->content);
-
-            return result;
-        }
-    }
-
-    void shader_includer::ReleaseInclude(shaderc_include_result* data) {
-        delete data;
-    }
-
+    
     const fs::path &folder_accessor_base::get_root() const {
         return root_folder;
     }
