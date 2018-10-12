@@ -36,12 +36,15 @@ namespace nova {
     };
 
     /*!
+    * \brief Orders the provided list of passes into submission order, based on the dynamic textures that each one uses
+    *
+    * \param passes The list of render passes to order
+    * \return The passes in submission order
+    */
+    std::vector<render_pass_data> flatten_frame_graph(const std::vector<render_pass_data> &passes);
+
+    /*!
      * \brief Orders the provided render passes to satisfy both their implicit and explicit dependencies
-     *
-     * The provided submission order may not be valid for all sets of passes. It is pretty un-optimized, preferring to
-     * execute a pass earlier in the frame - so it may lead to some stalls somewhere? But I'm using OpenGL and the
-     * driver deals with all that. There's things I can do that will give me much higher framerate gains than optimizing
-     * the submission order
      *
      * \param passes A map from pass name to pass of all the passes to order
      * \return The names of the passes in submission order

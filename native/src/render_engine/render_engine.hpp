@@ -58,7 +58,7 @@ namespace nova {
         *
         * \param data The shaderpack to load
         */
-        virtual void set_shaderpack(shaderpack_data data, ftl::TaskScheduler& scheduler) = 0;
+        virtual void set_shaderpack(const shaderpack_data& data, ftl::TaskScheduler& scheduler) = 0;
 
         /*!
          * \brief Renders a frame like so well, you guys

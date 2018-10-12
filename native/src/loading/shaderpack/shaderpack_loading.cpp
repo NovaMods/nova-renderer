@@ -20,11 +20,11 @@
 namespace nova {
     folder_accessor_base *get_shaderpack_accessor(const fs::path &shaderpack_name);
 
-    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, shaderpack_resources_data &output);
-    void load_passes_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::vector<render_pass_data> &output);
-    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::vector<pipeline_data> &output);
+    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::shared_ptr<shaderpack_data> output);
+    void load_passes_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::shared_ptr<shaderpack_data> output);
+    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::shared_ptr<shaderpack_data> output);
     void load_single_pipeline(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, const fs::path &pipeline_path, uint32_t out_idx, std::vector<pipeline_data> &output);
-    void load_material_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::vector<material_data> &output);
+    void load_material_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::shared_ptr<shaderpack_data> output);
     void load_single_material(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, const fs::path &material_path, uint32_t out_idx, std::vector<material_data> &output);
 
     std::vector<uint32_t> load_shader_file(const fs::path& filename, folder_accessor_base* folder_access, EShLanguage stage, const std::vector<std::string>& defines);
@@ -46,23 +46,23 @@ namespace nova {
 
         ftl::AtomicCounter loading_tasks_remaining(&task_scheduler);
 
-        shaderpack_data data = {};
+        std::shared_ptr<shaderpack_data> data = std::make_shared<shaderpack_data>();
 
         // Load resource definitions
         shaderpack_resources_data loaded_resources = {};
-        task_scheduler.AddTask(&loading_tasks_remaining, load_dynamic_resources_file, folder_access, data.resources);
+        task_scheduler.AddTask(&loading_tasks_remaining, load_dynamic_resources_file, folder_access, data);
 
         // Load pass definitions
         std::vector<render_pass_data> loaded_passes;
-        task_scheduler.AddTask(&loading_tasks_remaining, load_passes_file, folder_access, data.passes);
+        task_scheduler.AddTask(&loading_tasks_remaining, load_passes_file, folder_access, data);
 
         // Load pipeline definitions
         std::vector<pipeline_data> loaded_pipelines;
-        task_scheduler.AddTask(&loading_tasks_remaining, load_pipeline_files, folder_access, data.pipelines);
+        task_scheduler.AddTask(&loading_tasks_remaining, load_pipeline_files, folder_access, data);
 
         // Load materials
         std::vector<material_data> loaded_materials;
-        task_scheduler.AddTask(&loading_tasks_remaining, load_material_files, folder_access, data.materials);
+        task_scheduler.AddTask(&loading_tasks_remaining, load_material_files, folder_access, data);
 
         task_scheduler.WaitForCounter(&loading_tasks_remaining, 0);
 
@@ -72,7 +72,7 @@ namespace nova {
             return {};
 
         } else {
-            return std::make_optional(data);
+            return std::make_optional(*data);
         }
     }
 
@@ -110,7 +110,7 @@ namespace nova {
         return folder_access;
     }
 
-    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, shaderpack_resources_data &output) {
+    void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::shared_ptr<shaderpack_data> output) {
         std::string resources_string = folder_access->read_text_file("resources.json");
         try {
             auto json_resources = nlohmann::json::parse(resources_string.c_str());
@@ -122,8 +122,8 @@ namespace nova {
             }
 
             auto resources = json_resources.get<shaderpack_resources_data>();
-            output.samplers = std::move(resources.samplers);
-            output.textures = std::move(resources.textures);
+            output.get()->resources.samplers = std::move(resources.samplers);
+            output.get()->resources.textures = std::move(resources.textures);
 
         } catch(resource_not_found_exception &) {
             // No resources defined.. I guess they think they don't need any?
@@ -140,7 +140,7 @@ namespace nova {
         }
     }
 
-    void load_passes_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::vector<render_pass_data> &output) {
+    void load_passes_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::shared_ptr<shaderpack_data> output) {
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
             auto json_passes = nlohmann::json::parse(passes_bytes);
@@ -154,11 +154,11 @@ namespace nova {
 
             const auto ordered_pass_names = order_passes(passes_by_name);
             passes.clear();
-            for(const auto named_pass : ordered_pass_names) {
+            for(const auto& named_pass : ordered_pass_names) {
                 passes.push_back(passes_by_name.at(named_pass));
             }
 
-            output = std::move(passes);
+            output.get()->passes = std::move(passes);
 
         } catch(nlohmann::json::parse_error &err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's passes.json: " << err.what();
@@ -169,7 +169,7 @@ namespace nova {
         // shaderpack doesn't provide one then it can't be loaded, so we'll catch that exception later on
     }
 
-    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::vector<pipeline_data> &output) {
+    void load_pipeline_files(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, std::shared_ptr<shaderpack_data> output) {
         std::vector<fs::path> potential_pipeline_files;
         try {
             potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
@@ -181,7 +181,7 @@ namespace nova {
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        output.resize(potential_pipeline_files.size());
+        output.get()->pipelines.resize(potential_pipeline_files.size());
         uint32_t num_pipelines = 0;
         ftl::AtomicCounter pipeline_load_tasks_remaining(task_scheduler);
 
@@ -190,7 +190,7 @@ namespace nova {
         for(const fs::path &potential_file : potential_pipeline_files) {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
-                task_scheduler->AddTask(&pipeline_load_tasks_remaining, load_single_pipeline, folder_access, potential_file, num_pipelines, output);
+                task_scheduler->AddTask(&pipeline_load_tasks_remaining, load_single_pipeline, folder_access, potential_file, num_pipelines, output.get()->pipelines);
                 task_scheduler->WaitForCounter(&pipeline_load_tasks_remaining, 0);
                 num_pipelines++;
             }
@@ -335,7 +335,7 @@ namespace nova {
             const std::string shader_source = folder_access->read_text_file(full_filename);
             auto* shader_source_data = shader_source.data();
             shader.setStrings(&shader_source_data, 1);
-            bool shader_compiled = shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMsgSpvRules);
+            const bool shader_compiled = shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
 
             const char* info_log = shader.getInfoLog();
             NOVA_LOG(INFO) << full_filename.string() << " compilation messages:\n" << info_log;
@@ -353,7 +353,7 @@ namespace nova {
         throw resource_not_found_exception("Could not find shader " + filename.string());
     }
 
-    void load_material_files(ftl::TaskScheduler* task_scheduler, folder_accessor_base* folder_access, std::vector<material_data>& output) {
+    void load_material_files(ftl::TaskScheduler* task_scheduler, folder_accessor_base* folder_access, std::shared_ptr<shaderpack_data> output) {
         std::vector<fs::path> potential_material_files;
         try {
             potential_material_files = folder_access->get_all_items_in_folder("materials");
@@ -366,14 +366,14 @@ namespace nova {
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        output.resize(potential_material_files.size());
+        output.get()->materials.resize(potential_material_files.size());
         ftl::AtomicCounter material_load_tasks_remaining(task_scheduler);
 
         uint32_t num_materials = 0;
 
         for(const fs::path &potential_file : potential_material_files) {
             if(potential_file.extension() == ".mat") {
-                task_scheduler->AddTask(&material_load_tasks_remaining, load_single_material, folder_access, potential_file, num_materials, output);
+                task_scheduler->AddTask(&material_load_tasks_remaining, load_single_material, folder_access, potential_file, num_materials, output.get()->materials);
                 num_materials++;
             }
         }

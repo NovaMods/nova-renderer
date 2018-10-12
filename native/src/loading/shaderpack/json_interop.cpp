@@ -34,6 +34,7 @@ namespace nova {
         pass.texture_inputs = get_json_value<input_textures>(j, "textureInputs", input_textures{});
         pass.texture_outputs = get_json_array<texture_attachment>(j, "textureOutputs");
         pass.depth_texture = get_json_value<texture_attachment>(j, "depthTexture", texture_attachment{});
+        pass.name = get_json_value<std::string>(j, "name", "<NAME_MISSING>");
     }
 
     void from_json(const nlohmann::json &j, input_textures &inputs) {

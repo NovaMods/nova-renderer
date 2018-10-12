@@ -18,5 +18,12 @@
                 "height": 1
             }
         }
+    ],
+    "samplers": [
+        {
+            "name": "Point",
+            "filter": "Point",
+            "wrapMode": "Clamp"
+        }
     ]
 }

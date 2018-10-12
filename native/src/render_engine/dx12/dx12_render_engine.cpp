@@ -331,7 +331,7 @@ namespace nova {
         full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 
-    void dx12_render_engine::set_shaderpack(shaderpack_data data, ftl::TaskScheduler& scheduler) {
+    void dx12_render_engine::set_shaderpack(const shaderpack_data& data, ftl::TaskScheduler& scheduler) {
         // Let's build our data from the ground up!
         // To load a new shaderpack, we need to first clear out all the data from the old shaderpack. Then, we can
         // make the new dynamic textures and samplers, then the PSOs, then the material definitions, then the
@@ -355,24 +355,6 @@ namespace nova {
         create_dynamic_textures(data.resources.textures, ordered_passes);
 
         make_pipeline_state_objects(data.pipelines, scheduler);
-    }
-
-    std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data> &passes) {
-        std::unordered_map<std::string, render_pass_data> passes_by_name;
-        passes_by_name.reserve(passes.size());
-        for(const render_pass_data &pass_data : passes) {
-            passes_by_name[pass_data.name] = pass_data;
-        }
-
-        std::vector<render_pass_data> ordered_passes;
-
-        std::vector<std::string> ordered_pass_names = order_passes(passes_by_name);
-        ordered_passes.reserve(ordered_pass_names.size());
-        for(const std::string &pass_name : ordered_pass_names) {
-            ordered_passes.push_back(passes_by_name.at(pass_name));
-        }
-
-        return ordered_passes;
     }
 
     void dx12_render_engine::try_to_free_command_lists() {
@@ -437,7 +419,11 @@ namespace nova {
                     dimensions.y *= format.height;
                 }
 
-                DXGI_FORMAT dx12_format = get_dx12_format_from_pixel_format(format.pixel_format);
+                const DXGI_FORMAT dx12_format = get_dx12_format_from_pixel_format(format.pixel_format);
+
+                DXGI_SAMPLE_DESC sample_desc = {};
+                sample_desc.Count = 1;
+                sample_desc.Quality = 1;
 
                 D3D12_RESOURCE_DESC texture_desc = {};
                 texture_desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -449,17 +435,31 @@ namespace nova {
                 texture_desc.Format = dx12_format;
                 texture_desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
                 texture_desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+                texture_desc.SampleDesc = sample_desc;
 
                 if(format.pixel_format == pixel_format_enum::Depth || format.pixel_format == pixel_format_enum::DepthStencil) {
                     texture_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
                 }
 
                 ComPtr<ID3D12Resource> texture;
-                HRESULT hr = device->CreateCommittedResource(
-                    &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &texture_desc, D3D12_RESOURCE_STATE_RENDER_TARGET, nullptr, IID_PPV_ARGS(&texture));
+                auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+                const HRESULT hr = device->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE, &texture_desc, 
+                    D3D12_RESOURCE_STATE_RENDER_TARGET, nullptr, IID_PPV_ARGS(&texture));
 
                 if(FAILED(hr)) {
-                    NOVA_LOG(ERROR) << "Could not create texture " << texture_name << ": " << get_last_windows_error();
+                    std::string error_description;
+                    switch(hr) {
+                    case E_OUTOFMEMORY:
+                        error_description = "Out of memory";
+                        break;
+
+                    case E_INVALIDARG:
+                        error_description = "One or more arguments are invalid";
+                        break;
+                    }
+
+                    NOVA_LOG(ERROR) << "Could not create texture " << texture_name << ": Error code " << hr << ", Error description '" << error_description << ", Windows error: '" << get_last_windows_error() << "'";
+
                     continue;
                 }
                 texture->SetName(s2ws(texture_name).c_str());

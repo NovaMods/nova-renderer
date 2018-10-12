@@ -68,7 +68,7 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
         
-        void set_shaderpack(shaderpack_data data, ftl::TaskScheduler& scheduler) override;
+        void set_shaderpack(const shaderpack_data& data, ftl::TaskScheduler& scheduler) override;
 
         void render_frame() override;
 
@@ -160,8 +160,6 @@ namespace nova {
         void wait_for_previous_frame();
 
         void try_to_free_command_lists();
-
-        std::vector<render_pass_data> dx12_render_engine::flatten_frame_graph(const std::vector<render_pass_data> &passes);
 
         void create_dynamic_textures(const std::vector<texture_resource_data> &texture_datas, std::vector<render_pass_data> passes);
 

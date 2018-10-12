@@ -75,17 +75,35 @@ namespace nova {
         const bool right = other.last_used_pass() < first_used_pass();
         return left || right;
     }
+    
+    std::vector<render_pass_data> flatten_frame_graph(const std::vector<render_pass_data> &passes) {
+        std::unordered_map<std::string, render_pass_data> passes_by_name;
+        passes_by_name.reserve(passes.size());
+        for(const render_pass_data &pass_data : passes) {
+            passes_by_name[pass_data.name] = pass_data;
+        }
+
+        std::vector<render_pass_data> ordered_passes;
+
+        std::vector<std::string> ordered_pass_names = order_passes(passes_by_name);
+        ordered_passes.reserve(ordered_pass_names.size());
+        for(const std::string &pass_name : ordered_pass_names) {
+            ordered_passes.push_back(passes_by_name.at(pass_name));
+        }
+
+        return ordered_passes;
+    }
 
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_data> &passes) {
         NOVA_PROFILER_SCOPE;
-        NOVA_LOG(INFO) << "Executing Pass Schedule";
+        NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
         auto ordered_passes = std::vector<std::string>{};
 
         /*
-         * Build some accelleration structures
+         * Build some acceleration structures
          */
 
-        NOVA_LOG(DEBUG) << "Collecting passes that write to each resource...";
+        NOVA_LOG(TRACE) << "Collecting passes that write to each resource...";
         // Maps from resource name to pass that writes to that resource, then from resource name to pass that reads from
         // that resource
         auto resource_to_write_pass = std::unordered_map<std::string, std::vector<std::string>>{};
@@ -102,7 +120,7 @@ namespace nova {
          * Initial ordering of passes
          */
 
-        NOVA_LOG(DEBUG) << "First pass at ordering passes...";
+        NOVA_LOG(TRACE) << "First pass at ordering passes...";
         // The passes, in simple dependency order
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
             NOVA_LOG(ERROR) << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
