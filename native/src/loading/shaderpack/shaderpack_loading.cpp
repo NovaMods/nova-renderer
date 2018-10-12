@@ -191,6 +191,7 @@ namespace nova {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
                 task_scheduler->AddTask(&pipeline_load_tasks_remaining, load_single_pipeline, folder_access, potential_file, num_pipelines, output);
+                task_scheduler->WaitForCounter(&pipeline_load_tasks_remaining, 0);
                 num_pipelines++;
             }
         }
@@ -218,11 +219,12 @@ namespace nova {
             NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
             loading_failed = true;
 
-            //} catch(nlohmann::json::type_error& err) {
-            //    NOVA_LOG(ERROR) << "Could not parse pipeline file " << pipeline_path.string() << ": " << err.what();
-
         } catch(validation_failure_exception &err) {
             NOVA_LOG(ERROR) << "Could not validate pipeline file " << pipeline_path.string() << ": " << err.what();
+            loading_failed = true;
+
+        } catch(shader_compilation_failed &err) {
+            NOVA_LOG(ERROR) << "Could not compile shader: " << err.what();
             loading_failed = true;
         }
     }
@@ -314,6 +316,7 @@ namespace nova {
             glslang::TShader shader(stage);
             
             // TODO: Figure out how to handle shader options
+            // Maybe add them into the preamble?
 
             // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded 
             // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
@@ -346,6 +349,8 @@ namespace nova {
 
             return spirv;
         }
+
+        throw resource_not_found_exception("Could not find shader " + filename.string());
     }
 
     void load_material_files(ftl::TaskScheduler* task_scheduler, folder_accessor_base* folder_access, std::vector<material_data>& output) {

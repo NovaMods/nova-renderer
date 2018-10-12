@@ -43,6 +43,7 @@ namespace nova {
             // resource_stream >> val;
             // buf.push_back(val);
             file_string += buf;
+            file_string += "\n";
         }
 
         // buf.push_back(0);
