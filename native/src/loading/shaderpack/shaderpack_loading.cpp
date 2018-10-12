@@ -332,10 +332,14 @@ namespace nova {
             const std::string shader_source = folder_access->read_text_file(full_filename);
             auto* shader_source_data = shader_source.data();
             shader.setStrings(&shader_source_data, 1);
-            shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMsgSpvRules);
+            bool shader_compiled = shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMsgSpvRules);
 
             const char* info_log = shader.getInfoLog();
             NOVA_LOG(INFO) << full_filename.string() << " compilation messages:\n" << info_log;
+
+            if(!shader_compiled) {
+                throw shader_compilation_failed(info_log);
+            }
 
             std::vector<uint32_t> spirv;
             glslang::GlslangToSpv(*shader.getIntermediate(), spirv);
