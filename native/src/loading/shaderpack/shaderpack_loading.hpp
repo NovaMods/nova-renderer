@@ -12,7 +12,7 @@
 #include <ftl/task_scheduler.h>
 #include "shaderpack_data.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace nova {
     NOVA_EXCEPTION(shader_compilation_failed);
