@@ -8,9 +8,21 @@
     "vertexShader": "shaders/gui",
     "fragmentShader": "shaders/gui",
     "vertexFields": [
-        "Position",
-        "UV0",
-        "Color",
-        "VirtualTextureId"
+        {
+            "name": "position_in",
+            "field": "Position"
+        },
+        {
+            "name": "uv_in",
+            "field": "UV0"
+        },
+        {
+            "name": "color_in",
+            "field": "Color"
+        },
+        {
+            "name": "virtual_texture_id_in",
+            "field": "VirtualTextureId"
+        }
     ]
 }
