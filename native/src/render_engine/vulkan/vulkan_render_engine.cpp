@@ -81,7 +81,7 @@ namespace nova {
         destroy_framebuffers();
         destroy_graphics_pipelines();
         destroy_shader_modules();
-        destroy_render_pass();
+        destroy_render_passes();
         destroy_image_views();
         destroy_swapchain();
         destroy_memory_allocator();
@@ -371,7 +371,7 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::create_render_pass() {
+    void vulkan_render_engine::create_render_passes() {
         std::vector<render_pass_data> ordered_passes = flatten_frame_graph(shaderpack.passes);
         for(const render_pass_data &data : ordered_passes) {
             VkAttachmentDescription color_attachment;
@@ -746,8 +746,12 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::destroy_render_pass() {
-        vkDestroyRenderPass(device, render_pass, nullptr);
+    void vulkan_render_engine::destroy_render_passes() {
+        for(const vk_render_pass &render_pass : render_passes_by_order) {
+            vkDestroyRenderPass(device, render_pass.vulkan_pass, nullptr);
+        }
+        render_passes_by_order.clear();
+        render_passes_by_name.clear();
     }
 
     void vulkan_render_engine::cleanup_dynamic() {}
@@ -860,13 +864,13 @@ namespace nova {
         destroy_framebuffers();
         vkFreeCommandBuffers(device, command_pool, static_cast<uint32_t>(command_buffers.size()), command_buffers.data());
         destroy_graphics_pipelines();
-        destroy_render_pass();
+        destroy_render_passes();
         destroy_image_views();
         destroy_swapchain();
 
         create_swapchain();
         create_image_views();
-        create_render_pass();
+        create_render_passes();
         create_graphics_pipelines();
         create_framebuffers();
         create_command_buffers();
@@ -882,7 +886,7 @@ namespace nova {
             destroy_graphics_pipelines();
             destroy_shader_modules();
         } else {
-            create_render_pass();
+            create_render_passes();
             create_shader_modules();
         }
 

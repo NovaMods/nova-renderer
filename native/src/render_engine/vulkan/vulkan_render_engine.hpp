@@ -105,8 +105,8 @@ namespace nova {
         void destroy_swapchain();
         void create_image_views();
         void destroy_image_views();
-        void create_render_pass();
-        void destroy_render_pass();
+        void create_render_passes();
+        void destroy_render_passes();
         void create_graphics_pipelines();
         void destroy_graphics_pipelines();
         void create_framebuffers();
