@@ -17,7 +17,11 @@
 #include <nlohmann/json.hpp>
 #include "../../util/utils.hpp"
 
+#if _MSC_VER <= 1915
+namespace fs = std::experimental::filesystem;
+#else
 namespace fs = std::filesystem;
+#endif
 
 namespace nova {
     NOVA_EXCEPTION(validation_failure_exception);
@@ -244,6 +248,11 @@ namespace nova {
         std::vector<uint32_t> source;
     };
 
+    struct vertex_field_data {
+        std::string semantic_name;
+        vertex_field_enum field;
+    };
+
     /*!
      * \brief All the data that Nova uses to build a pipeline
      */
@@ -278,7 +287,7 @@ namespace nova {
          *
          * The index in the array is the attribute index that the vertex field is bound to
          */
-        std::vector<vertex_field_enum> vertex_fields;
+        std::vector<vertex_field_data> vertex_fields;
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
@@ -564,18 +573,18 @@ namespace nova {
     state_enum state_enum_from_string(const std::string &str);
     vertex_field_enum vertex_field_enum_from_string(const std::string &str);
 
-    std::string to_string(const pixel_format_enum val);
-    std::string to_string(const texture_dimension_type_enum val);
-    std::string to_string(const texture_filter_enum val);
-    std::string to_string(const wrap_mode_enum val);
-    std::string to_string(const stencil_op_enum val);
-    std::string to_string(const compare_op_enum val);
-    std::string to_string(const msaa_support_enum val);
-    std::string to_string(const primitive_topology_enum val);
-    std::string to_string(const blend_factor_enum val);
-    std::string to_string(const render_queue_enum val);
-    std::string to_string(const state_enum val);
-    std::string to_string(const vertex_field_enum val);
+    std::string to_string(pixel_format_enum val);
+    std::string to_string(texture_dimension_type_enum val);
+    std::string to_string(texture_filter_enum val);
+    std::string to_string(wrap_mode_enum val);
+    std::string to_string(stencil_op_enum val);
+    std::string to_string(compare_op_enum val);
+    std::string to_string(msaa_support_enum val);
+    std::string to_string(primitive_topology_enum val);
+    std::string to_string(blend_factor_enum val);
+    std::string to_string(render_queue_enum val);
+    std::string to_string(state_enum val);
+    std::string to_string(vertex_field_enum val);
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_SHADERPACK_DATA_HPP

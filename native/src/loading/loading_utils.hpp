@@ -9,7 +9,11 @@
 #include <string>
 #include <filesystem>
 
+#if _MSC_VER <= 1915
+namespace fs = std::experimental::filesystem;
+#else
 namespace fs = std::filesystem;
+#endif
 
 namespace nova {
     /*!

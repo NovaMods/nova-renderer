@@ -25,6 +25,8 @@ namespace nova {
 
     void from_json(const nlohmann::json &j, stencil_op_state &stencil_op);
 
+    void from_json(const nlohmann::json& j, vertex_field_data& vertex_data);
+
     void from_json(const nlohmann::json &j, render_pass_data &pass);
 
     void from_json(const nlohmann::json &j, std::vector<render_pass_data> &passes);

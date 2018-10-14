@@ -8,9 +8,6 @@
 
 #include <miniz_zip.h>
 #include "folder_accessor.hpp"
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 namespace nova {
     struct file_tree_node {
