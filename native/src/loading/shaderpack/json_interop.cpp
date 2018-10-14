@@ -109,13 +109,19 @@ namespace nova {
     }
 
     void from_json(const nlohmann::json &j, material_pass &pass) {
+        pass.name = get_json_value<std::string>(j, "name").value();
         pass.pipeline = get_json_value<std::string>(j, "pipeline").value();
         pass.bindings = get_json_value<std::unordered_map<std::string, std::string>>(j, "bindings").value();
     }
 
     void from_json(const nlohmann::json &j, material_data &mat) {
+        mat.name = get_json_value<std::string>(j, "name").value();
         mat.passes = get_json_array<material_pass>(j, "passes");
         mat.geometry_filter = get_json_value<std::string>(j, "filter").value();
+
+        for(material_pass& pass : mat.passes) {
+            pass.material_name = mat.name;
+        }
     }
 
     void from_json(const nlohmann::json &j, texture_attachment &tex) {

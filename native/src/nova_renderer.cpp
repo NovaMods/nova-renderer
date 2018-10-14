@@ -9,6 +9,7 @@
 
 #include "platform.hpp"
 #include "util/logger.hpp"
+#include "glslang/MachineIndependent/Initialize.h"
 
 #if SUPPORT_DX12
 #include "render_engine/dx12/dx12_render_engine.hpp"
@@ -41,6 +42,8 @@ namespace nova {
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
+        glslang::InitializeProcess();
+
         task_scheduler.Run(200,
             0,
             ftl::EmptyQueueBehavior::Yield,

@@ -498,11 +498,13 @@ namespace nova {
         std::vector<pipeline> dx12_pipelines(pipelines.size());
         std::size_t write_pipeline = 0;
 
-        for(const pipeline_data& data : pipelines) {
-            scheduler.AddTask(&pipelines_created_counter, 
-                [&](ftl::TaskScheduler *task_scheduler, const pipeline_data& data, std::vector<pipeline>& dx12_pipelines, const size_t write_pipeline) {
-                make_single_pso(data, dx12_pipelines, write_pipeline);
-            }, data, dx12_pipelines, write_pipeline);
+        for(const pipeline_data data : pipelines) {
+            if(!data.name.empty()) {
+                scheduler.AddTask(&pipelines_created_counter,
+                    [&](ftl::TaskScheduler *task_scheduler, const pipeline_data data, std::vector<pipeline>& dx12_pipelines, const size_t write_pipeline) {
+                    make_single_pso(data, dx12_pipelines, write_pipeline);
+                }, data, dx12_pipelines, write_pipeline);
+            }
         }
 
         scheduler.WaitForCounter(&pipelines_created_counter, pipelines.size());

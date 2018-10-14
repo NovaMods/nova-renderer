@@ -533,6 +533,7 @@ namespace nova {
     };
 
     struct material_pass {
+        std::string name;
         std::string material_name;
         std::string pipeline;
         std::unordered_map<std::string, std::string> bindings;
