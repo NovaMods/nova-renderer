@@ -14,6 +14,7 @@
 #include "vulkan_type_converters.hpp"
 #include <queue>
 #include "../../util/utils.hpp"
+#include "../../loading/shaderpack/render_graph_builder.hpp"
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings &settings) : render_engine(settings) {
@@ -80,7 +81,7 @@ namespace nova {
         destroy_framebuffers();
         destroy_graphics_pipelines();
         destroy_shader_modules();
-        destroy_render_pass();
+        destroy_render_passes();
         destroy_image_views();
         destroy_swapchain();
         destroy_memory_allocator();
@@ -98,7 +99,7 @@ namespace nova {
         x_surface_create_info.dpy = window->get_display();
         x_surface_create_info.window = window->get_x11_window();
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface), x_window_creation_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface), render_engine_initialization_exception);
 #else
 #error Unsuported window system
 #endif
@@ -370,56 +371,63 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::create_render_pass() {
-        VkAttachmentDescription color_attachment;
-        color_attachment.flags = 0;
-        color_attachment.format = swapchain_format;
-        color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    void vulkan_render_engine::create_render_passes() {
+        std::vector<render_pass_data> ordered_passes = flatten_frame_graph(shaderpack.passes);
+        for(const render_pass_data &data : ordered_passes) {
+            VkAttachmentDescription color_attachment;
+            color_attachment.flags = 0;
+            color_attachment.format = swapchain_format;
+            color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-        VkAttachmentReference color_attachment_reference;
-        color_attachment_reference.attachment = 0;
-        color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            VkAttachmentReference color_attachment_reference;
+            color_attachment_reference.attachment = 0;
+            color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkSubpassDescription subpass_description;
-        subpass_description.flags = 0;
-        subpass_description.colorAttachmentCount = 1;
-        subpass_description.pColorAttachments = &color_attachment_reference;
-        subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass_description.inputAttachmentCount = 0;
-        subpass_description.pInputAttachments = nullptr;
-        subpass_description.preserveAttachmentCount = 0;
-        subpass_description.pPreserveAttachments = nullptr;
-        subpass_description.pResolveAttachments = nullptr;
-        subpass_description.pDepthStencilAttachment = nullptr;
+            VkSubpassDescription subpass_description;
+            subpass_description.flags = 0;
+            subpass_description.colorAttachmentCount = 1;
+            subpass_description.pColorAttachments = &color_attachment_reference;
+            subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpass_description.inputAttachmentCount = 0;
+            subpass_description.pInputAttachments = nullptr;
+            subpass_description.preserveAttachmentCount = 0;
+            subpass_description.pPreserveAttachments = nullptr;
+            subpass_description.pResolveAttachments = nullptr;
+            subpass_description.pDepthStencilAttachment = nullptr;
 
-        VkSubpassDependency image_available_dependency;
-        image_available_dependency.dependencyFlags = 0;
-        image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        image_available_dependency.dstSubpass = 0;
-        image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        image_available_dependency.srcAccessMask = 0;
-        image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            VkSubpassDependency image_available_dependency;
+            image_available_dependency.dependencyFlags = 0;
+            image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+            image_available_dependency.dstSubpass = 0;
+            image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            image_available_dependency.srcAccessMask = 0;
+            image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-        VkRenderPassCreateInfo render_pass_create_info;
-        render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        render_pass_create_info.pNext = nullptr;
-        render_pass_create_info.flags = 0;
-        render_pass_create_info.attachmentCount = 1;
-        render_pass_create_info.pAttachments = &color_attachment;
-        render_pass_create_info.subpassCount = 1;
-        render_pass_create_info.pSubpasses = &subpass_description;
-        render_pass_create_info.dependencyCount = 1;
-        render_pass_create_info.pDependencies = &image_available_dependency;
+            VkRenderPassCreateInfo render_pass_create_info;
+            render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+            render_pass_create_info.pNext = nullptr;
+            render_pass_create_info.flags = 0;
+            render_pass_create_info.attachmentCount = 1;
+            render_pass_create_info.pAttachments = &color_attachment;
+            render_pass_create_info.subpassCount = 1;
+            render_pass_create_info.pSubpasses = &subpass_description;
+            render_pass_create_info.dependencyCount = 1;
+            render_pass_create_info.pDependencies = &image_available_dependency;
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
-    }
+            VkRenderPass render_pass;
+            NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
+            vk_render_pass pass = {render_pass, data};
+            render_passes_by_name.insert(std::make_pair(data.name, pass));
+            render_passes_by_order.push_back(pass);
+        }
+    }6
 
     void vulkan_render_engine::create_graphics_pipelines() {
         std::queue<pipeline_data> queued_data(std::deque(shaderpack.pipelines.begin(), shaderpack.pipelines.end()));
@@ -433,6 +441,8 @@ namespace nova {
                 if(noop_count >= queued_data.size()) {
                     NOVA_LOG(ERROR) << "Unresolved parent '" << data.parent_name.value() << " for pipeline " << data.name;
                     while(!queued_data.empty()) {
+                        queued_data.pop();
+                        data = queued_data.front();
                         NOVA_LOG(ERROR) << "Unresolved parent '" << data.parent_name.value() << " for pipeline " << data.name;
                     }
                     throw render_engine_initialization_exception("Pipelines with unresolved parents left over!");
@@ -736,8 +746,12 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::destroy_render_pass() {
-        vkDestroyRenderPass(device, render_pass, nullptr);
+    void vulkan_render_engine::destroy_render_passes() {
+        for(const vk_render_pass &render_pass : render_passes_by_order) {
+            vkDestroyRenderPass(device, render_pass.vulkan_pass, nullptr);
+        }
+        render_passes_by_order.clear();
+        render_passes_by_name.clear();
     }
 
     void vulkan_render_engine::cleanup_dynamic() {}
@@ -850,13 +864,13 @@ namespace nova {
         destroy_framebuffers();
         vkFreeCommandBuffers(device, command_pool, static_cast<uint32_t>(command_buffers.size()), command_buffers.data());
         destroy_graphics_pipelines();
-        destroy_render_pass();
+        destroy_render_passes();
         destroy_image_views();
         destroy_swapchain();
 
         create_swapchain();
         create_image_views();
-        create_render_pass();
+        create_render_passes();
         create_graphics_pipelines();
         create_framebuffers();
         create_command_buffers();
@@ -872,7 +886,7 @@ namespace nova {
             destroy_graphics_pipelines();
             destroy_shader_modules();
         } else {
-            create_render_pass();
+            create_render_passes();
             create_shader_modules();
         }
 

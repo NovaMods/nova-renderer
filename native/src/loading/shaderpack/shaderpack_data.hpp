@@ -17,7 +17,7 @@
 #include <nlohmann/json.hpp>
 #include "../../util/utils.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace nova {
     NOVA_EXCEPTION(validation_failure_exception);

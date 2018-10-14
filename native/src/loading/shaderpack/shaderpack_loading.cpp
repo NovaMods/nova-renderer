@@ -86,7 +86,7 @@ namespace nova {
             path_to_shaderpack.replace_extension(".zip");
             folder_access = new zip_folder_accessor(path_to_shaderpack);
 
-        } else if(std::experimental::filesystem::v1::exists(path_to_shaderpack)) {
+        } else if(std::filesystem::exists(path_to_shaderpack)) {
             // regular folder in shaderpacks folder
             folder_access = new regular_folder_accessor(path_to_shaderpack);
 

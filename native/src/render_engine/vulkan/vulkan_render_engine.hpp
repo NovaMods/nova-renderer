@@ -37,7 +37,7 @@ namespace nova {
 
         static const std::string get_engine_name();
 
-        void set_shaderpack(shaderpack_data data, ftl::TaskScheduler& scheduler) override;
+        void set_shaderpack(const shaderpack_data &data, ftl::TaskScheduler& scheduler) override;
 
     private:
         std::vector<const char *> enabled_validation_layer_names;
@@ -53,7 +53,13 @@ namespace nova {
         VmaAllocator memory_allocator;
 
         VkSwapchainKHR swapchain;
-        VkRenderPass render_pass;
+
+        struct vk_render_pass {
+            VkRenderPass vulkan_pass;
+            render_pass_data nova_pass;
+        };
+        std::unordered_map<std::string, vk_render_pass> render_passes_by_name;
+        std::vector<vk_render_pass> render_passes_by_order;
 
         struct vk_pipeline {
             VkPipeline vulkan_pipeline;
@@ -99,8 +105,8 @@ namespace nova {
         void destroy_swapchain();
         void create_image_views();
         void destroy_image_views();
-        void create_render_pass();
-        void destroy_render_pass();
+        void create_render_passes();
+        void destroy_render_passes();
         void create_graphics_pipelines();
         void destroy_graphics_pipelines();
         void create_framebuffers();

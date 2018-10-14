@@ -158,7 +158,6 @@ namespace nova {
 
         // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. Not
         // gonna worry about that now
-
         return ordered_passes;
     }
 
