@@ -545,14 +545,9 @@ namespace nova {
             pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
             get_root_signature_of_shader(fragment_blob, root_parameters, static_samplers);
         }
-
-
-        // D3D12_ROOT_SIGNATURE_DESC1 root_signature = {};
-
-        // std::unordered_set<D3D12_ROOT_PARAMETER1> vertex_shader_parameters = get_root_signature_of_shader(input.sources.);
-
-        // D3D12CreateRootSignatureDeserializer()
-
+        
+        ComPtr<ID3D12RootSignature> root_signature = create_root_signature(root_parameters, static_samplers);
+        pipeline_state_desc.pRootSignature = root_signature.Get();
     }
 
     ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target) {
@@ -613,6 +608,35 @@ namespace nova {
         for(uint32_t i = 0; i < root_desc.NumStaticSamplers; i++) {
             samplers.push_back(root_desc.pStaticSamplers[i]);
         }
+    }
+
+    ComPtr<ID3D12RootSignature> dx12_render_engine::create_root_signature(std::vector<D3D12_ROOT_PARAMETER1> root_parameters, std::vector<D3D12_STATIC_SAMPLER_DESC> static_samplers) const {
+        D3D12_ROOT_SIGNATURE_DESC1 root_signature_desc = {};
+        root_signature_desc.NumParameters = root_parameters.size();
+        root_signature_desc.pParameters = root_parameters.data();
+        root_signature_desc.NumStaticSamplers = static_samplers.size();
+        root_signature_desc.pStaticSamplers = static_samplers.data();
+
+        D3D12_VERSIONED_ROOT_SIGNATURE_DESC versioned_desc = {};
+        versioned_desc.Desc_1_1 = root_signature_desc;
+        versioned_desc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
+
+        ComPtr<ID3DBlob> root_signature_blob;
+        ComPtr<ID3DBlob> error_blob;
+        HRESULT hr = D3D12SerializeVersionedRootSignature(&versioned_desc, &root_signature_blob, &error_blob);
+        if(FAILED(hr)) {
+            throw shader_layout_creation_failed(std::string(static_cast<char *>(error_blob->GetBufferPointer())));
+        }
+
+        ComPtr<ID3D12RootSignature> root_signature;
+        hr = device->CreateRootSignature(1, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&root_signature));
+        if(FAILED(hr)) {
+            std::stringstream ss;
+            ss << "Could not create root signature, error code " << hr;
+            throw shader_layout_creation_failed(ss.str());
+        }
+
+        return root_signature;
     }
     
     bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) {
