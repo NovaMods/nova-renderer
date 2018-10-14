@@ -105,6 +105,7 @@ set(NOVA_SOURCE
         ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
         ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
         ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp 
+        ${SPIRV_CROSS_ROOT}/spirv_hlsl.cpp 
 
 		${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp
 

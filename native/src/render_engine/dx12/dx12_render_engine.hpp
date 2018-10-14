@@ -130,7 +130,7 @@ namespace nova {
          * \brief The passes in the current frame graph, in submission order
          */
         std::vector<render_pass_data> ordered_passes;
-
+        
         void create_device();
 
         void create_rtv_command_queue();
@@ -175,6 +175,30 @@ namespace nova {
         void create_gpu_query_heap(size_t num_queries);
 
     };
+
+    /*!
+     * \brief Compiles the provided shader_source into a DirectX 12 shader
+     * 
+     * \param shader The shader_source to compile. `shader.source` should be SPIR-V code
+     * \param target The shader target to compile to. Shader model 5.1 is recommended
+     */
+    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target);
+
+    bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
+    bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
+
+    bool operator==(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2);
+    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2);
+
+    bool operator==(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2);
+    bool operator!=(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2);
+
+    bool operator==(const D3D12_ROOT_CONSTANTS& lhs, const D3D12_ROOT_CONSTANTS& rhs);
+
+    bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs);
+
+    void get_root_signature_of_shader(const ComPtr<ID3DBlob> &shader, std::vector<D3D12_ROOT_PARAMETER1> &root_parameters, std::vector<D3D12_STATIC_SAMPLER_DESC>& samplers);
+
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP

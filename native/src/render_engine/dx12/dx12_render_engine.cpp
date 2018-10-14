@@ -4,6 +4,7 @@
  */
 
 #include <windows.h>
+#include <D3DCompiler.h>
 
 #include "dx12_render_engine.hpp"
 #include "dx12_opaque_types.hpp"
@@ -15,6 +16,9 @@
 #include "../../util/logger.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../util/windows_utils.hpp"
+#include "../../../3rdparty/SPIRV-Cross/spirv_cross.hpp"
+#include "../../../3rdparty/SPIRV-Cross/spirv_hlsl.hpp"
+#include "../../loading/shaderpack/shaderpack_loading.hpp"
 
 namespace nova {
     DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format);
@@ -503,14 +507,181 @@ namespace nova {
 
         scheduler.WaitForCounter(&pipelines_created_counter, pipelines.size());
     }
-
+    
     void dx12_render_engine::make_single_pso(const pipeline_data& input, std::vector<pipeline>& output, const size_t out_idx) {
-        D3D12_ROOT_SIGNATURE_DESC1 root_signature = {};
+        D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
 
-        //std::unordered_set<D3D12_ROOT_PARAMETER1> vertex_shader_parameters = get_root_signature_of_shader(input.sources.);
+        std::vector<D3D12_ROOT_PARAMETER1> root_parameters;
+        std::vector<D3D12_STATIC_SAMPLER_DESC> static_samplers;
+
+        ComPtr<ID3DBlob> vertex_blob = compile_shader(input.vertex_shader, "vs_5_1");
+        pipeline_state_desc.VS.BytecodeLength = vertex_blob->GetBufferSize();
+        pipeline_state_desc.VS.pShaderBytecode = vertex_blob->GetBufferPointer();
+        get_root_signature_of_shader(vertex_blob, root_parameters, static_samplers);
+
+        if(input.geometry_shader) {
+            ComPtr<ID3DBlob> geometry_blob = compile_shader(*input.geometry_shader, "gs_5_1");
+            pipeline_state_desc.GS.BytecodeLength = geometry_blob->GetBufferSize();
+            pipeline_state_desc.GS.pShaderBytecode = geometry_blob->GetBufferPointer();
+            get_root_signature_of_shader(geometry_blob, root_parameters, static_samplers);
+        }
+
+        if(input.tessellation_control_shader) {
+            ComPtr<ID3DBlob> tessellation_control_blob = compile_shader(*input.tessellation_control_shader, "hs_5_1");
+            pipeline_state_desc.HS.BytecodeLength = tessellation_control_blob->GetBufferSize();
+            pipeline_state_desc.HS.pShaderBytecode = tessellation_control_blob->GetBufferPointer();
+            get_root_signature_of_shader(tessellation_control_blob, root_parameters, static_samplers);
+        }
+        if(input.tessellation_evaluation_shader) {
+            ComPtr<ID3DBlob> tessellation_evaluation_blob = compile_shader(*input.tessellation_evaluation_shader, "ds_5_1");
+            pipeline_state_desc.DS.BytecodeLength = tessellation_evaluation_blob->GetBufferSize();
+            pipeline_state_desc.DS.pShaderBytecode = tessellation_evaluation_blob->GetBufferPointer();
+            get_root_signature_of_shader(tessellation_evaluation_blob, root_parameters, static_samplers);
+        }
+
+        if(input.fragment_shader) {
+            ComPtr<ID3DBlob> fragment_blob = compile_shader(*input.fragment_shader, "ps_5_1");
+            pipeline_state_desc.PS.BytecodeLength = fragment_blob->GetBufferSize();
+            pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
+            get_root_signature_of_shader(fragment_blob, root_parameters, static_samplers);
+        }
 
 
+        // D3D12_ROOT_SIGNATURE_DESC1 root_signature = {};
 
+        // std::unordered_set<D3D12_ROOT_PARAMETER1> vertex_shader_parameters = get_root_signature_of_shader(input.sources.);
+
+        // D3D12CreateRootSignatureDeserializer()
+
+    }
+
+    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target) {
+        spirv_cross::CompilerHLSL vertex_compiler{ shader.source };
+        std::string vertex_hlsl = vertex_compiler.compile();
+        ComPtr<ID3DBlob> vertex_blob;
+        ComPtr<ID3DBlob> vertex_compile_errors;
+        HRESULT hr = D3DCompile2(vertex_hlsl.data(), vertex_hlsl.size(), shader.filename.string().c_str(), nullptr,
+            D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.c_str(),
+            D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, 0, nullptr,
+            0, &vertex_blob, &vertex_compile_errors);
+        if(FAILED(hr)) {
+            std::stringstream ss;
+            ss << "Could not compile vertex shader for pipeline " << shader.filename.string() << ": " << static_cast<char*>(vertex_compile_errors->GetBufferPointer());
+            throw shader_compilation_failed(ss.str());
+        }
+
+        return vertex_blob;
+    }
+
+    void get_root_signature_of_shader(const ComPtr<ID3DBlob> &shader, std::vector<D3D12_ROOT_PARAMETER1> &root_parameters, std::vector<D3D12_STATIC_SAMPLER_DESC>& samplers) {
+        // Code greatly inspired by https://github.com/baldurk/renderdoc/blob/d0b650778bda75bd1086ccc13e05d16467277c96/renderdoc/driver/d3d12/d3d12_shader_cache.cpp#L170
+        ComPtr<ID3D12VersionedRootSignatureDeserializer> root_signature_deserializer;
+        HRESULT hr = D3D12CreateVersionedRootSignatureDeserializer(shader->GetBufferPointer(), shader->GetBufferSize(), IID_PPV_ARGS(&root_signature_deserializer));
+        if(FAILED(hr)) {
+            throw shader_reflection_failed("Could not create root signature deserializer");
+        }
+
+        const D3D12_VERSIONED_ROOT_SIGNATURE_DESC *versioned_desc = nullptr;
+        hr = root_signature_deserializer->GetRootSignatureDescAtVersion(D3D_ROOT_SIGNATURE_VERSION_1_1, &versioned_desc);
+        if(FAILED(hr)) {
+            throw shader_reflection_failed("Could not get versioned root signature");
+        }
+
+        const D3D12_ROOT_SIGNATURE_DESC1& root_desc = versioned_desc->Desc_1_1;
+
+        root_parameters.reserve(root_parameters.size() + root_desc.NumParameters);
+        for(uint32_t i = 0; i < root_desc.NumParameters; i++) {
+            // If this descriptor already exists, add this shader's stage to the allowed stages
+            // If not... just add it and hope for the best?
+            const D3D12_ROOT_PARAMETER1& param_from_shader = root_desc.pParameters[i];
+
+            bool should_add = true;
+            for(D3D12_ROOT_PARAMETER1& existing_param : root_parameters) {
+                if(existing_param == param_from_shader) {
+                    existing_param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+                    should_add = false;
+                    break;
+                }
+            }
+
+            if(should_add) {
+                root_parameters.push_back(param_from_shader);
+            }
+        }
+
+        samplers.reserve(samplers.size() + root_desc.NumStaticSamplers);
+        for(uint32_t i = 0; i < root_desc.NumStaticSamplers; i++) {
+            samplers.push_back(root_desc.pStaticSamplers[i]);
+        }
+    }
+    
+    bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) {
+        if(param1.ParameterType != param2.ParameterType) {
+            return false;
+        }
+
+        switch(param1.ParameterType) {
+        case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
+            return param1.DescriptorTable == param2.DescriptorTable;
+
+        case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
+            return param1.Constants == param2.Constants;
+
+        case D3D12_ROOT_PARAMETER_TYPE_CBV:
+        case D3D12_ROOT_PARAMETER_TYPE_SRV:
+        case D3D12_ROOT_PARAMETER_TYPE_UAV:
+            return param1.Descriptor == param2.Descriptor;
+
+        default:
+            return false;
+        }
+    }
+
+    bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) {
+        return !(param1 == param2);
+    }
+
+    bool operator==(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2) {
+        if(table1.NumDescriptorRanges != table2.NumDescriptorRanges) {
+            return false;
+        }
+
+        for(uint32_t i = 0; i < table1.NumDescriptorRanges; i++) {
+            if(table1.pDescriptorRanges[i] != table2.pDescriptorRanges[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2) {
+        return !(table1 == table2);
+    }
+
+    bool operator==(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2) {
+        return range1.RangeType == range2.RangeType &&
+            range1.NumDescriptors == range2.NumDescriptors &&
+            range1.BaseShaderRegister == range2.BaseShaderRegister &&
+            range1.RegisterSpace == range2.RegisterSpace &&
+            range1.Flags == range2.Flags &&
+            range1.OffsetInDescriptorsFromTableStart == range2.OffsetInDescriptorsFromTableStart;
+    }
+
+    bool operator!=(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2) {
+        return !(range1 == range2);
+    }
+    
+    bool operator==(const D3D12_ROOT_CONSTANTS& lhs, const D3D12_ROOT_CONSTANTS& rhs) {
+        return lhs.ShaderRegister == rhs.ShaderRegister &&
+            lhs.RegisterSpace == rhs.RegisterSpace &&
+            lhs.Num32BitValues == rhs.Num32BitValues;
+    }
+
+    bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs) {
+        return lhs.ShaderRegister == rhs.ShaderRegister &&
+            lhs.RegisterSpace == rhs.RegisterSpace &&
+            lhs.Flags == rhs.Flags;
     }
 
     DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format) {
