@@ -104,7 +104,7 @@ namespace nova {
         std::optional<std::string> fragment_shader_name = get_json_value<std::string>(j, "fragmentShader");
         if(fragment_shader_name) {
             pipeline.fragment_shader = std::make_optional<shader_source>();
-            (*pipeline.fragment_shader).filename = *geometry_shader_name;
+            (*pipeline.fragment_shader).filename = *fragment_shader_name;
         }
     }
 

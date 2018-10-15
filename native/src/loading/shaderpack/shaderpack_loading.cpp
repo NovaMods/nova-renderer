@@ -208,7 +208,29 @@ namespace nova {
             }
 
             pipeline_data new_pipeline = json_pipeline.get<pipeline_data>();
-            new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access, EShLangVertex, new_pipeline.defines);
+            new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access,
+                EShLangVertex, new_pipeline.defines);
+
+            if(new_pipeline.geometry_shader) {
+                (*new_pipeline.geometry_shader).source = load_shader_file((*new_pipeline.geometry_shader).filename, 
+                    folder_access, EShLangGeometry, new_pipeline.defines);
+            }
+
+            if(new_pipeline.tessellation_control_shader) {
+                (*new_pipeline.tessellation_control_shader).source = load_shader_file(
+                    (*new_pipeline.tessellation_control_shader).filename, folder_access, EShLangTessControl, 
+                    new_pipeline.defines);
+            }
+            if(new_pipeline.tessellation_evaluation_shader) {
+                (*new_pipeline.tessellation_evaluation_shader).source = load_shader_file(
+                    (*new_pipeline.tessellation_evaluation_shader).filename, folder_access, EShLangTessEvaluation, 
+                    new_pipeline.defines);
+            }
+
+            if(new_pipeline.fragment_shader) {
+                (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename, 
+                    folder_access, EShLangFragment, new_pipeline.defines);
+            }
 
             output->insert(output->begin() + out_idx, new_pipeline);
 

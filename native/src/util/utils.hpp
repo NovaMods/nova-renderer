@@ -19,6 +19,14 @@
 #include <glm/glm.hpp>
 #include <sstream>
 
+#include <filesystem>
+
+#if _MSC_VER <= 1915
+namespace fs = std::experimental::filesystem;
+#else
+namespace fs = std::filesystem;
+#endif
+
 namespace nova {
     /*!
      * \brief Calls the function once for every element in the provided container
@@ -40,6 +48,8 @@ namespace nova {
     std::string print_array(int data[], int num_elements);
 
     bool ends_with(const std::string &string, const std::string &ending);
+
+    void write_to_file(const std::string& data, const fs::path& filepath);
 
     class nova_exception : public std::exception {
     private:

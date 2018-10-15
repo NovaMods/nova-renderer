@@ -498,19 +498,24 @@ namespace nova {
         std::vector<pipeline> dx12_pipelines(pipelines.size());
         std::size_t write_pipeline = 0;
 
-        for(const pipeline_data data : pipelines) {
+        for(const pipeline_data& data : pipelines) {
             if(!data.name.empty()) {
                 scheduler.AddTask(&pipelines_created_counter,
-                    [&](ftl::TaskScheduler *task_scheduler, const pipeline_data data, std::vector<pipeline>& dx12_pipelines, const size_t write_pipeline) {
-                    make_single_pso(data, dx12_pipelines, write_pipeline);
-                }, data, dx12_pipelines, write_pipeline);
+                    [&](ftl::TaskScheduler *task_scheduler, const pipeline_data data, pipeline* dx12_pipeline) {
+                    try {
+                        make_single_pso(data, dx12_pipeline);
+                    } catch(shader_compilation_failed& err) {
+                        NOVA_LOG(ERROR) << "Could not compile shaders for PSO " << data.name << ": " << err.what();
+                    }
+                }, data, &dx12_pipelines[write_pipeline]);
+                write_pipeline++;
             }
         }
 
         scheduler.WaitForCounter(&pipelines_created_counter, pipelines.size());
     }
     
-    void dx12_render_engine::make_single_pso(const pipeline_data& input, std::vector<pipeline>& output, const size_t out_idx) {
+    void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
 
         std::vector<D3D12_ROOT_PARAMETER1> root_parameters;
@@ -519,33 +524,33 @@ namespace nova {
         ComPtr<ID3DBlob> vertex_blob = compile_shader(input.vertex_shader, "vs_5_1");
         pipeline_state_desc.VS.BytecodeLength = vertex_blob->GetBufferSize();
         pipeline_state_desc.VS.pShaderBytecode = vertex_blob->GetBufferPointer();
-        get_root_signature_of_shader(vertex_blob, root_parameters, static_samplers);
+        //get_root_signature_of_shader(vertex_blob, root_parameters, static_samplers);
 
         if(input.geometry_shader) {
             ComPtr<ID3DBlob> geometry_blob = compile_shader(*input.geometry_shader, "gs_5_1");
             pipeline_state_desc.GS.BytecodeLength = geometry_blob->GetBufferSize();
             pipeline_state_desc.GS.pShaderBytecode = geometry_blob->GetBufferPointer();
-            get_root_signature_of_shader(geometry_blob, root_parameters, static_samplers);
+            //get_root_signature_of_shader(geometry_blob, root_parameters, static_samplers);
         }
 
         if(input.tessellation_control_shader) {
             ComPtr<ID3DBlob> tessellation_control_blob = compile_shader(*input.tessellation_control_shader, "hs_5_1");
             pipeline_state_desc.HS.BytecodeLength = tessellation_control_blob->GetBufferSize();
             pipeline_state_desc.HS.pShaderBytecode = tessellation_control_blob->GetBufferPointer();
-            get_root_signature_of_shader(tessellation_control_blob, root_parameters, static_samplers);
+            //get_root_signature_of_shader(tessellation_control_blob, root_parameters, static_samplers);
         }
         if(input.tessellation_evaluation_shader) {
             ComPtr<ID3DBlob> tessellation_evaluation_blob = compile_shader(*input.tessellation_evaluation_shader, "ds_5_1");
             pipeline_state_desc.DS.BytecodeLength = tessellation_evaluation_blob->GetBufferSize();
             pipeline_state_desc.DS.pShaderBytecode = tessellation_evaluation_blob->GetBufferPointer();
-            get_root_signature_of_shader(tessellation_evaluation_blob, root_parameters, static_samplers);
+            //get_root_signature_of_shader(tessellation_evaluation_blob, root_parameters, static_samplers);
         }
 
         if(input.fragment_shader) {
             ComPtr<ID3DBlob> fragment_blob = compile_shader(*input.fragment_shader, "ps_5_1");
             pipeline_state_desc.PS.BytecodeLength = fragment_blob->GetBufferSize();
             pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
-            get_root_signature_of_shader(fragment_blob, root_parameters, static_samplers);
+            //get_root_signature_of_shader(fragment_blob, root_parameters, static_samplers);
         }
         
         ComPtr<ID3D12RootSignature> root_signature = create_root_signature(root_parameters, static_samplers);
@@ -553,21 +558,25 @@ namespace nova {
     }
 
     ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target) {
-        spirv_cross::CompilerHLSL vertex_compiler{ shader.source };
-        std::string vertex_hlsl = vertex_compiler.compile();
-        ComPtr<ID3DBlob> vertex_blob;
-        ComPtr<ID3DBlob> vertex_compile_errors;
-        HRESULT hr = D3DCompile2(vertex_hlsl.data(), vertex_hlsl.size(), shader.filename.string().c_str(), nullptr,
+        spirv_cross::CompilerHLSL shader_compiler{ shader.source };
+        std::string shader_hlsl = shader_compiler.compile();
+        fs::path debug_path = shader.filename.filename();
+        debug_path.replace_extension(target + ".generated.hlsl");
+        write_to_file(shader_hlsl, debug_path);
+
+        ComPtr<ID3DBlob> shader_blob;
+        ComPtr<ID3DBlob> shader_compile_errors;
+        const HRESULT hr = D3DCompile2(shader_hlsl.data(), shader_hlsl.size(), shader.filename.string().c_str(), nullptr,
             D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.c_str(),
             D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, 0, nullptr,
-            0, &vertex_blob, &vertex_compile_errors);
+            0, &shader_blob, &shader_compile_errors);
         if(FAILED(hr)) {
             std::stringstream ss;
-            ss << "Could not compile vertex shader for pipeline " << shader.filename.string() << ": " << static_cast<char*>(vertex_compile_errors->GetBufferPointer());
+            ss << "Could not compile vertex shader for pipeline " << shader.filename.string() << ": " << static_cast<char*>(shader_compile_errors->GetBufferPointer());
             throw shader_compilation_failed(ss.str());
         }
 
-        return vertex_blob;
+        return shader_blob;
     }
 
     void get_root_signature_of_shader(const ComPtr<ID3DBlob> &shader, std::vector<D3D12_ROOT_PARAMETER1> &root_parameters, std::vector<D3D12_STATIC_SAMPLER_DESC>& samplers) {

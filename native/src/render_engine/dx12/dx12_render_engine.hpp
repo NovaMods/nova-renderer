@@ -165,7 +165,7 @@ namespace nova {
 
         void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler& scheduler);
 
-        void make_single_pso(const pipeline_data& input, std::vector<pipeline>& output, size_t out_idx);
+        void make_single_pso(const pipeline_data& input, pipeline* output);
 
         ComPtr<ID3D12RootSignature> create_root_signature(std::vector<D3D12_ROOT_PARAMETER1> root_parameters, std::vector<D3D12_STATIC_SAMPLER_DESC> static_samplers) const;
 

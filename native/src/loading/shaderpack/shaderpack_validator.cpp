@@ -38,9 +38,6 @@ namespace nova {
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
         {"renderQueue", "Opaque"},
-        {"tessellationControlShader", ""},
-        {"tessellationEvaluationShader", ""},
-        {"geometryShader", ""},
         {"fragmentShader", ""}};
 
     std::vector<std::string> required_graphics_pipeline_fields = {"name", "pass", "vertexFields", "vertexShader"};
