@@ -56,14 +56,14 @@ add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
+set(SPIRV_SKIP_TESTS OFF CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
+add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
+add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
 
 if(UNIX)
     find_package(Vulkan)
-
-	add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
-	add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
-
+	
 	set(SHADERC_SKIP_TESTS TRUE CACHE BOOL "Shaderc tests go away" FORCE)
 	add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 endif()
@@ -206,7 +206,7 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz glslang SPIRV)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES})
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
