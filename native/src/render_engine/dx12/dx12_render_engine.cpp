@@ -559,6 +559,9 @@ namespace nova {
 
     ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target) {
         spirv_cross::CompilerHLSL shader_compiler{ shader.source };
+        spirv_cross::CompilerHLSL::Options options;
+        options.shader_model = 51;
+        shader_compiler.set_hlsl_options(options);
         std::string shader_hlsl = shader_compiler.compile();
         fs::path debug_path = shader.filename.filename();
         debug_path.replace_extension(target + ".generated.hlsl");
