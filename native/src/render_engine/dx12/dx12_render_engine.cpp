@@ -517,6 +517,10 @@ namespace nova {
 
     D3D12_BLEND to_dx12_blend(const blend_factor_enum blend_factor);
 
+    D3D12_COMPARISON_FUNC to_dx12_compare_func(const compare_op_enum depth_func);
+
+    D3D12_STENCIL_OP to_dx12_stencil_op(const stencil_op_enum op);
+
     void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {
         const auto states_begin = input.states.begin();
         const auto states_end = input.states.end();
@@ -603,6 +607,37 @@ namespace nova {
         raster_desc.ForcedSampleCount = 0;
         raster_desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_ON;
 
+        /*
+         * Depth and Stencil
+         */
+
+        D3D12_DEPTH_STENCIL_DESC& ds_desc = pipeline_state_desc.DepthStencilState;
+        ds_desc.DepthEnable = std::find(states_begin, states_end, state_enum::DisableDepthTest) == states_end;
+        if(std::find(states_begin, states_end, state_enum::DisableDepthWrite) != states_end) {
+            ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+
+        } else {
+            ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+        }
+
+        ds_desc.DepthFunc = to_dx12_compare_func(input.depth_func);
+        ds_desc.StencilEnable = std::find(states_begin, states_end, state_enum::EnableStencilTest) != states_end;
+        ds_desc.StencilReadMask = input.stencil_read_mask;
+        ds_desc.StencilWriteMask = input.stencil_write_mask;
+        if(input.front_face) {
+            const stencil_op_state& front_face = *input.front_face;
+            ds_desc.FrontFace.StencilFailOp = to_dx12_stencil_op(front_face.fail_op);
+            ds_desc.FrontFace.StencilDepthFailOp = to_dx12_stencil_op(front_face.depth_fail_op);
+            ds_desc.FrontFace.StencilPassOp = to_dx12_stencil_op(front_face.pass_op);
+            ds_desc.FrontFace.StencilFunc = to_dx12_compare_func(front_face.compare_op);
+        }
+        if(input.back_face) {
+            const stencil_op_state& back_face = *input.back_face;
+            ds_desc.BackFace.StencilFailOp = to_dx12_stencil_op(back_face.fail_op);
+            ds_desc.BackFace.StencilDepthFailOp = to_dx12_stencil_op(back_face.depth_fail_op);
+            ds_desc.BackFace.StencilPassOp = to_dx12_stencil_op(back_face.pass_op);
+            ds_desc.BackFace.StencilFunc = to_dx12_compare_func(back_face.compare_op);
+        }
 
         /*
          * Input description
@@ -799,6 +834,60 @@ namespace nova {
 
             default: 
                 return D3D12_BLEND_ONE;
+        }
+    }
+
+    D3D12_COMPARISON_FUNC to_dx12_compare_func(const compare_op_enum depth_func) {
+        switch(depth_func) {
+            case compare_op_enum::Never:
+                return D3D12_COMPARISON_FUNC_NEVER;
+
+            case compare_op_enum::Less:
+                return D3D12_COMPARISON_FUNC_LESS;
+
+            case compare_op_enum::LessEqual:
+                return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+
+            case compare_op_enum::Greater:
+                return D3D12_COMPARISON_FUNC_GREATER;
+
+            case compare_op_enum::GreaterEqual:
+                return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+
+            case compare_op_enum::Equal:
+                return D3D12_COMPARISON_FUNC_EQUAL;
+
+            case compare_op_enum::NotEqual:
+                return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+
+            case compare_op_enum::Always:
+                return D3D12_COMPARISON_FUNC_ALWAYS;
+
+            default: 
+                return D3D12_COMPARISON_FUNC_ALWAYS;
+        }
+    }
+
+    D3D12_STENCIL_OP to_dx12_stencil_op(const stencil_op_enum op) {
+        switch(op) {
+            case stencil_op_enum::Keep:
+                return D3D12_STENCIL_OP_KEEP;
+            case stencil_op_enum::Zero:
+                return D3D12_STENCIL_OP_ZERO;
+            case stencil_op_enum::Replace:
+                return D3D12_STENCIL_OP_REPLACE;
+            case stencil_op_enum::Incr:
+                return D3D12_STENCIL_OP_INCR;
+            case stencil_op_enum::IncrWrap:
+                return D3D12_STENCIL_OP_INCR_SAT;
+            case stencil_op_enum::Decr:
+                return D3D12_STENCIL_OP_DECR;
+            case stencil_op_enum::DecrWrap:
+                return D3D12_STENCIL_OP_DECR_SAT;
+            case stencil_op_enum::Invert:
+                return D3D12_STENCIL_OP_INVERT;
+            default: 
+                return D3D12_STENCIL_OP_KEEP;
         }
     }
 
