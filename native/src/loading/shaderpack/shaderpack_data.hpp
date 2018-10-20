@@ -160,11 +160,6 @@ namespace nova {
          * 12 bytes
          */
         McEntityId,
-
-        /*!
-         * \brief Useful if you want to skip a vertex attribute
-         */
-        Empty,
     };
 
     /*!

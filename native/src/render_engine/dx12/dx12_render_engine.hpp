@@ -163,6 +163,7 @@ namespace nova {
         void create_dynamic_textures(const std::vector<texture_resource_data> &texture_datas, std::vector<render_pass_data> passes);
 
         void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler& scheduler);
+        void create_input_description(const std::vector<vertex_field_data>& vertex_fields);
 
         void make_single_pso(const pipeline_data& input, pipeline* output);
 

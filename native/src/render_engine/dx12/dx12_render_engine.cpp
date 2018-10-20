@@ -18,6 +18,7 @@
 #include "../../util/windows_utils.hpp"
 #include "../../../3rdparty/SPIRV-Cross/spirv_cross.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
+#include "vertex_attributes.hpp"
 
 namespace nova {
     DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format);
@@ -517,6 +518,10 @@ namespace nova {
     void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
 
+        /*
+         * Compile all shader stages
+         */
+
         std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> shader_inputs;
         spirv_cross::CompilerHLSL::Options options = {};
         options.shader_model = 51;
@@ -550,6 +555,33 @@ namespace nova {
         
         ComPtr<ID3D12RootSignature> root_signature = create_root_signature(shader_inputs);
         pipeline_state_desc.pRootSignature = root_signature.Get();
+
+        /*
+         * Build up the input description
+         */
+
+        const std::unordered_map<vertex_field_enum, vertex_attribute> all_formats = get_all_vertex_attributes();
+
+        std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs;
+        input_descs.reserve(input.vertex_fields.size());
+        for(const vertex_field_data& vertex_field : input.vertex_fields) {
+            const vertex_attribute& attr = all_formats.at(vertex_field.field);
+
+            D3D12_INPUT_ELEMENT_DESC desc = {};
+            desc.SemanticName = vertex_field.semantic_name.data();
+            desc.Format = attr.format;
+            desc.InputSlot = 0;
+            desc.AlignedByteOffset = attr.offset;
+            desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+            desc.InstanceDataStepRate = 0;
+
+            input_descs.push_back(desc);
+        }
+
+        pipeline_state_desc.InputLayout.NumElements = input_descs.size();
+        pipeline_state_desc.InputLayout.pInputElementDescs = input_descs.data();
+
+
     }
 
     void add_resource_to_descriptor_table(const D3D12_DESCRIPTOR_RANGE_TYPE range_type, const spirv_cross::CompilerHLSL& shader_compiler,
