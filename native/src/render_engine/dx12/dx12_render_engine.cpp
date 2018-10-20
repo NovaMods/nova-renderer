@@ -517,7 +517,7 @@ namespace nova {
     void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
 
-        std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs;
+        std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> shader_inputs;
         spirv_cross::CompilerHLSL::Options options = {};
         options.shader_model = 51;
 
@@ -552,7 +552,48 @@ namespace nova {
         pipeline_state_desc.pRootSignature = root_signature.Get();
     }
 
-    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target, const spirv_cross::CompilerHLSL::Options& options, std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> &shader_inputs) {
+    void add_resource_to_descriptor_table(const D3D12_DESCRIPTOR_RANGE_TYPE range_type, const spirv_cross::CompilerHLSL& shader_compiler,
+        const std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC>& shader_inputs, const spirv_cross::Resource& sampled_image,
+        std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+
+        const D3D12_SHADER_INPUT_BIND_DESC& dx12_desc = shader_inputs.at(sampled_image.name);
+        const uint32_t set = shader_compiler.get_decoration(sampled_image.id, spv::DecorationDescriptorSet);
+
+        bool added_to_existing_table = false;
+        std::vector<D3D12_DESCRIPTOR_RANGE1>& ranges = tables.at(set);
+        // Try to find the descriptor range with the type we need
+        for(D3D12_DESCRIPTOR_RANGE1& range : ranges) {
+            if(range.RangeType == range_type) {
+                // Change the register range to incorporate the new resource
+                if(dx12_desc.BindPoint < range.BaseShaderRegister) {
+                    // Need to move the base shader register back a bit
+                    const uint32_t amount_moved = dx12_desc.BindPoint - range.BaseShaderRegister;
+                    range.BaseShaderRegister = dx12_desc.BindPoint;
+                    range.RegisterSpace += amount_moved;
+                    range.RegisterSpace += dx12_desc.BindCount;
+                    range.NumDescriptors++;
+                }
+
+                added_to_existing_table = true;
+            }
+        }
+
+        if(!added_to_existing_table) {
+            // New range whoo
+            D3D12_DESCRIPTOR_RANGE1 new_range = {};
+            new_range.RangeType = range_type;
+            new_range.NumDescriptors = 1;
+            new_range.BaseShaderRegister = dx12_desc.BindPoint;
+            new_range.RegisterSpace = dx12_desc.BindCount;
+            new_range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+            tables.at(set).push_back(new_range);
+        }
+    }
+
+    ComPtr<ID3DBlob> compile_shader( const shader_source& shader, const std::string& target, 
+        const spirv_cross::CompilerHLSL::Options& options, std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+
         spirv_cross::CompilerHLSL shader_compiler(shader.source);
         shader_compiler.set_hlsl_options(options);
         std::string shader_hlsl = shader_compiler.compile();
@@ -599,66 +640,50 @@ namespace nova {
             shader_inputs[binding_name] = bind_desc;
         }
 
-        std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> tables;
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
         for(const spirv_cross::Resource& sampled_image : resources.sampled_images) {
-            const uint32_t set = shader_compiler.get_decoration(sampled_image.id, spv::DecorationDescriptorSet);
-            const D3D12_SHADER_INPUT_BIND_DESC& dx12_desc = shader_inputs.at(sampled_image.name);
-
-            bool added_to_existing_table = false;
-            std::vector<D3D12_DESCRIPTOR_RANGE1>& ranges = tables.at(set);
-            // Try to find the descriptor range with the type we need
-            for(D3D12_DESCRIPTOR_RANGE1& range : ranges) {
-                if(range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV) {
-                    // Change the register range to incorporate the new resource
-                    if(dx12_desc.BindPoint < range.BaseShaderRegister) {
-                        // Need to move the base shader register back a bit
-                        const uint32_t amount_moved = dx12_desc.BindPoint - range.BaseShaderRegister;
-                        range.BaseShaderRegister = dx12_desc.BindPoint;
-                        range.RegisterSpace += amount_moved;
-                    }
-
-                    added_to_existing_table = true;
-                }
-            }
+            add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, shader_compiler, shader_inputs, sampled_image, tables);
+        }
+        for(const spirv_cross::Resource& uniform_buffer : resources.uniform_buffers) {
+            add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, shader_compiler, shader_inputs, uniform_buffer, tables);
         }
 
         return shader_blob;
     }
     
-    ComPtr<ID3D12RootSignature> dx12_render_engine::create_root_signature(const std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC>& shader_inputs) const {
-        std::vector<D3D12_ROOT_PARAMETER1> root_parameters;
-        for(const std::pair<std::string, D3D12_SHADER_INPUT_BIND_DESC>& named_input : shader_inputs) {
-            const D3D12_SHADER_INPUT_BIND_DESC& bind_desc = named_input.second;
+    ComPtr<ID3D12RootSignature> dx12_render_engine::create_root_signature(const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) const {
+        std::vector<D3D12_ROOT_PARAMETER1> params(tables.size());
+        std::size_t cur_param = 0;
+        for(const auto& table : tables) {
+            D3D12_ROOT_PARAMETER1& parameter = params.at(cur_param);
+            parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            parameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            parameter.DescriptorTable.NumDescriptorRanges = table.second.size();
+            parameter.DescriptorTable.pDescriptorRanges = table.second.data();
 
+            cur_param++;
         }
 
-        D3D12_ROOT_SIGNATURE_DESC1 root_signature_desc = {};
-        root_signature_desc.NumParameters = root_parameters.size();
-        root_signature_desc.pParameters = root_parameters.data();
-        root_signature_desc.NumStaticSamplers = static_samplers.size();
-        root_signature_desc.pStaticSamplers = static_samplers.data();
+        D3D12_VERSIONED_ROOT_SIGNATURE_DESC versioned_sig = {};
+        versioned_sig.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
+        versioned_sig.Desc_1_1.NumParameters = params.size();
+        versioned_sig.Desc_1_1.pParameters = params.data();
 
-        D3D12_VERSIONED_ROOT_SIGNATURE_DESC versioned_desc = {};
-        versioned_desc.Desc_1_1 = root_signature_desc;
-        versioned_desc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
-
-        ComPtr<ID3DBlob> root_signature_blob;
-        ComPtr<ID3DBlob> error_blob;
-        HRESULT hr = D3D12SerializeVersionedRootSignature(&versioned_desc, &root_signature_blob, &error_blob);
+        ComPtr<ID3DBlob> compiled_root_sig;
+        ComPtr<ID3DBlob> root_sig_compile_error;
+        HRESULT hr = D3D12SerializeVersionedRootSignature(&versioned_sig, &compiled_root_sig, &root_sig_compile_error);
         if(FAILED(hr)) {
-            throw shader_layout_creation_failed(std::string(static_cast<char *>(error_blob->GetBufferPointer())));
+            const std::string root_sig_compile_error_str = static_cast<char*>(root_sig_compile_error->GetBufferPointer());
+            throw shader_compilation_failed("Could not compile root signature: " + root_sig_compile_error_str);
         }
 
-        ComPtr<ID3D12RootSignature> root_signature;
-        hr = device->CreateRootSignature(1, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&root_signature));
+        ComPtr<ID3D12RootSignature> root_sig;
+        hr = device->CreateRootSignature(0, compiled_root_sig->GetBufferPointer(), compiled_root_sig->GetBufferSize(), IID_PPV_ARGS(&root_sig));
         if(FAILED(hr)) {
-            std::stringstream ss;
-            ss << "Could not create root signature, error code " << hr;
-            throw shader_layout_creation_failed(ss.str());
+            throw shader_compilation_failed("Could not create root signature");
         }
-
-        return root_signature;
+        
+        return root_sig;
     }
     
     bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) {

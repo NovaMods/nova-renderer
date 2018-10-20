@@ -166,7 +166,7 @@ namespace nova {
 
         void make_single_pso(const pipeline_data& input, pipeline* output);
 
-        ComPtr<ID3D12RootSignature> create_root_signature(const std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC>& shader_inputs) const;
+        ComPtr<ID3D12RootSignature> create_root_signature(const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) const;
 
         /*!
          * \brief Creates a timestamp query heap with enough space to time every render pass
@@ -183,12 +183,12 @@ namespace nova {
      * \param shader The shader_source to compile. `shader.source` should be SPIR-V code
      * \param target The shader target to compile to. Shader model 5.1 is recommended
      * \param options Any options to use when compiling this shader
-     * \param shader_inputs A vector to hold all the inputs for this shader
+     * \param tables All the descriptor tables that this shader declares
      * 
      * \return The compiled shader
      */
-    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target, 
-        const spirv_cross::CompilerHLSL::Options& options, std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> &shader_inputs);
+    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target,
+        const spirv_cross::CompilerHLSL::Options& options, std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 
     bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
     bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
