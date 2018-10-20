@@ -514,8 +514,13 @@ namespace nova {
 
         scheduler.WaitForCounter(&pipelines_created_counter, pipelines.size());
     }
-    
+
+    D3D12_BLEND to_dx12_blend(const blend_factor_enum blend_factor);
+
     void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {
+        const auto states_begin = input.states.begin();
+        const auto states_end = input.states.end();
+
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
 
         /*
@@ -557,7 +562,40 @@ namespace nova {
         pipeline_state_desc.pRootSignature = root_signature.Get();
 
         /*
-         * Build up the input description
+        * Blend state
+        */
+
+        pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin, states_end, state_enum::EnableAlphaToCoverage) != states_end;
+        pipeline_state_desc.BlendState.IndependentBlendEnable = false;
+        D3D12_RENDER_TARGET_BLEND_DESC& blend_state = pipeline_state_desc.BlendState.RenderTarget[0];
+        blend_state.BlendEnable = std::find(states_begin, states_end, state_enum::Blending) != states_end;
+        blend_state.SrcBlend = to_dx12_blend(input.source_blend_factor);
+        blend_state.DestBlend = to_dx12_blend(input.destination_blend_factor);
+        blend_state.BlendOp = D3D12_BLEND_OP_ADD;
+        blend_state.SrcBlendAlpha = to_dx12_blend(input.source_blend_factor);
+        blend_state.DestBlendAlpha = to_dx12_blend(input.destination_blend_factor);
+        blend_state.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+        blend_state.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+        pipeline_state_desc.SampleMask = 0xFFFFFFFF;
+
+        /*
+         * Rasterizer state
+         */
+
+        D3D12_RASTERIZER_DESC& raster_desc = pipeline_state_desc.RasterizerState;
+        raster_desc.FillMode = D3D12_FILL_MODE_SOLID;
+        if(std::find(states_begin, states_end, state_enum::InvertCulling) != states_end) {
+            raster_desc.CullMode = D3D12_CULL_MODE_FRONT;
+
+        } else if(std::find(states_begin, states_end, state_enum::DisableCulling) != states_end) {
+            raster_desc.CullMode = D3D12_CULL_MODE_NONE;
+
+        } else {
+            raster_desc.CullMode = D3D12_CULL_MODE_BACK;
+        }
+
+        /*
+         * Input description
          */
 
         const std::unordered_map<vertex_field_enum, vertex_attribute> all_formats = get_all_vertex_attributes();
@@ -580,7 +618,6 @@ namespace nova {
 
         pipeline_state_desc.InputLayout.NumElements = input_descs.size();
         pipeline_state_desc.InputLayout.pInputElementDescs = input_descs.data();
-
 
     }
 
@@ -717,7 +754,44 @@ namespace nova {
         
         return root_sig;
     }
-    
+
+    D3D12_BLEND to_dx12_blend(const blend_factor_enum blend_factor) {
+        switch(blend_factor) {
+            case blend_factor_enum::One: 
+                return D3D12_BLEND_ONE;
+
+            case blend_factor_enum::Zero: 
+                return D3D12_BLEND_ZERO;
+
+            case blend_factor_enum::SrcColor:
+                return D3D12_BLEND_SRC_COLOR;
+
+            case blend_factor_enum::DstColor:
+                return D3D12_BLEND_DEST_COLOR;
+
+            case blend_factor_enum::OneMinusSrcColor:
+                return D3D12_BLEND_INV_SRC_COLOR;
+
+            case blend_factor_enum::OneMinusDstColor:
+                return D3D12_BLEND_INV_DEST_COLOR;
+
+            case blend_factor_enum::SrcAlpha:
+                return D3D12_BLEND_SRC_ALPHA;
+
+            case blend_factor_enum::DstAlpha:
+                return D3D12_BLEND_DEST_ALPHA;
+
+            case blend_factor_enum::OneMinusSrcAlpha:
+                return D3D12_BLEND_INV_SRC_ALPHA;
+
+            case blend_factor_enum::OneMinusDstAlpha:
+                return D3D12_BLEND_INV_DEST_ALPHA;
+
+            default: 
+                return D3D12_BLEND_ONE;
+        }
+    }
+
     bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) {
         if(param1.ParameterType != param2.ParameterType) {
             return false;
