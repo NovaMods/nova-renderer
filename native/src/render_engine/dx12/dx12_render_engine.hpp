@@ -10,10 +10,8 @@
 
 #include <d3d12.h>
 #include <dxgi1_2.h>
-#include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <dxgi1_4.h>
-#include "d3dx12.h"
 #include "win32_window.hpp"
 
 #include <wrl.h>
@@ -21,6 +19,7 @@
 #include <unordered_map>
 #include <mutex>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
+#include "../../../3rdparty/SPIRV-Cross/spirv_hlsl.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -167,7 +166,7 @@ namespace nova {
 
         void make_single_pso(const pipeline_data& input, pipeline* output);
 
-        ComPtr<ID3D12RootSignature> create_root_signature(std::vector<D3D12_ROOT_PARAMETER1> root_parameters, std::vector<D3D12_STATIC_SAMPLER_DESC> static_samplers) const;
+        ComPtr<ID3D12RootSignature> create_root_signature(const std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC>& shader_inputs) const;
 
         /*!
          * \brief Creates a timestamp query heap with enough space to time every render pass
@@ -183,8 +182,13 @@ namespace nova {
      * 
      * \param shader The shader_source to compile. `shader.source` should be SPIR-V code
      * \param target The shader target to compile to. Shader model 5.1 is recommended
+     * \param options Any options to use when compiling this shader
+     * \param shader_inputs A vector to hold all the inputs for this shader
+     * 
+     * \return The compiled shader
      */
-    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target);
+    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target, 
+        const spirv_cross::CompilerHLSL::Options& options, std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> &shader_inputs);
 
     bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
     bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
@@ -198,9 +202,6 @@ namespace nova {
     bool operator==(const D3D12_ROOT_CONSTANTS& lhs, const D3D12_ROOT_CONSTANTS& rhs);
 
     bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs);
-
-    void get_root_signature_of_shader(const ComPtr<ID3DBlob> &shader, std::vector<D3D12_ROOT_PARAMETER1> &root_parameters, std::vector<D3D12_STATIC_SAMPLER_DESC>& samplers);
-
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP

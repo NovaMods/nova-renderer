@@ -178,7 +178,7 @@ else()
 endif()
 
 if (WIN32)
-   set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp src/util/windows_utils.cpp src/util/windows_utils.hpp)
+   set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp src/util/windows_utils.cpp src/util/windows_utils.hpp src/render_engine/dx12/pipeline_state_object.cpp src/render_engine/dx12/pipeline_state_object.hpp)
 endif (WIN32)
 
 if (UNIX)

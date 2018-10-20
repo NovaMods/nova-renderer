@@ -17,7 +17,6 @@
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../util/windows_utils.hpp"
 #include "../../../3rdparty/SPIRV-Cross/spirv_cross.hpp"
-#include "../../../3rdparty/SPIRV-Cross/spirv_hlsl.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 
 namespace nova {
@@ -518,113 +517,122 @@ namespace nova {
     void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
 
-        std::vector<D3D12_ROOT_PARAMETER1> root_parameters;
-        std::vector<D3D12_STATIC_SAMPLER_DESC> static_samplers;
+        std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs;
+        spirv_cross::CompilerHLSL::Options options = {};
+        options.shader_model = 51;
 
-        ComPtr<ID3DBlob> vertex_blob = compile_shader(input.vertex_shader, "vs_5_1");
+        ComPtr<ID3DBlob> vertex_blob = compile_shader(input.vertex_shader, "vs_5_1", options, shader_inputs);
         pipeline_state_desc.VS.BytecodeLength = vertex_blob->GetBufferSize();
         pipeline_state_desc.VS.pShaderBytecode = vertex_blob->GetBufferPointer();
-        //get_root_signature_of_shader(vertex_blob, root_parameters, static_samplers);
 
         if(input.geometry_shader) {
-            ComPtr<ID3DBlob> geometry_blob = compile_shader(*input.geometry_shader, "gs_5_1");
+            ComPtr<ID3DBlob> geometry_blob = compile_shader(*input.geometry_shader, "gs_5_1", options, shader_inputs);
             pipeline_state_desc.GS.BytecodeLength = geometry_blob->GetBufferSize();
             pipeline_state_desc.GS.pShaderBytecode = geometry_blob->GetBufferPointer();
-            //get_root_signature_of_shader(geometry_blob, root_parameters, static_samplers);
         }
 
         if(input.tessellation_control_shader) {
-            ComPtr<ID3DBlob> tessellation_control_blob = compile_shader(*input.tessellation_control_shader, "hs_5_1");
+            ComPtr<ID3DBlob> tessellation_control_blob = compile_shader(*input.tessellation_control_shader, "hs_5_1", options, shader_inputs);
             pipeline_state_desc.HS.BytecodeLength = tessellation_control_blob->GetBufferSize();
             pipeline_state_desc.HS.pShaderBytecode = tessellation_control_blob->GetBufferPointer();
-            //get_root_signature_of_shader(tessellation_control_blob, root_parameters, static_samplers);
         }
         if(input.tessellation_evaluation_shader) {
-            ComPtr<ID3DBlob> tessellation_evaluation_blob = compile_shader(*input.tessellation_evaluation_shader, "ds_5_1");
+            ComPtr<ID3DBlob> tessellation_evaluation_blob = compile_shader(*input.tessellation_evaluation_shader, "ds_5_1", options, shader_inputs);
             pipeline_state_desc.DS.BytecodeLength = tessellation_evaluation_blob->GetBufferSize();
             pipeline_state_desc.DS.pShaderBytecode = tessellation_evaluation_blob->GetBufferPointer();
-            //get_root_signature_of_shader(tessellation_evaluation_blob, root_parameters, static_samplers);
         }
 
         if(input.fragment_shader) {
-            ComPtr<ID3DBlob> fragment_blob = compile_shader(*input.fragment_shader, "ps_5_1");
+            ComPtr<ID3DBlob> fragment_blob = compile_shader(*input.fragment_shader, "ps_5_1", options, shader_inputs);
             pipeline_state_desc.PS.BytecodeLength = fragment_blob->GetBufferSize();
             pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
-            //get_root_signature_of_shader(fragment_blob, root_parameters, static_samplers);
         }
         
-        ComPtr<ID3D12RootSignature> root_signature = create_root_signature(root_parameters, static_samplers);
+        ComPtr<ID3D12RootSignature> root_signature = create_root_signature(shader_inputs);
         pipeline_state_desc.pRootSignature = root_signature.Get();
     }
 
-    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target) {
-        spirv_cross::CompilerHLSL shader_compiler{ shader.source };
-        spirv_cross::CompilerHLSL::Options options;
-        options.shader_model = 51;
+    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target, const spirv_cross::CompilerHLSL::Options& options, std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> &shader_inputs) {
+        spirv_cross::CompilerHLSL shader_compiler(shader.source);
         shader_compiler.set_hlsl_options(options);
         std::string shader_hlsl = shader_compiler.compile();
-        fs::path debug_path = shader.filename.filename();
+
+        const fs::path& filename = shader.filename;
+        fs::path debug_path = filename.filename();
         debug_path.replace_extension(target + ".generated.hlsl");
         write_to_file(shader_hlsl, debug_path);
 
         ComPtr<ID3DBlob> shader_blob;
         ComPtr<ID3DBlob> shader_compile_errors;
-        const HRESULT hr = D3DCompile2(shader_hlsl.data(), shader_hlsl.size(), shader.filename.string().c_str(), nullptr,
+        HRESULT hr = D3DCompile2(shader_hlsl.data(), shader_hlsl.size(), filename.string().c_str(), nullptr,
             D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.c_str(),
             D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, 0, nullptr,
             0, &shader_blob, &shader_compile_errors);
         if(FAILED(hr)) {
             std::stringstream ss;
-            ss << "Could not compile vertex shader for pipeline " << shader.filename.string() << ": " << static_cast<char*>(shader_compile_errors->GetBufferPointer());
+            ss << "Could not compile vertex shader for pipeline " << filename.string() << ": " << static_cast<char*>(shader_compile_errors->GetBufferPointer());
             throw shader_compilation_failed(ss.str());
+        }
+
+
+        ComPtr<ID3D12ShaderReflection> shader_reflector;
+        hr = D3DReflect(shader_blob->GetBufferPointer(), shader_blob->GetBufferSize(), IID_PPV_ARGS(&shader_reflector));
+        if(FAILED(hr)) {
+            throw shader_reflection_failed("Could not create reflector, error code " + std::to_string(hr));
+        }
+
+        D3D12_SHADER_DESC shader_desc;
+        hr = shader_reflector->GetDesc(&shader_desc);
+        if(FAILED(hr)) {
+            throw shader_reflection_failed("Could not get shader description");
+        }
+
+        std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs(shader_desc.BoundResources);
+        for(uint32_t i = 0; i < shader_desc.BoundResources; i++) {
+            D3D12_SHADER_INPUT_BIND_DESC bind_desc;
+            hr = shader_reflector->GetResourceBindingDesc(i, &bind_desc);
+            if(FAILED(hr)) {
+                throw shader_reflection_failed("Could not get description for bind point " + std::to_string(i));
+            }
+
+            std::string binding_name = bind_desc.Name;
+            shader_inputs[binding_name] = bind_desc;
+        }
+
+        std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> tables;
+        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
+        for(const spirv_cross::Resource& sampled_image : resources.sampled_images) {
+            const uint32_t set = shader_compiler.get_decoration(sampled_image.id, spv::DecorationDescriptorSet);
+            const D3D12_SHADER_INPUT_BIND_DESC& dx12_desc = shader_inputs.at(sampled_image.name);
+
+            bool added_to_existing_table = false;
+            std::vector<D3D12_DESCRIPTOR_RANGE1>& ranges = tables.at(set);
+            // Try to find the descriptor range with the type we need
+            for(D3D12_DESCRIPTOR_RANGE1& range : ranges) {
+                if(range.RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV) {
+                    // Change the register range to incorporate the new resource
+                    if(dx12_desc.BindPoint < range.BaseShaderRegister) {
+                        // Need to move the base shader register back a bit
+                        const uint32_t amount_moved = dx12_desc.BindPoint - range.BaseShaderRegister;
+                        range.BaseShaderRegister = dx12_desc.BindPoint;
+                        range.RegisterSpace += amount_moved;
+                    }
+
+                    added_to_existing_table = true;
+                }
+            }
         }
 
         return shader_blob;
     }
+    
+    ComPtr<ID3D12RootSignature> dx12_render_engine::create_root_signature(const std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC>& shader_inputs) const {
+        std::vector<D3D12_ROOT_PARAMETER1> root_parameters;
+        for(const std::pair<std::string, D3D12_SHADER_INPUT_BIND_DESC>& named_input : shader_inputs) {
+            const D3D12_SHADER_INPUT_BIND_DESC& bind_desc = named_input.second;
 
-    void get_root_signature_of_shader(const ComPtr<ID3DBlob> &shader, std::vector<D3D12_ROOT_PARAMETER1> &root_parameters, std::vector<D3D12_STATIC_SAMPLER_DESC>& samplers) {
-        // Code greatly inspired by https://github.com/baldurk/renderdoc/blob/d0b650778bda75bd1086ccc13e05d16467277c96/renderdoc/driver/d3d12/d3d12_shader_cache.cpp#L170
-        ComPtr<ID3D12VersionedRootSignatureDeserializer> root_signature_deserializer;
-        HRESULT hr = D3D12CreateVersionedRootSignatureDeserializer(shader->GetBufferPointer(), shader->GetBufferSize(), IID_PPV_ARGS(&root_signature_deserializer));
-        if(FAILED(hr)) {
-            throw shader_reflection_failed("Could not create root signature deserializer");
         }
 
-        const D3D12_VERSIONED_ROOT_SIGNATURE_DESC *versioned_desc = nullptr;
-        hr = root_signature_deserializer->GetRootSignatureDescAtVersion(D3D_ROOT_SIGNATURE_VERSION_1_1, &versioned_desc);
-        if(FAILED(hr)) {
-            throw shader_reflection_failed("Could not get versioned root signature");
-        }
-
-        const D3D12_ROOT_SIGNATURE_DESC1& root_desc = versioned_desc->Desc_1_1;
-
-        root_parameters.reserve(root_parameters.size() + root_desc.NumParameters);
-        for(uint32_t i = 0; i < root_desc.NumParameters; i++) {
-            // If this descriptor already exists, add this shader's stage to the allowed stages
-            // If not... just add it and hope for the best?
-            const D3D12_ROOT_PARAMETER1& param_from_shader = root_desc.pParameters[i];
-
-            bool should_add = true;
-            for(D3D12_ROOT_PARAMETER1& existing_param : root_parameters) {
-                if(existing_param == param_from_shader) {
-                    existing_param.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-                    should_add = false;
-                    break;
-                }
-            }
-
-            if(should_add) {
-                root_parameters.push_back(param_from_shader);
-            }
-        }
-
-        samplers.reserve(samplers.size() + root_desc.NumStaticSamplers);
-        for(uint32_t i = 0; i < root_desc.NumStaticSamplers; i++) {
-            samplers.push_back(root_desc.pStaticSamplers[i]);
-        }
-    }
-
-    ComPtr<ID3D12RootSignature> dx12_render_engine::create_root_signature(std::vector<D3D12_ROOT_PARAMETER1> root_parameters, std::vector<D3D12_STATIC_SAMPLER_DESC> static_samplers) const {
         D3D12_ROOT_SIGNATURE_DESC1 root_signature_desc = {};
         root_signature_desc.NumParameters = root_parameters.size();
         root_signature_desc.pParameters = root_parameters.data();
