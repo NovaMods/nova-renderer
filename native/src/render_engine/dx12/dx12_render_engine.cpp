@@ -593,6 +593,16 @@ namespace nova {
         } else {
             raster_desc.CullMode = D3D12_CULL_MODE_BACK;
         }
+        raster_desc.FrontCounterClockwise = true;
+        raster_desc.DepthBias = input.depth_bias;
+        raster_desc.SlopeScaledDepthBias = input.slope_scaled_depth_bias;
+        raster_desc.DepthClipEnable = true;
+        if(input.msaa_support == msaa_support_enum::MSAA) {
+            raster_desc.MultisampleEnable = true;
+        }
+        raster_desc.ForcedSampleCount = 0;
+        raster_desc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_ON;
+
 
         /*
          * Input description
