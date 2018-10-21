@@ -178,7 +178,18 @@ else()
 endif()
 
 if (WIN32)
-   set(NOVA_SOURCE ${NOVA_SOURCE} ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp src/util/windows_utils.cpp src/util/windows_utils.hpp src/render_engine/dx12/pipeline_state_object.cpp src/render_engine/dx12/pipeline_state_object.hpp src/render_engine/dx12/vertex_attributes.hpp src/render_engine/dx12/dx_12_texture.cpp src/render_engine/dx12/dx_12_texture.hpp src/render_engine/dx12/dx12_utils.cpp src/render_engine/dx12/dx12_utils.hpp)
+   set(NOVA_SOURCE 
+	   ${NOVA_SOURCE} 
+	   ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp 
+	   src/util/windows_utils.cpp 
+	   src/util/windows_utils.hpp
+	   src/render_engine/dx12/pipeline_state_object.cpp
+	   src/render_engine/dx12/pipeline_state_object.hpp 
+	   src/render_engine/dx12/vertex_attributes.hpp
+	   src/render_engine/dx12/dx12_texture.cpp 
+	   src/render_engine/dx12/dx12_texture.hpp 
+	   src/render_engine/dx12/dx12_utils.cpp 
+	   src/render_engine/dx12/dx12_utils.hpp)
 endif (WIN32)
 
 if (UNIX)

@@ -10,7 +10,7 @@ namespace nova {
     folder_accessor_base::folder_accessor_base(const fs::path &folder) : root_folder(folder) {}
 
     bool folder_accessor_base::does_resource_exist(const fs::path &resource_path) {
-        auto full_path = root_folder / resource_path;
+        const auto full_path = root_folder / resource_path;
         return does_resource_exist_internal(full_path);
     }
 

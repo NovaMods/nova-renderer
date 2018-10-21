@@ -303,9 +303,6 @@ namespace nova {
         } else if(str == "McEntityId") {
             return vertex_field_enum::McEntityId;
 
-        } else if(str == "Empty") {
-            return vertex_field_enum::Empty;
-
         } else {
             NOVA_LOG(ERROR) << "Unsupported vertex field " << str;
             throw validation_failure_exception("Unsupported vertex field " + str);
@@ -515,8 +512,6 @@ namespace nova {
             case vertex_field_enum::VirtualTextureId: return "VirtualTextureId";
 
             case vertex_field_enum::McEntityId: return "McEntityId";
-
-            case vertex_field_enum::Empty: return "Empty";
         }
 
         return "Unknown value";
