@@ -513,3 +513,4 @@ cmake-build-release
 
 # Out-of-tree build
 ../build
+**.generated
