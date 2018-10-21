@@ -51,6 +51,8 @@ namespace nova {
 
     void write_to_file(const std::string& data, const fs::path& filepath);
 
+    void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath);
+
     class nova_exception : public std::exception {
     private:
         std::string msg;

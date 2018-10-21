@@ -366,6 +366,10 @@ namespace nova {
             std::vector<uint32_t> spirv;
             glslang::GlslangToSpv(*shader.getIntermediate(), spirv);
 
+            fs::path dump_filename = filename.filename();
+            dump_filename.replace_extension(std::to_string(stage) + ".spirv.generated");
+            write_to_file(spirv, dump_filename);
+
             return spirv;
         }
 

@@ -69,6 +69,14 @@ namespace nova {
         os.close();
     }
 
+    void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath) {
+        std::ofstream os(filepath, std::ios::binary);
+        if(os.good()) {
+            os.write((char*)data.data(), data.size() * 4);
+        }
+        os.close();
+    }
+
     nova_exception::nova_exception(std::string msg) : msg(std::move(msg)) {}
     const char *nova_exception::what() const noexcept {
         return msg.c_str();
