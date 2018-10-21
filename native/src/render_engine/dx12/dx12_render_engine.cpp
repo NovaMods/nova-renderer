@@ -20,9 +20,19 @@
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "vertex_attributes.hpp"
 #include "d3dx12.h"
+#include "../../nova_renderer.hpp"
+#include "pipeline_state_object.hpp"
 
 namespace nova {
-    DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format);
+    DXGI_FORMAT to_dxgi_format(pixel_format_enum pixel_format);
+
+    D3D12_BLEND to_dx12_blend(blend_factor_enum blend_factor);
+
+    D3D12_COMPARISON_FUNC to_dx12_compare_func(compare_op_enum depth_func);
+
+    D3D12_STENCIL_OP to_dx12_stencil_op(stencil_op_enum op);
+
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(primitive_topology_enum primitive_mode);
 
     dx12_render_engine::dx12_render_engine(const nova_settings &settings) : render_engine(settings), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
         create_device();
@@ -434,7 +444,7 @@ namespace nova {
                     dimensions.y *= format.height;
                 }
 
-                const DXGI_FORMAT dx12_format = get_dx12_format_from_pixel_format(format.pixel_format);
+                const DXGI_FORMAT dx12_format = to_dxgi_format(format.pixel_format);
 
                 DXGI_SAMPLE_DESC sample_desc = {};
                 sample_desc.Count = 1;
@@ -525,17 +535,7 @@ namespace nova {
 
         scheduler.WaitForCounter(&pipelines_created_counter, pipelines.size());
     }
-
-    D3D12_BLEND to_dx12_blend(blend_factor_enum blend_factor);
-
-    D3D12_COMPARISON_FUNC to_dx12_compare_func(compare_op_enum depth_func);
-
-    D3D12_STENCIL_OP to_dx12_stencil_op(stencil_op_enum op);
-
-    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(primitive_topology_enum primitive_mode);
-
-    enum DXGI_FORMAT to_dxgi_format(const pixel_format_enum pixel_format);
-
+    
     void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {
         const render_pass_data& render_pass = render_passes.at(input.pass);
         const auto states_begin = input.states.begin();
@@ -578,8 +578,8 @@ namespace nova {
             pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
         }
         
-        ComPtr<ID3D12RootSignature> root_signature = create_root_signature(shader_inputs);
-        pipeline_state_desc.pRootSignature = root_signature.Get();
+        output->root_signature = create_root_signature(shader_inputs);
+        pipeline_state_desc.pRootSignature = output->root_signature.Get();
 
         /*
         * Blend state
@@ -713,7 +713,22 @@ namespace nova {
             pipeline_state_desc.SampleDesc.Quality = 1;
         }
 
+        /*
+         * Debugging
+         */
 
+        if(nova_renderer::get_instance()->get_settings().get_options().debug.enabled) {
+            pipeline_state_desc.Flags = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
+        }
+
+        /*
+         * PSO creation!
+         */
+
+        const HRESULT hr = device->CreateGraphicsPipelineState(&pipeline_state_desc, IID_PPV_ARGS(&output->pso));
+        if(FAILED(hr)) {
+            throw shader_compilation_failed("Could not create PSO");
+        }
     }
 
     void add_resource_to_descriptor_table(const D3D12_DESCRIPTOR_RANGE_TYPE range_type, const spirv_cross::CompilerHLSL& shader_compiler,
@@ -1048,24 +1063,5 @@ namespace nova {
         return lhs.ShaderRegister == rhs.ShaderRegister &&
             lhs.RegisterSpace == rhs.RegisterSpace &&
             lhs.Flags == rhs.Flags;
-    }
-
-    DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format) {
-        switch(pixel_format) {
-            case pixel_format_enum::RGB8:
-            case pixel_format_enum::RGBA8: return DXGI_FORMAT_R8G8B8A8_SNORM;
-
-            case pixel_format_enum::RGB16F:
-            case pixel_format_enum::RGBA16F: return DXGI_FORMAT_R16G16B16A16_FLOAT;
-
-            case pixel_format_enum::RGB32F:
-            case pixel_format_enum::RGBA32F: return DXGI_FORMAT_R32G32B32A32_FLOAT;
-
-            case pixel_format_enum::Depth: return DXGI_FORMAT_D32_FLOAT;
-
-            case pixel_format_enum::DepthStencil: return DXGI_FORMAT_D24_UNORM_S8_UINT;
-        }
-
-        return DXGI_FORMAT_R8G8B8A8_SNORM;
     }
 }  // namespace nova

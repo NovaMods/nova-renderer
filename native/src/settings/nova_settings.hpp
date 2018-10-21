@@ -25,21 +25,22 @@ namespace nova {
      */
     struct settings_options {
         struct {
-            bool enable_renderdoc;
+            bool enabled = false;
+            bool enable_renderdoc = false;
         } debug;
 
         struct {
-            std::string loaded_shaderpack;
+            std::string loaded_shaderpack = "DefaultShaderpack";
         } cache;
 
         struct {
-            std::string title;
+            std::string title = "Nova Renderer";
         } window;
 
         struct {
             struct {
-                std::string application_name;
-                semver appliction_version;
+                std::string application_name = "Nova Renderer";
+                semver application_version;
             } vulkan;
 
             struct {
