@@ -20,6 +20,7 @@
 #include <mutex>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../../3rdparty/SPIRV-Cross/spirv_hlsl.hpp"
+#include "dx12_texture.hpp"
 
 using Microsoft::WRL::ComPtr;
 
@@ -122,13 +123,16 @@ namespace nova {
         /*!
          * \brief All the textures that the loaded shaderpack has created
          */
-        std::unordered_map<std::string, ComPtr<ID3D12Resource>> dynamic_textures;
+        std::unordered_map<std::string, dx12_texture> dynamic_textures;
         std::unordered_map<std::string, uint32_t> dynamic_tex_name_to_idx;
 
         /*!
          * \brief The passes in the current frame graph, in submission order
          */
-        std::vector<render_pass_data> ordered_passes;
+        std::unordered_map<std::string, render_pass_data> render_passes;
+        std::vector<std::string> ordered_passes;
+
+        std::shared_ptr<win32_window> window;
         
         void create_device();
 
@@ -140,8 +144,6 @@ namespace nova {
          * This method has a precondition that the window must be initialized
          */
         void create_swapchain();
-
-        std::shared_ptr<win32_window> window;
 
         /*!
          * \brief Creates the descriptor heap for the swapchain
@@ -163,8 +165,7 @@ namespace nova {
         void create_dynamic_textures(const std::vector<texture_resource_data> &texture_datas, std::vector<render_pass_data> passes);
 
         void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler& scheduler);
-        void create_input_description(const std::vector<vertex_field_data>& vertex_fields);
-
+       
         void make_single_pso(const pipeline_data& input, pipeline* output);
 
         ComPtr<ID3D12RootSignature> create_root_signature(const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) const;

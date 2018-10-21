@@ -19,6 +19,7 @@
 #include "../../../3rdparty/SPIRV-Cross/spirv_cross.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "vertex_attributes.hpp"
+#include "d3dx12.h"
 
 namespace nova {
     DXGI_FORMAT get_dx12_format_from_pixel_format(const pixel_format_enum pixel_format);
@@ -350,13 +351,23 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Cleared data from old shaderpack";
 
         // Build up E V E R Y T H I N G
-        ordered_passes = flatten_frame_graph(data.passes);
+        render_passes.clear();
+        render_passes.reserve(data.passes.size());
+        for(const render_pass_data &pass_data : data.passes) {
+            render_passes[pass_data.name] = pass_data;
+        }
+        ordered_passes = order_passes(render_passes);
 
         NOVA_LOG(DEBUG) << "Flattened frame graph";
 
         create_gpu_query_heap(ordered_passes.size());
 
-        create_dynamic_textures(data.resources.textures, ordered_passes);
+        std::vector<render_pass_data> passes_in_submission_order;
+        passes_in_submission_order.reserve(ordered_passes.size());
+        for(const std::string& pass_name : ordered_passes) {
+            passes_in_submission_order.push_back(render_passes.at(pass_name));
+        }
+        create_dynamic_textures(data.resources.textures, passes_in_submission_order);
 
         make_pipeline_state_objects(data.pipelines, scheduler);
     }
@@ -469,7 +480,7 @@ namespace nova {
                 texture->SetName(s2ws(texture_name).c_str());
 
                 auto new_tex_index = dynamic_textures.size();
-                dynamic_textures[texture_name] = texture;
+                dynamic_textures[texture_name] = dx12_texture(textures.at(texture_name), texture);
                 dynamic_tex_name_to_idx.emplace(texture_name, new_tex_index);
 
                 NOVA_LOG(TRACE) << "Added texture " << texture_name << " to the dynamic textures";
@@ -515,13 +526,18 @@ namespace nova {
         scheduler.WaitForCounter(&pipelines_created_counter, pipelines.size());
     }
 
-    D3D12_BLEND to_dx12_blend(const blend_factor_enum blend_factor);
+    D3D12_BLEND to_dx12_blend(blend_factor_enum blend_factor);
 
-    D3D12_COMPARISON_FUNC to_dx12_compare_func(const compare_op_enum depth_func);
+    D3D12_COMPARISON_FUNC to_dx12_compare_func(compare_op_enum depth_func);
 
-    D3D12_STENCIL_OP to_dx12_stencil_op(const stencil_op_enum op);
+    D3D12_STENCIL_OP to_dx12_stencil_op(stencil_op_enum op);
+
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(primitive_topology_enum primitive_mode);
+
+    enum DXGI_FORMAT to_dxgi_format(const pixel_format_enum pixel_format);
 
     void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {
+        const render_pass_data& render_pass = render_passes.at(input.pass);
         const auto states_begin = input.states.begin();
         const auto states_end = input.states.end();
 
@@ -601,7 +617,7 @@ namespace nova {
         raster_desc.DepthBias = input.depth_bias;
         raster_desc.SlopeScaledDepthBias = input.slope_scaled_depth_bias;
         raster_desc.DepthClipEnable = true;
-        if(input.msaa_support == msaa_support_enum::MSAA) {
+        if(input.msaa_support != msaa_support_enum::None) {
             raster_desc.MultisampleEnable = true;
         }
         raster_desc.ForcedSampleCount = 0;
@@ -663,6 +679,40 @@ namespace nova {
 
         pipeline_state_desc.InputLayout.NumElements = input_descs.size();
         pipeline_state_desc.InputLayout.pInputElementDescs = input_descs.data();
+
+        /*
+         * Index buffer strip cut and primitive topology
+         */
+
+        pipeline_state_desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+        pipeline_state_desc.PrimitiveTopologyType = to_dx12_topology(input.primitive_mode);
+
+        /*
+         * Render targets
+         */
+
+        uint32_t i = 0;
+        for(i = 0; i < render_pass.texture_outputs.size(); i++) {
+            const texture_attachment& attachment = render_pass.texture_outputs.at(i);
+            const dx12_texture& tex = dynamic_textures.at(attachment.name);
+            if(tex.is_depth_texture()) {
+                pipeline_state_desc.DSVFormat = tex.get_dxgi_format();
+
+            } else {
+                pipeline_state_desc.RTVFormats[i] = to_dxgi_format(tex.get_data().format.pixel_format);
+            }
+        }
+        pipeline_state_desc.NumRenderTargets = i;
+
+        /*
+         * Multisampling
+         */
+
+        if(input.msaa_support != msaa_support_enum::None) {
+            pipeline_state_desc.SampleDesc.Count = 4;
+            pipeline_state_desc.SampleDesc.Quality = 1;
+        }
+
 
     }
 
@@ -888,6 +938,46 @@ namespace nova {
                 return D3D12_STENCIL_OP_INVERT;
             default: 
                 return D3D12_STENCIL_OP_KEEP;
+        }
+    }
+
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(const primitive_topology_enum primitive_mode) {
+        switch(primitive_mode) {
+            case primitive_topology_enum::Triangles: 
+                return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+            case primitive_topology_enum::Lines: 
+                return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+
+            default:
+                return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+        }
+    }
+
+    enum DXGI_FORMAT to_dxgi_format(const pixel_format_enum pixel_format) {
+        switch(pixel_format) {
+        case pixel_format_enum::RGB8:
+        case pixel_format_enum::RGBA8:
+            return DXGI_FORMAT_R8G8B8A8_UNORM;
+
+        case pixel_format_enum::RGB16F:
+        case pixel_format_enum::RGBA16F:
+            return DXGI_FORMAT_R16G16B16A16_FLOAT;
+
+        case pixel_format_enum::RGB32F:
+            return DXGI_FORMAT_R32G32B32_FLOAT;
+
+        case pixel_format_enum::RGBA32F:
+            return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+        case pixel_format_enum::Depth:
+            return DXGI_FORMAT_D32_FLOAT;
+
+        case pixel_format_enum::DepthStencil:
+            return DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+        default:
+            return DXGI_FORMAT_R8G8B8A8_UNORM;;
         }
     }
 

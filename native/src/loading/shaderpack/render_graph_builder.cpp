@@ -75,24 +75,6 @@ namespace nova {
         const bool right = other.last_used_pass() < first_used_pass();
         return left || right;
     }
-    
-    std::vector<render_pass_data> flatten_frame_graph(const std::vector<render_pass_data> &passes) {
-        std::unordered_map<std::string, render_pass_data> passes_by_name;
-        passes_by_name.reserve(passes.size());
-        for(const render_pass_data &pass_data : passes) {
-            passes_by_name[pass_data.name] = pass_data;
-        }
-
-        std::vector<render_pass_data> ordered_passes;
-
-        std::vector<std::string> ordered_pass_names = order_passes(passes_by_name);
-        ordered_passes.reserve(ordered_pass_names.size());
-        for(const std::string &pass_name : ordered_pass_names) {
-            ordered_passes.push_back(passes_by_name.at(pass_name));
-        }
-
-        return ordered_passes;
-    }
 
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_data> &passes) {
         NOVA_PROFILER_SCOPE;

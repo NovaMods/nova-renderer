@@ -36,14 +36,6 @@ namespace nova {
     };
 
     /*!
-    * \brief Orders the provided list of passes into submission order, based on the dynamic textures that each one uses
-    *
-    * \param passes The list of render passes to order
-    * \return The passes in submission order
-    */
-    std::vector<render_pass_data> flatten_frame_graph(const std::vector<render_pass_data> &passes);
-
-    /*!
      * \brief Orders the provided render passes to satisfy both their implicit and explicit dependencies
      *
      * \param passes A map from pass name to pass of all the passes to order
