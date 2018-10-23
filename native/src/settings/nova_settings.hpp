@@ -40,7 +40,7 @@ namespace nova {
         struct {
             struct {
                 std::string application_name = "Nova Renderer";
-                semver application_version;
+                semver application_version = {0, 8, 0};
             } vulkan;
 
             struct {

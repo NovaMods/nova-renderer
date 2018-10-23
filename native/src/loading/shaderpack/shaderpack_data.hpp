@@ -195,11 +195,8 @@ namespace nova {
     enum class render_queue_enum { Transparent, Opaque, Cutout };
 
     enum class pixel_format_enum {
-        RGB8,
         RGBA8,
-        RGB16F,
         RGBA16F,
-        RGB32F,
         RGBA32F,
         Depth,
         DepthStencil,

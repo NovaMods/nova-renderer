@@ -19,7 +19,7 @@
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings &settings) : render_engine(settings) {
         settings_options options = settings.get_options();
-        const auto &version = options.api.vulkan.appliction_version;
+        const auto &version = options.api.vulkan.application_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -42,8 +42,10 @@ namespace nova {
 
         std::vector<const char *> enabled_extension_names;
         enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-#ifdef NOVA_VK_XLIB
+#if NOVA_VK_XLIB
         enabled_extension_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
+#elif NOVA_USE_WIN32
+        enabled_extension_names.push_back(VK_WIN#@_SURFACE_EXTENSION_NAME);
 #else
 #error Unsupported window system
 #endif
@@ -80,7 +82,6 @@ namespace nova {
         destroy_command_pool();
         destroy_framebuffers();
         destroy_graphics_pipelines();
-        destroy_shader_modules();
         destroy_render_passes();
         destroy_image_views();
         destroy_swapchain();
@@ -106,11 +107,7 @@ namespace nova {
         create_device();
         create_memory_allocator();
         create_swapchain();
-        create_image_views();
-    }
-
-    const std::string vulkan_render_engine::get_engine_name() {
-        return "vulkan-1.1";
+        create_swapchain_image_views();
     }
 
     void vulkan_render_engine::create_device() {
@@ -312,7 +309,7 @@ namespace nova {
         swapchain_images.resize(image_count);
         vkGetSwapchainImagesKHR(device, swapchain, &image_count, swapchain_images.data());
         swapchain_format = surface_format.format;
-        swapchain_extend = extend;
+        swapchain_extent = extend;
     }
 
     VkSurfaceFormatKHR vulkan_render_engine::choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available) {
@@ -346,7 +343,7 @@ namespace nova {
         return extend;
     }
 
-    void vulkan_render_engine::create_image_views() {
+    void vulkan_render_engine::create_swapchain_image_views() {
         swapchain_image_views.resize(swapchain_images.size());
 
         for(size_t i = 0; i < swapchain_images.size(); i++) {
@@ -371,28 +368,51 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::create_render_passes() {
-        std::vector<render_pass_data> ordered_passes = flatten_frame_graph(shaderpack.passes);
-        for(const render_pass_data &data : ordered_passes) {
-            VkAttachmentDescription color_attachment;
-            color_attachment.flags = 0;
-            color_attachment.format = swapchain_format;
-            color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-            color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    void vulkan_render_engine::set_shaderpack(const shaderpack_data& data, ftl::TaskScheduler& scheduler) {
+        NOVA_LOG(DEBUG) << "Vulkan render engine loading new shaderpack";
+        if(shaderpack_loaded) {
+            destroy_render_passes();
 
-            VkAttachmentReference color_attachment_reference;
-            color_attachment_reference.attachment = 0;
-            color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            destroy_synchronization_objects();
+            destroy_vertex_buffer();
+            destroy_command_pool();
+            destroy_framebuffers();
+            destroy_graphics_pipelines();
+            NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
+        }
+
+        create_textures(data.resources.textures);
+        create_materials();
+
+        create_render_passes(data.passes);
+
+        create_graphics_pipelines();
+        create_framebuffers();
+        create_command_pool();
+        create_vertex_buffer();
+        create_command_buffers();
+        create_synchronization_objects();
+
+        shaderpack_loaded = true;
+    }
+
+    void vulkan_render_engine::create_render_passes(const std::vector<render_pass_data>& passes) {
+        NOVA_LOG(DEBUG) << "Flattening frame graph...";
+
+        std::unordered_map<std::string, render_pass_data> regular_render_passes;
+        regular_render_passes.reserve(passes.size());
+        render_passes_by_name.reserve(passes.size());
+        for(const render_pass_data& pass_data : passes) {
+            render_passes_by_name[pass_data.name].nova_data = pass_data;
+            regular_render_passes[pass_data.name] = pass_data;
+        }
+
+        render_passes_by_order = order_passes(regular_render_passes);
+
+        for(const std::string &pass_name : render_passes_by_order) {
 
             VkSubpassDescription subpass_description;
             subpass_description.flags = 0;
-            subpass_description.colorAttachmentCount = 1;
-            subpass_description.pColorAttachments = &color_attachment_reference;
             subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
             subpass_description.inputAttachmentCount = 0;
             subpass_description.pInputAttachments = nullptr;
@@ -415,19 +435,27 @@ namespace nova {
             render_pass_create_info.pNext = nullptr;
             render_pass_create_info.flags = 0;
             render_pass_create_info.attachmentCount = 1;
-            render_pass_create_info.pAttachments = &color_attachment;
-            render_pass_create_info.subpassCount = 1;
             render_pass_create_info.pSubpasses = &subpass_description;
             render_pass_create_info.dependencyCount = 1;
             render_pass_create_info.pDependencies = &image_available_dependency;
 
+            std::optional<input_textures> inputs_maybe = render_passes_by_name.at(pass_name).nova_data.texture_inputs;
+            if(inputs_maybe) {
+                std::vector<std::string>& color_inputs = inputs_maybe->bound_textures;
+                auto attachments, references = to_vk_attachment_info(color_inputs);
+
+                subpass_description.colorAttachmentCount = static_cast<uint32_t>(references.size());
+                subpass_description.pColorAttachments = references.data();
+
+                render_pass_create_info.subpassCount = static_cast<uint32_t>(attachments.size());
+                render_pass_create_info.pAttachments = attachments.data();
+            }
+
             VkRenderPass render_pass;
             NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
-            vk_render_pass pass = {render_pass, data};
-            render_passes_by_name.insert(std::make_pair(data.name, pass));
-            render_passes_by_order.push_back(pass);
+            render_passes_by_name[pass_name].vk_pass = render_pass;
         }
-    }6
+    }
 
     void vulkan_render_engine::create_graphics_pipelines() {
         std::queue<pipeline_data> queued_data(std::deque(shaderpack.pipelines.begin(), shaderpack.pipelines.end()));
@@ -514,14 +542,14 @@ namespace nova {
             VkViewport viewport;
             viewport.x = 0;
             viewport.y = 0;
-            viewport.width = swapchain_extend.width;
-            viewport.height = swapchain_extend.height;
+            viewport.width = swapchain_extent.width;
+            viewport.height = swapchain_extent.height;
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
 
             VkRect2D scissor;
             scissor.offset = {0, 0};
-            scissor.extent = swapchain_extend;
+            scissor.extent = swapchain_extent;
 
             VkPipelineViewportStateCreateInfo viewport_state_create_info;
             viewport_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -611,13 +639,13 @@ namespace nova {
             pipeline_create_info.renderPass = /* TODO */;
             pipeline_create_info.subpass = 0;
             if(data.parent_name) {
-                pipeline_create_info.basePipelineHandle = pipelines.at(data.parent_name.value()).vulkan_pipeline;
+                pipeline_create_info.basePipelineHandle = pipelines.at(data.parent_name.value()).vk_pipeline;
             } else {
                 pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
             }
             pipeline_create_info.basePipelineIndex = -1;
 
-            NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.vulkan_pipeline), render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.vk_pipeline), render_engine_initialization_exception);
             pipelines.insert(std::make_pair(data.name, nova_pipeline));
         }
     }
@@ -633,8 +661,8 @@ namespace nova {
             framebuffer_create_info.renderPass = render_pass;
             framebuffer_create_info.attachmentCount = 1;
             framebuffer_create_info.pAttachments = attachments;
-            framebuffer_create_info.width = swapchain_extend.width;
-            framebuffer_create_info.height = swapchain_extend.height;
+            framebuffer_create_info.width = swapchain_extent.width;
+            framebuffer_create_info.height = swapchain_extent.height;
             framebuffer_create_info.layers = 1;
 
             NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers.at(i)), render_engine_initialization_exception);
@@ -747,8 +775,8 @@ namespace nova {
     }
 
     void vulkan_render_engine::destroy_render_passes() {
-        for(const vk_render_pass &render_pass : render_passes_by_order) {
-            vkDestroyRenderPass(device, render_pass.vulkan_pass, nullptr);
+        for(const std::pair<std::string, vk_render_pass> &render_pass : render_passes_by_name) {
+            vkDestroyRenderPass(device, render_pass.second.vk_pass, nullptr);
         }
         render_passes_by_order.clear();
         render_passes_by_name.clear();
@@ -772,41 +800,6 @@ namespace nova {
 
     void vulkan_render_engine::destroy_device() {
         vkDestroyDevice(device, nullptr);
-    }
-
-    void vulkan_render_engine::DEBUG_record_command_buffers() {
-        for(size_t i = 0; i < command_buffers.size(); i++) {
-            VkCommandBufferBeginInfo buffer_begin_info;
-            buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            buffer_begin_info.pNext = nullptr;
-            buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-            buffer_begin_info.pInheritanceInfo = nullptr;
-
-            NOVA_THROW_IF_VK_ERROR(vkBeginCommandBuffer(command_buffers.at(i), &buffer_begin_info), render_engine_initialization_exception);
-
-            VkRenderPassBeginInfo render_pass_begin_info;
-            render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            render_pass_begin_info.pNext = nullptr;
-            render_pass_begin_info.renderPass = render_pass;
-            render_pass_begin_info.framebuffer = swapchain_framebuffers.at(i);
-            render_pass_begin_info.renderArea.offset = {0, 0};
-            render_pass_begin_info.renderArea.extent = swapchain_extend;
-
-            VkClearValue clear_value;
-            clear_value.color = {0.0f, 0.0f, 0.0f, 0.0f};
-            render_pass_begin_info.clearValueCount = 1;
-            render_pass_begin_info.pClearValues = &clear_value;
-
-            vkCmdBeginRenderPass(command_buffers.at(i), &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-            vkCmdBindPipeline(command_buffers.at(i), VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
-
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(command_buffers.at(i), 0, 1, &vertex_buffer, offsets);
-
-            vkCmdDraw(command_buffers.at(i), static_cast<uint32_t>(verticies.size()), 1, 0, 0);
-            vkCmdEndRenderPass(command_buffers.at(i));
-            NOVA_THROW_IF_VK_ERROR(vkEndCommandBuffer(command_buffers.at(i)), render_engine_initialization_exception);
-        }
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(
@@ -869,7 +862,7 @@ namespace nova {
         destroy_swapchain();
 
         create_swapchain();
-        create_image_views();
+        create_swapchain_image_views();
         create_render_passes();
         create_graphics_pipelines();
         create_framebuffers();
@@ -877,28 +870,65 @@ namespace nova {
         DEBUG_record_command_buffers();
     }
 
-    void vulkan_render_engine::set_shaderpack(shaderpack_data data, ftl::TaskScheduler& scheduler) {
-        if(shaderpack_loaded) {
-            destroy_synchronization_objects();
-            destroy_vertex_buffer();
-            destroy_command_pool();
-            destroy_framebuffers();
-            destroy_graphics_pipelines();
-            destroy_shader_modules();
-        } else {
-            create_render_passes();
-            create_shader_modules();
+    std::tuple<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>>
+    vulkan_render_engine::to_vk_attachment_info(std::vector<std::string> &attachment_names) {
+        std::vector<VkAttachmentDescription> attachment_descriptions;
+        attachment_descriptions.reserve(attachment_names.size());
+
+        std::vector<VkAttachmentReference> attachment_references;
+        attachment_references.reserve(attachment_names.size());
+
+        for(const std::string& name : attachment_names) {
+            vk_texture& tex = textures_by_name.at(name);
+
+            VkAttachmentDescription color_attachment;
+            color_attachment.flags = 0;
+            color_attachment.format = to_vk_format(tex.nova_data.format.pixel_format);
+            color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+            color_attachment.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            color_attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            attachment_descriptions.push_back(color_attachment);
+
+            VkAttachmentReference color_attachment_reference;
+            color_attachment_reference.attachment = static_cast<uint32_t>(attachment_references.size());
+            color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachment_references.push_back(color_attachment_reference);
         }
 
-        create_graphics_pipelines();
-        create_framebuffers();
-        create_command_pool();
-        create_vertex_buffer();
-        create_command_buffers();
-        DEBUG_record_command_buffers();
-        create_synchronization_objects();
-
-        shaderpack_loaded = true;
+        return {attachment_descriptions, attachment_references};
     }
 
+    VkFormat vulkan_render_engine::to_vk_format(pixel_format_enum format) {
+        switch(format) {
+            case pixel_format_enum::RGBA8:
+                return VK_FORMAT_R8G8B8A8_UNORM;
+
+            case pixel_format_enum::RGBA16F:
+                return VK_FORMAT_R16G16B16A16_SFLOAT;
+
+            case pixel_format_enum::RGBA32F:
+                return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+            case pixel_format_enum::Depth:
+                return VK_FORMAT_D32_SFLOAT;
+
+            case pixel_format_enum::DepthStencil:
+                return VK_FORMAT_D24_UNORM_S8_UINT;
+
+        }
+
+
+        return VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
+    }
+
+    void vulkan_render_engine::create_textures(std::vector<texture_resource_data> texture_datas) {
+        for(const texture_resource_data& texture_data : texture_datas) {
+
+        }
+
+    }
 }  // namespace nova
