@@ -927,7 +927,51 @@ namespace nova {
 
     void vulkan_render_engine::create_textures(std::vector<texture_resource_data> texture_datas) {
         for(const texture_resource_data& texture_data : texture_datas) {
+            vk_texture texture;
+            texture.nova_data = texture_data;
 
+            VkImageCreateInfo image_create_info = {};
+            image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            image_create_info.imageType = VK_IMAGE_TYPE_2D;
+            image_create_info.format = to_vk_format(texture_data.format.pixel_format);
+            glm::uvec2 texture_size = texture_data.format.get_size_in_pixels(swapchain_extent);
+            image_create_info.extent.width = texture_size.x;
+            image_create_info.extent.height = texture_size.y;
+            image_create_info.extent.depth = 1;
+            image_create_info.mipLevels = 0;
+            image_create_info.arrayLayers = 1;
+            image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+            image_create_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            image_create_info.queueFamilyIndexCount = 1;
+            image_create_info.pQueueFamilyIndices = &graphics_queue_index;
+            image_create_info.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+            VmaAllocationCreateInfo alloc_create_info = {};
+            alloc_create_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+            alloc_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+            alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+            alloc_create_info.preferredFlags = 0;
+            alloc_create_info.memoryTypeBits = 0;
+            alloc_create_info.pool = VK_NULL_HANDLE;
+            alloc_create_info.pUserData = nullptr;
+
+            vmaCreateImage(memory_allocator, &image_create_info, &alloc_create_info, &texture.vk_image,
+                           &texture.vma_allocation, &texture.vma_info);
+
+            VkImageViewCreateInfo image_view_create_info;
+            image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            image_view_create_info.image = texture.vk_image;
+            image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            image_view_create_info.format = image_create_info.format;
+            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            image_view_create_info.subresourceRange.baseArrayLayer = 0;
+            image_view_create_info.subresourceRange.layerCount = 1;
+            image_view_create_info.subresourceRange.baseMipLevel = 0;
+            image_view_create_info.subresourceRange.levelCount = 1;
+
+            vkCreateImageView(device, &image_view_create_info, nullptr, &texture.vk_image_view);
+
+            textures_by_name[texture_data.name] = texture;
         }
 
     }

@@ -78,7 +78,11 @@ namespace nova {
         struct vk_texture {
             VkImage vk_image;
             VkImageView vk_image_view;
+
             texture_resource_data nova_data;
+
+            VmaAllocation vma_allocation;
+            VmaAllocationInfo vma_info;
         };
         std::unordered_map<std::string, vk_texture> textures_by_name;
 
