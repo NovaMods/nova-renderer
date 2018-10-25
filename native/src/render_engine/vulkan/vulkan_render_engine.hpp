@@ -68,10 +68,16 @@ namespace nova {
         std::unordered_map<std::string, vk_render_pass> render_passes_by_name;
         std::vector<std::string> render_passes_by_order;
 
+        struct vk_resource_binding : VkDescriptorSetLayoutBinding {
+            uint32_t set;
+        };
+
         struct vk_pipeline {
             VkPipeline vk_pipeline;
             VkPipelineLayout vk_layout;
             pipeline_data nova_data;
+
+            std::vector<std::string, vk_resource_binding> bindings;
         };
         std::unordered_map<std::string, vk_pipeline> pipelines;
 
@@ -84,12 +90,12 @@ namespace nova {
             VmaAllocation vma_allocation;
             VmaAllocationInfo vma_info;
         };
-        std::unordered_map<std::string, vk_texture> textures_by_name;
+        std::unordered_map<std::string, vk_texture> dynamic_textures_by_name;
+
+        std::unordered_map<std::string, material_data> materials;
 
         VkCommandPool command_pool;
         std::vector<VkCommandBuffer> command_buffers;
-
-        std::vector<VkShaderModule> all_shader_modules;
 
         std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
@@ -117,6 +123,10 @@ namespace nova {
         void destroy_swapchain();
         void create_swapchain_image_views();
         void destroy_image_views();
+        /*!
+         * \brief Creates a Vulkan renderpass for every element in passes
+         * \param passes A list of render_pass_infos to create Vulkan renderpasses for
+         */
         void create_render_passes(const std::vector<render_pass_data>& passes);
         void destroy_render_passes();
         void create_graphics_pipelines();
@@ -147,8 +157,9 @@ namespace nova {
         PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 
-        static VkBool32 debug_report_callback(
-            VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT object_type, uint64_t object, size_t location, int32_t messageCode, const char *layer_prefix, const char *message, void *user_data);
+        static VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT object_type,
+                                              uint64_t object, size_t location, int32_t messageCode,
+                                              const char *layer_prefix, const char *message, void *user_data);
 
         VkDebugReportCallbackEXT debug_callback;
 #endif
@@ -158,7 +169,19 @@ namespace nova {
 
         VkFormat to_vk_format(pixel_format_enum format);
 
-        void create_textures(std::vector<texture_resource_data> texture_datas);
+        /*!
+         * \brief Adds an entry to the dynamic textures for each entry in texture_data
+         * \param texture_datas All the texture_datas that you want to create a dynamic texture for
+         */
+        void create_textures(const std::vector<texture_resource_data>& texture_datas);
+
+        VkShaderModule create_shader_module(std::vector<uint32_t> spirv);
+
+        void get_attribute_descriptions(std::vector<uint32_t> spirv,
+                                        std::unordered_map<std::string, vk_resource_binding>& bindings);
+
+        void process_bindings(std::unordered_map<std::string, vk_resource_binding> bindings,
+                          std::unordered_map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> layout_data);
     };
 }  // namespace nova
 
