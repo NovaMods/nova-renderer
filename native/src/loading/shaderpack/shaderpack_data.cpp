@@ -3,6 +3,7 @@
  * \date 23-Aug-18.
  */
 
+#include <Common.h>
 #include "shaderpack_data.hpp"
 #include "../json_utils.hpp"
 
@@ -21,21 +22,24 @@ namespace nova {
         return !(*this == other);
     }
 
+    glm::uvec2 texture_format::get_size_in_pixels(const VkExtent2D& screen_size) const {
+        float pixel_width = width;
+        float pixel_height = height;
+
+        if(dimension_type == texture_dimension_type_enum::ScreenRelative) {
+            pixel_width *= screen_size.width;
+            pixel_height *= screen_size.height;
+        }
+
+        return {std::round(pixel_width), std::round(pixel_height)};
+    }
+
     pixel_format_enum pixel_format_enum_from_string(const std::string &str) {
-        if(str == "RGB8") {
-            return pixel_format_enum::RGB8;
-
-        } else if(str == "RGBA8") {
+        if(str == "RGBA8") {
             return pixel_format_enum::RGBA8;
-
-        } else if(str == "RGB16F") {
-            return pixel_format_enum::RGB16F;
 
         } else if(str == "RGBA16F") {
             return pixel_format_enum::RGBA16F;
-
-        } else if(str == "RGB32F") {
-            return pixel_format_enum::RGB32F;
 
         } else if(str == "RGBA32F") {
             return pixel_format_enum::RGBA32F;
@@ -311,15 +315,9 @@ namespace nova {
 
     std::string to_string(const pixel_format_enum val) {
         switch(val) {
-            case pixel_format_enum::RGB8: return "RGB8";
-
             case pixel_format_enum::RGBA8: return "RGBA8";
 
-            case pixel_format_enum::RGB16F: return "RGB16F";
-
             case pixel_format_enum::RGBA16F: return "RGBA16F";
-
-            case pixel_format_enum::RGB32F: return "RGB32F";
 
             case pixel_format_enum::RGBA32F: return "RGBA32F";
 

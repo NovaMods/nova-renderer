@@ -15,6 +15,7 @@
 #include <optional>
 #include <filesystem>
 #include <nlohmann/json.hpp>
+#include <Common.h>
 #include "../../util/utils.hpp"
 
 #if _MSC_VER <= 1915
@@ -195,11 +196,8 @@ namespace nova {
     enum class render_queue_enum { Transparent, Opaque, Cutout };
 
     enum class pixel_format_enum {
-        RGB8,
         RGBA8,
-        RGB16F,
         RGBA16F,
-        RGB32F,
         RGBA32F,
         Depth,
         DepthStencil,
@@ -393,6 +391,8 @@ namespace nova {
          * \brief The height, in pixels, of the texture
          */
         float height;
+
+        glm::uvec2 get_size_in_pixels(const VkExtent2D& screen_size) const;
 
         bool operator==(const texture_format &other) const;
         bool operator!=(const texture_format &other) const;
