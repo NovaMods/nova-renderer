@@ -438,7 +438,7 @@ namespace nova {
             render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
             render_pass_create_info.pNext = nullptr;
             render_pass_create_info.flags = 0;
-            render_pass_create_info.attachmentCount = 1;
+            render_pass_create_info.subpassCount= 1;
             render_pass_create_info.pSubpasses = &subpass_description;
             render_pass_create_info.dependencyCount = 1;
             render_pass_create_info.pDependencies = &image_available_dependency;
@@ -451,7 +451,7 @@ namespace nova {
                 subpass_description.colorAttachmentCount = static_cast<uint32_t>(references.size());
                 subpass_description.pColorAttachments = references.data();
 
-                render_pass_create_info.subpassCount = static_cast<uint32_t>(attachments.size());
+                render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
                 render_pass_create_info.pAttachments = attachments.data();
             }
 
@@ -497,12 +497,12 @@ namespace nova {
 
             if(data.geometry_shader) {
                 shader_modules[VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT] = create_shader_module(data.geometry_shader->source);
-                get_attribute_descriptions(data.geometry_shader->source bindings);
+                get_attribute_descriptions(data.geometry_shader->source, bindings);
             }
 
             if(data.tessellation_control_shader) {
                 shader_modules[VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT] = create_shader_module(data.tessellation_control_shader->source);
-                get_attribute_descriptions(data.tessellation_control_shader->source bindings);
+                get_attribute_descriptions(data.tessellation_control_shader->source, bindings);
             }
 
             if(data.tessellation_evaluation_shader) {
@@ -517,6 +517,17 @@ namespace nova {
 
             std::unordered_map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> layout_data;
             process_bindings(bindings, layout_data);
+
+            VkPipelineLayoutCreateInfo pipeline_layout_create_info;
+            pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipeline_layout_create_info.pNext = nullptr;
+            pipeline_layout_create_info.flags = 0;
+            pipeline_layout_create_info.setLayoutCount = layout_data.size();
+            pipeline_layout_create_info.pSetLayouts = layout_data.data();
+            pipeline_layout_create_info.pushConstantRangeCount = 0;
+            pipeline_layout_create_info.pPushConstantRanges = nullptr;
+
+            NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &nova_pipeline.vk_layout), render_engine_initialization_exception);
 
             for(const auto &pair : shader_modules) {
                 VkPipelineShaderStageCreateInfo shader_stage_create_info;
@@ -621,17 +632,6 @@ namespace nova {
             color_blend_create_info.blendConstants[1] = 0.0f;
             color_blend_create_info.blendConstants[2] = 0.0f;
             color_blend_create_info.blendConstants[3] = 0.0f;
-
-            VkPipelineLayoutCreateInfo pipeline_layout_create_info;
-            pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipeline_layout_create_info.pNext = nullptr;
-            pipeline_layout_create_info.flags = 0;
-            pipeline_layout_create_info.setLayoutCount = 0;
-            pipeline_layout_create_info.pSetLayouts = nullptr;
-            pipeline_layout_create_info.pushConstantRangeCount = 0;
-            pipeline_layout_create_info.pPushConstantRanges = nullptr;
-
-            NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &nova_pipeline.vk_layout), render_engine_initialization_exception);
 
             VkGraphicsPipelineCreateInfo pipeline_create_info;
             pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -1026,38 +1026,45 @@ namespace nova {
         std::unordered_map<std::string, vulkan_render_engine::vk_resource_binding> bindings,
         std::unordered_map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> all_layouts) {
         for(const auto &new_named_binding : bindings) {
-            const resource_binding& new_binding = new_named_binding.second;
+            const vk_resource_binding& new_binding = new_named_binding.second;
 
-            if(all_bindings.find(new_named_binding.first) != all_bindings.end()) {
+            if(all_layouts.find(new_named_binding.first) != all_layouts.end()) {
                 // We already know about this descriptor. Validate it
-                const auto &existing_binding = all_bindings.at(new_named_binding.first);
+                const auto &existing_binding = all_layouts.at(new_named_binding.first);
                 if(existing_binding != new_binding) {
-                    LOG(ERROR) << shader_stage_name << " shader module redeclares descriptor " << new_named_binding.first
+                    NOVA_LOG(ERROR) << "Shader module redeclares descriptor " << new_named_binding.first
                                << " from location (set=" << existing_binding.set << ", binding=" << existing_binding.binding
                                << ") to location (set=" << new_binding.set << ", binding=" << new_binding.binding << ") ";
 
                 } else {
                     // We have a binding, now we need to merge the new binding into the existing binding
-                    all_bindings[new_named_binding.first].stageFlags |= new_binding.stageFlags;
+                    all_layouts[new_named_binding.first].stageFlags |= new_binding.stageFlags;
 
-                    auto& layouts_for_set = all_layouts[new_binding.set];
-                    auto old_layout = std::find_if(layouts_for_set.begin(), layouts_for_set.end(), [&](const auto& layout){return layout.binding == new_binding.binding;});
-                    if(old_layout->descriptorType != new_binding.descriptorType) {
-                        LOG(ERROR) << "You've used the same name for resources of different types. This won't work - Nova will ignore those bindings and things will act weird";
-                    } else {
-                        old_layout->stageFlags |= new_binding.stageFlags;
+                    std::vector<VkDescriptorSetLayoutBinding>& layouts_for_set = all_layouts[new_binding.set];
+                    for(VkDescriptorSetLayoutBinding& old_layout : layouts_for_set) {
+                        if(old_layout.binding == new_binding.binding) {
+                            if(old_layout.descriptorType != new_binding.descriptorType) {
+                                NOVA_LOG(ERROR) << "You've used the same name for resources of different types. This won't work - Nova will ignore those bindings and things will act weird";
+                            } else {
+                                old_layout.stageFlags |= new_binding.stageFlags;
+                            }
+
+                            break;
+                        }
                     }
                 }
 
             } else {
                 // New binding! Let's add it in
-                all_bindings[new_named_binding.first] = new_named_binding.second;
+                all_layouts[new_named_binding.first] = new_named_binding.second;
 
-                all_layouts[new_binding.set].push_back(vk::DescriptorSetLayoutBinding()
-                                                           .setDescriptorType(new_binding.descriptorType)
-                                                           .setDescriptorCount(new_binding.descriptorCount)
-                                                           .setBinding(new_binding.binding)
-                                                           .setStageFlags(new_binding.stageFlags));
+                VkDescriptorSetLayoutBinding layout_binding = {};
+                layout_binding.descriptorType = new_binding.descriptorType;
+                layout_binding.descriptorCount = new_binding.descriptorCount;
+                layout_binding.binding = new_binding.binding;
+                layout_binding.stageFlags = new_binding.stageFlags;
+
+                all_layouts[new_binding.set].push_back(layout_binding);
             }
         }
     }
