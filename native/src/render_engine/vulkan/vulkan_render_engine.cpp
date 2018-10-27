@@ -774,41 +774,6 @@ namespace nova {
         vkDestroyDevice(device, nullptr);
     }
 
-    void vulkan_render_engine::DEBUG_record_command_buffers() {
-        for(size_t i = 0; i < command_buffers.size(); i++) {
-            VkCommandBufferBeginInfo buffer_begin_info;
-            buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            buffer_begin_info.pNext = nullptr;
-            buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-            buffer_begin_info.pInheritanceInfo = nullptr;
-
-            NOVA_THROW_IF_VK_ERROR(vkBeginCommandBuffer(command_buffers.at(i), &buffer_begin_info), render_engine_initialization_exception);
-
-            VkRenderPassBeginInfo render_pass_begin_info;
-            render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            render_pass_begin_info.pNext = nullptr;
-            render_pass_begin_info.renderPass = render_pass;
-            render_pass_begin_info.framebuffer = swapchain_framebuffers.at(i);
-            render_pass_begin_info.renderArea.offset = {0, 0};
-            render_pass_begin_info.renderArea.extent = swapchain_extend;
-
-            VkClearValue clear_value;
-            clear_value.color = {0.0f, 0.0f, 0.0f, 0.0f};
-            render_pass_begin_info.clearValueCount = 1;
-            render_pass_begin_info.pClearValues = &clear_value;
-
-            vkCmdBeginRenderPass(command_buffers.at(i), &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-            vkCmdBindPipeline(command_buffers.at(i), VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline);
-
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(command_buffers.at(i), 0, 1, &vertex_buffer, offsets);
-
-            vkCmdDraw(command_buffers.at(i), static_cast<uint32_t>(verticies.size()), 1, 0, 0);
-            vkCmdEndRenderPass(command_buffers.at(i));
-            NOVA_THROW_IF_VK_ERROR(vkEndCommandBuffer(command_buffers.at(i)), render_engine_initialization_exception);
-        }
-    }
-
     VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(
         VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char *layer_prefix, const char *message, void *user_data) {
         NOVA_LOG(TRACE) << __FILE__ << ":" << __LINE__ << " >> VK Debug: [" << layer_prefix << "]" << message;

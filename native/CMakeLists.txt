@@ -61,9 +61,9 @@ add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
 add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
 
+find_package(Vulkan)
+
 if(UNIX)
-    find_package(Vulkan)
-	
 	set(SHADERC_SKIP_TESTS TRUE CACHE BOOL "Shaderc tests go away" FORCE)
 	add_subdirectory(${3RD_PARTY_DIR}/shaderc)
 endif()
@@ -82,13 +82,8 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/cpptoml/include
         ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/glslang
+        ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         )
-
-if(UNIX)
-    include_directories(SYSTEM
-            ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
-            )
-endif()
 
 ########################
 # Add Nova source code #
@@ -145,24 +140,30 @@ set(NOVA_SOURCE
 		src/loading/shaderpack/shaderpack_validator.cpp 
 		src/loading/shaderpack/shaderpack_validator.hpp 
 		src/loading/shaderpack/render_graph_builder.cpp 
-		src/loading/shaderpack/render_graph_builder.hpp)
+		src/loading/shaderpack/render_graph_builder.hpp
+        src/render_engine/vulkan/vulkan_render_engine.hpp
+        src/render_engine/vulkan/vulkan_render_engine.cpp
+        src/render_engine/vulkan/vulkan_utils.hpp
+        src/render_engine/vulkan/x11_window.cpp
+        src/render_engine/vulkan/x11_window.hpp
+        src/render_engine/vulkan/vulkan_resource_barrier_helpers.cpp
+        src/render_engine/vulkan/vulkan_resource_barrier_helpers.hpp
+        src/render_engine/vulkan/vulkan_opaque_types.hpp
+        src/render_engine/vulkan/vulkan_type_converters.hpp)
 
-if(UNIX)
+if(WIN32)
     set(NOVA_SOURCE
             ${NOVA_SOURCE}
-            src/render_engine/vulkan/vulkan_render_engine.hpp
-            src/render_engine/vulkan/vulkan_render_engine.cpp
-            src/render_engine/vulkan/vulkan_utils.hpp
-            src/render_engine/vulkan/x11_window.cpp
-            src/render_engine/vulkan/x11_window.hpp
-            src/render_engine/vulkan/vulkan_resource_barrier_helpers.cpp
-            src/render_engine/vulkan/vulkan_resource_barrier_helpers.hpp
-            src/render_engine/vulkan/vulkan_opaque_types.hpp
-			src/render_engine/vulkan/vulkan_type_converters.hpp)
-
-elseif(WIN32)
-    set(NOVA_SOURCE
-            ${NOVA_SOURCE}
+            ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp
+            src/util/windows_utils.cpp
+            src/util/windows_utils.hpp
+            src/render_engine/dx12/pipeline_state_object.cpp
+            src/render_engine/dx12/pipeline_state_object.hpp
+            src/render_engine/dx12/vertex_attributes.hpp
+            src/render_engine/dx12/dx12_texture.cpp
+            src/render_engine/dx12/dx12_texture.hpp
+            src/render_engine/dx12/dx12_utils.cpp
+            src/render_engine/dx12/dx12_utils.hpp
             src/render_engine/dx12/win32_window.hpp
             src/render_engine/dx12/win32_window.cpp
             src/render_engine/dx12/dx12_render_engine.cpp
@@ -171,26 +172,7 @@ elseif(WIN32)
             src/render_engine/dx12/dx12_resource_barrier_helpers.cpp
             src/render_engine/dx12/dx12_resource_barrier_helpers.hpp
             src/render_engine/dx12/dx12_opaque_types.hpp)
-
-else()
-    message(FATAL_ERROR "Unsupported platform")
-
 endif()
-
-if (WIN32)
-   set(NOVA_SOURCE 
-	   ${NOVA_SOURCE} 
-	   ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp 
-	   src/util/windows_utils.cpp 
-	   src/util/windows_utils.hpp
-	   src/render_engine/dx12/pipeline_state_object.cpp
-	   src/render_engine/dx12/pipeline_state_object.hpp 
-	   src/render_engine/dx12/vertex_attributes.hpp
-	   src/render_engine/dx12/dx12_texture.cpp 
-	   src/render_engine/dx12/dx12_texture.hpp 
-	   src/render_engine/dx12/dx12_utils.cpp 
-	   src/render_engine/dx12/dx12_utils.hpp)
-endif (WIN32)
 
 if (UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-omit-frame-pointer -fPIC")
@@ -217,7 +199,7 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES})
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES} ${Vulkan_LIBRARIES})
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
@@ -228,7 +210,7 @@ if (WIN32)
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
 
 else(WIN32)
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} ${Vulkan_LIBRARIES} stdc++fs X11)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
 endif (WIN32)
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
