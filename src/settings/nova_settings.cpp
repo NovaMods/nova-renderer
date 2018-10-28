@@ -5,7 +5,6 @@
 
 #include "nova_settings.hpp"
 #include "../util/utils.hpp"
-#include <cpptoml.h>
 
 namespace nova {
     void nova_settings::register_change_listener(iconfig_listener *new_listener) {

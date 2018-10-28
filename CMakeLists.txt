@@ -27,7 +27,7 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/build)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     # Update if necessary
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic -Wno-format-truncation")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
 endif()
 
 set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
@@ -52,7 +52,7 @@ add_subdirectory(${3RD_PARTY_DIR}/json)
 
 set(FTL_BUILD_TESTS OFF CACHE BOOL "Disable FTL tests" FORCE)
 set(FTL_BUILD_BENCHMARKS OFF CACHE BOOL "Disable FTL benchmarks" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/FiberTaskingLib)
+add_subdirectory(${3RD_PARTY_DIR}/fiber-tasking-library)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
@@ -62,11 +62,6 @@ add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
 
 find_package(Vulkan)
-
-if(UNIX)
-	set(SHADERC_SKIP_TESTS TRUE CACHE BOOL "Shaderc tests go away" FORCE)
-	add_subdirectory(${3RD_PARTY_DIR}/shaderc)
-endif()
 
 ######################################
 # Make dependencies' headers visible #

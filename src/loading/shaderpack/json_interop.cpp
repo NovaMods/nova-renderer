@@ -8,7 +8,7 @@
 
 namespace nova {
     void from_json(const nlohmann::json &j, texture_format &format) {
-        format.pixel_format = get_json_value<pixel_format_enum>(j, "format", pixel_format_enum::RGB8, pixel_format_enum_from_string);
+        format.pixel_format = get_json_value<pixel_format_enum>(j, "format", pixel_format_enum::RGBA8, pixel_format_enum_from_string);
         format.dimension_type = get_json_value<texture_dimension_type_enum>(j, "dimensionType", texture_dimension_type_enum::ScreenRelative, texture_dimension_type_enum_from_string);
         format.width = get_json_value<float>(j, "width").value_or(0);
         format.height = get_json_value<float>(j, "height").value_or(0);

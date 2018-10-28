@@ -1,46 +1,39 @@
-[submodule "native/tests/3rdparty/googletest"]
-	path = native/tests/3rdparty/googletest
+[submodule "tests/3rdparty/googletest"]
+	path = tests/3rdparty/googletest
 	url = https://github.com/google/googletest.git
-[submodule "native/3rdparty/glm"]
-	path = native/3rdparty/glm
+[submodule "3rdparty/glm"]
+	path = 3rdparty/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "native/3rdparty/profiler"]
-	path = native/3rdparty/profiler
+[submodule "3rdparty/profiler"]
+	path = 3rdparty/profiler
 	url = https://github.com/NovaMods/profiler.git
-[submodule "native/3rdparty/json"]
-	path = native/3rdparty/json
+[submodule "3rdparty/json"]
+	path = 3rdparty/json
 	url = https://github.com/nlohmann/json.git
-[submodule "native/3rdparty/cpptoml"]
-	path = native/3rdparty/cpptoml
-	url = https://github.com/skystrife/cpptoml.git
-[submodule "native/3rdparty/VulkanMemoryAllocator"]
-	path = native/3rdparty/VulkanMemoryAllocator
+[submodule "3rdparty/VulkanMemoryAllocator"]
+	path = 3rdparty/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule "native/3rdparty/SPIRV-Headers"]
-	path = native/3rdparty/SPIRV-Headers
+[submodule "3rdparty/SPIRV-Headers"]
+	path = 3rdparty/SPIRV-Headers
 	url = https://github.com/KhronosGroup/SPIRV-Headers.git
-[submodule "native/3rdparty/SPIRV-Tools"]
-	path = native/3rdparty/SPIRV-Tools
+[submodule "3rdparty/SPIRV-Tools"]
+	path = 3rdparty/SPIRV-Tools
 	url = https://github.com/KhronosGroup/SPIRV-Tools.git
-[submodule "native/3rdparty/SPIRV-Cross"]
-	path = native/3rdparty/SPIRV-Cross
+[submodule "3rdparty/SPIRV-Cross"]
+	path = 3rdparty/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
-[submodule "native/3rdparty/glslang"]
-	path = native/3rdparty/glslang
+[submodule "3rdparty/glslang"]
+	path = 3rdparty/glslang
 	url = https://github.com/KhronosGroup/glslang.git
-[submodule "native/3rdparty/shaderc"]
-	path = native/3rdparty/shaderc
-	url = https://github.com/google/shaderc.git
-[submodule "native/3rdparty/RenderDoc-Manager"]
-	path = native/3rdparty/RenderDoc-Manager
+[submodule "3rdparty/RenderDoc-Manager"]
+	path = 3rdparty/RenderDoc-Manager
 	url = https://github.com/NovaMods/RenderDoc-Manager.git
-[submodule "native/3rdparty/glfw"]
-	path = native/3rdparty/glfw
-	url = https://github.com/glfw/glfw
-[submodule "native/3rdparty/miniz"]
-	path = native/3rdparty/miniz
+[submodule "3rdparty/glfw"]
+	path = 3rdparty/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "3rdparty/miniz"]
+	path = 3rdparty/miniz
 	url = https://github.com/richgel999/miniz.git
-[submodule "native/3rdparty/FiberTaskingLib"]
-	path = native/3rdparty/FiberTaskingLib
-	url = https://github.com/BVE-Reborn/fiber-tasking-lib
-	branch = type-safe-interface
+[submodule "3rdparty/fiber-tasking-library"]
+	path = 3rdparty/fiber-tasking-library
+	url = https://github.com/NovaMods/fiber-tasking-library.git
