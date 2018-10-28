@@ -518,5 +518,3 @@ cmake-build-release
 build/
 
 **.generated.hlsl
-
-3rdparty/
