@@ -46,7 +46,7 @@ namespace nova {
 #if NOVA_VK_XLIB
         enabled_extension_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
 #elif NOVA_USE_WIN32
-        enabled_extension_names.push_back(VK_WIN#@_SURFACE_EXTENSION_NAME);
+        enabled_extension_names.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #else
 #error Unsupported window system
 #endif

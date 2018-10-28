@@ -77,7 +77,7 @@ namespace nova {
             VkPipelineLayout vk_layout;
             pipeline_data nova_data;
 
-            std::vector<std::string, vk_resource_binding> bindings;
+            std::unordered_map<std::string, vk_resource_binding> bindings;
         };
         std::unordered_map<std::string, vk_pipeline> pipelines;
 
