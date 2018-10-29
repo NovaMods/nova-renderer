@@ -5,6 +5,8 @@
 #ifndef NOVA_RENDERER_X_11_WINDOW_HPP
 #define NOVA_RENDERER_X_11_WINDOW_HPP
 
+#ifdef linux
+
 #include "../window.hpp"
 #include <X11/Xlib.h>
 #include <stdint.h>
@@ -31,5 +33,7 @@ namespace nova {
         window_size get_window_size() const override;
     };
 }  // namespace nova
+
+#endif
 
 #endif  // NOVA_RENDERER_X_11_WINDOW_HPP

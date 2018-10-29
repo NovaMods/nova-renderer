@@ -9,7 +9,7 @@
 #ifdef __linux__
 #define VK_USE_PLATFORM_XLIB_KHR  // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB 1
-#elif __win32
+#elif _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32 1
 #endif
@@ -20,6 +20,7 @@
 #include "x11_window.hpp"
 
 #include <vk_mem_alloc.h>
+#include "../dx12/win32_window.hpp"
 
 namespace nova {
     struct vulkan_queue {
@@ -44,8 +45,10 @@ namespace nova {
         std::vector<const char *> enabled_validation_layer_names;
 
         VkInstance vk_instance;
-#ifdef NOVA_VK_XLIB
+#ifdef linux
         std::shared_ptr<x11_window> window;
+#elif _WIN32
+        std::shared_ptr<win32_window> window;
 #endif
         VkSurfaceKHR surface;
         VkPhysicalDevice physical_device;
@@ -62,7 +65,7 @@ namespace nova {
         uint32_t current_swapchain_index = 0;
 
         struct vk_render_pass {
-            VkRenderPass vk_pass;
+            VkRenderPass pass;
             render_pass_data nova_data;
         };
         std::unordered_map<std::string, vk_render_pass> render_passes_by_name;
@@ -70,11 +73,14 @@ namespace nova {
 
         struct vk_resource_binding : VkDescriptorSetLayoutBinding {
             uint32_t set;
+
+            bool operator==(const vk_resource_binding& other) const;
+            bool operator!=(const vk_resource_binding& other) const;
         };
 
         struct vk_pipeline {
-            VkPipeline vk_pipeline;
-            VkPipelineLayout vk_layout;
+            VkPipeline pipeline;
+            VkPipelineLayout layout;
             pipeline_data nova_data;
 
             std::unordered_map<std::string, vk_resource_binding> bindings;
@@ -82,12 +88,12 @@ namespace nova {
         std::unordered_map<std::string, vk_pipeline> pipelines;
 
         struct vk_texture {
-            VkImage vk_image;
-            VkImageView vk_image_view;
+            VkImage image;
+            VkImageView image_view;
 
             texture_resource_data nova_data;
 
-            VmaAllocation vma_allocation;
+            VmaAllocation allocation;
             VmaAllocationInfo vma_info;
         };
         std::unordered_map<std::string, vk_texture> dynamic_textures_by_name;
@@ -164,7 +170,7 @@ namespace nova {
         VkDebugReportCallbackEXT debug_callback;
 #endif
 
-        std::tuple<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>>
+        std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>>
         to_vk_attachment_info(std::vector<std::string> &attachment_names);
 
         VkFormat to_vk_format(pixel_format_enum format);
@@ -177,11 +183,24 @@ namespace nova {
 
         VkShaderModule create_shader_module(std::vector<uint32_t> spirv);
 
-        void get_attribute_descriptions(std::vector<uint32_t> spirv,
+        /*!
+         * \brief Gets all the descriptor bindings from the provided SPIR-V code, performing basic validation that the 
+         * user hasn't declared two different bindings with the same name
+         * 
+         * \param spirv The SPIR-V shader code to get bindings from
+         * \param bindings An in/out array that holds all the existing binding before this method, and holds the 
+         * existing bindings plus new ones declared in the shader after this method
+         */
+        void get_shader_module_descriptors(std::vector<uint32_t> spirv,
                                         std::unordered_map<std::string, vk_resource_binding>& bindings);
 
-        void process_bindings(std::unordered_map<std::string, vk_resource_binding> bindings,
-                          std::unordered_map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> layout_data);
+        /*!
+         * \brief Creates descriptor set layouts for all the descriptor set bindings 
+         * 
+         * \param bindings All the bindings we know about
+         * \return A list of descriptor set layouts, one for each set in `bindings`
+         */
+        std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> bindings);
     };
 }  // namespace nova
 

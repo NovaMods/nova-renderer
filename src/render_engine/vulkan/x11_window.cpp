@@ -2,6 +2,8 @@
 // Created by jannis on 01.09.18.
 //
 
+#ifdef linux
+
 #include "x11_window.hpp"
 
 namespace nova {
@@ -71,3 +73,5 @@ namespace nova {
         return {width, height};
     }
 }  // namespace nova
+
+#endif

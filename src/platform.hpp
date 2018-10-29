@@ -18,8 +18,6 @@
 
 #ifdef _WIN32
 #define SUPPORT_DX12 1
-#else
-#define SUPPORT_VULKAN 1
 #endif
 
 #endif  // NOVA_RENDERER_PLATFORM_H
