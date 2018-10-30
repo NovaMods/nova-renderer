@@ -124,7 +124,7 @@ namespace nova {
         void destroy_device();
         void create_memory_allocator();
         void destroy_memory_allocator();
-        bool does_device_support_extensions(VkPhysicalDevice device);
+        static bool does_device_support_extensions(VkPhysicalDevice device);
         void create_swapchain();
         void destroy_swapchain();
         void create_swapchain_image_views();
@@ -137,18 +137,16 @@ namespace nova {
         void destroy_render_passes();
         void create_graphics_pipelines();
         void destroy_graphics_pipelines();
-        void create_framebuffers();
+        void create_framebuffers(VkRenderPass render_pass);
         void destroy_framebuffers();
         void create_command_pool();
         void destroy_command_pool();
-        void create_vertex_buffer();
-        void destroy_vertex_buffer();
         void create_command_buffers();
         void create_synchronization_objects();
         void destroy_synchronization_objects();
-        VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
-        VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
-        VkExtent2D choose_swapchain_extend();
+        static VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
+        static VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
+        static VkExtent2D choose_swapchain_extend();
         void recreate_swapchain();
 
         void cleanup_dynamic();  // Cleanup objects that have been created on the fly
@@ -173,7 +171,7 @@ namespace nova {
         std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>>
         to_vk_attachment_info(std::vector<std::string> &attachment_names);
 
-        VkFormat to_vk_format(pixel_format_enum format);
+        static VkFormat to_vk_format(pixel_format_enum format);
 
         /*!
          * \brief Adds an entry to the dynamic textures for each entry in texture_data
@@ -181,7 +179,7 @@ namespace nova {
          */
         void create_textures(const std::vector<texture_resource_data>& texture_datas);
 
-        VkShaderModule create_shader_module(std::vector<uint32_t> spirv);
+        VkShaderModule create_shader_module(std::vector<uint32_t> spirv) const;
 
         /*!
          * \brief Gets all the descriptor bindings from the provided SPIR-V code, performing basic validation that the 
@@ -191,7 +189,7 @@ namespace nova {
          * \param bindings An in/out array that holds all the existing binding before this method, and holds the 
          * existing bindings plus new ones declared in the shader after this method
          */
-        void get_shader_module_descriptors(std::vector<uint32_t> spirv,
+        static void get_shader_module_descriptors(std::vector<uint32_t> spirv,
                                         std::unordered_map<std::string, vk_resource_binding>& bindings);
 
         /*!
@@ -200,7 +198,7 @@ namespace nova {
          * \param bindings All the bindings we know about
          * \return A list of descriptor set layouts, one for each set in `bindings`
          */
-        std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> bindings);
+        std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> bindings) const;
     };
 }  // namespace nova
 

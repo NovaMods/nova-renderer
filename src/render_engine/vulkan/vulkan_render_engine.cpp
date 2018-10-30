@@ -81,7 +81,6 @@ namespace nova {
         vkDeviceWaitIdle(device);
         cleanup_dynamic();
         destroy_synchronization_objects();
-        destroy_vertex_buffer();
         destroy_command_pool();
         destroy_framebuffers();
         destroy_graphics_pipelines();
@@ -385,7 +384,6 @@ namespace nova {
             destroy_render_passes();
 
             destroy_synchronization_objects();
-            destroy_vertex_buffer();
             destroy_command_pool();
             destroy_framebuffers();
             destroy_graphics_pipelines();
@@ -403,7 +401,6 @@ namespace nova {
         create_graphics_pipelines();
         create_framebuffers();
         create_command_pool();
-        create_vertex_buffer();
         create_command_buffers();
         create_synchronization_objects();
 
@@ -432,7 +429,6 @@ namespace nova {
         render_passes_by_order = order_passes(regular_render_passes);
 
         for(const std::string &pass_name : render_passes_by_order) {
-
             VkSubpassDescription subpass_description;
             subpass_description.flags = 0;
             subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -533,7 +529,7 @@ namespace nova {
                 get_shader_module_descriptors(data.fragment_shader->source, bindings);
             }
 
-            std::vector<VkDescriptorSetLayout> layout_data = process_bindings(bindings);
+            std::vector<VkDescriptorSetLayout> layout_data = create_descriptor_set_layouts(bindings);
 
             VkPipelineLayoutCreateInfo pipeline_layout_create_info;
             pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -558,8 +554,6 @@ namespace nova {
 
                 shader_stages.push_back(shader_stage_create_info);
             }
-
-            auto [attributes, description] = ;
 
             auto vertex_binding_description = vulkan::vulkan_vertex::get_binding_description();
             auto vertex_attribute_description = vulkan::vulkan_vertex::get_attribute_description();
@@ -679,7 +673,7 @@ namespace nova {
         }
     }
 
-    VkShaderModule vulkan_render_engine::create_shader_module(std::vector<uint32_t> spirv) {
+    VkShaderModule vulkan_render_engine::create_shader_module(std::vector<uint32_t> spirv) const {
         VkShaderModuleCreateInfo shader_module_create_info;
         shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         shader_module_create_info.pNext = nullptr;
@@ -694,7 +688,7 @@ namespace nova {
         return module;
     }
 
-    void vulkan_render_engine::create_framebuffers() {
+    void vulkan_render_engine::create_framebuffers(const VkRenderPass render_pass) {
         swapchain_framebuffers.resize(swapchain_image_views.size());
         for(size_t i = 0; i < swapchain_framebuffers.size(); i++) {
             VkImageView attachments[] = {swapchain_image_views[i]};
@@ -721,37 +715,6 @@ namespace nova {
         command_pool_create_info.queueFamilyIndex = graphics_queue_index;
 
         NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
-    }
-
-    void vulkan_render_engine::create_vertex_buffer() {
-        VkBufferCreateInfo buffer_create_info;
-        buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_create_info.pNext = nullptr;
-        buffer_create_info.flags = 0;
-        buffer_create_info.size = sizeof(verticies[0]) * verticies.size();
-        buffer_create_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buffer_create_info.queueFamilyIndexCount = 0;
-        buffer_create_info.pQueueFamilyIndices = nullptr;
-
-        VmaAllocationCreateInfo allocation_create_info;
-        allocation_create_info.flags = 0;
-        allocation_create_info.usage = VMA_MEMORY_USAGE_UNKNOWN;
-        allocation_create_info.requiredFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-        allocation_create_info.preferredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-        allocation_create_info.memoryTypeBits = 0;
-        allocation_create_info.pUserData = nullptr;
-        allocation_create_info.pool = VK_NULL_HANDLE;
-
-        NOVA_THROW_IF_VK_ERROR(
-            vmaCreateBuffer(memory_allocator, &buffer_create_info, &allocation_create_info, &vertex_buffer, &vertex_buffer_allocation, nullptr), render_engine_initialization_exception);
-
-        // vmaBindBufferMemory(memory_allocator, vertex_buffer_allocation, vertex_buffer);
-
-        void *data;
-        vmaMapMemory(memory_allocator, vertex_buffer_allocation, &data);
-        std::memcpy(data, verticies.data(), (size_t) buffer_create_info.size);
-        vmaUnmapMemory(memory_allocator, vertex_buffer_allocation);
     }
 
     void vulkan_render_engine::create_command_buffers() {
@@ -796,11 +759,7 @@ namespace nova {
             vkDestroyFence(device, submit_fences.at(i), nullptr);
         }
     }
-
-    void vulkan_render_engine::destroy_vertex_buffer() {
-        vmaDestroyBuffer(memory_allocator, vertex_buffer, vertex_buffer_allocation);
-    }
-
+    
     void vulkan_render_engine::destroy_command_pool() {
         vkDestroyCommandPool(device, command_pool, nullptr);
     }
@@ -813,8 +772,8 @@ namespace nova {
 
     void vulkan_render_engine::destroy_graphics_pipelines() {
         for(const auto &[_, pipeline] : pipelines) {
-            vkDestroyPipeline(device, pipeline.vulkan_pipeline, nullptr);
-            vkDestroyPipelineLayout(device, pipeline.vulkan_layout, nullptr);
+            vkDestroyPipeline(device, pipeline.pipeline, nullptr);
+            vkDestroyPipelineLayout(device, pipeline.layout, nullptr);
         }
     }
 
@@ -911,7 +870,6 @@ namespace nova {
         create_graphics_pipelines();
         create_framebuffers();
         create_command_buffers();
-        DEBUG_record_command_buffers();
     }
 
     std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>>
@@ -1055,7 +1013,7 @@ namespace nova {
         }
     }
 
-    std::vector<VkDescriptorSetLayout> vulkan_render_engine::create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> all_bindings) {
+    std::vector<VkDescriptorSetLayout> vulkan_render_engine::create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> all_bindings) const {
         std::unordered_map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
 
         for(const auto& named_binding : all_bindings) {
