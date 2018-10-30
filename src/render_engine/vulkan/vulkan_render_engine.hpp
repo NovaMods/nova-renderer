@@ -28,6 +28,31 @@ namespace nova {
         uint32_t queue_idx;
     };
 
+    struct vk_resource_binding : VkDescriptorSetLayoutBinding {
+        uint32_t set;
+
+        bool operator==(const vk_resource_binding& other) const;
+        bool operator!=(const vk_resource_binding& other) const;
+    };
+
+    struct vk_pipeline {
+        VkPipeline pipeline;
+        VkPipelineLayout layout;
+        pipeline_data nova_data;
+
+        std::unordered_map<std::string, vk_resource_binding> bindings;
+    };
+
+    struct vk_texture {
+        VkImage image;
+        VkImageView image_view;
+
+        texture_resource_data nova_data;
+
+        VmaAllocation allocation;
+        VmaAllocationInfo vma_info;
+    };
+
     class vulkan_render_engine : public render_engine {
     public:
         explicit vulkan_render_engine(const nova_settings &settings);
@@ -71,31 +96,8 @@ namespace nova {
         std::unordered_map<std::string, vk_render_pass> render_passes_by_name;
         std::vector<std::string> render_passes_by_order;
 
-        struct vk_resource_binding : VkDescriptorSetLayoutBinding {
-            uint32_t set;
-
-            bool operator==(const vk_resource_binding& other) const;
-            bool operator!=(const vk_resource_binding& other) const;
-        };
-
-        struct vk_pipeline {
-            VkPipeline pipeline;
-            VkPipelineLayout layout;
-            pipeline_data nova_data;
-
-            std::unordered_map<std::string, vk_resource_binding> bindings;
-        };
         std::unordered_map<std::string, vk_pipeline> pipelines;
 
-        struct vk_texture {
-            VkImage image;
-            VkImageView image_view;
-
-            texture_resource_data nova_data;
-
-            VmaAllocation allocation;
-            VmaAllocationInfo vma_info;
-        };
         std::unordered_map<std::string, vk_texture> dynamic_textures_by_name;
 
         std::unordered_map<std::string, material_data> materials;
@@ -135,7 +137,7 @@ namespace nova {
          */
         void create_render_passes(const std::vector<render_pass_data>& passes);
         void destroy_render_passes();
-        void create_graphics_pipelines();
+        void create_graphics_pipelines(const std::vector<pipeline_data>& pipelines);
         void destroy_graphics_pipelines();
         void create_framebuffers(VkRenderPass render_pass);
         void destroy_framebuffers();
@@ -146,7 +148,7 @@ namespace nova {
         void destroy_synchronization_objects();
         static VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
         static VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
-        static VkExtent2D choose_swapchain_extend();
+        VkExtent2D choose_swapchain_extend() const;
         void recreate_swapchain();
 
         void cleanup_dynamic();  // Cleanup objects that have been created on the fly
@@ -154,17 +156,11 @@ namespace nova {
         const uint MAX_FRAMES_IN_QUEUE = 3;
         uint current_frame = 0;
 
-        const std::vector<vulkan::vulkan_vertex> verticies = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}}, {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}, {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
-
 #ifndef NDEBUG
         PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
         PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
-
-        static VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT object_type,
-                                              uint64_t object, size_t location, int32_t messageCode,
-                                              const char *layer_prefix, const char *message, void *user_data);
-
+        
         VkDebugReportCallbackEXT debug_callback;
 #endif
 
@@ -200,6 +196,10 @@ namespace nova {
          */
         std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> bindings) const;
     };
+
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugReportFlagsEXT flags, 
+        VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, 
+        const char *layer_prefix, const char *message, void *user_data);
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP

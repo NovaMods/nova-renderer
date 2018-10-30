@@ -374,6 +374,11 @@ namespace nova {
         std::optional<shader_source> tessellation_control_shader;
         std::optional<shader_source> tessellation_evaluation_shader;
         std::optional<shader_source> fragment_shader;
+
+        /*!
+         * \brief Merges this pipeline with the parent, returning the merged pipeline
+         */
+        pipeline_data merge_with_parent(const pipeline_data& parent_pipeline) const;
     };
 
     struct texture_format {

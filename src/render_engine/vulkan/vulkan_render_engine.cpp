@@ -346,7 +346,7 @@ namespace nova {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D vulkan_render_engine::choose_swapchain_extend() {
+    VkExtent2D vulkan_render_engine::choose_swapchain_extend() const {
         VkExtent2D extend;
         extend.width = window->get_window_size().width;
         extend.height = window->get_window_size().height;
@@ -398,8 +398,7 @@ namespace nova {
 
         create_render_passes(data.passes);
 
-        create_graphics_pipelines();
-        create_framebuffers();
+        create_graphics_pipelines(data.pipelines);
         create_command_pool();
         create_command_buffers();
         create_synchronization_objects();
@@ -407,11 +406,11 @@ namespace nova {
         shaderpack_loaded = true;
     }
 
-    bool vulkan_render_engine::vk_resource_binding::operator==(const vk_resource_binding& other) const {
+    bool vk_resource_binding::operator==(const vk_resource_binding& other) const {
         return other.set == set && other.binding == binding && other.descriptorCount == descriptorCount && other.descriptorType == descriptorType;
     }
 
-    bool vulkan_render_engine::vk_resource_binding::operator!=(const vk_resource_binding& other) const {
+    bool vk_resource_binding::operator!=(const vk_resource_binding& other) const {
         return !(*this == other);
     }
 
@@ -475,35 +474,13 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::create_graphics_pipelines() {
-        std::queue<pipeline_data> queued_data(std::deque<pipeline_data>(shaderpack.pipelines.begin(), shaderpack.pipelines.end()));
-
-        uint64_t noop_count = 0;
-        while(!queued_data.empty()) {
-            // TODO: Ugliest sorting ever, but I have no idea how to improve this right now
-            pipeline_data data = queued_data.front();
-            queued_data.pop();
-            if(!(data.parent_name && std::find(pipelines.begin(), pipelines.end(), data.parent_name.value()) != pipelines.end())) {
-                if(noop_count >= queued_data.size()) {
-                    NOVA_LOG(ERROR) << "Unresolved parent '" << data.parent_name.value() << " for pipeline " << data.name;
-                    while(!queued_data.empty()) {
-                        queued_data.pop();
-                        data = queued_data.front();
-                        NOVA_LOG(ERROR) << "Unresolved parent '" << data.parent_name.value() << " for pipeline " << data.name;
-                    }
-                    throw render_engine_initialization_exception("Pipelines with unresolved parents left over!");
-                }
-                queued_data.push(data);
-                noop_count++;
-                continue;
-            }
-            noop_count = 0;
-
+    void vulkan_render_engine::create_graphics_pipelines(const std::vector<pipeline_data>& pipelines) {
+        for(const pipeline_data& data : pipelines) {
             vk_pipeline nova_pipeline;
             nova_pipeline.nova_data = data;
 
             std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
-            std::unordered_map<VkShaderStageFlagBits, VkShaderModule> shader_modules;
+            std::unordered_map<VkShaderStageFlags, VkShaderModule> shader_modules;
             std::unordered_map<std::string, vk_resource_binding> bindings;
 
             shader_modules[VK_SHADER_STAGE_VERTEX_BIT] = create_shader_module(data.vertex_shader.source);
@@ -547,7 +524,7 @@ namespace nova {
                 shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 shader_stage_create_info.pNext = nullptr;
                 shader_stage_create_info.flags = 0;
-                shader_stage_create_info.stage = pair.first;
+                shader_stage_create_info.stage = static_cast<VkShaderStageFlagBits>(pair.first);
                 shader_stage_create_info.module = pair.second;
                 shader_stage_create_info.pName = "main";
                 shader_stage_create_info.pSpecializationInfo = nullptr;
@@ -661,15 +638,10 @@ namespace nova {
             pipeline_create_info.layout = nova_pipeline.layout;
             pipeline_create_info.renderPass = render_passes_by_name.at(data.pass).pass;
             pipeline_create_info.subpass = 0;
-            if(data.parent_name) {
-                pipeline_create_info.basePipelineHandle = pipelines.at(data.parent_name.value()).pipeline;
-            } else {
-                pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
-            }
             pipeline_create_info.basePipelineIndex = -1;
 
             NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.pipeline), render_engine_initialization_exception);
-            pipelines.insert(std::make_pair(data.name, nova_pipeline));
+            this->pipelines.insert(std::make_pair(data.name, nova_pipeline));
         }
     }
 
@@ -805,7 +777,7 @@ namespace nova {
         vkDestroyDevice(device, nullptr);
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL vulkan_render_engine::debug_report_callback(
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
         VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char *layer_prefix, const char *message, void *user_data) {
         NOVA_LOG(TRACE) << __FILE__ << ":" << __LINE__ << " >> VK Debug: [" << layer_prefix << "]" << message;
         return VK_FALSE;
@@ -866,9 +838,6 @@ namespace nova {
 
         create_swapchain();
         create_swapchain_image_views();
-        create_render_passes();
-        create_graphics_pipelines();
-        create_framebuffers();
         create_command_buffers();
     }
 
