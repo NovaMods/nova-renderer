@@ -2,8 +2,10 @@
 // Created by jannis on 21.08.18.
 //
 
-#include <gtest/gtest.h>
 #include "../../src/general_test_setup.hpp"
+
+#undef TEST
+#include <gtest/gtest.h>
 
 TEST(nova_filesystem, zip_reading) {
     TEST_SETUP_LOGGER();

@@ -112,15 +112,12 @@ namespace nova {
 
     enum DXGI_FORMAT to_dxgi_format(const pixel_format_enum pixel_format) {
         switch(pixel_format) {
-        case pixel_format_enum::RGB8:
         case pixel_format_enum::RGBA8:
             return DXGI_FORMAT_R8G8B8A8_UNORM;
 
-        case pixel_format_enum::RGB16F:
         case pixel_format_enum::RGBA16F:
             return DXGI_FORMAT_R16G16B16A16_FLOAT;
 
-        case pixel_format_enum::RGB32F:
             return DXGI_FORMAT_R32G32B32_FLOAT;
 
         case pixel_format_enum::RGBA32F:

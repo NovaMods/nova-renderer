@@ -14,8 +14,6 @@
 
 #include "settings/nova_settings.hpp"
 #include "render_engine/render_engine.hpp"
-#include "loading/shaderpack/shaderpack_loading.hpp"
-#include "util/utils.hpp"
 
 namespace nova {
     NOVA_EXCEPTION(already_initialized_exception);

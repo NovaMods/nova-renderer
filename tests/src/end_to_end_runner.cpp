@@ -3,10 +3,11 @@
  * \date 30-Aug-18.
  */
 
+#include "general_test_setup.hpp"
+#undef TEST
+
 #include <iostream>
 #include <gtest/gtest.h>
-
-#include "general_test_setup.hpp"
 
 namespace nova {
     int main() {

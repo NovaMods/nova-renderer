@@ -202,7 +202,7 @@ if (WIN32)
     target_include_directories(nova-renderer PRIVATE
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\shared"
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
-    target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
+    target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
 
 else(WIN32)
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)

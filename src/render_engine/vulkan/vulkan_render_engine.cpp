@@ -6,13 +6,9 @@
 #include <vector>
 #include <set>
 #include "../../util/logger.hpp"
-#include <fstream>
-#include "vulkan_opaque_types.hpp"
-#include <cstring>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 #include "vulkan_type_converters.hpp"
-#include <queue>
 #include "../../util/utils.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../../3rdparty/SPIRV-Cross/spirv_glsl.hpp"
@@ -145,12 +141,12 @@ namespace nova {
                 continue;
             }
 
-            uint32_t queue_familiy_count;
-            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_familiy_count, nullptr);
-            auto *family_properties = new VkQueueFamilyProperties[queue_familiy_count];
-            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_familiy_count, family_properties);
+            uint32_t queue_family_count;
+            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
+            auto *family_properties = new VkQueueFamilyProperties[queue_family_count];
+            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, family_properties);
 
-            for(uint32_t queue_idx = 0; queue_idx < queue_familiy_count; queue_idx++) {
+            for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
                 VkQueueFamilyProperties current_properties = family_properties[queue_idx];
                 if(current_properties.queueCount < 1) {
                     continue;

@@ -785,40 +785,42 @@ namespace nova {
         spirv_cross::CompilerHLSL shader_compiler(shader.source);
         shader_compiler.set_hlsl_options(options);
 
-        // Recommended by https://github.com/KhronosGroup/SPIRV-Cross#descriptor-sets-vulkan-glsl-for-backends-which-do-not-support-them-hlslglslmetal
-        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
-        for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.storage_buffers) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.stage_inputs) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.stage_outputs) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.subpass_inputs) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.storage_images) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.sampled_images) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.atomic_counters) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.push_constant_buffers) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.separate_images) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-        }
-        for(const spirv_cross::Resource& resource : resources.separate_samplers) {
-            shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+        {
+            // Recommended by https://github.com/KhronosGroup/SPIRV-Cross#descriptor-sets-vulkan-glsl-for-backends-which-do-not-support-them-hlslglslmetal
+            const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
+            for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.storage_buffers) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.stage_inputs) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.stage_outputs) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.subpass_inputs) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.storage_images) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.sampled_images) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.atomic_counters) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.push_constant_buffers) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.separate_images) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
+            for(const spirv_cross::Resource& resource : resources.separate_samplers) {
+                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
+            }
         }
 
         std::string shader_hlsl = shader_compiler.compile();
