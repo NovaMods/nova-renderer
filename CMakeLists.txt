@@ -61,6 +61,9 @@ add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
 add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
 
+set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
+add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Cross)
+
 find_package(Vulkan)
 
 ######################################
@@ -78,6 +81,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/glslang
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
+        ${3RD_PARTY_DIR}/SPIRV-Cross
         )
 
 ########################
@@ -91,11 +95,11 @@ set(NOVA_SOURCE
         # The instructions are like "yeah just copy over whatever files you want cause that's totally the way modern
         # software is built -_-
         # So here we are,
-        ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
-        ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
-        ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
-        ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp 
-        ${SPIRV_CROSS_ROOT}/spirv_hlsl.cpp 
+        # ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
+        # ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
+        # ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
+        # ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp 
+        # ${SPIRV_CROSS_ROOT}/spirv_hlsl.cpp 
 
 		${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp
 
@@ -194,7 +198,7 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} nova-profiler ftl miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES} ${Vulkan_LIBRARIES})
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} spirv-cross-core spirv-cross-glsl spirv-cross-hlsl spirv-cross-reflect spirv-cross-util nova-profiler ftl miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES} ${Vulkan_LIBRARIES})
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
