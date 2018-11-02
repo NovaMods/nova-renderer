@@ -139,8 +139,6 @@ namespace nova {
         void destroy_render_passes();
         void create_graphics_pipelines(const std::vector<pipeline_data>& pipelines);
         void destroy_graphics_pipelines();
-        void create_framebuffers(VkRenderPass render_pass);
-        void destroy_framebuffers();
         void create_command_pool();
         void destroy_command_pool();
         void create_command_buffers();

@@ -656,25 +656,6 @@ namespace nova {
         return module;
     }
 
-    void vulkan_render_engine::create_framebuffers(const VkRenderPass render_pass) {
-        swapchain_framebuffers.resize(swapchain_image_views.size());
-        for(size_t i = 0; i < swapchain_framebuffers.size(); i++) {
-            VkImageView attachments[] = {swapchain_image_views[i]};
-            VkFramebufferCreateInfo framebuffer_create_info;
-            framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebuffer_create_info.pNext = nullptr;
-            framebuffer_create_info.flags = 0;
-            framebuffer_create_info.renderPass = render_pass;
-            framebuffer_create_info.attachmentCount = 1;
-            framebuffer_create_info.pAttachments = attachments;
-            framebuffer_create_info.width = swapchain_extent.width;
-            framebuffer_create_info.height = swapchain_extent.height;
-            framebuffer_create_info.layers = 1;
-
-            NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers.at(i)), render_engine_initialization_exception);
-        }
-    }
-
     void vulkan_render_engine::create_command_pool() {
         VkCommandPoolCreateInfo command_pool_create_info;
         command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -730,12 +711,6 @@ namespace nova {
     
     void vulkan_render_engine::destroy_command_pool() {
         vkDestroyCommandPool(device, command_pool, nullptr);
-    }
-
-    void vulkan_render_engine::destroy_framebuffers() {
-        for(auto framebuffer : swapchain_framebuffers) {
-            vkDestroyFramebuffer(device, framebuffer, nullptr);
-        }
     }
 
     void vulkan_render_engine::destroy_graphics_pipelines() {
