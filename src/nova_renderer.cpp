@@ -14,20 +14,23 @@
 
 #if SUPPORT_DX12
 #include "render_engine/dx12/dx12_render_engine.hpp"
-#elif SUPPORT_VULKAN
+#endif 
+
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
-#endif
 
 namespace nova {
     nova_renderer *nova_renderer::instance;
 
     nova_renderer::nova_renderer(nova_settings &settings) : render_settings(settings) {
-#if SUPPORT_DX12
-        engine = std::make_unique<dx12_render_engine>(render_settings);
-
-#elif SUPPORT_VULKAN
-        engine = std::make_unique<vulkan_render_engine>(render_settings);
-#endif
+        switch(settings.get_options().api) {
+        case graphics_api::dx12:
+            #if _WIN32
+            engine = std::make_unique<dx12_render_engine>(render_settings);
+            break;
+            #endif
+        case graphics_api::vulkan:
+            engine = std::make_unique<vulkan_render_engine>(render_settings);
+        }
 
         // TODO: Get window size from config
         engine->open_window(200, 200);

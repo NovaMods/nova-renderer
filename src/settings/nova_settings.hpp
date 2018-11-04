@@ -17,6 +17,11 @@ namespace nova {
         uint32_t patch;
     };
 
+    enum class graphics_api {
+        vulkan,
+        dx12,
+    };
+
     /*!
      * \brief Nova settings, this doc has to be filled. See the TODO's
      */
@@ -38,14 +43,14 @@ namespace nova {
         } window;
 
         struct {
-            struct {
-                std::string application_name = "Nova Renderer";
-                semver application_version = {0, 8, 0};
-            } vulkan;
+            std::string application_name = "Nova Renderer";
+            semver application_version = {0, 8, 0};
+        } vulkan;
 
-            struct {
-            } dx12;
-        } api;
+        struct {
+        } dx12;
+
+        graphics_api api;
 
         uint32_t max_in_flight_frames = 3;
     };

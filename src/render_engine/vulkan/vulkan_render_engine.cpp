@@ -78,7 +78,6 @@ namespace nova {
         cleanup_dynamic();
         destroy_synchronization_objects();
         destroy_command_pool();
-        destroy_framebuffers();
         destroy_graphics_pipelines();
         destroy_render_passes();
         destroy_image_views();
@@ -381,7 +380,6 @@ namespace nova {
 
             destroy_synchronization_objects();
             destroy_command_pool();
-            destroy_framebuffers();
             destroy_graphics_pipelines();
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
@@ -800,7 +798,6 @@ namespace nova {
 
     void vulkan_render_engine::recreate_swapchain() {
         vkDeviceWaitIdle(device);
-        destroy_framebuffers();
         vkFreeCommandBuffers(device, command_pool, static_cast<uint32_t>(command_buffers.size()), command_buffers.data());
         destroy_graphics_pipelines();
         destroy_render_passes();

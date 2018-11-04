@@ -18,12 +18,13 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Running in " << buff << std::flush;
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
-        nova::nova_settings settings;
-        auto renderer = nova::nova_renderer::initialize(settings);
+        nova_settings settings;
+        settings.get_options().api = graphics_api::vulkan;
+        auto renderer = nova_renderer::initialize(settings);
 
         renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
-        std::shared_ptr<nova::iwindow> window = renderer->get_engine()->get_window();
+        std::shared_ptr<iwindow> window = renderer->get_engine()->get_window();
 
         NOVA_LOG(DEBUG) << window->should_close();
 
@@ -32,7 +33,7 @@ namespace nova {
             window->on_frame_end();
         }
 
-        nova::nova_renderer::deinitialize();
+        nova_renderer::deinitialize();
 
         return 0;
     }
