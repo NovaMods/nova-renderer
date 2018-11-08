@@ -21,6 +21,7 @@
 
 #include <vk_mem_alloc.h>
 #include "../dx12/win32_window.hpp"
+#include "spirv_glsl.hpp"
 
 namespace nova {
     struct vulkan_queue {
@@ -172,6 +173,7 @@ namespace nova {
          * \param texture_datas All the texture_datas that you want to create a dynamic texture for
          */
         void create_textures(const std::vector<texture_resource_data>& texture_datas);
+        static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding> &bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource &resource);
 
         VkShaderModule create_shader_module(std::vector<uint32_t> spirv) const;
 

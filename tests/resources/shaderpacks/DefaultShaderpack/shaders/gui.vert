@@ -62,7 +62,7 @@ layout(location = 0) out vec2 uv;
 layout(location = 1) out vec4 color;
 
 void main() {
-    gl_Position = gbufferModel * vec4(position_in, 1.0f);
+    gl_Position = gbufferProjection * gbufferModelView * gbufferModel * vec4(position_in, 1.0f);
 
     uv = uv_in;
     color = color_in;

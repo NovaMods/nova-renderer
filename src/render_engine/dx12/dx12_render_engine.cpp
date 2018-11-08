@@ -25,6 +25,8 @@
 
 namespace nova {
     dx12_render_engine::dx12_render_engine(const nova_settings &settings) : render_engine(settings), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
+        NOVA_LOG(INFO) << "Initializing Direct3D 12 rendering";
+
         create_device();
         create_rtv_command_queue();
         create_full_frame_fences();
@@ -61,9 +63,7 @@ namespace nova {
 
         NOVA_LOG(TRACE) << "Creating DX12 device";
 
-        HRESULT hr;
-
-        hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&dxgi_factory));
+        HRESULT hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&dxgi_factory));
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create DXGI Factory";
             throw render_engine_initialization_exception("Could not create DXGI Factory");
@@ -721,108 +721,38 @@ namespace nova {
         }
     }
 
-    void add_resource_to_descriptor_table(const D3D12_DESCRIPTOR_RANGE_TYPE range_type, const spirv_cross::CompilerHLSL& shader_compiler,
-        const std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC>& shader_inputs, const spirv_cross::Resource& resource,
-        std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+    void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type, const D3D12_SHADER_INPUT_BIND_DESC & bind_desc, const uint32_t set, std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+        D3D12_DESCRIPTOR_RANGE1 range = {};
+        range.BaseShaderRegister = bind_desc.BindPoint;
+        range.RegisterSpace = bind_desc.Space;
+        range.NumDescriptors = 1;
+        range.RangeType = descriptor_type;
+        range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-        const D3D12_SHADER_INPUT_BIND_DESC& dx12_desc = shader_inputs.at(resource.name);
-        const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-
-        bool added_to_existing_table = false;
-        if(tables.find(set) == tables.end()) {
-            tables[set] = std::vector<D3D12_DESCRIPTOR_RANGE1>{};
-        }
-        std::vector<D3D12_DESCRIPTOR_RANGE1>& ranges = tables.at(set);
-        // Try to find the descriptor range with the type we need
-        for(D3D12_DESCRIPTOR_RANGE1& range : ranges) {
-            if(range.RangeType == range_type) {
-                // Change the register range to incorporate the new resource
-                if(dx12_desc.BindPoint < range.BaseShaderRegister) {
-                    // Need to move the base shader register back a bit
-                    const uint32_t amount_moved = dx12_desc.BindPoint - range.BaseShaderRegister;
-                    range.BaseShaderRegister = dx12_desc.BindPoint;
-                    range.RegisterSpace += amount_moved;
-                    range.RegisterSpace += dx12_desc.BindCount;
-                    range.NumDescriptors++;
-
-                } else if(dx12_desc.BindPoint > range.BaseShaderRegister && dx12_desc.BindPoint < range.BaseShaderRegister + range.RegisterSpace - 1) {
-                    // New descriptor falls inside the range already covered. We don't need to do very much (hopefully)
-                    range.NumDescriptors++;
-
-                } else if(dx12_desc.BindPoint == range.BaseShaderRegister + range.RegisterSpace - 1) {
-                    range.RegisterSpace += dx12_desc.BindCount;
-                    range.NumDescriptors++;
-
-                } else if(dx12_desc.BindPoint > range.BaseShaderRegister + range.RegisterSpace - 1) {
-                    const int32_t distance_needed = (dx12_desc.BindPoint + dx12_desc.BindCount - 1) - (range.BaseShaderRegister + range.RegisterSpace - 1);
-                    range.RegisterSpace += distance_needed;
-                    range.NumDescriptors++;
-
-                } else {
-                    throw std::runtime_error("Unhandled case, yell at Dethraid");
-                }
-
-                added_to_existing_table = true;
-            }
-        }
-
-        if(!added_to_existing_table) {
-            // New range whoo
-            D3D12_DESCRIPTOR_RANGE1 new_range = {};
-            new_range.RangeType = range_type;
-            new_range.NumDescriptors = 1;
-            new_range.BaseShaderRegister = dx12_desc.BindPoint;
-            new_range.RegisterSpace = dx12_desc.BindCount;
-            new_range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-            tables.at(set).push_back(new_range);
-        }
+        tables[set].push_back(range);
     }
-
+    
     ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target, 
         const spirv_cross::CompilerHLSL::Options& options, std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
 
         spirv_cross::CompilerHLSL shader_compiler(shader.source);
         shader_compiler.set_hlsl_options(options);
 
-        /*{
-            // Recommended by https://github.com/KhronosGroup/SPIRV-Cross#descriptor-sets-vulkan-glsl-for-backends-which-do-not-support-them-hlslglslmetal
-            const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
-            for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.storage_buffers) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.stage_inputs) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.stage_outputs) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.subpass_inputs) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.storage_images) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.sampled_images) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.atomic_counters) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.push_constant_buffers) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.separate_images) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-            for(const spirv_cross::Resource& resource : resources.separate_samplers) {
-                shader_compiler.set_decoration(resource.id, spv::DecorationDescriptorSet, 0);
-            }
-        }*/
+        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
+        // Make maps of all the types of things we care about
+        std::unordered_map<std::string, spirv_cross::Resource> spirv_sampled_images;
+        spirv_sampled_images.reserve(resources.sampled_images.size());
+        for(const spirv_cross::Resource& sampled_image : resources.sampled_images) {
+            spirv_sampled_images[sampled_image.name] = sampled_image;
+        }
+        
+        std::unordered_map<std::string, spirv_cross::Resource> spirv_uniform_buffers;
+        spirv_uniform_buffers.reserve(resources.uniform_buffers.size());
+        for(const spirv_cross::Resource& uniform_buffer : resources.uniform_buffers) {
+            spirv_uniform_buffers[uniform_buffer.name] = uniform_buffer;
+        }
+        
         std::string shader_hlsl = shader_compiler.compile();
 
         const fs::path& filename = shader.filename;
@@ -856,6 +786,7 @@ namespace nova {
         }
 
         std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs(shader_desc.BoundResources);
+        // For each resource in the DX12 shader, find its set and binding in SPIR-V. Translate the sets and bindings into places in descriptor tables
         for(uint32_t i = 0; i < shader_desc.BoundResources; i++) {
             D3D12_SHADER_INPUT_BIND_DESC bind_desc;
             hr = shader_reflector->GetResourceBindingDesc(i, &bind_desc);
@@ -863,16 +794,43 @@ namespace nova {
                 throw shader_reflection_failed("Could not get description for bind point " + std::to_string(i));
             }
 
-            std::string binding_name = bind_desc.Name;
-            shader_inputs[binding_name] = bind_desc;
-        }
+            D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type = {};
+            spirv_cross::Resource spirv_resource = {};
+            uint32_t set = 0;
 
-        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
-        for(const spirv_cross::Resource& sampled_image : resources.sampled_images) {
-            add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, shader_compiler, shader_inputs, sampled_image, tables);
-        }
-        for(const spirv_cross::Resource& uniform_buffer : resources.uniform_buffers) {
-            add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, shader_compiler, shader_inputs, uniform_buffer, tables);
+            switch(bind_desc.Type) {
+                case D3D_SIT_CBUFFER:
+                    descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+                    spirv_resource = spirv_uniform_buffers.at(bind_desc.Name);
+                    set = shader_compiler.get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
+                    add_resource_to_descriptor_table(descriptor_type, bind_desc, set, tables);
+                    break;
+
+                case D3D_SIT_TEXTURE:
+                case D3D_SIT_TBUFFER:
+                    descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                    spirv_resource = spirv_sampled_images.at(bind_desc.Name);
+                    set = shader_compiler.get_decoration(spirv_resource.id, spv::DecorationDescriptorSet);
+                    add_resource_to_descriptor_table(descriptor_type, bind_desc, set, tables);
+
+                    // Also add a descriptor table entry for the sampler
+                    add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, bind_desc, set, tables);
+                    break;
+
+                case D3D_SIT_SAMPLER:
+                    descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+                    break;
+
+                case D3D_SIT_STRUCTURED:
+                case D3D_SIT_UAV_RWTYPED:
+                case D3D_SIT_UAV_RWSTRUCTURED:
+                case D3D_SIT_UAV_RWBYTEADDRESS: 
+                case D3D_SIT_UAV_APPEND_STRUCTURED: 
+                case D3D_SIT_UAV_CONSUME_STRUCTURED: 
+                case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER:
+                    descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+                    break;
+            }
         }
 
         return shader_blob;

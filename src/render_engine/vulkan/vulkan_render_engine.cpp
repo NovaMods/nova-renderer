@@ -17,13 +17,15 @@
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings &settings) : render_engine(settings) {
+        NOVA_LOG(INFO) << "Initializing Vulkan rendering";
+
         settings_options options = settings.get_options();
-        const auto &version = options.api.vulkan.application_version;
+        const auto &version = options.vulkan.application_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = nullptr;
-        application_info.pApplicationName = options.api.vulkan.application_name.c_str();
+        application_info.pApplicationName = options.vulkan.application_name.c_str();
         application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
         application_info.pEngineName = "Nova renderer 0.1";
         application_info.apiVersion = VK_API_VERSION_1_1;
@@ -128,7 +130,7 @@ namespace nova {
         VkPhysicalDevice chosen_device = nullptr;
         for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
             graphics_family_idx = 0xFFFFFFFF;
-            VkPhysicalDevice current_device = physical_devices[device_idx];
+            const VkPhysicalDevice current_device = physical_devices[device_idx];
             VkPhysicalDeviceProperties properties;
             vkGetPhysicalDeviceProperties(current_device, &properties);
 
@@ -222,10 +224,10 @@ namespace nova {
         vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
         copy_queue_index = copy_family_idx;
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
+        
+        physical_device = chosen_device;
 
         delete[] physical_devices;
-
-        physical_device = chosen_device;
     }
 
     bool vulkan_render_engine::does_device_support_extensions(VkPhysicalDevice device) {
@@ -243,16 +245,9 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_memory_allocator() {
-        VmaAllocatorCreateInfo allocator_create_info;
+        VmaAllocatorCreateInfo allocator_create_info = {};
         allocator_create_info.physicalDevice = physical_device;
         allocator_create_info.device = device;
-        allocator_create_info.flags = 0;
-        allocator_create_info.frameInUseCount = 0;
-        allocator_create_info.pAllocationCallbacks = nullptr;
-        allocator_create_info.pDeviceMemoryCallbacks = nullptr;
-        allocator_create_info.pHeapSizeLimit = nullptr;
-        allocator_create_info.preferredLargeHeapBlockSize = 0;
-        allocator_create_info.pVulkanFunctions = nullptr;
 
         NOVA_THROW_IF_VK_ERROR(vmaCreateAllocator(&allocator_create_info, &memory_allocator), render_engine_initialization_exception);
     }
@@ -451,9 +446,13 @@ namespace nova {
             render_pass_create_info.pDependencies = &image_available_dependency;
 
             std::optional<input_textures> inputs_maybe = render_passes_by_name.at(pass_name).nova_data.texture_inputs;
+            std::vector<VkAttachmentDescription> attachments;
+            std::vector<VkAttachmentReference> references;
             if(inputs_maybe) {
                 std::vector<std::string>& color_inputs = inputs_maybe->bound_textures;
-                auto [attachments, references] = to_vk_attachment_info(color_inputs);
+                auto [scope_attachments, scope_references] = to_vk_attachment_info(color_inputs);
+                attachments = std::move(scope_attachments);
+                references = std::move(scope_references);
 
                 subpass_description.colorAttachmentCount = static_cast<uint32_t>(references.size());
                 subpass_description.pColorAttachments = references.data();
@@ -492,8 +491,8 @@ namespace nova {
 
             if(data.tessellation_evaluation_shader) {
                 shader_modules[VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT] = create_shader_module(data.tessellation_evaluation_shader->source);
+                get_shader_module_descriptors(data.tessellation_evaluation_shader->source, bindings);
             }
-            get_shader_module_descriptors(data.tessellation_evaluation_shader->source, bindings);
 
             if(data.fragment_shader) {
                 shader_modules[VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT] = create_shader_module(data.fragment_shader->source);
@@ -543,6 +542,14 @@ namespace nova {
             input_assembly_create_info.pNext = nullptr;
             input_assembly_create_info.flags = 0;
             input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
+            switch(data.primitive_mode) {
+            case primitive_topology_enum::Triangles:
+                input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+                break;
+            case primitive_topology_enum::Lines:
+                input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+                break;
+            }
 
             VkViewport viewport;
             viewport.x = 0;
@@ -883,7 +890,7 @@ namespace nova {
             image_create_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
             image_create_info.queueFamilyIndexCount = 1;
             image_create_info.pQueueFamilyIndices = &graphics_queue_index;
-            image_create_info.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            image_create_info.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
 
             VmaAllocationCreateInfo alloc_create_info = {};
             alloc_create_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
@@ -897,7 +904,7 @@ namespace nova {
             vmaCreateImage(memory_allocator, &image_create_info, &alloc_create_info, &texture.image,
                            &texture.allocation, &texture.vma_info);
 
-            VkImageViewCreateInfo image_view_create_info;
+            VkImageViewCreateInfo image_view_create_info = {};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             image_view_create_info.image = texture.image;
             image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -915,38 +922,43 @@ namespace nova {
 
     }
 
+    void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource) {
+        const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+        vk_resource_binding new_binding = {};
+        new_binding.set = set;
+        new_binding.binding = binding;
+        new_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        new_binding.descriptorCount = 1;
+
+        if(bindings.find(resource.name) == bindings.end()) {
+            // Totally new binding!
+            bindings[resource.name] = new_binding;
+
+        } else {
+            // Existing binding. Is it the same as our binding?
+            const vk_resource_binding& existing_binding = bindings.at(resource.name);
+            if(existing_binding != new_binding) {
+                // They have two different bindings with the same name. Not allowed
+                NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
+                    << " in different shader stages. This is not allowed. Use unique names";
+
+            }
+        }
+    }
+
     void vulkan_render_engine::get_shader_module_descriptors(std::vector<uint32_t> spirv,
                                                           std::unordered_map<std::string, vk_resource_binding>& bindings) {
         const spirv_cross::CompilerGLSL shader_compiler(spirv);
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const spirv_cross::Resource& resource : resources.sampled_images) {
-            const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-            const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
+            add_resource_to_bindings(bindings, shader_compiler, resource);
+        }
 
-            vk_resource_binding new_binding = {};
-            new_binding.set = set;
-            new_binding.binding = binding;
-            new_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            new_binding.descriptorCount = 1;
-
-            if(bindings.find(resource.name) == bindings.end()) {
-                // Totally new binding!
-                bindings[resource.name] = new_binding;
-
-            } else {
-                // Existing binding. Is it the same as our binding?
-                const vk_resource_binding& existing_binding = bindings.at(resource.name);
-                if(existing_binding != new_binding) {
-                    // They have two different bindings with the same name. Not allowed
-                    NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name 
-                    << " in different shader stages. This is not allowed. Use unique names";
-
-                } else {
-                    // Extend the old binding's shader stages to include this one   
-                }
-            }
-
+        for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
+            add_resource_to_bindings(bindings, shader_compiler, resource);
         }
     }
 

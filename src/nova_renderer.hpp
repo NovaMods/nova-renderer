@@ -27,7 +27,7 @@ namespace nova {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit nova_renderer(nova_settings &settings);
+        explicit nova_renderer(const settings_options &settings);
 
         /*!
          * \brief Loads the shaderpack with the given name
@@ -51,7 +51,7 @@ namespace nova {
 
         ftl::TaskScheduler &get_task_scheduler();
 
-        static nova_renderer *initialize(nova_settings &settings) {
+        static nova_renderer *initialize(const settings_options &settings) {
             return (instance = new nova_renderer(settings));
         }
 

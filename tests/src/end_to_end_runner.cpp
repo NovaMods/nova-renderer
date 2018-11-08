@@ -18,8 +18,10 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Running in " << buff << std::flush;
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
-        nova_settings settings;
-        settings.get_options().api = graphics_api::vulkan;
+        settings_options settings;
+        settings.api = graphics_api::dx12;
+        settings.vulkan.application_name = "Nova Renderer test";
+        settings.vulkan.application_version = { 0, 8, 0 };
         auto renderer = nova_renderer::initialize(settings);
 
         renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");

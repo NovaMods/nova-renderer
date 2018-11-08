@@ -7,6 +7,9 @@
 #include "../util/utils.hpp"
 
 namespace nova {
+    nova_settings::nova_settings(const settings_options& options) : options(options) {
+    }
+
     void nova_settings::register_change_listener(iconfig_listener *new_listener) {
         config_change_listeners.push_back(new_listener);
     }

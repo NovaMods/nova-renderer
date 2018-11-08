@@ -76,11 +76,11 @@ namespace nova {
         }
 
         if(fs::exists(resource_path)) {
-            resource_existence.emplace(resource_string, true);
+            resource_existence[resource_string] = true;
             return true;
 
         } else {
-            resource_existence.emplace(resource_string, false);
+            resource_existence[resource_string] = false;
             return false;
         }
     }

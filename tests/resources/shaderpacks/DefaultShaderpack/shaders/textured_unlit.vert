@@ -60,7 +60,7 @@ layout(set = 1, binding = 0) uniform per_model_uniforms{
 layout(location = 0) out vec2 uv;
 
 void main() {
-    gl_Position = vec4(position_in, 1);
+    gl_Position = gbufferProjection * gbufferModelView * gbufferModel * vec4(position_in, 1);
 
     uv = uv_in;
 }

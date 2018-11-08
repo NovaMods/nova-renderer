@@ -97,6 +97,8 @@ namespace nova {
      */
     class nova_settings {
     public:
+        explicit nova_settings(const settings_options& options);
+
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer
          */
