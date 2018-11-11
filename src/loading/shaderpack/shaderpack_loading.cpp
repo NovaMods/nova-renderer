@@ -333,7 +333,7 @@ namespace nova {
             }
 
             glslang::TShader shader(stage);
-            
+
             // TODO: Figure out how to handle shader options
             // Maybe add them into the preamble?
 
@@ -357,14 +357,26 @@ namespace nova {
             const bool shader_compiled = shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
 
             const char* info_log = shader.getInfoLog();
-            NOVA_LOG(INFO) << full_filename.string() << " compilation messages:\n" << info_log;
+            if(std::strlen(info_log) > 0) {
+                const char* info_debug_log = shader.getInfoDebugLog();
+                NOVA_LOG(INFO) << full_filename.string() << " compilation messages:\n" << info_log << "\n" << info_debug_log;
+            }
 
             if(!shader_compiled) {
                 throw shader_compilation_failed(info_log);
             }
 
+            glslang::TProgram program;
+            program.addShader(&shader);
+            const bool shader_linked = program.link(EShMsgDefault);
+            if(!shader_linked) {
+                const char* program_info_log = program.getInfoLog();
+                const char* program_debug_info_log = program.getInfoDebugLog();
+                NOVA_LOG(ERROR) << "Program failed to link: " << program_info_log << "\n" << program_debug_info_log;
+            }
+
             std::vector<uint32_t> spirv;
-            glslang::GlslangToSpv(*shader.getIntermediate(), spirv);
+            GlslangToSpv(*program.getIntermediate(stage), spirv);
 
             fs::path dump_filename = filename.filename();
             dump_filename.replace_extension(std::to_string(stage) + ".spirv.generated");

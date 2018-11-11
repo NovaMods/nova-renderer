@@ -518,3 +518,4 @@ cmake-build-release
 build/
 
 **.generated.hlsl
+/tests/resources

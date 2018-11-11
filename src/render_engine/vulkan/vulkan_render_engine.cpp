@@ -275,13 +275,18 @@ namespace nova {
         VkSurfaceCapabilitiesKHR capabilities;
         NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &capabilities), render_engine_initialization_exception);
 
-        uint32_t image_count = std::max(capabilities.minImageCount, (uint32_t) 3);
+        uint32_t image_count = std::max(capabilities.minImageCount, static_cast<uint32_t>(3));
         if(capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount) {
             image_count = capabilities.maxImageCount;
         }
 
-        VkExtent2D extend = choose_swapchain_extend();
+        VkExtent2D extent = choose_swapchain_extend();
 
+        extent.width = std::max(extent.width, capabilities.minImageExtent.width);
+        extent.width = std::min(extent.width, capabilities.maxImageExtent.width);
+        extent.height = std::max(extent.height, capabilities.minImageExtent.height);
+        extent.height = std::min(extent.height, capabilities.maxImageExtent.height);
+        
         VkSwapchainCreateInfoKHR swapchain_create_info;
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchain_create_info.pNext = nullptr;
@@ -290,7 +295,7 @@ namespace nova {
         swapchain_create_info.minImageCount = image_count;
         swapchain_create_info.imageFormat = surface_format.format;
         swapchain_create_info.imageColorSpace = surface_format.colorSpace;
-        swapchain_create_info.imageExtent = extend;
+        swapchain_create_info.imageExtent = extent;
         swapchain_create_info.imageArrayLayers = 1;
         swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -309,7 +314,7 @@ namespace nova {
         swapchain_images.resize(image_count);
         vkGetSwapchainImagesKHR(device, swapchain, &image_count, swapchain_images.data());
         swapchain_format = surface_format.format;
-        swapchain_extent = extend;
+        swapchain_extent = extent;
     }
 
     VkSurfaceFormatKHR vulkan_render_engine::choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available) {
@@ -469,6 +474,7 @@ namespace nova {
 
     void vulkan_render_engine::create_graphics_pipelines(const std::vector<pipeline_data>& pipelines) {
         for(const pipeline_data& data : pipelines) {
+            NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
             vk_pipeline nova_pipeline;
             nova_pipeline.nova_data = data;
 
@@ -476,25 +482,30 @@ namespace nova {
             std::unordered_map<VkShaderStageFlags, VkShaderModule> shader_modules;
             std::unordered_map<std::string, vk_resource_binding> bindings;
 
+            NOVA_LOG(TRACE) << "Compiling vertex module";
             shader_modules[VK_SHADER_STAGE_VERTEX_BIT] = create_shader_module(data.vertex_shader.source);
             get_shader_module_descriptors(data.vertex_shader.source, bindings);
 
             if(data.geometry_shader) {
+                NOVA_LOG(TRACE) << "Compiling geometry module";
                 shader_modules[VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT] = create_shader_module(data.geometry_shader->source);
                 get_shader_module_descriptors(data.geometry_shader->source, bindings);
             }
 
             if(data.tessellation_control_shader) {
+                NOVA_LOG(TRACE) << "Compiling tessellation_control module";
                 shader_modules[VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT] = create_shader_module(data.tessellation_control_shader->source);
                 get_shader_module_descriptors(data.tessellation_control_shader->source, bindings);
             }
 
             if(data.tessellation_evaluation_shader) {
+                NOVA_LOG(TRACE) << "Compiling tessellation_evaluation module";
                 shader_modules[VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT] = create_shader_module(data.tessellation_evaluation_shader->source);
                 get_shader_module_descriptors(data.tessellation_evaluation_shader->source, bindings);
             }
 
             if(data.fragment_shader) {
+                NOVA_LOG(TRACE) << "Compiling fragment module";
                 shader_modules[VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT] = create_shader_module(data.fragment_shader->source);
                 get_shader_module_descriptors(data.fragment_shader->source, bindings);
             }
@@ -652,7 +663,9 @@ namespace nova {
         shader_module_create_info.pNext = nullptr;
         shader_module_create_info.flags = 0;
         shader_module_create_info.pCode = spirv.data();
-        shader_module_create_info.codeSize = spirv.size();
+        shader_module_create_info.codeSize = spirv.size() * 4;
+
+        write_to_file(spirv, "debug.spirv");
 
         VkShaderModule module;
         NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module),
@@ -754,8 +767,44 @@ namespace nova {
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
-        VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char *layer_prefix, const char *message, void *user_data) {
-        NOVA_LOG(TRACE) << __FILE__ << ":" << __LINE__ << " >> VK Debug: [" << layer_prefix << "]" << message;
+        VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char *layer_prefix, const char *msg, void *user_data) {
+        if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+            NOVA_LOG(ERROR) << "[" << layer_prefix << "] " << msg;
+        }
+        // Warnings may hint at unexpected / non-spec API usage
+        if(flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+            NOVA_LOG(WARN) << "[" << layer_prefix << "] " << msg;
+        }
+        // May indicate sub-optimal usage of the API
+        if(flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
+            NOVA_LOG(WARN) << "PERFORMANCE WARNING: [" << layer_prefix << "] " << msg;
+        }
+        // Informal messages that may become handy during debugging
+        if(flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+            NOVA_LOG(INFO) << "[" << layer_prefix << "] " << msg;
+        }
+        // Diagnostic info from the Vulkan loader and layers
+        // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
+        if(flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+            NOVA_LOG(DEBUG) << "[" << layer_prefix << "] " << msg;
+        }
+#ifndef _WIN32
+        if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+            void *array[50];
+            int size;
+
+            // get void*'s for all entries on the stack
+            size = backtrace(array, 10);
+
+            // print out all the frames to stderr
+            LOG(ERROR) << "Stacktrace: ";
+            char **data = backtrace_symbols(array, size);
+            for(int i = 0; i < size; i++) {
+                LOG(ERROR) << "\t" << data[i];
+            }
+            free(data);
+        }
+#endif
         return VK_FALSE;
     }
 
@@ -880,17 +929,17 @@ namespace nova {
             image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             image_create_info.imageType = VK_IMAGE_TYPE_2D;
             image_create_info.format = to_vk_format(texture_data.format.pixel_format);
-            glm::uvec2 texture_size = texture_data.format.get_size_in_pixels(swapchain_extent);
+            const glm::uvec2 texture_size = texture_data.format.get_size_in_pixels(swapchain_extent);
             image_create_info.extent.width = texture_size.x;
             image_create_info.extent.height = texture_size.y;
             image_create_info.extent.depth = 1;
-            image_create_info.mipLevels = 0;
+            image_create_info.mipLevels = 1;
             image_create_info.arrayLayers = 1;
             image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
             image_create_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
             image_create_info.queueFamilyIndexCount = 1;
             image_create_info.pQueueFamilyIndices = &graphics_queue_index;
-            image_create_info.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+            image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             VmaAllocationCreateInfo alloc_create_info = {};
             alloc_create_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;

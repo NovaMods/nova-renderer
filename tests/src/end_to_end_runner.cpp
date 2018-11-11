@@ -19,7 +19,7 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
         settings_options settings;
-        settings.api = graphics_api::dx12;
+        settings.api = graphics_api::vulkan;
         settings.vulkan.application_name = "Nova Renderer test";
         settings.vulkan.application_version = { 0, 8, 0 };
         auto renderer = nova_renderer::initialize(settings);
