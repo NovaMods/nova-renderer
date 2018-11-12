@@ -22,6 +22,7 @@
 #include <vk_mem_alloc.h>
 #include "../dx12/win32_window.hpp"
 #include "spirv_glsl.hpp"
+#include "mesh_allocator.hpp"
 
 namespace nova {
     struct vulkan_queue {
@@ -103,6 +104,8 @@ namespace nova {
 
         std::unordered_map<std::string, material_data> materials;
 
+        std::shared_ptr<mesh_allocator> mesh_manager;
+
         VkCommandPool command_pool;
         std::vector<VkCommandBuffer> command_buffers;
 
@@ -116,9 +119,6 @@ namespace nova {
         VkQueue compute_queue;
         uint32_t copy_queue_index;
         VkQueue copy_queue;
-
-        VkBuffer vertex_buffer;
-        VmaAllocation vertex_buffer_allocation;
 
         bool shaderpack_loaded = false;
         shaderpack_data shaderpack;

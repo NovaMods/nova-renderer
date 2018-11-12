@@ -125,10 +125,7 @@ set(NOVA_SOURCE
         src/util/logger.cpp
         src/util/logger.hpp
         src/render_engine/render_engine.hpp
-        src/render_engine/command_buffer_base.hpp
-        src/render_engine/command_buffer_base.cpp
         src/render_engine/window.hpp
-        src/render_engine/resource_barrier.hpp
         src/loading/shaderpack/json_interop.cpp
         src/loading/shaderpack/json_interop.hpp
         src/loading/json_utils.hpp
@@ -145,10 +142,8 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_utils.hpp
         src/render_engine/vulkan/x11_window.cpp
         src/render_engine/vulkan/x11_window.hpp
-        src/render_engine/vulkan/vulkan_resource_barrier_helpers.cpp
-        src/render_engine/vulkan/vulkan_resource_barrier_helpers.hpp
         src/render_engine/vulkan/vulkan_opaque_types.hpp
-        src/render_engine/vulkan/vulkan_type_converters.hpp)
+        src/render_engine/vulkan/vulkan_type_converters.hpp src/render_engine/vulkan/mesh_store.cpp src/render_engine/vulkan/mesh_store.hpp)
 
 if(WIN32)
     set(NOVA_SOURCE
@@ -168,8 +163,6 @@ if(WIN32)
             src/render_engine/dx12/dx12_render_engine.cpp
             src/render_engine/dx12/dx12_render_engine.hpp
             src/render_engine/dx12/d3dx12.h
-            src/render_engine/dx12/dx12_resource_barrier_helpers.cpp
-            src/render_engine/dx12/dx12_resource_barrier_helpers.hpp
             src/render_engine/dx12/dx12_opaque_types.hpp)
 endif()
 
@@ -207,6 +200,14 @@ if (WIN32)
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\shared"
             "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
+
+    # Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
+    # everyone else?
+    foreach(source IN LISTS NOVA_SOURCE)
+        get_filename_component(source_path "${source}" PATH)
+        string(REPLACE "/" "\\" source_path_msvc "${source_path}")
+        source_group("${source_path_msvc}" FILES "${source}")
+    endforeach()
 
 else(WIN32)
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)

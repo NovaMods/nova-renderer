@@ -73,6 +73,10 @@ namespace nova {
 
         NOVA_THROW_IF_VK_ERROR(vkCreateDebugReportCallbackEXT(vk_instance, &debug_create_info, nullptr, &debug_callback), render_engine_initialization_exception);
 #endif
+
+        create_memory_allocator();
+
+        mesh_manager = std::make_shared<mesh_allocator>(&memory_allocator);
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
@@ -112,7 +116,6 @@ namespace nova {
 #error Unsuported window system
 #endif
         create_device();
-        create_memory_allocator();
         create_swapchain();
         create_swapchain_image_views();
     }
