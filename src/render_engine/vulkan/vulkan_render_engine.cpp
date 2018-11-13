@@ -14,9 +14,13 @@
 #include "../../../3rdparty/SPIRV-Cross/spirv_glsl.hpp"
 #include "../dx12/win32_window.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
+#include <ftl/atomic_counter.h>
+#include "ftl/fibtex.h"
 
 namespace nova {
-    vulkan_render_engine::vulkan_render_engine(const nova_settings &settings) : render_engine(settings) {
+    vulkan_render_engine::vulkan_render_engine(const nova_settings &settings, ftl::TaskScheduler* task_scheduler) : 
+            render_engine(settings, task_scheduler) {
+
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
         settings_options options = settings.get_options();
@@ -76,7 +80,7 @@ namespace nova {
 
         create_memory_allocator();
 
-        mesh_manager = std::make_shared<mesh_allocator>(&memory_allocator);
+        mesh_manager = std::make_shared<mesh_allocator>(/* 1 GB for mesh data */ 1024 * 1024 * 1024, &memory_allocator, task_scheduler);
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
@@ -376,7 +380,7 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::set_shaderpack(const shaderpack_data& data, ftl::TaskScheduler& scheduler) {
+    void vulkan_render_engine::set_shaderpack(const shaderpack_data& data) {
         NOVA_LOG(DEBUG) << "Vulkan render engine loading new shaderpack";
         if(shaderpack_loaded) {
             destroy_render_passes();
@@ -401,6 +405,32 @@ namespace nova {
         create_synchronization_objects();
 
         shaderpack_loaded = true;
+    }
+
+    VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread() {
+    }
+
+    uint32_t vulkan_render_engine::add_mesh(const mesh_data& mesh) {
+        ftl::AtomicCounter mesh_upload_semaphore(scheduler);
+
+        scheduler->AddTask(&mesh_upload_semaphore,
+            [&](ftl::TaskScheduler* task_scheduler, const mesh_data* mesh) {
+                const uint64_t vertex_size = mesh->vertex_data.size() * sizeof(full_vertex);
+                mesh_memory mem = mesh_manager->allocate_mesh(vertex_size);
+
+                // We have the mesh... now we gotta upload data to it UGHHHHHH
+                // Basically create some small buffers to write the parts of the mesh to, then make a command buffer to 
+                // transfer them to the mesh's memory
+
+                VkCommandBuffer mesh_upload_cmds;
+
+                VkCommandBufferAllocateInfo alloc_info = {};
+                alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                alloc_info.commandBufferCount = 1;
+                alloc_info.commandPool = get_command_buffer_pool_for_current_thread();
+
+                vkAllocateCommandBuffers(device, )
+            }, &mesh);
     }
 
     bool vk_resource_binding::operator==(const vk_resource_binding& other) const {

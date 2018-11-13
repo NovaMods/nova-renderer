@@ -6,9 +6,12 @@
 #include "mesh_allocator.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/utils.hpp"
+#include "vulkan_utils.hpp"
 
 namespace nova {
-    mesh_allocator::mesh_allocator(const uint64_t max_size, const VmaAllocator* alloc) : vma_alloc(alloc), max_size(max_size) {
+    mesh_allocator::mesh_allocator(const uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler *task_scheduler) : 
+            vma_alloc(alloc), max_size(max_size), buffer_fibtex(task_scheduler) {
+
         allocate_new_buffer();
     }
 
@@ -19,6 +22,7 @@ namespace nova {
     }
 
     buffer_range mesh_allocator::get_buffer_part() {
+        ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
         for(auto& buf : buffers) {
             if(!buf.second.available_ranges.empty()) {
                 // There's space. WHOOOOOO
@@ -36,8 +40,8 @@ namespace nova {
         return ret_val;
     }
 
-    buffer_part mesh_allocator::allocate_mesh(const uint64_t size) {
-        buffer_part new_memory;
+    mesh_memory mesh_allocator::allocate_mesh(const uint64_t size) {
+        mesh_memory new_memory;
         new_memory.allocated_size = size;
         uint64_t size_remaining = size;
         while(size_remaining > buffer_part_size) {
@@ -53,8 +57,9 @@ namespace nova {
         return new_memory;
     }
 
-    void mesh_allocator::free_mesh(const buffer_part& memory_to_free) {
+    void mesh_allocator::free_mesh(const mesh_memory& memory_to_free) {
         for(const buffer_range& part : memory_to_free.parts) {
+            ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
             buffers.at(part.buffer).available_ranges.push_back(part);
         }
     }
@@ -82,6 +87,7 @@ namespace nova {
     }
 
     std::pair<VkBuffer, mesh_allocator::mega_buffer_info&> mesh_allocator::allocate_new_buffer() {
+        ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
         if(get_num_bytes_used() + new_buffer_size > max_size) {
             throw out_of_gpu_memory("Cannot exceed max size of " + std::to_string(max_size));
         }
@@ -116,7 +122,7 @@ namespace nova {
         } else {
             // VMA couldn't create it. We're probably out of memory, which I don't want to handle right now
             // TODO: Handle out of memory
-            NOVA_LOG(ERROR) << "Could not allocate a new VkBuffer. Error code " << result;
+            NOVA_LOG(ERROR) << "Could not allocate a new VkBuffer. Error code " << vulkan::vulkan_utils::vk_result_to_string(result);
             throw out_of_gpu_memory("Could not allocated another mesh data buffer");
         }
     }

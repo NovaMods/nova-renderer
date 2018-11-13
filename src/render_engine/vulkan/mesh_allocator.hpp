@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include <vk_mem_alloc.h>
+#include "ftl/fibtex.h"
 
 namespace nova {
     struct buffer_range {
@@ -17,7 +18,7 @@ namespace nova {
         // Don't need to store the size, wince we can look at the global constant `buffer_part_size`
     };
 
-    struct buffer_part {
+    struct mesh_memory {
         std::vector<buffer_range> parts;
         uint64_t allocated_size = 0;
     };
@@ -49,7 +50,7 @@ namespace nova {
          * \param max_size The maximum size, in bytes, that this mesh_allocator is allowed to grow to
          * \param alloc The device memory allocator to allocate new buffers with
          */
-        mesh_allocator(uint64_t max_size, const VmaAllocator* alloc);
+        mesh_allocator(uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler *task_scheduler);
 
         // Copying is for squares
 
@@ -82,15 +83,18 @@ namespace nova {
          * 
          * \return All the information you need to know about the memory for your mesh
          */
-        buffer_part allocate_mesh(uint64_t size);
+        mesh_memory allocate_mesh(uint64_t size);
 
         /*!
          * \brief Frees the mesh, returning it to the pool
          * 
+         * This method currently does not free any VkBuffer objects. If your mesh memory usage suddenly spikes, too 
+         * bad. You're stuck with that now
+         * 
          * \param memory_to_free The mesh memory to free. Usage of that mesh memory after calling this function is not 
          * valid usage
          */
-        void free_mesh(const buffer_part& memory_to_free);
+        void free_mesh(const mesh_memory& memory_to_free);
 
         uint64_t get_num_bytes_allocated() const;
 
@@ -107,6 +111,7 @@ namespace nova {
 
         const VmaAllocator* vma_alloc;
 
+        ftl::Fibtex buffer_fibtex;
         std::unordered_map<VkBuffer, mega_buffer_info> buffers;
         uint64_t max_size;
 

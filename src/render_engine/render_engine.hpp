@@ -16,7 +16,27 @@ namespace nova {
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
-    struct ifence;
+    struct full_vertex {
+        glm::vec3 position;
+        glm::vec3 normal;
+        glm::vec3 tangent;
+        glm::vec2 main_uv;
+        glm::vec2 secondary_uv;
+        uint32_t virtual_texture_id;
+        glm::vec4 additional_stuff;
+    };
+
+    /*!
+     * \brief All the data needed to make a single mesh
+     * 
+     * Meshes all have the same data. Chunks need all the mesh data, and they're most of the world. Entities, GUI, 
+     * particles, etc will probably have FAR fewer vertices than chunks, meaning that there's not a huge savings by 
+     * making them use special vertex formats
+     */
+    struct mesh_data {
+        std::vector<full_vertex> vertex_data;
+        std::vector<uint32_t> indices;
+    };
 
     /*!
      * \brief Abstract class for render backends
@@ -27,6 +47,12 @@ namespace nova {
      */
     class render_engine {
     public:
+        render_engine(const render_engine& other) = delete;
+        render_engine(render_engine&& other) = delete;
+
+        render_engine& operator=(const render_engine& other) = delete;
+        render_engine& operator=(render_engine&& other) = delete;
+
         /*!
          * \brief The engine name, for example "vulkan-1.1"
          * \attention Can be called before init(nova::settings)
@@ -58,7 +84,25 @@ namespace nova {
         *
         * \param data The shaderpack to load
         */
-        virtual void set_shaderpack(const shaderpack_data& data, ftl::TaskScheduler& scheduler) = 0;
+        virtual void set_shaderpack(const shaderpack_data& data) = 0;
+        
+        /*!
+         * \brief Adds a mesh to this render engine
+         * 
+         * The provided mesh data is uploaded to the GPU. The mesh's identifier is returned to you. This is all you 
+         * need for the operations that a Nova render engine supports
+         * 
+         * \param mesh The mesh data to send to the GPU
+         * \return The ID of the mesh that was just created
+         */
+        virtual uint32_t add_mesh(const mesh_data& mesh) = 0;
+
+        /*!
+         * \brief Deletes the mesh with the provided ID from the GPU
+         * 
+         * \param mesh_id The ID of the mesh to delete
+         */
+        virtual void delete_mesh(uint32_t mesh_id) = 0;
 
         /*!
          * \brief Renders a frame like so well, you guys
@@ -69,13 +113,16 @@ namespace nova {
         /*!
          * \brief Initializes the engine, does **NOT** open any window
          * \param settings The settings passed to nova
+         * \param scheduler The task scheduler that this render engine should use
          *
          * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
          * constructor that takes in some settings
          *
          * \attention Called by nova
          */
-        explicit render_engine(const nova_settings &settings){};
+        explicit render_engine(const nova_settings &settings, ftl::TaskScheduler* scheduler) : scheduler(scheduler) {};
+        
+        ftl::TaskScheduler* scheduler;
     };
 }  // namespace nova
 

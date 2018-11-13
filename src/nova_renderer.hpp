@@ -32,8 +32,8 @@ namespace nova {
         /*!
          * \brief Loads the shaderpack with the given name
          *
-         * This method will first try to load from the `shaderpacks/` folder (mimicing Optifine shaders). If the
-         * shaderpack isn't found there, it'll try to load it from the `resourcepacks/` directory (mimicing Bedrock
+         * This method will first try to load from the `shaderpacks/` folder (mimicking Optifine shaders). If the
+         * shaderpack isn't found there, it'll try to load it from the `resourcepacks/` directory (mimicking Bedrock
          * shaders). If the shader can't be found at either place, a `nova::resource_not_found` exception will be thrown
          *
          * \param shaderpack_name The name of the shaderpack to load

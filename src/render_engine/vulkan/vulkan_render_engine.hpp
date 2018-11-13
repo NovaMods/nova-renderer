@@ -57,7 +57,7 @@ namespace nova {
 
     class vulkan_render_engine : public render_engine {
     public:
-        explicit vulkan_render_engine(const nova_settings &settings);
+        explicit vulkan_render_engine(const nova_settings &settings, ftl::TaskScheduler* task_scheduler);
         ~vulkan_render_engine() override;
 
         void render_frame() override;
@@ -66,7 +66,11 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
 
-        void set_shaderpack(const shaderpack_data &data, ftl::TaskScheduler& scheduler) override;
+        void set_shaderpack(const shaderpack_data &data) override;
+        
+        uint32_t add_mesh(const mesh_data& mesh) override;
+
+        void delete_mesh(uint32_t mesh_id) override;
 
     private:
         std::vector<const char *> enabled_validation_layer_names;
@@ -107,7 +111,6 @@ namespace nova {
         std::shared_ptr<mesh_allocator> mesh_manager;
 
         VkCommandPool command_pool;
-        std::vector<VkCommandBuffer> command_buffers;
 
         std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
@@ -195,6 +198,14 @@ namespace nova {
          * \return A list of descriptor set layouts, one for each set in `bindings`
          */
         std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> bindings) const;
+
+        /*!
+         * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the 
+         * current thread
+         * 
+         * \return The command pool for the current thread
+         */
+        VkCommandPool get_command_buffer_pool_for_current_thread();
     };
 
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugReportFlagsEXT flags, 
