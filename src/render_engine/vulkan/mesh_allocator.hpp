@@ -7,6 +7,7 @@
 #define NOVA_RENDERER_MESH_STORE_HPP
 
 #include <vector>
+#include <unordered_map>
 #include <vk_mem_alloc.h>
 
 namespace nova {
@@ -16,14 +17,11 @@ namespace nova {
         // Don't need to store the size, wince we can look at the global constant `buffer_part_size`
     };
 
-    struct mesh_memory {
+    struct buffer_part {
         std::vector<buffer_range> parts;
-        uint64_t allocated_size;
+        uint64_t allocated_size = 0;
     };
-
-    const uint32_t new_buffer_size = 16 * 1024 * 1024;  // 16 Mb
-    const uint32_t buffer_part_size = 16 * 1024;    // 16 Kb
-
+    
     /*!
      * \brief Stores all the mesh data the Nova uses
      * 
@@ -42,13 +40,34 @@ namespace nova {
      */
     class mesh_allocator {
     public:
+        const static uint32_t new_buffer_size = 16 * 1024 * 1024;  // 16 Mb
+        const static uint32_t buffer_part_size = 16 * 1024;    // 16 Kb
+
         /*!
          * \brief Creates a new mesh store. A single physical buffer is created and made ready for use
+         * 
+         * \param max_size The maximum size, in bytes, that this mesh_allocator is allowed to grow to
+         * \param alloc The device memory allocator to allocate new buffers with
          */
-        mesh_allocator(const VmaAllocator* alloc);
+        mesh_allocator(uint64_t max_size, const VmaAllocator* alloc);
+
+        // Copying is for squares
+
+        mesh_allocator(const mesh_allocator& other) = delete;
+
+        mesh_allocator& operator=(const mesh_allocator& other) = delete;
+
+        // Moving is for galaxy brains
+
+        mesh_allocator(mesh_allocator&& other) = default;
+
+        mesh_allocator& operator=(mesh_allocator&& other) noexcept = default;
 
         /*!
          * \brief Deletes the physical buffers
+         * 
+         * Using any memory gotten from an instance of this class after that instance has been destructed will result
+         * in undefined behavior so don't do it
          */
         ~mesh_allocator();
 
@@ -63,7 +82,7 @@ namespace nova {
          * 
          * \return All the information you need to know about the memory for your mesh
          */
-        mesh_memory&& allocate_mesh(uint64_t size);
+        buffer_part allocate_mesh(uint64_t size);
 
         /*!
          * \brief Frees the mesh, returning it to the pool
@@ -71,11 +90,16 @@ namespace nova {
          * \param memory_to_free The mesh memory to free. Usage of that mesh memory after calling this function is not 
          * valid usage
          */
-        void free_mesh(const mesh_memory&& memory_to_free);
+        void free_mesh(const buffer_part& memory_to_free);
+
+        uint64_t get_num_bytes_allocated() const;
+
+        uint64_t get_num_bytes_used() const;
+
+        uint64_t get_num_bytes_available() const;
 
     private:
-        struct mega_buffer {
-            VkBuffer buffer;
+        struct mega_buffer_info {
             VmaAllocation allocation;
             VmaAllocationInfo alloc_info;
             std::vector<buffer_range> available_ranges;
@@ -83,7 +107,8 @@ namespace nova {
 
         const VmaAllocator* vma_alloc;
 
-        std::vector<mega_buffer> buffers;
+        std::unordered_map<VkBuffer, mega_buffer_info> buffers;
+        uint64_t max_size;
 
         /*
          * \brief Allocated a new buffer to allocate mesh memory out of
@@ -94,8 +119,20 @@ namespace nova {
          * proper cross-queue barriers so we don't try rendering with this thing while we're still writing to it
          * 
          * Good luck!
+         * 
+         * \return The buffer and info that were just created
          */
-        void allocate_new_buffer();
+        std::pair<VkBuffer, mega_buffer_info&> allocate_new_buffer();
+
+        /*!
+        * \brief Allocates a buffer range
+        *
+        * If there's space in an existing buffer, that range is removed from the buffer's list of ranges and is
+        * returned
+        *
+        * If there's not space, a new buffer is allocated and one of its parts is returned
+        */
+        buffer_range get_buffer_part();
     };
 }
 

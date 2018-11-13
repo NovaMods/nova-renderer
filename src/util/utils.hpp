@@ -71,6 +71,8 @@ namespace nova {
     public:                                                                                                                                                                                            \
         explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)){};                                                                                                                     \
     }
+
+    NOVA_EXCEPTION(out_of_gpu_memory);
 }  // namespace nova
 
 #endif  // RENDERER_UTILS_H
