@@ -87,6 +87,10 @@ namespace nova {
             for(const auto& output : pass.texture_outputs) {
                 resource_to_write_pass[output.name].push_back(pass.name);
             }
+
+            for(const auto& buffer_output : pass.output_buffers) {
+                resource_to_write_pass[buffer_output].push_back(pass.name);
+            }
         }
 
         /*
@@ -169,7 +173,7 @@ namespace nova {
             for(const auto& texture_name : all_inputs.color_attachments) {
                 if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
                     // TODO: Ignore the implicitly defined resources
-                    NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";
+                    NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from texture " << texture_name << ", but no pass writes to it";
 
                 } else {
                     const auto& write_passes = resource_to_write_pass.at(texture_name);
@@ -184,10 +188,16 @@ namespace nova {
 
         for(const auto& buffer_name : pass.input_buffers) {
             if(resource_to_write_pass.find(buffer_name) == resource_to_write_pass.end()) {
+                NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from buffer " << buffer_name << ", but no passes write to it";
 
+            } else {
+                const auto& write_passes = resource_to_write_pass.at(buffer_name);
+                ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
+
+                for(const auto& write_pass : write_passes) {
+                    add_dependent_passes(write_pass, passes, ordered_passes, resource_to_write_pass, depth + 1);
+                }
             }
-
-            const auto& write_pass = resource_to_write_pass.at(buffer_name);
         }
     }
 
