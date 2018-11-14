@@ -10,7 +10,10 @@
         "depthTexture": {
             "name": "DepthBuffer",
             "clear": true
-        }
+        },
+        "bufferInputs": [
+            "NovaMegaMesh"
+        ]
     }, 
     {
         "name": "Final",

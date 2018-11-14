@@ -408,6 +408,7 @@ namespace nova {
     }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread() {
+
     }
 
     uint32_t vulkan_render_engine::add_mesh(const mesh_data& mesh) {
