@@ -12,7 +12,8 @@
             "clear": true
         },
         "bufferInputs": [
-            "NovaMegaMesh"
+            "NovaMegaMesh_Vertices",
+            "NovaMegaMesh_Indices"
         ]
     }, 
     {

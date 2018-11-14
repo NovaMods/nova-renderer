@@ -19,13 +19,13 @@
 #include "../../util/utils.hpp"
 
 #if _WIN32
-    #if _MSC_VER <= 1915
-        namespace fs = std::experimental::filesystem;
-    #else
-        namespace fs = std::filesystem;
-    #endif
+#if _MSC_VER <= 1915
+namespace fs = std::experimental::filesystem;
 #else
-    namespace fs = std::filesystem;
+namespace fs = std::filesystem;
+#endif
+#else
+namespace fs = std::filesystem;
 #endif
 
 namespace nova {
@@ -86,16 +86,9 @@ namespace nova {
         DisableAlphaWrite,
     };
 
-    enum class texture_filter_enum {
-        TexelAA, 
-        Bilinear, 
-        Point
-    };
+    enum class texture_filter_enum { TexelAA, Bilinear, Point };
 
-    enum class wrap_mode_enum {
-        Repeat, 
-        Clamp
-    };
+    enum class wrap_mode_enum { Repeat, Clamp };
 
     /*!
      * \brief The kind of data in a vertex attribute
@@ -194,57 +187,17 @@ namespace nova {
         InAppPackage
     };
 
-    enum class msaa_support_enum {
-        MSAA, 
-        Both, 
-        None
-    };
+    enum class msaa_support_enum { MSAA, Both, None };
 
-    enum class stencil_op_enum {
-        Keep, 
-        Zero, 
-        Replace, 
-        Incr, 
-        IncrWrap, 
-        Decr, 
-        DecrWrap, 
-        Invert
-    };
+    enum class stencil_op_enum { Keep, Zero, Replace, Incr, IncrWrap, Decr, DecrWrap, Invert };
 
-    enum class compare_op_enum {
-		Never, 
-        Less, 
-        LessEqual, 
-        Greater, 
-        GreaterEqual, 
-        Equal, 
-        NotEqual, 
-        Always 
-    };
+    enum class compare_op_enum { Never, Less, LessEqual, Greater, GreaterEqual, Equal, NotEqual, Always };
 
-    enum class primitive_topology_enum {
-        Triangles, 
-        Lines
-    };
+    enum class primitive_topology_enum { Triangles, Lines };
 
-    enum class blend_factor_enum {
-        One, 
-        Zero, 
-        SrcColor, 
-        DstColor, 
-        OneMinusSrcColor, 
-        OneMinusDstColor, 
-        SrcAlpha, 
-        DstAlpha, 
-        OneMinusSrcAlpha, 
-        OneMinusDstAlpha
-    };
+    enum class blend_factor_enum { One, Zero, SrcColor, DstColor, OneMinusSrcColor, OneMinusDstColor, SrcAlpha, DstAlpha, OneMinusSrcAlpha, OneMinusDstAlpha };
 
-    enum class render_queue_enum {
-        Transparent, 
-        Opaque, 
-        Cutout
-    };
+    enum class render_queue_enum { Transparent, Opaque, Cutout };
 
     enum class pixel_format_enum {
         RGBA8,
@@ -254,10 +207,7 @@ namespace nova {
         DepthStencil,
     };
 
-    enum class texture_dimension_type_enum {
-        ScreenRelative, 
-        Absolute
-    };
+    enum class texture_dimension_type_enum { ScreenRelative, Absolute };
 
     /*!
      * \brief Defines a sampler to use for a texture
@@ -428,7 +378,7 @@ namespace nova {
         /*!
          * \brief Merges this pipeline with the parent, returning the merged pipeline
          */
-        pipeline_data merge_with_parent(const pipeline_data& parent_pipeline) const;
+        pipeline_data merge_with_parent(const pipeline_data &parent_pipeline) const;
     };
 
     struct texture_format {
@@ -451,7 +401,7 @@ namespace nova {
          */
         float height;
 
-        glm::uvec2 get_size_in_pixels(const VkExtent2D& screen_size) const;
+        glm::uvec2 get_size_in_pixels(const VkExtent2D &screen_size) const;
 
         bool operator==(const texture_format &other) const;
         bool operator!=(const texture_format &other) const;
@@ -582,6 +532,16 @@ namespace nova {
          * \brief The depth texture this pass will write to
          */
         std::optional<texture_attachment> depth_texture;
+
+        /*!
+         * \brief All the buffers that this renderpass reads from
+         */
+        std::vector<std::string> input_buffers;
+
+        /*!
+         * \brief All the buffers that this renderpass writes to
+         */
+        std::vector<std::string> output_buffers;
 
         render_pass_data() = default;
     };
