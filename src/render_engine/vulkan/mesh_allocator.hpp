@@ -10,7 +10,6 @@
 #include <unordered_map>
 #include <vk_mem_alloc.h>
 #include "ftl/fibtex.h"
-#include "../render_engine.hpp"
 
 namespace nova {
     struct buffer_range {
@@ -27,9 +26,9 @@ namespace nova {
     /*!
      * \brief Stores all the mesh data the Nova uses
      * 
-     * Nova's mesh data isn't what most folk think of as mesh data. Rather than have one buffer for each object, Nova 
+     * Nova's mesh data isnt' what most folk think of as mesh data. Rather than have one buffer for each object, Nova 
      * has one buffer per 64 MB of objects. This allows it to drastically reduce the number of drawcalls needed for 
-     * anything
+     * anything.
      * 
      * When a mesh is added, the mesh automatically gets a 16k block of memory (this may change later after some 
      * testing). It can get more than one if it's a larger mesh - so meshes can be bigger than 16k if they want to.
@@ -42,18 +41,16 @@ namespace nova {
      */
     class mesh_allocator {
     public:
-        const static uint32_t new_buffer_size = 16 * 1024 * 1024 * sizeof(full_vertex);  // 16m vertices
-        const static uint32_t buffer_part_size = 16 * 1024 * sizeof(full_vertex);    // 16k vertices
+        const static uint32_t new_buffer_size = 16 * 1024 * 1024;  // 16 Mb
+        const static uint32_t buffer_part_size = 16 * 1024;    // 16 Kb
 
         /*!
          * \brief Creates a new mesh store. A single physical buffer is created and made ready for use
          * 
          * \param max_size The maximum size, in bytes, that this mesh_allocator is allowed to grow to
          * \param alloc The device memory allocator to allocate new buffers with
-         * \param task_scheduler Nova's global task scheduler, which it used here to create fibtexes to synchronize 
-         * access to the physical buffers
          */
-        mesh_allocator(uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler* task_scheduler);
+        mesh_allocator(uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler *task_scheduler);
 
         // Copying is for squares
 
@@ -82,11 +79,11 @@ namespace nova {
          * used for the new mesh's parts. The parts may be in separate buffers and may not be completely congruent! 
          * This code has no qualms about spreading your mesh over multiple buffers
          * 
-         * \param num_verts The number of vertices that the new mesh has
+         * \param size The size, in bytes, of the needed mesh
          * 
          * \return All the information you need to know about the memory for your mesh
          */
-        mesh_memory allocate_mesh(uint64_t num_verts);
+        mesh_memory allocate_mesh(uint64_t size);
 
         /*!
          * \brief Frees the mesh, returning it to the pool
@@ -99,20 +96,11 @@ namespace nova {
          */
         void free_mesh(const mesh_memory& memory_to_free);
 
-        /*!
-         * \brief Retrieves the total number of vertices that can fit in all the buffers owned by this mesh_allocator
-         */
-        uint64_t get_total_vertex_capacity() const;
+        uint64_t get_num_bytes_allocated() const;
 
-        /*!
-         * \brief Gets the count of vertices that are currently being used by a mesh
-         */
-        uint64_t get_allocated_vertex_count() const;
+        uint64_t get_num_bytes_used() const;
 
-        /*!
-         * \brief Gets the number of vertices that can fit into unused space in any of the buffers
-         */
-        uint64_t get_available_vertex_count() const;
+        uint64_t get_num_bytes_available() const;
 
     private:
         struct mega_buffer_info {

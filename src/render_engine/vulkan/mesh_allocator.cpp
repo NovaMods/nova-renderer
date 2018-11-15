@@ -64,11 +64,11 @@ namespace nova {
         }
     }
 
-    uint64_t mesh_allocator::get_total_vertex_capacity() const {
+    uint64_t mesh_allocator::get_num_bytes_allocated() const {
         return buffers.size() * new_buffer_size;
     }
 
-    uint64_t mesh_allocator::get_allocated_vertex_count() const {
+    uint64_t mesh_allocator::get_num_bytes_used() const {
         const uint64_t num_buffer_parts = new_buffer_size / buffer_part_size;
         uint64_t num_buffer_parts_used = 0;
         for(const auto& [buf, buf_info] : buffers) {
@@ -77,7 +77,7 @@ namespace nova {
         return num_buffer_parts_used * buffer_part_size;
     }
 
-    uint64_t mesh_allocator::get_available_vertex_count() const {
+    uint64_t mesh_allocator::get_num_bytes_available() const {
         uint64_t num_buffer_parts_available = 0;
         for(const auto& [buf, buf_info] : buffers) {
             num_buffer_parts_available += buf_info.available_ranges.size();
@@ -88,7 +88,7 @@ namespace nova {
 
     std::pair<VkBuffer, mesh_allocator::mega_buffer_info&> mesh_allocator::allocate_new_buffer() {
         ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
-        if(get_allocated_vertex_count() + new_buffer_size > max_size) {
+        if(get_num_bytes_used() + new_buffer_size > max_size) {
             throw out_of_gpu_memory("Cannot exceed max size of " + std::to_string(max_size));
         }
 

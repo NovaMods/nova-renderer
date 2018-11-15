@@ -95,8 +95,6 @@ namespace nova {
         std::vector<VkFramebuffer> swapchain_framebuffers;
         uint32_t current_swapchain_index = 0;
 
-        std::unordered_map<std::thread::id, VkCommandPool> command_pools_by_thread;
-
         struct vk_render_pass {
             VkRenderPass pass;
             render_pass_data nova_data;
@@ -111,6 +109,8 @@ namespace nova {
         std::unordered_map<std::string, material_data> materials;
 
         std::shared_ptr<mesh_allocator> mesh_manager;
+
+        VkCommandPool command_pool;
 
         std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
@@ -143,6 +143,9 @@ namespace nova {
         void destroy_render_passes();
         void create_graphics_pipelines(const std::vector<pipeline_data>& pipelines);
         void destroy_graphics_pipelines();
+        void create_command_pool();
+        void destroy_command_pool();
+        void create_command_buffers();
         void create_synchronization_objects();
         void destroy_synchronization_objects();
         static VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
