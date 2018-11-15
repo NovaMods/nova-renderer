@@ -3,28 +3,26 @@
 //
 
 #include "vulkan_render_engine.hpp"
-#include <vector>
 #include <set>
+#include <vector>
 #include "../../util/logger.hpp"
 #define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.h>
-#include "vulkan_type_converters.hpp"
-#include "../../util/utils.hpp"
-#include "../../loading/shaderpack/render_graph_builder.hpp"
-#include "../../../3rdparty/SPIRV-Cross/spirv_glsl.hpp"
-#include "../dx12/win32_window.hpp"
-#include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include <ftl/atomic_counter.h>
+#include <vk_mem_alloc.h>
+#include "../../../3rdparty/SPIRV-Cross/spirv_glsl.hpp"
+#include "../../loading/shaderpack/render_graph_builder.hpp"
+#include "../../loading/shaderpack/shaderpack_loading.hpp"
+#include "../../util/utils.hpp"
+#include "../dx12/win32_window.hpp"
 #include "ftl/fibtex.h"
+#include "vulkan_type_converters.hpp"
 
 namespace nova {
-    vulkan_render_engine::vulkan_render_engine(const nova_settings &settings, ftl::TaskScheduler* task_scheduler) : 
-            render_engine(settings, task_scheduler) {
-
+    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler) : render_engine(settings, task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
         settings_options options = settings.get_options();
-        const auto &version = options.vulkan.application_version;
+        const auto& version = options.vulkan.application_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -45,7 +43,7 @@ namespace nova {
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_validation_layer_names.size());
         create_info.ppEnabledLayerNames = enabled_validation_layer_names.data();
 
-        std::vector<const char *> enabled_extension_names;
+        std::vector<const char*> enabled_extension_names;
         enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #ifdef linux
         enabled_extension_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
@@ -127,7 +125,7 @@ namespace nova {
     void vulkan_render_engine::create_device() {
         uint32_t device_count;
         NOVA_THROW_IF_VK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, nullptr), render_engine_initialization_exception);
-        auto *physical_devices = new VkPhysicalDevice[device_count];
+        auto* physical_devices = new VkPhysicalDevice[device_count];
         NOVA_THROW_IF_VK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, physical_devices), render_engine_initialization_exception);
 
         uint32_t graphics_family_idx = 0xFFFFFFFF;
@@ -151,7 +149,7 @@ namespace nova {
 
             uint32_t queue_family_count;
             vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
-            auto *family_properties = new VkQueueFamilyProperties[queue_family_count];
+            auto* family_properties = new VkQueueFamilyProperties[queue_family_count];
             vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, family_properties);
 
             for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
@@ -216,7 +214,7 @@ namespace nova {
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.pEnabledFeatures = &physical_device_features;
         device_create_info.enabledExtensionCount = 1;
-        const char *swapchain_extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+        const char* swapchain_extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
         device_create_info.ppEnabledExtensionNames = &swapchain_extension;
         device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_validation_layer_names.size());
         if(!enabled_validation_layer_names.empty()) {
@@ -231,7 +229,7 @@ namespace nova {
         vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
         copy_queue_index = copy_family_idx;
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
-        
+
         physical_device = chosen_device;
 
         delete[] physical_devices;
@@ -244,7 +242,7 @@ namespace nova {
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
 
         std::set<std::string> required = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-        for(const auto &extension : available) {
+        for(const auto& extension : available) {
             required.erase(extension.extensionName);
         }
 
@@ -293,7 +291,7 @@ namespace nova {
         extent.width = std::min(extent.width, capabilities.maxImageExtent.width);
         extent.height = std::max(extent.height, capabilities.minImageExtent.height);
         extent.height = std::min(extent.height, capabilities.maxImageExtent.height);
-        
+
         VkSwapchainCreateInfoKHR swapchain_create_info;
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchain_create_info.pNext = nullptr;
@@ -324,12 +322,12 @@ namespace nova {
         swapchain_extent = extent;
     }
 
-    VkSurfaceFormatKHR vulkan_render_engine::choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available) {
+    VkSurfaceFormatKHR vulkan_render_engine::choose_swapchain_format(const std::vector<VkSurfaceFormatKHR>& available) {
         if(available.size() == 1 && available.at(0).format == VK_FORMAT_UNDEFINED) {
             return {VK_FORMAT_B8G8R8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
         }
 
-        for(const auto &format : available) {
+        for(const auto& format : available) {
             if(format.format == VK_FORMAT_B8G8R8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return format;
             }
@@ -338,8 +336,8 @@ namespace nova {
         return available.at(0);
     }
 
-    VkPresentModeKHR vulkan_render_engine::choose_present_mode(const std::vector<VkPresentModeKHR> &available) {
-        for(const auto &mode : available) {
+    VkPresentModeKHR vulkan_render_engine::choose_present_mode(const std::vector<VkPresentModeKHR>& available) {
+        for(const auto& mode : available) {
             if(mode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return mode;
             }
@@ -408,7 +406,22 @@ namespace nova {
     }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread() {
+        const std::thread::id cur_thread_id = std::this_thread::get_id();
 
+        if(command_pools_by_thread.find(cur_thread_id) == command_pools_by_thread.end()) {
+            // No pool for this thread yet :(
+            VkCommandPoolCreateInfo command_pool_create_info;
+            command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            command_pool_create_info.pNext = nullptr;
+            command_pool_create_info.flags = 0;
+            command_pool_create_info.queueFamilyIndex = graphics_queue_index;
+
+            VkCommandPool command_pool;
+            NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
+            command_pools_by_thread[cur_thread_id] = command_pool;
+        }
+
+        return command_pools_by_thread.at(cur_thread_id);
     }
 
     uint32_t vulkan_render_engine::add_mesh(const mesh_data& mesh) {
@@ -420,7 +433,7 @@ namespace nova {
                 mesh_memory mem = mesh_manager->allocate_mesh(vertex_size);
 
                 // We have the mesh... now we gotta upload data to it UGHHHHHH
-                // Basically create some small buffers to write the parts of the mesh to, then make a command buffer to 
+                // Basically create some small buffers to write the parts of the mesh to, then make a command buffer to
                 // transfer them to the mesh's memory
 
                 VkCommandBuffer mesh_upload_cmds;
@@ -431,16 +444,15 @@ namespace nova {
                 alloc_info.commandPool = get_command_buffer_pool_for_current_thread();
 
                 vkAllocateCommandBuffers(device, )
-            }, &mesh);
+            },
+            &mesh);
     }
 
     bool vk_resource_binding::operator==(const vk_resource_binding& other) const {
         return other.set == set && other.binding == binding && other.descriptorCount == descriptorCount && other.descriptorType == descriptorType;
     }
 
-    bool vk_resource_binding::operator!=(const vk_resource_binding& other) const {
-        return !(*this == other);
-    }
+    bool vk_resource_binding::operator!=(const vk_resource_binding& other) const { return !(*this == other); }
 
     void vulkan_render_engine::create_render_passes(const std::vector<render_pass_data>& passes) {
         NOVA_LOG(DEBUG) << "Flattening frame graph...";
@@ -455,7 +467,7 @@ namespace nova {
 
         render_passes_by_order = order_passes(regular_render_passes);
 
-        for(const std::string &pass_name : render_passes_by_order) {
+        for(const std::string& pass_name : render_passes_by_order) {
             VkSubpassDescription subpass_description;
             subpass_description.flags = 0;
             subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -479,7 +491,7 @@ namespace nova {
             render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
             render_pass_create_info.pNext = nullptr;
             render_pass_create_info.flags = 0;
-            render_pass_create_info.subpassCount= 1;
+            render_pass_create_info.subpassCount = 1;
             render_pass_create_info.pSubpasses = &subpass_description;
             render_pass_create_info.dependencyCount = 1;
             render_pass_create_info.pDependencies = &image_available_dependency;
@@ -557,7 +569,7 @@ namespace nova {
 
             NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &nova_pipeline.layout), render_engine_initialization_exception);
 
-            for(const auto &pair : shader_modules) {
+            for(const auto& pair : shader_modules) {
                 VkPipelineShaderStageCreateInfo shader_stage_create_info;
                 shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 shader_stage_create_info.pNext = nullptr;
@@ -588,12 +600,12 @@ namespace nova {
             input_assembly_create_info.flags = 0;
             input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
             switch(data.primitive_mode) {
-            case primitive_topology_enum::Triangles:
-                input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-                break;
-            case primitive_topology_enum::Lines:
-                input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-                break;
+                case primitive_topology_enum::Triangles:
+                    input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+                    break;
+                case primitive_topology_enum::Lines:
+                    input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+                    break;
             }
 
             VkViewport viewport;
@@ -702,20 +714,9 @@ namespace nova {
         write_to_file(spirv, "debug.spirv");
 
         VkShaderModule module;
-        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module),
-                               render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module), render_engine_initialization_exception);
 
         return module;
-    }
-
-    void vulkan_render_engine::create_command_pool() {
-        VkCommandPoolCreateInfo command_pool_create_info;
-        command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        command_pool_create_info.pNext = nullptr;
-        command_pool_create_info.flags = 0;
-        command_pool_create_info.queueFamilyIndex = graphics_queue_index;
-
-        NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
     }
 
     void vulkan_render_engine::create_command_buffers() {
@@ -760,20 +761,18 @@ namespace nova {
             vkDestroyFence(device, submit_fences.at(i), nullptr);
         }
     }
-    
-    void vulkan_render_engine::destroy_command_pool() {
-        vkDestroyCommandPool(device, command_pool, nullptr);
-    }
+
+    void vulkan_render_engine::destroy_command_pool() { vkDestroyCommandPool(device, command_pool, nullptr); }
 
     void vulkan_render_engine::destroy_graphics_pipelines() {
-        for(const auto &[_, pipeline] : pipelines) {
+        for(const auto& [_, pipeline] : pipelines) {
             vkDestroyPipeline(device, pipeline.pipeline, nullptr);
             vkDestroyPipelineLayout(device, pipeline.layout, nullptr);
         }
     }
 
     void vulkan_render_engine::destroy_render_passes() {
-        for(const auto &render_pass : render_passes_by_name) {
+        for(const auto& render_pass : render_passes_by_name) {
             vkDestroyRenderPass(device, render_pass.second.pass, nullptr);
         }
         render_passes_by_order.clear();
@@ -788,20 +787,14 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::destroy_swapchain() {
-        vkDestroySwapchainKHR(device, swapchain, nullptr);
-    }
+    void vulkan_render_engine::destroy_swapchain() { vkDestroySwapchainKHR(device, swapchain, nullptr); }
 
-    void vulkan_render_engine::destroy_memory_allocator() {
-        vmaDestroyAllocator(memory_allocator);
-    }
+    void vulkan_render_engine::destroy_memory_allocator() { vmaDestroyAllocator(memory_allocator); }
 
-    void vulkan_render_engine::destroy_device() {
-        vkDestroyDevice(device, nullptr);
-    }
+    void vulkan_render_engine::destroy_device() { vkDestroyDevice(device, nullptr); }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
-        VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char *layer_prefix, const char *msg, void *user_data) {
+        VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* msg, void* user_data) {
         if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
             NOVA_LOG(ERROR) << "[" << layer_prefix << "] " << msg;
         }
@@ -824,7 +817,7 @@ namespace nova {
         }
 #ifndef _WIN32
         if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
-            void *array[50];
+            void* array[50];
             int size;
 
             // get void*'s for all entries on the stack
@@ -832,7 +825,7 @@ namespace nova {
 
             // print out all the frames to stderr
             LOG(ERROR) << "Stacktrace: ";
-            char **data = backtrace_symbols(array, size);
+            char** data = backtrace_symbols(array, size);
             for(int i = 0; i < size; i++) {
                 LOG(ERROR) << "\t" << data[i];
             }
@@ -842,9 +835,7 @@ namespace nova {
         return VK_FALSE;
     }
 
-    std::shared_ptr<iwindow> vulkan_render_engine::get_window() const {
-        return window;
-    }
+    std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }
 
     void vulkan_render_engine::render_frame() {
         vkWaitForFences(device, 1, &submit_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
@@ -899,8 +890,7 @@ namespace nova {
         create_command_buffers();
     }
 
-    std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>>
-    vulkan_render_engine::to_vk_attachment_info(std::vector<std::string> &attachment_names) {
+    std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>> vulkan_render_engine::to_vk_attachment_info(std::vector<std::string>& attachment_names) {
         std::vector<VkAttachmentDescription> attachment_descriptions;
         attachment_descriptions.reserve(attachment_names.size());
 
@@ -947,9 +937,7 @@ namespace nova {
 
             case pixel_format_enum::DepthStencil:
                 return VK_FORMAT_D24_UNORM_S8_UINT;
-
         }
-
 
         return VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
     }
@@ -984,8 +972,7 @@ namespace nova {
             alloc_create_info.pool = VK_NULL_HANDLE;
             alloc_create_info.pUserData = nullptr;
 
-            vmaCreateImage(memory_allocator, &image_create_info, &alloc_create_info, &texture.image,
-                           &texture.allocation, &texture.vma_info);
+            vmaCreateImage(memory_allocator, &image_create_info, &alloc_create_info, &texture.image, &texture.allocation, &texture.vma_info);
 
             VkImageViewCreateInfo image_view_create_info = {};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1002,10 +989,10 @@ namespace nova {
 
             dynamic_textures_by_name[texture_data.name] = texture;
         }
-
     }
 
-    void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource) {
+    void vulkan_render_engine::add_resource_to_bindings(
+        std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource) {
         const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
@@ -1024,15 +1011,12 @@ namespace nova {
             const vk_resource_binding& existing_binding = bindings.at(resource.name);
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
-                NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
-                    << " in different shader stages. This is not allowed. Use unique names";
-
+                NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name << " in different shader stages. This is not allowed. Use unique names";
             }
         }
     }
 
-    void vulkan_render_engine::get_shader_module_descriptors(std::vector<uint32_t> spirv,
-                                                          std::unordered_map<std::string, vk_resource_binding>& bindings) {
+    void vulkan_render_engine::get_shader_module_descriptors(std::vector<uint32_t> spirv, std::unordered_map<std::string, vk_resource_binding>& bindings) {
         const spirv_cross::CompilerGLSL shader_compiler(spirv);
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
@@ -1065,8 +1049,8 @@ namespace nova {
         for(uint32_t i = 0; i < bindings_by_set.size(); i++) {
             if(bindings_by_set.find(i) == bindings_by_set.end()) {
                 NOVA_LOG(ERROR) << "Could not get information for descriptor set " << i << "; most likely you skipped"
-                << " a descriptor set in your shader. Ensure that all shaders for this pipeline together don't have"
-                << " any gaps in the descriptor sets they declare";
+                                << " a descriptor set in your shader. Ensure that all shaders for this pipeline together don't have"
+                                << " any gaps in the descriptor sets they declare";
                 throw shader_layout_creation_failed("Descriptor set " + std::to_string(i) + " not present");
             }
 
