@@ -44,6 +44,9 @@ namespace nova {
         const static uint32_t new_buffer_size = 16 * 1024 * 1024;  // 16 Mb
         const static uint32_t buffer_part_size = 16 * 1024;    // 16 Kb
 
+        static_assert(new_buffer_size % 32 == 0, "new_buffer_size must be a multiple of 32");
+        static_assert(buffer_part_size % 32 == 0, "buffer_part_size must be a multiple of 32");
+
         /*!
          * \brief Creates a new mesh store. A single physical buffer is created and made ready for use
          * 

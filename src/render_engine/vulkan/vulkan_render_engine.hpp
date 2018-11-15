@@ -13,19 +13,17 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32 1
 #endif
+
 #include <vulkan/vulkan.h>
 #include <thread>
-#include <mutex>
-#include "vulkan_utils.hpp"
-#include "x11_window.hpp"
 
 #include <vk_mem_alloc.h>
 #include "../dx12/win32_window.hpp"
-#include "spirv_glsl.hpp"
 #include "mesh_allocator.hpp"
+#include "spirv_glsl.hpp"
 
 namespace nova {
-    struct vulkan_queue {
+    struct vk_queue {
         VkQueue queue;
         uint32_t queue_idx;
     };
@@ -35,6 +33,11 @@ namespace nova {
 
         bool operator==(const vk_resource_binding& other) const;
         bool operator!=(const vk_resource_binding& other) const;
+    };
+
+    struct vk_render_pass {
+        VkRenderPass pass;
+        render_pass_data nova_data;
     };
 
     struct vk_pipeline {
@@ -55,9 +58,16 @@ namespace nova {
         VmaAllocationInfo vma_info;
     };
 
+    struct vk_buffer {
+        VkBuffer buffer;
+
+        VmaAllocation allocation;
+        VmaAllocationInfo alloc_info;
+    };
+
     class vulkan_render_engine : public render_engine {
     public:
-        explicit vulkan_render_engine(const nova_settings &settings, ftl::TaskScheduler* task_scheduler);
+        explicit vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler);
         ~vulkan_render_engine() override;
 
         void render_frame() override;
@@ -66,14 +76,14 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
 
-        void set_shaderpack(const shaderpack_data &data) override;
-        
+        void set_shaderpack(const shaderpack_data& data) override;
+
         uint32_t add_mesh(const mesh_data& mesh) override;
 
         void delete_mesh(uint32_t mesh_id) override;
 
     private:
-        std::vector<const char *> enabled_validation_layer_names;
+        std::vector<const char*> enabled_validation_layer_names;
 
         VkInstance vk_instance;
 #ifdef linux
@@ -95,10 +105,6 @@ namespace nova {
         std::vector<VkFramebuffer> swapchain_framebuffers;
         uint32_t current_swapchain_index = 0;
 
-        struct vk_render_pass {
-            VkRenderPass pass;
-            render_pass_data nova_data;
-        };
         std::unordered_map<std::string, vk_render_pass> render_passes_by_name;
         std::vector<std::string> render_passes_by_order;
 
@@ -109,8 +115,11 @@ namespace nova {
         std::unordered_map<std::string, material_data> materials;
 
         std::shared_ptr<mesh_allocator> mesh_manager;
+        ftl::Fibtex mesh_staging_buffers_mutex;
+        std::vector<vk_buffer> mesh_staging_buffers;
 
-        std::unordered_map<std::thread::id, VkCommandPool> command_pools_by_thread;
+        ftl::Fibtex command_pools_by_queue_idx_mutex;
+        std::unordered_map<uint32_t, std::unordered_map<std::thread::id, VkCommandPool>> command_pools_by_queue_idx;
 
         std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
@@ -145,8 +154,8 @@ namespace nova {
         void destroy_graphics_pipelines();
         void create_synchronization_objects();
         void destroy_synchronization_objects();
-        static VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR> &available);
-        static VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &available);
+        static VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR>& available);
+        static VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR>& available);
         VkExtent2D choose_swapchain_extend() const;
         void recreate_swapchain();
 
@@ -159,12 +168,11 @@ namespace nova {
         PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
         PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
-        
+
         VkDebugReportCallbackEXT debug_callback;
 #endif
 
-        std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>>
-        to_vk_attachment_info(std::vector<std::string> &attachment_names);
+        std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>> to_vk_attachment_info(std::vector<std::string>& attachment_names);
 
         static VkFormat to_vk_format(pixel_format_enum format);
 
@@ -173,41 +181,52 @@ namespace nova {
          * \param texture_datas All the texture_datas that you want to create a dynamic texture for
          */
         void create_textures(const std::vector<texture_resource_data>& texture_datas);
-        static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding> &bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource &resource);
+        static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource);
 
         VkShaderModule create_shader_module(std::vector<uint32_t> spirv) const;
 
         /*!
-         * \brief Gets all the descriptor bindings from the provided SPIR-V code, performing basic validation that the 
+         * \brief Gets all the descriptor bindings from the provided SPIR-V code, performing basic validation that the
          * user hasn't declared two different bindings with the same name
-         * 
+         *
          * \param spirv The SPIR-V shader code to get bindings from
-         * \param bindings An in/out array that holds all the existing binding before this method, and holds the 
+         * \param bindings An in/out array that holds all the existing binding before this method, and holds the
          * existing bindings plus new ones declared in the shader after this method
          */
-        static void get_shader_module_descriptors(std::vector<uint32_t> spirv,
-                                        std::unordered_map<std::string, vk_resource_binding>& bindings);
+        static void get_shader_module_descriptors(std::vector<uint32_t> spirv, std::unordered_map<std::string, vk_resource_binding>& bindings);
 
         /*!
-         * \brief Creates descriptor set layouts for all the descriptor set bindings 
-         * 
+         * \brief Creates descriptor set layouts for all the descriptor set bindings
+         *
          * \param bindings All the bindings we know about
          * \return A list of descriptor set layouts, one for each set in `bindings`
          */
         std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> bindings) const;
 
         /*!
-         * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the 
+         * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
          * current thread
-         * 
+         *
+         * \param queue_index the index of the queue we need to get a command pool for
+         *
          * \return The command pool for the current thread
          */
-        VkCommandPool get_command_buffer_pool_for_current_thread();
+        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
+
+        /*!
+         * \brief If a mesh staging buffer is available, it's returned to the user. Otherwise, a new mesh staging
+         * buffer is created - and then returned to the user
+         */
+        vk_buffer get_or_allocate_mesh_staging_buffer();
+
+        /*!
+         * \brief Returns the provided buffer to the pool of staging buffers
+         */
+        void free_mesh_staging_buffer(const vk_buffer& buffer);
     };
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugReportFlagsEXT flags, 
-        VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, 
-        const char *layer_prefix, const char *message, void *user_data);
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
+        VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* message, void* user_data);
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP

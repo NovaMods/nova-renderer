@@ -16,6 +16,7 @@
 #include "../dx12/win32_window.hpp"
 #include "ftl/fibtex.h"
 #include "vulkan_type_converters.hpp"
+#include "vulkan_utils.hpp"
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler) : render_engine(settings, task_scheduler) {
@@ -405,16 +406,20 @@ namespace nova {
         shaderpack_loaded = true;
     }
 
-    VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread() {
+    VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
+        ftl::LockGuard l(command_pools_by_queue_idx_mutex);
         const std::thread::id cur_thread_id = std::this_thread::get_id();
 
+        auto& command_pools_by_thread = command_pools_by_queue_idx[queue_index];
+
         if(command_pools_by_thread.find(cur_thread_id) == command_pools_by_thread.end()) {
+            NOVA_LOG(TRACE) << "Allocating command pool for thread " << cur_thread_id << " and queue " << queue_index;
             // No pool for this thread yet :(
             VkCommandPoolCreateInfo command_pool_create_info;
             command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
             command_pool_create_info.pNext = nullptr;
             command_pool_create_info.flags = 0;
-            command_pool_create_info.queueFamilyIndex = graphics_queue_index;
+            command_pool_create_info.queueFamilyIndex = queue_index;
 
             VkCommandPool command_pool;
             NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
@@ -424,28 +429,87 @@ namespace nova {
         return command_pools_by_thread.at(cur_thread_id);
     }
 
+    vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer() {
+        ftl::LockGuard l(mesh_staging_buffers_mutex);
+
+        if(!mesh_staging_buffers.empty()) {
+            // Aw yeah don't need to allocate a buffer
+            const vk_buffer ret_val = mesh_staging_buffers.back();
+            mesh_staging_buffers.pop_back();
+            return ret_val;
+        }
+
+        vk_buffer new_buffer = {};
+
+        VkBufferCreateInfo buffer_create_info = {};
+        buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        buffer_create_info.size = mesh_allocator::buffer_part_size;
+        buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_create_info.queueFamilyIndexCount = 1;
+        buffer_create_info.pQueueFamilyIndices = &copy_queue_index;
+
+        VmaAllocationCreateInfo allocation_create_info = {};
+        allocation_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+        NOVA_THROW_IF_VK_ERROR(
+			vmaCreateBuffer(memory_allocator, &buffer_create_info, &allocation_create_info, &new_buffer.buffer, &new_buffer.allocation, &new_buffer.alloc_info), 
+			render_engine_rendering_exception);
+
+        return new_buffer;
+    }
+
+    void vulkan_render_engine::free_mesh_staging_buffer(const vk_buffer& buffer) { 
+        ftl::LockGuard l(mesh_staging_buffers_mutex);
+
+        mesh_staging_buffers.push_back(buffer);
+    }
+
     uint32_t vulkan_render_engine::add_mesh(const mesh_data& mesh) {
         ftl::AtomicCounter mesh_upload_semaphore(scheduler);
 
-        scheduler->AddTask(&mesh_upload_semaphore,
-            [&](ftl::TaskScheduler* task_scheduler, const mesh_data* mesh) {
-                const uint64_t vertex_size = mesh->vertex_data.size() * sizeof(full_vertex);
-                mesh_memory mem = mesh_manager->allocate_mesh(vertex_size);
+        scheduler->AddTask(&mesh_upload_semaphore, [&](ftl::TaskScheduler* task_scheduler, const mesh_data* mesh) {
+            const uint64_t vertex_size = mesh->vertex_data.size() * sizeof(full_vertex);
+            mesh_memory mem = mesh_manager->allocate_mesh(vertex_size);
 
-                // We have the mesh... now we gotta upload data to it UGHHHHHH
-                // Basically create some small buffers to write the parts of the mesh to, then make a command buffer to
-                // transfer them to the mesh's memory
+            // We have the mesh... now we gotta upload data to it UGHHHHHH
+            // Basically create some small buffers to write the parts of the mesh to, then make a command buffer to
+            // transfer them to the mesh's memory
 
-                VkCommandBuffer mesh_upload_cmds;
+            ftl::AtomicCounter mesh_parts_upload_counter(task_scheduler);
 
-                VkCommandBufferAllocateInfo alloc_info = {};
-                alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-                alloc_info.commandBufferCount = 1;
-                alloc_info.commandPool = get_command_buffer_pool_for_current_thread();
+            uint32_t num_vertices_per_part = mesh_allocator::buffer_part_size / sizeof(full_vertex);
 
-                vkAllocateCommandBuffers(device, )
-            },
-            &mesh);
+            // Create staging buffers
+            std::vector<vk_buffer> staging_buffers(mem.parts.size());
+            for(uint32_t i = 0; i < staging_buffers.size(); i++) {
+                staging_buffers[i] = get_or_allocate_mesh_staging_buffer();
+                    
+                task_scheduler->AddTask(&mesh_parts_upload_counter, [](const vk_buffer* buffer_to_upload_to, const full_vertex* vertices_to_upload, uint64_t num_vertices) {
+                    std::memcpy(buffer_to_upload_to->alloc_info.pMappedData, vertices_to_upload, num_vertices);
+                }, &staging_buffers[i], mesh->vertex_data[i * num_vertices_per_part], num_vertices_per_part);
+            }
+
+            VkCommandBuffer mesh_upload_cmds;
+
+            VkCommandBufferAllocateInfo alloc_info = {};
+            alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            alloc_info.commandBufferCount = 1;
+            alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_queue_index);
+            alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+            vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);
+
+            VkCommandBufferBeginInfo begin_info = {};
+            begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        
+            vkBeginCommandBuffer(mesh_upload_cmds, &begin_info);
+
+            task_scheduler->WaitForCounter(&mesh_parts_upload_counter, 0);
+
+
+        }, &mesh);
     }
 
     bool vk_resource_binding::operator==(const vk_resource_binding& other) const {
@@ -718,20 +782,7 @@ namespace nova {
 
         return module;
     }
-
-    void vulkan_render_engine::create_command_buffers() {
-        command_buffers.resize(swapchain_framebuffers.size());
-
-        VkCommandBufferAllocateInfo buffer_allocate_info;
-        buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        buffer_allocate_info.pNext = nullptr;
-        buffer_allocate_info.commandPool = command_pool;
-        buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        buffer_allocate_info.commandBufferCount = static_cast<uint32_t>(command_buffers.size());
-
-        NOVA_THROW_IF_VK_ERROR(vkAllocateCommandBuffers(device, &buffer_allocate_info, command_buffers.data()), render_engine_initialization_exception);
-    }
-
+        
     void vulkan_render_engine::create_synchronization_objects() {
         image_available_semaphores.resize(MAX_FRAMES_IN_QUEUE);
         render_finished_semaphores.resize(MAX_FRAMES_IN_QUEUE);
@@ -761,9 +812,7 @@ namespace nova {
             vkDestroyFence(device, submit_fences.at(i), nullptr);
         }
     }
-
-    void vulkan_render_engine::destroy_command_pool() { vkDestroyCommandPool(device, command_pool, nullptr); }
-
+    
     void vulkan_render_engine::destroy_graphics_pipelines() {
         for(const auto& [_, pipeline] : pipelines) {
             vkDestroyPipeline(device, pipeline.pipeline, nullptr);

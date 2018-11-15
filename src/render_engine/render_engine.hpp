@@ -6,31 +6,33 @@
 #define NOVA_RENDERER_RENDER_ENGINE_HPP
 
 #include <memory>
+#include "../loading/shaderpack/shaderpack_data.hpp"
 #include "../settings/nova_settings.hpp"
 #include "../util/utils.hpp"
-#include "window.hpp"
-#include "../loading/shaderpack/shaderpack_data.hpp"
 #include "ftl/task_scheduler.h"
+#include "window.hpp"
 
 namespace nova {
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
     struct full_vertex {
-        glm::vec3 position;
-        glm::vec3 normal;
-        glm::vec3 tangent;
-        glm::vec2 main_uv;
-        glm::vec2 secondary_uv;
-        uint32_t virtual_texture_id;
-        glm::vec4 additional_stuff;
+        glm::vec3 position;           // 12 bytes
+        glm::vec3 normal;             // 12 bytes
+        glm::vec3 tangent;            // 12 bytes
+        glm::u16vec2 main_uv;         // 4 bytes
+        glm::u8vec2 secondary_uv;     // 2 bytes
+        uint32_t virtual_texture_id;  // 4 bytes
+        glm::vec4 additional_stuff;   // 16 bytes
     };
+
+    static_assert(sizeof(full_vertex) % 32 == 0, "full_vertex struct is not aligned to 16 bytes!");
 
     /*!
      * \brief All the data needed to make a single mesh
-     * 
-     * Meshes all have the same data. Chunks need all the mesh data, and they're most of the world. Entities, GUI, 
-     * particles, etc will probably have FAR fewer vertices than chunks, meaning that there's not a huge savings by 
+     *
+     * Meshes all have the same data. Chunks need all the mesh data, and they're most of the world. Entities, GUI,
+     * particles, etc will probably have FAR fewer vertices than chunks, meaning that there's not a huge savings by
      * making them use special vertex formats
      */
     struct mesh_data {
@@ -80,18 +82,18 @@ namespace nova {
         virtual std::shared_ptr<iwindow> get_window() const = 0;
 
         /*!
-        * \brief Loads the specified shaderpack, building API-specific data structures
-        *
-        * \param data The shaderpack to load
-        */
+         * \brief Loads the specified shaderpack, building API-specific data structures
+         *
+         * \param data The shaderpack to load
+         */
         virtual void set_shaderpack(const shaderpack_data& data) = 0;
-        
+
         /*!
          * \brief Adds a mesh to this render engine
-         * 
-         * The provided mesh data is uploaded to the GPU. The mesh's identifier is returned to you. This is all you 
+         *
+         * The provided mesh data is uploaded to the GPU. The mesh's identifier is returned to you. This is all you
          * need for the operations that a Nova render engine supports
-         * 
+         *
          * \param mesh The mesh data to send to the GPU
          * \return The ID of the mesh that was just created
          */
@@ -99,7 +101,7 @@ namespace nova {
 
         /*!
          * \brief Deletes the mesh with the provided ID from the GPU
-         * 
+         *
          * \param mesh_id The ID of the mesh to delete
          */
         virtual void delete_mesh(uint32_t mesh_id) = 0;
@@ -120,8 +122,8 @@ namespace nova {
          *
          * \attention Called by nova
          */
-        explicit render_engine(const nova_settings &settings, ftl::TaskScheduler* scheduler) : scheduler(scheduler) {};
-        
+        explicit render_engine(const nova_settings& settings, ftl::TaskScheduler* scheduler) : scheduler(scheduler){};
+
         ftl::TaskScheduler* scheduler;
     };
 }  // namespace nova
