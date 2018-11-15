@@ -408,7 +408,22 @@ namespace nova {
     }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread() {
+        const std::thread::id cur_thread_id = std::this_thread::get_id();
 
+        if(command_pools_by_thread.find(cur_thread_id) == command_pools_by_thread.end()) {
+            // No pool for this thread yet :(
+            VkCommandPoolCreateInfo command_pool_create_info;
+            command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            command_pool_create_info.pNext = nullptr;
+            command_pool_create_info.flags = 0;
+            command_pool_create_info.queueFamilyIndex = graphics_queue_index;
+            
+            VkCommandPool command_pool;
+            NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
+            command_pools_by_thread[cur_thread_id] = command_pool;
+        }
+
+        return command_pools_by_thread.at(cur_thread_id);
     }
 
     uint32_t vulkan_render_engine::add_mesh(const mesh_data& mesh) {
@@ -707,17 +722,7 @@ namespace nova {
 
         return module;
     }
-
-    void vulkan_render_engine::create_command_pool() {
-        VkCommandPoolCreateInfo command_pool_create_info;
-        command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        command_pool_create_info.pNext = nullptr;
-        command_pool_create_info.flags = 0;
-        command_pool_create_info.queueFamilyIndex = graphics_queue_index;
-
-        NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
-    }
-
+    
     void vulkan_render_engine::create_command_buffers() {
         command_buffers.resize(swapchain_framebuffers.size());
 
