@@ -9,8 +9,8 @@
 #include "vulkan_utils.hpp"
 
 namespace nova {
-    mesh_allocator::mesh_allocator(const uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler *task_scheduler) : 
-            vma_alloc(alloc), max_size(max_size), buffer_fibtex(task_scheduler) {
+    mesh_allocator::mesh_allocator(const uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler* task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx)
+        : vma_alloc(alloc), max_size(max_size), buffer_fibtex(task_scheduler), graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
 
         allocate_new_buffer();
     }
@@ -84,6 +84,46 @@ namespace nova {
         }
 
         return num_buffer_parts_available * buffer_part_size;
+    }
+    
+    void mesh_allocator::add_barriers_before_mesh_upload(VkCommandBuffer cmds) {
+        std::vector<VkBufferMemoryBarrier> barriers;
+        barriers.reserve(buffers.size());
+        for(const auto& [buf, buf_info] : buffers) {
+            VkBufferMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            barrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.srcQueueFamilyIndex = graphics_queue_idx;
+            barrier.dstQueueFamilyIndex = copy_queue_idx;
+            barrier.buffer = buf;
+            barrier.offset = 0;
+            barrier.size = new_buffer_size;
+
+            barriers.push_back(barrier);
+        }
+
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, buffers.size(), barriers.data(), 0, nullptr);
+    }
+
+    void mesh_allocator::add_barriers_after_mesh_upload(VkCommandBuffer cmds) {
+        std::vector<VkBufferMemoryBarrier> barriers;
+        barriers.reserve(buffers.size());
+        for(const auto& [buf, buf_info] : buffers) {
+            VkBufferMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+            barrier.srcQueueFamilyIndex = copy_queue_idx;
+            barrier.dstQueueFamilyIndex = graphics_queue_idx;
+            barrier.buffer = buf;
+            barrier.offset = 0;
+            barrier.size = new_buffer_size;
+
+            barriers.push_back(barrier);
+        }
+
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, buffers.size(), barriers.data(), 0, nullptr);
     }
 
     std::pair<VkBuffer, mesh_allocator::mega_buffer_info&> mesh_allocator::allocate_new_buffer() {

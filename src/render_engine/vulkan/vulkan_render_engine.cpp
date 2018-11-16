@@ -512,7 +512,7 @@ namespace nova {
                 // way two dudes would be writing to the same region of a megamesh at the same time was if there was a 
                 // horrible problem
 
-            mesh_manager->add_barrier_to(mesh_upload_cmds);
+                mesh_manager->add_barriers_before_mesh_upload(mesh_upload_cmds);
 
                 task_scheduler->WaitForCounter(&mesh_parts_upload_counter, 0);
 
@@ -523,6 +523,8 @@ namespace nova {
                     copy.dstOffset = mem.parts[i].offset;
                     vkCmdCopyBuffer(mesh_upload_cmds, staging_buffers[i].buffer, mem.parts[i].buffer, 1, &copy);
                 }
+
+                mesh_manager->add_barriers_after_mesh_upload(mesh_upload_cmds);
             },
             &mesh);
     }

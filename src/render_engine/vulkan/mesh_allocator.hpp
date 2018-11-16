@@ -53,7 +53,7 @@ namespace nova {
          * \param max_size The maximum size, in bytes, that this mesh_allocator is allowed to grow to
          * \param alloc The device memory allocator to allocate new buffers with
          */
-        mesh_allocator(uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler *task_scheduler);
+        mesh_allocator(uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler *task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
 
         // Copying is for squares
 
@@ -105,6 +105,20 @@ namespace nova {
 
         uint64_t get_num_bytes_available() const;
 
+        /*!
+         * \brief Adds barriers for all our buffers to ensure that vertex reads are done before we upload new mesh data
+         * 
+         * \param cmds The command buffer to record the barriers into
+         */
+        void add_barriers_before_mesh_upload(VkCommandBuffer cmds);
+
+        /*!
+         * \brief Adds barriers to all our buffers to ensure that the mesh data upload is done before any vertex reads
+         * 
+         * \param cmds The command buffer to record the barriers into
+         */
+        void add_barriers_after_mesh_upload(VkCommandBuffer cmds);
+
     private:
         struct mega_buffer_info {
             VmaAllocation allocation;
@@ -117,6 +131,8 @@ namespace nova {
         ftl::Fibtex buffer_fibtex;
         std::unordered_map<VkBuffer, mega_buffer_info> buffers;
         uint64_t max_size;
+        uint32_t graphics_queue_idx;
+        uint32_t copy_queue_idx;
 
         /*
          * \brief Allocated a new buffer to allocate mesh memory out of
