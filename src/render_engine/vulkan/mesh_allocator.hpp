@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vk_mem_alloc.h>
 #include "ftl/fibtex.h"
+#include "ftl/atomic_counter.h"
 
 namespace nova {
     struct buffer_range {
@@ -119,6 +120,8 @@ namespace nova {
          */
         void add_barriers_after_mesh_upload(VkCommandBuffer cmds);
 
+        ftl::AtomicCounter* get_mesh_upload_counter();
+
     private:
         struct mega_buffer_info {
             VmaAllocation allocation;
@@ -129,6 +132,7 @@ namespace nova {
         const VmaAllocator* vma_alloc;
 
         ftl::Fibtex buffer_fibtex;
+        ftl::AtomicCounter staging_buffer_upload_counter;
         std::unordered_map<VkBuffer, mega_buffer_info> buffers;
         uint64_t max_size;
         uint32_t graphics_queue_idx;

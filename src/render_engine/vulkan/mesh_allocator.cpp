@@ -10,7 +10,7 @@
 
 namespace nova {
     mesh_allocator::mesh_allocator(const uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler* task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx)
-        : vma_alloc(alloc), max_size(max_size), buffer_fibtex(task_scheduler), graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
+        : vma_alloc(alloc), max_size(max_size), buffer_fibtex(task_scheduler), graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx), staging_buffer_upload_counter(task_scheduler) {
 
         allocate_new_buffer();
     }
@@ -124,6 +124,10 @@ namespace nova {
         }
 
         vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, buffers.size(), barriers.data(), 0, nullptr);
+    }
+
+    ftl::AtomicCounter* mesh_allocator::get_mesh_upload_counter() { 
+        return &staging_buffer_upload_counter;
     }
 
     std::pair<VkBuffer, mesh_allocator::mega_buffer_info&> mesh_allocator::allocate_new_buffer() {

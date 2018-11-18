@@ -21,6 +21,7 @@
 #include "../dx12/win32_window.hpp"
 #include "mesh_allocator.hpp"
 #include "spirv_glsl.hpp"
+#include <queue>
 
 namespace nova {
     struct vk_queue {
@@ -134,6 +135,9 @@ namespace nova {
 
         bool shaderpack_loaded = false;
         shaderpack_data shaderpack;
+        std::queue<mesh_data> mesh_upload_queue;
+        ftl::Fibtex mesh_upload_queue_mutex;
+        ftl::AtomicCounter mesh_upload_semaphore;
 
         void create_device();
         void destroy_device();
