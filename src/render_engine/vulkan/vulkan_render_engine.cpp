@@ -91,14 +91,6 @@ namespace nova {
 
     vulkan_render_engine::~vulkan_render_engine() {
         vkDeviceWaitIdle(device);
-        cleanup_dynamic();
-        destroy_synchronization_objects();
-        destroy_graphics_pipelines();
-        destroy_render_passes();
-        destroy_image_views();
-        destroy_swapchain();
-        destroy_memory_allocator();
-        destroy_device();
     }
 
     void vulkan_render_engine::open_window(uint32_t width, uint32_t height) {
@@ -402,8 +394,8 @@ namespace nova {
         if(shaderpack_loaded) {
             destroy_render_passes();
 
-            destroy_synchronization_objects();
-            destroy_graphics_pipelines();
+            destroy_graphics_pipelines(pipelines);
+
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
 
@@ -416,7 +408,6 @@ namespace nova {
         create_render_passes(data.passes);
 
         create_graphics_pipelines(data.pipelines);
-        create_synchronization_objects();
 
         shaderpack_loaded = true;
     }
@@ -506,9 +497,9 @@ namespace nova {
 
         std::unordered_map<std::string, render_pass_data> regular_render_passes;
         regular_render_passes.reserve(passes.size());
-        render_passes_by_name.reserve(passes.size());
+        render_passes.reserve(passes.size());
         for(const render_pass_data& pass_data : passes) {
-            render_passes_by_name[pass_data.name].data = pass_data;
+            render_passes[pass_data.name].data = pass_data;
             regular_render_passes[pass_data.name] = pass_data;
         }
 
@@ -543,7 +534,7 @@ namespace nova {
             render_pass_create_info.dependencyCount = 1;
             render_pass_create_info.pDependencies = &image_available_dependency;
 
-            std::optional<input_textures> inputs_maybe = render_passes_by_name.at(pass_name).data.texture_inputs;
+            std::optional<input_textures> inputs_maybe = render_passes.at(pass_name).data.texture_inputs;
             std::vector<VkAttachmentDescription> attachments;
             std::vector<VkAttachmentReference> references;
             if(inputs_maybe) {
@@ -561,7 +552,7 @@ namespace nova {
 
             VkRenderPass render_pass;
             NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
-            render_passes_by_name[pass_name].pass = render_pass;
+            render_passes[pass_name].pass = render_pass;
         }
     }
 
@@ -741,7 +732,7 @@ namespace nova {
             pipeline_create_info.pColorBlendState = &color_blend_create_info;
             pipeline_create_info.pDynamicState = nullptr;
             pipeline_create_info.layout = nova_pipeline.layout;
-            pipeline_create_info.renderPass = render_passes_by_name.at(data.pass).pass;
+            pipeline_create_info.renderPass = render_passes.at(data.pass).pass;
             pipeline_create_info.subpass = 0;
             pipeline_create_info.basePipelineIndex = -1;
 
@@ -765,54 +756,7 @@ namespace nova {
 
         return module;
     }
-
-    void vulkan_render_engine::create_synchronization_objects() {
-        image_available_semaphores.resize(MAX_FRAMES_IN_QUEUE);
-        render_finished_semaphores.resize(MAX_FRAMES_IN_QUEUE);
-        submit_fences.resize(MAX_FRAMES_IN_QUEUE);
-
-        VkSemaphoreCreateInfo semaphore_create_info;
-        semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        semaphore_create_info.pNext = nullptr;
-        semaphore_create_info.flags = 0;
-
-        VkFenceCreateInfo fence_create_info;
-        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fence_create_info.pNext = nullptr;
-        fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-        for(uint8_t i = 0; i < MAX_FRAMES_IN_QUEUE; i++) {
-            NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_available_semaphores.at(i)), render_engine_initialization_exception);
-            NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphores.at(i)), render_engine_initialization_exception);
-            NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_create_info, nullptr, &submit_fences.at(i)), render_engine_rendering_exception);
-        }
-    }
-
-    void vulkan_render_engine::destroy_synchronization_objects() {
-        for(uint8_t i = 0; i < MAX_FRAMES_IN_QUEUE; i++) {
-            vkDestroySemaphore(device, image_available_semaphores.at(i), nullptr);
-            vkDestroySemaphore(device, render_finished_semaphores.at(i), nullptr);
-            vkDestroyFence(device, submit_fences.at(i), nullptr);
-        }
-    }
-
-    void vulkan_render_engine::destroy_graphics_pipelines() {
-        for(const auto& [_, pipeline] : pipelines) {
-            vkDestroyPipeline(device, pipeline.pipeline, nullptr);
-            vkDestroyPipelineLayout(device, pipeline.layout, nullptr);
-        }
-    }
-
-    void vulkan_render_engine::destroy_render_passes() {
-        for(const auto& render_pass : render_passes_by_name) {
-            vkDestroyRenderPass(device, render_pass.second.pass, nullptr);
-        }
-        render_passes_by_order.clear();
-        render_passes_by_name.clear();
-    }
-
-    void vulkan_render_engine::cleanup_dynamic() {}
-
+    
     void vulkan_render_engine::upload_new_mesh_parts() {
         scheduler->AddTask(nullptr,
             [&](ftl::TaskScheduler* task_scheduler) {
@@ -881,18 +825,6 @@ namespace nova {
             });
     }
 
-    void vulkan_render_engine::destroy_image_views() {
-        for(auto image_view : swapchain_image_views) {
-            vkDestroyImageView(device, image_view, nullptr);
-        }
-    }
-
-    void vulkan_render_engine::destroy_swapchain() { vkDestroySwapchainKHR(device, swapchain, nullptr); }
-
-    void vulkan_render_engine::destroy_memory_allocator() { vmaDestroyAllocator(memory_allocator); }
-
-    void vulkan_render_engine::destroy_device() { vkDestroyDevice(device, nullptr); }
-
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
         VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* msg, void* user_data) {
         if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
@@ -954,9 +886,6 @@ namespace nova {
 
         // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has 
         // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
-        scheduler->AddTask(nullptr, [&](ftl::TaskScheduler* task_scheduler) {
-            
-        });
         upload_new_mesh_parts();
 
         VkSubmitInfo submit_info;
@@ -1015,6 +944,23 @@ namespace nova {
         }
 
         return {attachment_descriptions, attachment_references};
+    }
+
+    void vulkan_render_engine::destroy_render_passes() { 
+        for(const auto& [pass_name, pass] : render_passes) {
+            vkDestroyRenderPass(device, pass.pass, nullptr);
+        }
+
+        render_passes.clear();
+        render_passes_by_order.clear();
+    }
+
+    void vulkan_render_engine::destroy_graphics_pipelines() {
+        for(const auto& [pipeline_name, pipeline] : pipelines) {
+            vkDestroyPipeline(device, pipeline.pipeline, nullptr);
+        }
+
+        pipelines.clear();
     }
 
     VkFormat vulkan_render_engine::to_vk_format(pixel_format_enum format) {
@@ -1111,8 +1057,8 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::add_resource_to_bindings(
-        std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource) {
+    void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, 
+		    const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource) {
         const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
