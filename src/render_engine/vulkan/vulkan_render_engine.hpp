@@ -113,6 +113,7 @@ namespace nova {
 
         VmaAllocator memory_allocator;
 
+#pragma region Swapchain
         VkSwapchainKHR swapchain;
         std::vector<VkImage> swapchain_images;
         VkFormat swapchain_format;
@@ -120,6 +121,11 @@ namespace nova {
         std::vector<VkImageView> swapchain_image_views;
         std::vector<VkFramebuffer> swapchain_framebuffers;
         uint32_t current_swapchain_index = 0;
+#pragma endregion
+
+#pragma region Shaderpack
+        bool shaderpack_loaded = false;
+        shaderpack_data shaderpack;
 
         std::unordered_map<std::string, vk_render_pass> render_passes_by_name;
         std::vector<std::string> render_passes_by_order;
@@ -129,7 +135,9 @@ namespace nova {
         std::unordered_map<std::string, vk_texture> dynamic_textures_by_name;
 
         std::unordered_map<std::string, material_data> materials;
+#pragma endregion
 
+#pragma region Mesh
         std::shared_ptr<mesh_allocator> mesh_manager;
         /*!
          * \brief The number of mesh upload tasks that are still running
@@ -138,7 +146,12 @@ namespace nova {
         ftl::Fibtex mesh_staging_buffers_mutex;
         std::vector<vk_buffer> mesh_staging_buffers;
 
-        ftl::Fibtex command_pools_by_queue_idx_mutex;
+        std::queue<staging_buffer_upload_command> mesh_upload_queue;
+        ftl::Fibtex mesh_upload_queue_mutex;
+        VkFence mesh_rendering_done;
+        VkFence upload_to_megamesh_buffer_done;
+#pragma endregion
+
         ftl::ThreadLocal<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_queue_idx;
 
         std::vector<VkSemaphore> render_finished_semaphores;
@@ -151,15 +164,8 @@ namespace nova {
         VkQueue compute_queue;
         uint32_t copy_queue_index;
         VkQueue copy_queue;
-
-        bool shaderpack_loaded = false;
-        shaderpack_data shaderpack;
-        std::queue<staging_buffer_upload_command> mesh_upload_queue;
-        ftl::Fibtex mesh_upload_queue_mutex;
-        VkFence mesh_rendering_done;
-        VkFence upload_to_megamesh_buffer_done;
-
-        void validate_mesh_options(const settings_options::mesh_options& options);
+        
+        void validate_mesh_options(const settings_options::mesh_options& options) const;
 
         void create_device();
         void destroy_device();
@@ -191,9 +197,9 @@ namespace nova {
          * \brief Records and submits a command buffer that barriers until reading vertex data from the megamesh
          * buffer has finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer
          * are finished
-         * 
+         *
          * The command buffer will wait on fence `mesh_rendering_done` before getting submitted, and it'll signal
-         * `upload_to_megamesh_buffer_done` when it's done copying data into the megamesh buffer. This method uploads 
+         * `upload_to_megamesh_buffer_done` when it's done copying data into the megamesh buffer. This method uploads
          * all new mesh data and it's awesome
          */
         void upload_new_mesh_parts();
@@ -212,6 +218,8 @@ namespace nova {
         std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>> to_vk_attachment_info(std::vector<std::string>& attachment_names);
 
         static VkFormat to_vk_format(pixel_format_enum format);
+
+        std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
 
         /*!
          * \brief Adds an entry to the dynamic textures for each entry in texture_data

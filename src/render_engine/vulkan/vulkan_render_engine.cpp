@@ -20,7 +20,11 @@
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler) : 
-            render_engine(settings, task_scheduler), command_pools_by_queue_idx(task_scheduler), mesh_upload_queue_mutex(task_scheduler) {
+            render_engine(settings, task_scheduler), 
+            upload_to_staging_buffers_counter(task_scheduler), mesh_staging_buffers_mutex(task_scheduler),
+            command_pools_by_queue_idx(task_scheduler, [&]() { return make_new_command_pools(); }),
+            mesh_upload_queue_mutex(task_scheduler) {
+
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
         settings_options options = settings.get_options();
@@ -125,7 +129,7 @@ namespace nova {
         create_swapchain_image_views();
     }
 
-    void vulkan_render_engine::validate_mesh_options(const settings_options::mesh_options& options) {
+    void vulkan_render_engine::validate_mesh_options(const settings_options::mesh_options& options) const {
         if(options.buffer_part_size % sizeof(full_vertex) != 0) {
             throw std::runtime_error("mesh.buffer_part_size must be a multiple of sizeof(full_vertex) (which equals " + std::to_string(sizeof(full_vertex)) + ")");
         }
@@ -418,33 +422,7 @@ namespace nova {
     }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
-        ftl::LockGuard l(command_pools_by_queue_idx_mutex);
-        if(command_pools_by_queue_idx->empty()) {
-            std::vector<uint32_t> queue_indices;
-            queue_indices.push_back(graphics_queue_index);
-            queue_indices.push_back(copy_queue_index);
-            queue_indices.push_back(compute_queue_index);
-
-            std::unordered_map<uint32_t, VkCommandPool> pools_by_queue;
-            pools_by_queue.reserve(3);
-
-            for(const uint32_t queue_index : queue_indices) {
-                VkCommandPoolCreateInfo command_pool_create_info;
-                command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-                command_pool_create_info.pNext = nullptr;
-                command_pool_create_info.flags = 0;
-                command_pool_create_info.queueFamilyIndex = queue_index;
-
-                VkCommandPool command_pool;
-                NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
-                pools_by_queue[queue_index] = command_pool;
-            }
-
-            *command_pools_by_queue_idx = pools_by_queue;
-        }
-
-        std::unordered_map<uint32_t, VkCommandPool> pools_by_queue_idx = *command_pools_by_queue_idx;
-        return pools_by_queue_idx.at(queue_index);
+        return command_pools_by_queue_idx->at(queue_index);
     }
 
     vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer() {
@@ -862,6 +840,8 @@ namespace nova {
                 task_scheduler->WaitForCounter(&upload_to_staging_buffers_counter, 0);
 
                 mesh_upload_queue_mutex.lock();
+                std::vector<vk_buffer> freed_buffers;
+                freed_buffers.reserve(mesh_upload_queue.size());
                 while(!mesh_upload_queue.empty()) {
                     const staging_buffer_upload_command cmd = mesh_upload_queue.front();
                     mesh_upload_queue.pop();
@@ -872,6 +852,8 @@ namespace nova {
                         copy.dstOffset = cmd.mem.parts[i].offset;
                         vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffers[i].buffer, cmd.mem.parts[i].buffer, 1, &copy);
                     }
+
+                    freed_buffers.insert(freed_buffers.end(), cmd.staging_buffers.begin(), cmd.staging_buffers.end());
                 }
                 mesh_upload_queue_mutex.unlock();
 
@@ -887,6 +869,15 @@ namespace nova {
                 // Be super duper sure that mesh rendering is done 
                 vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, 0xffffffffffffffffL);
                 vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
+
+                task_scheduler->AddTask(nullptr,
+                    [&](ftl::TaskScheduler* task_scheduler, std::vector<vk_buffer>* buffers_to_free) { 
+                    vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, 0xffffffffffffffffL);
+
+                    // Once the upload is done, return all the staging buffers to the pool
+                    ftl::LockGuard l(mesh_staging_buffers_mutex);
+                    mesh_staging_buffers.insert(mesh_staging_buffers.end(), buffers_to_free->begin(), buffers_to_free->end());
+                });
             });
     }
 
@@ -1045,6 +1036,30 @@ namespace nova {
         }
 
         return VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
+    }
+
+    std::unordered_map<uint32_t, VkCommandPool> vulkan_render_engine::make_new_command_pools() const {
+        std::vector<uint32_t> queue_indices;
+        queue_indices.push_back(graphics_queue_index);
+        queue_indices.push_back(copy_queue_index);
+        queue_indices.push_back(compute_queue_index);
+
+        std::unordered_map<uint32_t, VkCommandPool> pools_by_queue;
+        pools_by_queue.reserve(3);
+
+        for(const uint32_t queue_index : queue_indices) {
+            VkCommandPoolCreateInfo command_pool_create_info;
+            command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            command_pool_create_info.pNext = nullptr;
+            command_pool_create_info.flags = 0;
+            command_pool_create_info.queueFamilyIndex = queue_index;
+
+            VkCommandPool command_pool;
+            NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
+            pools_by_queue[queue_index] = command_pool;
+        }
+
+        return pools_by_queue;
     }
 
     void vulkan_render_engine::create_textures(const std::vector<texture_resource_data>& texture_datas) {
