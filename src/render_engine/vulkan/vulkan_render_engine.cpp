@@ -20,10 +20,13 @@
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler) : 
-            render_engine(settings, task_scheduler), mesh_upload_queue_mutex(task_scheduler), mesh_upload_semaphore(task_scheduler) {
+            render_engine(settings, task_scheduler), command_pools_by_queue_idx(task_scheduler), mesh_upload_queue_mutex(task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
         settings_options options = settings.get_options();
+
+        validate_mesh_options(options.mesh);
+
         const auto& version = options.vulkan.application_version;
 
         VkApplicationInfo application_info;
@@ -79,15 +82,13 @@ namespace nova {
 #endif
 
         create_memory_allocator();
-
-        mesh_manager = std::make_shared<mesh_allocator>(/* 1 GB for mesh data */ 1024 * 1024 * 1024, &memory_allocator, task_scheduler);
+        mesh_manager = std::make_shared<mesh_allocator>(settings.get_options().mesh, &memory_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
         vkDeviceWaitIdle(device);
         cleanup_dynamic();
         destroy_synchronization_objects();
-        destroy_command_pool();
         destroy_graphics_pipelines();
         destroy_render_passes();
         destroy_image_views();
@@ -122,6 +123,18 @@ namespace nova {
         create_device();
         create_swapchain();
         create_swapchain_image_views();
+    }
+
+    void vulkan_render_engine::validate_mesh_options(const settings_options::mesh_options& options) {
+        if(options.buffer_part_size % sizeof(full_vertex) != 0) {
+            throw std::runtime_error("mesh.buffer_part_size must be a multiple of sizeof(full_vertex) (which equals " + std::to_string(sizeof(full_vertex)) + ")");
+        }
+        if(options.new_buffer_size % options.buffer_part_size != 0) {
+            throw std::runtime_error("mesh.new_buffer_size must be a multiple of mesh.buffer_part_size (which equals " + std::to_string(options.buffer_part_size) + ")");
+        }
+        if(options.max_total_allocation % options.new_buffer_size != 0) {
+            throw std::runtime_error("mesh.max_total_allocation must be a multiple of mesh.new_buffer_size (which equals " + std::to_string(options.max_total_allocation) + ")");
+        }
     }
 
     void vulkan_render_engine::create_device() {
@@ -386,7 +399,6 @@ namespace nova {
             destroy_render_passes();
 
             destroy_synchronization_objects();
-            destroy_command_pool();
             destroy_graphics_pipelines();
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
@@ -400,8 +412,6 @@ namespace nova {
         create_render_passes(data.passes);
 
         create_graphics_pipelines(data.pipelines);
-        create_command_pool();
-        create_command_buffers();
         create_synchronization_objects();
 
         shaderpack_loaded = true;
@@ -409,25 +419,32 @@ namespace nova {
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
         ftl::LockGuard l(command_pools_by_queue_idx_mutex);
-        const std::thread::id cur_thread_id = std::this_thread::get_id();
+        if(command_pools_by_queue_idx->empty()) {
+            std::vector<uint32_t> queue_indices;
+            queue_indices.push_back(graphics_queue_index);
+            queue_indices.push_back(copy_queue_index);
+            queue_indices.push_back(compute_queue_index);
 
-        auto& command_pools_by_thread = command_pools_by_queue_idx[queue_index];
+            std::unordered_map<uint32_t, VkCommandPool> pools_by_queue;
+            pools_by_queue.reserve(3);
 
-        if(command_pools_by_thread.find(cur_thread_id) == command_pools_by_thread.end()) {
-            NOVA_LOG(TRACE) << "Allocating command pool for thread " << cur_thread_id << " and queue " << queue_index;
-            // No pool for this thread yet :(
-            VkCommandPoolCreateInfo command_pool_create_info;
-            command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-            command_pool_create_info.pNext = nullptr;
-            command_pool_create_info.flags = 0;
-            command_pool_create_info.queueFamilyIndex = queue_index;
+            for(const uint32_t queue_index : queue_indices) {
+                VkCommandPoolCreateInfo command_pool_create_info;
+                command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+                command_pool_create_info.pNext = nullptr;
+                command_pool_create_info.flags = 0;
+                command_pool_create_info.queueFamilyIndex = queue_index;
 
-            VkCommandPool command_pool;
-            NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
-            command_pools_by_thread[cur_thread_id] = command_pool;
+                VkCommandPool command_pool;
+                NOVA_THROW_IF_VK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool), render_engine_initialization_exception);
+                pools_by_queue[queue_index] = command_pool;
+            }
+
+            *command_pools_by_queue_idx = pools_by_queue;
         }
 
-        return command_pools_by_thread.at(cur_thread_id);
+        std::unordered_map<uint32_t, VkCommandPool> pools_by_queue_idx = *command_pools_by_queue_idx;
+        return pools_by_queue_idx.at(queue_index);
     }
 
     vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer() {
@@ -466,9 +483,38 @@ namespace nova {
         mesh_staging_buffers.push_back(buffer);
     }
 
-    uint32_t vulkan_render_engine::add_mesh(const mesh_data& mesh) {
-        ftl::LockGuard l(mesh_upload_queue_mutex);
-        mesh_upload_queue.emplace(mesh);
+    uint32_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
+        scheduler->AddTask(&upload_to_staging_buffers_counter,
+            [&](ftl::TaskScheduler* task_scheduler, const mesh_data* mesh) {
+                const uint64_t vertex_size = mesh->vertex_data.size() * sizeof(full_vertex);
+                const mesh_memory mem = mesh_manager->allocate_mesh(vertex_size);
+
+                // Create some small buffers to write the parts of the mesh to, and upload data to them. Later on we'll 
+                // copy the staging buffers to the main buffer
+
+                ftl::AtomicCounter mesh_parts_upload_counter(scheduler);
+
+                uint32_t num_vertices_per_part = mesh_manager->buffer_part_size / sizeof(full_vertex);
+
+                // Create staging buffers, and tasks to uplaod to the staging buffers
+                std::vector<vk_buffer> staging_buffers(mem.parts.size());
+                for(uint32_t i = 0; i < staging_buffers.size(); i++) {
+                    staging_buffers[i] = get_or_allocate_mesh_staging_buffer();
+
+                    scheduler->AddTask(&mesh_parts_upload_counter,
+                        [](const vk_buffer* buffer_to_upload_to, const full_vertex* vertices_to_upload, uint64_t num_vertices) {
+                            std::memcpy(buffer_to_upload_to->alloc_info.pMappedData, vertices_to_upload, num_vertices);
+                        },
+                        &staging_buffers[i], mesh->vertex_data[i * num_vertices_per_part], num_vertices_per_part);
+                }
+
+                // When all the staging buffers have been uploaded to, add the mesh to the queue of meshes to upload
+                task_scheduler->WaitForCounter(&mesh_parts_upload_counter, 0);
+
+                ftl::LockGuard l(mesh_upload_queue_mutex);
+                mesh_upload_queue.emplace(staging_buffer_upload_command{staging_buffers, mem});
+            },
+            &input_mesh);
     }
 
     bool vk_resource_binding::operator==(const vk_resource_binding& other) const {
@@ -484,7 +530,7 @@ namespace nova {
         regular_render_passes.reserve(passes.size());
         render_passes_by_name.reserve(passes.size());
         for(const render_pass_data& pass_data : passes) {
-            render_passes_by_name[pass_data.name].nova_data = pass_data;
+            render_passes_by_name[pass_data.name].data = pass_data;
             regular_render_passes[pass_data.name] = pass_data;
         }
 
@@ -519,7 +565,7 @@ namespace nova {
             render_pass_create_info.dependencyCount = 1;
             render_pass_create_info.pDependencies = &image_available_dependency;
 
-            std::optional<input_textures> inputs_maybe = render_passes_by_name.at(pass_name).nova_data.texture_inputs;
+            std::optional<input_textures> inputs_maybe = render_passes_by_name.at(pass_name).data.texture_inputs;
             std::vector<VkAttachmentDescription> attachments;
             std::vector<VkAttachmentReference> references;
             if(inputs_maybe) {
@@ -545,7 +591,7 @@ namespace nova {
         for(const pipeline_data& data : pipelines) {
             NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
             vk_pipeline nova_pipeline;
-            nova_pipeline.nova_data = data;
+            nova_pipeline.data = data;
 
             std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
             std::unordered_map<VkShaderStageFlags, VkShaderModule> shader_modules;
@@ -789,6 +835,61 @@ namespace nova {
 
     void vulkan_render_engine::cleanup_dynamic() {}
 
+    void vulkan_render_engine::upload_new_mesh_parts() {
+        scheduler->AddTask(nullptr,
+            [&](ftl::TaskScheduler* task_scheduler) {
+                VkCommandBuffer mesh_upload_cmds;
+
+                VkCommandBufferAllocateInfo alloc_info = {};
+                alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                alloc_info.commandBufferCount = 1;
+                alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_queue_index);
+                alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+                vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);
+
+                VkCommandBufferBeginInfo begin_info = {};
+                begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+                vkBeginCommandBuffer(mesh_upload_cmds, &begin_info);
+
+                // Ensure that all reads from this buffer have finished. I don't care about writes because the only
+                // way two dudes would be writing to the same region of a megamesh at the same time was if there was a
+                // horrible problem
+
+                mesh_manager->add_barriers_before_mesh_upload(mesh_upload_cmds);
+
+                task_scheduler->WaitForCounter(&upload_to_staging_buffers_counter, 0);
+
+                mesh_upload_queue_mutex.lock();
+                while(!mesh_upload_queue.empty()) {
+                    const staging_buffer_upload_command cmd = mesh_upload_queue.front();
+                    mesh_upload_queue.pop();
+                    for(uint32_t i = 0; i < cmd.staging_buffers.size(); i++) {
+                        VkBufferCopy copy = {};
+                        copy.size = mesh_manager->buffer_part_size;
+                        copy.srcOffset = 0;
+                        copy.dstOffset = cmd.mem.parts[i].offset;
+                        vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffers[i].buffer, cmd.mem.parts[i].buffer, 1, &copy);
+                    }
+                }
+                mesh_upload_queue_mutex.unlock();
+
+                mesh_manager->add_barriers_after_mesh_upload(mesh_upload_cmds);
+
+                vkEndCommandBuffer(mesh_upload_cmds);
+
+                VkSubmitInfo submit_info = {};
+                submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                submit_info.commandBufferCount = 1;
+                submit_info.pCommandBuffers = &mesh_upload_cmds;
+
+                // Be super duper sure that mesh rendering is done 
+                vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, 0xffffffffffffffffL);
+                vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
+            });
+    }
+
     void vulkan_render_engine::destroy_image_views() {
         for(auto image_view : swapchain_image_views) {
             vkDestroyImageView(device, image_view, nullptr);
@@ -859,70 +960,13 @@ namespace nova {
         vkResetFences(device, 1, &submit_fences.at(current_frame));
 
         // TODO: Wait for all render passes that use the megamesh buffer to be recorded
-        { 
-            ftl::LockGuard l(mesh_staging_buffers_mutex);
-            scheduler->AddTask(&mesh_upload_semaphore,
-                [&](ftl::TaskScheduler* task_scheduler, const mesh_data* mesh) {
-                    ftl::AtomicCounter* staging_buffer_upload_counter = this->mesh_manager->get_mesh_upload_counter();
-                    task_scheduler->WaitForCounter(staging_buffer_upload_counter, 0);
-                    const uint64_t vertex_size = mesh->vertex_data.size() * sizeof(full_vertex);
-                    mesh_memory mem = mesh_manager->allocate_mesh(vertex_size);
 
-                    // We have the mesh... now we gotta upload data to it UGHHHHHH
-                    // Basically create some small buffers to write the parts of the mesh to, then make a command buffer to
-                    // transfer them to the mesh's memory
-
-                    ftl::AtomicCounter mesh_parts_upload_counter(task_scheduler);
-
-                    uint32_t num_vertices_per_part = mesh_allocator::buffer_part_size / sizeof(full_vertex);
-
-                    // Create staging buffers
-                    std::vector<vk_buffer> staging_buffers(mem.parts.size());
-                    for(uint32_t i = 0; i < staging_buffers.size(); i++) {
-                        staging_buffers[i] = get_or_allocate_mesh_staging_buffer();
-
-                        task_scheduler->AddTask(&mesh_parts_upload_counter,
-                            [](const vk_buffer* buffer_to_upload_to, const full_vertex* vertices_to_upload, uint64_t num_vertices) {
-                                std::memcpy(buffer_to_upload_to->alloc_info.pMappedData, vertices_to_upload, num_vertices);
-                            },
-                            &staging_buffers[i], mesh->vertex_data[i * num_vertices_per_part], num_vertices_per_part);
-                    }
-
-                    VkCommandBuffer mesh_upload_cmds;
-
-                    VkCommandBufferAllocateInfo alloc_info = {};
-                    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-                    alloc_info.commandBufferCount = 1;
-                    alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_queue_index);
-                    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-                    vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);
-
-                    VkCommandBufferBeginInfo begin_info = {};
-                    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-                    vkBeginCommandBuffer(mesh_upload_cmds, &begin_info);
-
-                    // Ensure that all reads from this buffer have finished. I don't care about writes because the only
-                    // way two dudes would be writing to the same region of a megamesh at the same time was if there was a
-                    // horrible problem
-
-                    mesh_manager->add_barriers_before_mesh_upload(mesh_upload_cmds);
-
-                    task_scheduler->WaitForCounter(&mesh_parts_upload_counter, 0);
-
-                    for(uint32_t i = 0; i < staging_buffers.size(); i++) {
-                        VkBufferCopy copy = {};
-                        copy.size = mesh_allocator::buffer_part_size;
-                        copy.srcOffset = 0;
-                        copy.dstOffset = mem.parts[i].offset;
-                        vkCmdCopyBuffer(mesh_upload_cmds, staging_buffers[i].buffer, mem.parts[i].buffer, 1, &copy);
-                    }
-
-                    mesh_manager->add_barriers_after_mesh_upload(mesh_upload_cmds);
-                },
-                &mesh);
-        }
+        // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has 
+        // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
+        scheduler->AddTask(nullptr, [&](ftl::TaskScheduler* task_scheduler) {
+            
+        });
+        upload_new_mesh_parts();
 
         VkSubmitInfo submit_info;
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -963,7 +1007,7 @@ namespace nova {
 
             VkAttachmentDescription color_attachment;
             color_attachment.flags = 0;
-            color_attachment.format = to_vk_format(tex.nova_data.format.pixel_format);
+            color_attachment.format = to_vk_format(tex.data.format.pixel_format);
             color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
             color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -1006,7 +1050,7 @@ namespace nova {
     void vulkan_render_engine::create_textures(const std::vector<texture_resource_data>& texture_datas) {
         for(const texture_resource_data& texture_data : texture_datas) {
             vk_texture texture;
-            texture.nova_data = texture_data;
+            texture.data = texture_data;
 
             VkImageCreateInfo image_create_info = {};
             image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;

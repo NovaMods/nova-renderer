@@ -11,6 +11,7 @@
 #include <vk_mem_alloc.h>
 #include "ftl/fibtex.h"
 #include "ftl/atomic_counter.h"
+#include "../../settings/nova_settings.hpp"
 
 namespace nova {
     struct buffer_range {
@@ -42,19 +43,17 @@ namespace nova {
      */
     class mesh_allocator {
     public:
-        const static uint32_t new_buffer_size = 16 * 1024 * 1024;  // 16 Mb
-        const static uint32_t buffer_part_size = 16 * 1024;    // 16 Kb
-
-        static_assert(new_buffer_size % 32 == 0, "new_buffer_size must be a multiple of 32");
-        static_assert(buffer_part_size % 32 == 0, "buffer_part_size must be a multiple of 32");
-
+        uint32_t new_buffer_size;
+        uint32_t buffer_part_size;
+        
         /*!
          * \brief Creates a new mesh store. A single physical buffer is created and made ready for use
          * 
+         * \param options The settings for this mesh_allocator to use
          * \param max_size The maximum size, in bytes, that this mesh_allocator is allowed to grow to
          * \param alloc The device memory allocator to allocate new buffers with
          */
-        mesh_allocator(uint64_t max_size, const VmaAllocator* alloc, ftl::TaskScheduler *task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
+        mesh_allocator(const settings_options::mesh_options& options, const VmaAllocator* alloc, ftl::TaskScheduler* task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
 
         // Copying is for squares
 
@@ -120,8 +119,6 @@ namespace nova {
          */
         void add_barriers_after_mesh_upload(VkCommandBuffer cmds);
 
-        ftl::AtomicCounter* get_mesh_upload_counter();
-
     private:
         struct mega_buffer_info {
             VmaAllocation allocation;
@@ -132,7 +129,6 @@ namespace nova {
         const VmaAllocator* vma_alloc;
 
         ftl::Fibtex buffer_fibtex;
-        ftl::AtomicCounter staging_buffer_upload_counter;
         std::unordered_map<VkBuffer, mega_buffer_info> buffers;
         uint64_t max_size;
         uint32_t graphics_queue_idx;

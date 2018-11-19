@@ -68,7 +68,7 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
         
-        void set_shaderpack(const shaderpack_data& data, ftl::TaskScheduler& scheduler) override;
+        void set_shaderpack(const shaderpack_data& data) override;
 
         void render_frame() override;
 

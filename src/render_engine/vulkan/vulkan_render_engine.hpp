@@ -18,10 +18,15 @@
 #include <thread>
 
 #include <vk_mem_alloc.h>
+#include <queue>
 #include "../dx12/win32_window.hpp"
 #include "mesh_allocator.hpp"
 #include "spirv_glsl.hpp"
-#include <queue>
+
+#include "ftl/atomic_counter.h"
+#include "ftl/fibtex.h"
+#include "ftl/task_scheduler.h"
+#include "ftl/thread_local.h"
 
 namespace nova {
     struct vk_queue {
@@ -38,13 +43,13 @@ namespace nova {
 
     struct vk_render_pass {
         VkRenderPass pass;
-        render_pass_data nova_data;
+        render_pass_data data;
     };
 
     struct vk_pipeline {
         VkPipeline pipeline;
         VkPipelineLayout layout;
-        pipeline_data nova_data;
+        pipeline_data data;
 
         std::unordered_map<std::string, vk_resource_binding> bindings;
     };
@@ -53,7 +58,7 @@ namespace nova {
         VkImage image;
         VkImageView image_view;
 
-        texture_resource_data nova_data;
+        texture_resource_data data;
 
         VmaAllocation allocation;
         VmaAllocationInfo vma_info;
@@ -64,6 +69,16 @@ namespace nova {
 
         VmaAllocation allocation;
         VmaAllocationInfo alloc_info;
+    };
+
+    struct staging_buffer_upload_command {
+        std::vector<vk_buffer> staging_buffers;
+        mesh_memory mem;
+    };
+
+    struct vk_mesh {
+        mesh_memory memory;
+        mesh_data data;
     };
 
     class vulkan_render_engine : public render_engine {
@@ -116,11 +131,15 @@ namespace nova {
         std::unordered_map<std::string, material_data> materials;
 
         std::shared_ptr<mesh_allocator> mesh_manager;
+        /*!
+         * \brief The number of mesh upload tasks that are still running
+         */
+        ftl::AtomicCounter upload_to_staging_buffers_counter;
         ftl::Fibtex mesh_staging_buffers_mutex;
         std::vector<vk_buffer> mesh_staging_buffers;
 
         ftl::Fibtex command_pools_by_queue_idx_mutex;
-        std::unordered_map<uint32_t, std::unordered_map<std::thread::id, VkCommandPool>> command_pools_by_queue_idx;
+        ftl::ThreadLocal<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_queue_idx;
 
         std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
@@ -135,9 +154,12 @@ namespace nova {
 
         bool shaderpack_loaded = false;
         shaderpack_data shaderpack;
-        std::queue<mesh_data> mesh_upload_queue;
+        std::queue<staging_buffer_upload_command> mesh_upload_queue;
         ftl::Fibtex mesh_upload_queue_mutex;
-        ftl::AtomicCounter mesh_upload_semaphore;
+        VkFence mesh_rendering_done;
+        VkFence upload_to_megamesh_buffer_done;
+
+        void validate_mesh_options(const settings_options::mesh_options& options);
 
         void create_device();
         void destroy_device();
@@ -164,6 +186,17 @@ namespace nova {
         void recreate_swapchain();
 
         void cleanup_dynamic();  // Cleanup objects that have been created on the fly
+
+        /*!
+         * \brief Records and submits a command buffer that barriers until reading vertex data from the megamesh
+         * buffer has finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer
+         * are finished
+         * 
+         * The command buffer will wait on fence `mesh_rendering_done` before getting submitted, and it'll signal
+         * `upload_to_megamesh_buffer_done` when it's done copying data into the megamesh buffer. This method uploads 
+         * all new mesh data and it's awesome
+         */
+        void upload_new_mesh_parts();
 
         const uint MAX_FRAMES_IN_QUEUE = 3;
         uint current_frame = 0;

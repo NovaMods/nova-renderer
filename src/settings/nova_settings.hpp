@@ -29,30 +29,36 @@ namespace nova {
      * TODO: Abstract this so a shaderpack for example does only contain the data of the pack itself and compiled SPIR-V, but provide built-in methods to parse shaderpacks
      */
     struct settings_options {
-        struct {
+        struct debug_options {
             bool enabled = false;
             bool enable_renderdoc = false;
         } debug;
 
-        struct {
+        struct cache_options {
             std::string loaded_shaderpack = "DefaultShaderpack";
         } cache;
 
-        struct {
+        struct window_options {
             std::string title = "Nova Renderer";
         } window;
 
-        struct {
+        struct vulkan_options {
             std::string application_name = "Nova Renderer";
             semver application_version = {0, 8, 0};
         } vulkan;
 
-        struct {
+        struct dx12_options {
         } dx12;
 
         graphics_api api;
 
         uint32_t max_in_flight_frames = 3;
+
+        struct mesh_options {
+            uint32_t max_total_allocation = 1024 * 1024 * 1024;
+            uint32_t new_buffer_size = 16 * 1024 * 1024;
+            uint32_t buffer_part_size = 16 * 1024;
+        } mesh;
     };
 
     /*!
