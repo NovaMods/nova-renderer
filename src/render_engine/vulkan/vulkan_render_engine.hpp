@@ -30,7 +30,7 @@
 
 namespace nova {
     struct vk_queue {
-        VkQueue queue;
+        VkQueue queue = VK_NULL_HANDLE;
         uint32_t queue_idx;
     };
 
@@ -42,21 +42,21 @@ namespace nova {
     };
 
     struct vk_render_pass {
-        VkRenderPass pass;
+        VkRenderPass pass = VK_NULL_HANDLE;
         render_pass_data data;
     };
 
     struct vk_pipeline {
-        VkPipeline pipeline;
-        VkPipelineLayout layout;
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        VkPipelineLayout layout = VK_NULL_HANDLE;
         pipeline_data data;
 
         std::unordered_map<std::string, vk_resource_binding> bindings;
     };
 
     struct vk_texture {
-        VkImage image;
-        VkImageView image_view;
+        VkImage image = VK_NULL_HANDLE;
+        VkImageView image_view = VK_NULL_HANDLE;
 
         texture_resource_data data;
 
@@ -65,7 +65,7 @@ namespace nova {
     };
 
     struct vk_buffer {
-        VkBuffer buffer;
+        VkBuffer buffer = VK_NULL_HANDLE;
 
         VmaAllocation allocation;
         VmaAllocationInfo alloc_info;
@@ -94,7 +94,7 @@ namespace nova {
 
         void set_shaderpack(const shaderpack_data& data) override;
 
-        uint32_t add_mesh(const mesh_data& mesh) override;
+        uint32_t add_mesh(const mesh_data& input_mesh) override;
 
         void delete_mesh(uint32_t mesh_id) override;
 
@@ -165,7 +165,7 @@ namespace nova {
 
         std::unordered_map<std::string, vk_pipeline> pipelines;
 
-        std::unordered_map<std::string, vk_texture> dynamic_textures_by_name;
+        std::unordered_map<std::string, vk_texture> dynamic_textures;
 
         std::unordered_map<std::string, material_data> materials;
 
@@ -211,7 +211,7 @@ namespace nova {
          *
          * \return The generated shader module
          */
-        VkShaderModule create_shader_module(std::vector<uint32_t> spirv) const;
+        VkShaderModule create_shader_module(const std::vector<uint32_t>& spirv) const;
 
         /*!
          * \brief Adds an entry to the dynamic textures for each entry in texture_data
@@ -245,6 +245,11 @@ namespace nova {
          * \brief Destroys all the pipelines in `pipelines`
          */
         void destroy_graphics_pipelines();
+
+        /*!
+         * \brief Destroys all the textures in `dynamic_textures`
+         */
+        void destroy_dynamic_textures();
 #pragma endregion
 
 #pragma region Mesh
@@ -260,6 +265,10 @@ namespace nova {
         ftl::Fibtex mesh_upload_queue_mutex;
         VkFence mesh_rendering_done;
         VkFence upload_to_megamesh_buffer_done;
+
+        // Might need to make 64-bit keys eventually, but in 2018 it's not a concern
+        std::unordered_map<uint32_t, vk_mesh> meshes;
+        std::atomic<uint32_t> next_mesh_id = 0;
 
         /*!
          * \brief Validates that the sizes in `options` are properly aligned
