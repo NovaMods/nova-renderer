@@ -452,37 +452,38 @@ namespace nova {
     }
 
     uint32_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
-        scheduler->AddTask(&upload_to_staging_buffers_counter,
-            [&](ftl::TaskScheduler* task_scheduler, const mesh_data* mesh) {
-                const uint64_t vertex_size = mesh->vertex_data.size() * sizeof(full_vertex);
-                const mesh_memory mem = mesh_manager->allocate_mesh(vertex_size);
+        const uint64_t vertex_size = input_mesh.vertex_data.size() * sizeof(full_vertex);
+        const mesh_memory mem = mesh_manager->allocate_mesh(vertex_size);
 
-                // Create some small buffers to write the parts of the mesh to, and upload data to them. Later on we'll
+        // Create some small buffers to write the parts of the mesh to, and upload data to them. Later on we'll
                 // copy the staging buffers to the main buffer
 
-                ftl::AtomicCounter mesh_parts_upload_counter(scheduler);
+        ftl::AtomicCounter mesh_parts_upload_counter(scheduler);
 
-                uint32_t num_vertices_per_part = mesh_manager->buffer_part_size / sizeof(full_vertex);
+        uint32_t num_vertices_per_part = mesh_manager->buffer_part_size / sizeof(full_vertex);
 
-                // Create staging buffers, and tasks to uplaod to the staging buffers
-                std::vector<vk_buffer> staging_buffers(mem.parts.size());
-                for(uint32_t i = 0; i < staging_buffers.size(); i++) {
-                    staging_buffers[i] = get_or_allocate_mesh_staging_buffer();
+        // Create staging buffers, and tasks to uplaod to the staging buffers
+        std::vector<vk_buffer> staging_buffers(mem.parts.size());
+        for(uint32_t i = 0; i < staging_buffers.size(); i++) {
+            staging_buffers[i] = get_or_allocate_mesh_staging_buffer();
 
-                    scheduler->AddTask(&mesh_parts_upload_counter,
-                        [](const vk_buffer* buffer_to_upload_to, const full_vertex* vertices_to_upload, uint64_t num_vertices) {
-                            std::memcpy(buffer_to_upload_to->alloc_info.pMappedData, vertices_to_upload, num_vertices);
-                        },
-                        &staging_buffers[i], mesh->vertex_data[i * num_vertices_per_part], num_vertices_per_part);
-                }
+            scheduler->AddTask(&mesh_parts_upload_counter,
+                [](const vk_buffer* buffer_to_upload_to, const full_vertex* vertices_to_upload, uint64_t num_vertices) {
+                    std::memcpy(buffer_to_upload_to->alloc_info.pMappedData, vertices_to_upload, num_vertices);
+                },
+                &staging_buffers[i], input_mesh.vertex_data[i * num_vertices_per_part], num_vertices_per_part);
+        }
 
-                // When all the staging buffers have been uploaded to, add the mesh to the queue of meshes to upload
-                task_scheduler->WaitForCounter(&mesh_parts_upload_counter, 0);
+        // When all the staging buffers have been uploaded to, add the mesh to the queue of meshes to upload
+        scheduler->WaitForCounter(&mesh_parts_upload_counter, 0);
 
-                ftl::LockGuard l(mesh_upload_queue_mutex);
-                mesh_upload_queue.emplace(staging_buffer_upload_command{staging_buffers, mem});
-            },
-            &input_mesh);
+        ftl::LockGuard l(mesh_upload_queue_mutex);
+        mesh_upload_queue.emplace(staging_buffer_upload_command{staging_buffers, mem});
+
+        const uint32_t mesh_id = next_mesh_id.fetch_add(1);
+        meshes[mesh_id] = {mem, input_mesh};
+
+        return mesh_id;
     }
 
     bool vk_resource_binding::operator==(const vk_resource_binding& other) const {
