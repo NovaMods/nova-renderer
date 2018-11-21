@@ -50,23 +50,13 @@ namespace nova {
          * \brief Creates a new mesh store. A single physical buffer is created and made ready for use
          * 
          * \param options The settings for this mesh_allocator to use
-         * \param max_size The maximum size, in bytes, that this mesh_allocator is allowed to grow to
          * \param alloc The device memory allocator to allocate new buffers with
+         * \param task_scheduler The TaskScheduler that we should use to make mutexes and whatever else this class needs
+         * \param graphics_queue_idx The index of the graphics queue where the meshes allocated from this pool will be used
+         * \param copy_queue_idx The index of the transfer queue where meshes allocated from this pool will be used
          */
         mesh_allocator(const settings_options::mesh_options& options, const VmaAllocator* alloc, ftl::TaskScheduler* task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
-
-        // Copying is for squares
-
-        mesh_allocator(const mesh_allocator& other) = delete;
-
-        mesh_allocator& operator=(const mesh_allocator& other) = delete;
-
-        // Moving is for galaxy brains
-
-        mesh_allocator(mesh_allocator&& other) = default;
-
-        mesh_allocator& operator=(mesh_allocator&& other) noexcept = default;
-
+        
         /*!
          * \brief Deletes the physical buffers
          * 
