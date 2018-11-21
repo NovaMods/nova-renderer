@@ -60,7 +60,7 @@ namespace nova {
         return new_memory;
     }
 
-    void mesh_allocator::free_mesh(const mesh_memory& memory_to_free) {
+    void mesh_allocator::free(const mesh_memory& memory_to_free) {
         for(const buffer_range& part : memory_to_free.parts) {
             ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
             buffers.at(part.buffer).available_ranges.push_back(part);

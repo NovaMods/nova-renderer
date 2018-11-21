@@ -486,6 +486,13 @@ namespace nova {
         return mesh_id;
     }
 
+    void vulkan_render_engine::delete_mesh(uint32_t mesh_id) {
+        const vk_mesh mesh = meshes.at(mesh_id);
+        meshes.erase(mesh_id);
+
+        mesh_manager->free(mesh.memory);
+    }
+
     bool vk_resource_binding::operator==(const vk_resource_binding& other) const {
         return other.set == set && other.binding == binding && other.descriptorCount == descriptorCount && other.descriptorType == descriptorType;
     }
@@ -748,8 +755,6 @@ namespace nova {
         shader_module_create_info.flags = 0;
         shader_module_create_info.pCode = spirv.data();
         shader_module_create_info.codeSize = spirv.size() * 4;
-
-        write_to_file(spirv, "debug.spirv");
 
         VkShaderModule module;
         NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module), render_engine_initialization_exception);

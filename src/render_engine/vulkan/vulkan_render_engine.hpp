@@ -119,6 +119,10 @@ namespace nova {
 
         VmaAllocator memory_allocator;
 
+        std::vector<VkSemaphore> render_finished_semaphores;
+        std::vector<VkSemaphore> image_available_semaphores;
+        std::vector<VkFence> submit_fences;
+
         /*!
          * \brief Thread-local command pools so multiple tasks don't try to use the same command pools at the same time
          */
@@ -129,9 +133,15 @@ namespace nova {
          */
         std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
 
-        std::vector<VkSemaphore> render_finished_semaphores;
-        std::vector<VkSemaphore> image_available_semaphores;
-        std::vector<VkFence> submit_fences;
+        /*!
+         * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
+         * current thread
+         *
+         * \param queue_index the index of the queue we need to get a command pool for
+         *
+         * \return The command pool for the current thread
+         */
+        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
 #pragma endregion
 
 #pragma region Init
@@ -289,16 +299,6 @@ namespace nova {
          * all new mesh data and it's awesome
          */
         void upload_new_mesh_parts();
-
-        /*!
-         * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
-         * current thread
-         *
-         * \param queue_index the index of the queue we need to get a command pool for
-         *
-         * \return The command pool for the current thread
-         */
-        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
 
         /*!
          * \brief If a mesh staging buffer is available, it's returned to the user. Otherwise, a new mesh staging

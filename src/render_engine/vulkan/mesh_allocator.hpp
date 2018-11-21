@@ -97,7 +97,7 @@ namespace nova {
          * \param memory_to_free The mesh memory to free. Usage of that mesh memory after calling this function is not 
          * valid usage
          */
-        void free_mesh(const mesh_memory& memory_to_free);
+        void free(const mesh_memory& memory_to_free);
 
         uint64_t get_num_bytes_allocated() const;
 
