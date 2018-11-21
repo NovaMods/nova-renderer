@@ -20,7 +20,7 @@
 #include <vk_mem_alloc.h>
 #include <queue>
 #include "../dx12/win32_window.hpp"
-#include "mesh_allocator.hpp"
+#include "block_allocator.hpp"
 #include "spirv_glsl.hpp"
 
 #include "ftl/atomic_counter.h"
@@ -73,11 +73,11 @@ namespace nova {
 
     struct staging_buffer_upload_command {
         std::vector<vk_buffer> staging_buffers;
-        mesh_memory mem;
+        block_memory_allocation mem;
     };
 
     struct vk_mesh {
-        mesh_memory memory;
+        block_memory_allocation memory;
         mesh_data data;
     };
 
@@ -263,7 +263,7 @@ namespace nova {
 #pragma endregion
 
 #pragma region Mesh
-        std::shared_ptr<mesh_allocator> mesh_manager;
+        std::shared_ptr<block_allocator> mesh_manager;
         /*!
          * \brief The number of mesh upload tasks that are still running
          */

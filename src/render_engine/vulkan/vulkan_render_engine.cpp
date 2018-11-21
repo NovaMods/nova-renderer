@@ -86,7 +86,7 @@ namespace nova {
 #endif
 
         create_memory_allocator();
-        mesh_manager = std::make_shared<mesh_allocator>(settings.get_options().mesh, &memory_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
+        mesh_manager = std::make_shared<block_allocator>(settings.get_options().mesh, &memory_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -430,7 +430,7 @@ namespace nova {
         VkBufferCreateInfo buffer_create_info = {};
         buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        buffer_create_info.size = mesh_allocator::buffer_part_size;
+        buffer_create_info.size = mesh_manager->buffer_part_size;
         buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         buffer_create_info.queueFamilyIndexCount = 1;
         buffer_create_info.pQueueFamilyIndices = &copy_queue_index;
@@ -453,7 +453,7 @@ namespace nova {
 
     uint32_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
         const uint64_t vertex_size = input_mesh.vertex_data.size() * sizeof(full_vertex);
-        const mesh_memory mem = mesh_manager->allocate_mesh(vertex_size);
+        const block_memory_allocation mem = mesh_manager->allocate_mesh(vertex_size);
 
         // Create some small buffers to write the parts of the mesh to, and upload data to them. Later on we'll
                 // copy the staging buffers to the main buffer
@@ -783,7 +783,7 @@ namespace nova {
             // way two dudes would be writing to the same region of a megamesh at the same time was if there was a
             // horrible problem
 
-            mesh_manager->add_barriers_before_mesh_upload(mesh_upload_cmds);
+            mesh_manager->add_barriers_before_data_upload(mesh_upload_cmds);
 
             task_scheduler->WaitForCounter(&upload_to_staging_buffers_counter, 0);
 
@@ -805,7 +805,7 @@ namespace nova {
             }
             mesh_upload_queue_mutex.unlock();
 
-            mesh_manager->add_barriers_after_mesh_upload(mesh_upload_cmds);
+            mesh_manager->add_barriers_after_data_upload(mesh_upload_cmds);
 
             vkEndCommandBuffer(mesh_upload_cmds);
 
@@ -875,9 +875,9 @@ namespace nova {
     void vulkan_render_engine::render_frame() {
         vkWaitForFences(device, 1, &submit_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
 
-        auto acquire_result = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphores.at(current_frame), VK_NULL_HANDLE, &current_swapchain_index);
+        const auto acquire_result = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphores.at(current_frame), VK_NULL_HANDLE, &current_swapchain_index);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
-            recreate_swapchain();
+            // TODO: Recreate the swapchain and all screen-relative textures
             return;
         } else if(acquire_result != VK_SUCCESS) {
             throw render_engine_rendering_exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " + vulkan::vulkan_utils::vk_result_to_string(acquire_result));
