@@ -10,21 +10,15 @@
 #include "../render_engine.hpp"
 
 namespace nova {
-    block_allocator::block_allocator(const settings_options::mesh_options& options, const VmaAllocator* alloc, 
-		ftl::TaskScheduler* task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx) : 
-            vma_alloc(alloc), buffer_fibtex(task_scheduler), max_size(options.max_total_allocation), 
-            buffer_part_size(options.buffer_part_size), new_buffer_size(options.new_buffer_size), 
-            graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
-        allocate_new_buffer();
-    }
-
-    block_allocator::~block_allocator() {
+    template <uint32_t Alignment>
+    block_allocator<Alignment>::~block_allocator() {
         for(const auto& [buf, buf_info] : buffers) {
             vmaDestroyBuffer(*vma_alloc, buf, buf_info.allocation);
         }
     }
 
-    buffer_range block_allocator::get_buffer_part() {
+    template <uint32_t Alignment>
+    buffer_range block_allocator<Alignment>::get_buffer_part() {
         ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
         for(auto& buf : buffers) {
             if(!buf.second.available_ranges.empty()) {
@@ -43,7 +37,8 @@ namespace nova {
         return ret_val;
     }
 
-    block_memory_allocation block_allocator::allocate(const uint64_t size) {
+    template <uint32_t Alignment>
+    block_memory_allocation block_allocator<Alignment>::allocate(const uint64_t size) {
         block_memory_allocation new_memory;
         new_memory.allocated_size = size;
         uint64_t size_remaining = size;
@@ -60,18 +55,21 @@ namespace nova {
         return new_memory;
     }
 
-    void block_allocator::free(const block_memory_allocation& memory_to_free) {
+    template <uint32_t Alignment>
+    void block_allocator<Alignment>::free(const block_memory_allocation& memory_to_free) {
         for(const buffer_range& part : memory_to_free.parts) {
             ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
             buffers.at(part.buffer).available_ranges.push_back(part);
         }
     }
 
-    uint64_t block_allocator::get_num_bytes_allocated() const {
+    template <uint32_t Alignment>
+    uint64_t block_allocator<Alignment>::get_num_bytes_allocated() const {
         return buffers.size() * new_buffer_size;
     }
 
-    uint64_t block_allocator::get_num_bytes_used() const {
+    template <uint32_t Alignment>
+    uint64_t block_allocator<Alignment>::get_num_bytes_used() const {
         const uint64_t num_buffer_parts = new_buffer_size / buffer_part_size;
         uint64_t num_buffer_parts_used = 0;
         for(const auto& [buf, buf_info] : buffers) {
@@ -80,7 +78,8 @@ namespace nova {
         return num_buffer_parts_used * buffer_part_size;
     }
 
-    uint64_t block_allocator::get_num_bytes_available() const {
+    template <uint32_t Alignment>
+    uint64_t block_allocator<Alignment>::get_num_bytes_available() const {
         uint64_t num_buffer_parts_available = 0;
         for(const auto& [buf, buf_info] : buffers) {
             num_buffer_parts_available += buf_info.available_ranges.size();
@@ -88,8 +87,9 @@ namespace nova {
 
         return num_buffer_parts_available * buffer_part_size;
     }
-    
-    void block_allocator::add_barriers_before_data_upload(VkCommandBuffer cmds) {
+
+    template <uint32_t Alignment>
+    void block_allocator<Alignment>::add_barriers_before_data_upload(VkCommandBuffer cmds) {
         std::vector<VkBufferMemoryBarrier> barriers;
         barriers.reserve(buffers.size());
         for(const auto& [buf, buf_info] : buffers) {
@@ -109,7 +109,8 @@ namespace nova {
         vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, buffers.size(), barriers.data(), 0, nullptr);
     }
 
-    void block_allocator::add_barriers_after_data_upload(VkCommandBuffer cmds) {
+    template <uint32_t Alignment>
+    void block_allocator<Alignment>::add_barriers_after_data_upload(VkCommandBuffer cmds) {
         std::vector<VkBufferMemoryBarrier> barriers;
         barriers.reserve(buffers.size());
         for(const auto& [buf, buf_info] : buffers) {
@@ -129,7 +130,8 @@ namespace nova {
         vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, buffers.size(), barriers.data(), 0, nullptr);
     }
 
-    std::pair<VkBuffer, block_allocator::mega_buffer_info&> block_allocator::allocate_new_buffer() {
+    template <uint32_t Alignment>
+    std::pair<VkBuffer, block_allocator<Alignment>::mega_buffer_info&> block_allocator::allocate_new_buffer() {
         ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
         if(get_num_bytes_used() + new_buffer_size > max_size) {
             throw out_of_gpu_memory("Cannot exceed max size of " + std::to_string(max_size));

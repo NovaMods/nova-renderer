@@ -28,6 +28,7 @@ namespace nova {
     /*!
      * \brief A block allocator, with the alignment as a template parameter
      */
+    template<uint32_t Alignment>
     class block_allocator {
     public:
         uint32_t new_buffer_size;
@@ -42,7 +43,27 @@ namespace nova {
          * \param graphics_queue_idx The index of the graphics queue where the meshes allocated from this pool will be used
          * \param copy_queue_idx The index of the transfer queue where meshes allocated from this pool will be used
          */
-        block_allocator(const settings_options::mesh_options& options, const VmaAllocator* alloc, ftl::TaskScheduler* task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
+        block_allocator(const settings_options::block_allocator_options& options, const VmaAllocator* alloc, ftl::TaskScheduler* task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx)
+            : vma_alloc(alloc),
+              buffer_fibtex(task_scheduler),
+              max_size(options.max_total_allocation),
+              buffer_part_size(options.buffer_part_size),
+              new_buffer_size(options.new_buffer_size),
+              graphics_queue_idx(graphics_queue_idx),
+              copy_queue_idx(copy_queue_idx) {
+            // All must be aligned
+            if(options.buffer_part_size % Alignment != 0) {
+                throw std::runtime_error("options.buffer_part_size must be a whole number multiple of " + std::to_string(Alignment));
+
+            } else if(options.new_buffer_size % options.buffer_part_size != 0) {
+                throw std::runtime_error("options.new_buffer_size must be a whole number multiple of " + std::to_string(options.buffer_part_size));
+
+            } else if(options.max_total_allocation % options.new_buffer_size != 0) {
+                throw std::runtime_error("options.max_total_allocation must be a whole number multiple of " + std::to_string(options.new_buffer_size));
+            }
+
+            allocate_new_buffer();
+        };
         
         /*!
          * \brief Deletes the physical buffers

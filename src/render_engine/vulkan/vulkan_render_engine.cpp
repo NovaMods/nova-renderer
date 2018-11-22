@@ -22,8 +22,8 @@ namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler)
         : render_engine(settings, task_scheduler),
           upload_to_staging_buffers_counter(task_scheduler),
-          mesh_staging_buffers_mutex(task_scheduler),
           command_pools_by_queue_idx(task_scheduler, [&]() { return make_new_command_pools(); }),
+          mesh_staging_buffers_mutex(task_scheduler),
           mesh_upload_queue_mutex(task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
@@ -86,7 +86,8 @@ namespace nova {
 #endif
 
         create_memory_allocator();
-        mesh_manager = std::make_shared<block_allocator>(settings.get_options().mesh, &memory_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
+        vertex_memory_allocator = std::make_shared<block_allocator<sizeof(full_vertex)>>(settings.get_options().mesh, &vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
+        index_memory_allocator = std::make_shared<block_allocator<sizeof(full_vertex)>>(settings.get_options().mesh, &vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -119,7 +120,7 @@ namespace nova {
         create_swapchain_image_views();
     }
 
-    void vulkan_render_engine::validate_mesh_options(const settings_options::mesh_options& options) const {
+    void vulkan_render_engine::validate_mesh_options(const settings_options::block_allocator_options& options) const {
         if(options.buffer_part_size % sizeof(full_vertex) != 0) {
             throw std::runtime_error("mesh.buffer_part_size must be a multiple of sizeof(full_vertex) (which equals " + std::to_string(sizeof(full_vertex)) + ")");
         }
@@ -263,7 +264,7 @@ namespace nova {
         allocator_create_info.physicalDevice = physical_device;
         allocator_create_info.device = device;
 
-        NOVA_THROW_IF_VK_ERROR(vmaCreateAllocator(&allocator_create_info, &memory_allocator), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vmaCreateAllocator(&allocator_create_info, &vma_allocator), render_engine_initialization_exception);
     }
 
     void vulkan_render_engine::create_swapchain() {
@@ -430,7 +431,7 @@ namespace nova {
         VkBufferCreateInfo buffer_create_info = {};
         buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        buffer_create_info.size = mesh_manager->buffer_part_size;
+        buffer_create_info.size = vertex_memory_allocator->buffer_part_size;
         buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         buffer_create_info.queueFamilyIndexCount = 1;
         buffer_create_info.pQueueFamilyIndices = &copy_queue_index;
@@ -440,7 +441,7 @@ namespace nova {
         allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
         NOVA_THROW_IF_VK_ERROR(
-            vmaCreateBuffer(memory_allocator, &buffer_create_info, &allocation_create_info, &new_buffer.buffer, &new_buffer.allocation, &new_buffer.alloc_info), render_engine_rendering_exception);
+            vmaCreateBuffer(vma_allocator, &buffer_create_info, &allocation_create_info, &new_buffer.buffer, &new_buffer.allocation, &new_buffer.alloc_info), render_engine_rendering_exception);
 
         return new_buffer;
     }
@@ -453,35 +454,48 @@ namespace nova {
 
     uint32_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
         const uint64_t vertex_size = input_mesh.vertex_data.size() * sizeof(full_vertex);
-        const block_memory_allocation mem = mesh_manager->allocate_mesh(vertex_size);
+        const block_memory_allocation vertex_mem = vertex_memory_allocator->allocate(vertex_size);
 
-        // Create some small buffers to write the parts of the mesh to, and upload data to them. Later on we'll
-                // copy the staging buffers to the main buffer
+        // Create some small buffers to write the parts of the mesh to, and upload data to them. Later on we'll copy 
+        // the staging buffers to the main buffer
 
         ftl::AtomicCounter mesh_parts_upload_counter(scheduler);
 
-        uint32_t num_vertices_per_part = mesh_manager->buffer_part_size / sizeof(full_vertex);
+        const uint32_t num_vertices_per_part = vertex_memory_allocator->buffer_part_size / sizeof(full_vertex);
 
-        // Create staging buffers, and tasks to uplaod to the staging buffers
-        std::vector<vk_buffer> staging_buffers(mem.parts.size());
-        for(uint32_t i = 0; i < staging_buffers.size(); i++) {
-            staging_buffers[i] = get_or_allocate_mesh_staging_buffer();
+        // Create staging buffers, and tasks to upload to the staging buffers
+        std::vector<vk_buffer> vertex_staging_buffers(vertex_mem.parts.size());
+        for(uint32_t i = 0; i < vertex_staging_buffers.size(); i++) {
+            vertex_staging_buffers[i] = get_or_allocate_mesh_staging_buffer();
 
             scheduler->AddTask(&mesh_parts_upload_counter,
                 [](const vk_buffer* buffer_to_upload_to, const full_vertex* vertices_to_upload, uint64_t num_vertices) {
                     std::memcpy(buffer_to_upload_to->alloc_info.pMappedData, vertices_to_upload, num_vertices);
                 },
-                &staging_buffers[i], input_mesh.vertex_data[i * num_vertices_per_part], num_vertices_per_part);
+                &vertex_staging_buffers[i], input_mesh.vertex_data[i * num_vertices_per_part], vertex_memory_allocator->buffer_part_size);
+        }
+
+        const block_memory_allocation index_mem = index_memory_allocator->allocate(input_mesh.indices.size() * sizeof(uint32_t));
+        const uint32_t num_indices_per_part = index_memory_allocator->buffer_part_size / sizeof(uint32_t);
+        std::vector<vk_buffer> index_staging_buffers(index_mem.parts.size());
+        for(uint32_t i = 0; i < index_staging_buffers.size(); i++) {
+            index_staging_buffers[i] = get_or_allocate_mesh_staging_buffer();
+
+            scheduler->AddTask(&mesh_parts_upload_counter, 
+				[](ftl::TaskScheduler * scheduler, const vk_buffer* buffer_to_upload_to, const full_vertex* vertices_to_upload, uint64_t num_bytes) {
+                    std::memcpy(buffer_to_upload_to->alloc_info.pMappedData, vertices_to_upload, num_bytes);
+                },
+                &index_staging_buffers[i], input_mesh.indices[i * num_indices_per_part], index_memory_allocator->buffer_part_size);
         }
 
         // When all the staging buffers have been uploaded to, add the mesh to the queue of meshes to upload
         scheduler->WaitForCounter(&mesh_parts_upload_counter, 0);
 
         ftl::LockGuard l(mesh_upload_queue_mutex);
-        mesh_upload_queue.emplace(staging_buffer_upload_command{staging_buffers, mem});
+        mesh_upload_queue.emplace(staging_buffer_upload_command{vertex_staging_buffers, vertex_mem, index_mem});
 
         const uint32_t mesh_id = next_mesh_id.fetch_add(1);
-        meshes[mesh_id] = {mem, input_mesh};
+        meshes[mesh_id] = {vertex_mem, index_mem, input_mesh};
 
         return mesh_id;
     }
@@ -490,7 +504,7 @@ namespace nova {
         const vk_mesh mesh = meshes.at(mesh_id);
         meshes.erase(mesh_id);
 
-        mesh_manager->free(mesh.memory);
+        vertex_memory_allocator->free(mesh.vertex_memory);
     }
 
     bool vk_resource_binding::operator==(const vk_resource_binding& other) const {
@@ -783,7 +797,7 @@ namespace nova {
             // way two dudes would be writing to the same region of a megamesh at the same time was if there was a
             // horrible problem
 
-            mesh_manager->add_barriers_before_data_upload(mesh_upload_cmds);
+            vertex_memory_allocator->add_barriers_before_data_upload(mesh_upload_cmds);
 
             task_scheduler->WaitForCounter(&upload_to_staging_buffers_counter, 0);
 
@@ -795,17 +809,17 @@ namespace nova {
                 mesh_upload_queue.pop();
                 for(uint32_t i = 0; i < cmd.staging_buffers.size(); i++) {
                     VkBufferCopy copy = {};
-                    copy.size = mesh_manager->buffer_part_size;
+                    copy.size = vertex_memory_allocator->buffer_part_size;
                     copy.srcOffset = 0;
-                    copy.dstOffset = cmd.mem.parts[i].offset;
-                    vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffers[i].buffer, cmd.mem.parts[i].buffer, 1, &copy);
+                    copy.dstOffset = cmd.vertex_mem.parts[i].offset;
+                    vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffers[i].buffer, cmd.vertex_mem.parts[i].buffer, 1, &copy);
                 }
 
                 freed_buffers.insert(freed_buffers.end(), cmd.staging_buffers.begin(), cmd.staging_buffers.end());
             }
             mesh_upload_queue_mutex.unlock();
 
-            mesh_manager->add_barriers_after_data_upload(mesh_upload_cmds);
+            vertex_memory_allocator->add_barriers_after_data_upload(mesh_upload_cmds);
 
             vkEndCommandBuffer(mesh_upload_cmds);
 
@@ -969,7 +983,7 @@ namespace nova {
     void vulkan_render_engine::destroy_dynamic_textures() {
         for(const auto& [tex_name, tex] : dynamic_textures) {
             vkDestroyImageView(device, tex.image_view, nullptr);
-            vmaDestroyImage(memory_allocator, tex.image, tex.allocation);
+            vmaDestroyImage(vma_allocator, tex.image, tex.allocation);
         }
 
         dynamic_textures.clear();
@@ -1050,7 +1064,7 @@ namespace nova {
             alloc_create_info.pool = VK_NULL_HANDLE;
             alloc_create_info.pUserData = nullptr;
 
-            vmaCreateImage(memory_allocator, &image_create_info, &alloc_create_info, &texture.image, &texture.allocation, &texture.vma_info);
+            vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture.image, &texture.allocation, &texture.vma_info);
 
             VkImageViewCreateInfo image_view_create_info = {};
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

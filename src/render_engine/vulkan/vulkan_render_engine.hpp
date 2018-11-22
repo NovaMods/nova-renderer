@@ -73,11 +73,13 @@ namespace nova {
 
     struct staging_buffer_upload_command {
         std::vector<vk_buffer> staging_buffers;
-        block_memory_allocation mem;
+        block_memory_allocation vertex_mem;
+        block_memory_allocation index_mem;
     };
 
     struct vk_mesh {
-        block_memory_allocation memory;
+        block_memory_allocation vertex_memory;
+        block_memory_allocation indices_memory;
         mesh_data data;
     };
 
@@ -117,7 +119,7 @@ namespace nova {
         VkPhysicalDevice physical_device;
         VkDevice device;
 
-        VmaAllocator memory_allocator;
+        VmaAllocator vma_allocator;
 
         std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
@@ -263,7 +265,9 @@ namespace nova {
 #pragma endregion
 
 #pragma region Mesh
-        std::shared_ptr<block_allocator> mesh_manager;
+        std::shared_ptr<block_allocator<sizeof(full_vertex)>> vertex_memory_allocator;
+        std::shared_ptr<block_allocator<sizeof(full_vertex)> >index_memory_allocator;
+
         /*!
          * \brief The number of mesh upload tasks that are still running
          */
@@ -287,7 +291,7 @@ namespace nova {
          * `options.new_buffer_size` must be a whole-number multiple of `options.buffer_part_size`
          * `options.max_total_allocation` must be a whole-number multiple of `options.new_buffer_size`
          */
-        void validate_mesh_options(const settings_options::mesh_options& options) const;
+        void validate_mesh_options(const settings_options::block_allocator_options& options) const;
 
         /*!
          * \brief Records and submits a command buffer that barriers until reading vertex data from the megamesh

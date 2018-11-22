@@ -54,7 +54,7 @@ namespace nova {
 
         uint32_t max_in_flight_frames = 3;
 
-        struct mesh_options {
+        struct block_allocator_options {
             uint32_t max_total_allocation = 1024 * 1024 * 1024;
             uint32_t new_buffer_size = 16 * 1024 * 1024;
             uint32_t buffer_part_size = 16 * 1024;
