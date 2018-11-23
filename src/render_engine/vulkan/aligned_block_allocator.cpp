@@ -3,7 +3,7 @@
  * \date 11-Nov-18.
  */
 
-#include "block_allocator.hpp"
+#include "aligned_block_allocator.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/utils.hpp"
 #include "vulkan_utils.hpp"
@@ -11,14 +11,14 @@
 
 namespace nova {
     template <uint32_t Alignment>
-    block_allocator<Alignment>::~block_allocator() {
+    aligned_block_allocator<Alignment>::~aligned_block_allocator() {
         for(const auto& [buf, buf_info] : buffers) {
             vmaDestroyBuffer(*vma_alloc, buf, buf_info.allocation);
         }
     }
 
     template <uint32_t Alignment>
-    buffer_range block_allocator<Alignment>::get_buffer_part() {
+    buffer_range aligned_block_allocator<Alignment>::get_buffer_part() {
         ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
         for(auto& buf : buffers) {
             if(!buf.second.available_ranges.empty()) {
@@ -38,8 +38,8 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    block_memory_allocation block_allocator<Alignment>::allocate(const uint64_t size) {
-        block_memory_allocation new_memory;
+    block_memory_allocation aligned_block_allocator<Alignment>::allocate(const uint64_t size) {
+        allocation new_memory;
         new_memory.allocated_size = size;
         uint64_t size_remaining = size;
         while(size_remaining > buffer_part_size) {
@@ -56,7 +56,7 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    void block_allocator<Alignment>::free(const block_memory_allocation& memory_to_free) {
+    void aligned_block_allocator<Alignment>::free(const allocation& memory_to_free) {
         for(const buffer_range& part : memory_to_free.parts) {
             ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
             buffers.at(part.buffer).available_ranges.push_back(part);
@@ -64,12 +64,12 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    uint64_t block_allocator<Alignment>::get_num_bytes_allocated() const {
+    uint64_t aligned_block_allocator<Alignment>::get_num_bytes_allocated() const {
         return buffers.size() * new_buffer_size;
     }
 
     template <uint32_t Alignment>
-    uint64_t block_allocator<Alignment>::get_num_bytes_used() const {
+    uint64_t aligned_block_allocator<Alignment>::get_num_bytes_used() const {
         const uint64_t num_buffer_parts = new_buffer_size / buffer_part_size;
         uint64_t num_buffer_parts_used = 0;
         for(const auto& [buf, buf_info] : buffers) {
@@ -79,7 +79,7 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    uint64_t block_allocator<Alignment>::get_num_bytes_available() const {
+    uint64_t aligned_block_allocator<Alignment>::get_num_bytes_available() const {
         uint64_t num_buffer_parts_available = 0;
         for(const auto& [buf, buf_info] : buffers) {
             num_buffer_parts_available += buf_info.available_ranges.size();
@@ -89,7 +89,7 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    void block_allocator<Alignment>::add_barriers_before_data_upload(VkCommandBuffer cmds) {
+    void aligned_block_allocator<Alignment>::add_barriers_before_data_upload(VkCommandBuffer cmds) {
         std::vector<VkBufferMemoryBarrier> barriers;
         barriers.reserve(buffers.size());
         for(const auto& [buf, buf_info] : buffers) {
@@ -110,7 +110,7 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    void block_allocator<Alignment>::add_barriers_after_data_upload(VkCommandBuffer cmds) {
+    void aligned_block_allocator<Alignment>::add_barriers_after_data_upload(VkCommandBuffer cmds) {
         std::vector<VkBufferMemoryBarrier> barriers;
         barriers.reserve(buffers.size());
         for(const auto& [buf, buf_info] : buffers) {
@@ -131,7 +131,7 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    std::pair<VkBuffer, block_allocator<Alignment>::mega_buffer_info&> block_allocator::allocate_new_buffer() {
+    std::pair<VkBuffer, aligned_block_allocator<Alignment>::mega_buffer_info&> block_allocator::allocate_new_buffer() {
         ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
         if(get_num_bytes_used() + new_buffer_size > max_size) {
             throw out_of_gpu_memory("Cannot exceed max size of " + std::to_string(max_size));

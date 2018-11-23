@@ -10,45 +10,44 @@
 #include <unordered_map>
 #include <vk_mem_alloc.h>
 #include "ftl/fibtex.h"
-#include "ftl/atomic_counter.h"
 #include "../../settings/nova_settings.hpp"
-
+   
 namespace nova {
-    struct buffer_range {
-        VkBuffer buffer;
-        uint32_t offset;
-        // Don't need to store the size, wince we can look at the global constant `buffer_part_size`
-    };
-
-    struct block_memory_allocation {
-        std::vector<buffer_range> parts;
-        uint64_t allocated_size = 0;
-    };
-    
     /*!
      * \brief A block allocator, with the alignment as a template parameter
      */
     template<uint32_t Alignment>
-    class block_allocator {
+    class aligned_block_allocator {
     public:
+        struct buffer_range {
+            VkBuffer buffer;
+            uint32_t offset;
+            // Don't need to store the size, wince we can look at the global constant `buffer_part_size`
+        };
+
+        struct allocation {
+            std::vector<buffer_range> parts;
+            uint64_t allocated_size = 0;
+        };
+
         uint32_t new_buffer_size;
         uint32_t buffer_part_size;
         
         /*!
          * \brief Creates a new block allocator. A single physical buffer is created and made ready for use
          * 
-         * \param options The settings for this block_allocator to use
+         * \param options The settings for this aligned_block_allocator to use
          * \param alloc The device memory allocator to allocate new buffers with
          * \param task_scheduler The TaskScheduler that we should use to make mutexes and whatever else this class needs
          * \param graphics_queue_idx The index of the graphics queue where the meshes allocated from this pool will be used
          * \param copy_queue_idx The index of the transfer queue where meshes allocated from this pool will be used
          */
-        block_allocator(const settings_options::block_allocator_options& options, const VmaAllocator* alloc, ftl::TaskScheduler* task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx)
-            : vma_alloc(alloc),
+        aligned_block_allocator(const settings_options::block_allocator_options& options, const VmaAllocator* alloc, ftl::TaskScheduler* task_scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx)
+            : new_buffer_size(options.new_buffer_size),
+              buffer_part_size(options.buffer_part_size),
+              vma_alloc(alloc),
               buffer_fibtex(task_scheduler),
               max_size(options.max_total_allocation),
-              buffer_part_size(options.buffer_part_size),
-              new_buffer_size(options.new_buffer_size),
               graphics_queue_idx(graphics_queue_idx),
               copy_queue_idx(copy_queue_idx) {
             // All must be aligned
@@ -71,7 +70,7 @@ namespace nova {
          * Using any memory gotten from an instance of this class after that instance has been destructed will result
          * in undefined behavior so don't do it
          */
-        ~block_allocator();
+        ~aligned_block_allocator();
 
         /*!
          * \brief Allocates a bunch of buffer space for the new data
@@ -84,7 +83,7 @@ namespace nova {
          * 
          * \return All the information you need to know about the memory for your allocation
          */
-        block_memory_allocation allocate(uint64_t size);
+        allocation allocate(uint64_t size);
 
         /*!
          * \brief Frees the allocation, returning it to the pool
@@ -95,7 +94,7 @@ namespace nova {
          * \param memory_to_free The allocation to free. Usage of that allocation's memory after calling this function is not 
          * valid usage
          */
-        void free(const block_memory_allocation& memory_to_free);
+        void free(const allocation& memory_to_free);
 
         uint64_t get_num_bytes_allocated() const;
 

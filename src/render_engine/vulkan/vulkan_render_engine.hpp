@@ -20,7 +20,7 @@
 #include <vk_mem_alloc.h>
 #include <queue>
 #include "../dx12/win32_window.hpp"
-#include "block_allocator.hpp"
+#include "aligned_block_allocator.hpp"
 #include "spirv_glsl.hpp"
 
 #include "ftl/atomic_counter.h"
@@ -73,13 +73,13 @@ namespace nova {
 
     struct staging_buffer_upload_command {
         std::vector<vk_buffer> staging_buffers;
-        block_memory_allocation vertex_mem;
-        block_memory_allocation index_mem;
+        aligned_block_allocator<sizeof(full_vertex)>::allocation vertex_mem;
+        aligned_block_allocator<sizeof(full_vertex)>::allocation index_mem;
     };
 
     struct vk_mesh {
-        block_memory_allocation vertex_memory;
-        block_memory_allocation indices_memory;
+        aligned_block_allocator<sizeof(full_vertex)>::allocation vertex_memory;
+        aligned_block_allocator<sizeof(full_vertex)>::allocation indices_memory;
         mesh_data data;
     };
 
@@ -265,8 +265,8 @@ namespace nova {
 #pragma endregion
 
 #pragma region Mesh
-        std::shared_ptr<block_allocator<sizeof(full_vertex)>> vertex_memory_allocator;
-        std::shared_ptr<block_allocator<sizeof(full_vertex)> >index_memory_allocator;
+        std::shared_ptr<aligned_block_allocator<sizeof(full_vertex)>> vertex_memory_allocator;
+        std::shared_ptr<aligned_block_allocator<sizeof(full_vertex)> >index_memory_allocator;
 
         /*!
          * \brief The number of mesh upload tasks that are still running

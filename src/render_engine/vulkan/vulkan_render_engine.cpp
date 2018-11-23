@@ -86,8 +86,8 @@ namespace nova {
 #endif
 
         create_memory_allocator();
-        vertex_memory_allocator = std::make_shared<block_allocator<sizeof(full_vertex)>>(settings.get_options().mesh, &vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
-        index_memory_allocator = std::make_shared<block_allocator<sizeof(full_vertex)>>(settings.get_options().mesh, &vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
+        vertex_memory_allocator = std::make_shared<aligned_block_allocator<sizeof(full_vertex)>>(settings.get_options().mesh, &vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
+        index_memory_allocator = std::make_shared<aligned_block_allocator<sizeof(full_vertex)>>(settings.get_options().mesh, &vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -454,7 +454,7 @@ namespace nova {
 
     uint32_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
         const uint64_t vertex_size = input_mesh.vertex_data.size() * sizeof(full_vertex);
-        const block_memory_allocation vertex_mem = vertex_memory_allocator->allocate(vertex_size);
+        const aligned_block_allocator<sizeof(full_vertex)>::allocation vertex_mem = vertex_memory_allocator->allocate(vertex_size);
 
         // Create some small buffers to write the parts of the mesh to, and upload data to them. Later on we'll copy 
         // the staging buffers to the main buffer
@@ -475,7 +475,7 @@ namespace nova {
                 &vertex_staging_buffers[i], input_mesh.vertex_data[i * num_vertices_per_part], vertex_memory_allocator->buffer_part_size);
         }
 
-        const block_memory_allocation index_mem = index_memory_allocator->allocate(input_mesh.indices.size() * sizeof(uint32_t));
+        const aligned_block_allocator<sizeof(full_vertex)>::allocation index_mem = index_memory_allocator->allocate(input_mesh.indices.size() * sizeof(uint32_t));
         const uint32_t num_indices_per_part = index_memory_allocator->buffer_part_size / sizeof(uint32_t);
         std::vector<vk_buffer> index_staging_buffers(index_mem.parts.size());
         for(uint32_t i = 0; i < index_staging_buffers.size(); i++) {
