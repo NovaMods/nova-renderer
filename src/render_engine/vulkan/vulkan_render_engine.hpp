@@ -73,14 +73,12 @@ namespace nova {
 
     struct staging_buffer_upload_command {
         std::vector<vk_buffer> staging_buffers;
-        aligned_block_allocator<sizeof(full_vertex)>::allocation vertex_mem;
-        aligned_block_allocator<sizeof(full_vertex)>::allocation index_mem;
+        aligned_block_allocator<sizeof(full_vertex)>::allocation mem;
+        uint32_t mesh_id;
     };
 
     struct vk_mesh {
         aligned_block_allocator<sizeof(full_vertex)>::allocation vertex_memory;
-        aligned_block_allocator<sizeof(full_vertex)>::allocation indices_memory;
-        mesh_data data;
     };
 
     class vulkan_render_engine : public render_engine {
@@ -265,8 +263,8 @@ namespace nova {
 #pragma endregion
 
 #pragma region Mesh
-        std::shared_ptr<aligned_block_allocator<sizeof(full_vertex)>> vertex_memory_allocator;
-        std::shared_ptr<aligned_block_allocator<sizeof(full_vertex)> >index_memory_allocator;
+        std::shared_ptr<aligned_block_allocator<sizeof(full_vertex)>> vertex_memory;
+        std::shared_ptr<aligned_block_allocator<sizeof(uint32_t)>> index_memory;
 
         /*!
          * \brief The number of mesh upload tasks that are still running

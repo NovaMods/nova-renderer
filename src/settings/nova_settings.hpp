@@ -23,42 +23,131 @@ namespace nova {
     };
 
     /*!
-     * \brief Nova settings, this doc has to be filled. See the TODO's
-     */
-    /* TODO: Since JSON is no longer here because Nova itself shouldn't depend on json configs at all, make this a way to set nova options
-     * TODO: Abstract this so a shaderpack for example does only contain the data of the pack itself and compiled SPIR-V, but provide built-in methods to parse shaderpacks
+     * \brief All the options to configure Nova with
+     *
+     * An application that uses Nova will likely store many of these setting in its configuration file and parse them
+     * itself
      */
     struct settings_options {
+        /*!
+         * \brief Options for configuring the way mesh memory is allocated
+         *
+         * Nova tries to be clever and optimize how it draws meshes with indirect rendering. It shoves everything into
+         * a handful of giant buffers, to facilitate indirect rendering. These options are how you configure that
+         */
+        struct block_allocator_options {
+            /*!
+             * \brief The total amount of memory that can be used
+             *
+             * This must be a whole-number multiple of `new_buffer_size`
+             */
+            uint32_t max_total_allocation = 1024 * 1024 * 1024;
+
+            /*!
+             * \brief The size of one buffer
+             *
+             * Nova doesn't allocate `max_total_allocation` memory initially. It only allocates a single buffer of
+             * `new_buffer_size` size, then allocates new buffers as needed
+             *
+             * This number must be a whole-number multiple of `buffer_part_size`
+             */
+            uint32_t new_buffer_size = 16 * 1024 * 1024;
+
+            /*!
+             * \brief The size of one allocation from a buffer
+             *
+             * Nova gives meshes one or more allocations from a given buffer.
+             */
+            uint32_t buffer_part_size = 16 * 1024;
+        };
+
+        /*!
+         * \brief All options to turn on debugging functionality
+         */
         struct debug_options {
+            /*!
+             * \brief If false, all debugging behavior is disabled, even if individual options are turned on
+             */
             bool enabled = false;
+
+            /*!
+             * \brief If true, Nova will look for RenderDoc on your computer and will try to load it, letting you
+             * debug your shaderpack without leaving Nova
+             */
             bool enable_renderdoc = false;
         } debug;
 
+        /*!
+         * \brief Settings that Nova can change, but which are still stored in a config
+         */
         struct cache_options {
+            /*!
+             * \brief The shaderpack that was most recently loaded
+             *
+             * Nova requires a shaderpack to render anything, so we need to know which one to load on application start
+             */
             std::string loaded_shaderpack = "DefaultShaderpack";
         } cache;
 
+        /*!
+         * \brief Options about the window that Nova will live in
+         */
         struct window_options {
+            /*!
+             * \brief The title of the Window
+             */
             std::string title = "Nova Renderer";
+
+            /*!
+             * \brief The width of the window
+             */
+            uint32_t width;
+
+            /*!
+             * \brief The height of the window
+             */
+            uint32_t height;
         } window;
 
+        /*!
+         * \brief Options that are specific to Nova's Vulkan rendering backend
+         */
         struct vulkan_options {
+            /*!
+             * \brief The application name to pass to Vulkan
+             */
             std::string application_name = "Nova Renderer";
-            semver application_version = {0, 8, 0};
+
+            /*!
+             * \brief The application version to pass to Vulkan
+             */
+            semver application_version = {0, 8, 3};
         } vulkan;
 
+        /*!
+         * \brief Options that are specific to Nova's DirectX 12 backend
+         */
         struct dx12_options {
         } dx12;
 
+        /*!
+         * \brief The rendering API to use
+         *
+         * DirectX 12 is only supported on Windows 10. On other platforms Vulkan will be used, regardless of what you've chosen
+         */
         graphics_api api;
 
         uint32_t max_in_flight_frames = 3;
 
-        struct block_allocator_options {
-            uint32_t max_total_allocation = 1024 * 1024 * 1024;
-            uint32_t new_buffer_size = 16 * 1024 * 1024;
-            uint32_t buffer_part_size = 16 * 1024;
-        } mesh;
+        /*!
+         * \brief Settings for how Nova should allocate vertex memory
+         */
+        block_allocator_options vertex_memory_settings;
+
+        /*!
+         * \brief Settings for how Nova should allocate index memory
+         */
+        block_allocator_options index_memory_settings;
     };
 
     /*!
@@ -76,7 +165,7 @@ namespace nova {
          *
          * \param new_config The updated configuration
          */
-        virtual void on_config_change(const settings_options &new_config) = 0;
+        virtual void on_config_change(const settings_options& new_config) = 0;
 
         /*!
          * \brief Tells listeners that the configuration has been loaded
@@ -92,7 +181,7 @@ namespace nova {
          *
          * \param config The configuration that was loaded
          */
-        virtual void on_config_loaded(const settings_options &config) = 0;
+        virtual void on_config_loaded(const settings_options& config) = 0;
     };
 
     /*!
@@ -108,9 +197,9 @@ namespace nova {
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer
          */
-        void register_change_listener(iconfig_listener *new_listener);
+        void register_change_listener(iconfig_listener* new_listener);
 
-        settings_options &get_options();
+        settings_options& get_options();
         settings_options get_options() const;
 
         /*!
@@ -130,7 +219,7 @@ namespace nova {
 
     private:
         settings_options options;
-        std::vector<iconfig_listener *> config_change_listeners;
+        std::vector<iconfig_listener*> config_change_listeners;
     };
 }  // namespace nova
 

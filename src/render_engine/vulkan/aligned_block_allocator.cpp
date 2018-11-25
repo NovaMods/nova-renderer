@@ -18,7 +18,7 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    buffer_range aligned_block_allocator<Alignment>::get_buffer_part() {
+    aligned_block_allocator<Alignment>::buffer_range aligned_block_allocator<Alignment>::get_buffer_part() {
         ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
         for(auto& buf : buffers) {
             if(!buf.second.available_ranges.empty()) {
@@ -38,7 +38,7 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    block_memory_allocation aligned_block_allocator<Alignment>::allocate(const uint64_t size) {
+    aligned_block_allocator<Alignment>::allocation aligned_block_allocator<Alignment>::allocate(const uint64_t size) {
         allocation new_memory;
         new_memory.allocated_size = size;
         uint64_t size_remaining = size;
@@ -131,7 +131,7 @@ namespace nova {
     }
 
     template <uint32_t Alignment>
-    std::pair<VkBuffer, aligned_block_allocator<Alignment>::mega_buffer_info&> block_allocator::allocate_new_buffer() {
+    std::pair<VkBuffer, aligned_block_allocator<Alignment>::mega_buffer_info&> aligned_block_allocator<Alignment>::allocate_new_buffer() {
         ftl::LockGuard<ftl::Fibtex> buffer_guard(buffer_fibtex);
         if(get_num_bytes_used() + new_buffer_size > max_size) {
             throw out_of_gpu_memory("Cannot exceed max size of " + std::to_string(max_size));
