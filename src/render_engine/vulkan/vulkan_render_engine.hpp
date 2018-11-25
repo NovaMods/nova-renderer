@@ -289,7 +289,7 @@ namespace nova {
          * `options.new_buffer_size` must be a whole-number multiple of `options.buffer_part_size`
          * `options.max_total_allocation` must be a whole-number multiple of `options.new_buffer_size`
          */
-        void validate_mesh_options(const settings_options::block_allocator_options& options) const;
+        void validate_mesh_options(const settings_options::block_allocator_settings& options) const;
 
         /*!
          * \brief Records and submits a command buffer that barriers until reading vertex data from the megamesh

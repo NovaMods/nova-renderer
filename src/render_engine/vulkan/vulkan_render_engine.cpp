@@ -122,7 +122,7 @@ namespace nova {
         create_swapchain_image_views();
     }
 
-    void vulkan_render_engine::validate_mesh_options(const settings_options::block_allocator_options& options) const {
+    void vulkan_render_engine::validate_mesh_options(const settings_options::block_allocator_settings& options) const {
         if(options.buffer_part_size % sizeof(full_vertex) != 0) {
             throw std::runtime_error("vertex_memory_settings.buffer_part_size must be a multiple of sizeof(full_vertex) (which equals " + std::to_string(sizeof(full_vertex)) + ")");
         }

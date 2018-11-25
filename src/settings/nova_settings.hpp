@@ -35,7 +35,7 @@ namespace nova {
          * Nova tries to be clever and optimize how it draws meshes with indirect rendering. It shoves everything into
          * a handful of giant buffers, to facilitate indirect rendering. These options are how you configure that
          */
-        struct block_allocator_options {
+        struct block_allocator_settings {
             /*!
              * \brief The total amount of memory that can be used
              *
@@ -142,12 +142,12 @@ namespace nova {
         /*!
          * \brief Settings for how Nova should allocate vertex memory
          */
-        block_allocator_options vertex_memory_settings;
+        block_allocator_settings vertex_memory_settings;
 
         /*!
          * \brief Settings for how Nova should allocate index memory
          */
-        block_allocator_options index_memory_settings;
+        block_allocator_settings index_memory_settings;
     };
 
     /*!
