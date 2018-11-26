@@ -27,6 +27,7 @@
 #include "ftl/fibtex.h"
 #include "ftl/task_scheduler.h"
 #include "ftl/thread_local.h"
+#include "../../render_objects/render_object.hpp"
 
 namespace nova {
     struct vk_queue {
@@ -82,7 +83,7 @@ namespace nova {
 
     class vulkan_render_engine : public render_engine {
     public:
-        explicit vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler);
+        vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler);
         ~vulkan_render_engine() override;
 
         void render_frame() override;
@@ -167,6 +168,7 @@ namespace nova {
 
 #pragma region Shaderpack
         bool shaderpack_loaded = false;
+        ftl::Fibtex shaderpack_loading_mutex;
         shaderpack_data shaderpack;
 
         std::unordered_map<std::string, vk_render_pass> render_passes;
@@ -323,6 +325,26 @@ namespace nova {
         uint32_t copy_queue_index;
         VkQueue copy_queue;
 #pragma endregion
+
+#pragma region Rendering
+        std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_renderpass;
+        std::unordered_map<std::string, std::vector<render_object>> renderables_by_material;
+
+        /*!
+         * \brief Performs all tasks necessary to render this renderpass
+         * 
+         * \param renderpass_name The name of the renderpass to execute
+         */
+        void execute_renderpass(const std::string* renderpass_name);
+
+        /*!
+         * Renders everything that uses the provided material_pass 
+         * 
+         * \param material_pass The material_pass to render objects for
+         * \param renderpass The renderpass that this material_pass exists in
+         */
+        void render_material_pass(const material_pass* material_pass, const vk_render_pass* renderpass);
+#pragma endregion 
         
 #ifndef NDEBUG
         PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;

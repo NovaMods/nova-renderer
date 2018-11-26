@@ -22,6 +22,7 @@ namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler)
         : render_engine(settings, task_scheduler),
           command_pools_by_queue_idx(task_scheduler, [&]() { return make_new_command_pools(); }),
+          shaderpack_loading_mutex(task_scheduler),
           upload_to_staging_buffers_counter(task_scheduler),
           mesh_staging_buffers_mutex(task_scheduler),
           mesh_upload_queue_mutex(task_scheduler),
@@ -87,7 +88,7 @@ namespace nova {
 #endif
 
         create_memory_allocator();
-        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);_queue_index);
+        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -420,7 +421,7 @@ namespace nova {
 
     vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer(const uint32_t needed_size) {
         ftl::LockGuard l(mesh_staging_buffers_mutex);
-        
+
         if(!mesh_staging_buffers.empty()) {
             // Try to find a buffer that's big enough
             uint32_t potential_staging_buffer_idx = std::numeric_limits<uint32_t>::max();
@@ -452,7 +453,8 @@ namespace nova {
         allocation_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
         allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator, &buffer_create_info, &allocation_create_info, &new_buffer.buffer, &new_buffer.allocation, &new_buffer.alloc_info), render_engine_rendering_exception);
+        NOVA_THROW_IF_VK_ERROR(
+            vmaCreateBuffer(vma_allocator, &buffer_create_info, &allocation_create_info, &new_buffer.buffer, &new_buffer.allocation, &new_buffer.alloc_info), render_engine_rendering_exception);
 
         return new_buffer;
     }
@@ -466,8 +468,8 @@ namespace nova {
     uint32_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
         const uint32_t mesh_id = next_mesh_id.fetch_add(1);
 
-        scheduler->AddTask(&upload_to_staging_buffers_counter, [&](ftl::TaskScheduler* scheduler, const mesh_data* input_mesh, std::mutex* mesh_upload_queue_mutex, 
-			        std::vector<staging_buffer_upload_command>* mesh_upload_queue) {
+        scheduler->AddTask(&upload_to_staging_buffers_counter,
+            [&](ftl::TaskScheduler* scheduler, const mesh_data* input_mesh, std::mutex* mesh_upload_queue_mutex, std::vector<staging_buffer_upload_command>* mesh_upload_queue) {
                 const uint32_t vertex_size = input_mesh->vertex_data.size() * sizeof(full_vertex);
                 const uint32_t index_size = input_mesh->indices.size() * sizeof(uint32_t);
 
@@ -478,11 +480,10 @@ namespace nova {
                 std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh->vertex_data[0], vertex_size);
                 std::memcpy(staging_buffer.alloc_info.pMappedData + vertex_size, &input_mesh->indices[0], index_size);
 
-                
                 ftl::LockGuard l(*mesh_upload_queue_mutex);
                 mesh_upload_queue->emplace_back(staging_buffer, mesh_id);
             });
-        
+
         return mesh_id;
     }
 
@@ -789,7 +790,7 @@ namespace nova {
 
             mesh_upload_queue_mutex.lock();
             meshes_mutex.lock();
-            
+
             std::vector<vk_buffer> freed_buffers;
             freed_buffers.reserve(mesh_upload_queue.size() * 2);
             while(!mesh_upload_queue.empty()) {
@@ -893,8 +894,16 @@ namespace nova {
 
         vkResetFences(device, 1, &submit_fences.at(current_frame));
 
-        // TODO: Wait for all render passes that use the megamesh buffer to be recorded
+        // RECORD COMMAND BUFFERS WHOOOOOOOOOOOOOOOOOOOOOOOOOOO
+        shaderpack_loading_mutex.lock();
+        ftl::AtomicCounter render_tasks_counter(scheduler);
+        for(const std::string& renderpass_name : render_passes_by_order) {
+            scheduler->AddTask(&render_tasks_counter, [&](ftl::TaskScheduler* scheduler, const std::string* renderpass_name) { this->execute_renderpass(renderpass_name); }, &renderpass_name);
+        }
+        shaderpack_loading_mutex.unlock();
 
+        vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        vkResetFences(device, 1, &mesh_rendering_done);
         // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has
         // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
         upload_new_mesh_parts();
@@ -981,6 +990,19 @@ namespace nova {
         }
 
         dynamic_textures.clear();
+    }
+
+    void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) { 
+        const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
+
+        const std::vector<material_pass> material_passes = material_passes_by_renderpass.at(*renderpass_name);
+
+        ftl::AtomicCounter material_passes_rendering_counter(scheduler);
+        for(const material_pass& pass : material_passes) {
+            scheduler->AddTask(material_passes_rendering_counter, [&](ftl::TaskScheduler* scheduler, const material_pass* material_pass, const vk_render_pass* renderpass) { 
+                this->render_material_pass(material_pass, renderpass);
+            }, pass, renderpass);
+        }
     }
 
     VkFormat vulkan_render_engine::to_vk_format(const pixel_format_enum format) {
