@@ -20,7 +20,7 @@
 #include <vk_mem_alloc.h>
 #include <queue>
 #include "../dx12/win32_window.hpp"
-#include "aligned_block_allocator.hpp"
+#include "compacting_block_allocator.hpp"
 #include "spirv_glsl.hpp"
 
 #include "ftl/atomic_counter.h"
@@ -72,13 +72,12 @@ namespace nova {
     };
 
     struct staging_buffer_upload_command {
-        std::vector<vk_buffer> staging_buffers;
-        aligned_block_allocator<sizeof(full_vertex)>::allocation mem;
+        vk_buffer staging_buffer;
         uint32_t mesh_id;
     };
 
     struct vk_mesh {
-        aligned_block_allocator<sizeof(full_vertex)>::allocation vertex_memory;
+        compacting_block_allocator::allocation_info* memory;
     };
 
     class vulkan_render_engine : public render_engine {
@@ -263,8 +262,7 @@ namespace nova {
 #pragma endregion
 
 #pragma region Mesh
-        std::shared_ptr<aligned_block_allocator<sizeof(full_vertex)>> vertex_memory;
-        std::shared_ptr<aligned_block_allocator<sizeof(uint32_t)>> index_memory;
+        std::unique_ptr<compacting_block_allocator> mesh_memory;
 
         /*!
          * \brief The number of mesh upload tasks that are still running
@@ -276,10 +274,11 @@ namespace nova {
         std::queue<staging_buffer_upload_command> mesh_upload_queue;
         ftl::Fibtex mesh_upload_queue_mutex;
         VkFence mesh_rendering_done;
-        VkFence upload_to_megamesh_buffer_done;
+        VkEvent upload_to_megamesh_buffer_done;
 
         // Might need to make 64-bit keys eventually, but in 2018 it's not a concern
         std::unordered_map<uint32_t, vk_mesh> meshes;
+        ftl::Fibtex meshes_mutex;
         std::atomic<uint32_t> next_mesh_id = 0;
 
         /*!
@@ -305,8 +304,10 @@ namespace nova {
         /*!
          * \brief If a mesh staging buffer is available, it's returned to the user. Otherwise, a new mesh staging
          * buffer is created - and then returned to the user
+         * 
+         * \param needed_size The size of the desired buffer
          */
-        vk_buffer get_or_allocate_mesh_staging_buffer();
+        vk_buffer get_or_allocate_mesh_staging_buffer(uint32_t needed_size);
 
         /*!
          * \brief Returns the provided buffer to the pool of staging buffers

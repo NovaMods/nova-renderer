@@ -3,9 +3,8 @@
  * \date 11-Nov-18.
  */
 
-#include "aligned_block_allocator.hpp"
+#include "compacting_block_allocator.hpp"
 #include "../../util/logger.hpp"
-#include "../../util/utils.hpp"
 #include "../render_engine.hpp"
 #include "vulkan_utils.hpp"
 
@@ -137,6 +136,8 @@ namespace nova {
         allocated -= alloc->size;
     }
 
+    VkBuffer compacting_block_allocator::block_allocator_buffer::get_buffer() const { return buffer; }
+
     compacting_block_allocator::allocation_info* compacting_block_allocator::block_allocator_buffer::allocate_internal(VkDeviceSize needed_size, bool can_compact) {
         const VkDeviceSize free_size = needed_size - allocated;
         if(free_size < needed_size) {
@@ -262,14 +263,16 @@ namespace nova {
         }
     }
 
-    compacting_block_allocator::compacting_block_allocator(settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator) 
-          : settings(settings), vma_allocator(vma_allocator) {
+    compacting_block_allocator::compacting_block_allocator(settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator, 
+		ftl::TaskScheduler* scheduler, const uint32_t graphics_queue_idx, const uint32_t copy_queue_idx) 
+          : pools_mutex(scheduler), settings(settings), vma_allocator(vma_allocator), scheduler(scheduler), graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
 
         const block_allocator_buffer new_buffer(settings.new_buffer_size, vma_allocator);
         pools.push_back(new_buffer);
     }
 
     compacting_block_allocator::allocation_info* compacting_block_allocator::allocate(const VkDeviceSize size) {
+        ftl::LockGuard l(pools_mutex);
         // First try to allocate from an existing pool
         for(block_allocator_buffer& buffer : pools) {
             allocation_info* allocation = buffer.allocate(size);

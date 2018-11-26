@@ -5,6 +5,11 @@
 #include <vector>
 #include "../../settings/nova_settings.hpp"
 #include "../../util/utils.hpp"
+#include "ftl/fibtex.h"
+
+namespace ftl {
+    class TaskScheduler;
+}
 
 namespace nova {
     NOVA_EXCEPTION(buffer_allocation_failed);
@@ -74,6 +79,8 @@ namespace nova {
              */
             void free(allocation_info* alloc);
 
+            VkBuffer get_buffer() const;
+
         private:
             // The pool is a simple linked list of allocated blocks.
             // If a block and its neighbor are free, then they are merged
@@ -107,8 +114,9 @@ namespace nova {
             void compact_all_memory();
         };
 
-        compacting_block_allocator(settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator);
-        
+        compacting_block_allocator(
+            settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator, ftl::TaskScheduler* scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
+
         /*!
          * \brief Allocates memory of the requested size and gives that to you
          *
@@ -129,11 +137,29 @@ namespace nova {
          */
         void free(allocation_info* allocation);
 
+        /*!
+         * \brief Adds barriers to the provided command buffer to ensure that reading vertex data has finished before transfers
+         * 
+         * \param cmds The command buffer to add commands to
+         */
+        void add_barriers_before_data_upload(VkCommandBuffer cmds) const;
+
+        /*!
+         * \brief Adds barriers to the provided command buffer to ensure that transfers are done before reading vertex data has started
+         * 
+         * \param cmds The command buffer to add commands to
+         */
+        void add_barriers_after_data_upload(VkCommandBuffer cmds) const;
+
     private:
         std::vector<block_allocator_buffer> pools;
+        ftl::Fibtex pools_mutex;
 
         settings_options::block_allocator_settings& settings;
         VmaAllocator vma_allocator;
+        ftl::TaskScheduler* scheduler;
+        uint32_t graphics_queue_idx;
+        uint32_t copy_queue_idx;
     };
 
 }  // namespace nova
