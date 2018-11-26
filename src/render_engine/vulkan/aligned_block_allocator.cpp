@@ -10,182 +10,73 @@
 #include "vulkan_utils.hpp"
 
 namespace nova {
-    compacting_block_allocator::allocation_info* compacting_block_allocator::allocate(const uint32 size) {
-        allocation_info* allocation;
+    uint32_t compacting_block_allocator::block_allocator_buffer::next_id = 0;
 
-        // First try to allocate from an existing pool
-        for(block_allocator_buffer& buffer : m_pools) {
-            allocation = buffer.allocate(size);
-            if(allocation != nullptr) {
-                return allocation;
-            }
-        }
+    compacting_block_allocator::block_allocator_buffer::block_allocator_buffer(const VkDeviceSize size, VmaAllocator allocator) 
+            : allocator(allocator), id(next_id++), size(size)  {
+        VmaAllocationCreateInfo allocate_info = {};
+        allocate_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+        allocate_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        // If we couldn't allocate from a pool we'll need to create a new one.
-        VkDeviceSize poolSize = hostVisible ? m_hostVisibleMemoryMB : m_deviceLocalMemoryMB;
+        VkBufferCreateInfo buffer_info = {};
+        buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_info.size = size;
+        buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        block_allocator_buffer* pool = new block_allocator_buffer(m_nextPoolId++, memoryTypeBits, poolSize, hostVisible);
-        if(pool->Init()) {
-            m_pools.Append(pool);
-        } else {
-            idLib::FatalError("compacting_block_allocator::Allocate: Could not allocate new memory pool.");
-        }
-
-        // Now that we've added the new pool, allocate directly from it.
-        pool->allocate(size, align, allocation);
-
-        return allocation;
-    }
-
-    /*
-    =============
-    compacting_block_allocator::AllocateFromPools
-    =============
-    */
-    bool compacting_block_allocator::AllocateFromPools(const uint32 size, const uint32 align, const uint32 memoryTypeBits, const bool needHostVisible, allocation_info& allocation) {
-        // Remember in Part 3 we got the memory properties when enumerating devices?  That comes in handy here. (vkcontext.gpu->memProps)
-        const VkPhysicalDeviceMemoryProperties& physicalMemoryProperties = vkcontext.gpu->memProps;
-        const int num = m_pools.Num();
-
-        // If we need host visible memory set the appropriate bits.  Otherwise we assume device local.
-        const VkMemoryPropertyFlags required = needHostVisible ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT : 0;
-        // Because it offers the best performance we prefer it, but don't require it.
-        const VkMemoryPropertyFlags preferred = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-
-        // Now iterate over the pools looking for a suitable one.
-        // This is the first attempt of two.
-        // 1.) We look for both required and preferred flags.
-        // 2.) We look for just required flags.
-        for(int i = 0; i < num; ++i) {
-            block_allocator_buffer* pool = m_pools[i];
-            const uint32 memoryTypeIndex = pool->memory_type_index;
-
-            // If we need host visible and this pool doesn't support it continue
-            if(needHostVisible && pool->host_visible == false) {
-                continue;
-            }
-
-            // vkcontext.gpu->memProps enumerates the number of memory types supported.
-            // When we create a pool we assign it a given index.  That's what we try to
-            // match here.
-            if(((memoryTypeBits >> memoryTypeIndex) & 1) == 0) {
-                continue;
-            }
-
-            // Now try to match our required memory flags.
-            const VkMemoryPropertyFlags properties = physicalMemoryProperties.memoryTypes[memoryTypeIndex].propertyFlags;
-            if((properties & required) != required) {
-                continue;
-            }
-
-            // Now try to match our preferred memory flags.
-            if((properties & preferred) != preferred) {
-                continue;
-            }
-
-            // If this matches both required and preferred, go ahead and allocate from the pool.
-            if(pool->allocate(size, align, allocation)) {
-                return true;
-            }
-        }
-
-        // On the second attempt we just look for required flags.  Otherwise it's the same as above.
-        for(int i = 0; i < num; ++i) {
-            block_allocator_buffer* pool = m_pools[i];
-            const uint32 memoryTypeIndex = pool->memory_type_index;
-
-            if(needHostVisible && pool->host_visible == false) {
-                continue;
-            }
-
-            if(((memoryTypeBits >> memoryTypeIndex) & 1) == 0) {
-                continue;
-            }
-
-            const VkMemoryPropertyFlags properties = physicalMemoryProperties.memoryTypes[memoryTypeIndex].propertyFlags;
-            if((properties & required) != required) {
-                continue;
-            }
-
-            if(pool->allocate(size, align, allocation)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /*
-    =============
-    block_allocator_buffer::block_allocator_buffer
-    =============
-    */
-    block_allocator_buffer::block_allocator_buffer(const uint32 id, const uint32 memoryTypeBits, const VkDeviceSize size, const bool hostVisible)
-        : id(id), next_block_id(0), size(size), allocated(0), host_visible(hostVisible) {
-        // Determine a suitable memory type index for this pool.
-        // This is basically the same thing as compacting_block_allocator's AllocateFromPools
-        memory_type_index = VK_FindMemoryTypeIndex(memoryTypeBits, hostVisible);
-    }
-
-    /*
-    =============
-    block_allocator_buffer::Init
-    =============
-    */
-    bool block_allocator_buffer::Init() {
-        if(memory_type_index == UINT64_MAX) {
-            return false;
-        }
-
-        // Yes it really is this easy ( once you get here ).
-        // Simply tell Vulkan the size and memory index you want to use.
-        VkMemoryAllocateInfo memoryAllocateInfo = {};
-        memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        memoryAllocateInfo.allocationSize = size;
-        memoryAllocateInfo.memoryTypeIndex = memory_type_index;
-
-        ID_VK_CHECK(vkAllocateMemory(vkcontext.device, &memoryAllocateInfo, NULL, &m_deviceMemory))
-
-        if(m_deviceMemory == VK_NULL_HANDLE) {
-            return false;
-        }
-
-        // If this is host visible we map it into our address space using m_data.
-        if(host_visible) {
-            ID_VK_CHECK(vkMapMemory(vkcontext.device, m_deviceMemory, 0, size, 0, (void**) &m_data));
-        }
+        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(allocator, &buffer_info, &allocate_info, &buffer, &vma_allocation, &vma_allocation_info), buffer_allocation_failed);
 
         // Setup the first block.
         head = new block_t();
         head->size = size;
         head->offset = 0;
-        head->prev = NULL;
-        head->next = NULL;
+        head->prev = nullptr;
+        head->next = nullptr;
         head->free = true;
-
-        return true;
     }
 
-    /*
-    =============
-    block_allocator_buffer::Shutdown
-    =============
-    */
-    void block_allocator_buffer::Shutdown() {
-        // Unmap the memory
-        if(host_visible) {
-            vkUnmapMemory(vkcontext.device, m_deviceMemory);
+    compacting_block_allocator::block_allocator_buffer::block_allocator_buffer(block_allocator_buffer&& other) noexcept
+        : head(other.head),
+          allocator(other.allocator),
+          id(other.id),
+          next_block_id(other.next_block_id),
+          buffer(other.buffer),
+          vma_allocation(other.vma_allocation),
+          vma_allocation_info(other.vma_allocation_info),
+          size(other.size),
+          allocated(other.allocated) {
+        other.buffer = VK_NULL_HANDLE;
+    }
+
+    compacting_block_allocator::block_allocator_buffer& compacting_block_allocator::block_allocator_buffer::operator=(block_allocator_buffer&& other) noexcept {
+        head = other.head;
+        id = other.id;
+        next_block_id = other.next_block_id;
+        buffer = other.buffer;
+        vma_allocation = other.vma_allocation;
+        vma_allocation_info = other.vma_allocation_info;
+        size = other.size;
+        allocated = other.allocated;
+        allocator = other.allocator;
+
+        other.buffer = VK_NULL_HANDLE;
+
+        return *this;
+    }
+
+    compacting_block_allocator::block_allocator_buffer::~block_allocator_buffer() { 
+        if(buffer == VK_NULL_HANDLE) {
+            return;
         }
 
-        // Free the memory
-        vkFreeMemory(vkcontext.device, m_deviceMemory, NULL);
+        vmaDestroyBuffer(allocator, buffer, vma_allocation);
 
-        block_t* prev = NULL;
+        block_t* prev = nullptr;
         block_t* current = head;
-        while(1) {
-            if(current->next == NULL) {
+        while(true) {
+            if(current->next == nullptr) {
                 delete current;
                 break;
+
             } else {
                 prev = current;
                 current = current->next;
@@ -193,6 +84,207 @@ namespace nova {
             }
         }
 
-        head = NULL;
+        head = nullptr;
+    }
+
+    compacting_block_allocator::allocation_info* compacting_block_allocator::block_allocator_buffer::allocate(const VkDeviceSize needed_size) {
+        return allocate_internal(needed_size, true);
+    }
+
+    void compacting_block_allocator::block_allocator_buffer::free(allocation_info* alloc) {
+        block_t* current = nullptr;
+        for(current = head; current != nullptr; current = current->next) {
+            if(current->id == alloc->block_id) {
+                break;
+            }
+        }
+
+        if(current == nullptr) {
+            NOVA_LOG(ERROR) << "compacting_block_allocator::block_allocator_buffer::free: Tried to free an unknown allocation. AllocatorL " << this << " block ID: " << alloc->block_id;
+            return;
+        }
+
+        current->free = true;
+
+        if(current->prev && current->prev->free) {
+            block_t* prev = current->prev;
+
+            prev->next = current->next;
+            if(current->next) {
+                current->next->prev = prev;
+            }
+
+            prev->size += current->size;
+
+            delete current;
+            current = prev;
+        }
+
+        if(current->next && current->next->free) {
+            block_t* next = current->next;
+
+            if(next->next) {
+                next->next->prev = current;
+            }
+
+            current->next = next->next;
+
+            current->size += next->size;
+
+            delete next;
+        }
+
+        allocated -= alloc->size;
+    }
+
+    compacting_block_allocator::allocation_info* compacting_block_allocator::block_allocator_buffer::allocate_internal(VkDeviceSize needed_size, bool can_compact) {
+        const VkDeviceSize free_size = needed_size - allocated;
+        if(free_size < needed_size) {
+            return nullptr;
+        }
+
+        block_t* best_fit = nullptr;
+        block_t* previous;
+
+        VkDeviceSize padding = 0;
+        VkDeviceSize offset = 0;
+        VkDeviceSize aligned_size = 0;
+
+        for(block_t* current = head; current != nullptr; previous = current, current = current->next) {
+            if(!current->free) {
+                continue;
+            }
+
+            if(needed_size > current->size) {
+                continue;
+            }
+
+            offset = current->offset;
+
+            padding = offset - current->offset;
+            aligned_size = padding + needed_size;
+
+            if(needed_size > current->size) {
+                continue;
+            }
+
+            if(aligned_size + allocated >= size) {
+                return nullptr;
+            }
+
+            best_fit = current;
+            break;
+        }
+
+        if(best_fit == nullptr) {
+            if(can_compact) {
+                compact_all_memory();
+                return allocate_internal(needed_size, false);
+
+            } else {
+                return nullptr;
+            }
+        }
+
+        if(best_fit->size > needed_size) {
+            block_t* chunk = new block_t;
+            block_t* next = best_fit->next;
+
+            chunk->id = next_block_id++;
+            chunk->prev = best_fit;
+            best_fit->next = chunk;
+
+            chunk->next = next;
+            if(next) {
+                next->prev = chunk;
+            }
+
+            chunk->size = best_fit->size - aligned_size;
+            chunk->offset = offset + needed_size;
+            chunk->free = true;
+        }
+
+        best_fit->free = false;
+        best_fit->size = needed_size;
+
+        allocated += aligned_size;
+
+        auto* allocation = new allocation_info;
+
+        allocation->size = best_fit->size;
+        allocation->block_id = best_fit->id;
+        allocation->offset = offset;
+        allocation->block = this;
+
+        return allocation;
+    }
+
+    void compacting_block_allocator::block_allocator_buffer::compact_all_memory() {
+        // Look for free blocks. If any are found, close them up
+
+        void* write_ptr;
+        vmaMapMemory(allocator, vma_allocation, &write_ptr);
+
+        uint32_t amount_compacted = 0;
+
+        block_t* current = nullptr;
+        for(current = head; current != nullptr; current = current->next) {
+            if(current->free && current->next != nullptr) {
+                // Free block! Now we need to move things back
+
+                // Don't read from memory that's free
+                amount_compacted += current->size;
+
+            } else {
+                if(amount_compacted > 0) {
+                    // The write and read pointers are different, which means that we need to move the current 
+                    // allocation back to fill the empty space
+
+                    std::memcpy(write_ptr, write_ptr + amount_compacted, current->size);
+                    current->offset -= amount_compacted;
+                }
+
+                write_ptr += current->size;
+            }
+        }
+
+        if(amount_compacted > 0) {
+            // Create a free block at the end - after iterating through the list of blocks, we are at the end
+            // e.g. current == end
+
+            block_t* end_block = new block_t;
+            end_block->id = next_block_id;
+            next_block_id++;
+            end_block->size = amount_compacted;
+            end_block->offset = current->offset + current->size;
+            end_block->prev = current;
+            current->next = end_block;
+        }
+    }
+
+    compacting_block_allocator::compacting_block_allocator(settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator) 
+          : settings(settings), vma_allocator(vma_allocator) {
+
+        const block_allocator_buffer new_buffer(settings.new_buffer_size, vma_allocator);
+        pools.push_back(new_buffer);
+    }
+
+    compacting_block_allocator::allocation_info* compacting_block_allocator::allocate(const VkDeviceSize size) {
+        // First try to allocate from an existing pool
+        for(block_allocator_buffer& buffer : pools) {
+            allocation_info* allocation = buffer.allocate(size);
+            if(allocation != nullptr) {
+                return allocation;
+            }
+        }
+
+        block_allocator_buffer new_buffer(settings.new_buffer_size, vma_allocator);
+        pools.push_back(new_buffer);
+
+        return new_buffer.allocate(size);
+    }
+
+    void compacting_block_allocator::free(allocation_info* allocation) { 
+        allocation->block->free(allocation);
     }
 }  // namespace nova
