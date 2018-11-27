@@ -23,13 +23,15 @@
 #include "compacting_block_allocator.hpp"
 #include "spirv_glsl.hpp"
 
+#include "../../render_objects/render_object.hpp"
 #include "ftl/atomic_counter.h"
 #include "ftl/fibtex.h"
 #include "ftl/task_scheduler.h"
 #include "ftl/thread_local.h"
-#include "../../render_objects/render_object.hpp"
 
 namespace nova {
+    NOVA_EXCEPTION(buffer_allocate_failed);
+
     struct vk_queue {
         VkQueue queue = VK_NULL_HANDLE;
         uint32_t queue_idx;
@@ -44,7 +46,9 @@ namespace nova {
 
     struct vk_render_pass {
         VkRenderPass pass = VK_NULL_HANDLE;
+        VkFramebuffer framebuffer = VK_NULL_HANDLE;
         render_pass_data data;
+        VkRect2D render_area;
     };
 
     struct vk_pipeline {
@@ -192,16 +196,15 @@ namespace nova {
 
         /*!
          * \brief Adds information about the provided resource to `bindings`
-         * 
-         * If there's nothing at the descriptor set and binding of `resource`, `resource` is added directly to `bindings`. 
+         *
+         * If there's nothing at the descriptor set and binding of `resource`, `resource` is added directly to `bindings`.
          * If something already exists, `bindings` is unchanged
-         * 
+         *
          * \param bindings The map of bindings to ass data to
          * \param shader_compiler The compiler used for the shader that the resource came from
          * \param resource The resource to maybe add to `bindings
          */
-        static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, 
-			const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource);
+        static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource);
 
         /*!
          * \brief Creates a Vulkan renderpass for every element in passes
@@ -239,9 +242,9 @@ namespace nova {
         std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> all_bindings) const;
 
         /*!
-         * \brief Converts the list of attachment names into attachment descriptions and references that can be later 
+         * \brief Converts the list of attachment names into attachment descriptions and references that can be later
          * used to make a VkRenderpass
-         * 
+         *
          * \param attachment_names The names of the attachments we want to convert
          * \return VkAttachmentDescriptions and VkAttachmentReferences for the attachments we want to convert
          */
@@ -306,7 +309,7 @@ namespace nova {
         /*!
          * \brief If a mesh staging buffer is available, it's returned to the user. Otherwise, a new mesh staging
          * buffer is created - and then returned to the user
-         * 
+         *
          * \param needed_size The size of the desired buffer
          */
         vk_buffer get_or_allocate_mesh_staging_buffer(uint32_t needed_size);
@@ -316,7 +319,7 @@ namespace nova {
          */
         void free_mesh_staging_buffer(const vk_buffer& buffer);
 #pragma endregion
-        
+
 #pragma region Queues
         uint32_t graphics_queue_index;
         VkQueue graphics_queue;
@@ -327,25 +330,42 @@ namespace nova {
 #pragma endregion
 
 #pragma region Rendering
-        std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_renderpass;
+        std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
+        std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
         std::unordered_map<std::string, std::vector<render_object>> renderables_by_material;
 
         /*!
          * \brief Performs all tasks necessary to render this renderpass
-         * 
+         *
+         * This method fill start a separate async task for each pipeline that is in the given renderpass
+         *
          * \param renderpass_name The name of the renderpass to execute
          */
         void execute_renderpass(const std::string* renderpass_name);
 
         /*!
-         * Renders everything that uses the provided material_pass 
-         * 
-         * \param material_pass The material_pass to render objects for
-         * \param renderpass The renderpass that this material_pass exists in
+         * \brief Renders all the meshes that use a single pipeline
+         *
+         * This method does not start any async tasks
+         *
+         * This method does allocate a new command buffer, then submits it to the graphics queue. All rendering
+         * operations that need to happen for the provided pipeline happen
          */
-        void render_material_pass(const material_pass* material_pass, const vk_render_pass* renderpass);
-#pragma endregion 
-        
+        void render_pipeline(const vk_pipeline* pipeline, const vk_render_pass* renderpass);
+
+        /*!
+         * \brief Renders all the things using the provided material
+         */
+        void draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds);
+
+        /*!
+         * \brief Submits the provided command buffer to the provided queue
+         *
+         * This method is thread-safe
+         */
+        void submit_to_queue(VkCommandBuffer cmds, VkQueue queue);
+#pragma endregion
+
 #ifndef NDEBUG
         PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
         PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;

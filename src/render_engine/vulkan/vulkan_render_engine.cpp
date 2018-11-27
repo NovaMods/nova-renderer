@@ -478,7 +478,7 @@ namespace nova {
 
                 vk_buffer staging_buffer = get_or_allocate_mesh_staging_buffer(total_memory_needed);
                 std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh->vertex_data[0], vertex_size);
-                std::memcpy(staging_buffer.alloc_info.pMappedData + vertex_size, &input_mesh->indices[0], index_size);
+                std::memcpy((uint8_t*) staging_buffer.alloc_info.pMappedData + vertex_size, &input_mesh->indices[0], index_size);
 
                 ftl::LockGuard l(*mesh_upload_queue_mutex);
                 mesh_upload_queue->emplace_back(staging_buffer, mesh_id);
@@ -513,7 +513,7 @@ namespace nova {
 
         render_passes_by_order = order_passes(regular_render_passes);
 
-        for(const std::string& pass_name : render_passes_by_order) {
+        for(const auto& [pass_name, pass] : render_passes) {
             VkSubpassDescription subpass_description;
             subpass_description.flags = 0;
             subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -542,25 +542,58 @@ namespace nova {
             render_pass_create_info.dependencyCount = 1;
             render_pass_create_info.pDependencies = &image_available_dependency;
 
-            std::optional<input_textures> inputs_maybe = render_passes.at(pass_name).data.texture_inputs;
-            std::vector<VkAttachmentDescription> attachments;
-            std::vector<VkAttachmentReference> references;
+            std::vector<VkImageView> framebuffer_attachments;
+            uint32_t framebuffer_width = 0;
+            uint32_t framebuffer_height = 0;
+            std::optional<input_textures> inputs_maybe = pass.data.texture_inputs;
             if(inputs_maybe) {
-                std::vector<std::string>& color_inputs = inputs_maybe->bound_textures;
-                auto [scope_attachments, scope_references] = to_vk_attachment_info(color_inputs);
-                attachments = std::move(scope_attachments);
-                references = std::move(scope_references);
+                std::vector<std::string>& color_attachment_names = inputs_maybe->color_attachments;
+                auto [attachments, references] = to_vk_attachment_info(color_attachment_names);
 
                 subpass_description.colorAttachmentCount = static_cast<uint32_t>(references.size());
                 subpass_description.pColorAttachments = references.data();
 
                 render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
                 render_pass_create_info.pAttachments = attachments.data();
+
+                for(const std::string& attachment_name : color_attachment_names) {
+                    const vk_texture& attachment_tex = dynamic_textures.at(attachment_name);
+                    framebuffer_attachments.push_back(attachment_tex.image_view);
+                    if(framebuffer_width == 0) {
+                        framebuffer_width = attachment_tex.data.format.width;
+
+                    } else if(attachment_tex.data.format.width != framebuffer_width) {
+                        NOVA_LOG(ERROR) << "Texture " << attachment_name << " used by renderpass " << pass_name << " has a width of " << attachment_tex.data.format.width
+                                        << ", but the framebuffer has a width of " << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
+                    }
+
+                    if(framebuffer_height == 0) {
+                        framebuffer_height = attachment_tex.data.format.height;
+
+                    } else if(attachment_tex.data.format.height != framebuffer_height) {
+                        NOVA_LOG(ERROR) << "Texture " << attachment_name << " used by renderpass " << pass_name << " has a height of " << attachment_tex.data.format.height
+                                        << ", but the framebuffer has a height of " << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
+                    }
+                }
             }
 
             VkRenderPass render_pass;
             NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
             render_passes[pass_name].pass = render_pass;
+
+            VkFramebufferCreateInfo framebuffer_create_info = {};
+            framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebuffer_create_info.renderPass = render_pass;
+            framebuffer_create_info.attachmentCount = framebuffer_attachments.size();
+            framebuffer_create_info.pAttachments = framebuffer_attachments.data();
+            framebuffer_create_info.width = framebuffer_width;
+            framebuffer_create_info.height = framebuffer_height;
+            framebuffer_create_info.layers = 1;
+
+            VkFramebuffer framebuffer;
+            vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer);
+            render_passes[pass_name].framebuffer = framebuffer;
+            render_passes[pass_name].render_area = {0, 0, framebuffer_width, framebuffer_height};
         }
     }
 
@@ -898,7 +931,7 @@ namespace nova {
         shaderpack_loading_mutex.lock();
         ftl::AtomicCounter render_tasks_counter(scheduler);
         for(const std::string& renderpass_name : render_passes_by_order) {
-            scheduler->AddTask(&render_tasks_counter, [&](ftl::TaskScheduler* scheduler, const std::string* renderpass_name) { this->execute_renderpass(renderpass_name); }, &renderpass_name);
+            scheduler->AddTask(&render_tasks_counter, [&](ftl::TaskScheduler* scheduler, const std::string* renderpass_name) { execute_renderpass(renderpass_name); }, &renderpass_name);
         }
         shaderpack_loading_mutex.unlock();
 
@@ -992,17 +1025,114 @@ namespace nova {
         dynamic_textures.clear();
     }
 
-    void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) { 
+    void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
 
-        const std::vector<material_pass> material_passes = material_passes_by_renderpass.at(*renderpass_name);
+        const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
 
-        ftl::AtomicCounter material_passes_rendering_counter(scheduler);
-        for(const material_pass& pass : material_passes) {
-            scheduler->AddTask(material_passes_rendering_counter, [&](ftl::TaskScheduler* scheduler, const material_pass* material_pass, const vk_render_pass* renderpass) { 
-                this->render_material_pass(material_pass, renderpass);
-            }, pass, renderpass);
+        ftl::AtomicCounter pipelines_rendering_counter(scheduler);
+        for(const vk_pipeline& pipe : pipelines) {
+            scheduler->AddTask(&pipelines_rendering_counter,
+                [&](ftl::TaskScheduler* scheduler, const vk_pipeline* material_pass, const vk_render_pass* renderpass) { render_pipeline(material_pass, renderpass); }, pipe, renderpass);
         }
+
+        scheduler->WaitForCounter(&pipelines_rendering_counter, 0);
+    }
+
+    void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, const vk_render_pass* renderpass) {
+        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
+
+        VkCommandBuffer cmds;
+
+        VkCommandBufferAllocateInfo cmds_info = {};
+        cmds_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        cmds_info.commandPool = command_pool;
+        cmds_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        cmds_info.commandBufferCount = 1;
+
+        vkAllocateCommandBuffers(device, &cmds_info, &cmds);
+
+        VkCommandBufferBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        vkBeginCommandBuffer(cmds, &begin_info);
+
+        VkClearValue clear_value = {};
+        clear_value.color = {0, 0, 0, 0};
+
+        VkRenderPassBeginInfo rp_begin_info = {};
+        rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        rp_begin_info.renderPass = renderpass->pass;
+        rp_begin_info.framebuffer = renderpass->framebuffer;
+        rp_begin_info.renderArea = renderpass->render_area;
+        rp_begin_info.clearValueCount = 1;
+        rp_begin_info.pClearValues = &clear_value;
+
+        vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+        const std::vector<material_pass> materials = material_passes_by_pipeline.at(pipeline->data.name);
+        for(const material_pass& pass : materials) {
+            draw_all_for_material(pass, cmds);
+        }
+
+        vkCmdEndRenderPass(cmds);
+        vkEndCommandBuffer(cmds);
+
+        submit_to_queue(cmds, graphics_queue);
+    }
+
+    void vulkan_render_engine::draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds) {
+        // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
+        // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
+        // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute shader
+        // Version 2: Incorporate occlusion queries so we know what with all certainty what is and isn't visible
+
+        // At the current time I'm making version 1
+
+        // TODO: _Anything_ smarter
+
+        const std::vector<render_object> renderables = renderables_by_material.at(pass.name);
+
+        VkBufferCreateInfo buffer_create_info = {};
+        buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_create_info.size = sizeof(VkDrawIndexedIndirectCommand) * renderables.size();
+        buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+        buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_create_info.queueFamilyIndexCount = 1;
+        buffer_create_info.pQueueFamilyIndices = &graphics_queue_index;
+
+        VmaAllocationCreateInfo alloc_create_info = {};
+        alloc_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+        alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+        VkBuffer indirect_draw_commands_buffer;
+        VmaAllocation allocation;
+        VmaAllocationInfo alloc_info;
+
+        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator, &buffer_create_info, &alloc_create_info, &indirect_draw_commands_buffer, &allocation, &alloc_info), buffer_allocate_failed);
+
+        // Version 1: write commands for all things to the indirect draw buffer
+        VkDrawIndexedIndirectCommand* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
+
+        for(const render_object& obj : renderables) {
+            // TODO: Write indirect draw commands
+        }
+
+        /*
+         * Don't wanna write this code at 11:30 PM but here's what's up:
+         * 
+         * Meshes need to know what buffer they were allocated from - and we need to store them grouped by buffer. We 
+         * need to group render_objects by the buffer that their memory resides in, so that we can issue a single 
+         * indirect drawing command for each buffer
+         * 
+         * Also like what even are index buffers?
+         */
+
+        vkCmdBindVertexBuffers();
+        vkCmdBindIndexBuffer();
+
+        vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, renderables.size(), 0);
     }
 
     VkFormat vulkan_render_engine::to_vk_format(const pixel_format_enum format) {
