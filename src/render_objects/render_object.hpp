@@ -10,22 +10,12 @@
 #include <list>
 
 namespace nova {
-    class render_object : public std::enable_shared_from_this<render_object> {
-    public:
-        explicit render_object() = default;
-        explicit render_object(const std::shared_ptr<render_object> &parent);
-        ~render_object();
+    struct vk_mesh;
 
-        std::shared_ptr<render_object> get_parent() const;
-        const std::list<std::shared_ptr<render_object>> &get_children() const;
+    struct render_object {
+        vk_mesh* mesh;
 
-        render_object &pos(const glm::vec3 &pos);
-
-    private:
-        std::weak_ptr<render_object> parent;
-        std::list<std::shared_ptr<render_object>> children;
-
-        glm::vec3 _pos;
+        glm::vec3 pos;
     };
 }  // namespace nova
 

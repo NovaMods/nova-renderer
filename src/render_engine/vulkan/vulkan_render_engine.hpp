@@ -83,6 +83,7 @@ namespace nova {
 
     struct vk_mesh {
         compacting_block_allocator::allocation_info* memory;
+        VkDrawIndexedIndirectCommand draw_cmd;
     };
 
     class vulkan_render_engine : public render_engine {
@@ -332,7 +333,7 @@ namespace nova {
 #pragma region Rendering
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
-        std::unordered_map<std::string, std::vector<render_object>> renderables_by_material;
+        std::unordered_map<std::string, std::unordered_map<VkBuffer, std::vector<render_object>>> renderables_by_material;
 
         /*!
          * \brief Performs all tasks necessary to render this renderpass

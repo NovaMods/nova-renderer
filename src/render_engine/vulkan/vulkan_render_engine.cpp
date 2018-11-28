@@ -1092,47 +1092,50 @@ namespace nova {
 
         // TODO: _Anything_ smarter
 
-        const std::vector<render_object> renderables = renderables_by_material.at(pass.name);
+        const std::unordered_map<VkBuffer, std::vector<render_object>>& renderables_by_buffer = renderables_by_material.at(pass.name);
 
-        VkBufferCreateInfo buffer_create_info = {};
-        buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_create_info.size = sizeof(VkDrawIndexedIndirectCommand) * renderables.size();
-        buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-        buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buffer_create_info.queueFamilyIndexCount = 1;
-        buffer_create_info.pQueueFamilyIndices = &graphics_queue_index;
+        for(const auto& [buffer, renderables] : renderables_by_buffer) {
+            VkBufferCreateInfo buffer_create_info = {};
+            buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            buffer_create_info.size = sizeof(VkDrawIndexedIndirectCommand) * renderables.size();
+            buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+            buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            buffer_create_info.queueFamilyIndexCount = 1;
+            buffer_create_info.pQueueFamilyIndices = &graphics_queue_index;
 
-        VmaAllocationCreateInfo alloc_create_info = {};
-        alloc_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-        alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+            VmaAllocationCreateInfo alloc_create_info = {};
+            alloc_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+            alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        VkBuffer indirect_draw_commands_buffer;
-        VmaAllocation allocation;
-        VmaAllocationInfo alloc_info;
+            VkBuffer indirect_draw_commands_buffer;
+            VmaAllocation allocation;
+            VmaAllocationInfo alloc_info;
 
-        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator, &buffer_create_info, &alloc_create_info, &indirect_draw_commands_buffer, &allocation, &alloc_info), buffer_allocate_failed);
+            NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator, &buffer_create_info, &alloc_create_info, &indirect_draw_commands_buffer, &allocation, &alloc_info), buffer_allocate_failed);
 
-        // Version 1: write commands for all things to the indirect draw buffer
-        VkDrawIndexedIndirectCommand* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
+            // Version 1: write commands for all things to the indirect draw buffer
+            VkDrawIndexedIndirectCommand* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
 
-        for(const render_object& obj : renderables) {
-            // TODO: Write indirect draw commands
+            for(uint32_t i = 0; i < renderables.size(); i++) {
+                const render_object& cur_obj = renderables.at(i);
+                indirect_commands[i] = cur_obj.mesh->draw_cmd;
+            }
+
+            /*
+             * Don't wanna write this code at 11:30 PM but here's what's up:
+             *
+             * Meshes need to know what buffer they were allocated from - and we need to store them grouped by buffer. We
+             * need to group render_objects by the buffer that their memory resides in, so that we can issue a single
+             * indirect drawing command for each buffer
+             *
+             * Also like what even are index buffers?
+             */
+
+            vkCmdBindVertexBuffers(cmds, 0, 1, &buffer, nullptr);
+            vkCmdBindIndexBuffer(cmds, buffer, 0, VK_INDEX_TYPE_UINT32);
+
+            vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, renderables.size(), 0);
         }
-
-        /*
-         * Don't wanna write this code at 11:30 PM but here's what's up:
-         * 
-         * Meshes need to know what buffer they were allocated from - and we need to store them grouped by buffer. We 
-         * need to group render_objects by the buffer that their memory resides in, so that we can issue a single 
-         * indirect drawing command for each buffer
-         * 
-         * Also like what even are index buffers?
-         */
-
-        vkCmdBindVertexBuffers();
-        vkCmdBindIndexBuffer();
-
-        vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, renderables.size(), 0);
     }
 
     VkFormat vulkan_render_engine::to_vk_format(const pixel_format_enum format) {
