@@ -355,6 +355,15 @@ namespace nova {
         void render_pipeline(const vk_pipeline* pipeline, const vk_render_pass* renderpass);
 
         /*!
+         * \brief Binds all the resources that the provided material uses to the given pipeline
+         * 
+         * \param pass The material pass to get resources from
+         * \param pipeline The pipeline to get binding locations from
+         * \param cmds The command buffer to bind things in
+         */
+        void bind_material_resources(const material_pass& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds);
+
+        /*!
          * \brief Renders all the things using the provided material
          */
         void draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds);

@@ -941,19 +941,6 @@ namespace nova {
         // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
         upload_new_mesh_parts();
 
-        VkSubmitInfo submit_info;
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.pNext = nullptr;
-        submit_info.waitSemaphoreCount = 1;
-        submit_info.pWaitSemaphores = &image_available_semaphores.at(current_frame);
-        VkPipelineStageFlags wait_stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        submit_info.pWaitDstStageMask = &wait_stages;
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &command_buffers.at(current_swapchain_index);
-        submit_info.signalSemaphoreCount = 1;
-        submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_frame);
-        NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(graphics_queue, 1, &submit_info, submit_fences.at(current_frame)), render_engine_rendering_exception);
-
         VkPresentInfoKHR present_info;
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         present_info.pNext = nullptr;
@@ -1070,9 +1057,12 @@ namespace nova {
         rp_begin_info.pClearValues = &clear_value;
 
         vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
 
         const std::vector<material_pass> materials = material_passes_by_pipeline.at(pipeline->data.name);
         for(const material_pass& pass : materials) {
+            bind_material_resources(pass, *pipeline, cmds);
+
             draw_all_for_material(pass, cmds);
         }
 
@@ -1080,6 +1070,22 @@ namespace nova {
         vkEndCommandBuffer(cmds);
 
         submit_to_queue(cmds, graphics_queue);
+    }
+
+    void vulkan_render_engine::bind_material_resources(const material_pass& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) { 
+        for(const auto& [descriptor_name, resource_name] : pass.bindings) {
+            if(pipeline.bindings.find(descriptor_name) == pipeline.bindings.end()) {
+                NOVA_LOG(DEBUG) << "Material pass " << pass.name << " in material " << pass.material_name << " wants to bind something to descriptor " << descriptor_name << ", but it does not exist in pipeline " << pipeline.data.name << ", which the material uses";
+                continue;
+            }
+
+            const vk_resource_binding binding = pipeline.bindings.at(descriptor_name);
+
+            if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
+                const vk_texture& resource = dynamic_textures.at(resource_name);
+                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, binding.set, 1, &resource.descriptor)
+            }
+        }
     }
 
     void vulkan_render_engine::draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds) {
@@ -1121,21 +1127,24 @@ namespace nova {
                 indirect_commands[i] = cur_obj.mesh->draw_cmd;
             }
 
-            /*
-             * Don't wanna write this code at 11:30 PM but here's what's up:
-             *
-             * Meshes need to know what buffer they were allocated from - and we need to store them grouped by buffer. We
-             * need to group render_objects by the buffer that their memory resides in, so that we can issue a single
-             * indirect drawing command for each buffer
-             *
-             * Also like what even are index buffers?
-             */
-
             vkCmdBindVertexBuffers(cmds, 0, 1, &buffer, nullptr);
             vkCmdBindIndexBuffer(cmds, buffer, 0, VK_INDEX_TYPE_UINT32);
 
             vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, renderables.size(), 0);
         }
+    }
+
+    void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue) {
+        VkSubmitInfo submit_info;
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.pNext = nullptr;
+        VkPipelineStageFlags wait_stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        submit_info.pWaitDstStageMask = &wait_stages;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &cmds;
+        submit_info.signalSemaphoreCount = 1;
+        submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_frame);
+        NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, submit_fences.at(current_frame)), render_engine_rendering_exception);
     }
 
     VkFormat vulkan_render_engine::to_vk_format(const pixel_format_enum format) {
