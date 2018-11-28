@@ -412,7 +412,10 @@ namespace nova {
         create_render_passes(data.passes);
         NOVA_LOG(DEBUG) << "Created render passes";
         create_graphics_pipelines(data.pipelines);
-        NOVA_LOG(DEBUG) << "Creates pipelines";
+        NOVA_LOG(DEBUG) << "Created pipelines";
+
+        create_material_descriptor_sets();
+        update_material_descriptor_sets();
 
         shaderpack_loaded = true;
     }
@@ -1027,6 +1030,9 @@ namespace nova {
     }
 
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, const vk_render_pass* renderpass) {
+
+        // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
+        // command pool for its thread, since command pools need to be externally synchronized
         const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
 
         VkCommandBuffer cmds;
@@ -1043,6 +1049,7 @@ namespace nova {
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
+        // Start command buffer, start renderpass, and bind pipeline
         vkBeginCommandBuffer(cmds, &begin_info);
 
         VkClearValue clear_value = {};
@@ -1059,6 +1066,8 @@ namespace nova {
         vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
 
+        // Record all the draws for a material
+        // I'll worry about depth sorting later
         const std::vector<material_pass> materials = material_passes_by_pipeline.at(pipeline->data.name);
         for(const material_pass& pass : materials) {
             bind_material_resources(pass, *pipeline, cmds);
@@ -1083,7 +1092,7 @@ namespace nova {
 
             if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
                 const vk_texture& resource = dynamic_textures.at(resource_name);
-                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, binding.set, 1, &resource.descriptor)
+                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, binding.set, pass.descriptor_sets.size(), pass.descriptor_sets.data(), 0, nullptr);
             }
         }
     }
@@ -1321,6 +1330,42 @@ namespace nova {
         }
 
         return layouts;
+    }
+
+    void vulkan_render_engine::create_material_descriptor_sets() {
+        for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
+            for(const auto& pipeline : pipelines) {
+                auto& mats = material_passes_by_pipeline[pipeline.data.name];
+                for(material_pass& mat : mats) {
+                    if(pipeline.layouts.empty()) {
+                        // If there's no layouts, we're done
+                        continue;
+                    }
+
+                    NOVA_LOG(TRACE) << "Creating descriptor sets for pipeline " << pipeline.data.name;
+
+                    auto layouts = std::vector<VkDescriptorSetLayout>{};
+                    layouts.reserve(pipeline.layouts.size());
+
+                    // CLion might tell you to simplify this into a foreach loop... DO NOT! The layouts need to be added in set
+                    // order, not map order which is what you'll get if you use a foreach - AND IT'S WRONG
+                    for(uint32_t i = 0; i < pipeline.layouts.size(); i++) {
+                        layouts.push_back(pipeline.layouts.at(static_cast<int32_t>(i)));
+                    }
+
+                    VkDescriptorSetAllocateInfo alloc_info = {};
+                    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    alloc_info.descriptorPool = descriptor_pool;
+                    alloc_info.descriptorSetCount = layouts.size();
+                    alloc_info.pSetLayouts = layouts.data();
+
+                    mat.descriptor_sets.reserve(layouts.size());
+                    NOVA_THROW_IF_VK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat.descriptor_sets.data()), shaderpack_loading_error);
+
+                    update_material_descriptor_sets(mat, pipeline.bindings);
+                }
+            }
+        }
     }
 
 }  // namespace nova

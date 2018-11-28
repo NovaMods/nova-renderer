@@ -31,6 +31,7 @@
 
 namespace nova {
     NOVA_EXCEPTION(buffer_allocate_failed);
+    NOVA_EXCEPTION(shaderpack_loading_error);
 
     struct vk_queue {
         VkQueue queue = VK_NULL_HANDLE;
@@ -53,7 +54,7 @@ namespace nova {
 
     struct vk_pipeline {
         VkPipeline pipeline = VK_NULL_HANDLE;
-        VkPipelineLayout layout = VK_NULL_HANDLE;
+        std::unordered_map<uint32_t, VkDescriptorSetLayout> layouts;
         pipeline_data data;
 
         std::unordered_map<std::string, vk_resource_binding> bindings;
@@ -243,6 +244,18 @@ namespace nova {
         std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> all_bindings) const;
 
         /*!
+         * \brief Creates descriptor sets for all the materials that are loaded
+         */
+        void create_material_descriptor_sets();
+
+        /*!
+         * \brief Binds this material's resources to its descriptor sets
+         *
+         * Prerequisite: This function must be run after create_material_descriptor_sets
+         */
+        void update_material_descriptor_sets(const material_pass& material, const std::unordered_map<std::string, vk_resource_binding>& bindings);
+
+        /*!
          * \brief Converts the list of attachment names into attachment descriptions and references that can be later
          * used to make a VkRenderpass
          *
@@ -356,7 +369,7 @@ namespace nova {
 
         /*!
          * \brief Binds all the resources that the provided material uses to the given pipeline
-         * 
+         *
          * \param pass The material pass to get resources from
          * \param pipeline The pipeline to get binding locations from
          * \param cmds The command buffer to bind things in

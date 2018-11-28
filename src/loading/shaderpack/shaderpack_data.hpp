@@ -551,6 +551,7 @@ namespace nova {
         std::string material_name;
         std::string pipeline;
         std::unordered_map<std::string, std::string> bindings;
+        std::vector<VkDescriptorSet> descriptor_sets;
     };
 
     struct material_data {
