@@ -22,6 +22,7 @@ namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler)
         : render_engine(settings, task_scheduler),
           command_pools_by_queue_idx(task_scheduler, [&]() { return make_new_command_pools(); }),
+          descriptor_pools_by_thread_idx(task_scheduler, [&]() { return this->make_new_descriptor_pool(); }),
           shaderpack_loading_mutex(task_scheduler),
           upload_to_staging_buffers_counter(task_scheduler),
           mesh_staging_buffers_mutex(task_scheduler),
@@ -415,12 +416,13 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Created pipelines";
 
         create_material_descriptor_sets();
-        update_material_descriptor_sets();
 
         shaderpack_loaded = true;
     }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) { return command_pools_by_queue_idx->at(queue_index); }
+
+    VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() { return *descriptor_pools_by_thread_idx; }
 
     vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer(const uint32_t needed_size) {
         ftl::LockGuard l(mesh_staging_buffers_mutex);
@@ -1030,7 +1032,6 @@ namespace nova {
     }
 
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, const vk_render_pass* renderpass) {
-
         // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
         // command pool for its thread, since command pools need to be externally synchronized
         const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
@@ -1081,10 +1082,11 @@ namespace nova {
         submit_to_queue(cmds, graphics_queue);
     }
 
-    void vulkan_render_engine::bind_material_resources(const material_pass& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) { 
+    void vulkan_render_engine::bind_material_resources(const material_pass& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
         for(const auto& [descriptor_name, resource_name] : pass.bindings) {
             if(pipeline.bindings.find(descriptor_name) == pipeline.bindings.end()) {
-                NOVA_LOG(DEBUG) << "Material pass " << pass.name << " in material " << pass.material_name << " wants to bind something to descriptor " << descriptor_name << ", but it does not exist in pipeline " << pipeline.data.name << ", which the material uses";
+                NOVA_LOG(DEBUG) << "Material pass " << pass.name << " in material " << pass.material_name << " wants to bind something to descriptor " << descriptor_name
+                                << ", but it does not exist in pipeline " << pipeline.data.name << ", which the material uses";
                 continue;
             }
 
@@ -1092,7 +1094,7 @@ namespace nova {
 
             if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
                 const vk_texture& resource = dynamic_textures.at(resource_name);
-                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, binding.set, pass.descriptor_sets.size(), pass.descriptor_sets.data(), 0, nullptr);
+                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layouts.at(binding.set), binding.set, pass.descriptor_sets.size(), pass.descriptor_sets.data(), 0, nullptr);
             }
         }
     }
@@ -1199,6 +1201,24 @@ namespace nova {
         }
 
         return pools_by_queue;
+    }
+
+    VkDescriptorPool vulkan_render_engine::make_new_descriptor_pool() const {
+        std::vector<VkDescriptorPoolSize> pool_sizes;
+        pool_sizes.emplace_back(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 5);  // Virtual textures greatly reduces the number of total textures
+        pool_sizes.emplace_back(VK_DESCRIPTOR_TYPE_SAMPLER, 5);
+        pool_sizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 5000);
+
+        VkDescriptorPoolCreateInfo pool_create_info = {};
+        pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pool_create_info.maxSets = 5000;
+        pool_create_info.poolSizeCount = pool_sizes.size();
+        pool_create_info.pPoolSizes = pool_sizes.data();
+
+        VkDescriptorPool pool;
+        NOVA_THROW_IF_VK_ERROR(vkCreateDescriptorPool(device, &pool_create_info, nullptr, &pool), descriptor_pool_creation_failed);
+
+        return pool;
     }
 
     void vulkan_render_engine::create_textures(const std::vector<texture_resource_data>& texture_datas) {
@@ -1333,39 +1353,123 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_material_descriptor_sets() {
+        ftl::AtomicCounter descriptor_set_creation_counter(scheduler);
+
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             for(const auto& pipeline : pipelines) {
-                auto& mats = material_passes_by_pipeline[pipeline.data.name];
-                for(material_pass& mat : mats) {
-                    if(pipeline.layouts.empty()) {
-                        // If there's no layouts, we're done
-                        continue;
-                    }
+                std::vector<material_pass>& mats = material_passes_by_pipeline.at(pipeline.data.name);
+                scheduler->AddTask(&descriptor_set_creation_counter,
+                    [&](ftl::TaskScheduler* scheduler, const vk_pipeline* pipeline, std::vector<material_pass>* mats) {
+                        for(material_pass& mat : *mats) {
+                            if(pipeline->layouts.empty()) {
+                                // If there's no layouts, we're done
+                                continue;
+                            }
 
-                    NOVA_LOG(TRACE) << "Creating descriptor sets for pipeline " << pipeline.data.name;
+                            NOVA_LOG(TRACE) << "Creating descriptor sets for pipeline " << pipeline->data.name;
 
-                    auto layouts = std::vector<VkDescriptorSetLayout>{};
-                    layouts.reserve(pipeline.layouts.size());
+                            auto layouts = std::vector<VkDescriptorSetLayout>{};
+                            layouts.reserve(pipeline->layouts.size());
 
-                    // CLion might tell you to simplify this into a foreach loop... DO NOT! The layouts need to be added in set
-                    // order, not map order which is what you'll get if you use a foreach - AND IT'S WRONG
-                    for(uint32_t i = 0; i < pipeline.layouts.size(); i++) {
-                        layouts.push_back(pipeline.layouts.at(static_cast<int32_t>(i)));
-                    }
+                            // CLion might tell you to simplify this into a foreach loop... DO NOT! The layouts need to be added in set
+                            // order, not map order which is what you'll get if you use a foreach - AND IT'S WRONG
+                            for(uint32_t i = 0; i < pipeline->layouts.size(); i++) {
+                                layouts.push_back(pipeline->layouts.at(static_cast<int32_t>(i)));
+                            }
 
-                    VkDescriptorSetAllocateInfo alloc_info = {};
-                    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                    alloc_info.descriptorPool = descriptor_pool;
-                    alloc_info.descriptorSetCount = layouts.size();
-                    alloc_info.pSetLayouts = layouts.data();
+                            VkDescriptorSetAllocateInfo alloc_info = {};
+                            alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                            alloc_info.descriptorPool = get_descriptor_pool_for_current_thread();
+                            alloc_info.descriptorSetCount = layouts.size();
+                            alloc_info.pSetLayouts = layouts.data();
 
-                    mat.descriptor_sets.reserve(layouts.size());
-                    NOVA_THROW_IF_VK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat.descriptor_sets.data()), shaderpack_loading_error);
+                            mat.descriptor_sets.reserve(layouts.size());
+                            NOVA_THROW_IF_VK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat.descriptor_sets.data()), shaderpack_loading_error);
 
-                    update_material_descriptor_sets(mat, pipeline.bindings);
-                }
+                            update_material_descriptor_sets(mat, pipeline->bindings);
+                        }
+                    },
+                    &pipeline, &mats);
             }
         }
+
+        scheduler->WaitForCounter(&descriptor_set_creation_counter, 0);
+    }
+
+    void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture, const vk_resource_binding& descriptor_info, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo> image_infos) const {
+        VkDescriptorImageInfo image_info = {};
+        image_info.imageView = texture.image_view;
+        image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        image_info.sampler = point_sampler;
+
+        image_infos.push_back(image_info);
+
+        write.pImageInfo = &image_infos.at(image_infos.size() - 1);
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+
+        NOVA_LOG(TRACE) << "Binding texture " << texture.data.name << " to descriptor (set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
+    }
+
+    void vulkan_render_engine::update_material_descriptor_sets(const material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor) {
+        // for each resource:
+        //  - Get its set and binding from the pipeline
+        //  - Update its descriptor set
+        NOVA_LOG(TRACE) << "Updating descriptors for material " << mat.material_name;
+
+        std::vector<VkWriteDescriptorSet> writes;
+
+        // We create VkDescriptorImageInfo objects in a different scope, so were they to live there forever they'd get destructed before we can use them
+        // Instead we have them in a std::vector so they get deallocated _after_ being used
+        std::vector<VkDescriptorImageInfo> image_infos(mat.bindings.size());
+
+        std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
+
+        for(const auto& binding : mat.bindings) {
+            const auto& descriptor_info = name_to_descriptor.at(binding.first);
+            const auto& resource_name = binding.second;
+            const auto descriptor_set = mat.descriptor_sets[descriptor_info.set];
+            bool is_known = true;
+
+            VkWriteDescriptorSet write = {};
+            write.dstSet = descriptor_set;
+            write.dstBinding = descriptor_info.binding;
+            write.descriptorCount = 1;
+            write.dstArrayElement = 0;
+
+            if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
+                const vk_texture& texture = dynamic_textures.at(resource_name);
+                write_texture_to_descriptor(texture, descriptor_info, write, image_infos);
+
+
+            } else if(builtin_textures.find(resource_name) != builtin_textures.end()) {
+                const vk_texture& texture = builtin_textures.at(resource_name);
+                write_texture_to_descriptor(texture, descriptor_info, write, image_infos);
+
+            /*} else if(buffers.is_buffer_known(resource_name)) {
+                is_known = true;
+
+                auto& buffer = buffers.get_buffer(resource_name);
+
+                auto buffer_info = VkDescriptorBufferInfo().setBuffer(buffer.get_vk_buffer()).setOffset(0).setRange(buffer.get_size());
+
+                buffer_infos.push_back(buffer_info);
+
+                write.setPBufferInfo(&buffer_infos[buffer_infos.size() - 1]).setDescriptorType(VkDescriptorType::eUniformBuffer);
+
+                NOVA_LOG(TRACE) << "Binding buffer " << resource_name << " to descriptor "
+                           << "(id=" << (VkDescriptorSet) descriptor_set << " set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
+             */
+            } else {
+                is_known = false;
+                NOVA_LOG(WARN) << "Resource " << resource_name << " is not known to Nova. I hope you aren't using it cause it doesn't exist";
+            }
+
+            if(is_known) {
+                writes.push_back(write);
+            }
+        }
+
+        vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
     }
 
 }  // namespace nova

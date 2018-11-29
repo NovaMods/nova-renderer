@@ -32,6 +32,7 @@
 namespace nova {
     NOVA_EXCEPTION(buffer_allocate_failed);
     NOVA_EXCEPTION(shaderpack_loading_error);
+    NOVA_EXCEPTION(descriptor_pool_creation_failed);
 
     struct vk_queue {
         VkQueue queue = VK_NULL_HANDLE;
@@ -129,15 +130,24 @@ namespace nova {
         std::vector<VkSemaphore> image_available_semaphores;
         std::vector<VkFence> submit_fences;
 
+        VkSampler point_sampler;
+
         /*!
          * \brief Thread-local command pools so multiple tasks don't try to use the same command pools at the same time
          */
         ftl::ThreadLocal<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_queue_idx;
 
+        ftl::ThreadLocal<VkDescriptorPool> descriptor_pools_by_thread_idx;
+
         /*!
          * \brief Allocates new command pools - one for graphics, one for transfer, one for compute
          */
         std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
+
+        /*!
+         * \brief Factory function to make a new descriptor pool
+         */
+        VkDescriptorPool make_new_descriptor_pool() const;
 
         /*!
          * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
@@ -148,6 +158,11 @@ namespace nova {
          * \return The command pool for the current thread
          */
         VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
+
+        /*!
+         * \brief Retrieves the descriptor pool for the calling thread
+         */
+        VkDescriptorPool get_descriptor_pool_for_current_thread();
 #pragma endregion
 
 #pragma region Init
@@ -183,6 +198,7 @@ namespace nova {
         std::unordered_map<std::string, vk_pipeline> pipelines;
 
         std::unordered_map<std::string, vk_texture> dynamic_textures;
+        std::unordered_map<std::string, vk_buffer> dynamic_buffers;
 
         std::unordered_map<std::string, material_data> materials;
 
@@ -249,11 +265,22 @@ namespace nova {
         void create_material_descriptor_sets();
 
         /*!
+         * \brier Helper function so I don't have the same code for both dynamic and builtin textures
+         * 
+         * \param image_infos A place to store VkDescriptorImageInfo structs so they don't get cleaned up too early
+         * \param descriptor_info Information about what descriptor we need to update
+         * \param write a VkWriteDescriptorSet struct that we can add information about out descriptor to
+         * \param texture The texture to write to the descriptor set
+         */
+        void write_texture_to_descriptor(const vk_texture& texture, const vk_resource_binding& descriptor_info,
+                                         VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo> image_infos) const;
+
+        /*!
          * \brief Binds this material's resources to its descriptor sets
          *
          * Prerequisite: This function must be run after create_material_descriptor_sets
          */
-        void update_material_descriptor_sets(const material_pass& material, const std::unordered_map<std::string, vk_resource_binding>& bindings);
+        void update_material_descriptor_sets(const material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor);
 
         /*!
          * \brief Converts the list of attachment names into attachment descriptions and references that can be later
@@ -347,6 +374,9 @@ namespace nova {
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
         std::unordered_map<std::string, std::unordered_map<VkBuffer, std::vector<render_object>>> renderables_by_material;
+
+        std::unordered_map<std::string, vk_texture> builtin_textures;
+        std::unordered_map<std::string, vk_buffer> builtin_buffers;
 
         /*!
          * \brief Performs all tasks necessary to render this renderpass
