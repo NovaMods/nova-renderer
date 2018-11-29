@@ -651,7 +651,8 @@ namespace nova {
             pipeline_layout_create_info.pushConstantRangeCount = 0;
             pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
-            NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &nova_pipeline.layout), render_engine_initialization_exception);
+            VkPipelineLayout layout;
+            NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout), render_engine_initialization_exception);
 
             for(const auto& pair : shader_modules) {
                 VkPipelineShaderStageCreateInfo shader_stage_create_info;
@@ -777,7 +778,7 @@ namespace nova {
             pipeline_create_info.pDepthStencilState = nullptr;
             pipeline_create_info.pColorBlendState = &color_blend_create_info;
             pipeline_create_info.pDynamicState = nullptr;
-            pipeline_create_info.layout = nova_pipeline.layout;
+            pipeline_create_info.layout = layout;
             pipeline_create_info.renderPass = render_passes.at(data.pass).pass;
             pipeline_create_info.subpass = 0;
             pipeline_create_info.basePipelineIndex = -1;
