@@ -265,22 +265,29 @@ namespace nova {
         void create_material_descriptor_sets();
 
         /*!
-         * \brier Helper function so I don't have the same code for both dynamic and builtin textures
-         * 
-         * \param image_infos A place to store VkDescriptorImageInfo structs so they don't get cleaned up too early
-         * \param descriptor_info Information about what descriptor we need to update
-         * \param write a VkWriteDescriptorSet struct that we can add information about out descriptor to
-         * \param texture The texture to write to the descriptor set
-         */
-        void write_texture_to_descriptor(const vk_texture& texture, const vk_resource_binding& descriptor_info,
-                                         VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo> image_infos) const;
-
-        /*!
          * \brief Binds this material's resources to its descriptor sets
          *
          * Prerequisite: This function must be run after create_material_descriptor_sets
          */
         void update_material_descriptor_sets(const material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor);
+
+        /*!
+         * \brier Helper function so I don't have the same code for both dynamic and builtin textures
+         *
+         * \param texture The texture to write to the descriptor set
+         * \param write a VkWriteDescriptorSet struct that we can add information about out descriptor to
+         * \param image_infos A place to store VkDescriptorImageInfo structs so they don't get cleaned up too early
+         */
+        void write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo> image_infos) const;
+
+        /*!
+         * \brief Helper function so I don't have the same code for dynamic and builtin buffers
+         *
+         * \param buffer The buffer to write to the descriptor set
+         * \param write A VkWriteDescriptorSet struct that we can add information about our descriptor to
+         * \param buffer_infos A place to store VkDescriptorBufferInfo structs so they don't get cleaned up too early
+         */
+        static void write_buffer_to_descriptor(const vk_buffer& buffer, VkWriteDescriptorSet& write, std::vector<VkDescriptorBufferInfo> buffer_infos);
 
         /*!
          * \brief Converts the list of attachment names into attachment descriptions and references that can be later

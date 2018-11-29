@@ -1396,20 +1396,6 @@ namespace nova {
         scheduler->WaitForCounter(&descriptor_set_creation_counter, 0);
     }
 
-    void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture, const vk_resource_binding& descriptor_info, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo> image_infos) const {
-        VkDescriptorImageInfo image_info = {};
-        image_info.imageView = texture.image_view;
-        image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        image_info.sampler = point_sampler;
-
-        image_infos.push_back(image_info);
-
-        write.pImageInfo = &image_infos.at(image_infos.size() - 1);
-        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-
-        NOVA_LOG(TRACE) << "Binding texture " << texture.data.name << " to descriptor (set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
-    }
-
     void vulkan_render_engine::update_material_descriptor_sets(const material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor) {
         // for each resource:
         //  - Get its set and binding from the pipeline
@@ -1438,27 +1424,20 @@ namespace nova {
 
             if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
                 const vk_texture& texture = dynamic_textures.at(resource_name);
-                write_texture_to_descriptor(texture, descriptor_info, write, image_infos);
-
-
+                write_texture_to_descriptor(texture, write, image_infos);
+                
             } else if(builtin_textures.find(resource_name) != builtin_textures.end()) {
                 const vk_texture& texture = builtin_textures.at(resource_name);
-                write_texture_to_descriptor(texture, descriptor_info, write, image_infos);
+                write_texture_to_descriptor(texture, write, image_infos);
 
-            /*} else if(buffers.is_buffer_known(resource_name)) {
-                is_known = true;
+            } else if(dynamic_buffers.find(resource_name) != dynamic_buffers.end()) {
+                const vk_buffer& buffer = dynamic_buffers.at(resource_name);
+                write_buffer_to_descriptor(buffer, write, buffer_infos);
 
-                auto& buffer = buffers.get_buffer(resource_name);
+            } else if(builtin_buffers.find(resource_name) != builtin_buffers.end()) {
+                const vk_buffer& buffer = builtin_buffers.at(resource_name);
+                write_buffer_to_descriptor(buffer, write, buffer_infos);
 
-                auto buffer_info = VkDescriptorBufferInfo().setBuffer(buffer.get_vk_buffer()).setOffset(0).setRange(buffer.get_size());
-
-                buffer_infos.push_back(buffer_info);
-
-                write.setPBufferInfo(&buffer_infos[buffer_infos.size() - 1]).setDescriptorType(VkDescriptorType::eUniformBuffer);
-
-                NOVA_LOG(TRACE) << "Binding buffer " << resource_name << " to descriptor "
-                           << "(id=" << (VkDescriptorSet) descriptor_set << " set=" << descriptor_info.set << " binding=" << descriptor_info.binding << ")";
-             */
             } else {
                 is_known = false;
                 NOVA_LOG(WARN) << "Resource " << resource_name << " is not known to Nova. I hope you aren't using it cause it doesn't exist";
@@ -1472,4 +1451,27 @@ namespace nova {
         vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
     }
 
+    void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo> image_infos) const {
+        VkDescriptorImageInfo image_info = {};
+        image_info.imageView = texture.image_view;
+        image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        image_info.sampler = point_sampler;
+
+        image_infos.push_back(image_info);
+
+        write.pImageInfo = &image_infos.at(image_infos.size() - 1);
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    }
+
+    void vulkan_render_engine::write_buffer_to_descriptor(const vk_buffer& buffer, VkWriteDescriptorSet& write, std::vector<VkDescriptorBufferInfo> buffer_infos) {
+        VkDescriptorBufferInfo buffer_info = {};
+        buffer_info.buffer = buffer.buffer;
+        buffer_info.offset = 0;
+        buffer_info.range = buffer.alloc_info.size;
+
+        buffer_infos.push_back(buffer_info);
+
+        write.pBufferInfo = &buffer_infos[buffer_infos.size() - 1];
+        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    }
 }  // namespace nova
