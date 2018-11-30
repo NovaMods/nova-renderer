@@ -26,7 +26,7 @@ namespace nova {
         glm::vec4 additional_stuff;   // 16 bytes
     };
 
-    static_assert(sizeof(full_vertex) % 32 == 0, "full_vertex struct is not aligned to 16 bytes!");
+    static_assert(sizeof(full_vertex) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
 
     /*!
      * \brief All the data needed to make a single mesh
