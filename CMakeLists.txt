@@ -140,10 +140,10 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_render_engine.hpp
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_utils.hpp
-        src/render_engine/vulkan/x11_window.cpp
-        src/render_engine/vulkan/x11_window.hpp
-        src/render_engine/vulkan/vulkan_opaque_types.hpp
-        src/render_engine/vulkan/vulkan_type_converters.hpp src/render_engine/vulkan/mesh_store.cpp src/render_engine/vulkan/mesh_store.hpp)
+        src/render_engine/vulkan/vulkan_type_converters.hpp
+		src/render_engine/vulkan/compacting_block_allocator.cpp 
+		src/render_engine/vulkan/compacting_block_allocator.hpp 
+		src/render_engine/vulkan/vulkan_utils.cpp)
 
 if(WIN32)
     set(NOVA_SOURCE
@@ -164,6 +164,11 @@ if(WIN32)
             src/render_engine/dx12/dx12_render_engine.hpp
             src/render_engine/dx12/d3dx12.h
             src/render_engine/dx12/dx12_opaque_types.hpp)
+else()
+	set(NOVA_SOURCE
+		${NOVA_SOURCE}
+        src/render_engine/vulkan/x11_window.cpp
+        src/render_engine/vulkan/x11_window.hpp)
 endif()
 
 if (UNIX)

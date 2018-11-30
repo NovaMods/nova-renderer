@@ -78,13 +78,19 @@ namespace nova {
         VmaAllocationInfo alloc_info;
     };
 
-    struct staging_buffer_upload_command {
+    struct mesh_staging_buffer_upload_command {
         vk_buffer staging_buffer;
         uint32_t mesh_id;
+        uint32_t indices_offset;
+        uint32_t model_matrix_offset;
     };
 
     struct vk_mesh {
         compacting_block_allocator::allocation_info* memory;
+
+        uint32_t index_offset;
+        uint32_t model_matrix_offset;
+
         VkDrawIndexedIndirectCommand draw_cmd;
     };
 
@@ -324,7 +330,7 @@ namespace nova {
         ftl::Fibtex mesh_staging_buffers_mutex;
         std::vector<vk_buffer> mesh_staging_buffers;
 
-        std::queue<staging_buffer_upload_command> mesh_upload_queue;
+        std::queue<mesh_staging_buffer_upload_command> mesh_upload_queue;
         ftl::Fibtex mesh_upload_queue_mutex;
         VkFence mesh_rendering_done;
         VkEvent upload_to_megamesh_buffer_done;

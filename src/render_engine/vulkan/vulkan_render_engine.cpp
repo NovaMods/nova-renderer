@@ -474,20 +474,21 @@ namespace nova {
         const uint32_t mesh_id = next_mesh_id.fetch_add(1);
 
         scheduler->AddTask(&upload_to_staging_buffers_counter,
-            [&](ftl::TaskScheduler* scheduler, const mesh_data* input_mesh, std::mutex* mesh_upload_queue_mutex, std::vector<staging_buffer_upload_command>* mesh_upload_queue) {
+            [&](ftl::TaskScheduler* scheduler, const mesh_data* input_mesh, std::mutex* mesh_upload_queue_mutex, std::vector<mesh_staging_buffer_upload_command>* mesh_upload_queue) {
                 const uint32_t vertex_size = input_mesh->vertex_data.size() * sizeof(full_vertex);
                 const uint32_t index_size = input_mesh->indices.size() * sizeof(uint32_t);
+                const uint32_t model_matrix_size = sizeof(glm::mat4);
 
                 // TODO: Make the extra memory allocation configurable
-                const uint32_t total_memory_needed = (vertex_size + index_size) * 1.1;  // Extra size so chunks can grow
+                const uint32_t total_memory_needed = (vertex_size + index_size + model_matrix_size) * 1.1;  // Extra size so chunks can grow
 
                 vk_buffer staging_buffer = get_or_allocate_mesh_staging_buffer(total_memory_needed);
                 std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh->vertex_data[0], vertex_size);
-                std::memcpy((uint8_t*) staging_buffer.alloc_info.pMappedData + vertex_size, &input_mesh->indices[0], index_size);
+                std::memcpy(reinterpret_cast<uint8_t*>(staging_buffer.alloc_info.pMappedData) + vertex_size, &input_mesh->indices[0], index_size);
 
                 ftl::LockGuard l(*mesh_upload_queue_mutex);
-                mesh_upload_queue->emplace_back(staging_buffer, mesh_id);
-            });
+                mesh_upload_queue->emplace_back(staging_buffer, mesh_id, vertex_size, vertex_size + index_size);
+            }, &input_mesh, &mesh_upload_queue_mutex, &mesh_upload_queue);
 
         return mesh_id;
     }
@@ -667,17 +668,17 @@ namespace nova {
                 shader_stages.push_back(shader_stage_create_info);
             }
 
-            auto vertex_binding_description = vulkan::vulkan_vertex::get_binding_description();
-            auto vertex_attribute_description = vulkan::vulkan_vertex::get_attribute_description();
+            const std::vector<VkVertexInputBindingDescription>& vertex_binding_descriptions = vulkan::get_vertex_input_binding_descriptions();
+            const std::vector<VkVertexInputAttributeDescription>& vertex_attribute_descriptions = vulkan::get_vertex_input_attribute_descriptions();
 
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertex_input_state_create_info.pNext = nullptr;
             vertex_input_state_create_info.flags = 0;
-            vertex_input_state_create_info.vertexBindingDescriptionCount = 1;
-            vertex_input_state_create_info.pVertexBindingDescriptions = &vertex_binding_description;
-            vertex_input_state_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_attribute_description.size());
-            vertex_input_state_create_info.pVertexAttributeDescriptions = vertex_attribute_description.data();
+            vertex_input_state_create_info.vertexBindingDescriptionCount = vertex_binding_descriptions.size();
+            vertex_input_state_create_info.pVertexBindingDescriptions = vertex_binding_descriptions.data();
+            vertex_input_state_create_info.vertexAttributeDescriptionCount = vertex_attribute_descriptions.size();
+            vertex_input_state_create_info.pVertexAttributeDescriptions = vertex_attribute_descriptions.data();
 
             VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info;
             input_assembly_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -833,7 +834,7 @@ namespace nova {
             std::vector<vk_buffer> freed_buffers;
             freed_buffers.reserve(mesh_upload_queue.size() * 2);
             while(!mesh_upload_queue.empty()) {
-                const staging_buffer_upload_command cmd = mesh_upload_queue.front();
+                const mesh_staging_buffer_upload_command cmd = mesh_upload_queue.front();
                 mesh_upload_queue.pop();
 
                 compacting_block_allocator::allocation_info* mem = mesh_memory->allocate(cmd.staging_buffer.alloc_info.size);
@@ -844,7 +845,14 @@ namespace nova {
                 copy.dstOffset = mem->offset;
                 vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffer.buffer, mem->block->get_buffer(), 1, &copy);
 
-                meshes[cmd.mesh_id] = {mem};
+                VkDrawIndexedIndirectCommand mesh_draw_command = {};
+                mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
+                mesh_draw_command.instanceCount = 1;
+                mesh_draw_command.firstIndex = 0;
+                mesh_draw_command.vertexOffset = mem->offset;
+                mesh_draw_command.firstInstance = 0;
+
+                meshes[cmd.mesh_id] = {mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command};
 
                 freed_buffers.insert(freed_buffers.end(), cmd.staging_buffer);
             }

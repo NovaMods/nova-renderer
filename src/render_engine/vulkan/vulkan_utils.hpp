@@ -5,15 +5,17 @@
 #ifndef NOVA_RENDERER_VULKAN_UTILS_HPP
 #define NOVA_RENDERER_VULKAN_UTILS_HPP
 
-#include <string>
 #include <vulkan/vulkan.h>
+#include <string>
+#include <vector>
 
 namespace nova::vulkan {
     class vulkan_utils {
     public:
         static std::string vk_result_to_string(VkResult result) {
 #define ERROR_CASE(r)                                                                                                                                                                                  \
-    case VK_##r: return #r
+    case VK_##r:                                                                                                                                                                                       \
+        return #r
             switch(result) {
                 ERROR_CASE(SUCCESS);
                 ERROR_CASE(NOT_READY);
@@ -25,11 +27,16 @@ namespace nova::vulkan {
                 ERROR_CASE(ERROR_INITIALIZATION_FAILED);
                 ERROR_CASE(ERROR_DEVICE_LOST);
 
-                default: return std::string("UNKNOWN_ERROR");
+                default:
+                    return std::string("UNKNOWN_ERROR");
             }
 #undef ERROR_CASE
         }
     };
+
+    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
+
+    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
 }  // namespace nova::vulkan
 
 #define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                                                                                        \
