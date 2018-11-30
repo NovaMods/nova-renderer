@@ -24,7 +24,7 @@
 #include "dx12_utils.hpp"
 
 namespace nova {
-    dx12_render_engine::dx12_render_engine(const nova_settings &settings) : render_engine(settings), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
+    dx12_render_engine::dx12_render_engine(const nova_settings& settings, ftl::TaskScheduler* scheduler) : render_engine(settings, scheduler), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
         NOVA_LOG(INFO) << "Initializing Direct3D 12 rendering";
 
         create_device();
@@ -336,7 +336,7 @@ namespace nova {
         full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 
-    void dx12_render_engine::set_shaderpack(const shaderpack_data& data, ftl::TaskScheduler& scheduler) {
+    void dx12_render_engine::set_shaderpack(const shaderpack_data& data) {
         // Let's build our data from the ground up!
         // To load a new shaderpack, we need to first clear out all the data from the old shaderpack. Then, we can
         // make the new dynamic textures and samplers, then the PSOs, then the material definitions, then the
@@ -370,6 +370,16 @@ namespace nova {
         create_dynamic_textures(data.resources.textures, passes_in_submission_order);
 
         make_pipeline_state_objects(data.pipelines, scheduler);
+    }
+
+    uint32_t dx12_render_engine::add_mesh(const mesh_data&) {
+        // TODO
+
+        return 0;
+    }
+
+    void dx12_render_engine::delete_mesh(uint32_t) {
+        // TODO
     }
 
     void dx12_render_engine::try_to_free_command_lists() {
@@ -503,16 +513,16 @@ namespace nova {
         device->CreateQueryHeap(&heap_desc, IID_PPV_ARGS(&renderpass_timestamp_query_heap));
     }
 
-    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler& scheduler) {
-        ftl::AtomicCounter pipelines_created_counter(&scheduler);
+    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler* scheduler) {
+        ftl::AtomicCounter pipelines_created_counter(scheduler);
 
         std::vector<pipeline> dx12_pipelines(pipelines.size());
         std::size_t write_pipeline = 0;
 
         for(const pipeline_data& data : pipelines) {
             if(!data.name.empty()) {
-                scheduler.AddTask(&pipelines_created_counter,
-                    [&](ftl::TaskScheduler *task_scheduler, const pipeline_data data, pipeline* dx12_pipeline) {
+                scheduler->AddTask(&pipelines_created_counter,
+                    [&](ftl::TaskScheduler* task_scheduler, const pipeline_data data, pipeline* dx12_pipeline) {
                     try {
                         make_single_pso(data, dx12_pipeline);
                     } catch(shader_compilation_failed& err) {
@@ -523,7 +533,7 @@ namespace nova {
             }
         }
 
-        scheduler.WaitForCounter(&pipelines_created_counter, pipelines.size());
+        scheduler->WaitForCounter(&pipelines_created_counter, pipelines.size());
     }
     
     void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {

@@ -474,7 +474,7 @@ namespace nova {
         const uint32_t mesh_id = next_mesh_id.fetch_add(1);
 
         scheduler->AddTask(&upload_to_staging_buffers_counter,
-            [&](ftl::TaskScheduler* scheduler, const mesh_data* input_mesh, std::mutex* mesh_upload_queue_mutex, std::vector<mesh_staging_buffer_upload_command>* mesh_upload_queue) {
+            [&](ftl::TaskScheduler* scheduler, const mesh_data* input_mesh, ftl::Fibtex* mesh_upload_queue_mutex, std::queue<mesh_staging_buffer_upload_command>* mesh_upload_queue) {
                 const uint32_t vertex_size = input_mesh->vertex_data.size() * sizeof(full_vertex);
                 const uint32_t index_size = input_mesh->indices.size() * sizeof(uint32_t);
                 const uint32_t model_matrix_size = sizeof(glm::mat4);
@@ -487,7 +487,7 @@ namespace nova {
                 std::memcpy(reinterpret_cast<uint8_t*>(staging_buffer.alloc_info.pMappedData) + vertex_size, &input_mesh->indices[0], index_size);
 
                 ftl::LockGuard l(*mesh_upload_queue_mutex);
-                mesh_upload_queue->emplace_back(staging_buffer, mesh_id, vertex_size, vertex_size + index_size);
+                mesh_upload_queue->push(mesh_staging_buffer_upload_command{staging_buffer, mesh_id, vertex_size, vertex_size + index_size});
             }, &input_mesh, &mesh_upload_queue_mutex, &mesh_upload_queue);
 
         return mesh_id;
@@ -874,12 +874,12 @@ namespace nova {
             vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
 
             task_scheduler->AddTask(nullptr, [&](ftl::TaskScheduler* task_scheduler, std::vector<vk_buffer>* buffers_to_free) {
-                vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, 0xffffffffffffffffL);
+                    vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, 0xffffffffffffffffL);
 
-                // Once the upload is done, return all the staging buffers to the pool
-                ftl::LockGuard l(mesh_staging_buffers_mutex);
-                mesh_staging_buffers.insert(mesh_staging_buffers.end(), buffers_to_free->begin(), buffers_to_free->end());
-            });
+                    // Once the upload is done, return all the staging buffers to the pool
+                    ftl::LockGuard l(mesh_staging_buffers_mutex);
+                    mesh_staging_buffers.insert(mesh_staging_buffers.end(), buffers_to_free->begin(), buffers_to_free->end());
+                }, &freed_buffers);
         });
     }
 
@@ -1240,9 +1240,9 @@ namespace nova {
 
     VkDescriptorPool vulkan_render_engine::make_new_descriptor_pool() const {
         std::vector<VkDescriptorPoolSize> pool_sizes;
-        pool_sizes.emplace_back(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 5);  // Virtual textures greatly reduces the number of total textures
-        pool_sizes.emplace_back(VK_DESCRIPTOR_TYPE_SAMPLER, 5);
-        pool_sizes.emplace_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 5000);
+        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 5});  // Virtual textures greatly reduces the number of total textures
+        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 5});
+        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 5000});
 
         VkDescriptorPoolCreateInfo pool_create_info = {};
         pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

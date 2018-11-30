@@ -22,14 +22,16 @@ namespace nova {
     nova_renderer *nova_renderer::instance;
 
     nova_renderer::nova_renderer(const settings_options &settings) : render_settings(settings) {
+        task_scheduler.SetEmptyQueueBehavior(ftl::EmptyQueueBehavior::Yield);
+
         switch(settings.api) {
         case graphics_api::dx12:
             #if _WIN32
-            engine = std::make_unique<dx12_render_engine>(render_settings);
+            engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
             break;
             #endif
         case graphics_api::vulkan:
-            engine = std::make_unique<vulkan_render_engine>(render_settings);
+            engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler);
         }
 
         // TODO: Get window size from config
@@ -54,7 +56,7 @@ namespace nova {
             [&](ftl::TaskScheduler *task_scheduler, const std::string &shaderpack_name) {
                 const std::optional<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
                 if(shaderpack_data) {
-                    engine->set_shaderpack(*shaderpack_data, *task_scheduler);
+                    engine->set_shaderpack(*shaderpack_data);
 
                 } else {
                     NOVA_LOG(ERROR) << "Shaderpack " << shaderpack_name << " could not be loaded. Check the logs for more information";

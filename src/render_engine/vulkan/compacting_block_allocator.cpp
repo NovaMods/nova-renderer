@@ -226,7 +226,7 @@ namespace nova {
         void* write_ptr;
         vmaMapMemory(allocator, vma_allocation, &write_ptr);
 
-        uint32_t amount_compacted = 0;
+        VkDeviceSize amount_compacted = 0;
 
         block_t* current = nullptr;
         for(current = head; current != nullptr; current = current->next) {
@@ -241,11 +241,13 @@ namespace nova {
                     // The write and read pointers are different, which means that we need to move the current 
                     // allocation back to fill the empty space
 
-                    std::memcpy(write_ptr, write_ptr + amount_compacted, current->size);
+                    uint8_t* dst = reinterpret_cast<uint8_t*>(write_ptr) + amount_compacted;
+
+                    std::memcpy(write_ptr, dst, current->size);
                     current->offset -= amount_compacted;
                 }
 
-                write_ptr += current->size;
+                write_ptr = reinterpret_cast<uint8_t*>(write_ptr) + current->size;
             }
         }
 
@@ -264,11 +266,11 @@ namespace nova {
     }
 
     compacting_block_allocator::compacting_block_allocator(settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator, 
-		ftl::TaskScheduler* scheduler, const uint32_t graphics_queue_idx, const uint32_t copy_queue_idx) 
-          : pools_mutex(scheduler), settings(settings), vma_allocator(vma_allocator), scheduler(scheduler), graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
+		    ftl::TaskScheduler* scheduler, const uint32_t graphics_queue_idx, const uint32_t copy_queue_idx) 
+          : pools_mutex(scheduler), settings(settings), vma_allocator(vma_allocator), scheduler(scheduler), 
+            graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
 
-        const block_allocator_buffer new_buffer(settings.new_buffer_size, vma_allocator);
-        pools.push_back(new_buffer);
+        pools.emplace_back(block_allocator_buffer{settings.new_buffer_size, vma_allocator});
     }
 
     compacting_block_allocator::allocation_info* compacting_block_allocator::allocate(const VkDeviceSize size) {
@@ -282,9 +284,10 @@ namespace nova {
         }
 
         block_allocator_buffer new_buffer(settings.new_buffer_size, vma_allocator);
-        pools.push_back(new_buffer);
+        allocation_info* allocation = new_buffer.allocate(size);
+        pools.emplace_back(std::move(new_buffer));
 
-        return new_buffer.allocate(size);
+        return allocation;
     }
 
     void compacting_block_allocator::free(allocation_info* allocation) { 

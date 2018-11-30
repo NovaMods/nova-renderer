@@ -55,8 +55,9 @@ namespace nova {
         /*!
          * \brief Initializes DX12
          * \param settings The settings that may or may not influence initialization
+         * \param scheduler The task scheduler that this render engine should use
          */
-        explicit dx12_render_engine(const nova_settings &settings);
+        explicit dx12_render_engine(const nova_settings& settings, ftl::TaskScheduler* scheduler);
 
         static const std::string get_engine_name();
 
@@ -69,6 +70,10 @@ namespace nova {
         std::shared_ptr<iwindow> get_window() const override;
         
         void set_shaderpack(const shaderpack_data& data) override;
+
+        uint32_t add_mesh(const mesh_data&) override;
+
+        void delete_mesh(uint32_t) override;
 
         void render_frame() override;
 
@@ -164,7 +169,7 @@ namespace nova {
 
         void create_dynamic_textures(const std::vector<texture_resource_data> &texture_datas, std::vector<render_pass_data> passes);
 
-        void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler& scheduler);
+        void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler* scheduler);
        
         void make_single_pso(const pipeline_data& input, pipeline* output);
 
