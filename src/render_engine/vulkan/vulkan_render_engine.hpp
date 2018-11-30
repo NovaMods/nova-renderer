@@ -405,10 +405,11 @@ namespace nova {
          *
          * This method does not start any async tasks
          *
-         * This method does allocate a new command buffer, then submits it to the graphics queue. All rendering
-         * operations that need to happen for the provided pipeline happen
+         * This method does allocate a secondary command buffer, which is returned through the `cmds` out parameter. 
+         * Intended use case is to render the things for each pipeline in a separate fiber, but imma have to do a lot 
+         * of profiling to be sure
          */
-        void render_pipeline(const vk_pipeline* pipeline, const vk_render_pass* renderpass);
+        void render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds);
 
         /*!
          * \brief Binds all the resources that the provided material uses to the given pipeline

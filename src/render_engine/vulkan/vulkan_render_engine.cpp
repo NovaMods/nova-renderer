@@ -1029,31 +1029,16 @@ namespace nova {
     void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
 
-        const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
-
-        ftl::AtomicCounter pipelines_rendering_counter(scheduler);
-        for(const vk_pipeline& pipe : pipelines) {
-            scheduler->AddTask(&pipelines_rendering_counter,
-                [&](ftl::TaskScheduler* scheduler, const vk_pipeline* material_pass, const vk_render_pass* renderpass) { render_pipeline(material_pass, renderpass); }, pipe, renderpass);
-        }
-
-        scheduler->WaitForCounter(&pipelines_rendering_counter, 0);
-    }
-
-    void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, const vk_render_pass* renderpass) {
-        // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
-        // command pool for its thread, since command pools need to be externally synchronized
         const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
 
+        VkCommandBufferAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        alloc_info.commandPool = command_pool;
+        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        alloc_info.commandBufferCount = 1;
+
         VkCommandBuffer cmds;
-
-        VkCommandBufferAllocateInfo cmds_info = {};
-        cmds_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cmds_info.commandPool = command_pool;
-        cmds_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        cmds_info.commandBufferCount = 1;
-
-        vkAllocateCommandBuffers(device, &cmds_info, &cmds);
+        NOVA_THROW_IF_VK_ERROR(vkAllocateCommandBuffers(device, &alloc_info, &cmds), buffer_allocate_failed);
 
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1067,28 +1052,69 @@ namespace nova {
 
         VkRenderPassBeginInfo rp_begin_info = {};
         rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        rp_begin_info.renderPass = renderpass->pass;
-        rp_begin_info.framebuffer = renderpass->framebuffer;
-        rp_begin_info.renderArea = renderpass->render_area;
+        rp_begin_info.renderPass = renderpass.pass;
+        rp_begin_info.framebuffer = renderpass.framebuffer;
+        rp_begin_info.renderArea = renderpass.render_area;
         rp_begin_info.clearValueCount = 1;
         rp_begin_info.pClearValues = &clear_value;
 
         vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+
+        const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
+
+        const std::vector<VkCommandBuffer> secondary_command_buffers(pipelines.size());
+        
+        ftl::AtomicCounter pipelines_rendering_counter(scheduler);
+        uint32_t i = 0;
+        for(const vk_pipeline& pipe : pipelines) {
+            scheduler->AddTask(&pipelines_rendering_counter,
+                [&](ftl::TaskScheduler* scheduler, const vk_pipeline* material_pass, const vk_render_pass* renderpass, VkCommandBuffer* cmds) {
+                render_pipeline(material_pass, cmds);
+            }, pipe, secondary_command_buffers[i]);
+            i++;
+        }
+
+        scheduler->WaitForCounter(&pipelines_rendering_counter, 0);
+
+        vkCmdExecuteCommands(cmds, secondary_command_buffers.size(), secondary_command_buffers.data());
+
+        vkEndCommandBuffer(cmds);
+
+        submit_to_queue(cmds, graphics_queue);
+    }
+
+    void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds) {
+        // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
+        // command pool for its thread, since command pools need to be externally synchronized
+        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
+        
+        VkCommandBufferAllocateInfo cmds_info = {};
+        cmds_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        cmds_info.commandPool = command_pool;
+        cmds_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+        cmds_info.commandBufferCount = 1;
+
+        vkAllocateCommandBuffers(device, &cmds_info, cmds);
+
+        VkCommandBufferBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        // Start command buffer, start renderpass, and bind pipeline
+        vkBeginCommandBuffer(*cmds, &begin_info);
+
+        vkCmdBindPipeline(*cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
 
         // Record all the draws for a material
         // I'll worry about depth sorting later
         const std::vector<material_pass> materials = material_passes_by_pipeline.at(pipeline->data.name);
         for(const material_pass& pass : materials) {
-            bind_material_resources(pass, *pipeline, cmds);
+            bind_material_resources(pass, *pipeline, *cmds);
 
-            draw_all_for_material(pass, cmds);
+            draw_all_for_material(pass, *cmds);
         }
 
-        vkCmdEndRenderPass(cmds);
-        vkEndCommandBuffer(cmds);
-
-        submit_to_queue(cmds, graphics_queue);
+        vkEndCommandBuffer(*cmds);
     }
 
     void vulkan_render_engine::bind_material_resources(const material_pass& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
