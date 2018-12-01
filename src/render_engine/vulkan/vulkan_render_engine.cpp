@@ -804,7 +804,7 @@ namespace nova {
     }
 
     void vulkan_render_engine::upload_new_mesh_parts() {
-        scheduler->AddTask(nullptr, [&](ftl::TaskScheduler* task_scheduler) {
+        scheduler->AddTask(nullptr, [&](ftl::TaskScheduler* task_scheduler, uint* i) {
             VkCommandBuffer mesh_upload_cmds;
 
             VkCommandBufferAllocateInfo alloc_info = {};
@@ -880,7 +880,8 @@ namespace nova {
                     ftl::LockGuard l(mesh_staging_buffers_mutex);
                     mesh_staging_buffers.insert(mesh_staging_buffers.end(), buffers_to_free->begin(), buffers_to_free->end());
                 }, &freed_buffers);
-        });
+            },
+            &current_frame);
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
@@ -1068,9 +1069,9 @@ namespace nova {
         uint32_t i = 0;
         for(const vk_pipeline& pipe : pipelines) {
             scheduler->AddTask(&pipelines_rendering_counter,
-                [&](ftl::TaskScheduler* scheduler, const vk_pipeline* material_pass, const vk_render_pass* renderpass, VkCommandBuffer* cmds) {
-                render_pipeline(material_pass, cmds);
-            }, pipe, secondary_command_buffers[i]);
+                [&](ftl::TaskScheduler* scheduler, const vk_pipeline* material_pass, VkCommandBuffer* cmds) {
+                    render_pipeline(material_pass, cmds);
+                }, &pipe, secondary_command_buffers[i]);
             i++;
         }
 

@@ -177,8 +177,8 @@ if (UNIX)
 endif (UNIX)
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g -rdynamic")
-    set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g -rdynamic")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g -rdynamic -fdiagnostic-color=always")
+    set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g -rdynamic -fdiagnostic-color=always")
     message("Enabling symbol output")
 endif()
 
