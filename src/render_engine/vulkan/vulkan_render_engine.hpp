@@ -9,6 +9,7 @@
 #ifdef __linux__
 #define VK_USE_PLATFORM_XLIB_KHR  // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB 1
+#include "x11_window.hpp"
 #elif _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32 1
