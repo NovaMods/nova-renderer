@@ -873,7 +873,7 @@ namespace nova {
             vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, 0xffffffffffffffffL);
             vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
 
-            task_scheduler->AddTask(nullptr, [&](ftl::TaskScheduler* task_scheduler, std::vector<vk_buffer>* buffers_to_free) {
+            task_scheduler->AddTask(nullptr, [&](ftl::TaskScheduler* /*task_scheduler*/, std::vector<vk_buffer>* buffers_to_free) {
                     vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, 0xffffffffffffffffL);
 
                     // Once the upload is done, return all the staging buffers to the pool
