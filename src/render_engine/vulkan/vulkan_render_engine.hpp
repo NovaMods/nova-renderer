@@ -264,7 +264,7 @@ namespace nova {
          * \param framebuffer_attachments All the image views that will make up our framebuffer
          */
         void collect_framebuffer_information_from_texture(const std::string& attachment, const std::string& pass_name,
-			uint32_t& framebuffer_width, uint32_t& framebuffer_height, std::vector<VkImageView> framebuffer_attachments);
+			uint32_t& framebuffer_width, uint32_t& framebuffer_height, std::vector<VkImageView>& framebuffer_attachments);
 
         /*!
          * \brief Creates a Vulkan renderpass for every element in passes

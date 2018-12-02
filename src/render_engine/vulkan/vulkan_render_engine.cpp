@@ -513,7 +513,7 @@ namespace nova {
 
     void vulkan_render_engine::collect_framebuffer_information_from_texture(const std::string& attachment_name, 
 			const std::string& pass_name, uint32_t& framebuffer_width, uint32_t& framebuffer_height, 
-			std::vector<VkImageView> framebuffer_attachments) {
+			std::vector<VkImageView>& framebuffer_attachments) {
         const vk_texture& attachment_tex = textures.at(attachment_name);
         framebuffer_attachments.push_back(attachment_tex.image_view);
 
@@ -578,6 +578,7 @@ namespace nova {
             render_pass_create_info.dependencyCount = 1;
             render_pass_create_info.pDependencies = &image_available_dependency;
 
+			std::vector<VkAttachmentReference> attachment_references;
 			std::vector<VkAttachmentDescription> attachments;
             std::vector<VkImageView> framebuffer_attachments;
             uint32_t framebuffer_width = 0;
@@ -604,6 +605,11 @@ namespace nova {
 
 					attachments.push_back(desc);
 
+					VkAttachmentReference ref = {};
+					ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+					ref.attachment = attachments.size() - 1;
+					attachment_references.push_back(ref);
+
                     break;
 
                 } else {
@@ -623,6 +629,11 @@ namespace nova {
 					desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 					attachments.push_back(desc);
+
+					VkAttachmentReference ref = {};
+					ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+					ref.attachment = attachments.size() - 1;
+					attachment_references.push_back(ref);
                 }
             }
 
@@ -669,6 +680,9 @@ namespace nova {
                                 << physical_device_properties.limits.maxColorAttachments
                                 << ". Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures";
             }
+
+			subpass_description.colorAttachmentCount = attachment_references.size();
+			subpass_description.pColorAttachments = attachment_references.data();
 
 			render_pass_create_info.attachmentCount = attachments.size();
 			render_pass_create_info.pAttachments = attachments.data();
@@ -799,8 +813,8 @@ namespace nova {
             VkViewport viewport;
             viewport.x = 0;
             viewport.y = 0;
-            viewport.width = swapchain_extent.width;
-            viewport.height = swapchain_extent.height;
+            viewport.width = static_cast<float>(swapchain_extent.width);
+            viewport.height = static_cast<float>(swapchain_extent.height);
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
 
@@ -952,7 +966,7 @@ namespace nova {
                     mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
                     mesh_draw_command.instanceCount = 1;
                     mesh_draw_command.firstIndex = 0;
-                    mesh_draw_command.vertexOffset = mem->offset;
+                    mesh_draw_command.vertexOffset = static_cast<uint32_t>(mem->offset);
                     mesh_draw_command.firstInstance = 0;
 
                     meshes[cmd.mesh_id] = {mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command};

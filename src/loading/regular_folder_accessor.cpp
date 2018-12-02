@@ -71,6 +71,7 @@ namespace nova {
     }
 
     bool regular_folder_accessor::does_resource_exist_internal(const fs::path &resource_path) {
+		NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
         const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
