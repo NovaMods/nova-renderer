@@ -104,9 +104,7 @@ namespace nova {
         ~vulkan_render_engine() override;
 
         void render_frame() override;
-
-        void open_window(uint32_t width, uint32_t height) override;
-
+        
         std::shared_ptr<iwindow> get_window() const override;
 
         void set_shaderpack(const shaderpack_data& data) override;
@@ -176,11 +174,15 @@ namespace nova {
 #pragma endregion
 
 #pragma region Init
+    protected:
+        void open_window(uint32_t width, uint32_t height) override;
+
+    private:
         static bool does_device_support_extensions(VkPhysicalDevice device);
         static VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR>& available);
         static VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR>& available);
         VkExtent2D choose_swapchain_extend() const;
-
+        
         void create_device();
         void create_memory_allocator();
         void create_swapchain();

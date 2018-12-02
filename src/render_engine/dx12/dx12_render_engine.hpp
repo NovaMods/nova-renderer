@@ -65,8 +65,6 @@ namespace nova {
          * render_engine overrides
          */
 
-        void open_window(uint32_t width, uint32_t height) override;
-
         std::shared_ptr<iwindow> get_window() const override;
         
         void set_shaderpack(const shaderpack_data& data) override;
@@ -142,6 +140,11 @@ namespace nova {
         void create_device();
 
         void create_rtv_command_queue();
+
+    protected:
+        void open_window(uint32_t width, uint32_t height) override;
+
+    private:
 
         /*!
          * \brief Creates the swapchain from the size of the window

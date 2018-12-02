@@ -72,13 +72,6 @@ namespace nova {
          */
         virtual ~render_engine() = default;
 
-        /*!
-         * \brief Initializes the window with the given size, and creates the swapchain for that window
-         * \param width The width, in pixels, of the desired window
-         * \param height The height, in pixels of the desired window
-         */
-        virtual void open_window(uint32_t width, uint32_t height) = 0;
-
         virtual std::shared_ptr<iwindow> get_window() const = 0;
 
         /*!
@@ -123,6 +116,13 @@ namespace nova {
          * \attention Called by nova
          */
         explicit render_engine(const nova_settings& settings, ftl::TaskScheduler* scheduler) : scheduler(scheduler){};
+
+        /*!
+         * \brief Initializes the window with the given size, and creates the swapchain for that window
+         * \param width The width, in pixels, of the desired window
+         * \param height The height, in pixels of the desired window
+         */
+        virtual void open_window(uint32_t width, uint32_t height) = 0;
 
         ftl::TaskScheduler* scheduler;
     };

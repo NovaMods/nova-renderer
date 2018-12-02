@@ -34,8 +34,6 @@ namespace nova {
             engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler);
         }
 
-        // TODO: Get window size from config
-        engine->open_window(200, 200);
         NOVA_LOG(DEBUG) << "Opened window";
     }
 
