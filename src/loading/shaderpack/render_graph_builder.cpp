@@ -153,35 +153,17 @@ namespace nova {
             add_dependent_passes(dependency, passes, ordered_passes, resource_to_write_pass, depth + 1);
         }
 
-        if(pass.texture_inputs) {
-            const input_textures& all_inputs = pass.texture_inputs.value();
-            for(const auto& texture_name : all_inputs.bound_textures) {
-                if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
-                    // TODO: Ignore the implicitly defined resources
-                    NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";
+        for(const auto& texture_name : pass.texture_inputs) {
+            if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
+                // TODO: Ignore the implicitly defined resources
+                NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";
 
-                } else {
-                    const auto& write_passes = resource_to_write_pass.at(texture_name);
-                    ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
+            } else {
+                const auto& write_passes = resource_to_write_pass.at(texture_name);
+                ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
 
-                    for(const auto& write_pass : write_passes) {
-                        add_dependent_passes(write_pass, passes, ordered_passes, resource_to_write_pass, depth + 1);
-                    }
-                }
-            }
-
-            for(const auto& texture_name : all_inputs.color_attachments) {
-                if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
-                    // TODO: Ignore the implicitly defined resources
-                    NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from texture " << texture_name << ", but no pass writes to it";
-
-                } else {
-                    const auto& write_passes = resource_to_write_pass.at(texture_name);
-                    ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
-
-                    for(const auto& write_pass : write_passes) {
-                        add_dependent_passes(write_pass, passes, ordered_passes, resource_to_write_pass, depth + 1);
-                    }
+                for(const auto& write_pass : write_passes) {
+                    add_dependent_passes(write_pass, passes, ordered_passes, resource_to_write_pass, depth + 1);
                 }
             }
         }
@@ -204,40 +186,21 @@ namespace nova {
     void determine_usage_order_of_textures(const std::vector<render_pass_data>& passes, std::unordered_map<std::string, range>& resource_used_range, std::vector<std::string>& resources_in_order) {
         uint32_t pass_idx = 0;
         for(const auto& pass : passes) {
-            if(pass.texture_inputs) {
-                const input_textures& all_inputs = pass.texture_inputs.value();
-                // color attachments
-                for(const auto& input : all_inputs.color_attachments) {
-                    auto& tex_range = resource_used_range[input];
+             // color attachments
+             for(const auto& input : pass.texture_inputs) {
+                 auto& tex_range = resource_used_range[input];
 
-                    if(pass_idx < tex_range.first_write_pass) {
-                        tex_range.first_write_pass = pass_idx;
+                 if(pass_idx < tex_range.first_write_pass) {
+                     tex_range.first_write_pass = pass_idx;
 
-                    } else if(pass_idx > tex_range.last_write_pass) {
-                        tex_range.last_write_pass = pass_idx;
-                    }
+                 } else if(pass_idx > tex_range.last_write_pass) {
+                     tex_range.last_write_pass = pass_idx;
+                 }
 
-                    if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
-                        resources_in_order.push_back(input);
-                    }
-                }
-
-                // shader-only textures
-                for(const auto& input : all_inputs.bound_textures) {
-                    auto& tex_range = resource_used_range[input];
-
-                    if(pass_idx < tex_range.first_write_pass) {
-                        tex_range.first_write_pass = pass_idx;
-
-                    } else if(pass_idx > tex_range.last_write_pass) {
-                        tex_range.last_write_pass = pass_idx;
-                    }
-
-                    if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
-                        resources_in_order.push_back(input);
-                    }
-                }
-            }
+                 if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
+                     resources_in_order.push_back(input);
+                 }
+             }
 
             if(!pass.texture_outputs.empty()) {
                 for(const auto& output : pass.texture_outputs) {

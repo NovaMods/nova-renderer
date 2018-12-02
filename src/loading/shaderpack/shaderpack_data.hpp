@@ -475,22 +475,6 @@ namespace nova {
     };
 
     /*!
-     * \brief Holds all the lists of textures that this pass needs as input
-     */
-    struct input_textures {
-        /*!
-         * \brief The textures that are bound to a pipeline that a shader may access anywhere. May be any size
-         */
-        std::vector<std::string> bound_textures;
-
-        /*!
-         * \brief The textures bound to this pass as color attachments. These may only be sampled at the current pixel
-         * and must be the same size as the output textures
-         */
-        std::vector<std::string> color_attachments;
-    };
-
-    /*!
      * \brief A pass over the scene
      *
      * A pass has a few things:
@@ -511,7 +495,7 @@ namespace nova {
      */
     struct render_pass_data {
         /*!
-         * \brief The name of thie render pass
+         * \brief The name of this render pass
          */
         std::string name;
 
@@ -523,7 +507,7 @@ namespace nova {
         /*!
          * \brief The textures that this pass will read from
          */
-        std::optional<input_textures> texture_inputs;
+        std::vector<std::string> texture_inputs;
         /*!
          * \brief The textures that this pass will write to
          */

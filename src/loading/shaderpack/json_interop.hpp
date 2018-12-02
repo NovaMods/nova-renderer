@@ -19,8 +19,6 @@ namespace nova {
 
     void from_json(const nlohmann::json &j, texture_attachment &tex);
 
-    void from_json(const nlohmann::json &j, input_textures &inputs);
-
     void from_json(const nlohmann::json &j, pipeline_data &pipeline);
 
     void from_json(const nlohmann::json &j, stencil_op_state &stencil_op);

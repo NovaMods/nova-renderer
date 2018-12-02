@@ -366,10 +366,8 @@ namespace nova {
     }
 
     VkExtent2D vulkan_render_engine::choose_swapchain_extend() const {
-        VkExtent2D extend;
-        extend.width = window->get_window_size().width;
-        extend.height = window->get_window_size().height;
-        return extend;
+        const glm::uvec2 window_size = window->get_window_size();
+        return {window_size.x, window_size.y};
     }
 
     void vulkan_render_engine::create_swapchain_image_views() {
@@ -405,7 +403,7 @@ namespace nova {
             destroy_render_passes();
             destroy_graphics_pipelines();
             materials.clear();
-            destroy_dynamic_textures();
+            destroy_dynamic_resources();
 
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
         }
@@ -514,9 +512,9 @@ namespace nova {
 
     bool vk_resource_binding::operator!=(const vk_resource_binding& other) const { return !(*this == other); }
 
-    void vulkan_render_engine::collect_framebuffer_information(
+    void vulkan_render_engine::collect_framebuffer_information_from_texture(
         const std::string& attachment_name, const std::string& pass_name, uint32_t& framebuffer_width, uint32_t& framebuffer_height, std::vector<VkImageView> framebuffer_attachments) {
-        const vk_texture& attachment_tex = dynamic_textures.at(attachment_name);
+        const vk_texture& attachment_tex = textures.at(attachment_name);
         framebuffer_attachments.push_back(attachment_tex.image_view);
 
         const glm::uvec2 attachment_size = attachment_tex.data.format.get_size_in_pixels(window->get_window_size());
@@ -584,32 +582,24 @@ namespace nova {
             uint32_t framebuffer_width = 0;
             uint32_t framebuffer_height = 0;
 
-            // Collect framebuffer size information from color input attachments
-            std::optional<input_textures> inputs_maybe = pass.data.texture_inputs;
-            if(inputs_maybe) {
-                std::vector<std::string>& color_attachment_names = inputs_maybe->color_attachments;
-                auto [attachments, references] = to_vk_attachment_info(color_attachment_names);
-
-                subpass_description.colorAttachmentCount = static_cast<uint32_t>(references.size());
-                subpass_description.pColorAttachments = references.data();
-
-                render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-                render_pass_create_info.pAttachments = attachments.data();
-
-                for(const std::string& attachment_name : color_attachment_names) {
-                    collect_framebuffer_information(attachment_name, pass.data.name, framebuffer_width, framebuffer_height, framebuffer_attachments);
-                }
-            }
-
+            bool writes_to_backbuffer = false;
             // Collect framebuffer size information from color output attachments
             for(const texture_attachment& attachment : pass.data.texture_outputs) {
-                collect_framebuffer_information(attachment.name, pass.data.name, framebuffer_width, framebuffer_height, framebuffer_attachments);
-            }
+                if(attachment.name == "Backbuffer") {
+                    // Handle backbuffer
+                    // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip everything
+                    writes_to_backbuffer = true;
+                    break;
 
+                } else {
+                    collect_framebuffer_information_from_texture(attachment.name, pass.data.name, framebuffer_width, framebuffer_height, framebuffer_attachments);
+                }
+            }
+            
             // Collect framebuffer size information from the depth attachment
             if(pass.data.depth_texture) {
                 std::vector<VkImageView> dummy_vector_so_depth_tex_isnt_an_attachment;
-                collect_framebuffer_information(pass.data.depth_texture->name, pass.data.name, framebuffer_width, framebuffer_height, dummy_vector_so_depth_tex_isnt_an_attachment);
+                collect_framebuffer_information_from_texture(pass.data.depth_texture->name, pass.data.name, framebuffer_width, framebuffer_height, dummy_vector_so_depth_tex_isnt_an_attachment);
             }
 
             if(framebuffer_width == 0) {
@@ -626,27 +616,37 @@ namespace nova {
 
             if(framebuffer_attachments.size() > physical_device_properties.limits.maxColorAttachments) {
                 NOVA_LOG(ERROR) << "Framebuffer for pass " << pass.data.name << " has " << framebuffer_attachments.size() << " color attachments, but your GPU only supports "
-                                << physical_device_properties.limits.maxColorAttachments << ". Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures";
+                                << physical_device_properties.limits.maxColorAttachments
+                                << ". Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures";
             }
 
-            VkRenderPass render_pass;
-            NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_pass), render_engine_initialization_exception);
-            render_passes[pass_name].pass = render_pass;
+            NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_passes[pass_name].pass), render_engine_initialization_exception);
 
-            VkFramebufferCreateInfo framebuffer_create_info = {};
-            framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebuffer_create_info.renderPass = render_pass;
-            framebuffer_create_info.attachmentCount = static_cast<uint32_t>(framebuffer_attachments.size());
-            framebuffer_create_info.pAttachments = framebuffer_attachments.data();
-            framebuffer_create_info.width = framebuffer_width;
-            framebuffer_create_info.height = framebuffer_height;
-            framebuffer_create_info.layers = 1;
+            if(writes_to_backbuffer) {
+                if(pass.data.texture_outputs.size() > 1) {
+                    NOVA_LOG(ERROR) << "Pass " << pass.data.name
+                                    << " writes to the backbuffer, and other textures. Passes that write to the backbuffer are not allowed to write to any other textures";
+                }
 
-            NOVA_LOG(TRACE) << "Creating framebuffer with size (" << framebuffer_width << ", " << framebuffer_height << ")";
+                render_passes[pass_name].framebuffer = VK_NULL_HANDLE;
 
-            VkFramebuffer framebuffer;
-            NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer), render_engine_initialization_exception);
-            render_passes[pass_name].framebuffer = framebuffer;
+            } else {
+                VkFramebufferCreateInfo framebuffer_create_info = {};
+                framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+                framebuffer_create_info.renderPass = render_passes[pass_name].pass;
+                framebuffer_create_info.attachmentCount = static_cast<uint32_t>(framebuffer_attachments.size());
+                framebuffer_create_info.pAttachments = framebuffer_attachments.data();
+                framebuffer_create_info.width = framebuffer_width;
+                framebuffer_create_info.height = framebuffer_height;
+                framebuffer_create_info.layers = 1;
+
+                NOVA_LOG(TRACE) << "Creating framebuffer with size (" << framebuffer_width << ", " << framebuffer_height << ")";
+
+                VkFramebuffer framebuffer;
+                NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer), render_engine_initialization_exception);
+                render_passes[pass_name].framebuffer = framebuffer;
+            }
+
             render_passes[pass_name].render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
         }
     }
@@ -1030,7 +1030,7 @@ namespace nova {
         attachment_references.reserve(attachment_names.size());
 
         for(const std::string& name : attachment_names) {
-            const vk_texture& tex = dynamic_textures.at(name);
+            const vk_texture& tex = textures.at(name);
 
             VkAttachmentDescription color_attachment;
             color_attachment.flags = 0;
@@ -1070,13 +1070,31 @@ namespace nova {
         pipelines.clear();
     }
 
-    void vulkan_render_engine::destroy_dynamic_textures() {
-        for(const auto& [tex_name, tex] : dynamic_textures) {
-            vkDestroyImageView(device, tex.image_view, nullptr);
-            vmaDestroyImage(vma_allocator, tex.image, tex.allocation);
+    void vulkan_render_engine::destroy_dynamic_resources() {
+        for(auto itr = std::begin(textures); itr != std::end(textures);) {
+            const vk_texture& tex = itr->second;
+            if(tex.is_dynamic) {
+                vkDestroyImageView(device, tex.image_view, nullptr);
+                vmaDestroyImage(vma_allocator, tex.image, tex.allocation);
+
+                itr = textures.erase(itr);
+
+            } else {
+                ++itr;
+            }
         }
 
-        dynamic_textures.clear();
+        for(auto itr = std::begin(buffers); itr != std::end(buffers);) {
+            const vk_buffer& buf = itr->second;
+            if(buf.is_dynamic) {
+                vmaDestroyBuffer(vma_allocator, buf.buffer, buf.allocation);
+
+                itr = buffers.erase(itr);
+
+            } else {
+                ++itr;
+            }
+        }
     }
 
     void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
@@ -1178,7 +1196,7 @@ namespace nova {
 
             const vk_resource_binding binding = pipeline.bindings.at(descriptor_name);
 
-            if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
+            if(textures.find(resource_name) != textures.end()) {
                 vkCmdBindDescriptorSets(
                     cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, binding.set, static_cast<uint32_t>(pass.descriptor_sets.size()), pass.descriptor_sets.data(), 0, nullptr);
             }
@@ -1308,6 +1326,7 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_textures(const std::vector<texture_resource_data>& texture_datas) {
+        const glm::uvec2 swapchain_extent_glm = {swapchain_extent.width, swapchain_extent.height};
         for(const texture_resource_data& texture_data : texture_datas) {
             vk_texture texture;
             texture.data = texture_data;
@@ -1316,7 +1335,7 @@ namespace nova {
             image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             image_create_info.imageType = VK_IMAGE_TYPE_2D;
             image_create_info.format = to_vk_format(texture_data.format.pixel_format);
-            const glm::uvec2 texture_size = texture_data.format.get_size_in_pixels(swapchain_extent);
+            const glm::uvec2 texture_size = texture_data.format.get_size_in_pixels(swapchain_extent_glm);
             image_create_info.extent.width = texture_size.x;
             image_create_info.extent.height = texture_size.y;
             image_create_info.extent.depth = 1;
@@ -1352,7 +1371,7 @@ namespace nova {
 
             vkCreateImageView(device, &image_view_create_info, nullptr, &texture.image_view);
 
-            dynamic_textures[texture_data.name] = texture;
+            textures[texture_data.name] = texture;
         }
     }
 
@@ -1508,20 +1527,12 @@ namespace nova {
             write.descriptorCount = 1;
             write.dstArrayElement = 0;
 
-            if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
-                const vk_texture& texture = dynamic_textures.at(resource_name);
+            if(textures.find(resource_name) != textures.end()) {
+                const vk_texture& texture = textures.at(resource_name);
                 write_texture_to_descriptor(texture, write, image_infos);
 
-            } else if(builtin_textures.find(resource_name) != builtin_textures.end()) {
-                const vk_texture& texture = builtin_textures.at(resource_name);
-                write_texture_to_descriptor(texture, write, image_infos);
-
-            } else if(dynamic_buffers.find(resource_name) != dynamic_buffers.end()) {
-                const vk_buffer& buffer = dynamic_buffers.at(resource_name);
-                write_buffer_to_descriptor(buffer, write, buffer_infos);
-
-            } else if(builtin_buffers.find(resource_name) != builtin_buffers.end()) {
-                const vk_buffer& buffer = builtin_buffers.at(resource_name);
+            } else if(buffers.find(resource_name) != buffers.end()) {
+                const vk_buffer& buffer = buffers.at(resource_name);
                 write_buffer_to_descriptor(buffer, write, buffer_infos);
 
             } else {

@@ -31,17 +31,12 @@ namespace nova {
 
     void from_json(const nlohmann::json &j, render_pass_data &pass) {
         pass.dependencies = get_json_array<std::string>(j, "dependencies");
-        pass.texture_inputs = get_json_value<input_textures>(j, "textureInputs", input_textures{});
+        pass.texture_inputs = get_json_array<std::string>(j, "textureInputs");
         pass.texture_outputs = get_json_array<texture_attachment>(j, "textureOutputs");
         pass.depth_texture = get_json_value<texture_attachment>(j, "depthTexture", texture_attachment{});
         pass.input_buffers = get_json_array<std::string>(j, "inputBuffers");
         pass.output_buffers = get_json_array<std::string>(j, "outputBuffers");
         pass.name = get_json_value<std::string>(j, "name", "<NAME_MISSING>");
-    }
-
-    void from_json(const nlohmann::json &j, input_textures &inputs) {
-        inputs.bound_textures = get_json_array<std::string>(j, "boundTextures");
-        inputs.color_attachments = get_json_array<std::string>(j, "colorAttachments");
     }
 
     void from_json(const nlohmann::json &j, stencil_op_state &stencil_op) {

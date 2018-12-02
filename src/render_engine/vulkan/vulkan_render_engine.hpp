@@ -50,6 +50,12 @@ namespace nova {
 
     struct vk_render_pass {
         VkRenderPass pass = VK_NULL_HANDLE;
+
+        /*!
+         * \brief The framebuffer to use for this render pass
+         * 
+         * If this is VK_NULL_HANDLE, we should use the backbuffer's framebuffer
+         */
         VkFramebuffer framebuffer = VK_NULL_HANDLE;
         render_pass_data data;
         VkRect2D render_area;
@@ -73,6 +79,8 @@ namespace nova {
 
         VmaAllocation allocation;
         VmaAllocationInfo vma_info;
+
+        bool is_dynamic;
     };
 
     struct vk_buffer {
@@ -80,6 +88,8 @@ namespace nova {
 
         VmaAllocation allocation;
         VmaAllocationInfo alloc_info;
+
+        bool is_dynamic;
     };
 
     struct mesh_staging_buffer_upload_command {
@@ -210,8 +220,8 @@ namespace nova {
 
         std::unordered_map<std::string, vk_pipeline> pipelines;
 
-        std::unordered_map<std::string, vk_texture> dynamic_textures;
-        std::unordered_map<std::string, vk_buffer> dynamic_buffers;
+        std::unordered_map<std::string, vk_texture> textures;
+        std::unordered_map<std::string, vk_buffer> buffers;
 
         std::unordered_map<std::string, material_data> materials;
 
@@ -252,7 +262,7 @@ namespace nova {
          * that the height of the attachment with the given name is the same as framebuffer_height
          * \param framebuffer_attachments All the image views that will make up our framebuffer
          */
-        void collect_framebuffer_information(const std::string& attachment, const std::string& pass_name, uint32_t& framebuffer_width, uint32_t& framebuffer_height, std::vector<VkImageView> framebuffer_attachments);
+        void collect_framebuffer_information_from_texture(const std::string& attachment, const std::string& pass_name, uint32_t& framebuffer_width, uint32_t& framebuffer_height, std::vector<VkImageView> framebuffer_attachments);
 
         /*!
          * \brief Creates a Vulkan renderpass for every element in passes
@@ -341,7 +351,7 @@ namespace nova {
         /*!
          * \brief Destroys all the textures in `dynamic_textures`
          */
-        void destroy_dynamic_textures();
+        void destroy_dynamic_resources();
 #pragma endregion
 
 #pragma region Mesh
@@ -411,9 +421,6 @@ namespace nova {
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
         std::unordered_map<std::string, std::unordered_map<VkBuffer, std::vector<render_object>>> renderables_by_material;
-
-        std::unordered_map<std::string, vk_texture> builtin_textures;
-        std::unordered_map<std::string, vk_buffer> builtin_buffers;
 
         /*!
          * \brief Performs all tasks necessary to render this renderpass
