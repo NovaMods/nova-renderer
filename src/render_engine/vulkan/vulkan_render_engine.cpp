@@ -482,10 +482,9 @@ namespace nova {
             [&](ftl::TaskScheduler* scheduler, const mesh_data* input_mesh, ftl::Fibtex* mesh_upload_queue_mutex, std::queue<mesh_staging_buffer_upload_command>* mesh_upload_queue) {
                 const uint32_t vertex_size = input_mesh->vertex_data.size() * sizeof(full_vertex);
                 const uint32_t index_size = input_mesh->indices.size() * sizeof(uint32_t);
-                const uint32_t model_matrix_size = sizeof(glm::mat4);
 
                 // TODO: Make the extra memory allocation configurable
-                const uint32_t total_memory_needed = (vertex_size + index_size + model_matrix_size) * 1.1;  // Extra size so chunks can grow
+                const uint32_t total_memory_needed = std::round((vertex_size + index_size) * 1.1);  // Extra size so chunks can grow
 
                 vk_buffer staging_buffer = get_or_allocate_mesh_staging_buffer(total_memory_needed);
                 std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh->vertex_data[0], vertex_size);
@@ -512,8 +511,9 @@ namespace nova {
 
     bool vk_resource_binding::operator!=(const vk_resource_binding& other) const { return !(*this == other); }
 
-    void vulkan_render_engine::collect_framebuffer_information_from_texture(
-        const std::string& attachment_name, const std::string& pass_name, uint32_t& framebuffer_width, uint32_t& framebuffer_height, std::vector<VkImageView> framebuffer_attachments) {
+    void vulkan_render_engine::collect_framebuffer_information_from_texture(const std::string& attachment_name, 
+			const std::string& pass_name, uint32_t& framebuffer_width, uint32_t& framebuffer_height, 
+			std::vector<VkImageView> framebuffer_attachments) {
         const vk_texture& attachment_tex = textures.at(attachment_name);
         framebuffer_attachments.push_back(attachment_tex.image_view);
 
@@ -578,6 +578,7 @@ namespace nova {
             render_pass_create_info.dependencyCount = 1;
             render_pass_create_info.pDependencies = &image_available_dependency;
 
+			std::vector<VkAttachmentDescription> attachments;
             std::vector<VkImageView> framebuffer_attachments;
             uint32_t framebuffer_width = 0;
             uint32_t framebuffer_height = 0;
@@ -589,17 +590,66 @@ namespace nova {
                     // Handle backbuffer
                     // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip everything
                     writes_to_backbuffer = true;
+
+					VkAttachmentDescription desc = {};
+					desc.flags = 0;
+					desc.format = swapchain_format;
+					desc.samples = VK_SAMPLE_COUNT_1_BIT;
+					desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+					desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+					desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+					desc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+					attachments.push_back(desc);
+
                     break;
 
                 } else {
-                    collect_framebuffer_information_from_texture(attachment.name, pass.data.name, framebuffer_width, framebuffer_height, framebuffer_attachments);
+                    collect_framebuffer_information_from_texture(attachment.name, pass.data.name, framebuffer_width, 
+						framebuffer_height, framebuffer_attachments);
+
+					const vk_texture& tex = textures.at(attachment.name);
+					VkAttachmentDescription desc = {};
+					desc.flags = 0;
+					desc.format = tex.format;
+					desc.samples = VK_SAMPLE_COUNT_1_BIT;
+					desc.loadOp = attachment.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+					desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+					desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+					desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+					attachments.push_back(desc);
                 }
             }
-            
+
+			VkAttachmentReference depth_reference = {};
             // Collect framebuffer size information from the depth attachment
             if(pass.data.depth_texture) {
                 std::vector<VkImageView> dummy_vector_so_depth_tex_isnt_an_attachment;
-                collect_framebuffer_information_from_texture(pass.data.depth_texture->name, pass.data.name, framebuffer_width, framebuffer_height, dummy_vector_so_depth_tex_isnt_an_attachment);
+                collect_framebuffer_information_from_texture(pass.data.depth_texture->name, pass.data.name, framebuffer_width, 
+					framebuffer_height, dummy_vector_so_depth_tex_isnt_an_attachment);
+
+				const vk_texture& tex = textures.at(pass.data.depth_texture->name);
+				VkAttachmentDescription desc = {};
+				desc.flags = 0;
+				desc.format = tex.format;
+				desc.samples = VK_SAMPLE_COUNT_1_BIT;
+				desc.loadOp = pass.data.depth_texture->clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+				desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+				desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+				attachments.push_back(desc);
+
+				depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				depth_reference.attachment = attachments.size() - 1;
+				subpass_description.pDepthStencilAttachment = &depth_reference;
             }
 
             if(framebuffer_width == 0) {
@@ -619,6 +669,9 @@ namespace nova {
                                 << physical_device_properties.limits.maxColorAttachments
                                 << ". Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures";
             }
+
+			render_pass_create_info.attachmentCount = attachments.size();
+			render_pass_create_info.pAttachments = attachments.data();
 
             NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_passes[pass_name].pass), render_engine_initialization_exception);
 
@@ -1330,11 +1383,12 @@ namespace nova {
         for(const texture_resource_data& texture_data : texture_datas) {
             vk_texture texture;
             texture.data = texture_data;
+			texture.format = to_vk_format(texture_data.format.pixel_format);
 
             VkImageCreateInfo image_create_info = {};
             image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             image_create_info.imageType = VK_IMAGE_TYPE_2D;
-            image_create_info.format = to_vk_format(texture_data.format.pixel_format);
+			image_create_info.format = texture.format;
             const glm::uvec2 texture_size = texture_data.format.get_size_in_pixels(swapchain_extent_glm);
             image_create_info.extent.width = texture_size.x;
             image_create_info.extent.height = texture_size.y;
