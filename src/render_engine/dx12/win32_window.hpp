@@ -18,14 +18,9 @@
 #include <windows.h>
 
 // C RunTime Header Files
-#include <cstdlib>
-#include <malloc.h>
-#include <memory.h>
 #include <tchar.h>
 
-#include <d3d12.h>
 #include <dxgi1_2.h>
-#include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <glm/glm.hpp>
 
@@ -48,7 +43,7 @@ namespace nova {
 
         bool should_close() const override;
 
-        window_size get_window_size() const override;
+        glm::uvec2 get_window_size() const override;
 
         /*
          * End platform-agnostic window interface
@@ -63,7 +58,7 @@ namespace nova {
 
         bool window_should_close;
 
-        window_size size;
+        glm::uvec2 size;
 
         /*!
          * \brief Registers Nova's window class

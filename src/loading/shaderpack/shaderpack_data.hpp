@@ -401,7 +401,7 @@ namespace nova {
          */
         float height;
 
-        glm::uvec2 get_size_in_pixels(const VkExtent2D &screen_size) const;
+        glm::uvec2 get_size_in_pixels(const glm::uvec2& screen_size) const;
 
         bool operator==(const texture_format &other) const;
         bool operator!=(const texture_format &other) const;

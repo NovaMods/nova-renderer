@@ -18,7 +18,7 @@
 #include "SPIRV/GlslangToSpv.h"
 
 namespace nova {
-    folder_accessor_base *get_shaderpack_accessor(const fs::path &shaderpack_name);
+    folder_accessor_base* get_shaderpack_accessor(const fs::path& shaderpack_name, ftl::TaskScheduler* scheduler);
 
     void load_dynamic_resources_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, shaderpack_data* output);
     void load_passes_file(ftl::TaskScheduler *task_scheduler, folder_accessor_base *folder_access, shaderpack_data* output);
@@ -33,7 +33,7 @@ namespace nova {
 
     std::optional<shaderpack_data> load_shaderpack_data(const fs::path &shaderpack_name, ftl::TaskScheduler &task_scheduler) {
         loading_failed = false;
-        folder_accessor_base *folder_access = get_shaderpack_accessor(shaderpack_name);
+        folder_accessor_base *folder_access = get_shaderpack_accessor(shaderpack_name, &task_scheduler);
 
         // The shaderpack has a number of items: There's the shaders themselves, of course, but there's so, so much more
         // What else is there?
@@ -76,7 +76,7 @@ namespace nova {
         }
     }
 
-    folder_accessor_base *get_shaderpack_accessor(const fs::path &shaderpack_name) {
+    folder_accessor_base *get_shaderpack_accessor(const fs::path &shaderpack_name, ftl::TaskScheduler* scheduler) {
         folder_accessor_base *folder_access = nullptr;
         fs::path path_to_shaderpack = shaderpack_name;
 
@@ -84,11 +84,11 @@ namespace nova {
         if(is_zip_folder(path_to_shaderpack)) {
             // zip folder in shaderpacks folder
             path_to_shaderpack.replace_extension(".zip");
-            folder_access = new zip_folder_accessor(path_to_shaderpack);
+            folder_access = new zip_folder_accessor(path_to_shaderpack, scheduler);
 
         } else if(fs::exists(path_to_shaderpack)) {
             // regular folder in shaderpacks folder
-            folder_access = new regular_folder_accessor(path_to_shaderpack);
+            folder_access = new regular_folder_accessor(path_to_shaderpack, scheduler);
 
         } else {
             path_to_shaderpack = shaderpack_name;
@@ -96,10 +96,10 @@ namespace nova {
             if(is_zip_folder(path_to_shaderpack)) {
                 // zip folder in the resourcepacks folder
                 path_to_shaderpack.replace_extension(".zip");
-                folder_access = new zip_folder_accessor(path_to_shaderpack);
+                folder_access = new zip_folder_accessor(path_to_shaderpack, scheduler);
 
             } else if(fs::exists(path_to_shaderpack)) {
-                folder_access = new regular_folder_accessor(path_to_shaderpack);
+                folder_access = new regular_folder_accessor(path_to_shaderpack, scheduler);
             }
         }
 

@@ -22,13 +22,13 @@ namespace nova {
         return !(*this == other);
     }
 
-    glm::uvec2 texture_format::get_size_in_pixels(const VkExtent2D& screen_size) const {
+    glm::uvec2 texture_format::get_size_in_pixels(const glm::uvec2& screen_size) const {
         float pixel_width = width;
         float pixel_height = height;
 
         if(dimension_type == texture_dimension_type_enum::ScreenRelative) {
-            pixel_width *= screen_size.width;
-            pixel_height *= screen_size.height;
+            pixel_width *= screen_size.x;
+            pixel_height *= screen_size.y;
         }
 
         return {std::round(pixel_width), std::round(pixel_height)};

@@ -16,10 +16,6 @@ namespace nova {
      */
     class iwindow {
     public:
-        struct window_size {
-            uint32_t width;
-            uint32_t height;
-        };
 
         /*!
          * \brief Handles what should happen when the frame is done. This includes telling the operating system that
@@ -40,7 +36,7 @@ namespace nova {
          *
          * \return The current size of the window
          */
-        virtual window_size get_window_size() const = 0;
+        virtual glm::uvec2 get_window_size() const = 0;
     };
 }  // namespace nova
 
