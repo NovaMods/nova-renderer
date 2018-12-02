@@ -8,7 +8,7 @@
 #include "../util/utils.hpp"
 
 namespace nova {
-    zip_folder_accessor::zip_folder_accessor(const fs::path &folder) : folder_accessor_base(folder), files(new file_tree_node) {
+    zip_folder_accessor::zip_folder_accessor(const fs::path& folder, ftl::TaskScheduler* scheduler) : folder_accessor_base(folder, scheduler), files(new file_tree_node) {
         const auto folder_string = folder.string();
 
         if(!mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0)) {

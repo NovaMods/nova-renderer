@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <optional>
 #include "../util/utils.hpp"
+#include "ftl/fibtex.h"
 
 #if _WIN32
     #if _MSC_VER <= 1915
@@ -55,14 +56,18 @@ namespace nova {
         /*!
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
+         * \param scheduler The task scheduler to create mutexes with
          */
-        explicit folder_accessor_base(const fs::path &folder);
+        folder_accessor_base(fs::path folder, ftl::TaskScheduler* scheduler);
 
-        // Else freeing could cause errors
-        virtual ~folder_accessor_base() {};
+        virtual ~folder_accessor_base() = default;
 
         /*!
          * \brief Checks if the given resource exists
+         * 
+         * This function locks resource_existence_mutex, so any methods which are called by this - 
+         * does_resource_exist_internal and does_resource_exist_in_map - MUST not try to lock resource_existence_mutex
+         * 
          * \param resource_path The path to the resource you want to know the existence of, relative to this
          * resourcepack's root
          * \return True if the resource exists, false if it does not
@@ -103,6 +108,8 @@ namespace nova {
          * call!
          */
         std::unordered_map<std::string, bool> resource_existence;
+
+        ftl::Fibtex resource_existence_mutex;
 
         std::optional<bool> does_resource_exist_in_map(const std::string &resource_string) const;
 
