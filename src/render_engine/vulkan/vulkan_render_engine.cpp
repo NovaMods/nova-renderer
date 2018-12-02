@@ -93,7 +93,7 @@ namespace nova {
 #endif
 
         create_memory_allocator();
-        mesh_memory = new compacting_block_allocator(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
+        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }

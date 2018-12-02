@@ -265,7 +265,7 @@ namespace nova {
         }
     }
 
-    compacting_block_allocator::compacting_block_allocator(settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator, 
+    compacting_block_allocator::compacting_block_allocator(settings_options::block_allocator_settings settings, VmaAllocator vma_allocator, 
 		    ftl::TaskScheduler* scheduler, const uint32_t graphics_queue_idx, const uint32_t copy_queue_idx) 
           : pools_mutex(scheduler), settings(settings), vma_allocator(vma_allocator), scheduler(scheduler), 
             graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
@@ -290,7 +290,49 @@ namespace nova {
         return allocation;
     }
 
-    void compacting_block_allocator::free(allocation_info* allocation) { 
+    void compacting_block_allocator::free(allocation_info* allocation) {
+        ftl::LockGuard l(pools_mutex);
         allocation->block->free(allocation);
+    }
+
+    void compacting_block_allocator::add_barriers_before_data_upload(VkCommandBuffer cmds) const {
+        std::vector<VkBufferMemoryBarrier> barriers;
+        barriers.reserve(pools.size());
+        for(const block_allocator_buffer& pool : pools) {
+            VkBufferMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            barrier.srcAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.srcQueueFamilyIndex = graphics_queue_idx;
+            barrier.dstQueueFamilyIndex = copy_queue_idx;
+            barrier.buffer = pool.buffer;
+            barrier.offset = 0;
+            barrier.size = settings.new_buffer_size;
+
+            barriers.push_back(barrier);
+        }
+
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, pools.size(), barriers.data(), 0, nullptr);
+    }
+
+    void compacting_block_allocator::add_barriers_after_data_upload(VkCommandBuffer cmds) const {
+        std::vector<VkBufferMemoryBarrier> barriers;
+        barriers.reserve(pools.size());
+        for(const block_allocator_buffer& pool : pools) {
+            VkBufferMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+            barrier.srcQueueFamilyIndex = copy_queue_idx;
+            barrier.dstQueueFamilyIndex = graphics_queue_idx;
+            barrier.buffer = pool.buffer;
+            barrier.offset = 0;
+            barrier.size = settings.new_buffer_size;
+
+            barriers.push_back(barrier);
+        }
+
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, pools.size(), barriers.data(), 0, nullptr);
+
     }
 }  // namespace nova
