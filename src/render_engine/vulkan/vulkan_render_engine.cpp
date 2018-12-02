@@ -154,10 +154,9 @@ namespace nova {
         for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
             graphics_family_idx = 0xFFFFFFFF;
             const VkPhysicalDevice current_device = physical_devices[device_idx];
-            VkPhysicalDeviceProperties properties;
-            vkGetPhysicalDeviceProperties(current_device, &properties);
+            vkGetPhysicalDeviceProperties(current_device, &physical_device_properties);
 
-            if(properties.vendorID == 0x8086 && device_count - 1 > device_idx) {  // Intel GPU... they are not powerful and we have more available, so skip it
+            if(physical_device_properties.vendorID == 0x8086 && device_count - 1 > device_idx) {  // Intel GPU... they are not powerful and we have more available, so skip it
                 continue;
             }
 
@@ -197,7 +196,7 @@ namespace nova {
             delete[] family_properties;
 
             if(graphics_family_idx != 0xFFFFFFFF) {
-                NOVA_LOG(INFO) << "Selected GPU " << properties.deviceName;
+                NOVA_LOG(INFO) << "Selected GPU " << physical_device_properties.deviceName;
                 chosen_device = current_device;
                 break;
             }
@@ -515,6 +514,30 @@ namespace nova {
 
     bool vk_resource_binding::operator!=(const vk_resource_binding& other) const { return !(*this == other); }
 
+    void vulkan_render_engine::collect_framebuffer_information(
+        const std::string& attachment_name, const std::string& pass_name, uint32_t& framebuffer_width, uint32_t& framebuffer_height, std::vector<VkImageView> framebuffer_attachments) {
+        const vk_texture& attachment_tex = dynamic_textures.at(attachment_name);
+        framebuffer_attachments.push_back(attachment_tex.image_view);
+
+        const glm::uvec2 attachment_size = attachment_tex.data.format.get_size_in_pixels(window->get_window_size());
+
+        if(framebuffer_width == 0) {
+            framebuffer_width = attachment_size.x;
+
+        } else if(attachment_size.x != framebuffer_width) {
+            NOVA_LOG(ERROR) << "Texture " << attachment_name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
+                            << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
+        }
+
+        if(framebuffer_height == 0) {
+            framebuffer_height = attachment_size.y;
+
+        } else if(attachment_size.y != framebuffer_height) {
+            NOVA_LOG(ERROR) << "Texture " << attachment_name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
+                            << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
+        }
+    }
+
     void vulkan_render_engine::create_render_passes(const std::vector<render_pass_data>& passes) {
         NOVA_LOG(DEBUG) << "Flattening frame graph...";
 
@@ -574,69 +597,19 @@ namespace nova {
                 render_pass_create_info.pAttachments = attachments.data();
 
                 for(const std::string& attachment_name : color_attachment_names) {
-                    const vk_texture& attachment_tex = dynamic_textures.at(attachment_name);
-                    framebuffer_attachments.push_back(attachment_tex.image_view);
-
-                    glm::uvec2 attachment_size = attachment_tex.data.format.get_size_in_pixels(window->get_window_size());
-
-                    if(framebuffer_width == 0) {
-                        framebuffer_width = attachment_tex.data.format.width;
-
-                    } else if(attachment_tex.data.format.width != framebuffer_width) {
-                        NOVA_LOG(ERROR) << "Texture " << attachment_name << " used by renderpass " << pass_name << " has a width of " << attachment_tex.data.format.width
-                                        << ", but the framebuffer has a width of " << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
-                    }
-
-                    if(framebuffer_height == 0) {
-                        framebuffer_height = attachment_tex.data.format.height;
-
-                    } else if(attachment_tex.data.format.height != framebuffer_height) {
-                        NOVA_LOG(ERROR) << "Texture " << attachment_name << " used by renderpass " << pass_name << " has a height of " << attachment_tex.data.format.height
-                                        << ", but the framebuffer has a height of " << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
-                    }
+                    collect_framebuffer_information(attachment_name, pass.data.name, framebuffer_width, framebuffer_height, framebuffer_attachments);
                 }
             }
 
             // Collect framebuffer size information from color output attachments
             for(const texture_attachment& attachment : pass.data.texture_outputs) {
-                const vk_texture& attachment_tex = dynamic_textures.at(attachment.name);
-                framebuffer_attachments.push_back(attachment_tex.image_view);
-                if(framebuffer_width == 0) {
-                    framebuffer_width = attachment_tex.data.format.width;
-
-                } else if(attachment_tex.data.format.width != framebuffer_width) {
-                    NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a width of " << attachment_tex.data.format.width
-                                    << ", but the framebuffer has a width of " << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
-                }
-
-                if(framebuffer_height == 0) {
-                    framebuffer_height = attachment_tex.data.format.height;
-
-                } else if(attachment_tex.data.format.height != framebuffer_height) {
-                    NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a height of " << attachment_tex.data.format.height
-                                    << ", but the framebuffer has a height of " << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
-                }
+                collect_framebuffer_information(attachment.name, pass.data.name, framebuffer_width, framebuffer_height, framebuffer_attachments);
             }
 
             // Collect framebuffer size information from the depth attachment
             if(pass.data.depth_texture) {
-                const vk_texture& attachment_tex = dynamic_textures.at(pass.data.depth_texture->name);
-                framebuffer_attachments.push_back(attachment_tex.image_view);
-                if(framebuffer_width == 0) {
-                    framebuffer_width = attachment_tex.data.format.width;
-
-                } else if(attachment_tex.data.format.width != framebuffer_width) {
-                    NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a width of " << attachment_tex.data.format.width
-                                    << ", but the framebuffer has a width of " << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
-                }
-
-                if(framebuffer_height == 0) {
-                    framebuffer_height = attachment_tex.data.format.height;
-
-                } else if(attachment_tex.data.format.height != framebuffer_height) {
-                    NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a height of " << attachment_tex.data.format.height
-                                    << ", but the framebuffer has a height of " << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
-                }
+                std::vector<VkImageView> dummy_vector_so_depth_tex_isnt_an_attachment;
+                collect_framebuffer_information(pass.data.depth_texture->name, pass.data.name, framebuffer_width, framebuffer_height, dummy_vector_so_depth_tex_isnt_an_attachment);
             }
 
             if(framebuffer_width == 0) {
@@ -649,6 +622,11 @@ namespace nova {
                 NOVA_LOG(ERROR)
                     << "Framebuffer height for pass " << pass.data.name
                     << " is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero height";
+            }
+
+            if(framebuffer_attachments.size() > physical_device_properties.limits.maxColorAttachments) {
+                NOVA_LOG(ERROR) << "Framebuffer for pass " << pass.data.name << " has " << framebuffer_attachments.size() << " color attachments, but your GPU only supports "
+                                << physical_device_properties.limits.maxColorAttachments << ". Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures";
             }
 
             VkRenderPass render_pass;

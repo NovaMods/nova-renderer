@@ -130,6 +130,7 @@ namespace nova {
 
         VkSurfaceKHR surface;
         VkPhysicalDevice physical_device;
+        VkPhysicalDeviceProperties physical_device_properties;
         VkDevice device;
 
         VmaAllocator vma_allocator;
@@ -235,6 +236,23 @@ namespace nova {
          * \param resource The resource to maybe add to `bindings
          */
         static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource);
+
+        /*!
+         * \brief If `framebuffer_width` and `framebuffer_height` are 0, sets them to the size of the attachment with 
+         * the given name. If they are not zero, validates that the size of the attachment with the given name is the 
+         * same as the framebuffer size
+         * 
+         * \param attachment The name of the attachment to get information from and validate
+         * \param pass_name The name of the render pass that we're creating a framebuffer for
+         * \param framebuffer_width The width of the framebuffer. If 0 is passed in, framebuffer_width will be set to 
+         * the width of the attachment with the given name. If a non-zero number is passed in, this method will check 
+         * that the width of the attachment with the given name is the same as framebuffer_width
+         * \param framebuffer_height The width of the framebuffer. If 0 is passed in, framebuffer_height will be set to 
+         * the height of the attachment with the given name. If a non-zero number is passed in, this method will check 
+         * that the height of the attachment with the given name is the same as framebuffer_height
+         * \param framebuffer_attachments All the image views that will make up our framebuffer
+         */
+        void collect_framebuffer_information(const std::string& attachment, const std::string& pass_name, uint32_t& framebuffer_width, uint32_t& framebuffer_height, std::vector<VkImageView> framebuffer_attachments);
 
         /*!
          * \brief Creates a Vulkan renderpass for every element in passes
