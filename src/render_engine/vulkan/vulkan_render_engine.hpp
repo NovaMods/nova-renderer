@@ -57,6 +57,8 @@ namespace nova {
 
     struct vk_pipeline {
         VkPipeline pipeline = VK_NULL_HANDLE;
+        VkPipelineLayout layout = VK_NULL_HANDLE;
+
         std::unordered_map<uint32_t, VkDescriptorSetLayout> layouts;
         pipeline_data data;
 
@@ -335,7 +337,7 @@ namespace nova {
         std::queue<mesh_staging_buffer_upload_command> mesh_upload_queue;
         ftl::Fibtex mesh_upload_queue_mutex;
         VkFence mesh_rendering_done;
-        VkEvent upload_to_megamesh_buffer_done;
+        VkFence upload_to_megamesh_buffer_done;
 
         // Might need to make 64-bit keys eventually, but in 2018 it's not a concern
         std::unordered_map<uint32_t, vk_mesh> meshes;

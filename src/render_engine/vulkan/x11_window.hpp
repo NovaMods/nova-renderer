@@ -22,7 +22,7 @@ namespace nova {
 
     public:
         explicit x11_window(uint32_t width, uint32_t height);
-        ~x11_window();
+        virtual ~x11_window();
 
         Window &get_x11_window();
         Display *get_display();

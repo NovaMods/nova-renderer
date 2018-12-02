@@ -18,6 +18,10 @@
 #include "vulkan_type_converters.hpp"
 #include "vulkan_utils.hpp"
 
+#ifdef __linux__
+#include <execinfo.h>
+#endif
+
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler)
         : render_engine(settings, task_scheduler),
@@ -89,7 +93,7 @@ namespace nova {
 #endif
 
         create_memory_allocator();
-        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
+        mesh_memory = new compacting_block_allocator(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -590,7 +594,7 @@ namespace nova {
             VkFramebufferCreateInfo framebuffer_create_info = {};
             framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebuffer_create_info.renderPass = render_pass;
-            framebuffer_create_info.attachmentCount = framebuffer_attachments.size();
+            framebuffer_create_info.attachmentCount = static_cast<uint32_t>(framebuffer_attachments.size());
             framebuffer_create_info.pAttachments = framebuffer_attachments.data();
             framebuffer_create_info.width = framebuffer_width;
             framebuffer_create_info.height = framebuffer_height;
@@ -599,7 +603,7 @@ namespace nova {
             VkFramebuffer framebuffer;
             vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer);
             render_passes[pass_name].framebuffer = framebuffer;
-            render_passes[pass_name].render_area = {0, 0, framebuffer_width, framebuffer_height};
+            render_passes[pass_name].render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
         }
     }
 
@@ -647,13 +651,14 @@ namespace nova {
             pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipeline_layout_create_info.pNext = nullptr;
             pipeline_layout_create_info.flags = 0;
-            pipeline_layout_create_info.setLayoutCount = layout_data.size();
+            pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(layout_data.size());
             pipeline_layout_create_info.pSetLayouts = layout_data.data();
             pipeline_layout_create_info.pushConstantRangeCount = 0;
             pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
             VkPipelineLayout layout;
             NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout), render_engine_initialization_exception);
+            nova_pipeline.layout = layout;
 
             for(const auto& pair : shader_modules) {
                 VkPipelineShaderStageCreateInfo shader_stage_create_info;
@@ -675,9 +680,9 @@ namespace nova {
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertex_input_state_create_info.pNext = nullptr;
             vertex_input_state_create_info.flags = 0;
-            vertex_input_state_create_info.vertexBindingDescriptionCount = vertex_binding_descriptions.size();
+            vertex_input_state_create_info.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_binding_descriptions.size());
             vertex_input_state_create_info.pVertexBindingDescriptions = vertex_binding_descriptions.data();
-            vertex_input_state_create_info.vertexAttributeDescriptionCount = vertex_attribute_descriptions.size();
+            vertex_input_state_create_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_attribute_descriptions.size());
             vertex_input_state_create_info.pVertexAttributeDescriptions = vertex_attribute_descriptions.data();
 
             VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info;
@@ -915,10 +920,10 @@ namespace nova {
             size = backtrace(array, 10);
 
             // print out all the frames to stderr
-            LOG(ERROR) << "Stacktrace: ";
+            NOVA_LOG(ERROR) << "Stacktrace: ";
             char** data = backtrace_symbols(array, size);
             for(int i = 0; i < size; i++) {
-                LOG(ERROR) << "\t" << data[i];
+                NOVA_LOG(ERROR) << "\t" << data[i];
             }
             free(data);
         }
@@ -1030,7 +1035,7 @@ namespace nova {
     void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
 
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1063,7 +1068,7 @@ namespace nova {
 
         const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
 
-        const std::vector<VkCommandBuffer> secondary_command_buffers(pipelines.size());
+        std::vector<VkCommandBuffer> secondary_command_buffers(pipelines.size());
         
         ftl::AtomicCounter pipelines_rendering_counter(scheduler);
         uint32_t i = 0;
@@ -1071,13 +1076,13 @@ namespace nova {
             scheduler->AddTask(&pipelines_rendering_counter,
                 [&](ftl::TaskScheduler* scheduler, const vk_pipeline* material_pass, VkCommandBuffer* cmds) {
                     render_pipeline(material_pass, cmds);
-                }, &pipe, secondary_command_buffers[i]);
+                }, &pipe, &secondary_command_buffers[i]);
             i++;
         }
 
         scheduler->WaitForCounter(&pipelines_rendering_counter, 0);
 
-        vkCmdExecuteCommands(cmds, secondary_command_buffers.size(), secondary_command_buffers.data());
+        vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
 
         vkEndCommandBuffer(cmds);
 
@@ -1129,8 +1134,7 @@ namespace nova {
             const vk_resource_binding binding = pipeline.bindings.at(descriptor_name);
 
             if(dynamic_textures.find(resource_name) != dynamic_textures.end()) {
-                const vk_texture& resource = dynamic_textures.at(resource_name);
-                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layouts.at(binding.set), binding.set, pass.descriptor_sets.size(), pass.descriptor_sets.data(), 0, nullptr);
+                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, binding.set, static_cast<uint32_t>(pass.descriptor_sets.size()), pass.descriptor_sets.data(), 0, nullptr);
             }
         }
     }
