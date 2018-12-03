@@ -883,7 +883,7 @@ namespace nova {
             color_blend_create_info.blendConstants[2] = 0.0f;
             color_blend_create_info.blendConstants[3] = 0.0f;
 
-            VkGraphicsPipelineCreateInfo pipeline_create_info;
+            VkGraphicsPipelineCreateInfo pipeline_create_info = {};
             pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
             pipeline_create_info.pNext = nullptr;
             pipeline_create_info.flags = 0;
