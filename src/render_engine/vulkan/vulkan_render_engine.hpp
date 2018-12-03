@@ -245,8 +245,10 @@ namespace nova {
          * \param bindings The map of bindings to ass data to
          * \param shader_compiler The compiler used for the shader that the resource came from
          * \param resource The resource to maybe add to `bindings
+         * \param type The type of this resource
          */
-        static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource);
+        static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, 
+			const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, VkDescriptorType type);
 
         /*!
          * \brief If `framebuffer_width` and `framebuffer_height` are 0, sets them to the size of the attachment with 

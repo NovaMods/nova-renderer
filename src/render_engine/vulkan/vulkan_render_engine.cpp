@@ -1451,15 +1451,15 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::add_resource_to_bindings(
-        std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource) {
+    void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
+			const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, const VkDescriptorType type) {
         const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
         vk_resource_binding new_binding = {};
         new_binding.set = set;
         new_binding.binding = binding;
-        new_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        new_binding.descriptorType = type;
         new_binding.descriptorCount = 1;
 
         if(bindings.find(resource.name) == bindings.end()) {
@@ -1481,11 +1481,11 @@ namespace nova {
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const spirv_cross::Resource& resource : resources.sampled_images) {
-            add_resource_to_bindings(bindings, shader_compiler, resource);
+            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
 
         for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
-            add_resource_to_bindings(bindings, shader_compiler, resource);
+            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
     }
 
