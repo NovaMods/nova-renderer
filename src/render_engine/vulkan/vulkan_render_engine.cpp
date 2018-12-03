@@ -610,6 +610,9 @@ namespace nova {
 					ref.attachment = attachments.size() - 1;
 					attachment_references.push_back(ref);
 
+					framebuffer_width = swapchain_extent.width;
+					framebuffer_height = swapchain_extent.height;
+
                     break;
 
                 } else {
@@ -640,9 +643,8 @@ namespace nova {
 			VkAttachmentReference depth_reference = {};
             // Collect framebuffer size information from the depth attachment
             if(pass.data.depth_texture) {
-                std::vector<VkImageView> dummy_vector_so_depth_tex_isnt_an_attachment;
                 collect_framebuffer_information_from_texture(pass.data.depth_texture->name, pass.data.name, framebuffer_width, 
-					framebuffer_height, dummy_vector_so_depth_tex_isnt_an_attachment);
+					framebuffer_height, framebuffer_attachments);
 
 				const vk_texture& tex = textures.at(pass.data.depth_texture->name);
 				VkAttachmentDescription desc = {};

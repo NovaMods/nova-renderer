@@ -33,7 +33,7 @@ namespace nova {
         pass.dependencies = get_json_array<std::string>(j, "dependencies");
         pass.texture_inputs = get_json_array<std::string>(j, "textureInputs");
         pass.texture_outputs = get_json_array<texture_attachment>(j, "textureOutputs");
-        pass.depth_texture = get_json_value<texture_attachment>(j, "depthTexture", texture_attachment{});
+        pass.depth_texture = get_json_value<texture_attachment>(j, "depthTexture");
         pass.input_buffers = get_json_array<std::string>(j, "inputBuffers");
         pass.output_buffers = get_json_array<std::string>(j, "outputBuffers");
         pass.name = get_json_value<std::string>(j, "name", "<NAME_MISSING>");
