@@ -3,6 +3,7 @@
 
 #include "../../platform.hpp"
 #include "../window.hpp"
+#include <vulkan/vulkan_core.h>
 
 #if SUPPORT_DX12
 

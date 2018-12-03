@@ -517,7 +517,7 @@ namespace nova {
         const vk_texture& attachment_tex = textures.at(attachment_name);
         framebuffer_attachments.push_back(attachment_tex.image_view);
 
-        const glm::uvec2 attachment_size = attachment_tex.data.format.get_size_in_pixels(window->get_window_size());
+		const glm::uvec2 attachment_size = attachment_tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
 
         if(framebuffer_width == 0) {
             framebuffer_width = attachment_size.x;
@@ -1412,7 +1412,13 @@ namespace nova {
             image_create_info.mipLevels = 1;
             image_create_info.arrayLayers = 1;
             image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
-            image_create_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+			if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
+				image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+			} else {
+				image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+			}
             image_create_info.queueFamilyIndexCount = 1;
             image_create_info.pQueueFamilyIndices = &graphics_queue_index;
             image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;

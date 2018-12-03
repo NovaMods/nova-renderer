@@ -150,6 +150,9 @@ namespace nova {
         std::vector<VkSemaphore> image_available_semaphores;
         std::vector<VkFence> submit_fences;
 
+		std::unordered_map<std::string, vk_texture> textures;
+		std::unordered_map<std::string, vk_buffer> buffers;
+
         VkSampler point_sampler;
 
         /*!
@@ -220,10 +223,7 @@ namespace nova {
         std::vector<std::string> render_passes_by_order;
 
         std::unordered_map<std::string, vk_pipeline> pipelines;
-
-        std::unordered_map<std::string, vk_texture> textures;
-        std::unordered_map<std::string, vk_buffer> buffers;
-
+		
         std::unordered_map<std::string, material_data> materials;
 
         /*!
