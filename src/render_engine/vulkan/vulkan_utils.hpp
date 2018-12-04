@@ -39,6 +39,9 @@ namespace nova::vulkan {
     std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
 }  // namespace nova::vulkan
 
+
+// Only validate errors in debug mode
+// Release mode needs to be fast A F 
 #ifndef NDEBUG
 #define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                                                                                        \
     do {                                                                                                                                                                                               \

@@ -99,6 +99,7 @@ namespace nova {
 		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+		frame_fences.resize(MAX_FRAMES_IN_QUEUE);
 		for(uint32_t i = 0; i < frame_fences.size(); i++) {
 			NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]), render_engine_initialization_exception);
 		}
