@@ -206,6 +206,8 @@ namespace nova {
         void create_memory_allocator();
         void create_swapchain();
         void create_swapchain_image_views();
+
+		void create_global_sync_objects();
 #pragma endregion
 
 #pragma region Swapchain

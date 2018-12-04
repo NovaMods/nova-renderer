@@ -95,14 +95,7 @@ namespace nova {
         create_memory_allocator();
         mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
 
-		VkFenceCreateInfo fence_info = {};
-		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-		frame_fences.resize(MAX_FRAMES_IN_QUEUE);
-		for(uint32_t i = 0; i < frame_fences.size(); i++) {
-			NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]), render_engine_initialization_exception);
-		}
+		create_global_sync_objects();
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -405,6 +398,25 @@ namespace nova {
 
         NOVA_LOG(TRACE) << "Created swapchain image views";
     }
+
+	void vulkan_render_engine::create_global_sync_objects() {
+		VkFenceCreateInfo fence_info = {};
+		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		VkSemaphoreCreateInfo semaphore_info = {};
+		semaphore_info.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
+
+		frame_fences.resize(MAX_FRAMES_IN_QUEUE);
+		image_available_semaphores.resize(MAX_FRAMES_IN_QUEUE);
+		render_finished_semaphores.resize(MAX_FRAMES_IN_QUEUE);
+
+		for(uint32_t i = 0; i < MAX_FRAMES_IN_QUEUE; i++) {
+			NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]), render_engine_initialization_exception);
+			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &render_finished_semaphores[i]), render_engine_initialization_exception);
+			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]), render_engine_initialization_exception);
+		}
+	}
 
     void vulkan_render_engine::set_shaderpack(const shaderpack_data& data) {
         NOVA_LOG(DEBUG) << "Vulkan render engine loading new shaderpack";
