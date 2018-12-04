@@ -736,25 +736,25 @@ namespace nova {
 
             if(data.geometry_shader) {
                 NOVA_LOG(TRACE) << "Compiling geometry module";
-                shader_modules[VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT] = create_shader_module(data.geometry_shader->source);
+                shader_modules[VK_SHADER_STAGE_GEOMETRY_BIT] = create_shader_module(data.geometry_shader->source);
                 get_shader_module_descriptors(data.geometry_shader->source, bindings);
             }
 
             if(data.tessellation_control_shader) {
                 NOVA_LOG(TRACE) << "Compiling tessellation_control module";
-                shader_modules[VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT] = create_shader_module(data.tessellation_control_shader->source);
+                shader_modules[VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT] = create_shader_module(data.tessellation_control_shader->source);
                 get_shader_module_descriptors(data.tessellation_control_shader->source, bindings);
             }
 
             if(data.tessellation_evaluation_shader) {
                 NOVA_LOG(TRACE) << "Compiling tessellation_evaluation module";
-                shader_modules[VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT] = create_shader_module(data.tessellation_evaluation_shader->source);
+                shader_modules[VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT] = create_shader_module(data.tessellation_evaluation_shader->source);
                 get_shader_module_descriptors(data.tessellation_evaluation_shader->source, bindings);
             }
 
             if(data.fragment_shader) {
                 NOVA_LOG(TRACE) << "Compiling fragment module";
-                shader_modules[VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT] = create_shader_module(data.fragment_shader->source);
+                shader_modules[VK_SHADER_STAGE_FRAGMENT_BIT] = create_shader_module(data.fragment_shader->source);
                 get_shader_module_descriptors(data.fragment_shader->source, bindings);
             }
 
@@ -773,13 +773,13 @@ namespace nova {
             NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout), render_engine_initialization_exception);
             nova_pipeline.layout = layout;
 
-            for(const auto& pair : shader_modules) {
+            for(const auto& [stage, shader_module]: shader_modules) {
                 VkPipelineShaderStageCreateInfo shader_stage_create_info;
                 shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 shader_stage_create_info.pNext = nullptr;
                 shader_stage_create_info.flags = 0;
-                shader_stage_create_info.stage = static_cast<VkShaderStageFlagBits>(pair.first);
-                shader_stage_create_info.module = pair.second;
+                shader_stage_create_info.stage = static_cast<VkShaderStageFlagBits>(stage);
+                shader_stage_create_info.module = shader_module;
                 shader_stage_create_info.pName = "main";
                 shader_stage_create_info.pSpecializationInfo = nullptr;
 
