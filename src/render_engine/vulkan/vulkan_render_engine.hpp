@@ -148,7 +148,7 @@ namespace nova {
 
         std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
-        std::vector<VkFence> submit_fences;
+        std::vector<VkFence> frame_fences;
 
 		std::unordered_map<std::string, vk_texture> textures;
 		std::unordered_map<std::string, vk_buffer> buffers;

@@ -94,6 +94,14 @@ namespace nova {
         open_window(settings.get_options().window.width, settings.get_options().window.height);
         create_memory_allocator();
         mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
+
+		VkFenceCreateInfo fence_info = {};
+		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		for(uint32_t i = 0; i < frame_fences.size(); i++) {
+			NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]), render_engine_initialization_exception);
+		}
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -1074,7 +1082,7 @@ namespace nova {
     std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }
 
     void vulkan_render_engine::render_frame() {
-        vkWaitForFences(device, 1, &submit_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
+        vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
 
         const auto acquire_result =
             vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphores.at(current_frame), VK_NULL_HANDLE, &current_swapchain_index);
@@ -1085,7 +1093,7 @@ namespace nova {
             throw render_engine_rendering_exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " + vulkan::vulkan_utils::vk_result_to_string(acquire_result));
         }
 
-        vkResetFences(device, 1, &submit_fences.at(current_frame));
+        vkResetFences(device, 1, &frame_fences.at(current_frame));
 
         // RECORD COMMAND BUFFERS WHOOOOOOOOOOOOOOOOOOOOOOOOOOO
         shaderpack_loading_mutex.lock();
@@ -1095,6 +1103,7 @@ namespace nova {
         }
         shaderpack_loading_mutex.unlock();
 
+		scheduler->WaitForCounter(&render_tasks_counter, 0);
         vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
         vkResetFences(device, 1, &mesh_rendering_done);
         // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has
@@ -1352,7 +1361,7 @@ namespace nova {
         submit_info.pCommandBuffers = &cmds;
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_frame);
-        NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, submit_fences.at(current_frame)), render_engine_rendering_exception);
+        NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, frame_fences.at(current_frame)), render_engine_rendering_exception);
     }
 
     VkFormat vulkan_render_engine::to_vk_format(const pixel_format_enum format) {

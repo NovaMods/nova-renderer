@@ -39,6 +39,7 @@ namespace nova::vulkan {
     std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
 }  // namespace nova::vulkan
 
+#ifndef NDEBUG
 #define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                                                                                        \
     do {                                                                                                                                                                                               \
         VkResult val = (expr);                                                                                                                                                                         \
@@ -46,5 +47,7 @@ namespace nova::vulkan {
             throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " + ::nova::vulkan::vulkan_utils::vk_result_to_string(val));                                                  \
         }                                                                                                                                                                                              \
     } while(false);
-
+#else 
+#define NOVA_THROW_IF_VK_ERROR(expr, exception) expr
+#endif
 #endif  // NOVA_RENDERER_VULKAN_UTILS_HPP
