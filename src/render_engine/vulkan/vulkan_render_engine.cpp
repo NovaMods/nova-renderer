@@ -860,14 +860,38 @@ namespace nova {
             multisample_create_info.alphaToCoverageEnable = VK_FALSE;
             multisample_create_info.alphaToOneEnable = VK_FALSE;
 
+			VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
+			depth_stencil_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+			depth_stencil_create_info.depthTestEnable = std::find(data.states.begin(), data.states.end(), state_enum::DisableDepthTest) == data.states.end();
+			depth_stencil_create_info.depthWriteEnable = std::find(data.states.begin(), data.states.end(), state_enum::DisableDepthWrite) == data.states.end();
+			depth_stencil_create_info.depthCompareOp = vulkan::type_converters::to_compare_op(data.depth_func);
+			depth_stencil_create_info.depthBoundsTestEnable = VK_FALSE;
+			depth_stencil_create_info.stencilTestEnable = std::find(data.states.begin(), data.states.end(), state_enum::EnableStencilTest) != data.states.end();
+			if(data.front_face) {
+				depth_stencil_create_info.front.failOp = vulkan::type_converters::to_stencil_op(data.front_face->fail_op);
+				depth_stencil_create_info.front.passOp = vulkan::type_converters::to_stencil_op(data.front_face->pass_op);
+				depth_stencil_create_info.front.depthFailOp = vulkan::type_converters::to_stencil_op(data.front_face->depth_fail_op);
+				depth_stencil_create_info.front.compareOp = vulkan::type_converters::to_compare_op(data.front_face->compare_op);
+				depth_stencil_create_info.front.compareMask = data.front_face->compare_mask;
+				depth_stencil_create_info.front.writeMask = data.front_face->write_mask;
+			}
+			if(data.back_face) {
+				depth_stencil_create_info.back.failOp = vulkan::type_converters::to_stencil_op(data.back_face->fail_op);
+				depth_stencil_create_info.back.passOp = vulkan::type_converters::to_stencil_op(data.back_face->pass_op);
+				depth_stencil_create_info.back.depthFailOp = vulkan::type_converters::to_stencil_op(data.back_face->depth_fail_op);
+				depth_stencil_create_info.back.compareOp = vulkan::type_converters::to_compare_op(data.back_face->compare_op);
+				depth_stencil_create_info.back.compareMask = data.back_face->compare_mask;
+				depth_stencil_create_info.back.writeMask = data.back_face->write_mask;
+			}
+
             VkPipelineColorBlendAttachmentState color_blend_attachment;
             color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             color_blend_attachment.blendEnable = VK_TRUE;
-            color_blend_attachment.srcColorBlendFactor = vulkan::type_converters::blend_factor(data.source_blend_factor);
-            color_blend_attachment.dstColorBlendFactor = vulkan::type_converters::blend_factor(data.destination_blend_factor);
+            color_blend_attachment.srcColorBlendFactor = vulkan::type_converters::to_blend_factor(data.source_blend_factor);
+            color_blend_attachment.dstColorBlendFactor = vulkan::type_converters::to_blend_factor(data.destination_blend_factor);
             color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD;
-            color_blend_attachment.srcAlphaBlendFactor = vulkan::type_converters::blend_factor(data.alpha_src);
-            color_blend_attachment.dstAlphaBlendFactor = vulkan::type_converters::blend_factor(data.alpha_dst);
+            color_blend_attachment.srcAlphaBlendFactor = vulkan::type_converters::to_blend_factor(data.alpha_src);
+            color_blend_attachment.dstAlphaBlendFactor = vulkan::type_converters::to_blend_factor(data.alpha_dst);
             color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo color_blend_create_info;
@@ -894,7 +918,7 @@ namespace nova {
             pipeline_create_info.pViewportState = &viewport_state_create_info;
             pipeline_create_info.pRasterizationState = &rasterizer_create_info;
             pipeline_create_info.pMultisampleState = &multisample_create_info;
-            pipeline_create_info.pDepthStencilState = nullptr;
+            pipeline_create_info.pDepthStencilState = &depth_stencil_create_info;
             pipeline_create_info.pColorBlendState = &color_blend_create_info;
             pipeline_create_info.pDynamicState = nullptr;
             pipeline_create_info.layout = layout;
