@@ -26,7 +26,7 @@ namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler)
         : render_engine(settings, task_scheduler),
           command_pools_by_queue_idx(task_scheduler, [&]() { return make_new_command_pools(); }),
-          descriptor_pools_by_thread_idx(task_scheduler, [&]() { return this->make_new_descriptor_pool(); }),
+          descriptor_pools_by_thread_idx(task_scheduler, [&]() { return make_new_descriptor_pool(); }),
           shaderpack_loading_mutex(task_scheduler),
           upload_to_staging_buffers_counter(task_scheduler),
           mesh_staging_buffers_mutex(task_scheduler),
@@ -446,7 +446,9 @@ namespace nova {
         shaderpack_loaded = true;
     }
 
-    VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) { return command_pools_by_queue_idx->at(queue_index); }
+    VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
+	    return command_pools_by_queue_idx->at(queue_index);
+    }
 
     VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() { return *descriptor_pools_by_thread_idx; }
 
