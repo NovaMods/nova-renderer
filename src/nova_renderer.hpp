@@ -10,7 +10,8 @@
 
 #include <string>
 #include <memory>
-#include <ftl/task_scheduler.h>
+#include <ftl/persistent_task_scheduler.h>
+#include <ftl/atomic_counter.h>
 
 #include "settings/nova_settings.hpp"
 #include "render_engine/render_engine.hpp"
@@ -63,7 +64,8 @@ namespace nova {
         nova_settings render_settings;
         std::unique_ptr<render_engine> engine;
 
-        ftl::TaskScheduler task_scheduler;
+        ftl::PersistentTaskScheduler task_scheduler;
+		ftl::AtomicCounter frame_counter;
 
         static nova_renderer *instance;
     };

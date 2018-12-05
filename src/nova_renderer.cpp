@@ -21,8 +21,10 @@
 namespace nova {
     nova_renderer *nova_renderer::instance;
 
-    nova_renderer::nova_renderer(const settings_options &settings) : render_settings(settings) {
-        task_scheduler.SetEmptyQueueBehavior(ftl::EmptyQueueBehavior::Yield);
+    nova_renderer::nova_renderer(const settings_options &settings) : 
+		render_settings(settings), 
+		task_scheduler(200, 0, ftl::EmptyQueueBehavior::Yield), 
+		frame_counter(&task_scheduler) {
 
         switch(settings.api) {
         case graphics_api::dx12:
@@ -42,15 +44,15 @@ namespace nova {
     }
 
     void nova_renderer::execute_frame() {
-        task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [](ftl::TaskScheduler *task_scheduler, render_engine *engine) { engine->render_frame(); }, engine.get());
+		task_scheduler.WaitForCounter(&frame_counter, 0);
+        task_scheduler.AddTask(&frame_counter, [](ftl::TaskScheduler *task_scheduler, render_engine *engine) { engine->render_frame(); }, engine.get());
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
         glslang::InitializeProcess();
+		ftl::AtomicCounter shaderpack_load_counter(&task_scheduler);
 
-        task_scheduler.Run(200,
-            0,
-            ftl::EmptyQueueBehavior::Yield,
+        task_scheduler.AddTask(&shaderpack_load_counter,
             [&](ftl::TaskScheduler *task_scheduler, const std::string &shaderpack_name) {
                 const std::optional<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
                 if(shaderpack_data) {
@@ -61,6 +63,8 @@ namespace nova {
                 }
             },
             shaderpack_name);
+
+		task_scheduler.WaitForCounter(&shaderpack_load_counter, 0);
     }
 
     render_engine *nova_renderer::get_engine() {
