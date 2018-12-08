@@ -57,14 +57,17 @@ namespace nova {
                 const std::optional<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
                 if(shaderpack_data) {
                     engine->set_shaderpack(*shaderpack_data);
+					NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
 
                 } else {
                     NOVA_LOG(ERROR) << "Shaderpack " << shaderpack_name << " could not be loaded. Check the logs for more information";
                 }
             },
             shaderpack_name);
+		NOVA_LOG(TRACE) << "Shaderpack load task started";
 
 		task_scheduler.WaitForCounter(&shaderpack_load_counter, 0);
+		NOVA_LOG(TRACE) << "Shaderpack load task completed";
     }
 
     render_engine *nova_renderer::get_engine() {

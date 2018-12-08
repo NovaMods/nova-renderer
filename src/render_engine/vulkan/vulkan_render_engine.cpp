@@ -405,7 +405,7 @@ namespace nova {
 		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 		VkSemaphoreCreateInfo semaphore_info = {};
-		semaphore_info.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
+		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
 		frame_fences.resize(MAX_FRAMES_IN_QUEUE);
 		image_available_semaphores.resize(MAX_FRAMES_IN_QUEUE);
@@ -442,6 +442,7 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Created pipelines";
 
         create_material_descriptor_sets();
+		NOVA_LOG(TRACE) << "Material descriptor sets created";
 
         shaderpack_loaded = true;
     }
