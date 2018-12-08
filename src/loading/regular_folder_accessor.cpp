@@ -60,7 +60,6 @@ namespace nova {
         try {
             fs::directory_iterator folder_itr(full_path);
             for(const fs::directory_entry &entry : folder_itr) {
-                NOVA_LOG(INFO) << entry.path().string();
                 paths.push_back(entry.path());
             }
         } catch(const fs::filesystem_error &error) {
