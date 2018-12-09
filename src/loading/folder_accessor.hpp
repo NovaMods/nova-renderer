@@ -109,7 +109,7 @@ namespace nova {
          */
         std::unordered_map<std::string, bool> resource_existence;
 
-        ftl::Fibtex resource_existence_mutex;
+        std::mutex resource_existence_mutex;
 
         std::optional<bool> does_resource_exist_in_map(const std::string &resource_string) const;
 

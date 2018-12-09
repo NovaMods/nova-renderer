@@ -8,10 +8,10 @@
 #include "../util/logger.hpp"
 
 namespace nova {
-    folder_accessor_base::folder_accessor_base(fs::path folder, ftl::TaskScheduler* scheduler) : root_folder(std::move(folder)), resource_existence_mutex(scheduler) {}
+    folder_accessor_base::folder_accessor_base(fs::path folder, ftl::TaskScheduler* scheduler) : root_folder(std::move(folder)) {}
 
     bool folder_accessor_base::does_resource_exist(const fs::path& resource_path) {
-        ftl::LockGuard l(resource_existence_mutex);
+        std::lock_guard l(resource_existence_mutex);
 
         const auto full_path = root_folder / resource_path;
         return does_resource_exist_internal(full_path);

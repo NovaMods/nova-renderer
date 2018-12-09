@@ -28,7 +28,7 @@ namespace nova {
         // std::vector<uint8_t> buf;
         std::ifstream resource_stream(full_resource_path);
         if(!resource_stream.good()) {
-            ftl::LockGuard l(resource_existence_mutex);
+            std::lock_guard l(resource_existence_mutex);
             // Error reading this file - it can't be read again in the future
             const auto resource_string = full_resource_path.string();
 

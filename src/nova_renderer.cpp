@@ -23,8 +23,15 @@ namespace nova {
 
     nova_renderer::nova_renderer(const settings_options &settings) : 
 		render_settings(settings), 
-		task_scheduler(200, 0, ftl::EmptyQueueBehavior::Yield), 
-		frame_counter(&task_scheduler) {
+		frame_counter(&task_scheduler),
+		is_nova_running_counter(&task_scheduler) {
+		is_nova_running_counter.Store(1);
+
+		hack_to_make_ftl_usable_for_nova = std::make_unique<std::thread>([&]() {
+			task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [&](ftl::TaskScheduler* scheduler, ftl::AtomicCounter* counter) {
+				scheduler->WaitForCounter(counter, 0);
+			}, &is_nova_running_counter);
+		});
 
         switch(settings.api) {
         case graphics_api::dx12:
@@ -39,7 +46,11 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Opened window";
     }
 
-    nova_settings &nova_renderer::get_settings() {
+	nova_renderer::~nova_renderer() {
+		is_nova_running_counter.Store(0);
+	}
+
+	nova_settings &nova_renderer::get_settings() {
         return render_settings;
     }
 
