@@ -50,9 +50,9 @@ add_subdirectory(${3RD_PARTY_DIR}/profiler)
 set(JSON_BuildTests OFF CACHE BOOL "JSON tests go away" FORCE)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 
-set(FTL_BUILD_TESTS OFF CACHE BOOL "Disable FTL tests" FORCE)
-set(FTL_BUILD_BENCHMARKS OFF CACHE BOOL "Disable FTL benchmarks" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/fiber-tasking-library)
+set(ENKITS_BUILD_C_INTERFACE OFF CACHE BOOL "C interface is not my friend" FORCE)
+set(ENKITS_BUILD_EXAMPLES OFF CACHE BOOL "Examples are not my friend" FORCE)
+add_subdirectory(${3RD_PARTY_DIR}/enkiTS)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
@@ -76,7 +76,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/RenderDoc-Manager
         ${3RD_PARTY_DIR}/profiler/include
         ${3RD_PARTY_DIR}/json/single_include
-        ${3RD_PARTY_DIR}/FiberTaskingLib/include
+        ${3RD_PARTY_DIR}/enkiTS/src
         ${3RD_PARTY_DIR}/cpptoml/include
         ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/glslang
@@ -143,7 +143,7 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_type_converters.hpp
 		src/render_engine/vulkan/compacting_block_allocator.cpp 
 		src/render_engine/vulkan/compacting_block_allocator.hpp 
-		src/render_engine/vulkan/vulkan_utils.cpp)
+		src/render_engine/vulkan/vulkan_utils.cpp src/tasks/thread_pool.cpp src/tasks/thread_pool.hpp)
 
 if(WIN32)
     set(NOVA_SOURCE
