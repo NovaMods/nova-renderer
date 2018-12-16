@@ -37,3 +37,6 @@
 [submodule "3rdparty/fiber-tasking-library"]
 	path = 3rdparty/fiber-tasking-library
 	url = https://github.com/NovaMods/fiber-tasking-library.git
+[submodule "3rdparty/enkiTS"]
+	path = 3rdparty/enkiTS
+	url = https://github.com/dougbinks/enkiTS.git

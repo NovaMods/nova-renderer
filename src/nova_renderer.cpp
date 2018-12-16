@@ -12,7 +12,7 @@
 #include "glslang/MachineIndependent/Initialize.h"
 #include "loading/shaderpack/shaderpack_loading.hpp"
 
-#if SUPPORT_DX12
+#if _WIN32
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif 
 
@@ -22,16 +22,9 @@ namespace nova {
     nova_renderer *nova_renderer::instance;
 
     nova_renderer::nova_renderer(const settings_options &settings) : 
-		render_settings(settings), 
-		frame_counter(&task_scheduler),
-		is_nova_running_counter(&task_scheduler) {
-		is_nova_running_counter.Store(1);
+		render_settings(settings) {
 
-		hack_to_make_ftl_usable_for_nova = std::make_unique<std::thread>([&]() {
-			task_scheduler.Run(200, 0, ftl::EmptyQueueBehavior::Yield, [&](ftl::TaskScheduler* scheduler, ftl::AtomicCounter* counter) {
-				scheduler->WaitForCounter(counter, 0);
-			}, &is_nova_running_counter);
-		});
+		task_scheduler.Initialize();
 
         switch(settings.api) {
         case graphics_api::dx12:
@@ -46,25 +39,23 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Opened window";
     }
 
-	nova_renderer::~nova_renderer() {
-		is_nova_running_counter.Store(0);
-	}
-
 	nova_settings &nova_renderer::get_settings() {
         return render_settings;
     }
 
     void nova_renderer::execute_frame() {
 		task_scheduler.WaitForCounter(&frame_counter, 0);
-        task_scheduler.AddTask(&frame_counter, [](ftl::TaskScheduler *task_scheduler, render_engine *engine) { engine->render_frame(); }, engine.get());
+        task_scheduler.add_task(&frame_counter, [](ftl::TaskScheduler *task_scheduler, render_engine *engine) { engine->render_frame(); }, engine.get());
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
         glslang::InitializeProcess();
-		ftl::AtomicCounter shaderpack_load_counter(&task_scheduler);
+		is_shaderpack_loading = false;
 
-        task_scheduler.AddTask(&shaderpack_load_counter,
+        task_scheduler.add_task(nullptr,
             [&](ftl::TaskScheduler *task_scheduler, const std::string &shaderpack_name) {
+				std::unique_lock l(is_shaderpack_loading_mutex);
+				
                 const std::optional<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), *task_scheduler);
                 if(shaderpack_data) {
                     engine->set_shaderpack(*shaderpack_data);
@@ -73,15 +64,19 @@ namespace nova {
                 } else {
                     NOVA_LOG(ERROR) << "Shaderpack " << shaderpack_name << " could not be loaded. Check the logs for more information";
                 }
+				is_shaderpack_loading = true;
+				l.unlock();
+				is_shaderpack_loading_cv.notify_all();
             },
             shaderpack_name);
 		NOVA_LOG(TRACE) << "Shaderpack load task started";
 
-		task_scheduler.WaitForCounter(&shaderpack_load_counter, 0);
-		NOVA_LOG(TRACE) << "Shaderpack load task completed";
+		std::unique_lock l(is_shaderpack_loading_mutex);
+		is_shaderpack_loading_cv.wait(l, [&] { return is_shaderpack_loading; });
+    	NOVA_LOG(TRACE) << "Shaderpack load task completed";
     }
 
-    render_engine *nova_renderer::get_engine() {
+    render_engine *nova_renderer::get_engine() const {
         return engine.get();
     }
 
