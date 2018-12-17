@@ -61,6 +61,23 @@ namespace nova::ttl {
     class thread_pool {
     public:
         /*!
+         * \brief Data that each thread needs
+         */
+        struct per_thread_data {
+            /*!
+             * \brief A queue of all the tasks this thread needs to execute
+             */
+			wait_free_queue<std::function<void()>> task_queue;
+            /*!
+             * \brief The index of the queue we last stole from
+             */
+			std::size_t last_successful_steal;
+
+			std::mutex things_in_queue_mutex;
+			std::condition_variable things_in_queue_cv;
+        };
+
+        /*!
          * \brief Initializes this thread pool with `num_threads` threads
          * 
          * \param num_threads The number of threads for this thread pool
@@ -115,15 +132,15 @@ namespace nova::ttl {
 
     private:
 		uint32_t num_threads;
+		std::vector<std::thread> threads;
+		std::vector<per_thread_data> thread_local_data;
 
 		std::atomic<bool> should_shutdown;
 
 		wait_free_queue<std::function<void()>> task_queue;        
 		std::atomic<empty_queue_behavior> behavior_of_empty_queues;
-		std::mutex things_in_queue_mutex;
-		std::condition_variable things_in_queue_cv;
 
-		/*!
+        /*!
 	     * \brief Adds a task to the internal queue.
 	     *
 	     * \param task       The task to queue
@@ -138,6 +155,8 @@ namespace nova::ttl {
          */
 		bool get_next_task(std::function<void()> *task);
     };
+
+	void thread_func(thread_pool* pool);
 }
 
 
