@@ -62,14 +62,16 @@ namespace nova {
         std::string msg;
 
     public:
+		nova_exception();
         explicit nova_exception(std::string msg);
         const char *what() const noexcept override;
     };
 
-#define NOVA_EXCEPTION(name)                                                                                                                                                                           \
-    class name : public ::nova::nova_exception {                                                                                                                                                       \
-    public:                                                                                                                                                                                            \
-        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)){};                                                                                                                     \
+#define NOVA_EXCEPTION(name)                                                                                        \
+    class name : public ::nova::nova_exception {                                                                    \
+    public:                                                                                                         \
+        name() {};                                                                                                  \
+        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)){};                                  \
     }
 
     NOVA_EXCEPTION(out_of_gpu_memory);

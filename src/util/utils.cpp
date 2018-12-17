@@ -77,6 +77,8 @@ namespace nova {
         os.close();
     }
 
+    nova_exception::nova_exception() : msg(typeid(*this).name()) {}
+
     nova_exception::nova_exception(std::string msg) : msg(std::move(msg)) {}
     const char *nova_exception::what() const noexcept {
         return msg.c_str();

@@ -10,8 +10,12 @@
 #include <atomic>
 #include <functional>
 #include <future>
+#include "wait_free_queue.hpp"
+#include "../util/utils.hpp"
 
-namespace nova {
+namespace nova::ttl {
+	NOVA_EXCEPTION(called_from_external_thread);
+
 	class thread_pool;
 
 	using argument_extractor_type = std::function<void(thread_pool*)>;
@@ -32,11 +36,36 @@ namespace nova {
 	}
 
     /*!
+     * What a thread should do when there's no new tasks
+     */
+    enum class empty_queue_behavior {
+        /*!
+         * Keep polling the task queue until there's a task
+         */
+        SPIN,
+
+        /*!
+         * Yield to the OS after each poll
+         */
+        YIELD,
+
+        /*!
+         * Sleep until tasks are available
+         */
+        SLEEP
+    };
+
+    /*!
      * \brief A thread pool for Nova!
      */
     class thread_pool {
     public:
-		thread_pool(uint32_t num_threads);
+        /*!
+         * \brief Initializes this thread pool with `num_threads` threads
+         * 
+         * \param num_threads The number of threads for this thread pool
+         */
+        explicit thread_pool(uint32_t num_threads);
 
 		thread_pool(const thread_pool& other) = delete;
 
@@ -46,59 +75,68 @@ namespace nova {
 
 		thread_pool& operator=(const thread_pool& other) = delete;
 		thread_pool& operator=(thread_pool&& other);
-
-		/**
-	     * Adds a task to the internal queue. Allocates internally
-	     *
-	     * \tparam F       Function type.
-	     * \tparam Args    Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
-	     * 
-	     * \param counter  An atomic counter corresponding to this task. Gets incremented when this method is called, and 
-	     * decremented when the task finishes
-	     * \param function Function to invoke
-	     * \param args     Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
-	     */
-		template<class F, class... Args>
-		void add_task(std::atomic<uint32_t>* counter, F&& function, Args&&... args) {
-			auto bound_func = std::bind(function, std::placeholders::_1, std::forward<Args>(args)...);
-			auto* alloced_function = new argument_extractor_type(bound_func);
-
-			add_task(task{ argument_extractor, alloced_function }, counter);
-		}
-
-		/**
-		 * Adds a task to the internal queue. Allocates internally
+        
+		/*!
+		 * \brief Adds a task to the internal queue. Allocates internally
 		 *
 		 * \tparam F       Function type.
 		 * \tparam Args    Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
 		 *
-		 * decremented when the task finishes
 		 * \param function Function to invoke
 		 * \param args     Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
+		 * 
+		 * \return A future to the data that your task will produce
 		 */
 		template<class F, class... Args>
-		auto add_typed_task(F&& function, Args&&... args)
+		auto add_task(F&& function, Args&&... args)
 			-> std::future<decltype(function(std::declval<thread_pool*>(), std::forward<Args>(args)...))> {
 			using RetVal = decltype(function(std::declval<thread_pool*>(), std::forward<Args>(args)...));
 
-			std::promise<RetVal>* promise = detail::create_promise(this, nullptr, 0, function, std::forward<Args>(args)...);
+			std::packaged_task<RetVal()> task(std::bind(function, this, std::forward<Args>(args)...));
+			std::future<RetVal> future = task.get_future();
 
-			std::future<RetVal> future = promise->get_future();
-
-			add_task(task{ detail::TypeSafeTask<RetVal>, promise }, promise->counter());
+			add_task([moved_task = std::move(task)] { moved_task(); });
 
 			return future;
 		}
 
+        /*!
+         * \brief Gets the index of the current thread
+         * 
+         * Gets the ID of the thread this method is called from. Loops through all the threads that TTL knows about,
+         * comparing their IDs to our ID. If a match is found, the index of that thread is returned. If not, an 
+         * exception is thrown
+         * 
+         * \return The index of the calling thread
+         */
+		std::size_t get_current_thread_idx();
+
+		friend void thread_func(thread_pool* pool);
+
     private:
-		/**
-	     * Adds a task to the internal queue.
+		uint32_t num_threads;
+
+		std::atomic<bool> should_shutdown;
+
+		wait_free_queue<std::function<void()>> task_queue;        
+		std::atomic<empty_queue_behavior> behavior_of_empty_queues;
+		std::mutex things_in_queue_mutex;
+		std::condition_variable things_in_queue_cv;
+
+		/*!
+	     * \brief Adds a task to the internal queue.
 	     *
 	     * \param task       The task to queue
-	     * \param counter    An atomic counter corresponding to this task. Gets incremented when this method is called, and 
-	     * decremented when the task finishes
 	     */
-		void add_task(task task, std::atomic<uint32_t> *counter = nullptr);
+		void add_task(std::function<void()> task);
+
+        /*!
+         * \brief Attempts to get the next task, returning success
+         * 
+         * \param task The memory to write the next task to
+         * \return True if there was a task, false if there was not
+         */
+		bool get_next_task(std::function<void()> *task);
     };
 }
 

@@ -519,3 +519,4 @@ build/
 
 **.generated.hlsl
 /tests/resources
+/3rdparty/enkiTS
