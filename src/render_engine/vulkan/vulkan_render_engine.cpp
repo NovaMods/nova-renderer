@@ -447,10 +447,14 @@ namespace nova {
     }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
-	    return command_pools_by_thread_idx->at(queue_index);
+		const uint32_t cur_thread_idx = scheduler->get_current_thread_idx();
+	    return command_pools_by_thread_idx.at(cur_thread_idx).at(queue_index);
     }
 
-    VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() { return *descriptor_pools_by_thread_idx; }
+    VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() {
+		const uint32_t cur_thread_idx = scheduler->get_current_thread_idx(); 
+        return descriptor_pools_by_thread_idx.at(cur_thread_idx); 
+    }
 
     vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer(const uint32_t needed_size) {
         ftl::LockGuard l(mesh_staging_buffers_mutex);
@@ -969,8 +973,8 @@ namespace nova {
     }
 
     void vulkan_render_engine::upload_new_mesh_parts() {
-        scheduler->AddTask(nullptr,
-            [&](ftl::TaskScheduler* task_scheduler, uint* i) {
+        scheduler->add_task(
+            [&](ttl::task_scheduler* task_scheduler, uint32_t* i) {
                 VkCommandBuffer mesh_upload_cmds;
 
                 VkCommandBufferAllocateInfo alloc_info = {};
