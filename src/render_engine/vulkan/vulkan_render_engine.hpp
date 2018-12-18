@@ -122,7 +122,7 @@ namespace nova {
 
         void set_shaderpack(const shaderpack_data& data) override;
 
-        uint32_t add_mesh(const mesh_data& input_mesh) override;
+		std::future<uint32_t> add_mesh(const mesh_data& input_mesh) override;
 
         void delete_mesh(uint32_t mesh_id) override;
 
@@ -379,21 +379,17 @@ namespace nova {
 #pragma region Mesh
         std::unique_ptr<compacting_block_allocator> mesh_memory;
 
-        /*!
-         * \brief The number of mesh upload tasks that are still running
-         */
-        ftl::AtomicCounter upload_to_staging_buffers_counter;
-        ftl::Fibtex mesh_staging_buffers_mutex;
-        std::vector<vk_buffer> mesh_staging_buffers;
+        std::mutex mesh_staging_buffers_mutex;
+        std::vector<vk_buffer> available_mesh_staging_buffers;
 
         std::queue<mesh_staging_buffer_upload_command> mesh_upload_queue;
-        ftl::Fibtex mesh_upload_queue_mutex;
+		std::mutex mesh_upload_queue_mutex;
         VkFence mesh_rendering_done;
         VkFence upload_to_megamesh_buffer_done;
 
         // Might need to make 64-bit keys eventually, but in 2018 it's not a concern
         std::unordered_map<uint32_t, vk_mesh> meshes;
-        ftl::Fibtex meshes_mutex;
+		std::mutex meshes_mutex;
         std::atomic<uint32_t> next_mesh_id = 0;
 
         /*!

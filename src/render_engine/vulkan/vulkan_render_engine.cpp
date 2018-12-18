@@ -7,14 +7,12 @@
 #include <vector>
 #include "../../util/logger.hpp"
 #define VMA_IMPLEMENTATION
-#include <ftl/atomic_counter.h>
 #include <vk_mem_alloc.h>
 #include "../../../3rdparty/SPIRV-Cross/spirv_glsl.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/utils.hpp"
 #include "../dx12/win32_window.hpp"
-#include "ftl/fibtex.h"
 #include "vulkan_type_converters.hpp"
 #include "vulkan_utils.hpp"
 
@@ -23,12 +21,7 @@
 #endif
 
 namespace nova {
-    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler)
-        : render_engine(settings, task_scheduler),
-          upload_to_staging_buffers_counter(task_scheduler),
-          mesh_staging_buffers_mutex(task_scheduler),
-          mesh_upload_queue_mutex(task_scheduler),
-          meshes_mutex(task_scheduler) {
+    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler) : render_engine(settings, task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
         settings_options options = settings.get_options();
@@ -457,21 +450,21 @@ namespace nova {
     }
 
     vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer(const uint32_t needed_size) {
-        ftl::LockGuard l(mesh_staging_buffers_mutex);
+        std::lock_guard l(mesh_staging_buffers_mutex);
 
-        if(!mesh_staging_buffers.empty()) {
+        if(!available_mesh_staging_buffers.empty()) {
             // Try to find a buffer that's big enough
             uint32_t potential_staging_buffer_idx = std::numeric_limits<uint32_t>::max();
 
-            for(uint32_t i = 0; i < mesh_staging_buffers.size(); i++) {
-                if(mesh_staging_buffers[i].alloc_info.size >= needed_size && mesh_staging_buffers[i].alloc_info.size > mesh_staging_buffers[potential_staging_buffer_idx].alloc_info.size) {
+            for(uint32_t i = 0; i < available_mesh_staging_buffers.size(); i++) {
+                if(available_mesh_staging_buffers[i].alloc_info.size >= needed_size && available_mesh_staging_buffers[i].alloc_info.size > available_mesh_staging_buffers[potential_staging_buffer_idx].alloc_info.size) {
                     potential_staging_buffer_idx = i;
                 }
             }
 
-            if(potential_staging_buffer_idx < mesh_staging_buffers.size()) {
-                const vk_buffer staging_buffer = mesh_staging_buffers[potential_staging_buffer_idx];
-                mesh_staging_buffers.erase(mesh_staging_buffers.begin() + potential_staging_buffer_idx);
+            if(potential_staging_buffer_idx < available_mesh_staging_buffers.size()) {
+                const vk_buffer staging_buffer = available_mesh_staging_buffers[potential_staging_buffer_idx];
+                available_mesh_staging_buffers.erase(available_mesh_staging_buffers.begin() + potential_staging_buffer_idx);
                 return staging_buffer;
             }
         }
@@ -497,16 +490,14 @@ namespace nova {
     }
 
     void vulkan_render_engine::free_mesh_staging_buffer(const vk_buffer& buffer) {
-        ftl::LockGuard l(mesh_staging_buffers_mutex);
+        std::lock_guard l(mesh_staging_buffers_mutex);
 
-        mesh_staging_buffers.push_back(buffer);
+        available_mesh_staging_buffers.push_back(buffer);
     }
 
-    uint32_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
-        const uint32_t mesh_id = next_mesh_id.fetch_add(1);
-
-        scheduler->AddTask(&upload_to_staging_buffers_counter,
-            [&](ftl::TaskScheduler* scheduler, const mesh_data* input_mesh, ftl::Fibtex* mesh_upload_queue_mutex, std::queue<mesh_staging_buffer_upload_command>* mesh_upload_queue) {
+    std::future<uint32_t> vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
+        return scheduler->add_task(
+            [&](ttl::task_scheduler*, const mesh_data* input_mesh, std::mutex* mesh_upload_queue_mutex, std::queue<mesh_staging_buffer_upload_command>* mesh_upload_queue) {
                 const uint32_t vertex_size = input_mesh->vertex_data.size() * sizeof(full_vertex);
                 const uint32_t index_size = input_mesh->indices.size() * sizeof(uint32_t);
 
@@ -517,12 +508,14 @@ namespace nova {
                 std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh->vertex_data[0], vertex_size);
                 std::memcpy(reinterpret_cast<uint8_t*>(staging_buffer.alloc_info.pMappedData) + vertex_size, &input_mesh->indices[0], index_size);
 
-                ftl::LockGuard l(*mesh_upload_queue_mutex);
+				const uint32_t mesh_id = next_mesh_id.fetch_add(1);
+
+                std::lock_guard l(*mesh_upload_queue_mutex);
                 mesh_upload_queue->push(mesh_staging_buffer_upload_command{staging_buffer, mesh_id, vertex_size, vertex_size + index_size});
+
+				return mesh_id;
             },
             &input_mesh, &mesh_upload_queue_mutex, &mesh_upload_queue);
-
-        return mesh_id;
     }
 
     void vulkan_render_engine::delete_mesh(uint32_t mesh_id) {
@@ -996,8 +989,6 @@ namespace nova {
 
                 mesh_memory->add_barriers_before_data_upload(mesh_upload_cmds);
 
-                task_scheduler->WaitForCounter(&upload_to_staging_buffers_counter, 0);
-
                 mesh_upload_queue_mutex.lock();
                 meshes_mutex.lock();
 
@@ -1043,13 +1034,13 @@ namespace nova {
                 vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, 0xffffffffffffffffL);
                 vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
 
-                task_scheduler->AddTask(nullptr,
-                    [&](ftl::TaskScheduler* /*task_scheduler*/, std::vector<vk_buffer>* buffers_to_free) {
+                task_scheduler->add_task(
+                    [&](ttl::task_scheduler* /*task_scheduler*/, std::vector<vk_buffer>* buffers_to_free) {
                         vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, 0xffffffffffffffffL);
 
                         // Once the upload is done, return all the staging buffers to the pool
-                        ftl::LockGuard l(mesh_staging_buffers_mutex);
-                        mesh_staging_buffers.insert(mesh_staging_buffers.end(), buffers_to_free->begin(), buffers_to_free->end());
+                        std::lock_guard l(mesh_staging_buffers_mutex);
+                        available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), buffers_to_free->begin(), buffers_to_free->end());
                     },
                     &freed_buffers);
             },
