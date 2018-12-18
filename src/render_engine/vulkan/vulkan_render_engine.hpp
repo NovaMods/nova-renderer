@@ -440,6 +440,9 @@ namespace nova {
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
         std::unordered_map<std::string, std::unordered_map<VkBuffer, std::vector<render_object>>> renderables_by_material;
 
+		std::mutex rendering_mutex;
+		std::condition_variable rendering_cv;
+
         /*!
          * \brief Performs all tasks necessary to render this renderpass
          *

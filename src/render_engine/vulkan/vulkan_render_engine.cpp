@@ -1105,15 +1105,24 @@ namespace nova {
 
         vkResetFences(device, 1, &frame_fences.at(current_frame));
 
-        // RECORD COMMAND BUFFERS WHOOOOOOOOOOOOOOOOOOOOOOOOOOO
+        // Record command buffers
+        // We can't upload a new shaderpack in the middle of a frame!
+        // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the frame 
         shaderpack_loading_mutex.lock();
-        ftl::AtomicCounter render_tasks_counter(scheduler);
+        std::atomic<uint32_t> render_tasks_counter;
         for(const std::string& renderpass_name : render_passes_by_order) {
-            scheduler->AddTask(&render_tasks_counter, [&](ftl::TaskScheduler* scheduler, const std::string* renderpass_name) { execute_renderpass(renderpass_name); }, &renderpass_name);
+            scheduler->add_task([&](ttl::task_scheduler* scheduler, const std::string* renderpass_name, std::atomic<uint32_t>* counter) {
+                execute_renderpass(renderpass_name);
+
+				counter->fetch_sub(1);
+				rendering_cv.notify_all();
+            }, &renderpass_name, &render_tasks_counter);
         }
         shaderpack_loading_mutex.unlock();
 
-		scheduler->WaitForCounter(&render_tasks_counter, 0);
+		std::unique_lock l(rendering_mutex);
+		rendering_cv.wait(l, [&] { return render_tasks_counter.load() == 0; });
+
         vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
         vkResetFences(device, 1, &mesh_rendering_done);
         // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has
