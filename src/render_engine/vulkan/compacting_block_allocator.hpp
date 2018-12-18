@@ -5,13 +5,17 @@
 #include <vector>
 #include "../../settings/nova_settings.hpp"
 #include "../../util/utils.hpp"
-#include "ftl/fibtex.h"
+#include <mutex>
 
 namespace ftl {
     class TaskScheduler;
 }
 
 namespace nova {
+    namespace ttl {
+        class task_scheduler;
+    }
+
     NOVA_EXCEPTION(buffer_allocation_failed);
 
     /*!
@@ -114,7 +118,7 @@ namespace nova {
             void compact_all_memory();
         };
 
-        compacting_block_allocator(settings_options::block_allocator_settings settings, VmaAllocator vma_allocator, ftl::TaskScheduler* scheduler, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
+        compacting_block_allocator(settings_options::block_allocator_settings settings, VmaAllocator vma_allocator, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
 
         /*!
          * \brief Allocates memory of the requested size and gives that to you
@@ -152,11 +156,10 @@ namespace nova {
 
     private:
         std::vector<block_allocator_buffer> pools;
-        ftl::Fibtex pools_mutex;
+        std::mutex pools_mutex;
 
         settings_options::block_allocator_settings& settings;
         VmaAllocator vma_allocator;
-        ftl::TaskScheduler* scheduler;
         uint32_t graphics_queue_idx;
         uint32_t copy_queue_idx;
     };

@@ -90,7 +90,7 @@ namespace nova {
 #endif
         open_window(settings.get_options().window.width, settings.get_options().window.height);
         create_memory_allocator();
-        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
+        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, graphics_queue_index, copy_queue_index);
 
 		create_global_sync_objects();
 		create_per_thread_command_pools();

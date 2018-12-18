@@ -266,15 +266,15 @@ namespace nova {
     }
 
     compacting_block_allocator::compacting_block_allocator(settings_options::block_allocator_settings settings, VmaAllocator vma_allocator, 
-		    ftl::TaskScheduler* scheduler, const uint32_t graphics_queue_idx, const uint32_t copy_queue_idx) 
-          : pools_mutex(scheduler), settings(settings), vma_allocator(vma_allocator), scheduler(scheduler), 
+		const uint32_t graphics_queue_idx, const uint32_t copy_queue_idx) 
+          : settings(settings), vma_allocator(vma_allocator), 
             graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
 
         pools.emplace_back(block_allocator_buffer{settings.new_buffer_size, vma_allocator});
     }
 
     compacting_block_allocator::allocation_info* compacting_block_allocator::allocate(const VkDeviceSize size) {
-        ftl::LockGuard l(pools_mutex);
+        std::lock_guard l(pools_mutex);
         // First try to allocate from an existing pool
         for(block_allocator_buffer& buffer : pools) {
             allocation_info* allocation = buffer.allocate(size);
@@ -291,7 +291,7 @@ namespace nova {
     }
 
     void compacting_block_allocator::free(allocation_info* allocation) {
-        ftl::LockGuard l(pools_mutex);
+		std::lock_guard l(pools_mutex);
         allocation->block->free(allocation);
     }
 
