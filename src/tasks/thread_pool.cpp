@@ -14,6 +14,14 @@ namespace nova::ttl {
         }
 	}
 
+    thread_pool::~thread_pool() {
+		should_shutdown = true;
+
+        for(auto& thread : threads) {
+			thread.join();
+        }
+	}
+
     std::size_t thread_pool::get_current_thread_idx() {
         const std::thread::id thread_id = std::this_thread::get_id();
 		for(std::size_t i = 0; i < num_threads; ++i) {
@@ -25,6 +33,54 @@ namespace nova::ttl {
         // If none of the threads in the pool are the thread we were called from, the user is doing something 
 	    // unsupported so they must be punished
 		throw called_from_external_thread();
+	}
+
+    void thread_pool::add_task(std::function<void()> task) {
+		static thread_local std::size_t external_index = 0;
+
+		const std::size_t thread_idx = get_current_thread_idx();
+		thread_local_data[get_current_thread_idx()].task_queue.push(std::move(task));
+
+		const empty_queue_behavior behavior = behavior_of_empty_queues.load(std::memory_order_relaxed);
+		if(behavior == empty_queue_behavior::SLEEP) {
+			// Find a thread that is sleeping and wake it
+			for(uint32_t i = 0; i < num_threads; ++i) {
+				std::unique_lock<std::mutex> lock(thread_local_data[i].things_in_queue_mutex);
+				if(thread_local_data[i].is_sleeping) {
+					thread_local_data[i].is_sleeping = false;
+					thread_local_data[i].things_in_queue_cv.notify_one();
+
+					break;
+				}
+			}
+		}
+	}
+
+    bool thread_pool::get_next_task(std::function<void()>* task) {
+        const std::size_t current_thread_index = get_current_thread_idx();
+		per_thread_data &tls = thread_local_data[current_thread_index];
+
+		// Try to pop from our own queue
+		if(tls.task_queue.pop(task)) {
+			return true;
+		}
+
+		// Ours is empty, try to steal from the others'
+		const std::size_t thread_index = tls.last_successful_steal;
+		for(std::size_t i = 0; i < num_threads; ++i) {
+			const std::size_t thread_index_to_steal_from = (thread_index + i) % num_threads;
+			if(thread_index_to_steal_from == current_thread_index) {
+				continue;
+			}
+
+			per_thread_data &other_tls = thread_local_data[thread_index_to_steal_from];
+			if(other_tls.task_queue.steal(task)) {
+				tls.last_successful_steal = thread_index_to_steal_from;
+				return true;
+			}
+		}
+
+		return false;
 	}
 
     /*!
@@ -55,6 +111,7 @@ namespace nova::ttl {
 				case empty_queue_behavior::SLEEP:
 				{
 					std::unique_lock<std::mutex> lock(tls.things_in_queue_mutex);
+					tls.is_sleeping = true;
 
 					tls.things_in_queue_cv.wait(lock);
 

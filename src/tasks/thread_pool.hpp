@@ -18,17 +18,17 @@ namespace nova::ttl {
 
 	class thread_pool;
 
-	using argument_extractor_type = std::function<void(thread_pool*)>;
+	using ArgumentExtractorType = std::function<void(thread_pool*)>;
 
-	typedef void(*task_function)(thread_pool *task_scheduler, void *arg);
+	typedef void(*TaskFunction)(thread_pool *task_scheduler, void *arg);
 
 	struct task {
-		task_function function;
+		TaskFunction function;
 		void *arg_data;
 	};
 
     inline void argument_extractor(thread_pool* scheduler, void* arg) {
-		auto* func = static_cast<argument_extractor_type*>(arg);
+		auto* func = static_cast<ArgumentExtractorType*>(arg);
 
 		(*func)(scheduler);
 
@@ -75,6 +75,7 @@ namespace nova::ttl {
 
 			std::mutex things_in_queue_mutex;
 			std::condition_variable things_in_queue_cv;
+			std::atomic<bool> is_sleeping = false;
         };
 
         /*!
@@ -83,15 +84,14 @@ namespace nova::ttl {
          * \param num_threads The number of threads for this thread pool
          */
         explicit thread_pool(uint32_t num_threads);
-
-		thread_pool(const thread_pool& other) = delete;
-
-		thread_pool(thread_pool&& other);
+        
+		thread_pool(thread_pool&& other) noexcept = default;
+		thread_pool& operator=(thread_pool&& other) = default;
 
 		~thread_pool();
 
+		thread_pool(const thread_pool& other) = delete;
 		thread_pool& operator=(const thread_pool& other) = delete;
-		thread_pool& operator=(thread_pool&& other);
         
 		/*!
 		 * \brief Adds a task to the internal queue. Allocates internally
@@ -136,8 +136,7 @@ namespace nova::ttl {
 		std::vector<per_thread_data> thread_local_data;
 
 		std::atomic<bool> should_shutdown;
-
-		wait_free_queue<std::function<void()>> task_queue;        
+    
 		std::atomic<empty_queue_behavior> behavior_of_empty_queues;
 
         /*!
