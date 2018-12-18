@@ -11,9 +11,11 @@
 #define NOVA_VK_XLIB 1
 #include "x11_window.hpp"
 #include <vulkan/vulkan_xlib.h>
+
 #elif _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32 1
+#include "../dx12/win32_window.hpp"
 #endif
 
 #include <vulkan/vulkan.h>
@@ -21,23 +23,23 @@
 
 #include <vk_mem_alloc.h>
 #include <queue>
-#include "../dx12/win32_window.hpp"
 #include "compacting_block_allocator.hpp"
 #include "spirv_glsl.hpp"
 
 #include "../../render_objects/render_object.hpp"
-#include "ftl/atomic_counter.h"
-#include "ftl/fibtex.h"
-#include "ftl/task_scheduler.h"
-#include "ftl/thread_local.h"
+#include <mutex>
 
 namespace nova {
+    namespace ttl {
+        class task_scheduler;
+    }
+
     NOVA_EXCEPTION(buffer_allocate_failed);
     NOVA_EXCEPTION(shaderpack_loading_error);
     NOVA_EXCEPTION(descriptor_pool_creation_failed);
 
     struct vk_queue {
-        VkQueue queue = VK_NULL_HANDLE;
+        VkQueue queue = nullptr;
         uint32_t queue_idx;
     };
 
@@ -111,7 +113,7 @@ namespace nova {
 
     class vulkan_render_engine : public render_engine {
     public:
-        vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler);
+        vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler);
         ~vulkan_render_engine() override;
 
         void render_frame() override;
@@ -125,8 +127,8 @@ namespace nova {
         void delete_mesh(uint32_t mesh_id) override;
 
     private:
-        const uint MAX_FRAMES_IN_QUEUE = 3;
-        uint current_frame = 0;
+        const uint32_t MAX_FRAMES_IN_QUEUE = 3;
+        uint32_t current_frame = 0;
 
         std::vector<const char*> enabled_validation_layer_names;
 
@@ -162,9 +164,19 @@ namespace nova {
         /*!
          * \brief Thread-local command pools so multiple tasks don't try to use the same command pools at the same time
          */
-        ftl::ThreadLocal<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_queue_idx;
+        std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
-        ftl::ThreadLocal<VkDescriptorPool> descriptor_pools_by_thread_idx;
+        std::vector<VkDescriptorPool> descriptor_pools_by_thread_idx;
+
+        /*!
+         * \brief Fills out the `command_pools_by_thread_idx` member
+         */
+		void create_per_thread_command_pools();
+
+        /*!
+         * \brief Fills out the `descriptor_pools_by_thread_idx` member
+         */
+		void create_per_thread_descriptor_pools();
 
         /*!
          * \brief Allocates new command pools - one for graphics, one for transfer, one for compute
@@ -222,7 +234,7 @@ namespace nova {
 
 #pragma region Shaderpack
         bool shaderpack_loaded = false;
-        ftl::Fibtex shaderpack_loading_mutex;
+        std::mutex shaderpack_loading_mutex;
         shaderpack_data shaderpack;
 
         std::unordered_map<std::string, vk_render_pass> render_passes;

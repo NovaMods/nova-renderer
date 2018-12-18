@@ -11,7 +11,6 @@
 #include <d3d12sdklayers.h>
 #include <algorithm>
 #include <unordered_set>
-#include <ftl/atomic_counter.h>
 
 #include "../../util/logger.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
@@ -23,8 +22,10 @@
 #include "../../nova_renderer.hpp"
 #include "dx12_utils.hpp"
 
+#include "../../tasks/task_scheduler.hpp"
+
 namespace nova {
-    dx12_render_engine::dx12_render_engine(const nova_settings& settings, ftl::TaskScheduler* scheduler) : render_engine(settings, scheduler), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
+    dx12_render_engine::dx12_render_engine(const nova_settings& settings, ttl::task_scheduler* scheduler) : render_engine(settings, scheduler), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
         NOVA_LOG(INFO) << "Initializing Direct3D 12 rendering";
 
         create_device();
@@ -513,9 +514,7 @@ namespace nova {
         device->CreateQueryHeap(&heap_desc, IID_PPV_ARGS(&renderpass_timestamp_query_heap));
     }
 
-    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ftl::TaskScheduler* scheduler) {
-        ftl::AtomicCounter pipelines_created_counter(scheduler);
-
+    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ttl::task_scheduler* scheduler) {
         std::vector<pipeline> dx12_pipelines(pipelines.size());
         std::size_t write_pipeline = 0;
 

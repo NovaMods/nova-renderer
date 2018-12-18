@@ -3,10 +3,10 @@
  * \date 15-Dec-18.
  */
 
-#include "thread_pool.hpp"
+#include "task_scheduler.hpp"
 
 namespace nova::ttl {
-	thread_pool::thread_pool(uint32_t num_threads) : num_threads(num_threads), should_shutdown(false) {
+	task_scheduler::task_scheduler(uint32_t num_threads) : num_threads(num_threads), should_shutdown(false) {
 		threads.reserve(num_threads);
 
         for(uint32_t i = 0; i < num_threads; i++) {
@@ -14,7 +14,7 @@ namespace nova::ttl {
         }
 	}
 
-    thread_pool::~thread_pool() {
+    task_scheduler::~task_scheduler() {
 		should_shutdown = true;
 
         for(auto& thread : threads) {
@@ -22,7 +22,7 @@ namespace nova::ttl {
         }
 	}
 
-    std::size_t thread_pool::get_current_thread_idx() {
+    std::size_t task_scheduler::get_current_thread_idx() {
         const std::thread::id thread_id = std::this_thread::get_id();
 		for(std::size_t i = 0; i < num_threads; ++i) {
 			if(threads[i].get_id() == thread_id) {
@@ -35,7 +35,11 @@ namespace nova::ttl {
 		throw called_from_external_thread();
 	}
 
-    void thread_pool::add_task(std::function<void()> task) {
+    uint32_t task_scheduler::get_num_threads() const {
+		return num_threads;
+	}
+
+    void task_scheduler::add_task(std::function<void()> task) {
 		static thread_local std::size_t external_index = 0;
 
 		const std::size_t thread_idx = get_current_thread_idx();
@@ -56,7 +60,7 @@ namespace nova::ttl {
 		}
 	}
 
-    bool thread_pool::get_next_task(std::function<void()>* task) {
+    bool task_scheduler::get_next_task(std::function<void()>* task) {
         const std::size_t current_thread_index = get_current_thread_idx();
 		per_thread_data &tls = thread_local_data[current_thread_index];
 
@@ -87,9 +91,9 @@ namespace nova::ttl {
 	 * \brief Function for each thread in the thread pool. We check if there's any tasks to execute. If so they get
 	 * executed, if not we check again
 	 */
-	void thread_func(thread_pool* pool) {
+	void thread_func(task_scheduler* pool) {
 	    const std::size_t thread_idx = pool->get_current_thread_idx();
-		thread_pool::per_thread_data& tls = pool->thread_local_data[thread_idx];
+		task_scheduler::per_thread_data& tls = pool->thread_local_data[thread_idx];
 
 		while(!pool->should_shutdown.load(std::memory_order_acquire)) {
 			// Get a new task from the queue, and execute it

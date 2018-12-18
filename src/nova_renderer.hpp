@@ -15,7 +15,7 @@
 
 #include "settings/nova_settings.hpp"
 #include "render_engine/render_engine.hpp"
-#include "tasks/thread_pool.hpp"
+#include "tasks/task_scheduler.hpp"
 
 namespace nova {
 	NOVA_EXCEPTION(already_initialized_exception);
@@ -51,7 +51,7 @@ namespace nova {
 
 		render_engine* get_engine() const;
 
-		ttl::thread_pool& get_task_scheduler();
+		ttl::task_scheduler& get_task_scheduler();
 
 		static nova_renderer* initialize(const settings_options& settings) {
 			return (instance = new nova_renderer(settings));
@@ -65,7 +65,7 @@ namespace nova {
 		nova_settings render_settings;
 		std::unique_ptr<render_engine> engine;
 
-		ttl::thread_pool task_scheduler;
+		ttl::task_scheduler task_scheduler;
 		std::future<void> frame_done_future;
 
 		static nova_renderer *instance;

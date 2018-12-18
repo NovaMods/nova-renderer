@@ -43,7 +43,7 @@ namespace nova {
 
     void nova_renderer::execute_frame() {
 		frame_done_future.get();
-        frame_done_future = task_scheduler.add_task([](ttl::thread_pool* task_scheduler, render_engine* engine) { engine->render_frame(); }, engine.get());
+        frame_done_future = task_scheduler.add_task([](ttl::task_scheduler* task_scheduler, render_engine* engine) { engine->render_frame(); }, engine.get());
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
@@ -71,7 +71,7 @@ namespace nova {
         delete instance;
     }
 
-	ttl::thread_pool &nova_renderer::get_task_scheduler() {
+	ttl::task_scheduler &nova_renderer::get_task_scheduler() {
         return task_scheduler;
     }
 }  // namespace nova

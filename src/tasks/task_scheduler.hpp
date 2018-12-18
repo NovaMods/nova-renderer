@@ -16,18 +16,18 @@
 namespace nova::ttl {
 	NOVA_EXCEPTION(called_from_external_thread);
 
-	class thread_pool;
+	class task_scheduler;
 
-	using ArgumentExtractorType = std::function<void(thread_pool*)>;
+	using ArgumentExtractorType = std::function<void(task_scheduler*)>;
 
-	typedef void(*TaskFunction)(thread_pool *task_scheduler, void *arg);
+	typedef void(*TaskFunction)(task_scheduler *task_scheduler, void *arg);
 
 	struct task {
 		TaskFunction function;
 		void *arg_data;
 	};
 
-    inline void argument_extractor(thread_pool* scheduler, void* arg) {
+    inline void argument_extractor(task_scheduler* scheduler, void* arg) {
 		auto* func = static_cast<ArgumentExtractorType*>(arg);
 
 		(*func)(scheduler);
@@ -58,7 +58,7 @@ namespace nova::ttl {
     /*!
      * \brief A thread pool for Nova!
      */
-    class thread_pool {
+    class task_scheduler {
     public:
         /*!
          * \brief Data that each thread needs
@@ -83,15 +83,15 @@ namespace nova::ttl {
          * 
          * \param num_threads The number of threads for this thread pool
          */
-        explicit thread_pool(uint32_t num_threads);
+        explicit task_scheduler(uint32_t num_threads);
         
-		thread_pool(thread_pool&& other) noexcept = default;
-		thread_pool& operator=(thread_pool&& other) = default;
+		task_scheduler(task_scheduler&& other) noexcept = default;
+		task_scheduler& operator=(task_scheduler&& other) = default;
 
-		~thread_pool();
+		~task_scheduler();
 
-		thread_pool(const thread_pool& other) = delete;
-		thread_pool& operator=(const thread_pool& other) = delete;
+		task_scheduler(const task_scheduler& other) = delete;
+		task_scheduler& operator=(const task_scheduler& other) = delete;
         
 		/*!
 		 * \brief Adds a task to the internal queue. Allocates internally
@@ -106,8 +106,8 @@ namespace nova::ttl {
 		 */
 		template<class F, class... Args>
 		auto add_task(F&& function, Args&&... args)
-			-> std::future<decltype(function(std::declval<thread_pool*>(), std::forward<Args>(args)...))> {
-			using RetVal = decltype(function(std::declval<thread_pool*>(), std::forward<Args>(args)...));
+			-> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
+			using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
 
 			std::packaged_task<RetVal()> task(std::bind(function, this, std::forward<Args>(args)...));
 			std::future<RetVal> future = task.get_future();
@@ -128,8 +128,10 @@ namespace nova::ttl {
          */
 		std::size_t get_current_thread_idx();
 
-		friend void thread_func(thread_pool* pool);
+		friend void thread_func(task_scheduler* pool);
 
+        uint32_t get_num_threads() const;
+        
     private:
 		uint32_t num_threads;
 		std::vector<std::thread> threads;
@@ -155,7 +157,7 @@ namespace nova::ttl {
 		bool get_next_task(std::function<void()> *task);
     };
 
-	void thread_func(thread_pool* pool);
+	void thread_func(task_scheduler* pool);
 }
 
 

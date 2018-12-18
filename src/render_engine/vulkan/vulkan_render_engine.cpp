@@ -23,11 +23,8 @@
 #endif
 
 namespace nova {
-    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ftl::TaskScheduler* task_scheduler)
+    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler)
         : render_engine(settings, task_scheduler),
-          command_pools_by_queue_idx(task_scheduler, [&]() { return make_new_command_pools(); }),
-          descriptor_pools_by_thread_idx(task_scheduler, [&]() { return make_new_descriptor_pool(); }),
-          shaderpack_loading_mutex(task_scheduler),
           upload_to_staging_buffers_counter(task_scheduler),
           mesh_staging_buffers_mutex(task_scheduler),
           mesh_upload_queue_mutex(task_scheduler),
@@ -96,6 +93,8 @@ namespace nova {
         mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, task_scheduler, graphics_queue_index, copy_queue_index);
 
 		create_global_sync_objects();
+		create_per_thread_command_pools();
+		create_per_thread_descriptor_pools();
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -448,7 +447,7 @@ namespace nova {
     }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
-	    return command_pools_by_queue_idx->at(queue_index);
+	    return command_pools_by_thread_idx->at(queue_index);
     }
 
     VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() { return *descriptor_pools_by_thread_idx; }
@@ -1399,6 +1398,24 @@ namespace nova {
         }
 
         return VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
+    }
+
+    void vulkan_render_engine::create_per_thread_command_pools() {
+		const uint32_t num_threads = scheduler->get_num_threads();
+		command_pools_by_thread_idx.reserve(num_threads);
+
+        for(uint32_t i = 0; i < num_threads; i++) {
+			command_pools_by_thread_idx.push_back(make_new_command_pools());
+        }
+    }
+
+    void vulkan_render_engine::create_per_thread_descriptor_pools() {
+		const uint32_t num_threads = scheduler->get_num_threads();
+		descriptor_pools_by_thread_idx.reserve(num_threads);
+
+        for(uint32_t i = 0; i < num_threads; i++) {
+			descriptor_pools_by_thread_idx.push_back(make_new_descriptor_pool());
+        }
     }
 
     std::unordered_map<uint32_t, VkCommandPool> vulkan_render_engine::make_new_command_pools() const {
