@@ -6,10 +6,9 @@
 #include <fstream>
 #include "regular_folder_accessor.hpp"
 #include "../util/logger.hpp"
-#include "ftl/fibtex.h"
 
 namespace nova {
-    regular_folder_accessor::regular_folder_accessor(const fs::path& folder, ftl::TaskScheduler* scheduler) : folder_accessor_base(folder, scheduler) {}
+    regular_folder_accessor::regular_folder_accessor(const fs::path& folder) : folder_accessor_base(folder) {}
 
     std::string regular_folder_accessor::read_text_file(const fs::path &resource_path) {
         fs::path full_resource_path;

@@ -6,23 +6,27 @@
 #ifndef NOVA_RENDERER_SHADERPACK_LOADING_HPP
 #define NOVA_RENDERER_SHADERPACK_LOADING_HPP
 
-#include <experimental/filesystem>
-#include <unordered_map>
 #include <optional>
-#include <ftl/task_scheduler.h>
 #include "shaderpack_data.hpp"
 
 #if _WIN32
     #if _MSC_VER <= 1915
+        #include <experimental/filesystem>
         namespace fs = std::experimental::filesystem;
     #else
+        #include <filesystem>
         namespace fs = std::filesystem;
     #endif
 #else
+    #include <filesystem>
     namespace fs = std::filesystem;
 #endif
 
 namespace nova {
+    namespace ttl {
+        class task_scheduler;
+    }
+
     NOVA_EXCEPTION(shader_compilation_failed);
     NOVA_EXCEPTION(shader_reflection_failed);
     NOVA_EXCEPTION(shader_layout_creation_failed);
@@ -43,7 +47,7 @@ namespace nova {
      * \param task_scheduler The task scheduler to use when kicking off tasks to process all of the shaderpack data
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    std::optional<shaderpack_data> load_shaderpack_data(const fs::path &shaderpack_name, ftl::TaskScheduler &task_scheduler);
+    std::optional<shaderpack_data> load_shaderpack_data(const fs::path &shaderpack_name, ttl::task_scheduler &task_scheduler);
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_SHADERPACK_LOADING_HPP

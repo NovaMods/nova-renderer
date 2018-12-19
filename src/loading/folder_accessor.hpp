@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <optional>
 #include "../util/utils.hpp"
-#include "ftl/fibtex.h"
+#include <mutex>
 
 #if _WIN32
     #if _MSC_VER <= 1915
@@ -58,7 +58,7 @@ namespace nova {
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          * \param scheduler The task scheduler to create mutexes with
          */
-        folder_accessor_base(fs::path folder, ftl::TaskScheduler* scheduler);
+        folder_accessor_base(fs::path folder);
 
         virtual ~folder_accessor_base() = default;
 

@@ -8,7 +8,7 @@
 #include "../util/logger.hpp"
 
 namespace nova {
-    folder_accessor_base::folder_accessor_base(fs::path folder, ftl::TaskScheduler* scheduler) : root_folder(std::move(folder)) {}
+    folder_accessor_base::folder_accessor_base(fs::path folder) : root_folder(std::move(folder)) {}
 
     bool folder_accessor_base::does_resource_exist(const fs::path& resource_path) {
         std::lock_guard l(resource_existence_mutex);
