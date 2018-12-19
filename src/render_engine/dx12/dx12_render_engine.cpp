@@ -373,10 +373,10 @@ namespace nova {
         make_pipeline_state_objects(data.pipelines, scheduler);
     }
 
-    uint32_t dx12_render_engine::add_mesh(const mesh_data&) {
+    std::future<uint32_t> dx12_render_engine::add_mesh(const mesh_data&) {
         // TODO
 
-        return 0;
+        return {};
     }
 
     void dx12_render_engine::delete_mesh(uint32_t) {
@@ -515,30 +515,34 @@ namespace nova {
     }
 
     void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ttl::task_scheduler* scheduler) {
-        std::vector<pipeline> dx12_pipelines(pipelines.size());
+        std::vector<std::future<pipeline>> future_pipelines(pipelines.size());
         std::size_t write_pipeline = 0;
 
         for(const pipeline_data& data : pipelines) {
             if(!data.name.empty()) {
-                scheduler->AddTask(&pipelines_created_counter,
-                    [&](ftl::TaskScheduler* task_scheduler, const pipeline_data data, pipeline* dx12_pipeline) {
+                future_pipelines[write_pipeline] = scheduler->add_task([&](ttl::task_scheduler* task_scheduler, const pipeline_data data) {
                     try {
-                        make_single_pso(data, dx12_pipeline);
+                        return make_single_pso(data);
                     } catch(shader_compilation_failed& err) {
                         NOVA_LOG(ERROR) << "Could not compile shaders for PSO " << data.name << ": " << err.what();
+						return pipeline{};
                     }
-                }, data, &dx12_pipelines[write_pipeline]);
+                }, data);
                 write_pipeline++;
             }
         }
 
-        scheduler->WaitForCounter(&pipelines_created_counter, pipelines.size());
+        for(auto& future_pipeline : future_pipelines) {
+			future_pipeline.wait();
+            // TODO
+        }
     }
     
-    void dx12_render_engine::make_single_pso(const pipeline_data& input, pipeline* output) {
+    pipeline dx12_render_engine::make_single_pso(const pipeline_data& input) {
         const render_pass_data& render_pass = render_passes.at(input.pass);
         const auto states_begin = input.states.begin();
         const auto states_end = input.states.end();
+		pipeline output;
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
 
@@ -577,8 +581,8 @@ namespace nova {
             pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
         }
         
-        output->root_signature = create_root_signature(shader_inputs);
-        pipeline_state_desc.pRootSignature = output->root_signature.Get();
+        output.root_signature = create_root_signature(shader_inputs);
+        pipeline_state_desc.pRootSignature = output.root_signature.Get();
 
         /*
         * Blend state
@@ -724,10 +728,12 @@ namespace nova {
          * PSO creation!
          */
 
-        const HRESULT hr = device->CreateGraphicsPipelineState(&pipeline_state_desc, IID_PPV_ARGS(&output->pso));
+        const HRESULT hr = device->CreateGraphicsPipelineState(&pipeline_state_desc, IID_PPV_ARGS(&output.pso));
         if(FAILED(hr)) {
             throw shader_compilation_failed("Could not create PSO");
         }
+
+		return output;
     }
 
     void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type, const D3D12_SHADER_INPUT_BIND_DESC & bind_desc, const uint32_t set, std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {

@@ -35,6 +35,7 @@
 #include <memory>
 #include <vector>
 
+#define CACHE_LINE_SIZE 64
 
 namespace nova {
 
