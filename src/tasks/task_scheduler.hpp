@@ -12,6 +12,7 @@
 #include <future>
 #include "wait_free_queue.hpp"
 #include "../util/utils.hpp"
+#include "condition_counter.hpp"
 
 namespace nova::ttl {
 	NOVA_EXCEPTION(called_from_external_thread);
@@ -113,6 +114,31 @@ namespace nova::ttl {
 			std::future<RetVal> future = task.get_future();
 
 			add_task([moved_task = std::move(task)] { moved_task(); });
+
+			return future;
+		}
+
+		/*!
+		 * \brief Adds a task to the internal queue. Allocates internally
+		 *
+		 * \tparam F       Function type.
+		 * \tparam Args    Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
+		 *
+		 * \param counter  The counter to decrement when the task has finished
+		 * \param function Function to invoke
+		 * \param args     Arguments to the function. Copied if lvalue. Moved if rvalue. Use std::ref/std::cref for references.
+		 *
+		 * \return A future to the data that your task will produce
+		 */
+		template<class F, class... Args>
+		auto add_task(condition_counter* counter, F&& function, Args&&... args)
+			-> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
+			using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
+
+			std::packaged_task<RetVal()> task(std::bind(function, this, std::forward<Args>(args)...));
+			std::future<RetVal> future = task.get_future();
+
+			add_task([moved_task = std::move(task)]{ moved_task(); counter->sub(1); });
 
 			return future;
 		}

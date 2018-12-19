@@ -1221,7 +1221,7 @@ namespace nova {
     void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
 
-        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
+        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1256,15 +1256,15 @@ namespace nova {
 
         std::vector<VkCommandBuffer> secondary_command_buffers(pipelines.size());
 
-        ftl::AtomicCounter pipelines_rendering_counter(scheduler);
+        ttl::condition_counter pipelines_rendering_counter;
         uint32_t i = 0;
         for(const vk_pipeline& pipe : pipelines) {
-            scheduler->AddTask(&pipelines_rendering_counter, [&](ftl::TaskScheduler* scheduler, const vk_pipeline* material_pass, VkCommandBuffer* cmds) { render_pipeline(material_pass, cmds); },
+            scheduler->add_task(&pipelines_rendering_counter, [&](ttl::task_scheduler* scheduler, const vk_pipeline* material_pass, VkCommandBuffer* cmds) { render_pipeline(material_pass, cmds); },
                 &pipe, &secondary_command_buffers[i]);
             i++;
         }
 
-        scheduler->WaitForCounter(&pipelines_rendering_counter, 0);
+        pipelines_rendering_counter.wait_for_value(0);
 
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
 
@@ -1604,13 +1604,13 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_material_descriptor_sets() {
-        ftl::AtomicCounter descriptor_set_creation_counter(scheduler);
+        ttl::condition_counter descriptor_set_creation_counter;
 
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             for(const auto& pipeline : pipelines) {
                 std::vector<material_pass>& mats = material_passes_by_pipeline.at(pipeline.data.name);
-                scheduler->AddTask(&descriptor_set_creation_counter,
-                    [&](ftl::TaskScheduler* scheduler, const vk_pipeline* pipeline, std::vector<material_pass>* mats) {
+                scheduler->add_task(&descriptor_set_creation_counter,
+                    [&](ttl::task_scheduler* scheduler, const vk_pipeline* pipeline, std::vector<material_pass>* mats) {
                         for(material_pass& mat : *mats) {
                             if(pipeline->layouts.empty()) {
                                 // If there's no layouts, we're done
@@ -1644,7 +1644,7 @@ namespace nova {
             }
         }
 
-        scheduler->WaitForCounter(&descriptor_set_creation_counter, 0);
+        descriptor_set_creation_counter.wait_for_value(0);
     }
 
     void vulkan_render_engine::update_material_descriptor_sets(const material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor) {

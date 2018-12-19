@@ -144,9 +144,11 @@ set(NOVA_SOURCE
 		src/render_engine/vulkan/compacting_block_allocator.cpp 
 		src/render_engine/vulkan/compacting_block_allocator.hpp 
 		src/render_engine/vulkan/vulkan_utils.cpp 
-		src/tasks/thread_pool.cpp 
-		src/tasks/thread_pool.hpp
-		src/tasks/wait_free_queue.h)
+		src/tasks/task_scheduler.cpp
+		src/tasks/task_scheduler.hpp
+		src/tasks/wait_free_queue.hpp
+		src/tasks/condition_counter.cpp
+		src/tasks/condition_counter.hpp)
 
 if(WIN32)
     set(NOVA_SOURCE
