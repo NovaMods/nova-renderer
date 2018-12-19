@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <mutex>
+#include <condition_variable>
 
 namespace nova::ttl {
 	/*!

@@ -11,8 +11,6 @@
 #include <string>
 #include <memory>
 
-#include <TaskScheduler.h>
-
 #include "settings/nova_settings.hpp"
 #include "render_engine/render_engine.hpp"
 #include "tasks/task_scheduler.hpp"

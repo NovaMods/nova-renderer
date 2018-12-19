@@ -8,6 +8,10 @@
 #include <vulkan/vulkan.h>
 #include "../../loading/shaderpack/shaderpack_data.hpp"
 
+#ifdef Always // RIP X11 and its macros
+#undef Always
+#endif
+
 #endif  // NOVA_RENDERER_VULKAN_TYPE_CONVERTERS_HPP
 
 namespace nova::vulkan {

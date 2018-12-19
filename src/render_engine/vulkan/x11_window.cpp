@@ -59,7 +59,7 @@ namespace nova {
         return should_window_close;
     }
 
-    iwindow::window_size x11_window::get_window_size() const {
+    glm::uvec2 x11_window::get_window_size() const {
         Window root_window;
         int x_pos;
         int y_pos;

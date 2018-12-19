@@ -1,3 +1,5 @@
+#include <utility>
+
 /*!
  * \author ddubois 
  * \date 15-Dec-18.
@@ -57,6 +59,10 @@ namespace nova::ttl {
 				}
 			}
 		}
+	}
+
+	void task_scheduler::__add_task(std::function<void()> task) {
+		add_task(std::move(task));
 	}
 
     bool task_scheduler::get_next_task(std::function<void()>* task) {

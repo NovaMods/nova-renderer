@@ -85,7 +85,7 @@ namespace nova::ttl {
          * \param num_threads The number of threads for this thread pool
          * \param behavior The behavior of empty task queues. See \enum empty_queue_behavior for more info
          */
-        task_scheduler(const uint32_t num_threads, const empty_queue_behavior behavior);;
+        task_scheduler(const uint32_t num_threads, const empty_queue_behavior behavior);
         
 		task_scheduler(task_scheduler&& other) noexcept = default;
 		task_scheduler& operator=(task_scheduler&& other) noexcept = default;
@@ -111,10 +111,12 @@ namespace nova::ttl {
 			-> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
 			using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
 
-			std::packaged_task<RetVal()> task(std::bind(std::move(function), this, std::forward<Args>(args)...));
+			std::packaged_task<RetVal()> task(std::bind(std::forward<F>(function), this, std::forward<Args>(args)...));
 			std::future<RetVal> future = task.get_future();
 
-			add_task([moved_task{ std::move(task) }]() mutable { moved_task(); });
+			__add_task([&]{
+				task();
+			});
 
 			return future;
 		}
@@ -139,7 +141,7 @@ namespace nova::ttl {
 			std::packaged_task<RetVal()> task(std::bind(function, this, std::forward<Args>(args)...));
 			std::future<RetVal> future = task.get_future();
 
-			add_task([=, moved_task = std::move(task)]() mutable { moved_task(); counter->sub(1); });
+			add_task([&]() mutable { task(); counter->sub(1); });
 
 			return future;
 		}
@@ -174,6 +176,12 @@ namespace nova::ttl {
 	     * \param task       The task to queue
 	     */
 		void add_task(std::function<void()> task);
+		/*!
+		 * \brief Proxy to add_task because the compiler cannot be sure which add_task
+		 * 		  to use for lambdas
+		 * \param task The task to queue
+		 */
+		void __add_task(std::function<void()> task);
 
         /*!
          * \brief Attempts to get the next task, returning success

@@ -52,7 +52,7 @@ add_subdirectory(${3RD_PARTY_DIR}/json)
 
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
-set(SPIRV_SKIP_TESTS OFF CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
+set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
 add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
 add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
 add_subdirectory(${3RD_PARTY_DIR}/glslang)
@@ -197,7 +197,7 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS NOMINMAX)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} spirv-cross-core spirv-cross-glsl spirv-cross-hlsl spirv-cross-reflect spirv-cross-util nova-profiler ftl miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES} ${Vulkan_LIBRARIES})
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} spirv-cross-core spirv-cross-glsl spirv-cross-hlsl spirv-cross-reflect spirv-cross-util nova-profiler miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES} ${Vulkan_LIBRARIES})
 
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")

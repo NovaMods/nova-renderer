@@ -30,10 +30,23 @@ namespace nova {
         void on_frame_end() override;
         bool should_close() const override;
 
-        window_size get_window_size() const override;
+        glm::uvec2 get_window_size() const override;
     };
 }  // namespace nova
 
+#endif
+
+// X11 macros that are bad
+#ifdef Always
+#undef Always
+#endif
+
+#ifdef None
+#undef None
+#endif
+
+#ifdef Bool
+#undef Bool
 #endif
 
 #endif  // NOVA_RENDERER_X_11_WINDOW_HPP
