@@ -100,12 +100,12 @@ namespace nova {
 			uint64_t t = m_top.load(std::memory_order_acquire);
 			circular_array *array = m_array.load(std::memory_order_relaxed);
 
-			if(b - t > array->Size() - 1) {
+			if(b - t > array->size() - 1) {
 				/* Full queue. */
-				array = array->Grow(t, b);
+				array = array->grow(t, b);
 				m_array.store(array, std::memory_order_release);
 			}
-			array->Put(b, value);
+			array->put(b, value);
 
 #if defined(FTL_STRONG_MEMORY_MODEL)
 			std::atomic_signal_fence(std::memory_order_release);
@@ -127,7 +127,7 @@ namespace nova {
 			bool result = true;
 			if(t <= b) {
 				/* Non-empty queue. */
-				*value = array->Get(b);
+				*value = array->get(b);
 				if(t == b) {
 					/* Single last element in queue. */
 					if(!std::atomic_compare_exchange_strong_explicit(&m_top, &t, t + 1, std::memory_order_seq_cst, std::memory_order_relaxed)) {
@@ -158,7 +158,7 @@ namespace nova {
 			if(t < b) {
 				/* Non-empty queue. */
 				circular_array *array = m_array.load(std::memory_order_consume);
-				*value = array->Get(t);
+				*value = array->get(t);
 				if(!std::atomic_compare_exchange_strong_explicit(&m_top, &t, t + 1, std::memory_order_seq_cst, std::memory_order_relaxed)) {
 					/* Failed race. */
 					return false;

@@ -196,7 +196,7 @@ namespace nova {
         print(report);
         if(!report.errors.empty()) {
             loading_failed = true;
-            return;
+            return {};
         }
 
         pipeline_data new_pipeline = json_pipeline.get<pipeline_data>();
@@ -408,7 +408,7 @@ namespace nova {
         if(!report.errors.empty()) {
             // There were errors, this material can't be loaded
             loading_failed = true;
-            return;
+            return {};
         }
 
         auto material = json_material.get<material_data>();

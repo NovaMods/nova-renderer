@@ -399,11 +399,11 @@ namespace nova {
 		VkSemaphoreCreateInfo semaphore_info = {};
 		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-		frame_fences.resize(MAX_FRAMES_IN_QUEUE);
-		image_available_semaphores.resize(MAX_FRAMES_IN_QUEUE);
-		render_finished_semaphores.resize(MAX_FRAMES_IN_QUEUE);
+		frame_fences.resize(max_frames_in_queue);
+		image_available_semaphores.resize(max_frames_in_queue);
+		render_finished_semaphores.resize(max_frames_in_queue);
 
-		for(uint32_t i = 0; i < MAX_FRAMES_IN_QUEUE; i++) {
+		for(uint32_t i = 0; i < max_frames_in_queue; i++) {
 			NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]), render_engine_initialization_exception);
 			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &render_finished_semaphores[i]), render_engine_initialization_exception);
 			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]), render_engine_initialization_exception);
@@ -1140,7 +1140,7 @@ namespace nova {
         present_info.pResults = nullptr;
         vkQueuePresentKHR(graphics_queue, &present_info);
 
-        current_frame = (current_frame + 1) % MAX_FRAMES_IN_QUEUE;
+        current_frame = (current_frame + 1) % max_frames_in_queue;
     }
 
     std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>> vulkan_render_engine::to_vk_attachment_info(std::vector<std::string>& attachment_names) {

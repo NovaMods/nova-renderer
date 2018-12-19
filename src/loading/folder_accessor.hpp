@@ -56,9 +56,14 @@ namespace nova {
         /*!
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
-         * \param scheduler The task scheduler to create mutexes with
          */
         folder_accessor_base(fs::path folder);
+
+		folder_accessor_base(folder_accessor_base&& other) noexcept = default;
+		folder_accessor_base& operator=(folder_accessor_base&& other) noexcept = default;
+
+		folder_accessor_base(const folder_accessor_base& other) = default;
+		folder_accessor_base& operator=(const folder_accessor_base& other) = default;
 
         virtual ~folder_accessor_base() = default;
 
@@ -96,10 +101,10 @@ namespace nova {
          */
         virtual std::vector<fs::path> get_all_items_in_folder(const fs::path &folder) = 0;
 
-        const fs::path &get_root() const;
+        std::shared_ptr<fs::path> get_root() const;
 
     protected:
-        fs::path root_folder;
+        std::shared_ptr<fs::path> root_folder;
 
         /*!
          * \brief I expect certain resources, like textures, to be requested a lot as Nova streams them in and out of
@@ -109,7 +114,7 @@ namespace nova {
          */
         std::unordered_map<std::string, bool> resource_existence;
 
-        std::mutex resource_existence_mutex;
+        std::unique_ptr<std::mutex> resource_existence_mutex;
 
         std::optional<bool> does_resource_exist_in_map(const std::string &resource_string) const;
 

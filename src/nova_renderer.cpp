@@ -22,16 +22,16 @@ namespace nova {
     nova_renderer *nova_renderer::instance;
 
     nova_renderer::nova_renderer(const settings_options &settings) : 
-		render_settings(settings), task_scheduler(16) {
+		render_settings(settings), task_scheduler(16, ttl::empty_queue_behavior::YIELD) {
 
         switch(settings.api) {
         case graphics_api::dx12:
             #if _WIN32
-            engine = std::make_unique<dx12_render_engine>(render_settings, task_scheduler);
+            engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
             break;
             #endif
         case graphics_api::vulkan:
-            engine = std::make_unique<vulkan_render_engine>(render_settings, task_scheduler);
+            engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler);
         }
 
         NOVA_LOG(DEBUG) << "Opened window";

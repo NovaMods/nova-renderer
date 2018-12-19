@@ -83,11 +83,12 @@ namespace nova::ttl {
          * \brief Initializes this thread pool with `num_threads` threads
          * 
          * \param num_threads The number of threads for this thread pool
+         * \param behavior The behavior of empty task queues. See \enum empty_queue_behavior for more info
          */
-        explicit task_scheduler(uint32_t num_threads);
+        task_scheduler(const uint32_t num_threads, const empty_queue_behavior behavior);;
         
 		task_scheduler(task_scheduler&& other) noexcept = default;
-		task_scheduler& operator=(task_scheduler&& other) = default;
+		task_scheduler& operator=(task_scheduler&& other) noexcept = default;
 
 		~task_scheduler();
 
@@ -110,10 +111,10 @@ namespace nova::ttl {
 			-> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
 			using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
 
-			std::packaged_task<RetVal()> task(std::bind(function, this, std::forward<Args>(args)...));
+			std::packaged_task<RetVal()> task(std::bind(std::move(function), this, std::forward<Args>(args)...));
 			std::future<RetVal> future = task.get_future();
 
-			add_task([moved_task = std::move(task)] { moved_task(); });
+			add_task([moved_task{ std::move(task) }]() mutable { moved_task(); });
 
 			return future;
 		}
@@ -138,7 +139,7 @@ namespace nova::ttl {
 			std::packaged_task<RetVal()> task(std::bind(function, this, std::forward<Args>(args)...));
 			std::future<RetVal> future = task.get_future();
 
-			add_task([moved_task = std::move(task)]{ moved_task(); counter->sub(1); });
+			add_task([=, moved_task = std::move(task)]() mutable { moved_task(); counter->sub(1); });
 
 			return future;
 		}
@@ -163,9 +164,9 @@ namespace nova::ttl {
 		std::vector<std::thread> threads;
 		std::vector<per_thread_data> thread_local_data;
 
-		std::atomic<bool> should_shutdown;
+		std::unique_ptr<std::atomic<bool>> should_shutdown;
     
-		std::atomic<empty_queue_behavior> behavior_of_empty_queues;
+		empty_queue_behavior behavior_of_empty_queues;
 
         /*!
 	     * \brief Adds a task to the internal queue.

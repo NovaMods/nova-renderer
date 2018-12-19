@@ -6,7 +6,7 @@
 #include "task_scheduler.hpp"
 
 namespace nova::ttl {
-	task_scheduler::task_scheduler(uint32_t num_threads) : num_threads(num_threads), should_shutdown(false) {
+	task_scheduler::task_scheduler(const uint32_t num_threads, const empty_queue_behavior behavior) : num_threads(num_threads), should_shutdown(new std::atomic<bool>(false)) {
 		threads.reserve(num_threads);
 
         for(uint32_t i = 0; i < num_threads; i++) {
@@ -15,7 +15,7 @@ namespace nova::ttl {
 	}
 
     task_scheduler::~task_scheduler() {
-		should_shutdown = true;
+		should_shutdown->store(true);
 
         for(auto& thread : threads) {
 			thread.join();
@@ -45,8 +45,7 @@ namespace nova::ttl {
 		const std::size_t thread_idx = get_current_thread_idx();
 		thread_local_data[get_current_thread_idx()].task_queue.push(std::move(task));
 
-		const empty_queue_behavior behavior = behavior_of_empty_queues.load(std::memory_order_relaxed);
-		if(behavior == empty_queue_behavior::SLEEP) {
+		if(behavior_of_empty_queues  == empty_queue_behavior::SLEEP) {
 			// Find a thread that is sleeping and wake it
 			for(uint32_t i = 0; i < num_threads; ++i) {
 				std::unique_lock<std::mutex> lock(thread_local_data[i].things_in_queue_mutex);
@@ -95,11 +94,11 @@ namespace nova::ttl {
 	    const std::size_t thread_idx = pool->get_current_thread_idx();
 		task_scheduler::per_thread_data& tls = pool->thread_local_data[thread_idx];
 
-		while(!pool->should_shutdown.load(std::memory_order_acquire)) {
+		while(!pool->should_shutdown->load()) {
 			// Get a new task from the queue, and execute it
 			std::function<void()> next_task;
 		    const bool success = pool->get_next_task(&next_task);
-		    const empty_queue_behavior behavior = pool->behavior_of_empty_queues.load(std::memory_order::memory_order_relaxed);
+			const empty_queue_behavior behavior = pool->behavior_of_empty_queues;
 
 			if(success) {
 				next_task();

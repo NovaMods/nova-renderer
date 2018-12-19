@@ -127,7 +127,7 @@ namespace nova {
         void delete_mesh(uint32_t mesh_id) override;
 
     private:
-        const uint32_t MAX_FRAMES_IN_QUEUE = 3;
+        const uint32_t max_frames_in_queue = 3;
         uint32_t current_frame = 0;
 
         std::vector<const char*> enabled_validation_layer_names;

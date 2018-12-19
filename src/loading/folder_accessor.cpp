@@ -8,12 +8,12 @@
 #include "../util/logger.hpp"
 
 namespace nova {
-    folder_accessor_base::folder_accessor_base(fs::path folder) : root_folder(std::move(folder)) {}
+    folder_accessor_base::folder_accessor_base(fs::path folder) : root_folder(std::make_shared<fs::path>(folder)), resource_existence_mutex(new std::mutex) {}
 
     bool folder_accessor_base::does_resource_exist(const fs::path& resource_path) {
-        std::lock_guard l(resource_existence_mutex);
+        std::lock_guard l(*resource_existence_mutex);
 
-        const auto full_path = root_folder / resource_path;
+        const auto full_path = *root_folder / resource_path;
         return does_resource_exist_internal(full_path);
     }
 
@@ -29,6 +29,7 @@ namespace nova {
     }
 
     std::optional<bool> folder_accessor_base::does_resource_exist_in_map(const std::string &resource_string) const {
+		std::lock_guard l(*resource_existence_mutex);
         if(resource_existence.find(resource_string) != resource_existence.end()) {
             return std::make_optional<bool>(resource_existence.at(resource_string));
         }
@@ -36,7 +37,7 @@ namespace nova {
         return {};
     }
     
-    const fs::path &folder_accessor_base::get_root() const {
+    std::shared_ptr<fs::path> folder_accessor_base::get_root() const {
         return root_folder;
     }
 

@@ -12,11 +12,11 @@ namespace nova {
 
     std::string regular_folder_accessor::read_text_file(const fs::path &resource_path) {
         fs::path full_resource_path;
-        if(has_root(resource_path, root_folder)) {
+        if(has_root(resource_path, *root_folder)) {
             full_resource_path = resource_path;
 
         } else {
-            full_resource_path = root_folder / resource_path;
+            full_resource_path = *root_folder / resource_path;
         }
 
         if(!does_resource_exist_internal(full_resource_path)) {
@@ -27,7 +27,7 @@ namespace nova {
         // std::vector<uint8_t> buf;
         std::ifstream resource_stream(full_resource_path);
         if(!resource_stream.good()) {
-            std::lock_guard l(resource_existence_mutex);
+            std::lock_guard l(*resource_existence_mutex);
             // Error reading this file - it can't be read again in the future
             const auto resource_string = full_resource_path.string();
 
@@ -53,7 +53,7 @@ namespace nova {
     }
 
     std::vector<fs::path> regular_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
-        const fs::path full_path = root_folder / folder;
+        const fs::path full_path = *root_folder / folder;
         std::vector<fs::path> paths = {};
 
         try {

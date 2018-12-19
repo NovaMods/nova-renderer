@@ -198,7 +198,7 @@ target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
-target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
+target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS NOMINMAX)
 #endif()
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} spirv-cross-core spirv-cross-glsl spirv-cross-hlsl spirv-cross-reflect spirv-cross-util nova-profiler ftl miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES} ${Vulkan_LIBRARIES})
