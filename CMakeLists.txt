@@ -50,10 +50,6 @@ add_subdirectory(${3RD_PARTY_DIR}/profiler)
 set(JSON_BuildTests OFF CACHE BOOL "JSON tests go away" FORCE)
 add_subdirectory(${3RD_PARTY_DIR}/json)
 
-set(ENKITS_BUILD_C_INTERFACE OFF CACHE BOOL "C interface is not my friend" FORCE)
-set(ENKITS_BUILD_EXAMPLES OFF CACHE BOOL "Examples are not my friend" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/enkiTS)
-
 add_subdirectory(${3RD_PARTY_DIR}/miniz)
 
 set(SPIRV_SKIP_TESTS OFF CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
