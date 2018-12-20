@@ -68,15 +68,23 @@ namespace nova::ttl {
             /*!
              * \brief A queue of all the tasks this thread needs to execute
              */
-			wait_free_queue<std::function<void()>> task_queue;
+			std::unique_ptr<wait_free_queue<std::function<void()>>> task_queue;
             /*!
              * \brief The index of the queue we last stole from
              */
-			std::size_t last_successful_steal;
+			std::size_t last_successful_steal = 0;
 
-			std::mutex things_in_queue_mutex;
-			std::condition_variable things_in_queue_cv;
-			std::atomic<bool> is_sleeping = false;
+			std::unique_ptr<std::mutex> things_in_queue_mutex;
+			std::unique_ptr<std::condition_variable> things_in_queue_cv;
+			std::unique_ptr<std::atomic<bool>> is_sleeping;
+
+			per_thread_data();
+
+			per_thread_data(per_thread_data&& other) noexcept = default;
+			per_thread_data& operator=(per_thread_data&& other) noexcept = default;
+
+			per_thread_data(const per_thread_data& other) = delete;
+			per_thread_data& operator=(const per_thread_data& other) = delete;
         };
 
         /*!
@@ -168,7 +176,10 @@ namespace nova::ttl {
 
 		std::unique_ptr<std::atomic<bool>> should_shutdown;
     
-		empty_queue_behavior behavior_of_empty_queues;
+		empty_queue_behavior behavior_of_empty_queues = empty_queue_behavior::YIELD;
+        bool initialized = false;
+		std::unique_ptr<std::mutex> initialized_mutex;
+        std::unique_ptr<std::condition_variable> initialized_cv;
 
         /*!
 	     * \brief Adds a task to the internal queue.

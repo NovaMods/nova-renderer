@@ -1,19 +1,28 @@
-#include <utility>
-
 /*!
  * \author ddubois 
  * \date 15-Dec-18.
  */
 
+#include <utility>
 #include "task_scheduler.hpp"
 
 namespace nova::ttl {
-	task_scheduler::task_scheduler(const uint32_t num_threads, const empty_queue_behavior behavior) : num_threads(num_threads), should_shutdown(new std::atomic<bool>(false)) {
+    task_scheduler::per_thread_data::per_thread_data() : task_queue(new wait_free_queue<std::function<void()>>), things_in_queue_mutex(new std::mutex),
+        things_in_queue_cv(new std::condition_variable), is_sleeping(new std::atomic<bool>(false)) {}
+
+	task_scheduler::task_scheduler(const uint32_t num_threads, const empty_queue_behavior behavior) : num_threads(num_threads), should_shutdown(new std::atomic<bool>(false)), initialized_mutex(new std::mutex), initialized_cv(new std::condition_variable) {
 		threads.reserve(num_threads);
+		thread_local_data.resize(num_threads);
 
         for(uint32_t i = 0; i < num_threads; i++) {
 			threads.emplace_back(thread_func, this);
         }
+
+		{
+			std::lock_guard l(*initialized_mutex);
+			initialized = true;
+			initialized_cv->notify_all();
+		}
 	}
 
     task_scheduler::~task_scheduler() {
@@ -42,18 +51,16 @@ namespace nova::ttl {
 	}
 
     void task_scheduler::add_task(std::function<void()> task) {
-		static thread_local std::size_t external_index = 0;
-
 		const std::size_t thread_idx = get_current_thread_idx();
-		thread_local_data[get_current_thread_idx()].task_queue.push(std::move(task));
+		thread_local_data[thread_idx].task_queue->push(std::move(task));
 
 		if(behavior_of_empty_queues  == empty_queue_behavior::SLEEP) {
 			// Find a thread that is sleeping and wake it
 			for(uint32_t i = 0; i < num_threads; ++i) {
-				std::unique_lock<std::mutex> lock(thread_local_data[i].things_in_queue_mutex);
+				std::unique_lock<std::mutex> lock(*thread_local_data[i].things_in_queue_mutex);
 				if(thread_local_data[i].is_sleeping) {
-					thread_local_data[i].is_sleeping = false;
-					thread_local_data[i].things_in_queue_cv.notify_one();
+					thread_local_data[i].is_sleeping->store(false);
+					thread_local_data[i].things_in_queue_cv->notify_one();
 
 					break;
 				}
@@ -70,7 +77,7 @@ namespace nova::ttl {
 		per_thread_data &tls = thread_local_data[current_thread_index];
 
 		// Try to pop from our own queue
-		if(tls.task_queue.pop(task)) {
+		if(tls.task_queue->pop(task)) {
 			return true;
 		}
 
@@ -83,7 +90,7 @@ namespace nova::ttl {
 			}
 
 			per_thread_data &other_tls = thread_local_data[thread_index_to_steal_from];
-			if(other_tls.task_queue.steal(task)) {
+			if(other_tls.task_queue->steal(task)) {
 				tls.last_successful_steal = thread_index_to_steal_from;
 				return true;
 			}
@@ -97,6 +104,11 @@ namespace nova::ttl {
 	 * executed, if not we check again
 	 */
 	void thread_func(task_scheduler* pool) {
+		{
+			std::unique_lock l(*pool->initialized_mutex);
+			pool->initialized_cv->wait(l, [=] { return pool->initialized; });
+		}
+
 	    const std::size_t thread_idx = pool->get_current_thread_idx();
 		task_scheduler::per_thread_data& tls = pool->thread_local_data[thread_idx];
 
@@ -119,10 +131,10 @@ namespace nova::ttl {
 
 				case empty_queue_behavior::SLEEP:
 				{
-					std::unique_lock<std::mutex> lock(tls.things_in_queue_mutex);
-					tls.is_sleeping = true;
+					std::unique_lock<std::mutex> lock(*tls.things_in_queue_mutex);
+					tls.is_sleeping->store(true);
 
-					tls.things_in_queue_cv.wait(lock);
+					tls.things_in_queue_cv->wait(lock);
 
 					break;
 				}

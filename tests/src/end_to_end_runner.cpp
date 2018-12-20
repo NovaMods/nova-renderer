@@ -43,6 +43,7 @@ namespace nova {
     }
 }
 
+
 TEST(nova_renderer, end_to_end) {
     nova::main();
 }

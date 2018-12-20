@@ -31,5 +31,3 @@ gtest_discover_tests(nova-test-unit)
 add_test(NAME nova-unit-tests COMMAND nova-test-unit)
 
 set(CMAKE_CXX_FLAGS "${NOVA_CXX_FLAGS}")
-
-

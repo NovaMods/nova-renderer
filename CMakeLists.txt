@@ -214,7 +214,7 @@ if (WIN32)
         string(REPLACE "/" "\\" source_path_msvc "${source_path}")
         source_group("${source_path_msvc}" FILES "${source}")
     endforeach()
-
+	
 else(WIN32)
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
 endif (WIN32)

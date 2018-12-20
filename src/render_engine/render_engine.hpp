@@ -54,19 +54,7 @@ namespace nova {
 
         render_engine(const render_engine& other) = delete;
         render_engine& operator=(const render_engine& other) = delete;
-
-        /*!
-         * \brief The engine name, for example "vulkan-1.1"
-         * \attention Can be called before init(nova::settings)
-         *
-         * C++ doesn't support static virtual methods, but if you don't provide this method then Nova won't compile so
-         * it's documented here
-         *
-         * \return the engine name
-         *
-         * static const std::string get_engine_name() const;
-         */
-
+        
         /*!
          * \brief Needed to make destructor of subclasses called
          */
