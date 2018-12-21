@@ -51,10 +51,27 @@ namespace nova::ttl {
 	}
 
     void task_scheduler::add_task(std::function<void()> task) {
-		const std::size_t thread_idx = get_current_thread_idx();
+    	size_t thread_idx = 0;
+    	if(behavior_of_task_queue_search == task_queue_search_behavior::NEXT) {
+			if(last_task_queue_index >= thread_local_data.size()) {
+				last_task_queue_index = 0;
+			}
+
+			thread_idx = last_task_queue_index;
+    	} else if(behavior_of_task_queue_search == task_queue_search_behavior::MOST_EMPTY) {
+    		size_t lowest_size = std::numeric_limits<size_t>::max();
+    		for(size_t i = 0; i < thread_local_data.size(); i++) {
+    			size_t size = thread_local_data[i].task_queue->size();
+    			if(size < lowest_size) {
+    				thread_idx = i;
+    				lowest_size = size;
+    			}
+    		}
+    	}
+
 		thread_local_data[thread_idx].task_queue->push(std::move(task));
 
-		if(behavior_of_empty_queues  == empty_queue_behavior::SLEEP) {
+		if(behavior_of_empty_queues == empty_queue_behavior::SLEEP) {
 			// Find a thread that is sleeping and wake it
 			for(uint32_t i = 0; i < num_threads; ++i) {
 				std::unique_lock<std::mutex> lock(*thread_local_data[i].things_in_queue_mutex);
@@ -68,11 +85,11 @@ namespace nova::ttl {
 		}
 	}
 
-	void task_scheduler::__add_task(std::function<void()> task) {
+	void task_scheduler::add_task_proxy(std::function<void()> task) {
 		add_task(std::move(task));
 	}
 
-    bool task_scheduler::get_next_task(std::function<void()>* task) {
+    bool task_scheduler::get_next_task(std::function<void()> *task) {
         const std::size_t current_thread_index = get_current_thread_idx();
 		per_thread_data &tls = thread_local_data[current_thread_index];
 
@@ -103,7 +120,7 @@ namespace nova::ttl {
 	 * \brief Function for each thread in the thread pool. We check if there's any tasks to execute. If so they get
 	 * executed, if not we check again
 	 */
-	void thread_func(task_scheduler* pool) {
+	void thread_func(task_scheduler *pool) {
 		{
 			std::unique_lock l(*pool->initialized_mutex);
 			pool->initialized_cv->wait(l, [=] { return pool->initialized; });
@@ -120,7 +137,6 @@ namespace nova::ttl {
 
 			if(success) {
 				next_task();
-
 			} else {
 				// We failed to find a Task from any of the queues
 				// What we do now depends on behavior_of_empty_queues, which we loaded above

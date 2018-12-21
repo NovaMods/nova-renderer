@@ -159,7 +159,7 @@ namespace nova {
         std::vector<fs::path> potential_pipeline_files;
         try {
             potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
-        } catch(filesystem_exception &exception) {
+        } catch(const filesystem_exception &exception) {
             NOVA_LOG(ERROR) << "Materials folder does not exist: " << exception.what();
             loading_failed = true;
             return;

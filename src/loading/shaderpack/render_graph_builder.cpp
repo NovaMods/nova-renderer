@@ -70,7 +70,7 @@ namespace nova {
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_data>& passes) {
         NOVA_PROFILER_SCOPE;
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
-        auto ordered_passes = std::vector<std::string>{};
+        std::vector<std::string> ordered_passes;
 
         /*
          * Build some acceleration structures

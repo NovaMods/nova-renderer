@@ -56,7 +56,7 @@ namespace nova {
 		public:
 			circular_array(std::size_t n)
 				: items(n) {
-				assert(!(n == 0) && !(n & (n - 1)) && "n must be a power of 2");
+				assert(n != 0 && !(n & (n - 1)) && "n must be a power of 2");
 			}
 
 		private:
@@ -80,7 +80,7 @@ namespace nova {
 			// linked list of all previous arrays. This is done because other threads
 			// could still be accessing elements from the smaller arrays.
 			circular_array *grow(std::size_t top, std::size_t bottom) {
-				circular_array *new_array = new circular_array(size() * 2);
+				auto *new_array = new circular_array(size() * 2);
 				new_array->previous.reset(this);
 				for(std::size_t i = top; i != bottom; i++) {
 					new_array->put(i, get(i));
@@ -168,6 +168,10 @@ namespace nova {
 			}
 
 			return false;
+		}
+
+		size_t size() {
+			return m_array.load(std::memory_order_relaxed)->size();
 		}
 	};
 

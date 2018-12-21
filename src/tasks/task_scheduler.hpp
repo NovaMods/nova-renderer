@@ -19,7 +19,7 @@ namespace nova::ttl {
 
 	class task_scheduler;
 
-	using ArgumentExtractorType = std::function<void(task_scheduler*)>;
+	using ArgumentExtractorType = std::function<void(task_scheduler *)>;
 
 	typedef void(*TaskFunction)(task_scheduler *task_scheduler, void *arg);
 
@@ -28,8 +28,8 @@ namespace nova::ttl {
 		void *arg_data;
 	};
 
-    inline void argument_extractor(task_scheduler* scheduler, void* arg) {
-		auto* func = static_cast<ArgumentExtractorType*>(arg);
+    inline void argument_extractor(task_scheduler *scheduler, void *arg) {
+		auto *func = static_cast<ArgumentExtractorType *>(arg);
 
 		(*func)(scheduler);
 
@@ -37,23 +37,38 @@ namespace nova::ttl {
 	}
 
     /*!
-     * What a thread should do when there's no new tasks
+     * \brief What a thread should do when there's no new tasks
      */
     enum class empty_queue_behavior {
         /*!
-         * Keep polling the task queue until there's a task
+         * \brief Keep polling the task queue until there's a task
          */
         SPIN,
 
         /*!
-         * Yield to the OS after each poll
+         * \brief Yield to the OS after each poll
          */
         YIELD,
 
         /*!
-         * Sleep until tasks are available
+         * \brief Sleep until tasks are available
          */
         SLEEP
+    };
+
+    /*!
+     * \brief How a task queue is searched for adding a new task
+     */
+    enum class task_queue_search_behavior {
+        /*!
+         * \brief Just choose the next queue from the previously filled one and start from the beginning if none is left
+         */
+        NEXT,
+
+        /*!
+         * \brief Search for the most empty queue and add the task to it
+         */
+        MOST_EMPTY
     };
 
     /*!
@@ -119,12 +134,12 @@ namespace nova::ttl {
 			-> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
 			using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
 
-			std::packaged_task<RetVal()> task(std::bind(std::forward<F>(function), this, std::forward<Args>(args)...));
-			std::future<RetVal> future = task.get_future();
+			auto task = std::make_shared<std::packaged_task<RetVal()>>(std::bind(std::forward<F>(function), this, std::forward<Args>(args)...));
+			std::future<RetVal> future = task->get_future();
 
-			__add_task([&]{
-				task();
-			});
+            add_task_proxy([task] {
+                task.get()->operator()();
+            });
 
 			return future;
 		}
@@ -146,10 +161,14 @@ namespace nova::ttl {
 			-> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
 			using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
 
-			std::packaged_task<RetVal()> task(std::bind(function, this, std::forward<Args>(args)...));
-			std::future<RetVal> future = task.get_future();
+			auto task = std::make_shared<std::packaged_task<RetVal()>>(std::bind(function, this, std::forward<Args>(args)...));
+			std::future<RetVal> future = task->get_future();
 
-			add_task([&]() mutable { task(); counter->sub(1); });
+			counter->add(1);
+            add_task_proxy([task, counter] {
+                task.get()->operator()();
+                counter->sub(1);
+            });
 
 			return future;
 		}
@@ -177,9 +196,12 @@ namespace nova::ttl {
 		std::unique_ptr<std::atomic<bool>> should_shutdown;
     
 		empty_queue_behavior behavior_of_empty_queues = empty_queue_behavior::YIELD;
+		task_queue_search_behavior behavior_of_task_queue_search = task_queue_search_behavior::NEXT;
         bool initialized = false;
 		std::unique_ptr<std::mutex> initialized_mutex;
         std::unique_ptr<std::condition_variable> initialized_cv;
+
+        uint32_t last_task_queue_index = 0;
 
         /*!
 	     * \brief Adds a task to the internal queue.
@@ -192,7 +214,7 @@ namespace nova::ttl {
 		 * 		  to use for lambdas
 		 * \param task The task to queue
 		 */
-		void __add_task(std::function<void()> task);
+		void add_task_proxy(std::function<void()> task);
 
         /*!
          * \brief Attempts to get the next task, returning success
