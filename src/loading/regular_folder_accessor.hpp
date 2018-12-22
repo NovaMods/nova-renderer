@@ -21,7 +21,7 @@ namespace nova {
         std::vector<fs::path> get_all_items_in_folder(const fs::path &folder) override;
 
     protected:
-        bool does_resource_exist_internal(const fs::path &resource_path) override;
+        bool does_resource_exist_on_filesystem(const fs::path &resource_path) override;
     };
 }  // namespace nova
 

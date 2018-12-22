@@ -123,7 +123,7 @@ namespace nova {
          *
          * \param resource_path The path to the resource, with `our_root` already appended
          */
-        virtual bool does_resource_exist_internal(const fs::path &resource_path) = 0;
+        virtual bool does_resource_exist_on_filesystem(const fs::path &resource_path) = 0;
     };
 
     /*!

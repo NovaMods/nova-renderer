@@ -42,7 +42,7 @@ namespace nova {
 
         void build_file_tree();
 
-        bool does_resource_exist_internal(const fs::path &resource_path) override;
+        bool does_resource_exist_on_filesystem(const fs::path &resource_path) override;
     };
 
     /*!

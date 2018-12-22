@@ -27,7 +27,7 @@ namespace nova {
         const fs::path full_path = *root_folder / resource_path;
 
         const std::string resource_string = full_path.string();
-        if(!does_resource_exist_internal(full_path)) {
+        if(!does_resource_exist_on_filesystem(full_path)) {
             NOVA_LOG(DEBUG) << "Resource at path " << resource_string << " does not exist";
             throw resource_not_found_exception(resource_string);
         }
@@ -137,7 +137,7 @@ namespace nova {
         }
     }
 
-    bool zip_folder_accessor::does_resource_exist_internal(const fs::path &resource_path) {
+    bool zip_folder_accessor::does_resource_exist_on_filesystem(const fs::path &resource_path) {
         const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {

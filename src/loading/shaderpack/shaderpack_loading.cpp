@@ -52,18 +52,22 @@ namespace nova {
         // Load resource definitions
         shaderpack_resources_data loaded_resources = {};
         task_scheduler.add_task(&loading_tasks_remaining, load_dynamic_resources_file, folder_access, &data);
+		NOVA_LOG(TRACE) << "Kicked off resources loading task";
 
         // Load pass definitions
         std::vector<render_pass_data> loaded_passes;
         task_scheduler.add_task(&loading_tasks_remaining, load_passes_file, folder_access, &data);
+		NOVA_LOG(TRACE) << "Kicked off passes loading task";
 
         // Load pipeline definitions
         std::vector<pipeline_data> loaded_pipelines;
         task_scheduler.add_task(&loading_tasks_remaining, load_pipeline_files, folder_access, &data);
+		NOVA_LOG(TRACE) << "Kicked off pipelines loading tasks";
 
         // Load materials
         std::vector<material_data> loaded_materials;
         task_scheduler.add_task(&loading_tasks_remaining, load_material_files, folder_access, &data);
+		NOVA_LOG(TRACE) << "Kicked off materials loading task";
 
         loading_tasks_remaining.wait_for_value(0);
 
@@ -175,6 +179,7 @@ namespace nova {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
                 future_pipelines[i] = task_scheduler->add_task(load_single_pipeline, folder_access, potential_file);
+				NOVA_LOG(TRACE) << "Kicked off task to load pipeline " << i;
 				i++;
             }
         }
