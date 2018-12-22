@@ -18,6 +18,8 @@
 
 #ifdef __linux__
 #include <execinfo.h>
+#include <cxxabi.h>
+
 #endif
 
 namespace nova {
@@ -1071,7 +1073,7 @@ namespace nova {
         }
 #ifndef _WIN32
         if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
-            void* array[50];
+            void *array[50];
             int size;
 
             // get void*'s for all entries on the stack
@@ -1079,9 +1081,31 @@ namespace nova {
 
             // print out all the frames to stderr
             NOVA_LOG(ERROR) << "Stacktrace: ";
-            char** data = backtrace_symbols(array, size);
+            char **data = backtrace_symbols(array, size);
+
             for(int i = 0; i < size; i++) {
-                NOVA_LOG(ERROR) << "\t" << data[i];
+                std::string str(data[i]);
+
+                if(str.find_last_of('(') != std::string::npos && str.find_last_of(')') != std::string::npos) {
+                    std::string path = str.substr(0, str.find_last_of('('));
+                    std::string symbol = str.substr(str.find_last_of('(') + 1, str.find_last_of('+') - str.find_last_of('(') - 1);
+                    std::string address = str.substr(str.find_last_of('+'), str.find_last_of(')') - str.find_last_of('+'));
+
+                    if(symbol.length() > 0) {
+                        char *name = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, nullptr);
+                        symbol = std::string(name);
+                        free(name);
+
+                        str = "";
+                        str.append(path).append("(").append(symbol).append(address).append(")");
+                    }
+                }
+
+                if(str.at(str.length() - 1) == '\n') {
+                    str = str.substr(0, str.length() - 1);
+                }
+
+                NOVA_LOG(ERROR) << "\t" << str;
             }
             free(data);
         }
