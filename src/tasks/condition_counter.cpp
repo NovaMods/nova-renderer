@@ -20,10 +20,10 @@ namespace nova::ttl {
 	}
 
     void condition_counter::sub(const uint32_t num) {
-		bool should_trigger = false;
+		bool should_trigger;
 		{
 			std::unique_lock l(mut);
-			counter -= (counter < num) ? counter : 0;
+			counter -= (counter < num) ? counter : num;
 			should_trigger = counter == wait_val;
 		}
 
