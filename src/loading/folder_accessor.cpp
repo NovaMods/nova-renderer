@@ -4,7 +4,6 @@
  */
 
 #include "folder_accessor.hpp"
-#include <utility>
 #include "../util/logger.hpp"
 
 namespace nova {

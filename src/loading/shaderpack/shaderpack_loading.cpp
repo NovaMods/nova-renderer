@@ -70,6 +70,7 @@ namespace nova {
 		NOVA_LOG(TRACE) << "Kicked off materials loading task";
 
         loading_tasks_remaining.wait_for_value(0);
+		NOVA_LOG(TRACE) << "Loaded shaderpack resources from disk";
 
         delete folder_access;
 
@@ -128,6 +129,8 @@ namespace nova {
             NOVA_LOG(ERROR) << "Could not validate resources.json: " << err.what();
             loading_failed = true;
         }
+
+		NOVA_LOG(TRACE) << "load_dynamic_resources_file finished";
     }
 
     void load_passes_file(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access, shaderpack_data* output) {
@@ -157,6 +160,8 @@ namespace nova {
 
         // Don't check for a resources_not_found exception because a shaderpack _needs_ a passes.json and if the
         // shaderpack doesn't provide one then it can't be loaded, so we'll catch that exception later on
+
+		NOVA_LOG(TRACE) << "load_passes_file finished";
     }
 
     void load_pipeline_files(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access, shaderpack_data* output) {
@@ -184,16 +189,21 @@ namespace nova {
             }
         }
 
+		future_pipelines.resize(i);
+
         for(std::future<pipeline_data>& future_pipeline : future_pipelines) {
 			future_pipeline.wait();
-			output->pipelines.push_back(future_pipeline.get());
+			pipeline_data pipeline = future_pipeline.get();
+			NOVA_LOG(TRACE) << "Finished waiting for load of pipeline " << pipeline.name;
+			output->pipelines.push_back(pipeline);
         }
 
         output->pipelines.shrink_to_fit();
+
+		NOVA_LOG(TRACE) << "load_pipeline_files finished";
     }
 
-    pipeline_data load_single_pipeline(ttl::task_scheduler* task_scheduler, folder_accessor_base* folder_access,
-                                       const fs::path& pipeline_path) {
+    pipeline_data load_single_pipeline(ttl::task_scheduler* task_scheduler, folder_accessor_base* folder_access, const fs::path& pipeline_path) {
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
         auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
@@ -201,6 +211,7 @@ namespace nova {
         print(report);
         if(!report.errors.empty()) {
             loading_failed = true;
+			NOVA_LOG(TRACE) << "Loading pipeline file " << pipeline_path << " failed";
             return {};
         }
 
@@ -228,6 +239,8 @@ namespace nova {
             (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename, 
                 folder_access, EShLangFragment, new_pipeline.defines);
         }
+
+		NOVA_LOG(TRACE) << "Load of pipeline " << pipeline_path << " succeeded";
 
         return new_pipeline;
     }
@@ -395,13 +408,17 @@ namespace nova {
 				i++;
             }
         }
+		future_materials.resize(i);
 
 		for(auto& future_material : future_materials) {
 			future_material.wait();
-			output->materials.push_back(future_material.get());
+			material_data material = future_material.get();
+			NOVA_LOG(TRACE) << "Finished waiting for material " << material.name;
+			output->materials.push_back(material);
 		}
 
 		output->materials.shrink_to_fit();
+		NOVA_LOG(TRACE) << "load_material_files finished";
     }
 
     material_data load_single_material(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access, const fs::path &material_path) {
@@ -413,11 +430,13 @@ namespace nova {
         if(!report.errors.empty()) {
             // There were errors, this material can't be loaded
             loading_failed = true;
+			NOVA_LOG(TRACE) << "Load of material " << material_path << " failed";
             return {};
         }
 
         auto material = json_material.get<material_data>();
         material.name = material_path.stem().string();
+		NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
     }
 }  // namespace nova

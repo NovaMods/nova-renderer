@@ -69,18 +69,21 @@ namespace nova {
     }
 
     bool regular_folder_accessor::does_resource_exist_on_filesystem(const fs::path &resource_path) {
-		NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
+		// NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
         const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
-            return existence_maybe.value();
+			// NOVA_LOG(TRACE) << "Does " << resource_path << " exist? " << *existence_maybe;
+			return *existence_maybe;
         }
 
         if(fs::exists(resource_path)) {
+			// NOVA_LOG(TRACE) << resource_path << " exists";
             resource_existence.emplace(resource_string, true);
             return true;
 
         } else {
+			// NOVA_LOG(TRACE) << resource_path << " does not exist";
             resource_existence.emplace(resource_string, false);
             return false;
         }
