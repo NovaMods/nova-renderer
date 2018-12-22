@@ -1071,43 +1071,9 @@ namespace nova {
         if(flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
             NOVA_LOG(DEBUG) << "[" << layer_prefix << "] " << msg;
         }
-#ifndef _WIN32
+#ifdef __linux__
         if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
-            void *array[50];
-            int size;
-
-            // get void*'s for all entries on the stack
-            size = backtrace(array, 10);
-
-            // print out all the frames to stderr
-            NOVA_LOG(ERROR) << "Stacktrace: ";
-            char **data = backtrace_symbols(array, size);
-
-            for(int i = 0; i < size; i++) {
-                std::string str(data[i]);
-
-                if(str.find_last_of('(') != std::string::npos && str.find_last_of(')') != std::string::npos) {
-                    std::string path = str.substr(0, str.find_last_of('('));
-                    std::string symbol = str.substr(str.find_last_of('(') + 1, str.find_last_of('+') - str.find_last_of('(') - 1);
-                    std::string address = str.substr(str.find_last_of('+'), str.find_last_of(')') - str.find_last_of('+'));
-
-                    if(symbol.length() > 0) {
-                        char *name = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, nullptr);
-                        symbol = std::string(name);
-                        free(name);
-
-                        str = "";
-                        str.append(path).append("(").append(symbol).append(address).append(")");
-                    }
-                }
-
-                if(str.at(str.length() - 1) == '\n') {
-                    str = str.substr(0, str.length() - 1);
-                }
-
-                NOVA_LOG(ERROR) << "\t" << str;
-            }
-            free(data);
+            nova_backtrace();
         }
 #endif
         return VK_FALSE;
@@ -1507,12 +1473,14 @@ namespace nova {
             image_create_info.arrayLayers = 1;
             image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
             image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-			if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
+			/* if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
 				image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
 			} else {
 				image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-			}
+			}*/
+			image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; // TODO: Cannot be correct, however, for debugging it helps and I'd like
+			                                                                        //       dethraid to look into whats going on (Janrupf)
             image_create_info.queueFamilyIndexCount = 1;
             image_create_info.pQueueFamilyIndices = &graphics_queue_index;
             image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;

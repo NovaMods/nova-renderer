@@ -169,7 +169,7 @@ else()
 	set(NOVA_SOURCE
 		${NOVA_SOURCE}
         src/render_engine/vulkan/x11_window.cpp
-        src/render_engine/vulkan/x11_window.hpp)
+        src/render_engine/vulkan/x11_window.hpp src/util/linux_utils.cpp src/util/linux_utils.hpp)
 endif()
 
 if (UNIX)

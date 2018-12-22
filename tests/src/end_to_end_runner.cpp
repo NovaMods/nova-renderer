@@ -9,6 +9,12 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
+#ifdef __linux__
+void sigsegv_handler(int signal);
+void sigabrt_handler(int signal);
+#include "../../src/util/linux_utils.hpp"
+#endif
+
 namespace nova {
     int main() {
         TEST_SETUP_LOGGER();
@@ -43,5 +49,29 @@ namespace nova {
 
 
 int main() {
+#ifdef __linux__
+    signal(SIGSEGV, sigsegv_handler);
+    signal(SIGABRT, sigabrt_handler);
+#endif
     return nova::main();
 }
+
+#ifdef __linux__
+void sigsegv_handler(int sig) {
+    signal(sig, SIG_IGN);
+
+    std::cerr << "!!!SIGSEGV!!!" << std::endl;
+    nova_backtrace();
+
+    _exit(1);
+}
+
+void sigabrt_handler(int sig) {
+    signal(sig, SIG_IGN);
+
+    std::cerr << "!!!SIGABRT!!!" << std::endl;
+    nova_backtrace();
+
+    _exit(1);
+}
+#endif

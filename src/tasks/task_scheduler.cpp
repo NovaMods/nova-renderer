@@ -57,7 +57,7 @@ namespace nova::ttl {
 				last_task_queue_index = 0;
 			}
 
-			thread_idx = last_task_queue_index;
+			thread_idx = ++last_task_queue_index;
     	} else if(behavior_of_task_queue_search == task_queue_search_behavior::MOST_EMPTY) {
     		size_t lowest_size = std::numeric_limits<size_t>::max();
     		for(size_t i = 0; i < thread_local_data.size(); i++) {

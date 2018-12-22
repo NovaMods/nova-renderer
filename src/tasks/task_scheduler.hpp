@@ -12,7 +12,12 @@
 #include <future>
 #include "wait_free_queue.hpp"
 #include "../util/utils.hpp"
+#include "../util/logger.hpp"
 #include "condition_counter.hpp"
+
+#ifdef __linux__
+#include "../util/linux_utils.hpp"
+#endif
 
 namespace nova::ttl {
 	NOVA_EXCEPTION(called_from_external_thread);
@@ -138,7 +143,16 @@ namespace nova::ttl {
 			std::future<RetVal> future = task->get_future();
 
             add_task_proxy([task] {
-                task.get()->operator()();
+                try {
+                    task.get()->operator()();
+                } catch (...) {
+                    // TODO: Better way of giving the user a chance to handle this, see https://en.cppreference.com/w/cpp/error/current_exception
+                    NOVA_LOG(FATAL) << "Task failed executing!";
+#ifdef __linux__
+                    nova_backtrace();
+#endif
+                    std::rethrow_exception(std::current_exception());
+                }
             });
 
 			return future;
@@ -166,8 +180,16 @@ namespace nova::ttl {
 
 			counter->add(1);
             add_task_proxy([task, counter] {
-                task.get()->operator()();
-                counter->sub(1);
+                try {
+                    task.get()->operator()();
+                    counter->sub(1);
+                } catch (...) {
+                    // TODO: Better way of giving the user a chance to handle this, see https://en.cppreference.com/w/cpp/error/current_exception
+                    NOVA_LOG(FATAL) << "Task failed executing!";
+#ifdef __linux__
+                    nova_backtrace();
+#endif
+                }
             });
 
 			return future;
