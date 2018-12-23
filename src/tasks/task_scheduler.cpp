@@ -15,6 +15,14 @@ namespace nova::ttl {
 		thread_local_data.resize(num_threads);
 
         for(uint32_t i = 0; i < num_threads; i++) {
+            per_thread_data data;
+            data.task_queue = std::make_unique<wait_free_queue<std::function<void()>>>();
+            data.is_sleeping = std::make_unique<std::atomic<bool>>();
+            data.last_successful_steal = 0;
+            data.things_in_queue_cv = std::make_unique<std::condition_variable>();
+            data.things_in_queue_mutex = std::make_unique<std::mutex>();
+            thread_local_data.push_back(std::move(data));
+
 			threads.emplace_back(thread_func, this);
         }
 
