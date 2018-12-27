@@ -150,7 +150,7 @@ set(NOVA_SOURCE
 		src/tasks/task_scheduler.hpp
 		src/tasks/wait_free_queue.hpp
 		src/tasks/condition_counter.cpp
-		src/tasks/condition_counter.hpp src/render_engine/glfw_window.cpp src/render_engine/glfw_window.hpp)
+		src/tasks/condition_counter.hpp)
 
 if(WIN32)
     set(NOVA_SOURCE
@@ -175,7 +175,9 @@ else()
 	set(NOVA_SOURCE
 		${NOVA_SOURCE}
         src/render_engine/vulkan/x11_window.cpp
-        src/render_engine/vulkan/x11_window.hpp src/util/linux_utils.cpp src/util/linux_utils.hpp)
+        src/render_engine/vulkan/x11_window.hpp
+        src/util/linux_utils.cpp
+        src/util/linux_utils.hpp)
 endif()
 
 if (UNIX)
