@@ -7,7 +7,6 @@
 #include <D3DCompiler.h>
 
 #include "dx12_render_engine.hpp"
-#include "dx12_opaque_types.hpp"
 #include <d3d12sdklayers.h>
 #include <algorithm>
 #include <unordered_set>

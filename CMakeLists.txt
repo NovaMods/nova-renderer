@@ -170,7 +170,7 @@ if(WIN32)
             src/render_engine/dx12/dx12_render_engine.cpp
             src/render_engine/dx12/dx12_render_engine.hpp
             src/render_engine/dx12/d3dx12.h
-            src/render_engine/dx12/dx12_opaque_types.hpp)
+            )
 else()
 	set(NOVA_SOURCE
 		${NOVA_SOURCE}
