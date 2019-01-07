@@ -63,10 +63,14 @@ namespace nova {
     class nova_exception : public std::exception {
     private:
         std::string msg;
+		std::exception cause;
 
     public:
 		nova_exception();
         explicit nova_exception(std::string msg);
+
+		explicit nova_exception(const std::exception& cause);
+		nova_exception(std::string msg, const std::exception& cause);
         const char *what() const noexcept override;
     };
 
@@ -74,7 +78,10 @@ namespace nova {
     class name : public ::nova::nova_exception {                                                                    \
     public:                                                                                                         \
         name() {};                                                                                                  \
-        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)){};                                  \
+        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)) {};                                 \
+                                                                                                                    \
+        explicit name(const std::exception& cause) : ::nova::nova_exception(cause) {};                              \
+        name(std::string msg, const std::exception& cause) : ::nova::nova_exception(std::move(msg), cause);         \
     }
 
     NOVA_EXCEPTION(out_of_gpu_memory);

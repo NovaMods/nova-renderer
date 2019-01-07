@@ -4,6 +4,7 @@
  */
 
 #include <cstring>
+#include <utility>
 #include "utils.hpp"
 #include "logger.hpp"
 
@@ -72,15 +73,28 @@ namespace nova {
     void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath) {
         std::ofstream os(filepath, std::ios::binary);
         if(os.good()) {
-            os.write((char*)data.data(), data.size() * 4);
+            os.write(reinterpret_cast<const char*>(data.data()), data.size() * 4);
         }
         os.close();
     }
 
-    nova_exception::nova_exception() : msg(typeid(*this).name()) {}
+    nova_exception::nova_exception() : msg(typeid(*this).name()), cause("<UNINITIALIZED>") {}
 
-    nova_exception::nova_exception(std::string msg) : msg(std::move(msg)) {}
+    nova_exception::nova_exception(const std::exception& cause) : cause(cause) {}
+
+    nova_exception::nova_exception(std::string msg) : msg(std::move(msg)), cause("<UNINITIALIZED>") {}
+
+    nova_exception::nova_exception(std::string msg, const std::exception& cause) : msg(std::move(msg)), cause(cause) {}
+
     const char *nova_exception::what() const noexcept {
-        return msg.c_str();
+		std::stringstream ss;
+
+		ss << msg;
+
+        if(std::strcmp(cause.what(), "<UNINITIALIZED>") != 0) {
+			ss << "\nCaused by: " << cause.what();
+        }
+
+        return ss.str().c_str();
     }
 }  // namespace nova
