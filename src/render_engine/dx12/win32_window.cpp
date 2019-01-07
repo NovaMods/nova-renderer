@@ -33,7 +33,7 @@ namespace nova {
 
         auto *title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
 
-        window_handle = CreateWindowExW(extended_style, window_class_name, title, style, 100, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
+        window_handle = CreateWindowExW(extended_style, window_class_name, title, style, -1000, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
         if(window_handle == nullptr) {
             const auto windows_error = get_last_windows_error();
             NOVA_LOG(FATAL) << "Could not create window: " << windows_error;

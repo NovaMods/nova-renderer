@@ -176,7 +176,7 @@ namespace nova {
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        output->pipelines.resize(potential_pipeline_files.size());
+        output->pipelines.reserve(potential_pipeline_files.size());
 		std::vector<std::future<pipeline_data>> future_pipelines(potential_pipeline_files.size());
         
 		uint32_t i = 0;
@@ -184,7 +184,7 @@ namespace nova {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
                 future_pipelines[i] = task_scheduler->add_task(load_single_pipeline, folder_access, potential_file);
-				NOVA_LOG(TRACE) << "Kicked off task to load pipeline " << i;
+				NOVA_LOG(TRACE) << "Kicked off task to load pipeline " << potential_file;
 				i++;
             }
         }
@@ -204,10 +204,13 @@ namespace nova {
     }
 
     pipeline_data load_single_pipeline(ttl::task_scheduler* task_scheduler, folder_accessor_base* folder_access, const fs::path& pipeline_path) {
+		NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
         auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
+		NOVA_LOG(TRACE) << "Parsed JSON from disk for pipeline " << pipeline_path;
         const validation_report report = validate_graphics_pipeline(json_pipeline);
+		NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path;
         print(report);
         if(!report.errors.empty()) {
             loading_failed = true;
@@ -216,6 +219,7 @@ namespace nova {
         }
 
         pipeline_data new_pipeline = json_pipeline.get<pipeline_data>();
+		NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path;
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access,
             EShLangVertex, new_pipeline.defines);
 
@@ -398,7 +402,7 @@ namespace nova {
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-        output->materials.resize(potential_material_files.size());
+        output->materials.reserve(potential_material_files.size());
 		std::vector<std::future<material_data>> future_materials(potential_material_files.size());
 
 		uint32_t i = 0;

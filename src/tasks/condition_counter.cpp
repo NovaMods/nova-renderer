@@ -6,6 +6,8 @@
 #include "condition_counter.hpp"
 
 namespace nova::ttl {
+    condition_counter::condition_counter(uint32_t initial_value) : counter(initial_value) {}
+
 	void condition_counter::add(const uint32_t num) {
 		bool should_trigger = false;
 		{

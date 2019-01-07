@@ -150,7 +150,9 @@ set(NOVA_SOURCE
 		src/tasks/task_scheduler.hpp
 		src/tasks/wait_free_queue.hpp
 		src/tasks/condition_counter.cpp
-		src/tasks/condition_counter.hpp)
+		src/tasks/condition_counter.hpp
+		src/tasks/task_chain.hpp
+		src/tasks/task_chain.cpp)
 
 if(WIN32)
     set(NOVA_SOURCE

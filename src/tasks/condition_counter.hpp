@@ -20,6 +20,8 @@ namespace nova::ttl {
 	 */
 	class condition_counter {
 	public:
+	    explicit condition_counter(uint32_t initial_value = 0);
+
         /*!
          * \brief Atomically adds `num` to this boi
          */

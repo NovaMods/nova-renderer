@@ -32,15 +32,18 @@
 #endif
 
 namespace nova {
+    template<int Num>
+    struct placeholder;
+
     /*!
      * \brief Calls the function once for every element in the provided container
      *
      * \param container The container to perform an action for each element in
-     * \param thingToDo The action to perform for each element in the collection
+     * \param thing_to_do The action to perform for each element in the collection
      */
     template <typename Cont, typename Func>
-    void foreach(Cont container, Func thingToDo) {
-        std::for_each(std::cbegin(container), std::cend(container), thingToDo);
+    void foreach(Cont container, Func thing_to_do) {
+        std::for_each(std::cbegin(container), std::cend(container), thing_to_do);
     }
 
     std::vector<std::string> split(const std::string &s, char delim);

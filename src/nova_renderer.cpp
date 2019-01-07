@@ -22,7 +22,7 @@ namespace nova {
     nova_renderer *nova_renderer::instance;
 
     nova_renderer::nova_renderer(const settings_options &settings) : 
-		render_settings(settings), task_scheduler(std::thread::hardware_concurrency(), ttl::empty_queue_behavior::YIELD) {
+		render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
         switch(settings.api) {
         case graphics_api::dx12:
