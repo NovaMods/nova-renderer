@@ -65,6 +65,9 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "Disable GLFW tests" FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "Disable GLFW docs" FORCE)
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
 
+set(PROMISING_ENABLE_TESTS OFF CACHE BOOL "Disable promising tests" FORCE)
+add_subdirectory(${3RD_PARTY_DIR}/promising)
+
 find_package(Vulkan)
 
 ######################################
@@ -84,6 +87,7 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/glslang
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/SPIRV-Cross
+		${3RD_PARTY_DIR}/promising/include
         )
 
 ########################
@@ -150,9 +154,7 @@ set(NOVA_SOURCE
 		src/tasks/task_scheduler.hpp
 		src/tasks/wait_free_queue.hpp
 		src/tasks/condition_counter.cpp
-		src/tasks/condition_counter.hpp
-		src/tasks/task_chain.hpp
-		src/tasks/task_chain.cpp)
+		src/tasks/condition_counter.hpp)
 
 if(WIN32)
     set(NOVA_SOURCE
@@ -208,7 +210,6 @@ target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS NOMINMAX)
 #endif()
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} spirv-cross-core spirv-cross-glsl spirv-cross-hlsl spirv-cross-reflect spirv-cross-util nova-profiler miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES} ${Vulkan_LIBRARIES} ${GLFW_LIBRARY_NAME})
-
 if (WIN32)
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler)

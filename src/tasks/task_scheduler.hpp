@@ -22,7 +22,49 @@
 namespace nova::ttl {
 	NOVA_EXCEPTION(called_from_external_thread);
 
-	class task_scheduler;
+    class task_scheduler;
+
+	/*!
+	 * \brief Represents a chain of tasks that must be executed in a certain order
+	 *
+	 * This class is awesome because it doesn't submit a task until all the tasks it depends on are finished. This
+	 * ensures that we _never_ run into thread exhaustion issues
+	 *
+	 * This class is not thread-safe
+	 */
+	template <typename InputType, typename OutputType>
+	class task_node {
+		friend class task_scheduler;
+
+	public:
+		task_node(std::function<OutputType(InputType)>&& func) : operation(func) {};
+        		
+		template <typename SuccessHandlerOutputType>
+		task_node& on_success(task_node<OutputType, SuccessHandlerOutputType>&& success_func) {
+			success_handler = [success_func = std::move(success_func)](const OutputType& output) { success_func(output); };
+
+			return *this;
+		}
+
+		template <typename ErrorHandlerOutputType>
+		task_node& on_error(task_node<ErrorHandlerOutputType, const std::exception&>&& error_func) {
+			error_handler = [error_func = std::move(error_func)](const std::exception& exception) { error_func(exception); };
+
+			return *this;
+		}
+
+	private:
+		std::function<OutputType(InputType)> operation;
+		std::function<void(const OutputType&)> success_handler = [](const OutputType& output) {};
+		std::function<void(const std::exception&)> error_handler = [](const std::exception& e) {
+			NOVA_LOG(ERROR) << "Exception during task execution: " << e.what();
+
+    #ifdef __linux__
+			nova_backtrace();
+    #endif
+			std::rethrow_exception(std::current_exception());
+		};
+	};
 
 	using ArgumentExtractorType = std::function<void(task_scheduler *)>;
 
@@ -122,7 +164,7 @@ namespace nova::ttl {
 
 		task_scheduler(const task_scheduler& other) = delete;
 		task_scheduler& operator=(const task_scheduler& other) = delete;
-        
+                
 		/*!
 		 * \brief Adds a task to the internal queue. Allocates internally
 		 *
@@ -156,6 +198,22 @@ namespace nova::ttl {
             });
 
 			return future;
+		}
+
+		/*!
+		 * \brief Similar to `add_task`, but this one adds a graph of tasks that 
+		 */
+		template<typename TaskInputType, typename TaskOutputType>
+		void add_task_graph(task_node<TaskOutputType, TaskInputType>&& task, TaskInputType&& input) {
+			add_task([task = std::forward(task), input = std::forward(input)] {
+			    try {
+					TaskOutputType output = task.operation(input);
+					add_task(task.success_handler, output);
+
+			    } catch(const std::exception& e) {
+					add_task(task.error_handler, e);
+			    }
+			});
 		}
 
 		/*!

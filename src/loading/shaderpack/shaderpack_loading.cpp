@@ -21,8 +21,8 @@
 namespace nova {
     folder_accessor_base* get_shaderpack_accessor(const fs::path& shaderpack_name);
 
-	shaderpack_resources_data load_dynamic_resources_file(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access);
-	std::vector<render_pass_data> load_passes_file(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access);
+	shaderpack_resources_data load_dynamic_resources_file(folder_accessor_base *folder_access);
+	std::vector<render_pass_data> load_passes_file(folder_accessor_base *folder_access);
     std::vector<pipeline_data> load_pipeline_files(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access);
     pipeline_data load_single_pipeline(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access, const fs::path &pipeline_path);
     std::vector<material_data> load_material_files(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access);
@@ -44,38 +44,29 @@ namespace nova {
         // - All the material descriptions
         //
         // All these things are loaded from the filesystem
-
-		ttl::condition_counter loading_tasks_remaining;
-
+        
         shaderpack_data data = {};
 
-        // Load resource definitions
-        std::future<shaderpack_resources_data> resources_future = task_scheduler.add_task(load_dynamic_resources_file, folder_access);
-		NOVA_LOG(TRACE) << "Kicked off resources loading task";
+		ttl::task_node chain(
+			    ttl::task_node(load_dynamic_resources_file, folder_access)
+			        .on_success([&data](void* last_task_output) { data.resources = *static_cast<shaderpack_resources_data*>(last_task_output); })
+		        );
 
-        // Load pass definitions
-        std::future<std::vector<render_pass_data>> passes_future = task_scheduler.add_task(load_passes_file, folder_access);
-		NOVA_LOG(TRACE) << "Kicked off passes loading task";
+		chain.on_success(ttl::task_node(load_passes_file, folder_access)
+			.on_success([&data](void* last_task_output) { data.passes = *static_cast<std::vector<render_pass_data>*>(last_task_output); }
+			)
+			.on_success(ttl::task_node(load_pipeline_files, folder_access)
+				.on_success([&data](void* last_task_output) { data.pipelines = *static_cast<std::vector<pipeline_data>*>(last_task_output); }
+				)
+				.on_success(ttl::task_node(load_material_files, folder_access)
+					.on_success([&data](void* last_task_output) { data.materials = *static_cast<std::vector<material_data>*>(last_task_output); }
+					)
+				)
+			)
+		);
+		task_scheduler.add_task(chain);
 
-        // Load pipeline definitions
-		std::future<std::vector<pipeline_data>> pipelines_future = task_scheduler.add_task(load_pipeline_files, folder_access);
-		NOVA_LOG(TRACE) << "Kicked off pipelines loading tasks";
-
-        // Load materials
-        std::future<std::vector<material_data>> materials_future = task_scheduler.add_task(load_material_files, folder_access);
-		NOVA_LOG(TRACE) << "Kicked off materials loading task";
-
-		resources_future.wait();
-		data.resources = resources_future.get();
-
-		passes_future.wait();
-		data.passes = passes_future.get();
-
-		pipelines_future.wait();
-		data.pipelines = pipelines_future.get();
-
-		materials_future.wait();
-		data.materials = materials_future.get();
+		NOVA_LOG(TRACE) << "Kicked off all shaderpack data loading tasks";
 
         delete folder_access;
 
@@ -108,7 +99,7 @@ namespace nova {
         return folder_access;
     }
 
-	shaderpack_resources_data load_dynamic_resources_file(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access) {
+	shaderpack_resources_data load_dynamic_resources_file(folder_accessor_base *folder_access) {
         std::string resources_string = folder_access->read_text_file("resources.json");
         try {
             auto json_resources = nlohmann::json::parse(resources_string.c_str());
@@ -138,7 +129,7 @@ namespace nova {
 		NOVA_LOG(TRACE) << "load_dynamic_resources_file finished";
     }
 
-    std::vector<render_pass_data> load_passes_file(ttl::task_scheduler *task_scheduler, folder_accessor_base *folder_access) {
+    std::vector<render_pass_data> load_passes_file(folder_accessor_base *folder_access) {
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
             auto json_passes = nlohmann::json::parse(passes_bytes);
