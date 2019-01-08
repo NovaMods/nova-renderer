@@ -217,6 +217,22 @@ namespace nova::ttl {
 		}
 
 		/*!
+		 * \brief Similar to `add_task`, but this one adds a graph of tasks that
+		 */
+		template<typename TaskOutputType>
+		void add_task_graph(task_node<void, TaskOutputType>&& task) {
+			add_task([task = std::forward(task)]{
+				try {
+					TaskOutputType output = task.operation();
+					add_task(task.success_handler, output);
+
+				} catch(const std::exception& e) {
+					add_task(task.error_handler, e);
+				}
+				});
+		}
+
+		/*!
 		 * \brief Adds a task to the internal queue. Allocates internally
 		 *
 		 * \tparam F       Function type.
