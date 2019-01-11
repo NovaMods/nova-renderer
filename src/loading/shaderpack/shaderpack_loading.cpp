@@ -59,7 +59,7 @@ namespace nova {
 		ttl::task_node<void, std::vector<material_data>> load_materials_task([&] { return load_material_files(task_scheduler, folder_access); });
 		load_materials_task.on_success(ttl::task_node<std::vector<material_data>, void>([&data](std::vector<material_data>& last_task_output) { data.materials = last_task_output; }));
 
-		task_scheduler.add_task_graph(load_dynamic_resources_task);
+		task_scheduler.add_task_graph(std::move(load_dynamic_resources_task));
 
 		NOVA_LOG(TRACE) << "Kicked off all shaderpack data loading tasks";
 
@@ -102,7 +102,7 @@ namespace nova {
             print(report);
             if(!report.errors.empty()) {
                 loading_failed = true;
-                return;
+                return {};
             }
 
             return json_resources.get<shaderpack_resources_data>();

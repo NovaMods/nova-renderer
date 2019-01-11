@@ -33,15 +33,15 @@ namespace nova::ttl {
 	 * This class is not thread-safe
 	 */
 	template <typename InputType, typename OutputType>
-	class task_node {
+	struct task_node {
+
 		friend class task_scheduler;
 
-	public:
-		task_node(std::function<OutputType(InputType)>&& func) : operation(func) {};
+		task_node(std::function<OutputType(InputType)> func) : operation(func) {};
         		
 		template <typename SuccessHandlerOutputType>
 		task_node& on_success(task_node<OutputType, SuccessHandlerOutputType>&& success_func) {
-			success_handler = [success_func = std::move(success_func)](const OutputType& output) { success_func(output); };
+			success_handler = [success_func = std::move(success_func)](const OutputType& output) { success_func.operation(output); };
 
 			return *this;
 		}
@@ -53,9 +53,40 @@ namespace nova::ttl {
 			return *this;
 		}
 
-	private:
 		std::function<OutputType(InputType)> operation;
 		std::function<void(const OutputType&)> success_handler = [](const OutputType& output) {};
+		std::function<void(const std::exception&)> error_handler = [](const std::exception& e) {
+			NOVA_LOG(ERROR) << "Exception during task execution: " << e.what();
+
+    #ifdef __linux__
+			nova_backtrace();
+    #endif
+			std::rethrow_exception(std::current_exception());
+		};
+	};
+
+	template<typename InputType>
+	struct task_node <InputType, void> {
+		friend class task_scheduler;
+
+		task_node(std::function<void(InputType)> func) : operation(func) {};
+
+		template <typename SuccessHandlerOutputType>
+		task_node<InputType, void>& on_success(task_node<void, SuccessHandlerOutputType>&& success_func) {
+			success_handler = [success_func = std::move(success_func)]() { success_func(); };
+
+			return *this;
+		}
+
+		template <typename ErrorHandlerOutputType>
+		task_node& on_error(task_node<ErrorHandlerOutputType, const std::exception&>&& error_func) {
+			error_handler = [error_func = std::move(error_func)](const std::exception& exception) { error_func(exception); };
+
+			return *this;
+		}
+
+		std::function<void(InputType)> operation;
+		std::function<void(void)> success_handler = [] {};
 		std::function<void(const std::exception&)> error_handler = [](const std::exception& e) {
 			NOVA_LOG(ERROR) << "Exception during task execution: " << e.what();
 
@@ -221,13 +252,13 @@ namespace nova::ttl {
 		 */
 		template<typename TaskOutputType>
 		void add_task_graph(task_node<void, TaskOutputType>&& task) {
-			add_task([task = std::forward(task)]{
+			add_task([task = std::move(task)]{
 				try {
 					TaskOutputType output = task.operation();
-					add_task(task.success_handler, output);
+					add_task([=] { task.success_handler(output); });
 
 				} catch(const std::exception& e) {
-					add_task(task.error_handler, e);
+					add_task([=] { task.error_handler(e); });
 				}
 				});
 		}

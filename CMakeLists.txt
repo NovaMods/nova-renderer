@@ -65,9 +65,6 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "Disable GLFW tests" FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "Disable GLFW docs" FORCE)
 add_subdirectory(${3RD_PARTY_DIR}/glfw)
 
-set(PROMISING_ENABLE_TESTS OFF CACHE BOOL "Disable promising tests" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/promising)
-
 find_package(Vulkan)
 
 ######################################
@@ -87,7 +84,6 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/glslang
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/SPIRV-Cross
-		${3RD_PARTY_DIR}/promising/include
         )
 
 ########################

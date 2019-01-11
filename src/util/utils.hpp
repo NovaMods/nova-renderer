@@ -81,7 +81,7 @@ namespace nova {
         explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)) {};                                 \
                                                                                                                     \
         explicit name(const std::exception& cause) : ::nova::nova_exception(cause) {};                              \
-        name(std::string msg, const std::exception& cause) : ::nova::nova_exception(std::move(msg), cause);         \
+        name(std::string msg, const std::exception& cause) : ::nova::nova_exception(std::move(msg), cause) {};      \
     }
 
     NOVA_EXCEPTION(out_of_gpu_memory);
