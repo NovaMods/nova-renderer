@@ -252,13 +252,13 @@ namespace nova::ttl {
 		 */
 		template<typename TaskOutputType>
 		void add_task_graph(task_node<void, TaskOutputType>&& task) {
-			add_task([task = std::move(task)]{
+			add_task([this, task = std::move(task)]{
 				try {
 					TaskOutputType output = task.operation();
-					add_task([=] { task.success_handler(output); });
+					add_task_proxy([=] { task.success_handler(output); });
 
 				} catch(const std::exception& e) {
-					add_task([=] { task.error_handler(e); });
+					add_task_proxy([=] { task.error_handler(e); });
 				}
 				});
 		}
