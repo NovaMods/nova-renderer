@@ -6,8 +6,8 @@
 #ifndef NOVA_RENDERER_SHADERPACK_LOADING_HPP
 #define NOVA_RENDERER_SHADERPACK_LOADING_HPP
 
-#include <optional>
 #include "shaderpack_data.hpp"
+#include <future>
 
 #if _WIN32
     #if _MSC_VER <= 1915
@@ -49,7 +49,7 @@ namespace nova {
      * \param task_scheduler The task scheduler to use when kicking off tasks to process all of the shaderpack data
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    std::optional<shaderpack_data> load_shaderpack_data(const fs::path &shaderpack_name, ttl::task_scheduler &task_scheduler);
+    std::future<shaderpack_data> load_shaderpack_data(const fs::path &shaderpack_name, ttl::task_scheduler &task_scheduler);
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_SHADERPACK_LOADING_HPP

@@ -49,14 +49,11 @@ namespace nova {
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
         glslang::InitializeProcess();
 
-        const std::optional<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), task_scheduler);
-        if(shaderpack_data) {
-            engine->set_shaderpack(*shaderpack_data);
-			NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
+        std::future<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), task_scheduler);
+		shaderpack_data.wait();
 
-        } else {
-            NOVA_LOG(ERROR) << "Shaderpack " << shaderpack_name << " could not be loaded. Check the logs for more information";
-        }
+        engine->set_shaderpack(shaderpack_data.get());
+		NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
     }
 
     render_engine *nova_renderer::get_engine() const {

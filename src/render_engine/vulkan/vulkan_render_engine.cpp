@@ -1250,7 +1250,9 @@ namespace nova {
         uint32_t i = 0;
         for(const vk_pipeline& pipe : pipelines) {
             scheduler->add_task(&pipelines_rendering_counter, [&](ttl::task_scheduler* scheduler, const vk_pipeline* material_pass, VkCommandBuffer* cmds) { render_pipeline(material_pass, cmds); },
-                &pipe, &secondary_command_buffers[i]);
+                &pipe, &secondary_command_buffers[i]
+			);
+
             i++;
         }
 
