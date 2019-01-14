@@ -49,7 +49,7 @@ namespace nova {
      * \param task_scheduler The task scheduler to use when kicking off tasks to process all of the shaderpack data
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    std::future<shaderpack_data> load_shaderpack_data(const fs::path &shaderpack_name, ttl::task_scheduler &task_scheduler);
+    shaderpack_data load_shaderpack_data(const fs::path &shaderpack_name);
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_SHADERPACK_LOADING_HPP
