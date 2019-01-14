@@ -42,23 +42,24 @@ namespace nova {
     }
 
     void nova_renderer::execute_frame() {
-		frame_done_future.wait();
+		/*frame_done_future.wait();
 		frame_done_future.get();
 		try {
 			frame_done_future = task_scheduler.add_task([](ttl::task_scheduler* task_scheduler, render_engine* engine) { engine->render_frame(); }, engine.get());
 
 		} catch(const std::exception& e) {
 			NOVA_LOG(ERROR) << "Could not execute frame: " << e.what();
-		}
+		}*/
+
+		engine->render_frame();
     }
 
-    void nova_renderer::load_shaderpack(const std::string &shaderpack_name) {
+    void nova_renderer::load_shaderpack(const std::string &shaderpack_name) const {
         glslang::InitializeProcess();
 
-        std::future<shaderpack_data> shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name), task_scheduler);
-		shaderpack_data.wait();
+        const shaderpack_data shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
 
-        engine->set_shaderpack(shaderpack_data.get());
+        engine->set_shaderpack(shaderpack_data);
 		NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
     }
 

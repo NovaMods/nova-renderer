@@ -103,7 +103,7 @@ namespace nova {
             loading_failed = true;
         }
 
-		NOVA_LOG(TRACE) << "load_dynamic_resources_file finished";
+		return {};
     }
 
     std::vector<render_pass_data> load_passes_file(std::shared_ptr<folder_accessor_base> folder_access) {
@@ -135,7 +135,7 @@ namespace nova {
         // Don't check for a resources_not_found exception because a shaderpack _needs_ a passes.json and if the
         // shaderpack doesn't provide one then it can't be loaded, so we'll catch that exception later on
 
-		NOVA_LOG(TRACE) << "load_passes_file finished";
+		return {};
     }
 
     std::vector<pipeline_data> load_pipeline_files(std::shared_ptr<folder_accessor_base> folder_access) {

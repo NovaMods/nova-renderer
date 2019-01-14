@@ -38,7 +38,7 @@ namespace nova {
 		 *
 		 * \param shaderpack_name The name of the shaderpack to load
 		 */
-		void load_shaderpack(const std::string& shaderpack_name);
+		void load_shaderpack(const std::string& shaderpack_name) const;
 
 		/*!
 		 * \brief Executes a single frame
