@@ -1101,17 +1101,17 @@ namespace nova {
         shaderpack_loading_mutex.lock();
         std::atomic<uint32_t> render_tasks_counter;
         for(const std::string& renderpass_name : render_passes_by_order) {
-            scheduler->add_task([&](ttl::task_scheduler* scheduler, const std::string* renderpass_name, std::atomic<uint32_t>* counter) {
-                execute_renderpass(renderpass_name);
+           // scheduler->add_task([&](ttl::task_scheduler* scheduler, const std::string* renderpass_name, std::atomic<uint32_t>* counter) {
+                execute_renderpass(&renderpass_name);
 
-				counter->fetch_sub(1);
-				rendering_cv.notify_all();
-            }, &renderpass_name, &render_tasks_counter);
+		//		counter->fetch_sub(1);
+			//	rendering_cv.notify_all();
+            //}, &renderpass_name, &render_tasks_counter);
         }
         shaderpack_loading_mutex.unlock();
 
-		std::unique_lock l(rendering_mutex);
-		rendering_cv.wait(l, [&] { return render_tasks_counter.load() == 0; });
+		//std::unique_lock l(rendering_mutex);
+		//rendering_cv.wait(l, [&] { return render_tasks_counter.load() == 0; });
 
         vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
         vkResetFences(device, 1, &mesh_rendering_done);
@@ -1249,14 +1249,16 @@ namespace nova {
         ttl::condition_counter pipelines_rendering_counter;
         uint32_t i = 0;
         for(const vk_pipeline& pipe : pipelines) {
-            scheduler->add_task(&pipelines_rendering_counter, [&](ttl::task_scheduler* scheduler, const vk_pipeline* material_pass, VkCommandBuffer* cmds) { render_pipeline(material_pass, cmds); },
-                &pipe, &secondary_command_buffers[i]
-			);
+            //scheduler->add_task(&pipelines_rendering_counter, [&](ttl::task_scheduler* scheduler, const vk_pipeline* material_pass, VkCommandBuffer* cmds) { render_pipeline(material_pass, cmds); },
+              //  &pipe, &secondary_command_buffers[i]
+			//);
+
+			render_pipeline(&pipe, &secondary_command_buffers[i]);
 
             i++;
         }
 
-        pipelines_rendering_counter.wait_for_value(0);
+        //pipelines_rendering_counter.wait_for_value(0);
 
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
 

@@ -51,7 +51,9 @@ namespace nova::ttl {
 
         // If none of the threads in the pool are the thread we were called from, the user is doing something 
 	    // unsupported so they must be punished
-		throw called_from_external_thread();
+		// throw called_from_external_thread();
+
+		return 0;
 	}
 
     uint32_t task_scheduler::get_num_threads() const {
