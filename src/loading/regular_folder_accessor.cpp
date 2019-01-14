@@ -11,6 +11,7 @@ namespace nova {
     regular_folder_accessor::regular_folder_accessor(const fs::path& folder) : folder_accessor_base(folder) {}
 
     std::string regular_folder_accessor::read_text_file(const fs::path &resource_path) {
+		std::lock_guard l(*resource_existence_mutex);
         fs::path full_resource_path;
         if(has_root(resource_path, *root_folder)) {
             full_resource_path = resource_path;
@@ -27,7 +28,6 @@ namespace nova {
         // std::vector<uint8_t> buf;
         std::ifstream resource_stream(full_resource_path);
         if(!resource_stream.good()) {
-            std::lock_guard l(*resource_existence_mutex);
             // Error reading this file - it can't be read again in the future
             const auto resource_string = full_resource_path.string();
 
