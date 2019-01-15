@@ -427,6 +427,10 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Dynamic textures created";
         for(const material_data& mat_data : data.materials) {
             materials[mat_data.name] = mat_data;
+
+			for(const material_pass& mat : mat_data.passes) {
+				material_passes_by_pipeline[mat.pipeline].push_back(mat);
+			}
         }
         NOVA_LOG(DEBUG) << "Materials saved";
 
@@ -950,6 +954,8 @@ namespace nova {
 
             NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.pipeline), render_engine_initialization_exception);
             this->pipelines.insert(std::make_pair(data.name, nova_pipeline));
+
+			pipelines_by_renderpass[data.pass].push_back(nova_pipeline);
         }
     }
 
@@ -1600,47 +1606,39 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_material_descriptor_sets() {
-        ttl::condition_counter descriptor_set_creation_counter;
-
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             for(const auto& pipeline : pipelines) {
                 std::vector<material_pass>& mats = material_passes_by_pipeline.at(pipeline.data.name);
-                scheduler->add_task(&descriptor_set_creation_counter,
-                    [&](ttl::task_scheduler* scheduler, const vk_pipeline* pipeline, std::vector<material_pass>* mats) {
-                        for(material_pass& mat : *mats) {
-                            if(pipeline->layouts.empty()) {
-                                // If there's no layouts, we're done
-                                continue;
-                            }
+                for(material_pass& mat : mats) {
+                    if(pipeline.layouts.empty()) {
+                        // If there's no layouts, we're done
+                        continue;
+                    }
 
-                            NOVA_LOG(TRACE) << "Creating descriptor sets for pipeline " << pipeline->data.name;
+                    NOVA_LOG(TRACE) << "Creating descriptor sets for pipeline " << pipeline.data.name;
 
-                            auto layouts = std::vector<VkDescriptorSetLayout>{};
-                            layouts.reserve(pipeline->layouts.size());
+                    auto layouts = std::vector<VkDescriptorSetLayout>{};
+                    layouts.reserve(pipeline.layouts.size());
 
-                            // CLion might tell you to simplify this into a foreach loop... DO NOT! The layouts need to be added in set
+                    // CLion might tell you to simplify this into a foreach loop... DO NOT! The layouts need to be added in set
                             // order, not map order which is what you'll get if you use a foreach - AND IT'S WRONG
-                            for(uint32_t i = 0; i < pipeline->layouts.size(); i++) {
-                                layouts.push_back(pipeline->layouts.at(static_cast<int32_t>(i)));
-                            }
+                    for(uint32_t i = 0; i < pipeline.layouts.size(); i++) {
+                        layouts.push_back(pipeline.layouts.at(static_cast<int32_t>(i)));
+                    }
 
-                            VkDescriptorSetAllocateInfo alloc_info = {};
-                            alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                            alloc_info.descriptorPool = get_descriptor_pool_for_current_thread();
-                            alloc_info.descriptorSetCount = layouts.size();
-                            alloc_info.pSetLayouts = layouts.data();
+                    VkDescriptorSetAllocateInfo alloc_info = {};
+                    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    alloc_info.descriptorPool = get_descriptor_pool_for_current_thread();
+                    alloc_info.descriptorSetCount = layouts.size();
+                    alloc_info.pSetLayouts = layouts.data();
 
-                            mat.descriptor_sets.reserve(layouts.size());
-                            NOVA_THROW_IF_VK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat.descriptor_sets.data()), shaderpack_loading_error);
+                    mat.descriptor_sets.reserve(layouts.size());
+                    NOVA_THROW_IF_VK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat.descriptor_sets.data()), shaderpack_loading_error);
 
-                            update_material_descriptor_sets(mat, pipeline->bindings);
-                        }
-                    },
-                    &pipeline, &mats);
+                    update_material_descriptor_sets(mat, pipeline.bindings);
+                }
             }
         }
-
-        descriptor_set_creation_counter.wait_for_value(0);
     }
 
     void vulkan_render_engine::update_material_descriptor_sets(const material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor) {
