@@ -1246,6 +1246,7 @@ namespace nova {
         rp_begin_info.clearValueCount = 1;
         rp_begin_info.pClearValues = &clear_value;
 
+        // TODO: There's a crash right here
         vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
         const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
@@ -1334,6 +1335,14 @@ namespace nova {
 
         // TODO: _Anything_ smarter
 
+        if(renderables_by_material.find(pass.name) == renderables_by_material.end()) {
+            // Nothing to render? Don't render it!
+
+            // smh
+
+			return;
+        }
+        
         const std::unordered_map<VkBuffer, std::vector<render_object>>& renderables_by_buffer = renderables_by_material.at(pass.name);
 
         for(const auto& [buffer, renderables] : renderables_by_buffer) {
@@ -1371,7 +1380,7 @@ namespace nova {
     }
 
     void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue) {
-        VkSubmitInfo submit_info;
+        VkSubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.pNext = nullptr;
         VkPipelineStageFlags wait_stages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
