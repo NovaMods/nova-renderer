@@ -120,6 +120,7 @@ namespace nova {
         create_device();
         create_swapchain();
         create_swapchain_image_views();
+		create_swapchain_framebuffers();
     }
 
     void vulkan_render_engine::validate_mesh_options(const settings_options::block_allocator_settings& options) const {
@@ -393,7 +394,86 @@ namespace nova {
         NOVA_LOG(TRACE) << "Created swapchain image views";
     }
 
-	void vulkan_render_engine::create_global_sync_objects() {
+	void vulkan_render_engine::create_swapchain_framebuffers() {
+		// Create a dummy renderpass that has the layout we want, then create framebuffers from that renderpass
+		// Note that the renderpass _only_ provides the layout for the framebuffer, and the framebuffer will not be 
+		// tied to the renderpass in any way
+
+		VkSubpassDescription subpass_description;
+		subpass_description.flags = 0;
+		subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass_description.inputAttachmentCount = 0;
+		subpass_description.pInputAttachments = nullptr;
+		subpass_description.preserveAttachmentCount = 0;
+		subpass_description.pPreserveAttachments = nullptr;
+		subpass_description.pResolveAttachments = nullptr;
+		subpass_description.pDepthStencilAttachment = nullptr;
+
+		VkSubpassDependency image_available_dependency;
+		image_available_dependency.dependencyFlags = 0;
+		image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+		image_available_dependency.dstSubpass = 0;
+		image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		image_available_dependency.srcAccessMask = 0;
+		image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		VkRenderPassCreateInfo render_pass_create_info;
+		render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		render_pass_create_info.pNext = nullptr;
+		render_pass_create_info.flags = 0;
+		render_pass_create_info.subpassCount = 1;
+		render_pass_create_info.pSubpasses = &subpass_description;
+		render_pass_create_info.dependencyCount = 1;
+		render_pass_create_info.pDependencies = &image_available_dependency;
+
+		std::vector<VkAttachmentReference> attachment_references;
+		std::vector<VkAttachmentDescription> attachments;
+		std::vector<VkImageView> framebuffer_attachments;
+
+		VkAttachmentDescription desc = {};
+		desc.flags = 0;
+		desc.format = swapchain_format;
+		desc.samples = VK_SAMPLE_COUNT_1_BIT;
+		desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		desc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		attachments.push_back(desc);
+
+		VkAttachmentReference ref = {};
+		ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		ref.attachment = attachments.size() - 1;
+		attachment_references.push_back(ref);
+
+		subpass_description.colorAttachmentCount = attachment_references.size();
+		subpass_description.pColorAttachments = attachment_references.data();
+
+		render_pass_create_info.attachmentCount = attachments.size();
+		render_pass_create_info.pAttachments = attachments.data();
+
+		VkRenderPass framebuffer_creation_renderpass;
+		NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &framebuffer_creation_renderpass), render_engine_initialization_exception);
+
+		swapchain_framebuffers.resize(swapchain_image_views.size());
+        for(uint32_t i = 0; i < swapchain_image_views.size(); i++) {
+			VkFramebufferCreateInfo framebuffer_create_info = {};
+			framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebuffer_create_info.renderPass = framebuffer_creation_renderpass;
+			framebuffer_create_info.attachmentCount = 1;
+			framebuffer_create_info.pAttachments = &swapchain_image_views.at(i);
+			framebuffer_create_info.width = swapchain_extent.width;
+			framebuffer_create_info.height = swapchain_extent.height;
+			framebuffer_create_info.layers = 1;
+
+			NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers[i]), render_engine_initialization_exception);
+        }
+	}
+
+    void vulkan_render_engine::create_global_sync_objects() {
 		VkFenceCreateInfo fence_info = {};
 		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -1247,7 +1327,7 @@ namespace nova {
         rp_begin_info.pClearValues = &clear_value;
 
         if(rp_begin_info.framebuffer == VK_NULL_HANDLE) {
-			rp_begin_info.framebuffer = swapchain_framebuffers.at(current_swapchain_index);
+            rp_begin_info.framebuffer = swapchain_framebuffers.at(current_swapchain_index);
         }
 
         vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
