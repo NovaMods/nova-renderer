@@ -1246,7 +1246,10 @@ namespace nova {
         rp_begin_info.clearValueCount = 1;
         rp_begin_info.pClearValues = &clear_value;
 
-        // TODO: There's a crash right here
+        if(rp_begin_info.framebuffer == VK_NULL_HANDLE) {
+			rp_begin_info.framebuffer = swapchain_framebuffers.at(current_swapchain_index);
+        }
+
         vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
         const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
@@ -1256,16 +1259,9 @@ namespace nova {
         ttl::condition_counter pipelines_rendering_counter;
         uint32_t i = 0;
         for(const vk_pipeline& pipe : pipelines) {
-            //scheduler->add_task(&pipelines_rendering_counter, [&](ttl::task_scheduler* scheduler, const vk_pipeline* material_pass, VkCommandBuffer* cmds) { render_pipeline(material_pass, cmds); },
-              //  &pipe, &secondary_command_buffers[i]
-			//);
-
 			render_pipeline(&pipe, &secondary_command_buffers[i]);
-
             i++;
         }
-
-        //pipelines_rendering_counter.wait_for_value(0);
 
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
 
@@ -1477,6 +1473,7 @@ namespace nova {
         const glm::uvec2 swapchain_extent_glm = {swapchain_extent.width, swapchain_extent.height};
         for(const texture_resource_data& texture_data : texture_datas) {
             vk_texture texture;
+			texture.is_dynamic = true;
             texture.data = texture_data;
 			texture.format = to_vk_format(texture_data.format.pixel_format);
 
