@@ -1,12 +1,12 @@
 #version 450
 
 layout(location = 0) in vec3 position_in;
-layout(location = 2) in vec2 uv_in;
-layout(location = 3) in vec2 lightmap_uv_in;
-layout(location = 4) in vec3 normal_in;
-layout(location = 1) in vec4 color_in;
+layout(location = 1) in vec2 uv_in;
+layout(location = 2) in vec2 lightmap_uv_in;
+layout(location = 3) in vec3 normal_in;
+layout(location = 5) in vec4 color_in;
 
-layout(set = 0, binding = 0) uniform per_frame_uniforms {
+layout(std140) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
     mat4 gbufferPreviousModelView;
@@ -56,20 +56,18 @@ layout(set = 0, binding = 0) uniform per_frame_uniforms {
     float centerDepthSmooth;
 };
 
-layout(set = 1, binding = 0) uniform per_model_uniforms{
-    mat4 gbufferModel;
-};
+uniform mat4 gbufferModel;
 
-layout(location = 0) out vec2 uv;
-layout(location = 1) out vec4 color;
-layout(location = 2) out vec2 lightmap_uv;
-layout(location = 3) out vec3 normal;
+out vec2 uv;
+out vec4 color;
+out vec2 lightmap_uv;
+out vec3 normal;
 
 void main() {
-	gl_Position =  gbufferProjection * gbufferModelView * gbufferModel * vec4(position_in, 1.0f);
+	gl_Position = gbufferProjection * gbufferModelView * gbufferModel * vec4(position_in, 1.0f);
 
 	uv = uv_in;
- 	color = color_in;
- 	lightmap_uv = (lightmap_uv_in + 0.5) / 256;
- 	normal = normal_in;
+	color = color_in;
+	lightmap_uv = (lightmap_uv_in + 0.5) / 256;
+	normal = normal_in;
 }

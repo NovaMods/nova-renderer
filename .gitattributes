@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto eol=lf
 
@@ -64,3 +65,6 @@
 *.jpg binary
 gradlew text
 gradlew.bat text
+=======
+* text=auto eol=lf
+>>>>>>> master
