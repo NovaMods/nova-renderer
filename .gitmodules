@@ -1,24 +1,39 @@
-[submodule "src/main/cpp/3rdparty/glm"]
-	path = src/main/cpp/3rdparty/glm
-	url = https://github.com/g-truc/glm.git
-[submodule "src/main/cpp/3rdparty/glfw"]
-	path = src/main/cpp/3rdparty/glfw
-	url = https://github.com/glfw/glfw.git
-[submodule "src/main/cpp/3rdparty/miniz"]
-	path = src/main/cpp/3rdparty/miniz
-	url = https://github.com/richgel999/miniz.git
-[submodule "src/main/cpp/3rdparty/easyloggingpp"]
-	path = src/main/cpp/3rdparty/easyloggingpp
-	url = https://github.com/easylogging/easyloggingpp.git
-[submodule "src/main/cpp/3rdparty/json"]
-	path = src/main/cpp/3rdparty/json
-	url = https://github.com/nlohmann/json.git
-[submodule "src/main/cpp/3rdparty/googletest"]
-	path = src/main/cpp/3rdparty/googletest
+[submodule "tests/3rdparty/googletest"]
+	path = tests/3rdparty/googletest
 	url = https://github.com/google/googletest.git
-[submodule "src/main/cpp/3rdparty/optional"]
-	path = src/main/cpp/3rdparty/optional
-	url = https://github.com/akrzemi1/Optional.git
-[submodule "src/main/cpp/3rdparty/renderdocapi"]
-	path = src/main/cpp/3rdparty/renderdocapi
+[submodule "3rdparty/glm"]
+	path = 3rdparty/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "3rdparty/profiler"]
+	path = 3rdparty/profiler
+	url = https://github.com/NovaMods/profiler.git
+[submodule "3rdparty/json"]
+	path = 3rdparty/json
+	url = https://github.com/nlohmann/json.git
+[submodule "3rdparty/VulkanMemoryAllocator"]
+	path = 3rdparty/VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "3rdparty/SPIRV-Headers"]
+	path = 3rdparty/SPIRV-Headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers.git
+[submodule "3rdparty/SPIRV-Tools"]
+	path = 3rdparty/SPIRV-Tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git
+[submodule "3rdparty/SPIRV-Cross"]
+	path = 3rdparty/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "3rdparty/glslang"]
+	path = 3rdparty/glslang
+	url = https://github.com/KhronosGroup/glslang.git
+[submodule "3rdparty/RenderDoc-Manager"]
+	path = 3rdparty/RenderDoc-Manager
 	url = https://github.com/NovaMods/RenderDoc-Manager.git
+[submodule "3rdparty/glfw"]
+	path = 3rdparty/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "3rdparty/miniz"]
+	path = 3rdparty/miniz
+	url = https://github.com/richgel999/miniz.git
+[submodule "3rdparty/enkiTS"]
+	path = 3rdparty/enkiTS
+	url = https://github.com/dougbinks/enkiTS.git

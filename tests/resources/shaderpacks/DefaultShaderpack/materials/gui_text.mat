@@ -1,0 +1,15 @@
+{
+    "name": "gui_text",
+    "filter": "geometry_type::text",
+    "passes": [
+        {
+            "name": "main",
+            "pipeline": "gui",
+            "bindings": {
+                "per_frame_uniforms": "NovaPerFrameUBO",
+                "per_model_uniforms": "NovaPerModelUBO",
+                "colortex": "font"
+            }
+        }
+    ]
+}

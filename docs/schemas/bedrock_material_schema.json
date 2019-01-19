@@ -21,7 +21,7 @@
                     "type": "array",
                     "items": {
                         "type": "string",
-                        "enum": ["Blending", "InvertCulling", "DisableCulling", "DisableDepthWrite", "EnableStencilTest", "StencilWrite", "DisableColorWrite", "EnableAlphaToCoverage"]
+                        "enum": ["Blending", "InvertCulling", "DisableCulling", "DisableDepthWrite", "DisableDepthWrite", "EnableStencilTest", "StencilWrite", "DisableColorWrite", "EnableAlphaToCoverage"]
                     },
                     "description": "The renderer states that need to be active when rendring this state"
                 },
@@ -34,11 +34,11 @@
                 },
                 "depthBiasOGL": {
                     "type": "number",
-                    "description": "Offset the value written to the depth buffer"
+                    "description": "Offset the value written to the depth buffer. If this value is present then Nova ignores depthBias"
                 }, 
                 "slopeScaledDepthBiasOGL": {
                     "type": "number",
-                    "description": "Offset the value written to the depth buffer"
+                    "description": "Offset the value written to the depth buffer. If this value is present then Nove ignores slopeScaledDepthBias"
                 }, 
                 "vertexShader" : {
                     "type": "string",
@@ -46,7 +46,19 @@
                 },
                 "vrGeometryShader": {
                     "type": "string",
-                    "description": "Provides the filepath for the VR geometry shader to use for this state"
+                    "description": "Provides the filepath for the VR geometry shader to use for this state. Nova ignores this value since it doesn't deal with VR"
+                },
+                "geometryShader": {
+                    "type": "string",
+                    "description": "Provides the filepath for the geometry shader to use for this state"
+                },
+                "tessellationControlShader": {
+                    "type": "string",
+                    "description": "Provides the filepath for the tessellation control shader to use for this state"
+                },
+                "tessellationEvaluationShader": {
+                    "type": "string",
+                    "description": "Provides the filepath for the tessellation evaluation shader to use for this state"
                 },
                 "fragmentShader": {
                     "type": "string",
@@ -91,7 +103,7 @@
                     "properties": {
                         "stencilFunc": {
                             "type": "string",
-                            "enum": ["Always", "Never", "Less", "LessEqual", "GreaterEqual", "Equal", "Replace", "NotEqual"],
+                            "enum": ["Always", "Never", "Less", "LessEqual", "GreaterEqual", "Equal", "NotEqual"],
                             "description": "What stencil function to use for the back faces in this state"
                         },
                         "stencilFailOp": {
@@ -104,7 +116,7 @@
                             "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
                             "description": "What to do when the stencil and depth tests fail (I think)"
                         },
-                        "StencilPassOp": {
+                        "stencilPassOp": {
                             "type": "string",
                             "enum": ["Keep", "Zero", "Replace", "Increment", "IncrementAndWrap", "Decrement", "DecrementAndWrap", "Invert"],
                             "description": "What to do when the stencil test passes"
@@ -191,8 +203,8 @@
             "properties":{
                 "field": {
                     "type": "string",
-                    "enum": ["Position", "UV0", "UV1", "Color", "Normal"],
-                    "description": "Declares which vertex field this object refers to"
+                    "enum": ["Position", "UV0", "UV1", "Color", "Normal", "Tangent", "MidTexCoord", "VirtualTextureId", "McEntityId", "Empty"],
+                    "description": "Declares which vertex field this object refers to. Here's how it goes down:\n\n* Position (float3): Vertex position\t* UV0 (half2): Primary UV coordinate, used for the color, normal, and data texture\n* UV1 (fixed2): Secondary UV, used for the lightmap\n* Color (fixed4): Vertex color, used for biome color\n* Normal (float3): Vertex normal\n* MainUV (half2): Nova-specific name for UV0\n* LightmapUv (fixed2): Nova-specific name for UV1\n* Tangent (float3): Vertex tangent. Hopefully not Nova only\n* MidTexCoord (half2): The texture coordinate of the main texture at the center of the quad. Nova-only\n* VirtualTextureId (uint32): A unique ID that represents this face's texture. Generated at runtime by Nova, this value helps Nova know what textures to make resident in the GPU\n* McEntityId (float4): A collection of data about the current block. Nova only\n* Empty: Specified that the vertex binding of this index should not be bound. Useful maybe, but definitely Nova-only"
                 }
             }
         },
@@ -210,7 +222,7 @@
                 },
                 "textureName": {
                     "type": "string",
-                    "description": "The name of the texture to use. This value can be a specific texture in a resourcepack (something like `textures/misc/enchanted_item_glint`), or it can refer to an atlas (like `atlas.terrain`). A couple atlases:\n\n * `atlas.terrain`: The atlas of all the block textures\n * `atlas.items`: The atlas of all the item textures\n\nSome dynamic textures:\n\n * Brightness\n\n * SeasonFoliage"
+                    "description": "The name of the texture to use. This value can be a specific texture in a resourcepack (something like `textures/misc/enchanted_item_glint`), or it can refer to an atlas (like `atlas.terrain`). A couple atlases:\n\n * `atlas.terrain`: The atlas of all the block textures\n * `atlas.items`: The atlas of all the item textures\n\nSome dynamic textures:\n\n * Brightness\n * SeasonFoliage"
                 }
             }
         }

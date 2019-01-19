@@ -1,0 +1,16 @@
+{
+    "name": "gbuffers_terrain",
+    "filter": "geometry_type::block AND not_transparent",
+    "passes": [
+        {
+            "name": "main",
+            "pipeline": "gbuffers_terrain",
+            "bindings": {
+                "per_frame_uniforms": "NovaPerFrameUBO",
+                "per_model_uniforms": "NovaPerModelUBO",
+                "colortex": "NovaColorAtlas",
+                "lightmap": "NovaLightmap"
+            }
+        }
+    ]
+}

@@ -1,1 +1,70 @@
+<<<<<<< HEAD
+# Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto eol=lf
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+
+# C++ code
+*.c text
+*.cpp text
+*.cxx text
+*.h text
+*.hpp text
+*.hxx text
+
+# Java code
+*.java text
+
+# Shader code
+*.glsl text
+*.hlsl text
+*.vsh text
+*.vert text 
+*.vertex text
+*.geo text
+*.geom text
+*.geometry text
+*.tsc text
+*.tesc text
+*.tess_control text
+*.tse text
+*.tese text
+*.tess_eval text
+*.fsh text
+*.frag text
+*.fragment text
+
+*.spirv binary
+
+*.mat text
+*.material text
+
+# Patches
+*.patch text
+
+# Config files
+*.json text
+*.conf text
+*.xml text
+
+# Scripts
+*.gradle text
+*.yml text
+*.cmake text
+
+# Documentation
+*.md text
+*.txt text
+
+# Declare files that will always have CRLF line endings on checkout.
+*.sln text eol=crlf
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary
+gradlew text
+gradlew.bat text
+=======
+* text=auto eol=lf
+>>>>>>> master
