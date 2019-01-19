@@ -471,6 +471,8 @@ namespace nova {
 
 			NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers[i]), render_engine_initialization_exception);
         }
+
+		vkDestroyRenderPass(device, framebuffer_creation_renderpass, nullptr);
 	}
 
     void vulkan_render_engine::create_global_sync_objects() {
@@ -1187,18 +1189,10 @@ namespace nova {
         shaderpack_loading_mutex.lock();
         std::atomic<uint32_t> render_tasks_counter;
         for(const std::string& renderpass_name : render_passes_by_order) {
-           // scheduler->add_task([&](ttl::task_scheduler* scheduler, const std::string* renderpass_name, std::atomic<uint32_t>* counter) {
                 execute_renderpass(&renderpass_name);
-
-		//		counter->fetch_sub(1);
-			//	rendering_cv.notify_all();
-            //}, &renderpass_name, &render_tasks_counter);
         }
         shaderpack_loading_mutex.unlock();
-
-		//std::unique_lock l(rendering_mutex);
-		//rendering_cv.wait(l, [&] { return render_tasks_counter.load() == 0; });
-
+        
         vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
         vkResetFences(device, 1, &mesh_rendering_done);
         // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has
@@ -1634,7 +1628,7 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::get_shader_module_descriptors(std::vector<uint32_t> spirv, std::unordered_map<std::string, vk_resource_binding>& bindings) {
+    void vulkan_render_engine::get_shader_module_descriptors(const std::vector<uint32_t>& spirv, std::unordered_map<std::string, vk_resource_binding>& bindings) {
         const spirv_cross::CompilerGLSL shader_compiler(spirv);
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
