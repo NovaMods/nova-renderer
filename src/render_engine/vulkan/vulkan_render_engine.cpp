@@ -1056,87 +1056,79 @@ namespace nova {
         return module;
     }
 
-    void vulkan_render_engine::upload_new_mesh_parts() {
-        scheduler->add_task(
-            [&](ttl::task_scheduler* task_scheduler, uint32_t* i) {
-                VkCommandBuffer mesh_upload_cmds;
+	void vulkan_render_engine::upload_new_mesh_parts() {
+		VkCommandBuffer mesh_upload_cmds;
 
-                VkCommandBufferAllocateInfo alloc_info = {};
-                alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-                alloc_info.commandBufferCount = 1;
-                alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_queue_index);
-                alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		VkCommandBufferAllocateInfo alloc_info = {};
+		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		alloc_info.commandBufferCount = 1;
+		alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_queue_index);
+		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-                vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);
+		vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);
 
-                VkCommandBufferBeginInfo begin_info = {};
-                begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		VkCommandBufferBeginInfo begin_info = {};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-                vkBeginCommandBuffer(mesh_upload_cmds, &begin_info);
+		vkBeginCommandBuffer(mesh_upload_cmds, &begin_info);
 
-                // Ensure that all reads from this buffer have finished. I don't care about writes because the only
-                // way two dudes would be writing to the same region of a megamesh at the same time was if there was a
-                // horrible problem
+		// Ensure that all reads from this buffer have finished. I don't care about writes because the only
+		// way two dudes would be writing to the same region of a megamesh at the same time was if there was a
+		// horrible problem
 
-                mesh_memory->add_barriers_before_data_upload(mesh_upload_cmds);
+		mesh_memory->add_barriers_before_data_upload(mesh_upload_cmds);
 
-                mesh_upload_queue_mutex.lock();
-                meshes_mutex.lock();
+		mesh_upload_queue_mutex.lock();
+		meshes_mutex.lock();
 
-                std::vector<vk_buffer> freed_buffers;
-                freed_buffers.reserve(mesh_upload_queue.size() * 2);
-                while(!mesh_upload_queue.empty()) {
-                    const mesh_staging_buffer_upload_command cmd = mesh_upload_queue.front();
-                    mesh_upload_queue.pop();
+		std::vector<vk_buffer> freed_buffers;
+		freed_buffers.reserve(mesh_upload_queue.size() * 2);
+		while(!mesh_upload_queue.empty()) {
+			const mesh_staging_buffer_upload_command cmd = mesh_upload_queue.front();
+			mesh_upload_queue.pop();
 
-                    compacting_block_allocator::allocation_info* mem = mesh_memory->allocate(cmd.staging_buffer.alloc_info.size);
+			compacting_block_allocator::allocation_info* mem = mesh_memory->allocate(cmd.staging_buffer.alloc_info.size);
 
-                    VkBufferCopy copy = {};
-                    copy.size = cmd.staging_buffer.alloc_info.size;
-                    copy.srcOffset = 0;
-                    copy.dstOffset = mem->offset;
-                    vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffer.buffer, mem->block->get_buffer(), 1, &copy);
+			VkBufferCopy copy = {};
+			copy.size = cmd.staging_buffer.alloc_info.size;
+			copy.srcOffset = 0;
+			copy.dstOffset = mem->offset;
+			vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffer.buffer, mem->block->get_buffer(), 1, &copy);
 
-                    VkDrawIndexedIndirectCommand mesh_draw_command = {};
-                    mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
-                    mesh_draw_command.instanceCount = 1;
-                    mesh_draw_command.firstIndex = 0;
-                    mesh_draw_command.vertexOffset = static_cast<uint32_t>(mem->offset);
-                    mesh_draw_command.firstInstance = 0;
+			VkDrawIndexedIndirectCommand mesh_draw_command = {};
+			mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
+			mesh_draw_command.instanceCount = 1;
+			mesh_draw_command.firstIndex = 0;
+			mesh_draw_command.vertexOffset = static_cast<uint32_t>(mem->offset);
+			mesh_draw_command.firstInstance = 0;
 
-                    meshes[cmd.mesh_id] = {mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command};
+			meshes[cmd.mesh_id] = { mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command };
 
-                    freed_buffers.insert(freed_buffers.end(), cmd.staging_buffer);
-                }
+			freed_buffers.insert(freed_buffers.end(), cmd.staging_buffer);
+		}
 
-                mesh_memory->add_barriers_after_data_upload(mesh_upload_cmds);
+		mesh_memory->add_barriers_after_data_upload(mesh_upload_cmds);
 
-                mesh_upload_queue_mutex.unlock();
-                meshes_mutex.unlock();
+		mesh_upload_queue_mutex.unlock();
+		meshes_mutex.unlock();
 
-                vkEndCommandBuffer(mesh_upload_cmds);
+		vkEndCommandBuffer(mesh_upload_cmds);
 
-                VkSubmitInfo submit_info = {};
-                submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-                submit_info.commandBufferCount = 1;
-                submit_info.pCommandBuffers = &mesh_upload_cmds;
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &mesh_upload_cmds;
 
-                // Be super duper sure that mesh rendering is done
-                vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, 0xffffffffffffffffL);
-                vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
+		// Be super duper sure that mesh rendering is done
+		vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, 0xffffffffffffffffL);
+		vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
 
-                task_scheduler->add_task(
-                    [&](ttl::task_scheduler* /*task_scheduler*/, std::vector<vk_buffer>* buffers_to_free) {
-                        vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, 0xffffffffffffffffL);
+		vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, 0xffffffffffffffffL);
 
-                        // Once the upload is done, return all the staging buffers to the pool
-                        std::lock_guard l(mesh_staging_buffers_mutex);
-                        available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), buffers_to_free->begin(), buffers_to_free->end());
-                    },
-                    &freed_buffers);
-            },
-            &current_frame);
-    }
+		// Once the upload is done, return all the staging buffers to the pool
+		std::lock_guard l(mesh_staging_buffers_mutex);
+		available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), freed_buffers.begin(), freed_buffers.end());
+	}
 
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
         VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* msg, void* user_data) {
@@ -1190,7 +1182,7 @@ namespace nova {
         shaderpack_loading_mutex.lock();
         std::atomic<uint32_t> render_tasks_counter;
         for(const std::string& renderpass_name : render_passes_by_order) {
-                execute_renderpass(&renderpass_name);
+            execute_renderpass(&renderpass_name);
         }
         shaderpack_loading_mutex.unlock();
         
