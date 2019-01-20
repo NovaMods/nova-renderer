@@ -78,11 +78,11 @@ namespace nova {
         os.close();
     }
 
-    nova_exception::nova_exception() : msg(typeid(*this).name()), cause("<UNINITIALIZED>") {}
+    nova_exception::nova_exception() : msg(typeid(*this).name()), cause(std::runtime_error("<UNINITIALIZED>")) {}
 
     nova_exception::nova_exception(const std::exception& cause) : cause(cause) {}
 
-    nova_exception::nova_exception(std::string msg) : msg(std::move(msg)), cause("<UNINITIALIZED>") {}
+    nova_exception::nova_exception(std::string msg) : msg(std::move(msg)), cause(std::runtime_error("<UNINITIALIZED>")) {}
 
     nova_exception::nova_exception(std::string msg, const std::exception& cause) : msg(std::move(msg)), cause(cause) {}
 
