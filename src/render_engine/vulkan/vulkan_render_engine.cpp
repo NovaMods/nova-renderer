@@ -492,6 +492,7 @@ namespace nova {
 			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &render_finished_semaphores[i]), render_engine_initialization_exception);
 			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]), render_engine_initialization_exception);
 		}
+		NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &mesh_rendering_done), render_engine_initialization_exception);
 	}
 
     void vulkan_render_engine::set_shaderpack(const shaderpack_data& data) {
@@ -1312,13 +1313,15 @@ namespace nova {
         VkClearValue clear_value = {};
         clear_value.color = {0, 0, 0, 0};
 
+        VkClearValue clear_values[] = {clear_value, clear_value};
+
         VkRenderPassBeginInfo rp_begin_info = {};
         rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         rp_begin_info.renderPass = renderpass.pass;
         rp_begin_info.framebuffer = renderpass.framebuffer;
         rp_begin_info.renderArea = renderpass.render_area;
-        rp_begin_info.clearValueCount = 1;
-        rp_begin_info.pClearValues = &clear_value;
+        rp_begin_info.clearValueCount = 2;
+        rp_begin_info.pClearValues = clear_values;
 
         if(rp_begin_info.framebuffer == VK_NULL_HANDLE) {
             rp_begin_info.framebuffer = swapchain_framebuffers.at(current_swapchain_index);
@@ -1333,7 +1336,7 @@ namespace nova {
         ttl::condition_counter pipelines_rendering_counter;
         uint32_t i = 0;
         for(const vk_pipeline& pipe : pipelines) {
-			render_pipeline(&pipe, &secondary_command_buffers[i]);
+			render_pipeline(&pipe, &secondary_command_buffers[i], renderpass);
             i++;
         }
 
@@ -1344,7 +1347,7 @@ namespace nova {
         submit_to_queue(cmds, graphics_queue);
     }
 
-    void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds) {
+    void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass &renderpass) {
         // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
         // command pool for its thread, since command pools need to be externally synchronized
         const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
@@ -1357,9 +1360,15 @@ namespace nova {
 
         vkAllocateCommandBuffers(device, &cmds_info, cmds);
 
+        VkCommandBufferInheritanceInfo cmds_inheritance_info = {};
+        cmds_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+        cmds_inheritance_info.framebuffer = renderpass.framebuffer;
+        cmds_inheritance_info.renderPass = renderpass.pass;
+
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        begin_info.pInheritanceInfo = &cmds_inheritance_info;
 
         // Start command buffer, start renderpass, and bind pipeline
         vkBeginCommandBuffer(*cmds, &begin_info);

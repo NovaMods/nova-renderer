@@ -465,7 +465,7 @@ namespace nova {
          * Intended use case is to render the things for each pipeline in a separate fiber, but imma have to do a lot 
          * of profiling to be sure
          */
-        void render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds);
+        void render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass &renderpass);
 
         /*!
          * \brief Binds all the resources that the provided material uses to the given pipeline
