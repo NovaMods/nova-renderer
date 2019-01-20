@@ -63,6 +63,7 @@ namespace nova {
 
 #ifndef NDEBUG
         enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+		enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
         create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extension_names.size());
         create_info.ppEnabledExtensionNames = enabled_extension_names.data();
@@ -653,6 +654,9 @@ namespace nova {
         render_passes.reserve(passes.size());
         for(const render_pass_data& pass_data : passes) {
             render_passes[pass_data.name].data = pass_data;
+			VkFenceCreateInfo fence_info = {};
+
+			vkCreateFence(device, &fence_info, nullptr, &render_passes[pass_data.name].fence);
             regular_render_passes[pass_data.name] = pass_data;
         }
 
@@ -1120,10 +1124,12 @@ namespace nova {
 		submit_info.pCommandBuffers = &mesh_upload_cmds;
 
 		// Be super duper sure that mesh rendering is done
-		vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, 0xffffffffffffffffL);
+		for(const auto& [pass_name, pass] : render_passes) {
+			vkWaitForFences(device, 1, &pass.fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+		}
 		vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
 
-		vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, 0xffffffffffffffffL);
+		vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
 		// Once the upload is done, return all the staging buffers to the pool
 		std::lock_guard l(mesh_staging_buffers_mutex);
@@ -1134,24 +1140,29 @@ namespace nova {
         VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* msg, void* user_data) {
         if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
             NOVA_LOG(ERROR) << "[" << layer_prefix << "] " << msg;
-        }
-        // Warnings may hint at unexpected / non-spec API usage
-        if(flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+
+        } else if(flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+			// Warnings may hint at unexpected / non-spec API usage
             NOVA_LOG(WARN) << "[" << layer_prefix << "] " << msg;
-        }
-        // May indicate sub-optimal usage of the API
-        if(flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
+            
+        } else if(flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
+			// May indicate sub-optimal usage of the API
             NOVA_LOG(WARN) << "PERFORMANCE WARNING: [" << layer_prefix << "] " << msg;
-        }
-        // Informal messages that may become handy during debugging
-        if(flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+
+        } else if(flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+			// Informal messages that may become handy during debugging
             NOVA_LOG(INFO) << "[" << layer_prefix << "] " << msg;
-        }
-        // Diagnostic info from the Vulkan loader and layers
-        // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
-        if(flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+
+        } else if(flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+			// Diagnostic info from the Vulkan loader and layers
+			// Usually not helpful in terms of API usage, but may help to debug layer and loader problems
             NOVA_LOG(DEBUG) << "[" << layer_prefix << "] " << msg;
+
+        } else {
+            // Catch-all to be super sure
+			NOVA_LOG(INFO) << "[" << layer_prefix << "]" << msg;
         }
+
 #ifdef __linux__
         if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
             nova_backtrace();
@@ -1180,19 +1191,16 @@ namespace nova {
         // We can't upload a new shaderpack in the middle of a frame!
         // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the frame 
         shaderpack_loading_mutex.lock();
-        std::atomic<uint32_t> render_tasks_counter;
         for(const std::string& renderpass_name : render_passes_by_order) {
             execute_renderpass(&renderpass_name);
         }
         shaderpack_loading_mutex.unlock();
         
-        vkWaitForFences(device, 1, &mesh_rendering_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
-        vkResetFences(device, 1, &mesh_rendering_done);
         // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has
         // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
         upload_new_mesh_parts();
 
-        VkPresentInfoKHR present_info;
+        VkPresentInfoKHR present_info = {};
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         present_info.pNext = nullptr;
         present_info.waitSemaphoreCount = 1;
@@ -1283,6 +1291,7 @@ namespace nova {
 
     void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
+		vkResetFences(device, 1, &renderpass.fence);
 
         const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
 
@@ -1336,7 +1345,7 @@ namespace nova {
 
         vkEndCommandBuffer(cmds);
 
-        submit_to_queue(cmds, graphics_queue);
+        submit_to_queue(cmds, graphics_queue, renderpass.fence);
     }
 
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass &renderpass) {
@@ -1450,7 +1459,7 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue) {
+    void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence) {
         VkSubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.pNext = nullptr;
@@ -1460,7 +1469,7 @@ namespace nova {
         submit_info.pCommandBuffers = &cmds;
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_frame);
-        NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, frame_fences.at(current_frame)), render_engine_rendering_exception);
+        NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence), render_engine_rendering_exception);
     }
 
     VkFormat vulkan_render_engine::to_vk_format(const pixel_format_enum format) {

@@ -64,6 +64,7 @@ namespace nova {
         VkFramebuffer framebuffer = VK_NULL_HANDLE;
         render_pass_data data;
         VkRect2D render_area;
+        VkFence fence;
     };
 
     struct vk_pipeline {
@@ -486,7 +487,7 @@ namespace nova {
          *
          * This method is thread-safe
          */
-        void submit_to_queue(VkCommandBuffer cmds, VkQueue queue);
+        void submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence);
 #pragma endregion
 
 #ifndef NDEBUG
