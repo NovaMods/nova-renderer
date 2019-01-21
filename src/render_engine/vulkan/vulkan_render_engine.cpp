@@ -673,6 +673,7 @@ namespace nova {
         render_passes_by_order = order_passes(regular_render_passes);
 
         for(const auto& [pass_name, pass] : render_passes) {
+			bool is_forward = pass_name == "Forward";
             VkSubpassDescription subpass_description;
             subpass_description.flags = 0;
             subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -778,7 +779,7 @@ namespace nova {
 				desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 				desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 				desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-				desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				desc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 				attachments.push_back(desc);
@@ -1612,7 +1613,12 @@ namespace nova {
             image_view_create_info.image = texture.image;
             image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
             image_view_create_info.format = image_create_info.format;
-            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
+				image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+			} else {
+				image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			}
             image_view_create_info.subresourceRange.baseArrayLayer = 0;
             image_view_create_info.subresourceRange.layerCount = 1;
             image_view_create_info.subresourceRange.baseMipLevel = 0;
