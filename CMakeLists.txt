@@ -78,7 +78,6 @@ include_directories(SYSTEM
         ${3RD_PARTY_DIR}/RenderDoc-Manager
         ${3RD_PARTY_DIR}/profiler/include
         ${3RD_PARTY_DIR}/json/single_include
-        ${3RD_PARTY_DIR}/enkiTS/src
         ${3RD_PARTY_DIR}/cpptoml/include
         ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/glslang
@@ -151,7 +150,8 @@ set(NOVA_SOURCE
 		src/tasks/task_graph.hpp
 		src/tasks/wait_free_queue.hpp
 		src/tasks/condition_counter.cpp
-		src/tasks/condition_counter.hpp)
+		src/tasks/condition_counter.hpp
+		)
 
 if(WIN32)
     set(NOVA_SOURCE
@@ -178,7 +178,8 @@ else()
         src/render_engine/vulkan/x11_window.cpp
         src/render_engine/vulkan/x11_window.hpp
         src/util/linux_utils.cpp
-        src/util/linux_utils.hpp)
+        src/util/linux_utils.hpp
+		)
 endif()
 
 if (UNIX)

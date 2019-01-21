@@ -91,6 +91,15 @@ namespace nova {
 		create_global_sync_objects();
 		create_per_thread_command_pools();
 		create_per_thread_descriptor_pools();
+
+#ifndef NDEBUG
+		VkImageFormatProperties format_properties;
+		vkGetPhysicalDeviceImageFormatProperties(physical_device, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TYPE_2D, 
+			VK_IMAGE_TILING_LINEAR, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 0, &format_properties);
+
+		NOVA_LOG(INFO) << "VkImageFormatProperties for VK_FORMAT_R8G8B8A8_UNORM:\n" <<
+			"\tmaxMipLevels: " << format_properties.maxMipLevels;
+#endif
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -1573,14 +1582,15 @@ namespace nova {
             image_create_info.arrayLayers = 1;
             image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
             image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-			/* if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
+			if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
 				image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
 			} else {
 				image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-			}*/
-			image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; // TODO: Cannot be correct, however, for debugging it helps and I'd like
-			                                                                        //       dethraid to look into whats going on (Janrupf)
+			}
+			// image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; 
+            // TODO: Cannot be correct, however, for debugging it helps and I'd like
+            //       dethraid to look into whats going on (Janrupf)
             image_create_info.queueFamilyIndexCount = 1;
             image_create_info.pQueueFamilyIndices = &graphics_queue_index;
             image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
