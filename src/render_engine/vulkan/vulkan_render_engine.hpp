@@ -160,6 +160,7 @@ namespace nova {
 		 */
         std::vector<VkFence> frame_fences;
 
+		bool dynamic_textures_need_to_transition = false;
 		std::unordered_map<std::string, vk_texture> textures;
 		std::unordered_map<std::string, vk_buffer> buffers;
 
@@ -355,6 +356,11 @@ namespace nova {
          * \param buffer_infos A place to store VkDescriptorBufferInfo structs so they don't get cleaned up too early
          */
         static void write_buffer_to_descriptor(const vk_buffer& buffer, VkWriteDescriptorSet& write, std::vector<VkDescriptorBufferInfo> buffer_infos);
+
+        /*!
+         * \brief Executed barriers for all the dynamic textures so they are in COLOR_ATTACHMENT_OPTIMAL layout
+         */
+		void transition_dynamic_textures();
 
         /*!
          * \brief Converts the list of attachment names into attachment descriptions and references that can be later

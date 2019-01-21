@@ -104,6 +104,94 @@ namespace nova {
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
 
+	void vulkan_render_engine::transition_dynamic_textures() {
+		std::vector<VkImageMemoryBarrier> color_barriers;
+		color_barriers.reserve(textures.size());
+
+		std::vector<VkImageMemoryBarrier> depth_barriers;
+		depth_barriers.reserve(textures.size());
+
+		for(const auto&[texture_name, texture] : textures) {
+			VkImageMemoryBarrier barrier = {};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			barrier.srcQueueFamilyIndex = graphics_queue_index;
+			barrier.dstQueueFamilyIndex = graphics_queue_index;
+			barrier.image = texture.image;
+			barrier.subresourceRange.baseMipLevel = 0;
+			barrier.subresourceRange.levelCount = 1;
+			barrier.subresourceRange.baseArrayLayer = 0;
+			barrier.subresourceRange.layerCount = 1;
+
+            if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
+				barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+				depth_barriers.push_back(barrier);
+
+            } else {
+				barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+				color_barriers.push_back(barrier);
+
+			}
+		}
+
+	    const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
+
+		VkCommandBufferAllocateInfo alloc_info = {};
+		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		alloc_info.commandPool = command_pool;
+		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		alloc_info.commandBufferCount = 1;
+
+		VkCommandBuffer cmds;
+		vkAllocateCommandBuffers(device, &alloc_info, &cmds);
+
+		VkCommandBufferBeginInfo begin_info = {};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		vkBeginCommandBuffer(cmds, &begin_info);
+
+		vkCmdPipelineBarrier(cmds,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			color_barriers.size(), color_barriers.data());
+
+		vkCmdPipelineBarrier(cmds,
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			depth_barriers.size(), depth_barriers.data());
+
+		vkEndCommandBuffer(cmds);
+
+		VkFence transition_done_fence;
+
+		VkFenceCreateInfo fence_create_info = {};
+		fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+		vkCreateFence(device, &fence_create_info, nullptr, &transition_done_fence);
+
+		VkSubmitInfo submit_info = {};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &cmds;
+
+		vkQueueSubmit(graphics_queue, 1, &submit_info, transition_done_fence);
+		vkWaitForFences(device, 1, &transition_done_fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+
+		vkFreeCommandBuffers(device, command_pool, 1, &cmds);
+
+		dynamic_textures_need_to_transition = false;
+	}
+
     void vulkan_render_engine::open_window(uint32_t width, uint32_t height) {
 #ifdef linux
         window = std::make_shared<x11_window>(width, height);
@@ -1202,6 +1290,11 @@ namespace nova {
         // We can't upload a new shaderpack in the middle of a frame!
         // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the frame 
         shaderpack_loading_mutex.lock();
+
+        if(dynamic_textures_need_to_transition) {
+			transition_dynamic_textures();
+        }
+
         for(const std::string& renderpass_name : render_passes_by_order) {
             execute_renderpass(&renderpass_name);
         }
@@ -1318,29 +1411,7 @@ namespace nova {
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-        // Start command buffer, start renderpass, and bind pipeline
-        vkBeginCommandBuffer(cmds, &begin_info);
-
-        VkClearValue clear_value = {};
-        clear_value.color = {0, 0, 0, 0};
-
-        VkClearValue clear_values[] = {clear_value, clear_value};
-
-        VkRenderPassBeginInfo rp_begin_info = {};
-        rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        rp_begin_info.renderPass = renderpass.pass;
-        rp_begin_info.framebuffer = renderpass.framebuffer;
-        rp_begin_info.renderArea = renderpass.render_area;
-        rp_begin_info.clearValueCount = 2;
-        rp_begin_info.pClearValues = clear_values;
-
-        if(rp_begin_info.framebuffer == VK_NULL_HANDLE) {
-            rp_begin_info.framebuffer = swapchain_framebuffers.at(current_swapchain_index);
-        }
-
-        vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-
+                
         const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
 
         std::vector<VkCommandBuffer> secondary_command_buffers(pipelines.size());
@@ -1352,7 +1423,30 @@ namespace nova {
             i++;
         }
 
+		vkBeginCommandBuffer(cmds, &begin_info);
+
+		VkClearValue clear_value = {};
+		clear_value.color = { 0, 0, 0, 0 };
+
+		VkClearValue clear_values[] = { clear_value, clear_value };
+
+		VkRenderPassBeginInfo rp_begin_info = {};
+		rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		rp_begin_info.renderPass = renderpass.pass;
+		rp_begin_info.framebuffer = renderpass.framebuffer;
+		rp_begin_info.renderArea = renderpass.render_area;
+		rp_begin_info.clearValueCount = 2;
+		rp_begin_info.pClearValues = clear_values;
+
+		if(rp_begin_info.framebuffer == VK_NULL_HANDLE) {
+			rp_begin_info.framebuffer = swapchain_framebuffers.at(current_swapchain_index);
+		}
+
+		vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
+
+		vkCmdEndRenderPass(cmds);
 
         vkEndCommandBuffer(cmds);
 
@@ -1395,7 +1489,7 @@ namespace nova {
 
             draw_all_for_material(pass, *cmds);
         }
-
+        
         vkEndCommandBuffer(*cmds);
     }
 
@@ -1535,7 +1629,7 @@ namespace nova {
             VkCommandPoolCreateInfo command_pool_create_info;
             command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
             command_pool_create_info.pNext = nullptr;
-            command_pool_create_info.flags = 0;
+            command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
             command_pool_create_info.queueFamilyIndex = queue_index;
 
             VkCommandPool command_pool;
@@ -1590,9 +1684,6 @@ namespace nova {
 			} else {
 				image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 			}
-			// image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; 
-            // TODO: Cannot be correct, however, for debugging it helps and I'd like
-            //       dethraid to look into whats going on (Janrupf)
             image_create_info.queueFamilyIndexCount = 1;
             image_create_info.pQueueFamilyIndices = &graphics_queue_index;
             image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -1628,6 +1719,8 @@ namespace nova {
 
             textures[texture_data.name] = texture;
         }
+
+		dynamic_textures_need_to_transition = true;
     }
 
     void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
