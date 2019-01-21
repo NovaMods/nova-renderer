@@ -664,6 +664,7 @@ namespace nova {
         for(const render_pass_data& pass_data : passes) {
             render_passes[pass_data.name].data = pass_data;
 			VkFenceCreateInfo fence_info = {};
+			fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
 			vkCreateFence(device, &fence_info, nullptr, &render_passes[pass_data.name].fence);
             regular_render_passes[pass_data.name] = pass_data;
