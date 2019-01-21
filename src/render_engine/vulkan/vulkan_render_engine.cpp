@@ -580,17 +580,17 @@ namespace nova {
 
 		VkSemaphoreCreateInfo semaphore_info = {};
 		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
+        
 		frame_fences.resize(max_frames_in_queue);
 		image_available_semaphores.resize(max_frames_in_queue);
-		render_finished_semaphores.resize(max_frames_in_queue);
+		render_finished_semaphores_by_frame.resize(max_frames_in_queue);
 
 		for(uint32_t i = 0; i < max_frames_in_queue; i++) {
 			NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]), render_engine_initialization_exception);
-			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &render_finished_semaphores[i]), render_engine_initialization_exception);
 			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]), render_engine_initialization_exception);
 		}
 		NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &mesh_rendering_done), render_engine_initialization_exception);
+		NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &upload_to_megamesh_buffer_done), render_engine_initialization_exception);
 	}
 
     void vulkan_render_engine::set_shaderpack(const shaderpack_data& data) {
@@ -1273,6 +1273,7 @@ namespace nova {
     std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }
 
     void vulkan_render_engine::render_frame() {
+		current_semaphore_idx = 0;
         vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
 
         const auto acquire_result =
@@ -1307,8 +1308,8 @@ namespace nova {
         VkPresentInfoKHR present_info = {};
         present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         present_info.pNext = nullptr;
-        present_info.waitSemaphoreCount = 1;
-        present_info.pWaitSemaphores = &render_finished_semaphores.at(current_frame);
+        present_info.waitSemaphoreCount = render_finished_semaphores_by_frame.at(current_swapchain_index).size();
+        present_info.pWaitSemaphores = render_finished_semaphores_by_frame.at(current_swapchain_index).data();
         present_info.swapchainCount = 1;
         present_info.pSwapchains = &swapchain;
         present_info.pImageIndices = &current_swapchain_index;
@@ -1565,6 +1566,20 @@ namespace nova {
     }
 
     void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence) {
+		std::lock_guard l(render_done_sync_mutex);
+		std::vector<VkSemaphore>& render_finished_semaphores = render_finished_semaphores_by_frame.at(current_frame);
+
+		VkSemaphoreCreateInfo semaphore_info = {};
+		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        while(render_finished_semaphores.size() <= current_semaphore_idx) {
+			VkSemaphore semaphore;
+
+			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphore), render_engine_initialization_exception);
+
+			render_finished_semaphores.push_back(semaphore);
+        }
+        
         VkSubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.pNext = nullptr;
@@ -1573,8 +1588,10 @@ namespace nova {
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &cmds;
         submit_info.signalSemaphoreCount = 1;
-        submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_frame);
+        submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_semaphore_idx);
         NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence), render_engine_rendering_exception);
+
+		current_semaphore_idx++;
     }
 
     VkFormat vulkan_render_engine::to_vk_format(const pixel_format_enum format) {

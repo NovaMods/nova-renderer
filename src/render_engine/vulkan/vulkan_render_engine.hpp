@@ -152,7 +152,9 @@ namespace nova {
 
         VmaAllocator vma_allocator;
 
-        std::vector<VkSemaphore> render_finished_semaphores;
+		std::mutex render_done_sync_mutex;
+		uint64_t current_semaphore_idx = 0;
+        std::vector<std::vector<VkSemaphore>> render_finished_semaphores_by_frame;
         std::vector<VkSemaphore> image_available_semaphores;
 
 		/*!
