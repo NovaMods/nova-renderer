@@ -11,14 +11,13 @@
 #define NOVA_VK_XLIB 1
 #include "x11_window.hpp"
 #include <vulkan/vulkan_xlib.h>
+#include "../../util/linux_utils.hpp"
+
 #elif _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32 1
 #include "../dx12/win32_window.hpp"
-#endif
-
-#ifdef __linux__
-#include "../../util/linux_utils.hpp"
+#include <vulkan/vulkan_win32.h>
 #endif
 
 #include <vulkan/vulkan.h>

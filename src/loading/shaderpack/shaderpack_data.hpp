@@ -15,8 +15,11 @@
 #include <optional>
 #include <filesystem>
 #include <nlohmann/json.hpp>
-#include <Common.h>
 #include "../../util/utils.hpp"
+
+#include <vulkan/vulkan.h>
+
+#include <glm/glm.hpp>
 
 #if _WIN32
 #if _MSC_VER <= 1915

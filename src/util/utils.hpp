@@ -12,12 +12,8 @@
 #include <string>
 #include <algorithm>
 #include <exception>
-#include <optional>
 
 #include <fstream>
-
-#include <glm/glm.hpp>
-#include <sstream>
 
 #include <filesystem>
 

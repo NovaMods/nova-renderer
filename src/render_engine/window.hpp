@@ -8,6 +8,8 @@
 
 #include "../util/utils.hpp"
 
+#include <glm/glm.hpp>
+
 namespace nova {
     NOVA_EXCEPTION(window_creation_error);
 

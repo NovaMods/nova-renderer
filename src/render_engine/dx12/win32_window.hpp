@@ -3,7 +3,6 @@
 
 #include "../../platform.hpp"
 #include "../window.hpp"
-#include <vulkan/vulkan_core.h>
 
 #if SUPPORT_DX12
 
@@ -13,7 +12,6 @@
 
 #include <SDKDDKVer.h>
 
-#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN  // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
@@ -24,6 +22,10 @@
 #include <dxgi1_2.h>
 #include <DirectXMath.h>
 #include <glm/glm.hpp>
+
+#ifdef ERROR
+#undef ERROR
+#endif
 
 namespace nova {
     /*!

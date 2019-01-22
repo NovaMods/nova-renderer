@@ -1495,20 +1495,8 @@ namespace nova {
         vkEndCommandBuffer(*cmds);
     }
 
-    void vulkan_render_engine::bind_material_resources(const material_pass& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
-        for(const auto& [descriptor_name, resource_name] : pass.bindings) {
-            if(pipeline.bindings.find(descriptor_name) == pipeline.bindings.end()) {
-                NOVA_LOG(DEBUG) << "Material pass " << pass.name << " in material " << pass.material_name << " wants to bind something to descriptor " << descriptor_name
-                                << ", but it does not exist in pipeline " << pipeline.data.name << ", which the material uses";
-                continue;
-            }
-
-            const vk_resource_binding binding = pipeline.bindings.at(descriptor_name);
-
-            if(textures.find(resource_name) != textures.end()) {
-                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, binding.set, static_cast<uint32_t>(pass.descriptor_sets.size()), pass.descriptor_sets.data(), 0, nullptr);
-            }
-        }
+    void vulkan_render_engine::bind_material_resources(const material_pass& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
+		vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, &mat_pass.descriptor_sets.at(0), 0, nullptr);
     }
 
     void vulkan_render_engine::draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds) {
@@ -1873,9 +1861,29 @@ namespace nova {
 
         std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
 
-        for(const auto& binding : mat.bindings) {
-            const auto& descriptor_info = name_to_descriptor.at(binding.first);
-            const auto& resource_name = binding.second;
+        for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
+			bool should_break = false;
+
+            for(const vk_pipeline& pipeline : pipelines) {
+                if(pipeline.data.name == mat.pipeline) {
+                    for(const auto& [descriptor_name, resource_name] : mat.bindings) {
+                        if(pipeline.bindings.find(descriptor_name) == pipeline.bindings.end()) {
+							NOVA_LOG(DEBUG) << "Material pass " << mat.name << " in material " << mat.material_name << " wants to bind " << resource_name << " to descriptor set " << descriptor_name << ", but it doesn't exist in pipeline " << pipeline.data.name << ", which this material pass uses";
+                        }
+                    }
+
+					should_break = true;
+					break;
+                }
+
+                if(should_break) {
+					break;
+                }
+            }
+        }
+        
+        for(const auto& [descriptor_name, resource_name] : mat.bindings) {
+            const auto& descriptor_info = name_to_descriptor.at(descriptor_name);
             const auto descriptor_set = mat.descriptor_sets[descriptor_info.set];
             bool is_known = true;
 
