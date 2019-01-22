@@ -247,8 +247,6 @@ namespace nova {
 
         std::unordered_map<std::string, vk_render_pass> render_passes;
         std::vector<std::string> render_passes_by_order;
-
-        std::unordered_map<std::string, vk_pipeline> pipelines;
 		
         std::unordered_map<std::string, material_data> materials;
 

@@ -599,6 +599,7 @@ namespace nova {
             destroy_render_passes();
             destroy_graphics_pipelines();
             materials.clear();
+			material_passes_by_pipeline.clear();
             destroy_dynamic_resources();
 
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
@@ -940,37 +941,36 @@ namespace nova {
 
             std::vector<VkPipelineShaderStageCreateInfo> shader_stages;
             std::unordered_map<VkShaderStageFlags, VkShaderModule> shader_modules;
-            std::unordered_map<std::string, vk_resource_binding> bindings;
 
             NOVA_LOG(TRACE) << "Compiling vertex module";
             shader_modules[VK_SHADER_STAGE_VERTEX_BIT] = create_shader_module(data.vertex_shader.source);
-            get_shader_module_descriptors(data.vertex_shader.source, bindings);
+            get_shader_module_descriptors(data.vertex_shader.source, nova_pipeline.bindings);
 
             if(data.geometry_shader) {
                 NOVA_LOG(TRACE) << "Compiling geometry module";
                 shader_modules[VK_SHADER_STAGE_GEOMETRY_BIT] = create_shader_module(data.geometry_shader->source);
-                get_shader_module_descriptors(data.geometry_shader->source, bindings);
+                get_shader_module_descriptors(data.geometry_shader->source, nova_pipeline.bindings);
             }
 
             if(data.tessellation_control_shader) {
                 NOVA_LOG(TRACE) << "Compiling tessellation_control module";
                 shader_modules[VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT] = create_shader_module(data.tessellation_control_shader->source);
-                get_shader_module_descriptors(data.tessellation_control_shader->source, bindings);
+                get_shader_module_descriptors(data.tessellation_control_shader->source, nova_pipeline.bindings);
             }
 
             if(data.tessellation_evaluation_shader) {
                 NOVA_LOG(TRACE) << "Compiling tessellation_evaluation module";
                 shader_modules[VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT] = create_shader_module(data.tessellation_evaluation_shader->source);
-                get_shader_module_descriptors(data.tessellation_evaluation_shader->source, bindings);
+                get_shader_module_descriptors(data.tessellation_evaluation_shader->source, nova_pipeline.bindings);
             }
 
             if(data.fragment_shader) {
                 NOVA_LOG(TRACE) << "Compiling fragment module";
                 shader_modules[VK_SHADER_STAGE_FRAGMENT_BIT] = create_shader_module(data.fragment_shader->source);
-                get_shader_module_descriptors(data.fragment_shader->source, bindings);
+                get_shader_module_descriptors(data.fragment_shader->source, nova_pipeline.bindings);
             }
 
-            std::vector<VkDescriptorSetLayout> layout_data = create_descriptor_set_layouts(bindings);
+            std::vector<VkDescriptorSetLayout> layout_data = create_descriptor_set_layouts(nova_pipeline.bindings);
 
             VkPipelineLayoutCreateInfo pipeline_layout_create_info;
             pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -1139,8 +1139,7 @@ namespace nova {
             pipeline_create_info.basePipelineIndex = -1;
 
             NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.pipeline), render_engine_initialization_exception);
-            this->pipelines.insert(std::make_pair(data.name, nova_pipeline));
-
+            
 			pipelines_by_renderpass[data.pass].push_back(nova_pipeline);
         }
     }
@@ -1276,8 +1275,7 @@ namespace nova {
 		current_semaphore_idx = 0;
         vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
 
-        const auto acquire_result =
-            vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphores.at(current_frame), VK_NULL_HANDLE, &current_swapchain_index);
+        const auto acquire_result = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphores.at(current_frame), VK_NULL_HANDLE, &current_swapchain_index);
         if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
             // TODO: Recreate the swapchain and all screen-relative textures
             return;
@@ -1360,11 +1358,13 @@ namespace nova {
     }
 
     void vulkan_render_engine::destroy_graphics_pipelines() {
-        for(const auto& [pipeline_name, pipeline] : pipelines) {
-            vkDestroyPipeline(device, pipeline.pipeline, nullptr);
+        for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
+			for(const auto& pipeline : pipelines) {
+				vkDestroyPipeline(device, pipeline.pipeline, nullptr);
+			}
         }
 
-        pipelines.clear();
+        pipelines_by_renderpass.clear();
     }
 
     void vulkan_render_engine::destroy_dynamic_resources() {
