@@ -71,7 +71,7 @@ namespace nova {
         VkPipeline pipeline = VK_NULL_HANDLE;
         VkPipelineLayout layout = VK_NULL_HANDLE;
 
-        std::unordered_map<uint32_t, VkDescriptorSetLayout> layouts;
+        std::vector<VkDescriptorSetLayout> layouts;
         pipeline_data data;
 
         std::unordered_map<std::string, vk_resource_binding> bindings;
@@ -346,7 +346,7 @@ namespace nova {
          * \param write a VkWriteDescriptorSet struct that we can add information about out descriptor to
          * \param image_infos A place to store VkDescriptorImageInfo structs so they don't get cleaned up too early
          */
-        void write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo> image_infos) const;
+        void write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo>& image_infos) const;
 
         /*!
          * \brief Helper function so I don't have the same code for dynamic and builtin buffers
@@ -355,7 +355,7 @@ namespace nova {
          * \param write A VkWriteDescriptorSet struct that we can add information about our descriptor to
          * \param buffer_infos A place to store VkDescriptorBufferInfo structs so they don't get cleaned up too early
          */
-        static void write_buffer_to_descriptor(const vk_buffer& buffer, VkWriteDescriptorSet& write, std::vector<VkDescriptorBufferInfo> buffer_infos);
+        static void write_buffer_to_descriptor(const vk_buffer& buffer, VkWriteDescriptorSet& write, std::vector<VkDescriptorBufferInfo>& buffer_infos);
 
         /*!
          * \brief Executed barriers for all the dynamic textures so they are in COLOR_ATTACHMENT_OPTIMAL layout

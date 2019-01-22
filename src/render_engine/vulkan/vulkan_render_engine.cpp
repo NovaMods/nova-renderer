@@ -970,14 +970,14 @@ namespace nova {
                 get_shader_module_descriptors(data.fragment_shader->source, nova_pipeline.bindings);
             }
 
-            std::vector<VkDescriptorSetLayout> layout_data = create_descriptor_set_layouts(nova_pipeline.bindings);
+			nova_pipeline.layouts = create_descriptor_set_layouts(nova_pipeline.bindings);
 
             VkPipelineLayoutCreateInfo pipeline_layout_create_info;
             pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipeline_layout_create_info.pNext = nullptr;
             pipeline_layout_create_info.flags = 0;
-            pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(layout_data.size());
-            pipeline_layout_create_info.pSetLayouts = layout_data.data();
+            pipeline_layout_create_info.setLayoutCount = static_cast<uint32_t>(nova_pipeline.layouts.size());
+            pipeline_layout_create_info.pSetLayouts = nova_pipeline.layouts.data();
             pipeline_layout_create_info.pushConstantRangeCount = 0;
             pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
@@ -1505,8 +1505,7 @@ namespace nova {
             const vk_resource_binding binding = pipeline.bindings.at(descriptor_name);
 
             if(textures.find(resource_name) != textures.end()) {
-                vkCmdBindDescriptorSets(
-                    cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, binding.set, static_cast<uint32_t>(pass.descriptor_sets.size()), pass.descriptor_sets.data(), 0, nullptr);
+                vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, binding.set, static_cast<uint32_t>(pass.descriptor_sets.size()), pass.descriptor_sets.data(), 0, nullptr);
             }
         }
     }
@@ -1825,10 +1824,11 @@ namespace nova {
     void vulkan_render_engine::create_material_descriptor_sets() {
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             for(const auto& pipeline : pipelines) {
-                std::vector<material_pass>& mats = material_passes_by_pipeline.at(pipeline.data.name);
-                for(material_pass& mat : mats) {
+                std::vector<material_pass>& material_passes = material_passes_by_pipeline.at(pipeline.data.name);
+                for(material_pass& mat_pass : material_passes) {
                     if(pipeline.layouts.empty()) {
                         // If there's no layouts, we're done
+						NOVA_LOG(TRACE) << "No layouts for pipeline " << pipeline.data.name << ", which material pass " << mat_pass.name << " of material " << mat_pass.material_name << " uses";
                         continue;
                     }
 
@@ -1849,10 +1849,10 @@ namespace nova {
                     alloc_info.descriptorSetCount = layouts.size();
                     alloc_info.pSetLayouts = layouts.data();
 
-                    mat.descriptor_sets.reserve(layouts.size());
-                    NOVA_THROW_IF_VK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat.descriptor_sets.data()), shaderpack_loading_error);
+                    mat_pass.descriptor_sets.resize(layouts.size());
+                    NOVA_THROW_IF_VK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat_pass.descriptor_sets.data()), shaderpack_loading_error);
 
-                    update_material_descriptor_sets(mat, pipeline.bindings);
+                    update_material_descriptor_sets(mat_pass, pipeline.bindings);
                 }
             }
         }
@@ -1879,6 +1879,7 @@ namespace nova {
             bool is_known = true;
 
             VkWriteDescriptorSet write = {};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             write.dstSet = descriptor_set;
             write.dstBinding = descriptor_info.binding;
             write.descriptorCount = 1;
@@ -1905,7 +1906,7 @@ namespace nova {
         vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
     }
 
-    void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo> image_infos) const {
+    void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo>& image_infos) const {
         VkDescriptorImageInfo image_info = {};
         image_info.imageView = texture.image_view;
         image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -1917,7 +1918,7 @@ namespace nova {
         write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     }
 
-    void vulkan_render_engine::write_buffer_to_descriptor(const vk_buffer& buffer, VkWriteDescriptorSet& write, std::vector<VkDescriptorBufferInfo> buffer_infos) {
+    void vulkan_render_engine::write_buffer_to_descriptor(const vk_buffer& buffer, VkWriteDescriptorSet& write, std::vector<VkDescriptorBufferInfo>& buffer_infos) {
         VkDescriptorBufferInfo buffer_info = {};
         buffer_info.buffer = buffer.buffer;
         buffer_info.offset = 0;
