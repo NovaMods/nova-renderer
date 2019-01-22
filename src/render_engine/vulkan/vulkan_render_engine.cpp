@@ -91,15 +91,7 @@ namespace nova {
 		create_global_sync_objects();
 		create_per_thread_command_pools();
 		create_per_thread_descriptor_pools();
-
-#ifndef NDEBUG
-		VkImageFormatProperties format_properties;
-		vkGetPhysicalDeviceImageFormatProperties(physical_device, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TYPE_2D, 
-			VK_IMAGE_TILING_LINEAR, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 0, &format_properties);
-
-		NOVA_LOG(INFO) << "VkImageFormatProperties for VK_FORMAT_R8G8B8A8_UNORM:\n" <<
-			"\tmaxMipLevels: " << format_properties.maxMipLevels;
-#endif
+		create_default_samplers();
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
@@ -635,6 +627,15 @@ namespace nova {
     VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() {
 		const uint32_t cur_thread_idx = scheduler->get_current_thread_idx(); 
         return descriptor_pools_by_thread_idx.at(cur_thread_idx); 
+    }
+
+    void vulkan_render_engine::create_default_samplers() {
+		VkSamplerCreateInfo point_sampler_create = {};
+		point_sampler_create.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		point_sampler_create.magFilter = VK_FILTER_NEAREST;
+		point_sampler_create.minFilter = VK_FILTER_NEAREST;
+
+		NOVA_THROW_IF_VK_ERROR(vkCreateSampler(device, &point_sampler_create, nullptr, &point_sampler), render_engine_initialization_exception);
     }
 
     vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer(const uint32_t needed_size) {

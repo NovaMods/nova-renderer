@@ -209,6 +209,11 @@ namespace nova {
          * \brief Retrieves the descriptor pool for the calling thread
          */
         VkDescriptorPool get_descriptor_pool_for_current_thread();
+
+        /*!
+         * \brief Creates a point sampler and a linear sampler
+         */
+		void create_default_samplers();
 #pragma endregion
 
 #pragma region Init
