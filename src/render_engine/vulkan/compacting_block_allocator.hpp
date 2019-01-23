@@ -118,7 +118,7 @@ namespace nova {
             void compact_all_memory();
         };
 
-        compacting_block_allocator(settings_options::block_allocator_settings settings, VmaAllocator vma_allocator, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
+        compacting_block_allocator(const settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
 
         /*!
          * \brief Allocates memory of the requested size and gives that to you
@@ -158,7 +158,7 @@ namespace nova {
         std::vector<block_allocator_buffer> pools;
         std::mutex pools_mutex;
 
-        settings_options::block_allocator_settings& settings;
+        const settings_options::block_allocator_settings& settings;
         VmaAllocator vma_allocator;
         uint32_t graphics_queue_idx;
         uint32_t copy_queue_idx;

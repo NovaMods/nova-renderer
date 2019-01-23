@@ -265,7 +265,7 @@ namespace nova {
         }
     }
 
-    compacting_block_allocator::compacting_block_allocator(settings_options::block_allocator_settings settings, VmaAllocator vma_allocator, 
+    compacting_block_allocator::compacting_block_allocator(const settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator, 
 		const uint32_t graphics_queue_idx, const uint32_t copy_queue_idx) 
           : settings(settings), vma_allocator(vma_allocator), 
             graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
