@@ -15,6 +15,10 @@
 #include "render_engine/render_engine.hpp"
 #include "tasks/task_scheduler.hpp"
 
+#if _WIN32
+#include "RenderDocManager.h"
+#endif
+
 namespace nova {
 	NOVA_EXCEPTION(already_initialized_exception);
 	NOVA_EXCEPTION(uninitialized_exception);
@@ -43,7 +47,7 @@ namespace nova {
 		/*!
 		 * \brief Executes a single frame
 		 */
-		void execute_frame();
+		void execute_frame() const;
 
 		nova_settings& get_settings();
 
@@ -66,6 +70,9 @@ namespace nova {
 		ttl::task_scheduler task_scheduler;
 		std::future<void> frame_done_future;
 
+#if _WIN32
+		std::unique_ptr<RenderDocManager> render_doc;
+#endif
 		static nova_renderer *instance;
 	};
 } // namespace nova

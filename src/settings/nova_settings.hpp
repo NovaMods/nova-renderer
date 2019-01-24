@@ -75,6 +75,11 @@ namespace nova {
              * debug your shaderpack without leaving Nova
              */
             bool enable_renderdoc = false;
+
+            /*!
+             * \brief The path to `renderdoc.dll` on your filesystem
+             */
+			std::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
         } debug;
 
         /*!

@@ -24,6 +24,12 @@ namespace nova {
     nova_renderer::nova_renderer(const settings_options &settings) : 
 		render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
+#if _WIN32
+        if(settings.debug.enable_renderdoc) {
+			render_doc = std::make_unique<RenderDocManager>(settings.debug.renderdoc_dll_path, "log/captures");
+        }
+#endif
+
         switch(settings.api) {
         case graphics_api::dx12:
             #if _WIN32
@@ -33,24 +39,13 @@ namespace nova {
         case graphics_api::vulkan:
             engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler);
         }
-
-        NOVA_LOG(DEBUG) << "Opened window";
     }
 
 	nova_settings &nova_renderer::get_settings() {
         return render_settings;
     }
 
-    void nova_renderer::execute_frame() {
-		/*frame_done_future.wait();
-		frame_done_future.get();
-		try {
-			frame_done_future = task_scheduler.add_task([](ttl::task_scheduler* task_scheduler, render_engine* engine) { engine->render_frame(); }, engine.get());
-
-		} catch(const std::exception& e) {
-			NOVA_LOG(ERROR) << "Could not execute frame: " << e.what();
-		}*/
-
+    void nova_renderer::execute_frame() const {
 		engine->render_frame();
     }
 

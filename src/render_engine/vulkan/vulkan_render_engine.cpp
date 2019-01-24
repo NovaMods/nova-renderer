@@ -26,7 +26,7 @@ namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler) : render_engine(settings, task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
-        settings_options options = settings.get_options();
+        const settings_options& options = settings.get_options();
 
         validate_mesh_options(options.vertex_memory_settings);
 
