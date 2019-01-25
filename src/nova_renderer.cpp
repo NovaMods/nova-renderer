@@ -24,7 +24,7 @@ namespace nova {
     nova_renderer::nova_renderer(const settings_options &settings) : 
 		render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
-        if(settings.debug.renderdoc.enable) {
+        if(settings.debug.renderdoc.enabled) {
 #if _WIN32
 			render_doc = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
 #endif

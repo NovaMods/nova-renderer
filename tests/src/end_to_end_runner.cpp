@@ -29,7 +29,7 @@ namespace nova {
         settings.vulkan.application_name = "Nova Renderer test";
         settings.vulkan.application_version = { 0, 8, 0 };
 		settings.debug.enabled = true;
-		settings.debug.enable_renderdoc = true;
+		settings.debug.renderdoc.enabled = true;
         settings.window.width = 640;
         settings.window.height = 480;
         auto renderer = nova_renderer::initialize(settings);
@@ -38,7 +38,7 @@ namespace nova {
 
         std::shared_ptr<iwindow> window = renderer->get_engine()->get_window();
 
-        while (!window->should_close()) {
+        while(!window->should_close()) {
             renderer->execute_frame();
             window->on_frame_end();
         }

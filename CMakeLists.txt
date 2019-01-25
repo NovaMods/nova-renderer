@@ -92,16 +92,6 @@ include_directories(SYSTEM
 set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
 
 set(NOVA_SOURCE
-        # SPIRV-Cross doesn't like being an in-source build, meaning I can't easily add it as a dependency to Nova.
-        # The instructions are like "yeah just copy over whatever files you want cause that's totally the way modern
-        # software is built -_-
-        # So here we are,
-        # ${SPIRV_CROSS_ROOT}/spirv_cfg.cpp
-        # ${SPIRV_CROSS_ROOT}/spirv_cross_util.cpp
-        # ${SPIRV_CROSS_ROOT}/spirv_cross.cpp
-        # ${SPIRV_CROSS_ROOT}/spirv_glsl.cpp 
-        # ${SPIRV_CROSS_ROOT}/spirv_hlsl.cpp 
-
 		${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp
 
         src/platform.hpp
@@ -158,7 +148,6 @@ set(NOVA_SOURCE
 if(WIN32)
     set(NOVA_SOURCE
             ${NOVA_SOURCE}
-            ${3RD_PARTY_DIR}/RenderDoc-Manager/RenderDocManager.cpp
             src/util/windows_utils.cpp
             src/util/windows_utils.hpp
             src/render_engine/dx12/pipeline_state_object.cpp

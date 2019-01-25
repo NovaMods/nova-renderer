@@ -75,7 +75,7 @@ namespace nova {
 				 * \brief If true, Nova will look for RenderDoc on your computer and will try to load it, letting you
 				 * debug your shaderpack without leaving Nova
 				 */
-				bool enable_renderdoc = false;
+				bool enabled = false;
 
 				/*!
 				 * \brief The path to `renderdoc.dll` on your filesystem
