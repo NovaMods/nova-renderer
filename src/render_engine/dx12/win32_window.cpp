@@ -3,6 +3,7 @@
 
 #include "win32_window.hpp"
 #include "../../util/logger.hpp"
+#include "../../util/windows_utils.hpp"
 
 #if SUPPORT_DX12
 
@@ -109,30 +110,7 @@ namespace nova {
             default: return DefWindowProc(hWnd, message, wParam, lParam);
         }
     }
-
-    std::string get_last_windows_error() {
-        const DWORD errorMessageID = GetLastError();
-        if(errorMessageID == 0) {
-            return std::string();  // No error message has been recorded
-        }
-
-        LPSTR messageBuffer = nullptr;
-        const size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            nullptr,
-            errorMessageID,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            reinterpret_cast<LPSTR>(&messageBuffer),
-            0,
-            nullptr);
-
-        std::string message(messageBuffer, size);
-
-        // Free the buffer.
-        LocalFree(messageBuffer);
-
-        return message;
-    }
-
+    
     bool win32_window::should_close() const {
         return window_should_close;
     }

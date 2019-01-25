@@ -7,7 +7,6 @@
 
 #include "nova_renderer.hpp"
 
-#include "platform.hpp"
 #include "util/logger.hpp"
 #include "glslang/MachineIndependent/Initialize.h"
 #include "loading/shaderpack/shaderpack_loading.hpp"
@@ -17,6 +16,7 @@
 #endif 
 
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
+#include "debugging/renderdoc.hpp"
 
 namespace nova {
     nova_renderer *nova_renderer::instance;
@@ -24,11 +24,23 @@ namespace nova {
     nova_renderer::nova_renderer(const settings_options &settings) : 
 		render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
+        if(settings.debug.renderdoc.enable) {
 #if _WIN32
-        if(settings.debug.enable_renderdoc) {
-			render_doc = std::make_unique<RenderDocManager>(settings.debug.renderdoc_dll_path, "log/captures");
-        }
+			render_doc = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
 #endif
+
+            if(render_doc) {
+				render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
+
+				RENDERDOC_InputButton captureKey = eRENDERDOC_Key_F12;
+				render_doc->SetCaptureKeys(&captureKey, 1);
+
+				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, true);
+				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, true);
+				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_VerifyMapWrites, true);
+				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, true);
+            }
+        }
 
         switch(settings.api) {
         case graphics_api::dx12:

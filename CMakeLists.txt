@@ -151,6 +151,8 @@ set(NOVA_SOURCE
 		src/tasks/wait_free_queue.hpp
 		src/tasks/condition_counter.cpp
 		src/tasks/condition_counter.hpp
+		src/debugging/renderdoc.cpp
+		src/debugging/renderdoc.hpp
 		)
 
 if(WIN32)

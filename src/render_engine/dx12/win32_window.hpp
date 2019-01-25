@@ -100,12 +100,6 @@ namespace nova {
          */
         static LRESULT CALLBACK window_procedure_wrapper(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     };
-
-    /*!
-     * \brief Retrieves the most recent Windows error and returns it to the user
-     * \return The error string of the most recent Windows error
-     */
-    std::string get_last_windows_error();
 }  // namespace nova
 
 #endif

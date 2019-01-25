@@ -70,16 +70,21 @@ namespace nova {
              */
             bool enabled = false;
 
-            /*!
-             * \brief If true, Nova will look for RenderDoc on your computer and will try to load it, letting you
-             * debug your shaderpack without leaving Nova
-             */
-            bool enable_renderdoc = false;
+            struct {
+				/*!
+				 * \brief If true, Nova will look for RenderDoc on your computer and will try to load it, letting you
+				 * debug your shaderpack without leaving Nova
+				 */
+				bool enable_renderdoc = false;
 
-            /*!
-             * \brief The path to `renderdoc.dll` on your filesystem
-             */
-			std::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
+				/*!
+				 * \brief The path to `renderdoc.dll` on your filesystem
+				 */
+				std::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
+
+				std::string capture_path = "logs/captures";
+                
+            } renderdoc;
         } debug;
 
         /*!

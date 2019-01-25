@@ -14,10 +14,7 @@
 #include "settings/nova_settings.hpp"
 #include "render_engine/render_engine.hpp"
 #include "tasks/task_scheduler.hpp"
-
-#if _WIN32
-#include "RenderDocManager.h"
-#endif
+#include "debugging/renderdoc_app.h"
 
 namespace nova {
 	NOVA_EXCEPTION(already_initialized_exception);
@@ -71,7 +68,7 @@ namespace nova {
 		std::future<void> frame_done_future;
 
 #if _WIN32
-		std::unique_ptr<RenderDocManager> render_doc;
+		std::optional<RENDERDOC_API_1_3_0> render_doc;
 #endif
 		static nova_renderer *instance;
 	};
