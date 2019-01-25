@@ -39,6 +39,7 @@ namespace nova {
 				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, true);
 				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_VerifyMapWrites, true);
 				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, true);
+				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, true);
             }
         }
 

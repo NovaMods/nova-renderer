@@ -6,7 +6,6 @@
 #ifndef NOVA_RENDERER_RENDERDOC_HPP
 #define NOVA_RENDERER_RENDERDOC_HPP
 
-#include <optional>
 #include <string>
 
 #include "renderdoc_app.h"

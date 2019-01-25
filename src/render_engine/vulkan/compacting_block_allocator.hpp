@@ -158,7 +158,7 @@ namespace nova {
         std::vector<block_allocator_buffer> pools;
         std::mutex pools_mutex;
 
-        const settings_options::block_allocator_settings& settings;
+        const settings_options::block_allocator_settings settings;
         VmaAllocator vma_allocator;
         uint32_t graphics_queue_idx;
         uint32_t copy_queue_idx;
