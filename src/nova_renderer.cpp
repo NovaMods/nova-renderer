@@ -25,9 +25,7 @@ namespace nova {
 		render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
         if(settings.debug.renderdoc.enabled) {
-#if _WIN32
 			render_doc = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
-#endif
 
             if(render_doc) {
 				render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());

@@ -4,6 +4,7 @@
 
 #include <execinfo.h>
 #include <cxxabi.h>
+#include <cstring>
 #include "logger.hpp"
 #include "linux_utils.hpp"
 
@@ -43,4 +44,14 @@ void nova_backtrace() {
         NOVA_LOG(ERROR) << "\t" << str;
     }
     free(data);
+}
+
+std::string get_last_linux_error() {
+    char *errstr = strerror(errno);
+    if(!errstr) {
+        return std::string("unkown error");
+    }
+    errno = 0;
+
+    return std::string(errstr);
 }

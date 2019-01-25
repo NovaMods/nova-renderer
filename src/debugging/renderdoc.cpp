@@ -1,15 +1,18 @@
 #include "renderdoc.hpp"
 
 #include "../util/logger.hpp"
-#include "../util/windows_utils.hpp"
 
 #if _WIN32
 #include <windows.h>
+#include "../util/windows_utils.hpp"
 
 // Fucking hell
 #ifdef ERROR
 #undef ERROR
 #endif
+#elif __linux__
+#include <dlfcn.h>
+#include "../util/linux_utils.hpp"
 #endif
 
 namespace nova {
@@ -32,8 +35,21 @@ namespace nova {
         }
 
 #elif __linux__
-		void* renderdoc_so = dlopen(renderdoc_dll_path.c_str());
-        // TODO
+		void *renderdoc_so = dlopen(renderdoc_dll_path.c_str(), RTLD_NOW);
+        if(!renderdoc_so) {
+        	// Try to load system-wide version of renderdoc
+        	renderdoc_so = dlopen("librenderdoc.so", RTLD_NOW);
+        	if(!renderdoc_so) {
+				NOVA_LOG(ERROR) << "Could not load RenderdDoc. Error: " << dlerror();
+				return nullptr;
+        	}
+        }
+
+        const auto get_api = (pRENDERDOC_GetAPI) dlsym(renderdoc_so, "RENDERDOC_GetAPI");
+		if(!get_api) {
+			NOVA_LOG(ERROR) << "Could not find the RenderDoc API loading function. Error: " << dlerror();
+			return nullptr;
+		}
 #endif
 
 		RENDERDOC_API_1_3_0* api;
@@ -43,7 +59,6 @@ namespace nova {
 
 			return nullptr;
         }
-
 		return api;
     }
 }
