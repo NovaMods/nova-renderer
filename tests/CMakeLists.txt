@@ -9,7 +9,7 @@ include(GoogleTest)
 find_package(Threads REQUIRED)
 
 # End-to-end test
-add_executable(nova-test-end-to-end ${CMAKE_CURRENT_SOURCE_DIR}/src/end_to_end_runner.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/general_test_setup.hpp)
+add_executable(nova-test-end-to-end src/end_to_end_runner.cpp src/general_test_setup.hpp)
 target_compile_definitions(nova-test-end-to-end PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources/")
 target_link_libraries(nova-test-end-to-end PRIVATE nova-renderer gtest gtest_main Threads::Threads)
 
