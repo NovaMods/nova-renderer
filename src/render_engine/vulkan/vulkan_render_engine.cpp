@@ -71,6 +71,18 @@ namespace nova {
 
         NOVA_THROW_IF_VK_ERROR(vkCreateInstance(&create_info, nullptr, &vk_instance), render_engine_initialization_exception);
 
+		uint32_t num_extensions;
+		vkEnumerateInstanceExtensionProperties(nullptr, &num_extensions, nullptr);
+		gpu.available_extensions.resize(num_extensions);
+		vkEnumerateInstanceExtensionProperties(nullptr, &num_extensions, gpu.available_extensions.data());
+
+		std::stringstream ss;
+        for(const VkExtensionProperties& props : gpu.available_extensions) {
+			ss << "\t" << props.extensionName << " version " << props.specVersion << "\n";
+        }
+
+		NOVA_LOG(TRACE) << "Supported extensions:\n" << ss.str();
+
 #ifndef NDEBUG
         vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(vk_instance, "vkCreateDebugReportCallbackEXT"));
         vkDebugReportMessageEXT = reinterpret_cast<PFN_vkDebugReportMessageEXT>(vkGetInstanceProcAddr(vk_instance, "vkDebugReportMessageEXT"));
@@ -85,6 +97,8 @@ namespace nova {
 
         NOVA_THROW_IF_VK_ERROR(vkCreateDebugReportCallbackEXT(vk_instance, &debug_create_info, nullptr, &debug_callback), render_engine_initialization_exception);
 #endif
+		create_device();
+
         open_window(settings.get_options().window.width, settings.get_options().window.height);
         create_memory_allocator();
         mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, graphics_family_index, copy_family_index);
@@ -205,11 +219,22 @@ namespace nova {
         win32_surface_create.hwnd = window->get_window_handle();
 
         NOVA_THROW_IF_VK_ERROR(vkCreateWin32SurfaceKHR(vk_instance, &win32_surface_create, nullptr, &surface), render_engine_initialization_exception);
+
+		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities), render_engine_initialization_exception);
+
+		uint32_t num_surface_formats;
+		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr), render_engine_initialization_exception);
+		gpu.surface_formats.resize(num_surface_formats);
+		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, gpu.surface_formats.data()), render_engine_initialization_exception);
+
+		uint32_t num_surface_present_modes;
+		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_formats, nullptr), render_engine_initialization_exception);
+		gpu.present_modes.resize(num_surface_formats);
+		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_formats, gpu.present_modes.data()), render_engine_initialization_exception);
+
 #else
 #error Unsuported window system
 #endif
-        create_device();
-
 		swapchain = std::make_unique<swapchain_manager>(3, *this, window->get_window_size());
     }
 
@@ -237,13 +262,12 @@ namespace nova {
         uint32_t compute_family_idx = 0xFFFFFFFF;
         uint32_t copy_family_idx = 0xFFFFFFFF;
 
-        VkPhysicalDevice chosen_device = nullptr;
         for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
             graphics_family_idx = 0xFFFFFFFF;
-            const VkPhysicalDevice current_device = physical_devices[device_idx];
-            vkGetPhysicalDeviceProperties(current_device, &physical_device_properties);
+            VkPhysicalDevice current_device = physical_devices[device_idx];
+            vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
-            if(physical_device_properties.vendorID == 0x8086 && device_count - 1 > device_idx) {  // Intel GPU... they are not powerful and we have more available, so skip it
+            if(gpu.props.vendorID == 0x8086 && device_count - 1 > device_idx) {  // Intel GPU... they are not powerful and we have more available, so skip it
                 continue;
             }
 
@@ -253,46 +277,46 @@ namespace nova {
 
             uint32_t queue_family_count;
             vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
-            auto* family_properties = new VkQueueFamilyProperties[queue_family_count];
-            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, family_properties);
+			gpu.queue_family_props.resize(queue_family_count);
+            vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, gpu.queue_family_props.data());
 
             for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
-                VkQueueFamilyProperties current_properties = family_properties[queue_idx];
+                const VkQueueFamilyProperties current_properties = gpu.queue_family_props[queue_idx];
                 if(current_properties.queueCount < 1) {
                     continue;
                 }
 
                 VkBool32 supports_present = VK_FALSE;
                 NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, queue_idx, surface, &supports_present), render_engine_initialization_exception);
-                VkQueueFlags supports_graphics = current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+                const VkQueueFlags supports_graphics = current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
                 if(supports_graphics && supports_present == VK_TRUE && graphics_family_idx == 0xFFFFFFFF) {
                     graphics_family_idx = queue_idx;
                 }
 
-                VkQueueFlags supports_compute = current_properties.queueFlags & VK_QUEUE_COMPUTE_BIT;
+                const VkQueueFlags supports_compute = current_properties.queueFlags & VK_QUEUE_COMPUTE_BIT;
                 if(supports_compute && compute_family_idx == 0xFFFFFFFF) {
                     compute_family_idx = queue_idx;
                 }
 
-                VkQueueFlags supports_copy = current_properties.queueFlags & VK_QUEUE_TRANSFER_BIT;
+                const VkQueueFlags supports_copy = current_properties.queueFlags & VK_QUEUE_TRANSFER_BIT;
                 if(supports_copy && copy_family_idx == 0xFFFFFFFF) {
                     copy_family_idx = queue_idx;
                 }
             }
 
-            delete[] family_properties;
-
             if(graphics_family_idx != 0xFFFFFFFF) {
-                NOVA_LOG(INFO) << "Selected GPU " << physical_device_properties.deviceName;
-                chosen_device = current_device;
+                NOVA_LOG(INFO) << "Selected GPU " << gpu.props.deviceName;
+                gpu.phys_device = current_device;
                 break;
             }
         }
 
-        if(!chosen_device) {
+        if(!gpu.phys_device) {
             throw render_engine_initialization_exception("Failed to find good GPU");
         }
 
+		vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
+        
         const float priority = 1.0;
 
         VkDeviceQueueCreateInfo graphics_queue_create_info{};
@@ -325,7 +349,7 @@ namespace nova {
             device_create_info.ppEnabledLayerNames = enabled_validation_layer_names.data();
         }
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateDevice(chosen_device, &device_create_info, nullptr, &device), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateDevice(gpu.phys_device, &device_create_info, nullptr, &device), render_engine_initialization_exception);
 
         graphics_family_index = graphics_family_idx;
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
@@ -333,9 +357,7 @@ namespace nova {
         vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
         copy_family_index = copy_family_idx;
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
-
-        physical_device = chosen_device;
-
+        
         delete[] physical_devices;
     }
 
@@ -355,7 +377,7 @@ namespace nova {
 
     void vulkan_render_engine::create_memory_allocator() {
         VmaAllocatorCreateInfo allocator_create_info = {};
-        allocator_create_info.physicalDevice = physical_device;
+        allocator_create_info.physicalDevice = gpu.phys_device;
         allocator_create_info.device = device;
 
         NOVA_THROW_IF_VK_ERROR(vmaCreateAllocator(&allocator_create_info, &vma_allocator), render_engine_initialization_exception);
@@ -701,9 +723,9 @@ namespace nova {
                     << " is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero height";
             }
 
-            if(framebuffer_attachments.size() > physical_device_properties.limits.maxColorAttachments) {
+            if(framebuffer_attachments.size() > gpu.props.limits.maxColorAttachments) {
                 NOVA_LOG(ERROR) << "Framebuffer for pass " << pass.data.name << " has " << framebuffer_attachments.size() << " color attachments, but your GPU only supports "
-                                << physical_device_properties.limits.maxColorAttachments
+                                << gpu.props.limits.maxColorAttachments
                                 << ". Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures";
             }
 

@@ -117,12 +117,11 @@ namespace nova {
     };
 
 	struct vk_gpu_info {
-		VkPhysicalDevice device;
+		VkPhysicalDevice phys_device;
 		std::vector<VkQueueFamilyProperties> queue_family_props;
-		std::vector<VkExtensionProperties> extention_props;
+		std::vector<VkExtensionProperties> available_extensions;
 		VkSurfaceCapabilitiesKHR surface_capabilities;
 		std::vector<VkSurfaceFormatKHR> surface_formats;
-		VkPhysicalDeviceMemoryProperties mem_props;
 		VkPhysicalDeviceProperties props;
 		VkPhysicalDeviceFeatures supported_features;
 		std::vector<VkPresentModeKHR> present_modes;
@@ -181,10 +180,7 @@ namespace nova {
 
 #pragma region Globals
         VkInstance vk_instance;
-
-        VkPhysicalDevice physical_device;
-        VkPhysicalDeviceProperties physical_device_properties;
-
+        
         VmaAllocator vma_allocator;
 
 		std::mutex render_done_sync_mutex;
