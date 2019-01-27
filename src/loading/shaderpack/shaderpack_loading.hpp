@@ -9,7 +9,7 @@
 #include "shaderpack_data.hpp"
 #include <future>
 
-#if _WIN32
+#if NOVA_WINDOWS
     #if _MSC_VER <= 1915
         #include <experimental/filesystem>
         namespace fs = std::experimental::filesystem;
