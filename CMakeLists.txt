@@ -35,37 +35,7 @@ set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
-######################################
-# Add dependencies as subdirectories #
-######################################
-
-set(BUILD_DEMOS OFF CACHE BOOL "Disable demos" FORCE)
-set(BUILD_ICD OFF CACHE BOOL "Disable ICD" FORCE)
-
-set(BUILD_SHARED_LIBS OFF)
-
-add_subdirectory(${3RD_PARTY_DIR}/glm)
-add_subdirectory(${3RD_PARTY_DIR}/profiler)
-		
-set(JSON_BuildTests OFF CACHE BOOL "JSON tests go away" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/json)
-
-add_subdirectory(${3RD_PARTY_DIR}/miniz)
-
-set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
-add_subdirectory(${3RD_PARTY_DIR}/glslang)
-
-set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Cross)
-
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Disable GLFW exampes" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "Disable GLFW tests" FORCE)
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "Disable GLFW docs" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/glfw)
-
-find_package(Vulkan)
+include(${3RD_PARTY_DIR}/3rdparty.cmake)
 
 ######################################
 # Make dependencies' headers visible #
@@ -73,17 +43,12 @@ find_package(Vulkan)
 
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
-        ${3RD_PARTY_DIR}/glm
-        ${3RD_PARTY_DIR}/glfw/include
         ${3RD_PARTY_DIR}/RenderDoc-Manager
-        ${3RD_PARTY_DIR}/profiler/include
-        ${3RD_PARTY_DIR}/json/single_include
         ${3RD_PARTY_DIR}/cpptoml/include
-        ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/glslang
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/SPIRV-Cross
-        )
+)
 
 ########################
 # Add Nova source code #
@@ -198,8 +163,22 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS NOMINMAX)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} spirv-cross-core spirv-cross-glsl spirv-cross-hlsl spirv-cross-reflect spirv-cross-util nova-profiler miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES} ${Vulkan_LIBRARIES} ${GLFW_LIBRARY_NAME})
-if (WIN32)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
+                     glm::glm
+                     nlohmann::json
+                     spirv::headers
+	                 spirv-cross-core
+	                 spirv-cross-glsl
+	                 spirv-cross-hlsl
+	                 spirv-cross-reflect
+	                 spirv-cross-util
+	                 nova-profiler
+	                 miniz
+	                 glslang
+	                 SPIRV
+	                 ${SPIRV_SHARED_LIBRARIES}
+	                 ${Vulkan_LIBRARIES}
+	                 ${GLFW_LIBRARY_NAME})
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler)
     target_include_directories(nova-renderer PRIVATE
