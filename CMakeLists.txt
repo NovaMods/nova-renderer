@@ -65,7 +65,7 @@ include_directories(SYSTEM
 set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
 
 set(NOVA_SOURCE
-		${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp
+        ${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp
 
         src/platform.hpp
         src/loading/zip_folder_accessor.hpp
@@ -95,28 +95,28 @@ set(NOVA_SOURCE
         src/loading/json_utils.hpp
         src/util/utils.hpp
         src/util/utils.cpp
-		src/render_objects/render_object.cpp
-		src/render_objects/render_object.hpp 
-		src/loading/shaderpack/shaderpack_validator.cpp 
-		src/loading/shaderpack/shaderpack_validator.hpp 
-		src/loading/shaderpack/render_graph_builder.cpp 
-		src/loading/shaderpack/render_graph_builder.hpp
+        src/render_objects/render_object.cpp
+        src/render_objects/render_object.hpp 
+        src/loading/shaderpack/shaderpack_validator.cpp 
+        src/loading/shaderpack/shaderpack_validator.hpp 
+        src/loading/shaderpack/render_graph_builder.cpp 
+        src/loading/shaderpack/render_graph_builder.hpp
         src/render_engine/vulkan/vulkan_render_engine.hpp
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_utils.hpp
         src/render_engine/vulkan/vulkan_type_converters.hpp
-		src/render_engine/vulkan/compacting_block_allocator.cpp 
-		src/render_engine/vulkan/compacting_block_allocator.hpp 
-		src/render_engine/vulkan/vulkan_utils.cpp 
-		src/tasks/task_scheduler.cpp
-		src/tasks/task_scheduler.hpp
-		src/tasks/task_graph.hpp
-		src/tasks/wait_free_queue.hpp
-		src/tasks/condition_counter.cpp
-		src/tasks/condition_counter.hpp
-		src/debugging/renderdoc.cpp
-		src/debugging/renderdoc.hpp
-		)
+        src/render_engine/vulkan/compacting_block_allocator.cpp 
+        src/render_engine/vulkan/compacting_block_allocator.hpp 
+        src/render_engine/vulkan/vulkan_utils.cpp 
+        src/tasks/task_scheduler.cpp
+        src/tasks/task_scheduler.hpp
+        src/tasks/task_graph.hpp
+        src/tasks/wait_free_queue.hpp
+        src/tasks/condition_counter.cpp
+        src/tasks/condition_counter.hpp
+        src/debugging/renderdoc.cpp
+        src/debugging/renderdoc.hpp
+        )
 
 if(WIN32)
     set(NOVA_SOURCE
@@ -137,13 +137,13 @@ if(WIN32)
             src/render_engine/dx12/d3dx12.h
             )
 else()
-	set(NOVA_SOURCE
-		${NOVA_SOURCE}
+    set(NOVA_SOURCE
+        ${NOVA_SOURCE}
         src/render_engine/vulkan/x11_window.cpp
         src/render_engine/vulkan/x11_window.hpp
         src/util/linux_utils.cpp
         src/util/linux_utils.hpp
-		)
+        )
 endif()
 
 if (UNIX)
@@ -179,16 +179,16 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      glm::glm
                      nlohmann::json
                      spirv::headers
-	                 spirv-cross-core
-	                 spirv-cross-glsl
-	                 spirv-cross-hlsl
-	                 spirv-cross-reflect
-	                 spirv-cross-util
-	                 nova-profiler
-	                 miniz
-	                 glslang
-	                 SPIRV
-	                 ${SPIRV_SHARED_LIBRARIES}
+                     spirv-cross-core
+                     spirv-cross-glsl
+                     spirv-cross-hlsl
+                     spirv-cross-reflect
+                     spirv-cross-util
+                     nova-profiler
+                     miniz
+                     glslang
+                     SPIRV
+                     ${SPIRV_SHARED_LIBRARIES}
                      ${Vulkan_LIBRARIES})
 if(WIN32)
     find_package(WindowsSDK)
@@ -207,14 +207,14 @@ if(WIN32)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
 
-	# Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
-	# everyone else?
+    # Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
+    # everyone else?
     foreach(source IN LISTS NOVA_SOURCE)
         get_filename_component(source_path "${source}" PATH)
         string(REPLACE "/" "\\" source_path_msvc "${source_path}")
         source_group("${source_path_msvc}" FILES "${source}")
     endforeach()
-	
+    
 else()
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
 endif()

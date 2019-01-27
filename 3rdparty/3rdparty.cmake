@@ -10,22 +10,22 @@ set(BUILD_SHARED_LIBS OFF)
 add_library(glm::glm INTERFACE IMPORTED)
 set_target_properties(glm::glm PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/glm"
-	INTERFACE_COMPILE_FEATURES cxx_std_17
-	INTERFACE_COMPILE_DEFINITIONS "GLM_ENABLE_EXPERIMENTAL"
+    INTERFACE_COMPILE_FEATURES cxx_std_17
+    INTERFACE_COMPILE_DEFINITIONS "GLM_ENABLE_EXPERIMENTAL"
 )
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/profiler)
-		
+        
 add_library(nlohmann::json INTERFACE IMPORTED)
 set_target_properties(nlohmann::json PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/json/single_include"
-	INTERFACE_COMPILE_FEATURES cxx_std_17
+    INTERFACE_COMPILE_FEATURES cxx_std_17
 )
 
 # Miniz's cmake sucks, so doing it here
 set(MINIZ_SOURCE ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz.c 
-	             ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz_zip.c
-	             ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz_tinfl.c
-	             ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz_tdef.c)
+                 ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz_zip.c
+                 ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz_tinfl.c
+                 ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz_tdef.c)
 add_library(miniz ${MINIZ_SOURCE})
 target_include_directories(miniz PUBLIC ${CMAKE_CURRENT_LIST_DIR}/miniz)
 
@@ -33,7 +33,7 @@ set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
 add_library(spirv::headers INTERFACE IMPORTED)
 set_target_properties(spirv::headers PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers"
-	INTERFACE_COMPILE_FEATURES cxx_std_17
+    INTERFACE_COMPILE_FEATURES cxx_std_17
 )
 set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
