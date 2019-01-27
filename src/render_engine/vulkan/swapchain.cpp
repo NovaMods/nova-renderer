@@ -62,7 +62,7 @@ namespace nova {
 		color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-		VkAttachmentReference color_ref;
+		VkAttachmentReference color_ref = {};
 		color_ref.attachment = 0;
 		color_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
@@ -72,6 +72,7 @@ namespace nova {
 		subpass.pColorAttachments = &color_ref;
 
 		VkRenderPassCreateInfo render_pass_create_info = {};
+		render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 		render_pass_create_info.attachmentCount = 1;
 		render_pass_create_info.pAttachments = &color_attachment;
 		render_pass_create_info.subpassCount = 1;
@@ -106,7 +107,8 @@ namespace nova {
 
 			swapchain_image_views.push_back(image_view);
 
-			VkFramebufferCreateInfo framebuffer_create_info;
+			VkFramebufferCreateInfo framebuffer_create_info = {};
+			framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebuffer_create_info.attachmentCount = 1;
 			framebuffer_create_info.pAttachments = &image_view;
 			framebuffer_create_info.renderPass = renderpass;
