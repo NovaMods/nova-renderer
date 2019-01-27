@@ -143,6 +143,8 @@ set(NOVA_SOURCE
 		src/tasks/condition_counter.hpp
 		src/debugging/renderdoc.cpp
 		src/debugging/renderdoc.hpp
+        src/render_engine/vulkan/swapchain.hpp
+        src/render_engine/vulkan/swapchain.cpp
 		)
 
 if(WIN32)

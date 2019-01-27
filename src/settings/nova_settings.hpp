@@ -70,6 +70,15 @@ namespace nova {
              */
             bool enabled = false;
 
+            /*!
+             * \breif Controls if the API-specific validation layers are enabled
+             * 
+             * This should be enabled most of the time for Nova developers and almost never for shaderpack authors. 
+             * Nova developers need it on to debug their Vulkan or DX12 usage, while Nova should be robust enough that
+             * errors that the validation layers would catch never happen in a shipping build
+             */
+			bool enable_validation_layers = true;
+
             struct {
 				/*!
 				 * \brief If true, Nova will look for RenderDoc on your computer and will try to load it, letting you
@@ -82,6 +91,9 @@ namespace nova {
 				 */
 				std::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
 
+                /*!
+                 * \brief The base path for RenderDoc captures
+                 */
 				std::string capture_path = "logs/captures";
                 
             } renderdoc;

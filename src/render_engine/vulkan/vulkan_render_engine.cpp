@@ -15,6 +15,7 @@
 #include "../dx12/win32_window.hpp"
 #include "vulkan_type_converters.hpp"
 #include "vulkan_utils.hpp"
+#include "swapchain.hpp"
 
 #ifdef __linux__
 #include <execinfo.h>
@@ -86,7 +87,7 @@ namespace nova {
 #endif
         open_window(settings.get_options().window.width, settings.get_options().window.height);
         create_memory_allocator();
-        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, graphics_queue_index, copy_queue_index);
+        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, graphics_family_index, copy_family_index);
 
 		create_global_sync_objects();
 		create_per_thread_command_pools();
@@ -107,8 +108,8 @@ namespace nova {
 			VkImageMemoryBarrier barrier = {};
 			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 			barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			barrier.srcQueueFamilyIndex = graphics_queue_index;
-			barrier.dstQueueFamilyIndex = graphics_queue_index;
+			barrier.srcQueueFamilyIndex = graphics_family_index;
+			barrier.dstQueueFamilyIndex = graphics_family_index;
 			barrier.image = texture.image;
 			barrier.subresourceRange.baseMipLevel = 0;
 			barrier.subresourceRange.levelCount = 1;
@@ -134,7 +135,7 @@ namespace nova {
 			}
 		}
 
-	    const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
+	    const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
 		VkCommandBufferAllocateInfo alloc_info = {};
 		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -208,9 +209,8 @@ namespace nova {
 #error Unsuported window system
 #endif
         create_device();
-        create_swapchain();
-        create_swapchain_image_views();
-		create_swapchain_framebuffers();
+
+		swapchain = std::make_unique<swapchain_manager>(3, *this, window->get_window_size());
     }
 
     void vulkan_render_engine::validate_mesh_options(const settings_options::block_allocator_settings& options) const {
@@ -327,11 +327,11 @@ namespace nova {
 
         NOVA_THROW_IF_VK_ERROR(vkCreateDevice(chosen_device, &device_create_info, nullptr, &device), render_engine_initialization_exception);
 
-        graphics_queue_index = graphics_family_idx;
+        graphics_family_index = graphics_family_idx;
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
-        compute_queue_index = compute_family_idx;
+        compute_family_index = compute_family_idx;
         vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
-        copy_queue_index = copy_family_idx;
+        copy_family_index = copy_family_idx;
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
 
         physical_device = chosen_device;
@@ -360,210 +360,6 @@ namespace nova {
 
         NOVA_THROW_IF_VK_ERROR(vmaCreateAllocator(&allocator_create_info, &vma_allocator), render_engine_initialization_exception);
     }
-
-    void vulkan_render_engine::create_swapchain() {
-        uint32_t format_count;
-        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, nullptr), render_engine_initialization_exception);
-        if(format_count == 0) {
-            throw render_engine_initialization_exception("No supported surface formats... something went really wrong");
-        }
-        std::vector<VkSurfaceFormatKHR> formats(format_count);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &format_count, formats.data());
-
-        uint32_t present_mode_count;
-        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, nullptr), render_engine_initialization_exception);
-        if(present_mode_count == 0) {
-            throw render_engine_initialization_exception("No supported present modes... something went really wrong");
-        }
-        std::vector<VkPresentModeKHR> present_modes(present_mode_count);
-        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &present_mode_count, present_modes.data()), render_engine_initialization_exception);
-
-        const VkSurfaceFormatKHR surface_format = choose_swapchain_format(formats);
-        const VkPresentModeKHR present_mode = choose_present_mode(present_modes);
-
-        VkSurfaceCapabilitiesKHR capabilities;
-        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &capabilities), render_engine_initialization_exception);
-
-        uint32_t image_count = std::max(capabilities.minImageCount, static_cast<uint32_t>(3));
-        if(capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount) {
-            image_count = capabilities.maxImageCount;
-        }
-
-        VkExtent2D extent = choose_swapchain_extend();
-
-        extent.width = std::max(extent.width, capabilities.minImageExtent.width);
-        extent.width = std::min(extent.width, capabilities.maxImageExtent.width);
-        extent.height = std::max(extent.height, capabilities.minImageExtent.height);
-        extent.height = std::min(extent.height, capabilities.maxImageExtent.height);
-
-        VkSwapchainCreateInfoKHR swapchain_create_info;
-        swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        swapchain_create_info.pNext = nullptr;
-        swapchain_create_info.flags = 0;
-        swapchain_create_info.surface = surface;
-        swapchain_create_info.minImageCount = image_count;
-        swapchain_create_info.imageFormat = surface_format.format;
-        swapchain_create_info.imageColorSpace = surface_format.colorSpace;
-        swapchain_create_info.imageExtent = extent;
-        swapchain_create_info.imageArrayLayers = 1;
-        swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        swapchain_create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        swapchain_create_info.queueFamilyIndexCount = 0;
-        swapchain_create_info.pQueueFamilyIndices = nullptr;
-        swapchain_create_info.preTransform = capabilities.currentTransform;
-        swapchain_create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        swapchain_create_info.presentMode = present_mode;
-        swapchain_create_info.clipped = VK_TRUE;
-        swapchain_create_info.oldSwapchain = VK_NULL_HANDLE;
-
-        NOVA_THROW_IF_VK_ERROR(vkCreateSwapchainKHR(device, &swapchain_create_info, nullptr, &swapchain), render_engine_initialization_exception);
-
-        swapchain_images.clear();
-        vkGetSwapchainImagesKHR(device, swapchain, &image_count, nullptr);
-        swapchain_images.resize(image_count);
-        vkGetSwapchainImagesKHR(device, swapchain, &image_count, swapchain_images.data());
-        swapchain_format = surface_format.format;
-        swapchain_extent = extent;
-
-        NOVA_LOG(TRACE) << "Created swapchain";
-    }
-
-    VkSurfaceFormatKHR vulkan_render_engine::choose_swapchain_format(const std::vector<VkSurfaceFormatKHR>& available) {
-        if(available.size() == 1 && available.at(0).format == VK_FORMAT_UNDEFINED) {
-            return {VK_FORMAT_B8G8R8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR};
-        }
-
-        for(const auto& format : available) {
-            if(format.format == VK_FORMAT_B8G8R8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-                return format;
-            }
-        }
-
-        return available.at(0);
-    }
-
-    VkPresentModeKHR vulkan_render_engine::choose_present_mode(const std::vector<VkPresentModeKHR>& available) {
-        for(const auto& mode : available) {
-            if(mode == VK_PRESENT_MODE_MAILBOX_KHR) {
-                return mode;
-            }
-        }
-
-        return VK_PRESENT_MODE_FIFO_KHR;
-    }
-
-    VkExtent2D vulkan_render_engine::choose_swapchain_extend() const {
-        const glm::uvec2 window_size = window->get_window_size();
-        return {window_size.x, window_size.y};
-    }
-
-    void vulkan_render_engine::create_swapchain_image_views() {
-        swapchain_image_views.resize(swapchain_images.size());
-
-        for(size_t i = 0; i < swapchain_images.size(); i++) {
-            VkImageViewCreateInfo image_view_create_info;
-            image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            image_view_create_info.pNext = nullptr;
-            image_view_create_info.flags = 0;
-            image_view_create_info.image = swapchain_images.at(i);
-            image_view_create_info.format = swapchain_format;
-            image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            image_view_create_info.subresourceRange.baseMipLevel = 0;
-            image_view_create_info.subresourceRange.levelCount = 1;
-            image_view_create_info.subresourceRange.baseArrayLayer = 0;
-            image_view_create_info.subresourceRange.layerCount = 1;
-
-            NOVA_THROW_IF_VK_ERROR(vkCreateImageView(device, &image_view_create_info, nullptr, &swapchain_image_views.at(i)), render_engine_initialization_exception);
-        }
-
-        NOVA_LOG(TRACE) << "Created swapchain image views";
-    }
-
-	void vulkan_render_engine::create_swapchain_framebuffers() {
-		// Create a dummy renderpass that has the layout we want, then create framebuffers from that renderpass
-		// Note that the renderpass _only_ provides the layout for the framebuffer, and the framebuffer will not be 
-		// tied to the renderpass in any way
-
-		VkSubpassDescription subpass_description;
-		subpass_description.flags = 0;
-		subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass_description.inputAttachmentCount = 0;
-		subpass_description.pInputAttachments = nullptr;
-		subpass_description.preserveAttachmentCount = 0;
-		subpass_description.pPreserveAttachments = nullptr;
-		subpass_description.pResolveAttachments = nullptr;
-		subpass_description.pDepthStencilAttachment = nullptr;
-
-		VkSubpassDependency image_available_dependency;
-		image_available_dependency.dependencyFlags = 0;
-		image_available_dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-		image_available_dependency.dstSubpass = 0;
-		image_available_dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		image_available_dependency.srcAccessMask = 0;
-		image_available_dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		image_available_dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		VkRenderPassCreateInfo render_pass_create_info;
-		render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		render_pass_create_info.pNext = nullptr;
-		render_pass_create_info.flags = 0;
-		render_pass_create_info.subpassCount = 1;
-		render_pass_create_info.pSubpasses = &subpass_description;
-		render_pass_create_info.dependencyCount = 1;
-		render_pass_create_info.pDependencies = &image_available_dependency;
-
-		std::vector<VkAttachmentReference> attachment_references;
-		std::vector<VkAttachmentDescription> attachments;
-		std::vector<VkImageView> framebuffer_attachments;
-
-		VkAttachmentDescription desc = {};
-		desc.flags = 0;
-		desc.format = swapchain_format;
-		desc.samples = VK_SAMPLE_COUNT_1_BIT;
-		desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-		desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		desc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		attachments.push_back(desc);
-
-		VkAttachmentReference ref = {};
-		ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		ref.attachment = attachments.size() - 1;
-		attachment_references.push_back(ref);
-
-		subpass_description.colorAttachmentCount = attachment_references.size();
-		subpass_description.pColorAttachments = attachment_references.data();
-
-		render_pass_create_info.attachmentCount = attachments.size();
-		render_pass_create_info.pAttachments = attachments.data();
-
-		VkRenderPass framebuffer_creation_renderpass;
-		NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &framebuffer_creation_renderpass), render_engine_initialization_exception);
-
-		swapchain_framebuffers.resize(swapchain_image_views.size());
-        for(uint32_t i = 0; i < swapchain_image_views.size(); i++) {
-			VkFramebufferCreateInfo framebuffer_create_info = {};
-			framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebuffer_create_info.renderPass = framebuffer_creation_renderpass;
-			framebuffer_create_info.attachmentCount = 1;
-			framebuffer_create_info.pAttachments = &swapchain_image_views.at(i);
-			framebuffer_create_info.width = swapchain_extent.width;
-			framebuffer_create_info.height = swapchain_extent.height;
-			framebuffer_create_info.layers = 1;
-
-			NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &swapchain_framebuffers[i]), render_engine_initialization_exception);
-        }
-
-		vkDestroyRenderPass(device, framebuffer_creation_renderpass, nullptr);
-	}
 
     void vulkan_render_engine::create_global_sync_objects() {
 		VkFenceCreateInfo fence_info = {};
@@ -666,7 +462,7 @@ namespace nova {
         buffer_create_info.size = needed_size;
         buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         buffer_create_info.queueFamilyIndexCount = 1;
-        buffer_create_info.pQueueFamilyIndices = &copy_queue_index;
+        buffer_create_info.pQueueFamilyIndices = &copy_family_index;
 
         VmaAllocationCreateInfo allocation_create_info = {};
         allocation_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
@@ -720,31 +516,6 @@ namespace nova {
 
     bool vk_resource_binding::operator!=(const vk_resource_binding& other) const { return !(*this == other); }
 
-    void vulkan_render_engine::collect_framebuffer_information_from_texture(const std::string& attachment_name, 
-			const std::string& pass_name, uint32_t& framebuffer_width, uint32_t& framebuffer_height, 
-			std::vector<VkImageView>& framebuffer_attachments) {
-        const vk_texture& attachment_tex = textures.at(attachment_name);
-        framebuffer_attachments.push_back(attachment_tex.image_view);
-
-		const glm::uvec2 attachment_size = attachment_tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
-
-        if(framebuffer_width == 0) {
-            framebuffer_width = attachment_size.x;
-
-        } else if(attachment_size.x != framebuffer_width) {
-            NOVA_LOG(ERROR) << "Texture " << attachment_name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
-                            << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
-        }
-
-        if(framebuffer_height == 0) {
-            framebuffer_height = attachment_size.y;
-
-        } else if(attachment_size.y != framebuffer_height) {
-            NOVA_LOG(ERROR) << "Texture " << attachment_name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
-                            << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
-        }
-    }
-
     void vulkan_render_engine::create_render_passes(const std::vector<render_pass_data>& passes) {
         NOVA_LOG(DEBUG) << "Flattening frame graph...";
 
@@ -761,6 +532,8 @@ namespace nova {
         }
 
         render_passes_by_order = order_passes(regular_render_passes);
+
+		const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
         for(const auto& [pass_name, pass] : render_passes) {
 			bool is_forward = pass_name == "Forward";
@@ -808,7 +581,7 @@ namespace nova {
 
 					VkAttachmentDescription desc = {};
 					desc.flags = 0;
-					desc.format = swapchain_format;
+					desc.format = swapchain->get_swapchain_format();
 					desc.samples = VK_SAMPLE_COUNT_1_BIT;
 					desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 					desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -830,10 +603,29 @@ namespace nova {
                     break;
 
                 } else {
-                    collect_framebuffer_information_from_texture(attachment.name, pass.data.name, framebuffer_width, 
-						framebuffer_height, framebuffer_attachments);
-
 					const vk_texture& tex = textures.at(attachment.name);
+					framebuffer_attachments.push_back(tex.image_view);
+
+					const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
+
+					if(framebuffer_width == 0) {
+						framebuffer_width = attachment_size.x;
+
+					} else if(attachment_size.x != framebuffer_width) {
+						NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
+							<< framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
+					}
+
+					if(framebuffer_height == 0) {
+						framebuffer_height = attachment_size.y;
+
+					} else if(attachment_size.y != framebuffer_height) {
+						NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
+							<< framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
+					}
+
+					NOVA_LOG(TRACE) << "Adding image view " << textures.at(attachment.name).image_view << " from image " << attachment.name << " to framebuffer for renderpass " << pass.data.name;
+
 					VkAttachmentDescription desc = {};
 					desc.flags = 0;
 					desc.format = tex.format;
@@ -857,10 +649,28 @@ namespace nova {
 			VkAttachmentReference depth_reference = {};
             // Collect framebuffer size information from the depth attachment
             if(pass.data.depth_texture) {
-                collect_framebuffer_information_from_texture(pass.data.depth_texture->name, pass.data.name, framebuffer_width, 
-					framebuffer_height, framebuffer_attachments);
 
 				const vk_texture& tex = textures.at(pass.data.depth_texture->name);
+				framebuffer_attachments.push_back(tex.image_view);
+
+				const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
+
+				if(framebuffer_width == 0) {
+					framebuffer_width = attachment_size.x;
+
+				} else if(attachment_size.x != framebuffer_width) {
+					NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
+						<< framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
+				}
+
+				if(framebuffer_height == 0) {
+					framebuffer_height = attachment_size.y;
+
+				} else if(attachment_size.y != framebuffer_height) {
+					NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
+						<< framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
+				}
+
 				VkAttachmentDescription desc = {};
 				desc.flags = 0;
 				desc.format = tex.format;
@@ -911,7 +721,7 @@ namespace nova {
                                     << " writes to the backbuffer, and other textures. Passes that write to the backbuffer are not allowed to write to any other textures";
                 }
 
-                render_passes[pass_name].framebuffer = VK_NULL_HANDLE;
+                render_passes[pass_name].framebuffer = nullptr;
 
             } else {
                 VkFramebufferCreateInfo framebuffer_create_info = {};
@@ -923,7 +733,12 @@ namespace nova {
                 framebuffer_create_info.height = framebuffer_height;
                 framebuffer_create_info.layers = 1;
 
-                NOVA_LOG(TRACE) << "Creating framebuffer with size (" << framebuffer_width << ", " << framebuffer_height << ")";
+				std::stringstream ss;
+                for(const VkImageView& attachment : framebuffer_attachments) {
+					ss << attachment << ", ";
+                }
+
+                NOVA_LOG(TRACE) << "Creating framebuffer with size (" << framebuffer_width << ", " << framebuffer_height << "), and attachments " << ss.str();
 
                 VkFramebuffer framebuffer;
                 NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer), render_engine_initialization_exception);
@@ -935,6 +750,8 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_graphics_pipelines(const std::vector<pipeline_data>& pipelines) {
+		const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
+
         for(const pipeline_data& data : pipelines) {
             NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
             vk_pipeline nova_pipeline;
@@ -1160,12 +977,17 @@ namespace nova {
     }
 
 	void vulkan_render_engine::upload_new_mesh_parts() {
+        if(mesh_upload_queue.empty()) {
+            // Early out yay
+			return;
+        }
+
 		VkCommandBuffer mesh_upload_cmds;
 
 		VkCommandBufferAllocateInfo alloc_info = {};
 		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		alloc_info.commandBufferCount = 1;
-		alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_queue_index);
+		alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_family_index);
 		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
 		vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);
@@ -1230,6 +1052,8 @@ namespace nova {
 
 		vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
+		vkResetFences(device, 1, &upload_to_megamesh_buffer_done);
+
 		// Once the upload is done, return all the staging buffers to the pool
 		std::lock_guard l(mesh_staging_buffers_mutex);
 		available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), freed_buffers.begin(), freed_buffers.end());
@@ -1275,14 +1099,9 @@ namespace nova {
     void vulkan_render_engine::render_frame() {
 		current_semaphore_idx = 0;
         vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
+		vkResetFences(device, 1, &frame_fences.at(current_frame));
 
-        const auto acquire_result = vkAcquireNextImageKHR(device, swapchain, std::numeric_limits<uint64_t>::max(), image_available_semaphores.at(current_frame), VK_NULL_HANDLE, &current_swapchain_index);
-        if(acquire_result == VK_ERROR_OUT_OF_DATE_KHR || acquire_result == VK_SUBOPTIMAL_KHR) {
-            // TODO: Recreate the swapchain and all screen-relative textures
-            return;
-        } else if(acquire_result != VK_SUCCESS) {
-            throw render_engine_rendering_exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " + vulkan::vulkan_utils::vk_result_to_string(acquire_result));
-        }
+		swapchain->acquire_next_swapchain_image(image_available_semaphores.at(current_frame));
 
         vkResetFences(device, 1, &frame_fences.at(current_frame));
 
@@ -1304,16 +1123,7 @@ namespace nova {
         // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
         upload_new_mesh_parts();
 
-        VkPresentInfoKHR present_info = {};
-        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        present_info.pNext = nullptr;
-        present_info.waitSemaphoreCount = render_finished_semaphores_by_frame.at(current_swapchain_index).size();
-        present_info.pWaitSemaphores = render_finished_semaphores_by_frame.at(current_swapchain_index).data();
-        present_info.swapchainCount = 1;
-        present_info.pSwapchains = &swapchain;
-        present_info.pImageIndices = &current_swapchain_index;
-        present_info.pResults = nullptr;
-        vkQueuePresentKHR(graphics_queue, &present_info);
+		swapchain->present_current_image({ render_finished_semaphores_by_frame.at(swapchain->get_current_index()) });
 
         current_frame = (current_frame + 1) % max_frames_in_queue;
     }
@@ -1399,7 +1209,7 @@ namespace nova {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
 		vkResetFences(device, 1, &renderpass.fence);
 
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
+        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1440,9 +1250,11 @@ namespace nova {
 		rp_begin_info.clearValueCount = 2;
 		rp_begin_info.pClearValues = clear_values;
 
-		if(rp_begin_info.framebuffer == VK_NULL_HANDLE) {
-			rp_begin_info.framebuffer = swapchain_framebuffers.at(current_swapchain_index);
+		if(rp_begin_info.framebuffer == nullptr) {
+			rp_begin_info.framebuffer = swapchain->get_current_framebuffer();
 		}
+
+		NOVA_LOG(TRACE) << "Starting renderpass " << *renderpass_name << " with framebuffer " << rp_begin_info.framebuffer;
 
 		vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -1458,7 +1270,7 @@ namespace nova {
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass &renderpass) {
         // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
         // command pool for its thread, since command pools need to be externally synchronized
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_queue_index);
+        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
         VkCommandBufferAllocateInfo cmds_info = {};
         cmds_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1526,7 +1338,7 @@ namespace nova {
             buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
             buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             buffer_create_info.queueFamilyIndexCount = 1;
-            buffer_create_info.pQueueFamilyIndices = &graphics_queue_index;
+            buffer_create_info.pQueueFamilyIndices = &graphics_family_index;
 
             VmaAllocationCreateInfo alloc_create_info = {};
             alloc_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
@@ -1623,9 +1435,9 @@ namespace nova {
 
     std::unordered_map<uint32_t, VkCommandPool> vulkan_render_engine::make_new_command_pools() const {
         std::vector<uint32_t> queue_indices;
-        queue_indices.push_back(graphics_queue_index);
-        queue_indices.push_back(copy_queue_index);
-        queue_indices.push_back(compute_queue_index);
+        queue_indices.push_back(graphics_family_index);
+        queue_indices.push_back(copy_family_index);
+        queue_indices.push_back(compute_family_index);
 
         std::unordered_map<uint32_t, VkCommandPool> pools_by_queue;
         pools_by_queue.reserve(3);
@@ -1664,6 +1476,7 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_textures(const std::vector<texture_resource_data>& texture_datas) {
+		const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
         const glm::uvec2 swapchain_extent_glm = {swapchain_extent.width, swapchain_extent.height};
         for(const texture_resource_data& texture_data : texture_datas) {
             vk_texture texture;
@@ -1690,7 +1503,7 @@ namespace nova {
 				image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 			}
             image_create_info.queueFamilyIndexCount = 1;
-            image_create_info.pQueueFamilyIndices = &graphics_queue_index;
+            image_create_info.pQueueFamilyIndices = &graphics_family_index;
             image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             VmaAllocationCreateInfo alloc_create_info = {};

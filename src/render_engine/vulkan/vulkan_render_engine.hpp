@@ -32,6 +32,8 @@
 #include <mutex>
 
 namespace nova {
+    class swapchain_manager;
+
     namespace ttl {
         class task_scheduler;
     }
@@ -114,8 +116,34 @@ namespace nova {
         VkDrawIndexedIndirectCommand draw_cmd;
     };
 
+	struct vk_gpu_info {
+		VkPhysicalDevice device;
+		std::vector<VkQueueFamilyProperties> queue_family_props;
+		std::vector<VkExtensionProperties> extention_props;
+		VkSurfaceCapabilitiesKHR surface_capabilities;
+		std::vector<VkSurfaceFormatKHR> surface_formats;
+		VkPhysicalDeviceMemoryProperties mem_props;
+		VkPhysicalDeviceProperties props;
+		VkPhysicalDeviceFeatures supported_features;
+		std::vector<VkPresentModeKHR> present_modes;
+	};
+
     class vulkan_render_engine : public render_engine {
     public:
+		VkDevice device;
+		VkSurfaceKHR surface;
+
+		vk_gpu_info gpu;
+
+#pragma region Queues
+		uint32_t graphics_family_index;
+		VkQueue graphics_queue;
+		uint32_t compute_family_index;
+		VkQueue compute_queue;
+		uint32_t copy_family_index;
+		VkQueue copy_queue;
+#pragma endregion
+
         vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler);
         ~vulkan_render_engine() override;
 
@@ -128,6 +156,16 @@ namespace nova {
 		std::future<uint32_t> add_mesh(const mesh_data& input_mesh) override;
 
         void delete_mesh(uint32_t mesh_id) override;
+
+		/*!
+		 * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
+		 * current thread
+		 *
+		 * \param queue_index the index of the queue we need to get a command pool for
+		 *
+		 * \return The command pool for the current thread
+		 */
+		VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
 
     private:
         const uint32_t max_frames_in_queue = 3;
@@ -144,10 +182,8 @@ namespace nova {
 #pragma region Globals
         VkInstance vk_instance;
 
-        VkSurfaceKHR surface;
         VkPhysicalDevice physical_device;
         VkPhysicalDeviceProperties physical_device_properties;
-        VkDevice device;
 
         VmaAllocator vma_allocator;
 
@@ -193,17 +229,7 @@ namespace nova {
          * \brief Factory function to make a new descriptor pool
          */
         VkDescriptorPool make_new_descriptor_pool() const;
-
-        /*!
-         * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
-         * current thread
-         *
-         * \param queue_index the index of the queue we need to get a command pool for
-         *
-         * \return The command pool for the current thread
-         */
-        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
-
+        
         /*!
          * \brief Retrieves the descriptor pool for the calling thread
          */
@@ -221,27 +247,15 @@ namespace nova {
 
     private:
         static bool does_device_support_extensions(VkPhysicalDevice device);
-        static VkSurfaceFormatKHR choose_swapchain_format(const std::vector<VkSurfaceFormatKHR>& available);
-        static VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR>& available);
-        VkExtent2D choose_swapchain_extend() const;
         
         void create_device();
         void create_memory_allocator();
-        void create_swapchain();
-        void create_swapchain_image_views();
-		void create_swapchain_framebuffers();
 
 		void create_global_sync_objects();
 #pragma endregion
 
 #pragma region Swapchain
-        VkSwapchainKHR swapchain;
-        std::vector<VkImage> swapchain_images;
-        VkFormat swapchain_format;
-        VkExtent2D swapchain_extent;
-        std::vector<VkImageView> swapchain_image_views;
-        std::vector<VkFramebuffer> swapchain_framebuffers;
-        uint32_t current_swapchain_index = 0;
+		std::unique_ptr<swapchain_manager> swapchain;
 #pragma endregion
 
 #pragma region Shaderpack
@@ -277,25 +291,7 @@ namespace nova {
          */
         static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, 
 			const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, VkDescriptorType type);
-
-        /*!
-         * \brief If `framebuffer_width` and `framebuffer_height` are 0, sets them to the size of the attachment with 
-         * the given name. If they are not zero, validates that the size of the attachment with the given name is the 
-         * same as the framebuffer size
-         * 
-         * \param attachment_name The name of the attachment to get information from and validate
-         * \param pass_name The name of the render pass that we're creating a framebuffer for
-         * \param framebuffer_width The width of the framebuffer. If 0 is passed in, framebuffer_width will be set to 
-         * the width of the attachment with the given name. If a non-zero number is passed in, this method will check 
-         * that the width of the attachment with the given name is the same as framebuffer_width
-         * \param framebuffer_height The width of the framebuffer. If 0 is passed in, framebuffer_height will be set to 
-         * the height of the attachment with the given name. If a non-zero number is passed in, this method will check 
-         * that the height of the attachment with the given name is the same as framebuffer_height
-         * \param framebuffer_attachments All the image views that will make up our framebuffer
-         */
-        void collect_framebuffer_information_from_texture(const std::string& attachment_name, const std::string& pass_name,
-			uint32_t& framebuffer_width, uint32_t& framebuffer_height, std::vector<VkImageView>& framebuffer_attachments);
-
+        
         /*!
          * \brief Creates a Vulkan renderpass for every element in passes
          * \param passes A list of render_pass_infos to create Vulkan renderpasses for
@@ -440,16 +436,7 @@ namespace nova {
          */
         void free_mesh_staging_buffer(const vk_buffer& buffer);
 #pragma endregion
-
-#pragma region Queues
-        uint32_t graphics_queue_index;
-        VkQueue graphics_queue;
-        uint32_t compute_queue_index;
-        VkQueue compute_queue;
-        uint32_t copy_queue_index;
-        VkQueue copy_queue;
-#pragma endregion
-
+        
 #pragma region Rendering
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
