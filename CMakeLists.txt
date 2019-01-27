@@ -216,9 +216,9 @@ if(WIN32)
         source_group("${source_path_msvc}" FILES "${source}")
     endforeach()
 	
-else(WIN32)
+else()
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
-endif (WIN32)
+endif()
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 
