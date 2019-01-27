@@ -189,8 +189,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
 	                 glslang
 	                 SPIRV
 	                 ${SPIRV_SHARED_LIBRARIES}
-	                 ${Vulkan_LIBRARIES}
-	                 ${GLFW_LIBRARY_NAME})
+                     ${Vulkan_LIBRARIES})
 if(WIN32)
     find_package(WindowsSDK)
     get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
