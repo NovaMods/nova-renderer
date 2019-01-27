@@ -6,14 +6,14 @@
 #define NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 
 #include "../render_engine.hpp"
-#ifdef __linux__
+#ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR 1  // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB 1
 #include "x11_window.hpp"
 #include <vulkan/vulkan_xlib.h>
 #include "../../util/linux_utils.hpp"
 
-#elif _WIN32
+#elif NOVA_WINDOWS
 #define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32 1
 #include "../dx12/win32_window.hpp"
@@ -135,9 +135,9 @@ namespace nova {
 
         std::vector<const char*> enabled_validation_layer_names;
 
-#ifdef linux
+#ifdef NOVA_LINUX
         std::shared_ptr<x11_window> window;
-#elif _WIN32
+#elif NOVA_WINDOWS
         std::shared_ptr<win32_window> window;
 #endif
 

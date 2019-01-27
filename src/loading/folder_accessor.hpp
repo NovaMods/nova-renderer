@@ -14,7 +14,7 @@
 #include "../util/utils.hpp"
 #include <mutex>
 
-#if _WIN32
+#if NOVA_WINDOWS
     #if _MSC_VER <= 1915
         namespace fs = std::experimental::filesystem;
     #else

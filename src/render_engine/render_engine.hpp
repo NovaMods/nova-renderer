@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "../loading/shaderpack/shaderpack_data.hpp"
+#include "../platform.hpp"
 #include "../settings/nova_settings.hpp"
 #include "../util/utils.hpp"
 #include "window.hpp"

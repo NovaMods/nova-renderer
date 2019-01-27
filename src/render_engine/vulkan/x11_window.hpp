@@ -5,7 +5,7 @@
 #ifndef NOVA_RENDERER_X_11_WINDOW_HPP
 #define NOVA_RENDERER_X_11_WINDOW_HPP
 
-#ifdef linux
+#ifdef NOVA_LINUX
 
 #include "../window.hpp"
 #include <X11/Xlib.h>

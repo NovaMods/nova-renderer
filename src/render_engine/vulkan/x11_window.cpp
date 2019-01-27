@@ -2,7 +2,9 @@
 // Created by jannis on 01.09.18.
 //
 
-#ifdef linux
+#include "../../platform.hpp"
+
+#ifdef NOVA_LINUX
 
 #include "x11_window.hpp"
 

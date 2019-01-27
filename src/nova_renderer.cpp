@@ -11,7 +11,7 @@
 #include "glslang/MachineIndependent/Initialize.h"
 #include "loading/shaderpack/shaderpack_loading.hpp"
 
-#if _WIN32
+#if NOVA_WINDOWS
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif 
 
@@ -42,7 +42,7 @@ namespace nova {
 
         switch(settings.api) {
         case graphics_api::dx12:
-            #if _WIN32
+            #if NOVA_WINDOWS
             engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
             break;
             #endif

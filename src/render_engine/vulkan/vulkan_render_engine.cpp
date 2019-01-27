@@ -11,12 +11,13 @@
 #include "../../../3rdparty/SPIRV-Cross/spirv_glsl.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
+#include "../../platform.hpp"
 #include "../../util/utils.hpp"
 #include "../dx12/win32_window.hpp"
 #include "vulkan_type_converters.hpp"
 #include "vulkan_utils.hpp"
 
-#ifdef __linux__
+#ifdef NOVA_LINUX
 #include <execinfo.h>
 #include <cxxabi.h>
 
@@ -53,9 +54,9 @@ namespace nova {
 
         std::vector<const char*> enabled_extension_names;
         enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-#ifdef linux
+#ifdef NOVA_LINUX
         enabled_extension_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-#elif _WIN32
+#elif NOVA_WINDOWS
         enabled_extension_names.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #else
 #error Unsupported Operating system
@@ -185,7 +186,7 @@ namespace nova {
 	}
 
     void vulkan_render_engine::open_window(uint32_t width, uint32_t height) {
-#ifdef linux
+#ifdef NOVA_LINUX
         window = std::make_shared<x11_window>(width, height);
 
         VkXlibSurfaceCreateInfoKHR x_surface_create_info;
@@ -196,7 +197,7 @@ namespace nova {
         x_surface_create_info.window = window->get_x11_window();
 
         NOVA_THROW_IF_VK_ERROR(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface), render_engine_initialization_exception);
-#elif _WIN32
+#elif NOVA_WINDOWS
         window = std::make_shared<win32_window>(width, height);
 
         VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
@@ -1262,7 +1263,7 @@ namespace nova {
 			NOVA_LOG(INFO) << "[" << layer_prefix << "]" << msg;
         }
 
-#ifdef __linux__
+#ifdef NOVA_LINUX
         if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
             nova_backtrace();
         }
