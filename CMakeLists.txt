@@ -152,9 +152,13 @@ if (UNIX)
 endif (UNIX)
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g -rdynamic -fdiagnostic-color=always")
-    set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g -rdynamic -fdiagnostic-color=always")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g -rdynamic")
+    set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g -rdynamic")
     message("Enabling symbol output")
+endif()
+
+if(NOT WIN32)
+    add_compile_options("-fdiagnostics-color=always")
 endif()
 
 set(NOVA_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
