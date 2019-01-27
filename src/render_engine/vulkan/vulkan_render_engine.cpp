@@ -97,14 +97,24 @@ namespace nova {
 
         NOVA_THROW_IF_VK_ERROR(vkCreateDebugReportCallbackEXT(vk_instance, &debug_create_info, nullptr, &debug_callback), render_engine_initialization_exception);
 #endif
+        // First we open the window. This doesn't depend on anything except the VkInstance/ This method also creates 
+        // the VkSurfaceKHR we can render to
+        open_window(settings.get_options().window.width, settings.get_options().window.height);
+
+        // Create the device. This depends on both the VkInstance and the VkSurfaceKHR: we need the VkSurfaceKHR to 
+        // make sure we find a device that can present to that surface
 		create_device();
 
-        open_window(settings.get_options().window.width, settings.get_options().window.height);
+		create_per_thread_command_pools();
+
+        // Create the swapchain. This depends on the VkInstance, VkPhysicalDevice, our pre-thread command pools, and 
+        // VkSurfaceKHR. This method also fills out a lot of the information in our vk_gpu_info
+		create_swapchain();
+
         create_memory_allocator();
         mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, graphics_family_index, copy_family_index);
 
 		create_global_sync_objects();
-		create_per_thread_command_pools();
 		create_per_thread_descriptor_pools();
 		create_default_samplers();
     }
@@ -198,6 +208,22 @@ namespace nova {
 
 		dynamic_textures_need_to_transition = false;
 	}
+    
+    void vulkan_render_engine::create_swapchain() {
+        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities), render_engine_initialization_exception);
+
+        uint32_t num_surface_formats;
+        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr), render_engine_initialization_exception);
+        gpu.surface_formats.resize(num_surface_formats);
+        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, gpu.surface_formats.data()), render_engine_initialization_exception);
+
+        uint32_t num_surface_present_modes;
+        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_formats, nullptr), render_engine_initialization_exception);
+        gpu.present_modes.resize(num_surface_formats);
+        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_formats, gpu.present_modes.data()), render_engine_initialization_exception);
+
+        swapchain = std::make_unique<swapchain_manager>(3, *this, window->get_window_size());
+    }
 
     void vulkan_render_engine::open_window(uint32_t width, uint32_t height) {
 #ifdef linux
@@ -211,31 +237,19 @@ namespace nova {
         x_surface_create_info.window = window->get_x11_window();
 
         NOVA_THROW_IF_VK_ERROR(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface), render_engine_initialization_exception);
+
 #elif _WIN32
         window = std::make_shared<win32_window>(width, height);
 
-        VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
-        win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-        win32_surface_create.hwnd = window->get_window_handle();
+		VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
+		win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+		win32_surface_create.hwnd = window->get_window_handle();
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateWin32SurfaceKHR(vk_instance, &win32_surface_create, nullptr, &surface), render_engine_initialization_exception);
-
-		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities), render_engine_initialization_exception);
-
-		uint32_t num_surface_formats;
-		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr), render_engine_initialization_exception);
-		gpu.surface_formats.resize(num_surface_formats);
-		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, gpu.surface_formats.data()), render_engine_initialization_exception);
-
-		uint32_t num_surface_present_modes;
-		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_formats, nullptr), render_engine_initialization_exception);
-		gpu.present_modes.resize(num_surface_formats);
-		NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_formats, gpu.present_modes.data()), render_engine_initialization_exception);
+		NOVA_THROW_IF_VK_ERROR(vkCreateWin32SurfaceKHR(vk_instance, &win32_surface_create, nullptr, &surface), render_engine_initialization_exception);
 
 #else
 #error Unsuported window system
 #endif
-		swapchain = std::make_unique<swapchain_manager>(3, *this, window->get_window_size());
     }
 
     void vulkan_render_engine::validate_mesh_options(const settings_options::block_allocator_settings& options) const {

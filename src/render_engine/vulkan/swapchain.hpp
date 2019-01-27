@@ -15,6 +15,7 @@
 namespace nova {
     class vulkan_render_engine;
 
+	NOVA_EXCEPTION(swapchain_creation_failed);
 	NOVA_EXCEPTION(present_failed);
 
     /*!

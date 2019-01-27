@@ -44,9 +44,9 @@ namespace nova {
 		swapchain_extent = extent;
 
 		uint32_t real_num_swapchain_images;
-		VkImage* images = nullptr;
-		vkGetSwapchainImagesKHR(render_engine.device, swapchain, &real_num_swapchain_images, images);
-		swapchain_images.assign(images, images + real_num_swapchain_images);
+		NOVA_THROW_IF_VK_ERROR(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &real_num_swapchain_images, nullptr), swapchain_creation_failed);
+		swapchain_images.resize(real_num_swapchain_images);
+		NOVA_THROW_IF_VK_ERROR(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &real_num_swapchain_images, swapchain_images.data()), swapchain_creation_failed);
 		swapchain_image_layouts.resize(real_num_swapchain_images);
 
 		if(swapchain_images.empty()) {

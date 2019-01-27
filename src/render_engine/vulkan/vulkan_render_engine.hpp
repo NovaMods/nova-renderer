@@ -252,6 +252,8 @@ namespace nova {
 
 #pragma region Swapchain
 		std::unique_ptr<swapchain_manager> swapchain;
+
+		void create_swapchain();
 #pragma endregion
 
 #pragma region Shaderpack
@@ -357,7 +359,7 @@ namespace nova {
          * \brief Executed barriers for all the dynamic textures so they are in COLOR_ATTACHMENT_OPTIMAL layout
          */
 		void transition_dynamic_textures();
-
+        
         /*!
          * \brief Converts the list of attachment names into attachment descriptions and references that can be later
          * used to make a VkRenderpass
