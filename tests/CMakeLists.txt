@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.8)
-project(nova-renderer)
-
 set(BUILD_SHARED_LIBS ON)
 
 set(INSTALL_GTEST OFF)
