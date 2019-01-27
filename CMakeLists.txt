@@ -179,15 +179,17 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
 	                 ${SPIRV_SHARED_LIBRARIES}
 	                 ${Vulkan_LIBRARIES}
 	                 ${GLFW_LIBRARY_NAME})
+if(WIN32)
+    find_package(WindowsSDK)
+    get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
+
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler)
-    target_include_directories(nova-renderer PRIVATE
-            "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\shared"
-            "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
+    target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
 
-    # Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
-    # everyone else?
+	# Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
+	# everyone else?
     foreach(source IN LISTS NOVA_SOURCE)
         get_filename_component(source_path "${source}" PATH)
         string(REPLACE "/" "\\" source_path_msvc "${source_path}")
