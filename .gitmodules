@@ -25,9 +25,6 @@
 [submodule "3rdparty/glslang"]
 	path = 3rdparty/glslang
 	url = https://github.com/KhronosGroup/glslang.git
-[submodule "3rdparty/glfw"]
-	path = 3rdparty/glfw
-	url = https://github.com/glfw/glfw.git
 [submodule "3rdparty/miniz"]
 	path = 3rdparty/miniz
 	url = https://github.com/richgel999/miniz.git

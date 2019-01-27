@@ -18,6 +18,11 @@
 
 #ifdef _WIN32
 #define SUPPORT_DX12 1
+#define NOVA_WINDOWS 1
+#endif
+
+#if defined(linux) || defined(__linux) || defined(__linux__)
+#define NOVA_LINUX 1
 #endif
 
 #endif  // NOVA_RENDERER_PLATFORM_H

@@ -7,6 +7,12 @@ if(CCACHE_PROGRAM)
     message(STATUS "Enabling CCache at ${CCACHE_PROGRAM}")
 endif()
 
+if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+    set(NOVA_IN_SUBMODULE False)
+else()
+    set(NOVA_IN_SUBMODULE True)
+endif()
+
 option(NOVA_TEST "Enable tests." OFF)
 option(ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as well as in the CMake files" OFF)
 if(ENABLE_EXPERIMENTAL)
@@ -20,8 +26,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+if(NOT ${NOVA_IN_SUBMODULE})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+endif()
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/build)
 
@@ -35,37 +43,7 @@ set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 # Setup 3rd party dependencies.
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
 
-######################################
-# Add dependencies as subdirectories #
-######################################
-
-set(BUILD_DEMOS OFF CACHE BOOL "Disable demos" FORCE)
-set(BUILD_ICD OFF CACHE BOOL "Disable ICD" FORCE)
-
-set(BUILD_SHARED_LIBS OFF)
-
-add_subdirectory(${3RD_PARTY_DIR}/glm)
-add_subdirectory(${3RD_PARTY_DIR}/profiler)
-		
-set(JSON_BuildTests OFF CACHE BOOL "JSON tests go away" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/json)
-
-add_subdirectory(${3RD_PARTY_DIR}/miniz)
-
-set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Headers)
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Tools)
-add_subdirectory(${3RD_PARTY_DIR}/glslang)
-
-set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/SPIRV-Cross)
-
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Disable GLFW exampes" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "Disable GLFW tests" FORCE)
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "Disable GLFW docs" FORCE)
-add_subdirectory(${3RD_PARTY_DIR}/glfw)
-
-find_package(Vulkan)
+include(${3RD_PARTY_DIR}/3rdparty.cmake)
 
 ######################################
 # Make dependencies' headers visible #
@@ -73,17 +51,12 @@ find_package(Vulkan)
 
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
-        ${3RD_PARTY_DIR}/glm
-        ${3RD_PARTY_DIR}/glfw/include
         ${3RD_PARTY_DIR}/RenderDoc-Manager
-        ${3RD_PARTY_DIR}/profiler/include
-        ${3RD_PARTY_DIR}/json/single_include
         ${3RD_PARTY_DIR}/cpptoml/include
-        ${3RD_PARTY_DIR}/miniz
         ${3RD_PARTY_DIR}/glslang
         ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
         ${3RD_PARTY_DIR}/SPIRV-Cross
-        )
+)
 
 ########################
 # Add Nova source code #
@@ -92,7 +65,7 @@ include_directories(SYSTEM
 set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
 
 set(NOVA_SOURCE
-		${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp
+        ${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp
 
         src/platform.hpp
         src/loading/zip_folder_accessor.hpp
@@ -122,30 +95,28 @@ set(NOVA_SOURCE
         src/loading/json_utils.hpp
         src/util/utils.hpp
         src/util/utils.cpp
-		src/render_objects/render_object.cpp
-		src/render_objects/render_object.hpp 
-		src/loading/shaderpack/shaderpack_validator.cpp 
-		src/loading/shaderpack/shaderpack_validator.hpp 
-		src/loading/shaderpack/render_graph_builder.cpp 
-		src/loading/shaderpack/render_graph_builder.hpp
+        src/render_objects/render_object.cpp
+        src/render_objects/render_object.hpp 
+        src/loading/shaderpack/shaderpack_validator.cpp 
+        src/loading/shaderpack/shaderpack_validator.hpp 
+        src/loading/shaderpack/render_graph_builder.cpp 
+        src/loading/shaderpack/render_graph_builder.hpp
         src/render_engine/vulkan/vulkan_render_engine.hpp
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_utils.hpp
         src/render_engine/vulkan/vulkan_type_converters.hpp
-		src/render_engine/vulkan/compacting_block_allocator.cpp 
-		src/render_engine/vulkan/compacting_block_allocator.hpp 
-		src/render_engine/vulkan/vulkan_utils.cpp 
-		src/tasks/task_scheduler.cpp
-		src/tasks/task_scheduler.hpp
-		src/tasks/task_graph.hpp
-		src/tasks/wait_free_queue.hpp
-		src/tasks/condition_counter.cpp
-		src/tasks/condition_counter.hpp
-		src/debugging/renderdoc.cpp
-		src/debugging/renderdoc.hpp
-        src/render_engine/vulkan/swapchain.hpp
-        src/render_engine/vulkan/swapchain.cpp
-		)
+        src/render_engine/vulkan/compacting_block_allocator.cpp 
+        src/render_engine/vulkan/compacting_block_allocator.hpp 
+        src/render_engine/vulkan/vulkan_utils.cpp 
+        src/tasks/task_scheduler.cpp
+        src/tasks/task_scheduler.hpp
+        src/tasks/task_graph.hpp
+        src/tasks/wait_free_queue.hpp
+        src/tasks/condition_counter.cpp
+        src/tasks/condition_counter.hpp
+        src/debugging/renderdoc.cpp
+        src/debugging/renderdoc.hpp
+        )
 
 if(WIN32)
     set(NOVA_SOURCE
@@ -166,13 +137,13 @@ if(WIN32)
             src/render_engine/dx12/d3dx12.h
             )
 else()
-	set(NOVA_SOURCE
-		${NOVA_SOURCE}
+    set(NOVA_SOURCE
+        ${NOVA_SOURCE}
         src/render_engine/vulkan/x11_window.cpp
         src/render_engine/vulkan/x11_window.hpp
         src/util/linux_utils.cpp
         src/util/linux_utils.hpp
-		)
+        )
 endif()
 
 if (UNIX)
@@ -181,9 +152,13 @@ if (UNIX)
 endif (UNIX)
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g -rdynamic -fdiagnostic-color=always")
-    set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g -rdynamic -fdiagnostic-color=always")
+    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g -rdynamic")
+    set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g -rdynamic")
     message("Enabling symbol output")
+endif()
+
+if(NOT WIN32)
+    add_compile_options("-fdiagnostics-color=always")
 endif()
 
 set(NOVA_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -200,13 +175,36 @@ set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS NOMINMAX)
 #endif()
 
-set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS} spirv-cross-core spirv-cross-glsl spirv-cross-hlsl spirv-cross-reflect spirv-cross-util nova-profiler miniz glslang SPIRV ${SPIRV_SHARED_LIBRARIES} ${Vulkan_LIBRARIES} ${GLFW_LIBRARY_NAME})
-if (WIN32)
+set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
+                     glm::glm
+                     nlohmann::json
+                     spirv::headers
+                     spirv-cross-core
+                     spirv-cross-glsl
+                     spirv-cross-hlsl
+                     spirv-cross-reflect
+                     spirv-cross-util
+                     nova-profiler
+                     miniz
+                     glslang
+                     SPIRV
+                     ${SPIRV_SHARED_LIBRARIES}
+                     ${Vulkan_LIBRARIES})
+if(WIN32)
+    find_package(WindowsSDK)
+    get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
+
+    # MSVC 15.9 broke the Windows SDK by implementing two phase lookup. "/Zc:twoPhase-" disables it.
+
+    include(CheckCXXCompilerFlag)
+    CHECK_CXX_COMPILER_FLAG(/Zc:twoPhase- HAS_TWO_PHASE_LOOKUP)
+    if (HAS_TWO_PHASE_LOOKUP)
+        add_definitions(/Zc:twoPhase-)
+    endif()
+
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler)
-    target_include_directories(nova-renderer PRIVATE
-            "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\shared"
-            "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.17134.0\\um")
+    target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
 
     # Visual Studio is stupid. Is it really that hard to use filesystem directories to organize code like literally
@@ -216,10 +214,10 @@ if (WIN32)
         string(REPLACE "/" "\\" source_path_msvc "${source_path}")
         source_group("${source_path_msvc}" FILES "${source}")
     endforeach()
-	
-else(WIN32)
+    
+else()
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
-endif (WIN32)
+endif()
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 

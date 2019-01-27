@@ -16,7 +16,7 @@
 #include "condition_counter.hpp"
 #include "task_graph.hpp"
 
-#ifdef __linux__
+#ifdef NOVA_LINUX
 #include "../util/linux_utils.hpp"
 #endif
 
@@ -149,7 +149,7 @@ namespace nova::ttl {
                 } catch (...) {
                     // TODO: Better way of giving the user a chance to handle this, see https://en.cppreference.com/w/cpp/error/current_exception
                     NOVA_LOG(FATAL) << "Task failed executing!";
-#ifdef __linux__
+#ifdef NOVA_LINUX
                     nova_backtrace();
 #endif
                     std::rethrow_exception(std::current_exception());
@@ -187,7 +187,7 @@ namespace nova::ttl {
                 } catch(...) {
                     // TODO: Better way of giving the user a chance to handle this, see https://en.cppreference.com/w/cpp/error/current_exception
                     NOVA_LOG(FATAL) << "Task failed executing!";
-#ifdef __linux__
+#ifdef NOVA_LINUX
                     nova_backtrace();
 #endif
                 }

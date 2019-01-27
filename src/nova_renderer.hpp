@@ -67,9 +67,7 @@ namespace nova {
 		ttl::task_scheduler task_scheduler;
 		std::future<void> frame_done_future;
 
-#if _WIN32
 		RENDERDOC_API_1_3_0* render_doc;
-#endif
 		static nova_renderer *instance;
 	};
 } // namespace nova
