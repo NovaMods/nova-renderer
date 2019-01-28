@@ -251,8 +251,6 @@ endif()
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 
 remove_permissive(nova-renderer)
-get_target_property(FLAGS nova-renderer COMPILE_OPTIONS)
-message(STATUS "${FLAGS}")
 
 set(NOVA_TEST ON)
 
