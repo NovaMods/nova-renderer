@@ -131,7 +131,7 @@ namespace nova {
 		vkDestroyRenderPass(render_engine.device, renderpass, nullptr);
 
 		// move the swapchain images into the correct layout cause I guess they aren't for some reason?
-		move_swapchain_images_into_correct_layout(swapchain_images);
+		transition_swapchain_images_into_correct_layout(swapchain_images);
 	}
 
 	VkSurfaceFormatKHR swapchain_manager::choose_surface_format(const std::vector<VkSurfaceFormatKHR> &formats) {
@@ -187,6 +187,7 @@ namespace nova {
 		VkResult swapchain_result = {};
 
 		VkPresentInfoKHR present_info = {};
+		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		present_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
 		present_info.pWaitSemaphores = wait_semaphores.data();
 		present_info.swapchainCount = 1;
@@ -197,7 +198,7 @@ namespace nova {
 		vkQueuePresentKHR(render_engine.graphics_queue, &present_info);
 	}
 
-	void swapchain_manager::move_swapchain_images_into_correct_layout(const std::vector<VkImage> &images) const {
+	void swapchain_manager::transition_swapchain_images_into_correct_layout(const std::vector<VkImage> &images) const {
 		std::vector<VkImageMemoryBarrier> barriers;
 		barriers.reserve(images.size());
 
@@ -210,7 +211,7 @@ namespace nova {
 			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 			barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 			barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;   // Each swapchain image **will** be rendered to before it is presented
 			barrier.subresourceRange.baseMipLevel = 0;
 			barrier.subresourceRange.levelCount = 1;
 			barrier.subresourceRange.baseArrayLayer = 0;

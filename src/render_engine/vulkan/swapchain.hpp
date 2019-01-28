@@ -71,7 +71,7 @@ namespace nova {
 
 	    static VkExtent2D choose_surface_extent(const VkSurfaceCapabilitiesKHR &caps, const glm::ivec2 &window_dimensions);
 
-		void move_swapchain_images_into_correct_layout(const std::vector<VkImage> &images) const;
+		void transition_swapchain_images_into_correct_layout(const std::vector<VkImage> &images) const;
 	};
 }
 
