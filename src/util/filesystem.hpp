@@ -6,10 +6,10 @@
 #ifndef NOVA_RENDERER_FILESYSTEM_UTIL_HPP
 #define NOVA_RENDERER_FILESYSTEM_UTIL_HPP
 
-#if __has_include(<filesystem>)
+#if NOVA_STD_FILESYSTEM
 #include <filesystem>
 namespace fs = std::filesystem;
-#else
+#elif NOVA_STD_FILESYSTEM_EXPERIMENTAL
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 #endif
