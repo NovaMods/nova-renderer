@@ -192,16 +192,16 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      SPIRV
                      ${SPIRV_SHARED_LIBRARIES}
                      ${Vulkan_LIBRARIES})
+include(CheckCXXCompilerFlag)
 if(WIN32)
     find_package(WindowsSDK)
     get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
 
     # MSVC 15.9 broke the Windows SDK by implementing two phase lookup. "/Zc:twoPhase-" disables it.
 
-    include(CheckCXXCompilerFlag)
-    CHECK_CXX_COMPILER_FLAG(/Zc:twoPhase- HAS_TWO_PHASE_LOOKUP)
-    if (HAS_TWO_PHASE_LOOKUP)
-        add_definitions(/Zc:twoPhase-)
+    CHECK_CXX_COMPILER_FLAG(/Zc:twoPhase- TWO_PHASE_LOOKUP)
+    if (TWO_PHASE_LOOKUP)
+        add_compile_options(/Zc:twoPhase-)
     endif()
 
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
@@ -218,6 +218,13 @@ if(WIN32)
     endforeach()
     
 else()
+    # GCC and Clang complain loudly about the #pragma region stuff. This shuts them up.
+
+    CHECK_CXX_COMPILER_FLAG(-Wno-unknown-pragmas Wno_unknown_pragmas)
+    if (Wno_unknown_pragmas)
+        add_compile_options(-Wno-unknown-pragmas)
+    endif()
+
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
 endif()
 
