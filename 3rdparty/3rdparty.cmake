@@ -36,6 +36,7 @@ set_target_properties(spirv::headers PROPERTIES
     INTERFACE_COMPILE_FEATURES cxx_std_17
 )
 set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers)
+set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
 
