@@ -7,17 +7,8 @@
 #define NOVA_RENDERER_LOADING_UTILS_HPP
 
 #include <string>
-#include <filesystem>
 
-#if NOVA_WINDOWS
-    #if _MSC_VER <= 1915
-        namespace fs = std::experimental::filesystem;
-    #else
-        namespace fs = std::filesystem;
-    #endif
-#else
-    namespace fs = std::filesystem;
-#endif
+#include "../util/filesystem.hpp"
 
 namespace nova {
     /*!

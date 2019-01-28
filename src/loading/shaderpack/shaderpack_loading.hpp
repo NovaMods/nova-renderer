@@ -8,19 +8,7 @@
 
 #include "shaderpack_data.hpp"
 #include <future>
-
-#if NOVA_WINDOWS
-    #if _MSC_VER <= 1915
-        #include <experimental/filesystem>
-        namespace fs = std::experimental::filesystem;
-    #else
-        #include <filesystem>
-        namespace fs = std::filesystem;
-    #endif
-#else
-    #include <filesystem>
-    namespace fs = std::filesystem;
-#endif
+#include "../../util/filesystem.hpp"
 
 namespace nova {
     namespace ttl {

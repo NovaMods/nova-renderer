@@ -8,21 +8,11 @@
 
 #include <string>
 #include <vector>
-#include <filesystem>
 #include <unordered_map>
 #include <optional>
+#include "../util/filesystem.hpp"
 #include "../util/utils.hpp"
 #include <mutex>
-
-#if NOVA_WINDOWS
-    #if _MSC_VER <= 1915
-        namespace fs = std::experimental::filesystem;
-    #else
-        namespace fs = std::filesystem;
-    #endif
-#else
-    namespace fs = std::filesystem;
-#endif
 
 namespace nova {
     NOVA_EXCEPTION(resource_not_found_exception);

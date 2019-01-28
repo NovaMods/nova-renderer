@@ -13,23 +13,13 @@
 #include <unordered_map>
 #include <cstdint>
 #include <optional>
-#include <filesystem>
 #include <nlohmann/json.hpp>
+#include "../../util/filesystem.hpp"
 #include "../../util/utils.hpp"
 
 #include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
-
-#if NOVA_WINDOWS
-#if _MSC_VER <= 1915
-namespace fs = std::experimental::filesystem;
-#else
-namespace fs = std::filesystem;
-#endif
-#else
-namespace fs = std::filesystem;
-#endif
 
 namespace nova {
     NOVA_EXCEPTION(validation_failure_exception);
