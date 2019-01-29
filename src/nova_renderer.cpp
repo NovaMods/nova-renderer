@@ -24,48 +24,50 @@ namespace nova {
     nova_renderer *nova_renderer::instance;
 
     nova_renderer::nova_renderer(const settings_options &settings) : 
-		render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
+        render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
-		mtr_init("trace.json");
+        mtr_init("trace.json");
 
-		MTR_META_PROCESS_NAME("NovaRenderer");
-		MTR_META_THREAD_NAME("Main");
+        MTR_META_PROCESS_NAME("NovaRenderer");
+        MTR_META_THREAD_NAME("Main");
 
-		MTR_SCOPE("Init", "nova_renderer::nova_renderer");
+        MTR_SCOPE("Init", "nova_renderer::nova_renderer");
 
         if(settings.debug.renderdoc.enabled) {
-			MTR_SCOPE("Init", "LoadRenderdoc");
-			render_doc = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
+            MTR_SCOPE("Init", "LoadRenderdoc");
+            render_doc = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
 
             if(render_doc) {
-				render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
+                render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
-				RENDERDOC_InputButton captureKey = eRENDERDOC_Key_F12;
-				render_doc->SetCaptureKeys(&captureKey, 1);
+                RENDERDOC_InputButton captureKey = eRENDERDOC_Key_F12;
+                render_doc->SetCaptureKeys(&captureKey, 1);
 
-				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, true);
-				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, true);
-				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_VerifyMapWrites, true);
-				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, true);
-				render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, true);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, true);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, true);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_VerifyMapWrites, true);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, true);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, true);
             }
         }
 
         switch(settings.api) {
         case graphics_api::dx12:
             #if NOVA_WINDOWS
-			MTR_SCOPE("Init", "InitDirectX12RenderEngine");
+        {
+            MTR_SCOPE("Init", "InitDirectX12RenderEngine");
             engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
+        }
             break;
             #endif
         case graphics_api::vulkan:
-			MTR_SCOPE("Init", "InitVulkanRenderEngine");
+            MTR_SCOPE("Init", "InitVulkanRenderEngine");
             engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler);
         }
     }
 
     nova_renderer::~nova_renderer() {
-		mtr_shutdown();
+        mtr_shutdown();
     }
 
     nova_settings &nova_renderer::get_settings() {
@@ -73,20 +75,20 @@ namespace nova {
     }
 
     void nova_renderer::execute_frame() const {
-		MTR_SCOPE("RenderLoop", "execute_frame");
-		engine->render_frame();
+        MTR_SCOPE("RenderLoop", "execute_frame");
+        engine->render_frame();
 
-		mtr_flush();
+        mtr_flush();
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) const {
-		MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
+        MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
 
         const shaderpack_data shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
 
         engine->set_shaderpack(shaderpack_data);
-		NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
+        NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
     }
 
     render_engine *nova_renderer::get_engine() const {
@@ -101,7 +103,7 @@ namespace nova {
         delete instance;
     }
 
-	ttl::task_scheduler &nova_renderer::get_task_scheduler() {
+    ttl::task_scheduler &nova_renderer::get_task_scheduler() {
         return task_scheduler;
     }
 }  // namespace nova

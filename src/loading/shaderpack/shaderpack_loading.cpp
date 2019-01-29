@@ -21,11 +21,11 @@
 namespace nova {
     std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path& shaderpack_name);
 
-	shaderpack_resources_data load_dynamic_resources_file(std::shared_ptr<folder_accessor_base> folder_access);
+    shaderpack_resources_data load_dynamic_resources_file(std::shared_ptr<folder_accessor_base> folder_access);
 
-	std::vector<render_pass_data> load_passes_file(std::shared_ptr<folder_accessor_base> folder_access);
+    std::vector<render_pass_data> load_passes_file(std::shared_ptr<folder_accessor_base> folder_access);
 
-	std::vector<pipeline_data> load_pipeline_files(std::shared_ptr<folder_accessor_base> folder_access);
+    std::vector<pipeline_data> load_pipeline_files(std::shared_ptr<folder_accessor_base> folder_access);
     pipeline_data load_single_pipeline(std::shared_ptr<folder_accessor_base> folder_access, const fs::path &pipeline_path);
 
     std::vector<material_data> load_material_files(std::shared_ptr<folder_accessor_base> folder_access);
@@ -48,13 +48,13 @@ namespace nova {
         //
         // All these things are loaded from the filesystem
 
-		shaderpack_data data{};
-		data.resources = load_dynamic_resources_file(folder_access);
-		data.passes = load_passes_file(folder_access);
-		data.pipelines = load_pipeline_files(folder_access);
-		data.materials = load_material_files(folder_access);
+        shaderpack_data data{};
+        data.resources = load_dynamic_resources_file(folder_access);
+        data.passes = load_passes_file(folder_access);
+        data.pipelines = load_pipeline_files(folder_access);
+        data.materials = load_material_files(folder_access);
         
-		return data;
+        return data;
     }
 
     std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path &shaderpack_name) {
@@ -75,8 +75,8 @@ namespace nova {
         }
     }
 
-	shaderpack_resources_data load_dynamic_resources_file(std::shared_ptr<folder_accessor_base> folder_access) {
-		NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
+    shaderpack_resources_data load_dynamic_resources_file(std::shared_ptr<folder_accessor_base> folder_access) {
+        NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
         std::string resources_string = folder_access->read_text_file("resources.json");
         try {
             auto json_resources = nlohmann::json::parse(resources_string.c_str());
@@ -103,11 +103,11 @@ namespace nova {
             loading_failed = true;
         }
 
-		return {};
+        return {};
     }
 
     std::vector<render_pass_data> load_passes_file(std::shared_ptr<folder_accessor_base> folder_access) {
-		NOVA_LOG(TRACE) << "load_passes_file called";
+        NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
             auto json_passes = nlohmann::json::parse(passes_bytes);
@@ -135,19 +135,19 @@ namespace nova {
         // Don't check for a resources_not_found exception because a shaderpack _needs_ a passes.json and if the
         // shaderpack doesn't provide one then it can't be loaded, so we'll catch that exception later on
 
-		return {};
+        return {};
     }
 
     std::vector<pipeline_data> load_pipeline_files(std::shared_ptr<folder_accessor_base> folder_access) {
-		NOVA_LOG(TRACE) << "load_pipeline_files called";
+        NOVA_LOG(TRACE) << "load_pipeline_files called";
         std::vector<fs::path> potential_pipeline_files;
         try {
             potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
         } catch(const filesystem_exception &exception) {
-			throw pipeline_load_failed("Materials folder does not exist", exception);
+            throw pipeline_load_failed("Materials folder does not exist", exception);
         }
 
-		std::vector<pipeline_data> output;
+        std::vector<pipeline_data> output;
 
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
@@ -156,31 +156,31 @@ namespace nova {
         for(const fs::path &potential_file : potential_pipeline_files) {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
-				const pipeline_data& pipeline = load_single_pipeline(folder_access, potential_file);
-				output.push_back(pipeline);
+                const pipeline_data& pipeline = load_single_pipeline(folder_access, potential_file);
+                output.push_back(pipeline);
             }
         }
 
-		return output;
+        return output;
     }
 
     pipeline_data load_single_pipeline(std::shared_ptr<folder_accessor_base> folder_access, const fs::path& pipeline_path) {
-		NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
+        NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
         auto json_pipeline = nlohmann::json::parse(pipeline_bytes);
-		NOVA_LOG(TRACE) << "Parsed JSON from disk for pipeline " << pipeline_path;
+        NOVA_LOG(TRACE) << "Parsed JSON from disk for pipeline " << pipeline_path;
         const validation_report report = validate_graphics_pipeline(json_pipeline);
-		NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path;
+        NOVA_LOG(TRACE) << "Finished validating JSON for pipeline " << pipeline_path;
         print(report);
         if(!report.errors.empty()) {
             loading_failed = true;
-			NOVA_LOG(TRACE) << "Loading pipeline file " << pipeline_path << " failed";
+            NOVA_LOG(TRACE) << "Loading pipeline file " << pipeline_path << " failed";
             return {};
         }
 
         pipeline_data new_pipeline = json_pipeline.get<pipeline_data>();
-		NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path;
+        NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path;
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access,
             EShLangVertex, new_pipeline.defines);
 
@@ -205,7 +205,7 @@ namespace nova {
                 folder_access, EShLangFragment, new_pipeline.defines);
         }
 
-		NOVA_LOG(TRACE) << "Load of pipeline " << pipeline_path << " succeeded";
+        NOVA_LOG(TRACE) << "Load of pipeline " << pipeline_path << " succeeded";
 
         return new_pipeline;
     }
@@ -356,22 +356,22 @@ namespace nova {
             potential_material_files = folder_access->get_all_items_in_folder("materials");
 
         } catch(filesystem_exception &exception) {
-			throw material_load_failed("Materials folder does not exist", exception);
+            throw material_load_failed("Materials folder does not exist", exception);
         }
         
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
-		std::vector<material_data> output;
-		output.reserve(potential_material_files.size());
+        std::vector<material_data> output;
+        output.reserve(potential_material_files.size());
 
         for(const fs::path &potential_file : potential_material_files) {
             if(potential_file.extension() == ".mat") {
                 const material_data& material = load_single_material(folder_access, potential_file);
-				output.push_back(material);
+                output.push_back(material);
             }
         }
 
-		return output;
+        return output;
     }
 
     material_data load_single_material(std::shared_ptr<folder_accessor_base> folder_access, const fs::path &material_path) {
@@ -383,13 +383,13 @@ namespace nova {
         if(!report.errors.empty()) {
             // There were errors, this material can't be loaded
             loading_failed = true;
-			NOVA_LOG(TRACE) << "Load of material " << material_path << " failed";
+            NOVA_LOG(TRACE) << "Load of material " << material_path << " failed";
             return {};
         }
 
         auto material = json_material.get<material_data>();
         material.name = material_path.stem().string();
-		NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
+        NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
     }
 }  // namespace nova

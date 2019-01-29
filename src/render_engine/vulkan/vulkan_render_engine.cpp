@@ -65,24 +65,24 @@ namespace nova {
 
 #ifndef NDEBUG
         enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-		enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
         create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extension_names.size());
         create_info.ppEnabledExtensionNames = enabled_extension_names.data();
 
         NOVA_THROW_IF_VK_ERROR(vkCreateInstance(&create_info, nullptr, &vk_instance), render_engine_initialization_exception);
 
-		uint32_t num_extensions;
-		vkEnumerateInstanceExtensionProperties(nullptr, &num_extensions, nullptr);
-		gpu.available_extensions.resize(num_extensions);
-		vkEnumerateInstanceExtensionProperties(nullptr, &num_extensions, gpu.available_extensions.data());
+        uint32_t num_extensions;
+        vkEnumerateInstanceExtensionProperties(nullptr, &num_extensions, nullptr);
+        gpu.available_extensions.resize(num_extensions);
+        vkEnumerateInstanceExtensionProperties(nullptr, &num_extensions, gpu.available_extensions.data());
 
-		std::stringstream ss;
+        std::stringstream ss;
         for(const VkExtensionProperties& props : gpu.available_extensions) {
-			ss << "\t" << props.extensionName << " version " << props.specVersion << "\n";
+            ss << "\t" << props.extensionName << " version " << props.specVersion << "\n";
         }
 
-		NOVA_LOG(TRACE) << "Supported extensions:\n" << ss.str();
+        NOVA_LOG(TRACE) << "Supported extensions:\n" << ss.str();
 
 #ifndef NDEBUG
         vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(vk_instance, "vkCreateDebugReportCallbackEXT"));
@@ -104,111 +104,111 @@ namespace nova {
 
         // Create the device. This depends on both the VkInstance and the VkSurfaceKHR: we need the VkSurfaceKHR to 
         // make sure we find a device that can present to that surface
-		create_device();
+        create_device();
 
-		create_per_thread_command_pools();
+        create_per_thread_command_pools();
 
         // Create the swapchain. This depends on the VkInstance, VkPhysicalDevice, our pre-thread command pools, and 
         // VkSurfaceKHR. This method also fills out a lot of the information in our vk_gpu_info
-		create_swapchain();
+        create_swapchain();
 
         create_memory_allocator();
         mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings, vma_allocator, graphics_family_index, copy_family_index);
 
-		create_global_sync_objects();
-		create_per_thread_descriptor_pools();
-		create_default_samplers();
+        create_global_sync_objects();
+        create_per_thread_descriptor_pools();
+        create_default_samplers();
     }
 
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
 
-	void vulkan_render_engine::transition_dynamic_textures() {
-		std::vector<VkImageMemoryBarrier> color_barriers;
-		color_barriers.reserve(textures.size());
+    void vulkan_render_engine::transition_dynamic_textures() {
+        std::vector<VkImageMemoryBarrier> color_barriers;
+        color_barriers.reserve(textures.size());
 
-		std::vector<VkImageMemoryBarrier> depth_barriers;
-		depth_barriers.reserve(textures.size());
+        std::vector<VkImageMemoryBarrier> depth_barriers;
+        depth_barriers.reserve(textures.size());
 
-		for(const auto&[texture_name, texture] : textures) {
-			VkImageMemoryBarrier barrier = {};
-			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			barrier.srcQueueFamilyIndex = graphics_family_index;
-			barrier.dstQueueFamilyIndex = graphics_family_index;
-			barrier.image = texture.image;
-			barrier.subresourceRange.baseMipLevel = 0;
-			barrier.subresourceRange.levelCount = 1;
-			barrier.subresourceRange.baseArrayLayer = 0;
-			barrier.subresourceRange.layerCount = 1;
+        for(const auto&[texture_name, texture] : textures) {
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.srcQueueFamilyIndex = graphics_family_index;
+            barrier.dstQueueFamilyIndex = graphics_family_index;
+            barrier.image = texture.image;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
 
             if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
-				barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-				barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-				depth_barriers.push_back(barrier);
+                depth_barriers.push_back(barrier);
 
             } else {
-				barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-				barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-				color_barriers.push_back(barrier);
+                color_barriers.push_back(barrier);
 
-			}
-		}
+            }
+        }
 
-	    const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
-		VkCommandBufferAllocateInfo alloc_info = {};
-		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		alloc_info.commandPool = command_pool;
-		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		alloc_info.commandBufferCount = 1;
+        VkCommandBufferAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        alloc_info.commandPool = command_pool;
+        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        alloc_info.commandBufferCount = 1;
 
-		VkCommandBuffer cmds;
-		vkAllocateCommandBuffers(device, &alloc_info, &cmds);
+        VkCommandBuffer cmds;
+        vkAllocateCommandBuffers(device, &alloc_info, &cmds);
 
-		VkCommandBufferBeginInfo begin_info = {};
-		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		vkBeginCommandBuffer(cmds, &begin_info);
+        VkCommandBufferBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        vkBeginCommandBuffer(cmds, &begin_info);
 
-		vkCmdPipelineBarrier(cmds,
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
-			0, nullptr,
-			0, nullptr,
-			color_barriers.size(), color_barriers.data());
+        vkCmdPipelineBarrier(cmds,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
+            0, nullptr,
+            0, nullptr,
+            color_barriers.size(), color_barriers.data());
 
-		vkCmdPipelineBarrier(cmds,
-			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
-			0, nullptr,
-			0, nullptr,
-			depth_barriers.size(), depth_barriers.data());
+        vkCmdPipelineBarrier(cmds,
+            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
+            0, nullptr,
+            0, nullptr,
+            depth_barriers.size(), depth_barriers.data());
 
-		vkEndCommandBuffer(cmds);
+        vkEndCommandBuffer(cmds);
 
-		VkFence transition_done_fence;
+        VkFence transition_done_fence;
 
-		VkFenceCreateInfo fence_create_info = {};
-		fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        VkFenceCreateInfo fence_create_info = {};
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-		vkCreateFence(device, &fence_create_info, nullptr, &transition_done_fence);
+        vkCreateFence(device, &fence_create_info, nullptr, &transition_done_fence);
 
-		VkSubmitInfo submit_info = {};
-		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submit_info.commandBufferCount = 1;
-		submit_info.pCommandBuffers = &cmds;
+        VkSubmitInfo submit_info = {};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &cmds;
 
-		vkQueueSubmit(graphics_queue, 1, &submit_info, transition_done_fence);
-		vkWaitForFences(device, 1, &transition_done_fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        vkQueueSubmit(graphics_queue, 1, &submit_info, transition_done_fence);
+        vkWaitForFences(device, 1, &transition_done_fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
-		vkFreeCommandBuffers(device, command_pool, 1, &cmds);
+        vkFreeCommandBuffers(device, command_pool, 1, &cmds);
 
-		dynamic_textures_need_to_transition = false;
-	}
+        dynamic_textures_need_to_transition = false;
+    }
     
     void vulkan_render_engine::create_swapchain() {
         NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities), render_engine_initialization_exception);
@@ -241,11 +241,11 @@ namespace nova {
 #elif NOVA_WINDOWS
         window = std::make_shared<win32_window>(width, height);
 
-		VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
-		win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-		win32_surface_create.hwnd = window->get_window_handle();
+        VkWin32SurfaceCreateInfoKHR win32_surface_create = {};
+        win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+        win32_surface_create.hwnd = window->get_window_handle();
 
-		NOVA_THROW_IF_VK_ERROR(vkCreateWin32SurfaceKHR(vk_instance, &win32_surface_create, nullptr, &surface), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateWin32SurfaceKHR(vk_instance, &win32_surface_create, nullptr, &surface), render_engine_initialization_exception);
 
 #else
 #error Unsuported window system
@@ -291,7 +291,7 @@ namespace nova {
 
             uint32_t queue_family_count;
             vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, nullptr);
-			gpu.queue_family_props.resize(queue_family_count);
+            gpu.queue_family_props.resize(queue_family_count);
             vkGetPhysicalDeviceQueueFamilyProperties(current_device, &queue_family_count, gpu.queue_family_props.data());
 
             for(uint32_t queue_idx = 0; queue_idx < queue_family_count; queue_idx++) {
@@ -329,7 +329,7 @@ namespace nova {
             throw render_engine_initialization_exception("Failed to find good GPU");
         }
 
-		vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
+        vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
         
         const float priority = 1.0;
 
@@ -398,24 +398,24 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_global_sync_objects() {
-		VkFenceCreateInfo fence_info = {};
-		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        VkFenceCreateInfo fence_info = {};
+        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		VkSemaphoreCreateInfo semaphore_info = {};
-		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        VkSemaphoreCreateInfo semaphore_info = {};
+        semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
         
-		frame_fences.resize(max_frames_in_queue);
-		image_available_semaphores.resize(max_frames_in_queue);
-		render_finished_semaphores_by_frame.resize(max_frames_in_queue);
+        frame_fences.resize(max_frames_in_queue);
+        image_available_semaphores.resize(max_frames_in_queue);
+        render_finished_semaphores_by_frame.resize(max_frames_in_queue);
 
-		for(uint32_t i = 0; i < max_frames_in_queue; i++) {
-			NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]), render_engine_initialization_exception);
-			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]), render_engine_initialization_exception);
-		}
-		NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &mesh_rendering_done), render_engine_initialization_exception);
-		NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &upload_to_megamesh_buffer_done), render_engine_initialization_exception);
-	}
+        for(uint32_t i = 0; i < max_frames_in_queue; i++) {
+            NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]), render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]), render_engine_initialization_exception);
+        }
+        NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &mesh_rendering_done), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateFence(device, &fence_info, nullptr, &upload_to_megamesh_buffer_done), render_engine_initialization_exception);
+    }
 
     void vulkan_render_engine::set_shaderpack(const shaderpack_data& data) {
         NOVA_LOG(DEBUG) << "Vulkan render engine loading new shaderpack";
@@ -423,7 +423,7 @@ namespace nova {
             destroy_render_passes();
             destroy_graphics_pipelines();
             materials.clear();
-			material_passes_by_pipeline.clear();
+            material_passes_by_pipeline.clear();
             destroy_dynamic_resources();
 
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
@@ -434,9 +434,9 @@ namespace nova {
         for(const material_data& mat_data : data.materials) {
             materials[mat_data.name] = mat_data;
 
-			for(const material_pass& mat : mat_data.passes) {
-				material_passes_by_pipeline[mat.pipeline].push_back(mat);
-			}
+            for(const material_pass& mat : mat_data.passes) {
+                material_passes_by_pipeline[mat.pipeline].push_back(mat);
+            }
         }
         NOVA_LOG(DEBUG) << "Materials saved";
 
@@ -446,28 +446,28 @@ namespace nova {
         NOVA_LOG(DEBUG) << "Created pipelines";
 
         create_material_descriptor_sets();
-		NOVA_LOG(TRACE) << "Material descriptor sets created";
+        NOVA_LOG(TRACE) << "Material descriptor sets created";
 
         shaderpack_loaded = true;
     }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
-		const uint32_t cur_thread_idx = scheduler->get_current_thread_idx();
-	    return command_pools_by_thread_idx.at(cur_thread_idx).at(queue_index);
+        const uint32_t cur_thread_idx = scheduler->get_current_thread_idx();
+        return command_pools_by_thread_idx.at(cur_thread_idx).at(queue_index);
     }
 
     VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() {
-		const uint32_t cur_thread_idx = scheduler->get_current_thread_idx(); 
+        const uint32_t cur_thread_idx = scheduler->get_current_thread_idx(); 
         return descriptor_pools_by_thread_idx.at(cur_thread_idx); 
     }
 
     void vulkan_render_engine::create_default_samplers() {
-		VkSamplerCreateInfo point_sampler_create = {};
-		point_sampler_create.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		point_sampler_create.magFilter = VK_FILTER_NEAREST;
-		point_sampler_create.minFilter = VK_FILTER_NEAREST;
+        VkSamplerCreateInfo point_sampler_create = {};
+        point_sampler_create.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        point_sampler_create.magFilter = VK_FILTER_NEAREST;
+        point_sampler_create.minFilter = VK_FILTER_NEAREST;
 
-		NOVA_THROW_IF_VK_ERROR(vkCreateSampler(device, &point_sampler_create, nullptr, &point_sampler), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateSampler(device, &point_sampler_create, nullptr, &point_sampler), render_engine_initialization_exception);
     }
 
     vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer(const uint32_t needed_size) {
@@ -529,12 +529,12 @@ namespace nova {
                 std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh->vertex_data[0], vertex_size);
                 std::memcpy(reinterpret_cast<uint8_t*>(staging_buffer.alloc_info.pMappedData) + vertex_size, &input_mesh->indices[0], index_size);
 
-				const uint32_t mesh_id = next_mesh_id.fetch_add(1);
+                const uint32_t mesh_id = next_mesh_id.fetch_add(1);
 
                 std::lock_guard l(*mesh_upload_queue_mutex);
                 mesh_upload_queue->push(mesh_staging_buffer_upload_command{staging_buffer, mesh_id, vertex_size, vertex_size + index_size});
 
-				return mesh_id;
+                return mesh_id;
             },
             &input_mesh, &mesh_upload_queue_mutex, &mesh_upload_queue);
     }
@@ -560,19 +560,19 @@ namespace nova {
         render_passes.reserve(passes.size());
         for(const render_pass_data& pass_data : passes) {
             render_passes[pass_data.name].data = pass_data;
-			VkFenceCreateInfo fence_info = {};
-			fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            VkFenceCreateInfo fence_info = {};
+            fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-			vkCreateFence(device, &fence_info, nullptr, &render_passes[pass_data.name].fence);
+            vkCreateFence(device, &fence_info, nullptr, &render_passes[pass_data.name].fence);
             regular_render_passes[pass_data.name] = pass_data;
         }
 
         render_passes_by_order = order_passes(regular_render_passes);
 
-		const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
+        const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
         for(const auto& [pass_name, pass] : render_passes) {
-			bool is_forward = pass_name == "Forward";
+            bool is_forward = pass_name == "Forward";
             VkSubpassDescription subpass_description;
             subpass_description.flags = 0;
             subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -601,8 +601,8 @@ namespace nova {
             render_pass_create_info.dependencyCount = 1;
             render_pass_create_info.pDependencies = &image_available_dependency;
 
-			std::vector<VkAttachmentReference> attachment_references;
-			std::vector<VkAttachmentDescription> attachments;
+            std::vector<VkAttachmentReference> attachment_references;
+            std::vector<VkAttachmentDescription> attachments;
             std::vector<VkImageView> framebuffer_attachments;
             uint32_t framebuffer_width = 0;
             uint32_t framebuffer_height = 0;
@@ -615,116 +615,116 @@ namespace nova {
                     // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip everything
                     writes_to_backbuffer = true;
 
-					VkAttachmentDescription desc = {};
-					desc.flags = 0;
-					desc.format = swapchain->get_swapchain_format();
-					desc.samples = VK_SAMPLE_COUNT_1_BIT;
-					desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-					desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-					desc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                    VkAttachmentDescription desc = {};
+                    desc.flags = 0;
+                    desc.format = swapchain->get_swapchain_format();
+                    desc.samples = VK_SAMPLE_COUNT_1_BIT;
+                    desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+                    desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                    desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                    desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                    desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    desc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-					attachments.push_back(desc);
+                    attachments.push_back(desc);
 
-					VkAttachmentReference ref = {};
-					ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-					ref.attachment = attachments.size() - 1;
-					attachment_references.push_back(ref);
+                    VkAttachmentReference ref = {};
+                    ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    ref.attachment = attachments.size() - 1;
+                    attachment_references.push_back(ref);
 
-					framebuffer_width = swapchain_extent.width;
-					framebuffer_height = swapchain_extent.height;
+                    framebuffer_width = swapchain_extent.width;
+                    framebuffer_height = swapchain_extent.height;
 
-					render_passes[pass_name].writes_to_backbuffer = true;
+                    render_passes[pass_name].writes_to_backbuffer = true;
 
                     break;
 
                 } else {
-					const vk_texture& tex = textures.at(attachment.name);
-					framebuffer_attachments.push_back(tex.image_view);
+                    const vk_texture& tex = textures.at(attachment.name);
+                    framebuffer_attachments.push_back(tex.image_view);
 
-					const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
+                    const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
 
-					if(framebuffer_width == 0) {
-						framebuffer_width = attachment_size.x;
+                    if(framebuffer_width == 0) {
+                        framebuffer_width = attachment_size.x;
 
-					} else if(attachment_size.x != framebuffer_width) {
-						NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
-							<< framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
-					}
+                    } else if(attachment_size.x != framebuffer_width) {
+                        NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
+                            << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
+                    }
 
-					if(framebuffer_height == 0) {
-						framebuffer_height = attachment_size.y;
+                    if(framebuffer_height == 0) {
+                        framebuffer_height = attachment_size.y;
 
-					} else if(attachment_size.y != framebuffer_height) {
-						NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
-							<< framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
-					}
+                    } else if(attachment_size.y != framebuffer_height) {
+                        NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
+                            << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
+                    }
 
-					NOVA_LOG(TRACE) << "Adding image view " << textures.at(attachment.name).image_view << " from image " << attachment.name << " to framebuffer for renderpass " << pass.data.name;
+                    NOVA_LOG(TRACE) << "Adding image view " << textures.at(attachment.name).image_view << " from image " << attachment.name << " to framebuffer for renderpass " << pass.data.name;
 
-					VkAttachmentDescription desc = {};
-					desc.flags = 0;
-					desc.format = tex.format;
-					desc.samples = VK_SAMPLE_COUNT_1_BIT;
-					desc.loadOp = attachment.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-					desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-					desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-					desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    VkAttachmentDescription desc = {};
+                    desc.flags = 0;
+                    desc.format = tex.format;
+                    desc.samples = VK_SAMPLE_COUNT_1_BIT;
+                    desc.loadOp = attachment.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+                    desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                    desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                    desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                    desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-					attachments.push_back(desc);
+                    attachments.push_back(desc);
 
-					VkAttachmentReference ref = {};
-					ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-					ref.attachment = attachments.size() - 1;
-					attachment_references.push_back(ref);
+                    VkAttachmentReference ref = {};
+                    ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    ref.attachment = attachments.size() - 1;
+                    attachment_references.push_back(ref);
                 }
             }
 
-			VkAttachmentReference depth_reference = {};
+            VkAttachmentReference depth_reference = {};
             // Collect framebuffer size information from the depth attachment
             if(pass.data.depth_texture) {
 
-				const vk_texture& tex = textures.at(pass.data.depth_texture->name);
-				framebuffer_attachments.push_back(tex.image_view);
+                const vk_texture& tex = textures.at(pass.data.depth_texture->name);
+                framebuffer_attachments.push_back(tex.image_view);
 
-				const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
+                const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
 
-				if(framebuffer_width == 0) {
-					framebuffer_width = attachment_size.x;
+                if(framebuffer_width == 0) {
+                    framebuffer_width = attachment_size.x;
 
-				} else if(attachment_size.x != framebuffer_width) {
-					NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
-						<< framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
-				}
+                } else if(attachment_size.x != framebuffer_width) {
+                    NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
+                        << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
+                }
 
-				if(framebuffer_height == 0) {
-					framebuffer_height = attachment_size.y;
+                if(framebuffer_height == 0) {
+                    framebuffer_height = attachment_size.y;
 
-				} else if(attachment_size.y != framebuffer_height) {
-					NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
-						<< framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
-				}
+                } else if(attachment_size.y != framebuffer_height) {
+                    NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
+                        << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
+                }
 
-				VkAttachmentDescription desc = {};
-				desc.flags = 0;
-				desc.format = tex.format;
-				desc.samples = VK_SAMPLE_COUNT_1_BIT;
-				desc.loadOp = pass.data.depth_texture->clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-				desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-				desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-				desc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                VkAttachmentDescription desc = {};
+                desc.flags = 0;
+                desc.format = tex.format;
+                desc.samples = VK_SAMPLE_COUNT_1_BIT;
+                desc.loadOp = pass.data.depth_texture->clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+                desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                desc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-				attachments.push_back(desc);
+                attachments.push_back(desc);
 
-				depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-				depth_reference.attachment = attachments.size() - 1;
-				subpass_description.pDepthStencilAttachment = &depth_reference;
+                depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                depth_reference.attachment = attachments.size() - 1;
+                subpass_description.pDepthStencilAttachment = &depth_reference;
             }
 
             if(framebuffer_width == 0) {
@@ -745,11 +745,11 @@ namespace nova {
                                 << ". Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures";
             }
 
-			subpass_description.colorAttachmentCount = attachment_references.size();
-			subpass_description.pColorAttachments = attachment_references.data();
+            subpass_description.colorAttachmentCount = attachment_references.size();
+            subpass_description.pColorAttachments = attachment_references.data();
 
-			render_pass_create_info.attachmentCount = attachments.size();
-			render_pass_create_info.pAttachments = attachments.data();
+            render_pass_create_info.attachmentCount = attachments.size();
+            render_pass_create_info.pAttachments = attachments.data();
 
             NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_passes[pass_name].pass), render_engine_initialization_exception);
 
@@ -771,9 +771,9 @@ namespace nova {
                 framebuffer_create_info.height = framebuffer_height;
                 framebuffer_create_info.layers = 1;
 
-				std::stringstream ss;
+                std::stringstream ss;
                 for(const VkImageView& attachment : framebuffer_attachments) {
-					ss << attachment << ", ";
+                    ss << attachment << ", ";
                 }
 
                 NOVA_LOG(TRACE) << "Creating framebuffer with size (" << framebuffer_width << ", " << framebuffer_height << "), and attachments " << ss.str();
@@ -788,7 +788,7 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_graphics_pipelines(const std::vector<pipeline_data>& pipelines) {
-		const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
+        const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
         for(const pipeline_data& data : pipelines) {
             NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
@@ -826,7 +826,7 @@ namespace nova {
                 get_shader_module_descriptors(data.fragment_shader->source, nova_pipeline.bindings);
             }
 
-			nova_pipeline.layouts = create_descriptor_set_layouts(nova_pipeline.bindings);
+            nova_pipeline.layouts = create_descriptor_set_layouts(nova_pipeline.bindings);
 
             VkPipelineLayoutCreateInfo pipeline_layout_create_info;
             pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -928,29 +928,29 @@ namespace nova {
             multisample_create_info.alphaToCoverageEnable = VK_FALSE;
             multisample_create_info.alphaToOneEnable = VK_FALSE;
 
-			VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
-			depth_stencil_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-			depth_stencil_create_info.depthTestEnable = std::find(data.states.begin(), data.states.end(), state_enum::DisableDepthTest) == data.states.end();
-			depth_stencil_create_info.depthWriteEnable = std::find(data.states.begin(), data.states.end(), state_enum::DisableDepthWrite) == data.states.end();
-			depth_stencil_create_info.depthCompareOp = vulkan::type_converters::to_compare_op(data.depth_func);
-			depth_stencil_create_info.depthBoundsTestEnable = VK_FALSE;
-			depth_stencil_create_info.stencilTestEnable = std::find(data.states.begin(), data.states.end(), state_enum::EnableStencilTest) != data.states.end();
-			if(data.front_face) {
-				depth_stencil_create_info.front.failOp = vulkan::type_converters::to_stencil_op(data.front_face->fail_op);
-				depth_stencil_create_info.front.passOp = vulkan::type_converters::to_stencil_op(data.front_face->pass_op);
-				depth_stencil_create_info.front.depthFailOp = vulkan::type_converters::to_stencil_op(data.front_face->depth_fail_op);
-				depth_stencil_create_info.front.compareOp = vulkan::type_converters::to_compare_op(data.front_face->compare_op);
-				depth_stencil_create_info.front.compareMask = data.front_face->compare_mask;
-				depth_stencil_create_info.front.writeMask = data.front_face->write_mask;
-			}
-			if(data.back_face) {
-				depth_stencil_create_info.back.failOp = vulkan::type_converters::to_stencil_op(data.back_face->fail_op);
-				depth_stencil_create_info.back.passOp = vulkan::type_converters::to_stencil_op(data.back_face->pass_op);
-				depth_stencil_create_info.back.depthFailOp = vulkan::type_converters::to_stencil_op(data.back_face->depth_fail_op);
-				depth_stencil_create_info.back.compareOp = vulkan::type_converters::to_compare_op(data.back_face->compare_op);
-				depth_stencil_create_info.back.compareMask = data.back_face->compare_mask;
-				depth_stencil_create_info.back.writeMask = data.back_face->write_mask;
-			}
+            VkPipelineDepthStencilStateCreateInfo depth_stencil_create_info = {};
+            depth_stencil_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            depth_stencil_create_info.depthTestEnable = std::find(data.states.begin(), data.states.end(), state_enum::DisableDepthTest) == data.states.end();
+            depth_stencil_create_info.depthWriteEnable = std::find(data.states.begin(), data.states.end(), state_enum::DisableDepthWrite) == data.states.end();
+            depth_stencil_create_info.depthCompareOp = vulkan::type_converters::to_compare_op(data.depth_func);
+            depth_stencil_create_info.depthBoundsTestEnable = VK_FALSE;
+            depth_stencil_create_info.stencilTestEnable = std::find(data.states.begin(), data.states.end(), state_enum::EnableStencilTest) != data.states.end();
+            if(data.front_face) {
+                depth_stencil_create_info.front.failOp = vulkan::type_converters::to_stencil_op(data.front_face->fail_op);
+                depth_stencil_create_info.front.passOp = vulkan::type_converters::to_stencil_op(data.front_face->pass_op);
+                depth_stencil_create_info.front.depthFailOp = vulkan::type_converters::to_stencil_op(data.front_face->depth_fail_op);
+                depth_stencil_create_info.front.compareOp = vulkan::type_converters::to_compare_op(data.front_face->compare_op);
+                depth_stencil_create_info.front.compareMask = data.front_face->compare_mask;
+                depth_stencil_create_info.front.writeMask = data.front_face->write_mask;
+            }
+            if(data.back_face) {
+                depth_stencil_create_info.back.failOp = vulkan::type_converters::to_stencil_op(data.back_face->fail_op);
+                depth_stencil_create_info.back.passOp = vulkan::type_converters::to_stencil_op(data.back_face->pass_op);
+                depth_stencil_create_info.back.depthFailOp = vulkan::type_converters::to_stencil_op(data.back_face->depth_fail_op);
+                depth_stencil_create_info.back.compareOp = vulkan::type_converters::to_compare_op(data.back_face->compare_op);
+                depth_stencil_create_info.back.compareMask = data.back_face->compare_mask;
+                depth_stencil_create_info.back.writeMask = data.back_face->write_mask;
+            }
 
             VkPipelineColorBlendAttachmentState color_blend_attachment;
             color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -996,7 +996,7 @@ namespace nova {
 
             NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.pipeline), render_engine_initialization_exception);
             
-			pipelines_by_renderpass[data.pass].push_back(nova_pipeline);
+            pipelines_by_renderpass[data.pass].push_back(nova_pipeline);
         }
     }
 
@@ -1014,88 +1014,88 @@ namespace nova {
         return module;
     }
 
-	void vulkan_render_engine::upload_new_mesh_parts() {
+    void vulkan_render_engine::upload_new_mesh_parts() {
         if(mesh_upload_queue.empty()) {
             // Early out yay
-			return;
+            return;
         }
 
-		VkCommandBuffer mesh_upload_cmds;
+        VkCommandBuffer mesh_upload_cmds;
 
-		VkCommandBufferAllocateInfo alloc_info = {};
-		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		alloc_info.commandBufferCount = 1;
-		alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_family_index);
-		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        VkCommandBufferAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        alloc_info.commandBufferCount = 1;
+        alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_family_index);
+        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-		vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);
+        vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);
 
-		VkCommandBufferBeginInfo begin_info = {};
-		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        VkCommandBufferBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-		vkBeginCommandBuffer(mesh_upload_cmds, &begin_info);
+        vkBeginCommandBuffer(mesh_upload_cmds, &begin_info);
 
-		// Ensure that all reads from this buffer have finished. I don't care about writes because the only
-		// way two dudes would be writing to the same region of a megamesh at the same time was if there was a
-		// horrible problem
+        // Ensure that all reads from this buffer have finished. I don't care about writes because the only
+        // way two dudes would be writing to the same region of a megamesh at the same time was if there was a
+        // horrible problem
 
-		mesh_memory->add_barriers_before_data_upload(mesh_upload_cmds);
+        mesh_memory->add_barriers_before_data_upload(mesh_upload_cmds);
 
-		mesh_upload_queue_mutex.lock();
-		meshes_mutex.lock();
+        mesh_upload_queue_mutex.lock();
+        meshes_mutex.lock();
 
-		std::vector<vk_buffer> freed_buffers;
-		freed_buffers.reserve(mesh_upload_queue.size() * 2);
-		while(!mesh_upload_queue.empty()) {
-			const mesh_staging_buffer_upload_command cmd = mesh_upload_queue.front();
-			mesh_upload_queue.pop();
+        std::vector<vk_buffer> freed_buffers;
+        freed_buffers.reserve(mesh_upload_queue.size() * 2);
+        while(!mesh_upload_queue.empty()) {
+            const mesh_staging_buffer_upload_command cmd = mesh_upload_queue.front();
+            mesh_upload_queue.pop();
 
-			compacting_block_allocator::allocation_info* mem = mesh_memory->allocate(cmd.staging_buffer.alloc_info.size);
+            compacting_block_allocator::allocation_info* mem = mesh_memory->allocate(cmd.staging_buffer.alloc_info.size);
 
-			VkBufferCopy copy = {};
-			copy.size = cmd.staging_buffer.alloc_info.size;
-			copy.srcOffset = 0;
-			copy.dstOffset = mem->offset;
-			vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffer.buffer, mem->block->get_buffer(), 1, &copy);
+            VkBufferCopy copy = {};
+            copy.size = cmd.staging_buffer.alloc_info.size;
+            copy.srcOffset = 0;
+            copy.dstOffset = mem->offset;
+            vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffer.buffer, mem->block->get_buffer(), 1, &copy);
 
-			VkDrawIndexedIndirectCommand mesh_draw_command = {};
-			mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
-			mesh_draw_command.instanceCount = 1;
-			mesh_draw_command.firstIndex = 0;
-			mesh_draw_command.vertexOffset = static_cast<uint32_t>(mem->offset);
-			mesh_draw_command.firstInstance = 0;
+            VkDrawIndexedIndirectCommand mesh_draw_command = {};
+            mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
+            mesh_draw_command.instanceCount = 1;
+            mesh_draw_command.firstIndex = 0;
+            mesh_draw_command.vertexOffset = static_cast<uint32_t>(mem->offset);
+            mesh_draw_command.firstInstance = 0;
 
-			meshes[cmd.mesh_id] = { mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command };
+            meshes[cmd.mesh_id] = { mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command };
 
-			freed_buffers.insert(freed_buffers.end(), cmd.staging_buffer);
-		}
+            freed_buffers.insert(freed_buffers.end(), cmd.staging_buffer);
+        }
 
-		mesh_memory->add_barriers_after_data_upload(mesh_upload_cmds);
+        mesh_memory->add_barriers_after_data_upload(mesh_upload_cmds);
 
-		mesh_upload_queue_mutex.unlock();
-		meshes_mutex.unlock();
+        mesh_upload_queue_mutex.unlock();
+        meshes_mutex.unlock();
 
-		vkEndCommandBuffer(mesh_upload_cmds);
+        vkEndCommandBuffer(mesh_upload_cmds);
 
-		VkSubmitInfo submit_info = {};
-		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submit_info.commandBufferCount = 1;
-		submit_info.pCommandBuffers = &mesh_upload_cmds;
+        VkSubmitInfo submit_info = {};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &mesh_upload_cmds;
 
-		// Be super duper sure that mesh rendering is done
-		for(const auto& [pass_name, pass] : render_passes) {
-			vkWaitForFences(device, 1, &pass.fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
-		}
-		vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
+        // Be super duper sure that mesh rendering is done
+        for(const auto& [pass_name, pass] : render_passes) {
+            vkWaitForFences(device, 1, &pass.fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        }
+        vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
 
-		vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
-		vkResetFences(device, 1, &upload_to_megamesh_buffer_done);
+        vkResetFences(device, 1, &upload_to_megamesh_buffer_done);
 
-		// Once the upload is done, return all the staging buffers to the pool
-		std::lock_guard l(mesh_staging_buffers_mutex);
-		available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), freed_buffers.begin(), freed_buffers.end());
-	}
+        // Once the upload is done, return all the staging buffers to the pool
+        std::lock_guard l(mesh_staging_buffers_mutex);
+        available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), freed_buffers.begin(), freed_buffers.end());
+    }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
         VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* msg, void* user_data) {
@@ -1103,25 +1103,25 @@ namespace nova {
             NOVA_LOG(ERROR) << "[" << layer_prefix << "] " << msg;
 
         } else if(flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
-			// Warnings may hint at unexpected / non-spec API usage
+            // Warnings may hint at unexpected / non-spec API usage
             NOVA_LOG(WARN) << "[" << layer_prefix << "] " << msg;
             
         } else if(flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
-			// May indicate sub-optimal usage of the API
+            // May indicate sub-optimal usage of the API
             NOVA_LOG(WARN) << "PERFORMANCE WARNING: [" << layer_prefix << "] " << msg;
 
         } else if(flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
-			// Informal messages that may become handy during debugging
+            // Informal messages that may become handy during debugging
             NOVA_LOG(INFO) << "[" << layer_prefix << "] " << msg;
 
         } else if(flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
-			// Diagnostic info from the Vulkan loader and layers
-			// Usually not helpful in terms of API usage, but may help to debug layer and loader problems
+            // Diagnostic info from the Vulkan loader and layers
+            // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
             NOVA_LOG(DEBUG) << "[" << layer_prefix << "] " << msg;
 
         } else {
             // Catch-all to be super sure
-			NOVA_LOG(INFO) << "[" << layer_prefix << "]" << msg;
+            NOVA_LOG(INFO) << "[" << layer_prefix << "]" << msg;
         }
 
 #ifdef NOVA_LINUX
@@ -1135,13 +1135,13 @@ namespace nova {
     std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }
 
     void vulkan_render_engine::render_frame() {
-		reset_render_finished_semaphores();
+        reset_render_finished_semaphores();
 
-		current_semaphore_idx = 0;
+        current_semaphore_idx = 0;
         vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
-		vkResetFences(device, 1, &frame_fences.at(current_frame));
+        vkResetFences(device, 1, &frame_fences.at(current_frame));
 
-		swapchain->acquire_next_swapchain_image(image_available_semaphores.at(current_frame));
+        swapchain->acquire_next_swapchain_image(image_available_semaphores.at(current_frame));
         
         // Record command buffers
         // We can't upload a new shaderpack in the middle of a frame!
@@ -1149,13 +1149,13 @@ namespace nova {
         shaderpack_loading_mutex.lock();
 
         if(dynamic_textures_need_to_transition) {
-			transition_dynamic_textures();
+            transition_dynamic_textures();
         }
 
-		bool is_first = true;
+        bool is_first = true;
         for(const std::string& renderpass_name : render_passes_by_order) {
             execute_renderpass(&renderpass_name, is_first);
-			is_first = false;
+            is_first = false;
         }
         shaderpack_loading_mutex.unlock();
         
@@ -1163,7 +1163,7 @@ namespace nova {
         // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
         upload_new_mesh_parts();
 
-		swapchain->present_current_image(render_finished_semaphores_by_frame.at(current_frame));
+        swapchain->present_current_image(render_finished_semaphores_by_frame.at(current_frame));
         current_frame = (current_frame + 1) % max_frames_in_queue;
     }
 
@@ -1209,9 +1209,9 @@ namespace nova {
 
     void vulkan_render_engine::destroy_graphics_pipelines() {
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
-			for(const auto& pipeline : pipelines) {
-				vkDestroyPipeline(device, pipeline.pipeline, nullptr);
-			}
+            for(const auto& pipeline : pipelines) {
+                vkDestroyPipeline(device, pipeline.pipeline, nullptr);
+            }
         }
 
         pipelines_by_renderpass.clear();
@@ -1246,7 +1246,7 @@ namespace nova {
 
     void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name, const bool is_first) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
-		vkResetFences(device, 1, &renderpass.fence);
+        vkResetFences(device, 1, &renderpass.fence);
 
         const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
@@ -1270,51 +1270,51 @@ namespace nova {
         ttl::condition_counter pipelines_rendering_counter;
         uint32_t i = 0;
         for(const vk_pipeline& pipe : pipelines) {
-			render_pipeline(&pipe, &secondary_command_buffers[i], renderpass);
+            render_pipeline(&pipe, &secondary_command_buffers[i], renderpass);
             i++;
         }
 
-		vkBeginCommandBuffer(cmds, &begin_info);
+        vkBeginCommandBuffer(cmds, &begin_info);
 
-		VkClearValue clear_value = {};
-		clear_value.color = { 0, 0, 0, 0 };
+        VkClearValue clear_value = {};
+        clear_value.color = { 0, 0, 0, 0 };
 
-		VkClearValue clear_values[] = { clear_value, clear_value };
+        VkClearValue clear_values[] = { clear_value, clear_value };
 
-		VkRenderPassBeginInfo rp_begin_info = {};
-		rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		rp_begin_info.renderPass = renderpass.pass;
-		rp_begin_info.framebuffer = renderpass.framebuffer;
-		rp_begin_info.renderArea = renderpass.render_area;
-		rp_begin_info.clearValueCount = 2;
-		rp_begin_info.pClearValues = clear_values;
+        VkRenderPassBeginInfo rp_begin_info = {};
+        rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        rp_begin_info.renderPass = renderpass.pass;
+        rp_begin_info.framebuffer = renderpass.framebuffer;
+        rp_begin_info.renderArea = renderpass.render_area;
+        rp_begin_info.clearValueCount = 2;
+        rp_begin_info.pClearValues = clear_values;
 
-		if(rp_begin_info.framebuffer == nullptr) {
-			rp_begin_info.framebuffer = swapchain->get_current_framebuffer();
-		}
+        if(rp_begin_info.framebuffer == nullptr) {
+            rp_begin_info.framebuffer = swapchain->get_current_framebuffer();
+        }
 
-		NOVA_LOG(TRACE) << "Starting renderpass " << *renderpass_name << " with framebuffer " << rp_begin_info.framebuffer;
+        NOVA_LOG(TRACE) << "Starting renderpass " << *renderpass_name << " with framebuffer " << rp_begin_info.framebuffer;
 
-		vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
 
-		vkCmdEndRenderPass(cmds);
+        vkCmdEndRenderPass(cmds);
 
         vkEndCommandBuffer(cmds);
 
-		VkSemaphore wait_semaphore = VK_NULL_HANDLE;
+        VkSemaphore wait_semaphore = VK_NULL_HANDLE;
         if(is_first) {
-			wait_semaphore = image_available_semaphores.at(current_frame);
+            wait_semaphore = image_available_semaphores.at(current_frame);
         }
 
-		// If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's fence
-		if(renderpass.writes_to_backbuffer) {
-			submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), { wait_semaphore });
+        // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's fence
+        if(renderpass.writes_to_backbuffer) {
+            submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), { wait_semaphore });
 
-		} else {
-			submit_to_queue(cmds, graphics_queue, renderpass.fence, { wait_semaphore });
-		}
+        } else {
+            submit_to_queue(cmds, graphics_queue, renderpass.fence, { wait_semaphore });
+        }
     }
 
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass &renderpass) {
@@ -1358,7 +1358,7 @@ namespace nova {
     }
 
     void vulkan_render_engine::bind_material_resources(const material_pass& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
-		vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, &mat_pass.descriptor_sets.at(0), 0, nullptr);
+        vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, &mat_pass.descriptor_sets.at(0), 0, nullptr);
     }
 
     void vulkan_render_engine::draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds) {
@@ -1376,7 +1376,7 @@ namespace nova {
 
             // smh
 
-			return;
+            return;
         }
         
         const std::unordered_map<VkBuffer, std::vector<render_object>>& renderables_by_buffer = renderables_by_material.at(pass.name);
@@ -1416,18 +1416,18 @@ namespace nova {
     }
 
     void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence, const std::vector<VkSemaphore>& wait_semaphores) {
-		std::lock_guard l(render_done_sync_mutex);
-		std::vector<VkSemaphore>& render_finished_semaphores = render_finished_semaphores_by_frame.at(current_frame);
+        std::lock_guard l(render_done_sync_mutex);
+        std::vector<VkSemaphore>& render_finished_semaphores = render_finished_semaphores_by_frame.at(current_frame);
 
-		VkSemaphoreCreateInfo semaphore_info = {};
-		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        VkSemaphoreCreateInfo semaphore_info = {};
+        semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         while(render_finished_semaphores.size() <= current_semaphore_idx) {
-			VkSemaphore semaphore;
+            VkSemaphore semaphore;
 
-			NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphore), render_engine_initialization_exception);
+            NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphore), render_engine_initialization_exception);
 
-			render_finished_semaphores.push_back(semaphore);
+            render_finished_semaphores.push_back(semaphore);
         }
         
         VkSubmitInfo submit_info = {};
@@ -1438,16 +1438,16 @@ namespace nova {
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &cmds;
 
-		bool one_null_semaphore = wait_semaphores.size() == 1 && wait_semaphores.at(0) == VK_NULL_HANDLE;
-		if(!one_null_semaphore) {
-			submit_info.waitSemaphoreCount = wait_semaphores.size();
-			submit_info.pWaitSemaphores = wait_semaphores.data();
-		}
+        const bool one_null_semaphore = wait_semaphores.size() == 1 && wait_semaphores.at(0) == VK_NULL_HANDLE;
+        if(!one_null_semaphore) {
+            submit_info.waitSemaphoreCount = wait_semaphores.size();
+            submit_info.pWaitSemaphores = wait_semaphores.data();
+        }
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_semaphore_idx);
         NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence), render_engine_rendering_exception);
 
-		current_semaphore_idx++;
+        current_semaphore_idx++;
     }
 
     VkFormat vulkan_render_engine::to_vk_format(const pixel_format_enum format) {
@@ -1472,28 +1472,28 @@ namespace nova {
     }
 
     void vulkan_render_engine::reset_render_finished_semaphores() {
-		for(VkSemaphore& semaphore : render_finished_semaphores_by_frame[current_frame]) {
-			vkDestroySemaphore(device, semaphore, nullptr);
-		}
+        for(VkSemaphore& semaphore : render_finished_semaphores_by_frame[current_frame]) {
+            vkDestroySemaphore(device, semaphore, nullptr);
+        }
 
-		render_finished_semaphores_by_frame[current_frame].clear();
+        render_finished_semaphores_by_frame[current_frame].clear();
     }
 
     void vulkan_render_engine::create_per_thread_command_pools() {
-		const uint32_t num_threads = scheduler->get_num_threads();
-		command_pools_by_thread_idx.reserve(num_threads);
+        const uint32_t num_threads = scheduler->get_num_threads();
+        command_pools_by_thread_idx.reserve(num_threads);
 
         for(uint32_t i = 0; i < num_threads; i++) {
-			command_pools_by_thread_idx.push_back(make_new_command_pools());
+            command_pools_by_thread_idx.push_back(make_new_command_pools());
         }
     }
 
     void vulkan_render_engine::create_per_thread_descriptor_pools() {
-		const uint32_t num_threads = scheduler->get_num_threads();
-		descriptor_pools_by_thread_idx.reserve(num_threads);
+        const uint32_t num_threads = scheduler->get_num_threads();
+        descriptor_pools_by_thread_idx.reserve(num_threads);
 
         for(uint32_t i = 0; i < num_threads; i++) {
-			descriptor_pools_by_thread_idx.push_back(make_new_descriptor_pool());
+            descriptor_pools_by_thread_idx.push_back(make_new_descriptor_pool());
         }
     }
 
@@ -1540,18 +1540,18 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_textures(const std::vector<texture_resource_data>& texture_datas) {
-		const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
+        const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
         const glm::uvec2 swapchain_extent_glm = {swapchain_extent.width, swapchain_extent.height};
         for(const texture_resource_data& texture_data : texture_datas) {
             vk_texture texture;
-			texture.is_dynamic = true;
+            texture.is_dynamic = true;
             texture.data = texture_data;
-			texture.format = to_vk_format(texture_data.format.pixel_format);
+            texture.format = to_vk_format(texture_data.format.pixel_format);
 
             VkImageCreateInfo image_create_info = {};
             image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             image_create_info.imageType = VK_IMAGE_TYPE_2D;
-			image_create_info.format = texture.format;
+            image_create_info.format = texture.format;
             const glm::uvec2 texture_size = texture_data.format.get_size_in_pixels(swapchain_extent_glm);
             image_create_info.extent.width = texture_size.x;
             image_create_info.extent.height = texture_size.y;
@@ -1560,12 +1560,12 @@ namespace nova {
             image_create_info.arrayLayers = 1;
             image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
             image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-			if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
-				image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
+                image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-			} else {
-				image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-			}
+            } else {
+                image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            }
             image_create_info.queueFamilyIndexCount = 1;
             image_create_info.pQueueFamilyIndices = &graphics_family_index;
             image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -1586,12 +1586,12 @@ namespace nova {
             image_view_create_info.image = texture.image;
             image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
             image_view_create_info.format = image_create_info.format;
-			if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
-				image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+            if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
+                image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-			} else {
-				image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			}
+            } else {
+                image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            }
             image_view_create_info.subresourceRange.baseArrayLayer = 0;
             image_view_create_info.subresourceRange.layerCount = 1;
             image_view_create_info.subresourceRange.baseMipLevel = 0;
@@ -1602,11 +1602,11 @@ namespace nova {
             textures[texture_data.name] = texture;
         }
 
-		dynamic_textures_need_to_transition = true;
+        dynamic_textures_need_to_transition = true;
     }
 
     void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
-			const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, const VkDescriptorType type) {
+            const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, const VkDescriptorType type) {
         const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
@@ -1694,7 +1694,7 @@ namespace nova {
                 for(material_pass& mat_pass : material_passes) {
                     if(pipeline.layouts.empty()) {
                         // If there's no layouts, we're done
-						NOVA_LOG(TRACE) << "No layouts for pipeline " << pipeline.data.name << ", which material pass " << mat_pass.name << " of material " << mat_pass.material_name << " uses";
+                        NOVA_LOG(TRACE) << "No layouts for pipeline " << pipeline.data.name << ", which material pass " << mat_pass.name << " of material " << mat_pass.material_name << " uses";
                         continue;
                     }
 
@@ -1739,22 +1739,22 @@ namespace nova {
         std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
 
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
-			bool should_break = false;
+            bool should_break = false;
 
             for(const vk_pipeline& pipeline : pipelines) {
                 if(pipeline.data.name == mat.pipeline) {
                     for(const auto& [descriptor_name, resource_name] : mat.bindings) {
                         if(pipeline.bindings.find(descriptor_name) == pipeline.bindings.end()) {
-							NOVA_LOG(DEBUG) << "Material pass " << mat.name << " in material " << mat.material_name << " wants to bind " << resource_name << " to descriptor set " << descriptor_name << ", but it doesn't exist in pipeline " << pipeline.data.name << ", which this material pass uses";
+                            NOVA_LOG(DEBUG) << "Material pass " << mat.name << " in material " << mat.material_name << " wants to bind " << resource_name << " to descriptor set " << descriptor_name << ", but it doesn't exist in pipeline " << pipeline.data.name << ", which this material pass uses";
                         }
                     }
 
-					should_break = true;
-					break;
+                    should_break = true;
+                    break;
                 }
 
                 if(should_break) {
-					break;
+                    break;
                 }
             }
         }
@@ -1765,7 +1765,7 @@ namespace nova {
             bool is_known = true;
 
             VkWriteDescriptorSet write = {};
-			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             write.dstSet = descriptor_set;
             write.dstBinding = descriptor_info.binding;
             write.descriptorCount = 1;

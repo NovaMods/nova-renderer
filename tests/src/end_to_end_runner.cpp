@@ -28,8 +28,8 @@ namespace nova {
         settings.api = graphics_api::vulkan;
         settings.vulkan.application_name = "Nova Renderer test";
         settings.vulkan.application_version = { 0, 8, 0 };
-		settings.debug.enabled = true;
-		settings.debug.renderdoc.enabled = false;
+        settings.debug.enabled = true;
+        settings.debug.renderdoc.enabled = false;
         settings.window.width = 640;
         settings.window.height = 480;
         const auto renderer = nova_renderer::initialize(settings);

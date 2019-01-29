@@ -11,7 +11,7 @@ namespace nova {
     regular_folder_accessor::regular_folder_accessor(const fs::path& folder) : folder_accessor_base(folder) {}
 
     std::string regular_folder_accessor::read_text_file(const fs::path &resource_path) {
-		std::lock_guard l(*resource_existence_mutex);
+        std::lock_guard l(*resource_existence_mutex);
         fs::path full_resource_path;
         if(has_root(resource_path, *root_folder)) {
             full_resource_path = resource_path;
@@ -69,21 +69,21 @@ namespace nova {
     }
 
     bool regular_folder_accessor::does_resource_exist_on_filesystem(const fs::path &resource_path) {
-		// NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
+        // NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
         const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
         if(existence_maybe) {
-			// NOVA_LOG(TRACE) << "Does " << resource_path << " exist? " << *existence_maybe;
-			return *existence_maybe;
+            // NOVA_LOG(TRACE) << "Does " << resource_path << " exist? " << *existence_maybe;
+            return *existence_maybe;
         }
 
         if(fs::exists(resource_path)) {
-			// NOVA_LOG(TRACE) << resource_path << " exists";
+            // NOVA_LOG(TRACE) << resource_path << " exists";
             resource_existence.emplace(resource_string, true);
             return true;
 
         } else {
-			// NOVA_LOG(TRACE) << resource_path << " does not exist";
+            // NOVA_LOG(TRACE) << resource_path << " does not exist";
             resource_existence.emplace(resource_string, false);
             return false;
         }

@@ -49,14 +49,14 @@ namespace nova {
     class nova_exception : public std::exception {
     private:
         std::string msg;
-		std::exception cause;
+        std::exception cause;
 
     public:
-		nova_exception();
+        nova_exception();
         explicit nova_exception(std::string msg);
 
-		explicit nova_exception(const std::exception& cause);
-		nova_exception(std::string msg, const std::exception& cause);
+        explicit nova_exception(const std::exception& cause);
+        nova_exception(std::string msg, const std::exception& cause);
         const char *what() const noexcept override;
     };
 

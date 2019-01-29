@@ -54,6 +54,23 @@ namespace nova {
         bool operator!=(const vk_resource_binding& other) const;
     };
 
+    struct vk_texture {
+        VkImage image = VK_NULL_HANDLE;
+        VkImageView image_view = VK_NULL_HANDLE;
+
+        texture_resource_data data;
+
+        VmaAllocation allocation;
+        VmaAllocationInfo vma_info;
+
+        bool is_dynamic = false;
+        VkFormat format;
+    };
+
+    struct vk_framebuffer {
+        std::vector<vk_texture*> images;
+    };
+
     struct vk_render_pass {
         VkRenderPass pass = VK_NULL_HANDLE;
 
@@ -67,7 +84,7 @@ namespace nova {
         VkRect2D render_area;
         VkFence fence;
 
-		bool writes_to_backbuffer = false;
+        bool writes_to_backbuffer = false;
     };
 
     struct vk_pipeline {
@@ -78,19 +95,6 @@ namespace nova {
         pipeline_data data;
 
         std::unordered_map<std::string, vk_resource_binding> bindings;
-    };
-
-    struct vk_texture {
-        VkImage image = VK_NULL_HANDLE;
-        VkImageView image_view = VK_NULL_HANDLE;
-
-        texture_resource_data data;
-
-        VmaAllocation allocation;
-        VmaAllocationInfo vma_info;
-
-        bool is_dynamic = false;
-	    VkFormat format;
     };
 
     struct vk_buffer {
@@ -118,31 +122,31 @@ namespace nova {
         VkDrawIndexedIndirectCommand draw_cmd;
     };
 
-	struct vk_gpu_info {
-		VkPhysicalDevice phys_device;
-		std::vector<VkQueueFamilyProperties> queue_family_props;
-		std::vector<VkExtensionProperties> available_extensions;
-		VkSurfaceCapabilitiesKHR surface_capabilities;
-		std::vector<VkSurfaceFormatKHR> surface_formats;
-		VkPhysicalDeviceProperties props;
-		VkPhysicalDeviceFeatures supported_features;
-		std::vector<VkPresentModeKHR> present_modes;
-	};
+    struct vk_gpu_info {
+        VkPhysicalDevice phys_device;
+        std::vector<VkQueueFamilyProperties> queue_family_props;
+        std::vector<VkExtensionProperties> available_extensions;
+        VkSurfaceCapabilitiesKHR surface_capabilities;
+        std::vector<VkSurfaceFormatKHR> surface_formats;
+        VkPhysicalDeviceProperties props;
+        VkPhysicalDeviceFeatures supported_features;
+        std::vector<VkPresentModeKHR> present_modes;
+    };
 
     class vulkan_render_engine : public render_engine {
     public:
-		VkDevice device;
-		VkSurfaceKHR surface;
+        VkDevice device;
+        VkSurfaceKHR surface;
 
-		vk_gpu_info gpu;
+        vk_gpu_info gpu;
 
 #pragma region Queues
-		uint32_t graphics_family_index;
-		VkQueue graphics_queue;
-		uint32_t compute_family_index;
-		VkQueue compute_queue;
-		uint32_t copy_family_index;
-		VkQueue copy_queue;
+        uint32_t graphics_family_index;
+        VkQueue graphics_queue;
+        uint32_t compute_family_index;
+        VkQueue compute_queue;
+        uint32_t copy_family_index;
+        VkQueue copy_queue;
 #pragma endregion
 
         vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler);
@@ -154,19 +158,19 @@ namespace nova {
 
         void set_shaderpack(const shaderpack_data& data) override;
 
-		std::future<uint32_t> add_mesh(const mesh_data& input_mesh) override;
+        std::future<uint32_t> add_mesh(const mesh_data& input_mesh) override;
 
         void delete_mesh(uint32_t mesh_id) override;
 
-		/*!
-		 * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
-		 * current thread
-		 *
-		 * \param queue_index the index of the queue we need to get a command pool for
-		 *
-		 * \return The command pool for the current thread
-		 */
-		VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
+        /*!
+         * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
+         * current thread
+         *
+         * \param queue_index the index of the queue we need to get a command pool for
+         *
+         * \return The command pool for the current thread
+         */
+        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
 
     private:
         const uint32_t max_frames_in_queue = 1;
@@ -185,8 +189,8 @@ namespace nova {
         
         VmaAllocator vma_allocator;
 
-		std::mutex render_done_sync_mutex;
-		uint64_t current_semaphore_idx = 0;
+        std::mutex render_done_sync_mutex;
+        uint64_t current_semaphore_idx = 0;
 
         /*!
          * \brief A collection of semaphores that tell us when each of the renderpasses rendered this frame is done executing
@@ -194,14 +198,14 @@ namespace nova {
         std::vector<std::vector<VkSemaphore>> render_finished_semaphores_by_frame;
         std::vector<VkSemaphore> image_available_semaphores;
 
-		/*!
-		 * \brief Fences to tell us if we can render the next frame 
-		 */
+        /*!
+         * \brief Fences to tell us if we can render the next frame 
+         */
         std::vector<VkFence> frame_fences;
 
-		bool dynamic_textures_need_to_transition = false;
-		std::unordered_map<std::string, vk_texture> textures;
-		std::unordered_map<std::string, vk_buffer> buffers;
+        bool dynamic_textures_need_to_transition = false;
+        std::unordered_map<std::string, vk_texture> textures;
+        std::unordered_map<std::string, vk_buffer> buffers;
 
         VkSampler point_sampler;
 
@@ -212,17 +216,17 @@ namespace nova {
 
         std::vector<VkDescriptorPool> descriptor_pools_by_thread_idx;
         
-		void reset_render_finished_semaphores();
+        void reset_render_finished_semaphores();
 
         /*!
          * \brief Fills out the `command_pools_by_thread_idx` member
          */
-		void create_per_thread_command_pools();
+        void create_per_thread_command_pools();
 
         /*!
          * \brief Fills out the `descriptor_pools_by_thread_idx` member
          */
-		void create_per_thread_descriptor_pools();
+        void create_per_thread_descriptor_pools();
 
         /*!
          * \brief Allocates new command pools - one for graphics, one for transfer, one for compute
@@ -242,7 +246,7 @@ namespace nova {
         /*!
          * \brief Creates a point sampler and a linear sampler
          */
-		void create_default_samplers();
+        void create_default_samplers();
 #pragma endregion
 
 #pragma region Init
@@ -255,13 +259,13 @@ namespace nova {
         void create_device();
         void create_memory_allocator();
 
-		void create_global_sync_objects();
+        void create_global_sync_objects();
 #pragma endregion
 
 #pragma region Swapchain
-		std::unique_ptr<swapchain_manager> swapchain;
+        std::unique_ptr<swapchain_manager> swapchain;
 
-		void create_swapchain();
+        void create_swapchain();
 #pragma endregion
 
 #pragma region Shaderpack
@@ -271,7 +275,7 @@ namespace nova {
 
         std::unordered_map<std::string, vk_render_pass> render_passes;
         std::vector<std::string> render_passes_by_order;
-		
+        
         std::unordered_map<std::string, material_data> materials;
 
         /*!
@@ -296,7 +300,7 @@ namespace nova {
          * \param type The type of this resource
          */
         static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, 
-			const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, VkDescriptorType type);
+            const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, VkDescriptorType type);
         
         /*!
          * \brief Creates a Vulkan renderpass for every element in passes
@@ -366,7 +370,7 @@ namespace nova {
         /*!
          * \brief Executed barriers for all the dynamic textures so they are in COLOR_ATTACHMENT_OPTIMAL layout
          */
-		void transition_dynamic_textures();
+        void transition_dynamic_textures();
         
         /*!
          * \brief Converts the list of attachment names into attachment descriptions and references that can be later
@@ -400,13 +404,13 @@ namespace nova {
         std::vector<vk_buffer> available_mesh_staging_buffers;
 
         std::queue<mesh_staging_buffer_upload_command> mesh_upload_queue;
-		std::mutex mesh_upload_queue_mutex;
+        std::mutex mesh_upload_queue_mutex;
         VkFence mesh_rendering_done;
         VkFence upload_to_megamesh_buffer_done;
 
         // Might need to make 64-bit keys eventually, but in 2018 it's not a concern
         std::unordered_map<uint32_t, vk_mesh> meshes;
-		std::mutex meshes_mutex;
+        std::mutex meshes_mutex;
         std::atomic<uint32_t> next_mesh_id = 0;
 
         /*!
@@ -448,8 +452,8 @@ namespace nova {
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
         std::unordered_map<std::string, std::unordered_map<VkBuffer, std::vector<render_object>>> renderables_by_material;
 
-		std::mutex rendering_mutex;
-		std::condition_variable rendering_cv;
+        std::mutex rendering_mutex;
+        std::condition_variable rendering_cv;
 
         /*!
          * \brief Performs all tasks necessary to render this renderpass

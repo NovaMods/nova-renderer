@@ -77,24 +77,24 @@ namespace nova {
              * Nova developers need it on to debug their Vulkan or DX12 usage, while Nova should be robust enough that
              * errors that the validation layers would catch never happen in a shipping build
              */
-			bool enable_validation_layers = true;
+            bool enable_validation_layers = true;
 
             struct {
-				/*!
-				 * \brief If true, Nova will look for RenderDoc on your computer and will try to load it, letting you
-				 * debug your shaderpack without leaving Nova
-				 */
-				bool enabled = false;
+                /*!
+                 * \brief If true, Nova will look for RenderDoc on your computer and will try to load it, letting you
+                 * debug your shaderpack without leaving Nova
+                 */
+                bool enabled = false;
 
-				/*!
-				 * \brief The path to `renderdoc.dll` on your filesystem
-				 */
-				std::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
+                /*!
+                 * \brief The path to `renderdoc.dll` on your filesystem
+                 */
+                std::string renderdoc_dll_path = R"(C:\Program Files\RenderDoc\renderdoc.dll)";
 
                 /*!
                  * \brief The base path for RenderDoc captures
                  */
-				std::string capture_path = "logs/captures";
+                std::string capture_path = "logs/captures";
                 
             } renderdoc;
         } debug;

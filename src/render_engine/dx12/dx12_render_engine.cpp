@@ -524,7 +524,7 @@ namespace nova {
                         return make_single_pso(data);
                     } catch(shader_compilation_failed& err) {
                         NOVA_LOG(ERROR) << "Could not compile shaders for PSO " << data.name << ": " << err.what();
-						return pipeline{};
+                        return pipeline{};
                     }
                 }, data);
                 write_pipeline++;
@@ -532,7 +532,7 @@ namespace nova {
         }
 
         for(auto& future_pipeline : future_pipelines) {
-			future_pipeline.wait();
+            future_pipeline.wait();
             // TODO
         }
     }
@@ -541,7 +541,7 @@ namespace nova {
         const render_pass_data& render_pass = render_passes.at(input.pass);
         const auto states_begin = input.states.begin();
         const auto states_end = input.states.end();
-		pipeline output;
+        pipeline output;
 
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipeline_state_desc = {};
 
@@ -732,7 +732,7 @@ namespace nova {
             throw shader_compilation_failed("Could not create PSO");
         }
 
-		return output;
+        return output;
     }
 
     void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type, const D3D12_SHADER_INPUT_BIND_DESC & bind_desc, const uint32_t set, std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {

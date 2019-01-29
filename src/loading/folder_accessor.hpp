@@ -49,11 +49,11 @@ namespace nova {
          */
         folder_accessor_base(fs::path folder);
 
-		folder_accessor_base(folder_accessor_base&& other) noexcept = default;
-		folder_accessor_base& operator=(folder_accessor_base&& other) noexcept = default;
+        folder_accessor_base(folder_accessor_base&& other) noexcept = default;
+        folder_accessor_base& operator=(folder_accessor_base&& other) noexcept = default;
 
-		folder_accessor_base(const folder_accessor_base& other) = default;
-		folder_accessor_base& operator=(const folder_accessor_base& other) = default;
+        folder_accessor_base(const folder_accessor_base& other) = default;
+        folder_accessor_base& operator=(const folder_accessor_base& other) = default;
 
         virtual ~folder_accessor_base() = default;
 

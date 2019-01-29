@@ -87,12 +87,12 @@ namespace nova {
     nova_exception::nova_exception(std::string msg, const std::exception& cause) : msg(std::move(msg)), cause(cause) {}
 
     const char *nova_exception::what() const noexcept {
-		std::stringstream ss;
+        std::stringstream ss;
 
-		ss << msg;
+        ss << msg;
 
         if(std::strcmp(cause.what(), "<UNINITIALIZED>") != 0) {
-			ss << "\nCaused by: " << cause.what();
+            ss << "\nCaused by: " << cause.what();
         }
 
         return ss.str().c_str();

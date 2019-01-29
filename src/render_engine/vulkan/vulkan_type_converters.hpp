@@ -1,4 +1,4 @@
-	//
+    //
 // Created by jannis on 18.09.18.
 //
 
@@ -39,66 +39,66 @@ namespace nova::vulkan {
             }
         }
 
-	    static VkCompareOp to_compare_op(const compare_op_enum compare_op) {
-	        switch(compare_op) {
-		        case compare_op_enum::Never:
-					return VK_COMPARE_OP_NEVER;
+        static VkCompareOp to_compare_op(const compare_op_enum compare_op) {
+            switch(compare_op) {
+                case compare_op_enum::Never:
+                    return VK_COMPARE_OP_NEVER;
 
-		        case compare_op_enum::Less:
-					return VK_COMPARE_OP_LESS;
+                case compare_op_enum::Less:
+                    return VK_COMPARE_OP_LESS;
 
-		        case compare_op_enum::LessEqual: 
-					return VK_COMPARE_OP_LESS_OR_EQUAL;
+                case compare_op_enum::LessEqual: 
+                    return VK_COMPARE_OP_LESS_OR_EQUAL;
 
-		        case compare_op_enum::Greater: 
-					return VK_COMPARE_OP_GREATER;
+                case compare_op_enum::Greater: 
+                    return VK_COMPARE_OP_GREATER;
 
-		        case compare_op_enum::GreaterEqual: 
-					return VK_COMPARE_OP_GREATER_OR_EQUAL;
+                case compare_op_enum::GreaterEqual: 
+                    return VK_COMPARE_OP_GREATER_OR_EQUAL;
 
-		        case compare_op_enum::Equal: 
-					return VK_COMPARE_OP_EQUAL;
+                case compare_op_enum::Equal: 
+                    return VK_COMPARE_OP_EQUAL;
 
-		        case compare_op_enum::NotEqual: 
-					return VK_COMPARE_OP_NOT_EQUAL;
+                case compare_op_enum::NotEqual: 
+                    return VK_COMPARE_OP_NOT_EQUAL;
 
-		        case compare_op_enum::Always: 
-					return VK_COMPARE_OP_ALWAYS;
+                case compare_op_enum::Always: 
+                    return VK_COMPARE_OP_ALWAYS;
 
-		        default:
-					return VK_COMPARE_OP_NEVER;
-	        }
+                default:
+                    return VK_COMPARE_OP_NEVER;
+            }
         }
 
-	    static VkStencilOp to_stencil_op(stencil_op_enum stencil_op) {
-	        switch(stencil_op) {
-		        case stencil_op_enum::Keep:
-					return VK_STENCIL_OP_KEEP;
+        static VkStencilOp to_stencil_op(stencil_op_enum stencil_op) {
+            switch(stencil_op) {
+                case stencil_op_enum::Keep:
+                    return VK_STENCIL_OP_KEEP;
 
-		        case stencil_op_enum::Zero:
-					return VK_STENCIL_OP_ZERO;
+                case stencil_op_enum::Zero:
+                    return VK_STENCIL_OP_ZERO;
 
-		        case stencil_op_enum::Replace: 
-					return VK_STENCIL_OP_REPLACE;
+                case stencil_op_enum::Replace: 
+                    return VK_STENCIL_OP_REPLACE;
 
-		        case stencil_op_enum::Incr:
-					return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
+                case stencil_op_enum::Incr:
+                    return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
 
-		        case stencil_op_enum::IncrWrap: 
-					return VK_STENCIL_OP_INCREMENT_AND_WRAP;
+                case stencil_op_enum::IncrWrap: 
+                    return VK_STENCIL_OP_INCREMENT_AND_WRAP;
 
-		        case stencil_op_enum::Decr: 
-					return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
+                case stencil_op_enum::Decr: 
+                    return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
 
-		        case stencil_op_enum::DecrWrap: 
-					return VK_STENCIL_OP_DECREMENT_AND_WRAP;
+                case stencil_op_enum::DecrWrap: 
+                    return VK_STENCIL_OP_DECREMENT_AND_WRAP;
 
-		        case stencil_op_enum::Invert: 
-					return VK_STENCIL_OP_INVERT;
+                case stencil_op_enum::Invert: 
+                    return VK_STENCIL_OP_INVERT;
 
-		        default: 
-	        		return VK_STENCIL_OP_KEEP;
-	        }
+                default: 
+                    return VK_STENCIL_OP_KEEP;
+            }
         }
     };
 }  // namespace nova::vulkan
