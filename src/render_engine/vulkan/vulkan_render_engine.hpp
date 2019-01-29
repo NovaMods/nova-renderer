@@ -187,6 +187,10 @@ namespace nova {
 
 		std::mutex render_done_sync_mutex;
 		uint64_t current_semaphore_idx = 0;
+
+        /*!
+         * \brief A collection of semaphores that tell us when each of the renderpasses rendered this frame is done executing
+         */
         std::vector<std::vector<VkSemaphore>> render_finished_semaphores_by_frame;
         std::vector<VkSemaphore> image_available_semaphores;
 
@@ -207,6 +211,8 @@ namespace nova {
         std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
         std::vector<VkDescriptorPool> descriptor_pools_by_thread_idx;
+        
+		void reset_render_finished_semaphores();
 
         /*!
          * \brief Fills out the `command_pools_by_thread_idx` member

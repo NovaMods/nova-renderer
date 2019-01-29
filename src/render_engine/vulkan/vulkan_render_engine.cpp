@@ -1135,6 +1135,8 @@ namespace nova {
     std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }
 
     void vulkan_render_engine::render_frame() {
+		reset_render_finished_semaphores();
+
 		current_semaphore_idx = 0;
         vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
 		vkResetFences(device, 1, &frame_fences.at(current_frame));
@@ -1161,8 +1163,7 @@ namespace nova {
         // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
         upload_new_mesh_parts();
 
-		swapchain->present_current_image({ render_finished_semaphores_by_frame.at(swapchain->get_current_index()) });
-
+		swapchain->present_current_image(render_finished_semaphores_by_frame.at(current_frame));
         current_frame = (current_frame + 1) % max_frames_in_queue;
     }
 
@@ -1436,8 +1437,12 @@ namespace nova {
         submit_info.pWaitDstStageMask = &wait_stages;
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &cmds;
-		submit_info.waitSemaphoreCount = wait_semaphores.size();
-		submit_info.pWaitSemaphores = wait_semaphores.data();
+
+		bool one_null_semaphore = wait_semaphores.size() == 1 && wait_semaphores.at(0) == VK_NULL_HANDLE;
+		if(!one_null_semaphore) {
+			submit_info.waitSemaphoreCount = wait_semaphores.size();
+			submit_info.pWaitSemaphores = wait_semaphores.data();
+		}
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_semaphore_idx);
         NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence), render_engine_rendering_exception);
@@ -1464,6 +1469,14 @@ namespace nova {
         }
 
         return VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
+    }
+
+    void vulkan_render_engine::reset_render_finished_semaphores() {
+		for(VkSemaphore& semaphore : render_finished_semaphores_by_frame[current_frame]) {
+			vkDestroySemaphore(device, semaphore, nullptr);
+		}
+
+		render_finished_semaphores_by_frame[current_frame].clear();
     }
 
     void vulkan_render_engine::create_per_thread_command_pools() {
