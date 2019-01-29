@@ -31,3 +31,6 @@
 [submodule "3rdparty/enkiTS"]
 	path = 3rdparty/enkiTS
 	url = https://github.com/dougbinks/enkiTS.git
+[submodule "3rdparty/minitrace"]
+	path = 3rdparty/minitrace
+	url = https://github.com/hrydgard/minitrace.git

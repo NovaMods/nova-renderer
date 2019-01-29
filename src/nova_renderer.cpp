@@ -18,13 +18,23 @@
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 #include "debugging/renderdoc.hpp"
 
+#include "minitrace.h"
+
 namespace nova {
     nova_renderer *nova_renderer::instance;
 
     nova_renderer::nova_renderer(const settings_options &settings) : 
 		render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
+		mtr_init("trace.json");
+
+		MTR_META_PROCESS_NAME("NovaRenderer");
+		MTR_META_THREAD_NAME("Main");
+
+		MTR_SCOPE("Init", "nova_renderer::nova_renderer");
+
         if(settings.debug.renderdoc.enabled) {
+			MTR_SCOPE("Init", "LoadRenderdoc");
 			render_doc = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
 
             if(render_doc) {
@@ -44,23 +54,33 @@ namespace nova {
         switch(settings.api) {
         case graphics_api::dx12:
             #if NOVA_WINDOWS
+			MTR_SCOPE("Init", "InitDirectX12RenderEngine");
             engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
             break;
             #endif
         case graphics_api::vulkan:
+			MTR_SCOPE("Init", "InitVulkanRenderEngine");
             engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler);
         }
     }
 
-	nova_settings &nova_renderer::get_settings() {
+    nova_renderer::~nova_renderer() {
+		mtr_shutdown();
+    }
+
+    nova_settings &nova_renderer::get_settings() {
         return render_settings;
     }
 
     void nova_renderer::execute_frame() const {
+		MTR_SCOPE("RenderLoop", "execute_frame");
 		engine->render_frame();
+
+		mtr_flush();
     }
 
     void nova_renderer::load_shaderpack(const std::string &shaderpack_name) const {
+		MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
 
         const shaderpack_data shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));

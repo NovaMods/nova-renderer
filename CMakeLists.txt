@@ -173,9 +173,11 @@ add_library(nova-renderer STATIC ${NOVA_SOURCE})
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
-#if(CMAKE_BUILD_TYPE MATCHES "Debug")
-target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS NOMINMAX)
-#endif()
+target_compile_definitions(nova-renderer PUBLIC NOMINMAX)
+
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+	target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS MTR_ENABLED)
+endif()
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      glm::glm
@@ -188,6 +190,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-util
                      nova-profiler
                      miniz
+					 minitrace
                      glslang
                      SPIRV
                      ${SPIRV_SHARED_LIBRARIES}

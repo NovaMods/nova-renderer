@@ -66,6 +66,8 @@ namespace nova {
         render_pass_data data;
         VkRect2D render_area;
         VkFence fence;
+
+		bool writes_to_backbuffer = false;
     };
 
     struct vk_pipeline {
@@ -167,7 +169,7 @@ namespace nova {
 		VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
 
     private:
-        const uint32_t max_frames_in_queue = 3;
+        const uint32_t max_frames_in_queue = 1;
         uint32_t current_frame = 0;
 
         std::vector<const char*> enabled_validation_layer_names;
@@ -450,7 +452,7 @@ namespace nova {
          *
          * \param renderpass_name The name of the renderpass to execute
          */
-        void execute_renderpass(const std::string* renderpass_name);
+        void execute_renderpass(const std::string* renderpass_name, bool is_first);
 
         /*!
          * \brief Renders all the meshes that use a single pipeline
@@ -482,7 +484,7 @@ namespace nova {
          *
          * This method is thread-safe
          */
-        void submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence);
+        void submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence, const std::vector<VkSemaphore>& wait_semaphores);
 #pragma endregion
 
 #ifndef NDEBUG

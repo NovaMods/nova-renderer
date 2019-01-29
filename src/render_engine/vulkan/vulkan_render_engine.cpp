@@ -636,6 +636,8 @@ namespace nova {
 					framebuffer_width = swapchain_extent.width;
 					framebuffer_height = swapchain_extent.height;
 
+					render_passes[pass_name].writes_to_backbuffer = true;
+
                     break;
 
                 } else {
@@ -1138,9 +1140,7 @@ namespace nova {
 		vkResetFences(device, 1, &frame_fences.at(current_frame));
 
 		swapchain->acquire_next_swapchain_image(image_available_semaphores.at(current_frame));
-
-        vkResetFences(device, 1, &frame_fences.at(current_frame));
-
+        
         // Record command buffers
         // We can't upload a new shaderpack in the middle of a frame!
         // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the frame 
@@ -1150,8 +1150,10 @@ namespace nova {
 			transition_dynamic_textures();
         }
 
+		bool is_first = true;
         for(const std::string& renderpass_name : render_passes_by_order) {
-            execute_renderpass(&renderpass_name);
+            execute_renderpass(&renderpass_name, is_first);
+			is_first = false;
         }
         shaderpack_loading_mutex.unlock();
         
@@ -1241,7 +1243,7 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
+    void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name, const bool is_first) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
 		vkResetFences(device, 1, &renderpass.fence);
 
@@ -1300,7 +1302,18 @@ namespace nova {
 
         vkEndCommandBuffer(cmds);
 
-        submit_to_queue(cmds, graphics_queue, renderpass.fence);
+		VkSemaphore wait_semaphore = VK_NULL_HANDLE;
+        if(is_first) {
+			wait_semaphore = image_available_semaphores.at(current_frame);
+        }
+
+		// If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's fence
+		if(renderpass.writes_to_backbuffer) {
+			submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), { wait_semaphore });
+
+		} else {
+			submit_to_queue(cmds, graphics_queue, renderpass.fence, { wait_semaphore });
+		}
     }
 
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass &renderpass) {
@@ -1401,7 +1414,7 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence) {
+    void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence, const std::vector<VkSemaphore>& wait_semaphores) {
 		std::lock_guard l(render_done_sync_mutex);
 		std::vector<VkSemaphore>& render_finished_semaphores = render_finished_semaphores_by_frame.at(current_frame);
 
@@ -1423,6 +1436,8 @@ namespace nova {
         submit_info.pWaitDstStageMask = &wait_stages;
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &cmds;
+		submit_info.waitSemaphoreCount = wait_semaphores.size();
+		submit_info.pWaitSemaphores = wait_semaphores.data();
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_semaphore_idx);
         NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence), render_engine_rendering_exception);

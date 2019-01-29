@@ -30,6 +30,8 @@ namespace nova {
 		 */
 		explicit nova_renderer(const settings_options& settings);
 
+		~nova_renderer();
+
 		/*!
 		 * \brief Loads the shaderpack with the given name
 		 *
