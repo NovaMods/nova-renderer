@@ -28,3 +28,6 @@
 [submodule "3rdparty/miniz"]
 	path = 3rdparty/miniz
 	url = https://github.com/richgel999/miniz.git
+[submodule "3rdparty/minitrace"]
+	path = 3rdparty/minitrace
+	url = https://github.com/hrydgard/minitrace.git
