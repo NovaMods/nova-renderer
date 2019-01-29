@@ -196,13 +196,25 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      ${SPIRV_SHARED_LIBRARIES}
                      ${Vulkan_LIBRARIES})
 include(CheckCXXCompilerFlag)
+include(CheckIncludeFileCXX)
+check_include_file_cxx("filesystem" CXX_STD_FILESYSTEM)
+if(NOT CXX_STD_FILESYSTEM)
+    check_include_file_cxx("experimental/filesystem" CXX_STD_FILESYSTEM_EXPERIMENTAL)
+    if(NOT CXX_STD_FILESYSTEM_EXPERIMENTAL)
+        message(FATAL_ERROR "Failed to find a filesystem header for C++")
+    endif()
+    target_compile_definitions(nova-renderer PUBLIC NOVA_STD_FILESYSTEM_EXPERIMENTAL=1)
+else()
+    target_compile_definitions(nova-renderer PUBLIC NOVA_STD_FILESYSTEM=1)
+endif()
+
 if(WIN32)
     find_package(WindowsSDK)
     get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
 
     # MSVC 15.9 broke the Windows SDK by implementing two phase lookup. "/Zc:twoPhase-" disables it.
 
-    CHECK_CXX_COMPILER_FLAG(/Zc:twoPhase- TWO_PHASE_LOOKUP)
+    check_cxx_compiler_flag(/Zc:twoPhase- TWO_PHASE_LOOKUP)
     if (TWO_PHASE_LOOKUP)
         add_compile_options(/Zc:twoPhase-)
     endif()
@@ -222,8 +234,7 @@ if(WIN32)
     
 else()
     # GCC and Clang complain loudly about the #pragma region stuff. This shuts them up.
-
-    CHECK_CXX_COMPILER_FLAG(-Wno-unknown-pragmas Wno_unknown_pragmas)
+    check_cxx_compiler_flag(-Wno-unknown-pragmas Wno_unknown_pragmas)
     if (Wno_unknown_pragmas)
         add_compile_options(-Wno-unknown-pragmas)
     endif()
