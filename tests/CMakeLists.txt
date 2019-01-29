@@ -14,6 +14,7 @@ target_compile_definitions(nova-test-end-to-end PRIVATE CMAKE_DEFINED_RESOURCES_
 target_link_libraries(nova-test-end-to-end PRIVATE nova-renderer gtest gtest_main Threads::Threads)
 
 add_test(NAME nova-end-to-end-test COMMAND nova-test-end-to-end)
+remove_permissive(nova-test-end-to-end)
 
 # Unit tests
 add_executable(nova-test-unit unit_tests/loading/filesystem_test.cpp src/general_test_setup.hpp unit_tests/loading/shaderpack/shaderpack_validator_tests.cpp)
@@ -22,6 +23,7 @@ target_link_libraries(nova-test-unit nova-renderer gtest gtest_main Threads::Thr
 
 gtest_discover_tests(nova-test-unit)
 add_test(NAME nova-unit-tests COMMAND nova-test-unit)
+remove_permissive(nova-test-unit)
 
 set(CMAKE_CXX_FLAGS "${NOVA_CXX_FLAGS}")
 
