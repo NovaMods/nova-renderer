@@ -26,6 +26,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
 if(NOT ${NOVA_IN_SUBMODULE})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -48,6 +49,8 @@ include(${3RD_PARTY_DIR}/3rdparty.cmake)
 ######################################
 # Make dependencies' headers visible #
 ######################################
+
+include(cmake/RemovePermissive.cmake)
 
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
@@ -217,6 +220,11 @@ if(WIN32)
         add_compile_options(/Zc:twoPhase-)
     endif()
 
+    CHECK_CXX_COMPILER_FLAG(/permissive PERMISSIVE)
+    if (PERMISSIVE)
+        add_compile_options(/permissive)
+    endif()
+
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
@@ -241,6 +249,8 @@ else()
 endif()
 
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
+
+remove_permissive(nova-renderer)
 
 set(NOVA_TEST ON)
 
