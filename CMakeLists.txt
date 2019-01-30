@@ -169,7 +169,7 @@ set(NOVA_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE})
 
 add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
-clang_format(nova-renderer NOVA_SOURCE)
+# clang_format(nova-renderer NOVA_SOURCE) <= TODO: Uncomment when .clang-format is perfect
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
