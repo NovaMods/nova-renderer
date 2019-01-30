@@ -19,26 +19,32 @@ namespace nova {
      * If a field is in `pipeline_data` but not in this structure, it is a required field and cannot be given a
      * default value. It will thus cause an exception
      */
-    nlohmann::json default_graphics_pipeline = {{"parentName", ""},
-        {"defines", {}},
-        {"states", {}},
-        {"frontFace", {}},
-        {"backFace", {}},
-        {"fallback", ""},
-        {"depthBias", 0},
-        {"slopeScaledDepthBias", 0},
-        {"stencilRef", 0},
-        {"stencilReadMask", 0},
-        {"stencilWriteMask", 0},
-        {"msaaSupport", "None"},
-        {"primitiveMode", "Triangles"},
-        {"sourceBlendFactor", "One"},
-        {"destinationBlendFactor", "Zero"},
-        {"alphaSrc", "One"},
-        {"alphaDst", "Zero"},
-        {"depthFunc", "Less"},
-        {"renderQueue", "Opaque"},
-        {"fragmentShader", ""}};
+    nlohmann::json default_graphics_pipeline =
+        {
+            {"parentName", ""},
+            {"defines", {}},
+            {"states", {}},
+            {"frontFace", {}},
+            {"backFace", {}},
+            {"fallback", ""},
+            {"depthBias", 0},
+            {"slopeScaledDepthBias", 0},
+            {"stencilRef", 0},
+            {"stencilReadMask", 0},
+            {"stencilWriteMask", 0},
+            {"msaaSupport", "None"},
+            {"primitiveMode", "Triangles"},
+            {"sourceBlendFactor", "One"},
+            {"destinationBlendFactor", "Zero"},
+            {"alphaSrc", "One"},
+            {"alphaDst", "Zero"},
+            {"depthFunc", "Less"},
+            {"renderQueue", "Opaque"},
+            {"fragmentShader", ""},
+            {"tessellationControlShader", ""},
+            {"tessellationEvaluationShader", ""},
+            {"geometryShader", ""}
+        };
 
     std::vector<std::string> required_graphics_pipeline_fields = {"name", "pass", "vertexFields", "vertexShader"};
 
@@ -235,7 +241,6 @@ namespace nova {
                 const auto bindings_itr = pass_json.find("bindings");
                 if(bindings_itr == pass_json.end()) {
                     report.warnings.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "Missing field bindings"));
-
                 } else {
                     const nlohmann::json &bindings = *bindings_itr;
                     if(bindings.empty()) {
