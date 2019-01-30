@@ -3,8 +3,13 @@
 ## A complete replacement for Minecraft's renderer
 
 [Follow us on Twitter!](https://twitter.com/NovaRendererMC)  
-[Talk to us on Discord!](https://discordapp.com/invite/014ux6siiDogn9FLz)  
-[There's even a blog now!](https://continuum.graphics/blog/?category=Nova)
+[Talk to us on Discord!](https://discordapp.com/invite/014ux6siiDogn9FLz) 
+
+|             |   Nova  |
+|:------------|:--------|
+| Windows     | [![Build status](https://ci.appveyor.com/api/projects/status/gwo4ie0frw5csnhb/branch/master?svg=true)](https://ci.appveyor.com/project/DethRaid/nova-renderer/branch/master) |
+| Linux       | [![Build Status](https://ci.bvereborn.com/buildStatus/icon?job=nova-render)](https://ci.bvereborn.com/job/nova-render)                                                       |
+| Coverage    | [![Coverage](https://codecov.io/gh/NovaMods/nova-renderer/branch/master/graph/badge.svg)](https://codecov.io/gh/NovaMods/nova-renderer)                                      |
 
 ## Development status
 
