@@ -1160,10 +1160,8 @@ namespace nova {
             transition_dynamic_textures();
         }
 
-        bool is_first = true;
         for(const std::string& renderpass_name : render_passes_by_order) {
-            execute_renderpass(&renderpass_name, is_first);
-            is_first = false;
+            execute_renderpass(&renderpass_name);
         }
         shaderpack_loading_mutex.unlock();
         
@@ -1252,32 +1250,41 @@ namespace nova {
         }
     }
 
-    VkCommandBuffer vulkan_render_engine::record_command_buffer_to_transition_images_to_attachment_layouts(const std::vector<vk_texture*>& images) {
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
-
-        VkCommandBufferAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        alloc_info.commandPool = command_pool;
-        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        alloc_info.commandBufferCount = 1;
-
-        VkCommandBuffer cmds;
-        NOVA_THROW_IF_VK_ERROR(vkAllocateCommandBuffers(device, &alloc_info, &cmds), buffer_allocate_failed);
-        
-        VkCommandBufferBeginInfo begin_info = {};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
+    void vulkan_render_engine::transition_textures_to_layout(const std::vector<std::string>& texture_names, VkImageLayout layout, VkCommandBuffer cmds) {
         std::vector<VkImageMemoryBarrier> barriers;
-        barriers.reserve(images.size());
-        for(const vk_texture* tex : images) {
-            
-        }
+        barriers.reserve(texture_names.size());
 
-        vkBeginCommandBuffer(cmds, &begin_info);
+        for(const std::string& texture_name : texture_names) {
+            vk_texture texture = textures.at(texture_name);
+            if(texture.layout != layout) {
+                VkImageMemoryBarrier barrier = {};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                barrier.oldLayout = texture.layout;
+                barrier.newLayout = layout;
+                barrier.srcQueueFamilyIndex = graphics_family_index;
+                barrier.dstQueueFamilyIndex = graphics_family_index;
+                barrier.image = texture.image;
+
+                if(texture.is_depth_tex) {
+                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+                } else {
+                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                }
+                barrier.subresourceRange.baseMipLevel = 0;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.baseArrayLayer = 0;
+                barrier.subresourceRange.layerCount = 1;
+
+                barriers.push_back(barrier);
+                texture.layout = layout;
+            }
+        }
     }
 
-    void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name, const bool is_first) {
+    void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
         vkResetFences(device, 1, &renderpass.fence);
 
@@ -1309,6 +1316,10 @@ namespace nova {
 
         vkBeginCommandBuffer(cmds, &begin_info);
 
+        if(!renderpass.data.texture_inputs.empty()) {
+            transition_textures_to_layout(renderpass.data.texture_inputs, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cmds);
+        }
+
         VkClearValue clear_value = {};
         clear_value.color = { 0, 0, 0, 0 };
 
@@ -1328,8 +1339,6 @@ namespace nova {
 
         NOVA_LOG(TRACE) << "Starting renderpass " << *renderpass_name << " with framebuffer " << rp_begin_info.framebuffer;
 
-        VkCommandBuffer buf = record_command_buffer_to_transition_images_to_attachment_layouts(renderpass.framebuffer.images);
-
         vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
@@ -1338,17 +1347,12 @@ namespace nova {
 
         vkEndCommandBuffer(cmds);
 
-        VkSemaphore wait_semaphore = VK_NULL_HANDLE;
-        if(is_first) {
-            wait_semaphore = image_available_semaphores.at(current_frame);
-        }
-
         // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's fence
         if(renderpass.writes_to_backbuffer) {
-            submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), { wait_semaphore });
+            submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), { image_available_semaphores.at(current_frame) });
 
         } else {
-            submit_to_queue(cmds, graphics_queue, renderpass.fence, { wait_semaphore });
+            submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
         }
     }
 

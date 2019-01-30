@@ -65,6 +65,8 @@ namespace nova {
 
         bool is_dynamic = false;
         VkFormat format;
+        VkImageLayout layout;
+        bool is_depth_tex = false;
     };
 
     struct vk_framebuffer {
@@ -457,7 +459,14 @@ namespace nova {
         std::mutex rendering_mutex;
         std::condition_variable rendering_cv;
 
-        VkCommandBuffer record_command_buffer_to_transition_images_to_attachment_layouts(const std::vector<vk_texture*>& images);
+        /*!
+         * \brief Transitions all the textures named by texture_names into the provided layout, using the given command buffer
+         * 
+         * \param texture_names The names of the textures to transition
+         * \param layout The layout those textures should be in
+         * \param cmds The command buffer to record the transitions into
+         */
+        void transition_textures_to_layout(const std::vector<std::string>& texture_names, VkImageLayout layout, VkCommandBuffer cmds);
 
         /*!
          * \brief Performs all tasks necessary to render this renderpass
@@ -466,7 +475,7 @@ namespace nova {
          *
          * \param renderpass_name The name of the renderpass to execute
          */
-        void execute_renderpass(const std::string* renderpass_name, bool is_first);
+        void execute_renderpass(const std::string* renderpass_name);
 
         /*!
          * \brief Renders all the meshes that use a single pipeline
