@@ -240,9 +240,9 @@ if(WIN32)
     
 else()
     # GCC and Clang complain loudly about the #pragma region stuff. This shuts them up.
-    check_cxx_compiler_flag(-Wno-unknown-pragmas Wno_unknown_pragmas)
-    if (Wno_unknown_pragmas)
-        add_compile_options(-Wno-unknown-pragmas)
+    check_cxx_compiler_flag(-Wno-unknown-pragmas W_NO_UNKNOWN_PRAGMAS)
+    if (W_NO_UNKNOWN_PRAGMAS)
+        target_compile_options(nova-renderer PUBLIC -Wno-unknown-pragmas)
     endif()
 
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
