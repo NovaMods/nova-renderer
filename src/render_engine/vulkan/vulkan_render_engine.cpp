@@ -607,6 +607,8 @@ namespace nova {
             uint32_t framebuffer_width = 0;
             uint32_t framebuffer_height = 0;
 
+            std::vector<vk_texture*> textures_in_framebuffer;
+            textures_in_framebuffer.reserve(pass.data.texture_outputs.size() + (pass.data.depth_texture ? 1 : 0));
             bool writes_to_backbuffer = false;
             // Collect framebuffer size information from color output attachments
             for(const texture_attachment& attachment : pass.data.texture_outputs) {
@@ -642,6 +644,9 @@ namespace nova {
 
                 } else {
                     const vk_texture& tex = textures.at(attachment.name);
+                    // the textures array _should_ _never_ change from this point onward. If it does, this pointer will probably point to undefined data
+                    textures_in_framebuffer.push_back(&textures.at(attachment.name));
+
                     framebuffer_attachments.push_back(tex.image_view);
 
                     const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
@@ -690,6 +695,8 @@ namespace nova {
 
                 const vk_texture& tex = textures.at(pass.data.depth_texture->name);
                 framebuffer_attachments.push_back(tex.image_view);
+
+                textures_in_framebuffer.push_back(&textures.at(pass.data.depth_texture->name));
 
                 const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
 
@@ -759,7 +766,7 @@ namespace nova {
                                     << " writes to the backbuffer, and other textures. Passes that write to the backbuffer are not allowed to write to any other textures";
                 }
 
-                render_passes[pass_name].framebuffer = nullptr;
+                render_passes[pass_name].framebuffer.framebuffer = nullptr;
 
             } else {
                 VkFramebufferCreateInfo framebuffer_create_info = {};
@@ -780,7 +787,8 @@ namespace nova {
 
                 VkFramebuffer framebuffer;
                 NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer), render_engine_initialization_exception);
-                render_passes[pass_name].framebuffer = framebuffer;
+                render_passes[pass_name].framebuffer.framebuffer = framebuffer;
+                render_passes[pass_name].framebuffer.images = std::move(textures_in_framebuffer);
             }
 
             render_passes[pass_name].render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
@@ -1244,6 +1252,31 @@ namespace nova {
         }
     }
 
+    VkCommandBuffer vulkan_render_engine::record_command_buffer_to_transition_images_to_attachment_layouts(const std::vector<vk_texture*>& images) {
+        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+
+        VkCommandBufferAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        alloc_info.commandPool = command_pool;
+        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        alloc_info.commandBufferCount = 1;
+
+        VkCommandBuffer cmds;
+        NOVA_THROW_IF_VK_ERROR(vkAllocateCommandBuffers(device, &alloc_info, &cmds), buffer_allocate_failed);
+        
+        VkCommandBufferBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        std::vector<VkImageMemoryBarrier> barriers;
+        barriers.reserve(images.size());
+        for(const vk_texture* tex : images) {
+            
+        }
+
+        vkBeginCommandBuffer(cmds, &begin_info);
+    }
+
     void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name, const bool is_first) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
         vkResetFences(device, 1, &renderpass.fence);
@@ -1284,7 +1317,7 @@ namespace nova {
         VkRenderPassBeginInfo rp_begin_info = {};
         rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         rp_begin_info.renderPass = renderpass.pass;
-        rp_begin_info.framebuffer = renderpass.framebuffer;
+        rp_begin_info.framebuffer = renderpass.framebuffer.framebuffer;
         rp_begin_info.renderArea = renderpass.render_area;
         rp_begin_info.clearValueCount = 2;
         rp_begin_info.pClearValues = clear_values;
@@ -1294,6 +1327,8 @@ namespace nova {
         }
 
         NOVA_LOG(TRACE) << "Starting renderpass " << *renderpass_name << " with framebuffer " << rp_begin_info.framebuffer;
+
+        VkCommandBuffer buf = record_command_buffer_to_transition_images_to_attachment_layouts(renderpass.framebuffer.images);
 
         vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
@@ -1332,7 +1367,7 @@ namespace nova {
 
         VkCommandBufferInheritanceInfo cmds_inheritance_info = {};
         cmds_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-        cmds_inheritance_info.framebuffer = renderpass.framebuffer;
+        cmds_inheritance_info.framebuffer = renderpass.framebuffer.framebuffer;
         cmds_inheritance_info.renderPass = renderpass.pass;
 
         VkCommandBufferBeginInfo begin_info = {};

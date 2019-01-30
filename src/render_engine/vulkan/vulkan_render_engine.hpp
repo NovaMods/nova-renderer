@@ -68,6 +68,8 @@ namespace nova {
     };
 
     struct vk_framebuffer {
+        VkFramebuffer framebuffer;
+
         std::vector<vk_texture*> images;
     };
 
@@ -79,7 +81,7 @@ namespace nova {
          * 
          * If this is VK_NULL_HANDLE, we should use the backbuffer's framebuffer
          */
-        VkFramebuffer framebuffer = VK_NULL_HANDLE;
+        vk_framebuffer framebuffer;
         render_pass_data data;
         VkRect2D render_area;
         VkFence fence;
@@ -454,6 +456,8 @@ namespace nova {
 
         std::mutex rendering_mutex;
         std::condition_variable rendering_cv;
+
+        VkCommandBuffer record_command_buffer_to_transition_images_to_attachment_layouts(const std::vector<vk_texture*>& images);
 
         /*!
          * \brief Performs all tasks necessary to render this renderpass
