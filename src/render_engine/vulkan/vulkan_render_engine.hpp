@@ -460,15 +460,6 @@ namespace nova {
         std::condition_variable rendering_cv;
 
         /*!
-         * \brief Transitions all the textures named by texture_names into the provided layout, using the given command buffer
-         * 
-         * \param texture_names The names of the textures to transition
-         * \param layout The layout those textures should be in
-         * \param cmds The command buffer to record the transitions into
-         */
-        void transition_textures_to_layout(const std::vector<std::string>& texture_names, VkImageLayout layout, VkCommandBuffer cmds);
-
-        /*!
          * \brief Performs all tasks necessary to render this renderpass
          *
          * This method fill start a separate async task for each pipeline that is in the given renderpass

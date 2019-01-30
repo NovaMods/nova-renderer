@@ -1249,41 +1249,7 @@ namespace nova {
             }
         }
     }
-
-    void vulkan_render_engine::transition_textures_to_layout(const std::vector<std::string>& texture_names, VkImageLayout layout, VkCommandBuffer cmds) {
-        std::vector<VkImageMemoryBarrier> barriers;
-        barriers.reserve(texture_names.size());
-
-        for(const std::string& texture_name : texture_names) {
-            vk_texture texture = textures.at(texture_name);
-            if(texture.layout != layout) {
-                VkImageMemoryBarrier barrier = {};
-                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                barrier.oldLayout = texture.layout;
-                barrier.newLayout = layout;
-                barrier.srcQueueFamilyIndex = graphics_family_index;
-                barrier.dstQueueFamilyIndex = graphics_family_index;
-                barrier.image = texture.image;
-
-                if(texture.is_depth_tex) {
-                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-                } else {
-                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                }
-                barrier.subresourceRange.baseMipLevel = 0;
-                barrier.subresourceRange.levelCount = 1;
-                barrier.subresourceRange.baseArrayLayer = 0;
-                barrier.subresourceRange.layerCount = 1;
-
-                barriers.push_back(barrier);
-                texture.layout = layout;
-            }
-        }
-    }
-
+    
     void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
         vkResetFences(device, 1, &renderpass.fence);
@@ -1316,9 +1282,102 @@ namespace nova {
 
         vkBeginCommandBuffer(cmds, &begin_info);
 
-        if(!renderpass.data.texture_inputs.empty()) {
-            transition_textures_to_layout(renderpass.data.texture_inputs, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, cmds);
+#pragma region Texture attachment layout transition
+        std::vector<VkImageMemoryBarrier> barriers;
+        barriers.reserve(renderpass.data.texture_inputs.size());
+
+        for(const texture_attachment& attachment : renderpass.data.texture_outputs) {
+            if(attachment.name == "Backbuffer") {
+                VkImageMemoryBarrier barrier = {};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                barrier.oldLayout = swapchain->get_current_layout();
+                barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                barrier.srcQueueFamilyIndex = graphics_family_index;
+                barrier.dstQueueFamilyIndex = graphics_family_index;
+                barrier.image = swapchain->get_current_image();
+
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier.subresourceRange.baseMipLevel = 0;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.baseArrayLayer = 0;
+                barrier.subresourceRange.layerCount = 1;
+
+                barriers.push_back(barrier);
+                swapchain->set_current_layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+            } else {
+                vk_texture& texture = textures.at(attachment.name);
+                if(texture.layout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+                    VkImageMemoryBarrier barrier = {};
+                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                    barrier.oldLayout = texture.layout;
+                    barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    barrier.srcQueueFamilyIndex = graphics_family_index;
+                    barrier.dstQueueFamilyIndex = graphics_family_index;
+                    barrier.image = texture.image;
+
+                    if(texture.is_depth_tex) {
+                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+                    } else {
+                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    }
+                    barrier.subresourceRange.baseMipLevel = 0;
+                    barrier.subresourceRange.levelCount = 1;
+                    barrier.subresourceRange.baseArrayLayer = 0;
+                    barrier.subresourceRange.layerCount = 1;
+
+                    barriers.push_back(barrier);
+                    texture.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                }
+            }
         }
+
+        if(!barriers.empty()) {
+            vkCmdPipelineBarrier(cmds,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
+                0, nullptr,
+                0, nullptr,
+                barriers.size(), barriers.data());
+        }
+
+        if(renderpass.data.depth_texture) {
+            vk_texture& texture = textures.at(renderpass.data.depth_texture.value().name);
+            if(texture.layout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+                barriers.clear();
+                VkImageMemoryBarrier barrier = {};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                barrier.oldLayout = texture.layout;
+                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.srcQueueFamilyIndex = graphics_family_index;
+                barrier.dstQueueFamilyIndex = graphics_family_index;
+                barrier.image = texture.image;
+
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                barrier.subresourceRange.baseMipLevel = 0;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.baseArrayLayer = 0;
+                barrier.subresourceRange.layerCount = 1;
+
+                barriers.push_back(barrier);
+                texture.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            }
+
+            if(!barriers.empty()) {
+                vkCmdPipelineBarrier(cmds,
+                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
+                    0, nullptr,
+                    0, nullptr,
+                    barriers.size(), barriers.data());
+            }
+        }
+#pragma endregion
 
         VkClearValue clear_value = {};
         clear_value.color = { 0, 0, 0, 0 };
@@ -1353,6 +1412,15 @@ namespace nova {
 
         } else {
             submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
+        }
+
+        for(const texture_attachment& attachment : renderpass.data.texture_outputs) {
+            if(attachment.name == "Backbuffer") {
+                continue;
+            }
+
+            vk_texture& texture = textures.at(attachment.name);
+            texture.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
     }
 
@@ -1586,6 +1654,7 @@ namespace nova {
             texture.is_dynamic = true;
             texture.data = texture_data;
             texture.format = to_vk_format(texture_data.format.pixel_format);
+            texture.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             VkImageCreateInfo image_create_info = {};
             image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1627,6 +1696,7 @@ namespace nova {
             image_view_create_info.format = image_create_info.format;
             if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
                 image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                texture.is_depth_tex = true;
 
             } else {
                 image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
