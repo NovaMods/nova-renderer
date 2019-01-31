@@ -21,7 +21,7 @@ namespace nova {
      * \param key The name of the value
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      */
-    template <typename ValType>
+    template <typename ValType, std::enable_if_t <!std::is_same_v<ValType, std::string>>** = nullptr>
     std::optional<ValType> get_json_value(const nlohmann::json &json_obj, const std::string &key) {
         const auto &itr = json_obj.find(key);
         if(itr != json_obj.end()) {
@@ -30,6 +30,25 @@ namespace nova {
         }
 
         return std::optional<ValType>{};
+    }
+
+    /*!
+     * \brief Retrieves an individual string value from the provided JSON structure
+     * \tparam ValType The type of the value to retrieve (always std::string here)
+     * \param json_obj The JSON object where your string might be found
+     * \param key The name of the string
+     * \param empty_means_not_present If set to true an empty string will be interpreted as not found
+     * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
+     */
+     template <typename ValType, std::enable_if_t<std::is_same_v<ValType, std::string>>** = nullptr>
+    std::optional<ValType> get_json_value(const nlohmann::json &json_obj, const std::string &key, bool empty_means_not_present = false) {
+        const auto &itr = json_obj.find(key);
+        if(itr != json_obj.end()) {
+            auto str = json_obj.at(key).get<std::string>();
+            return (empty_means_not_present && str.empty()) ? std::optional<std::string>{} : std::optional<std::string>(str);
+        }
+
+        return std::optional<std::string>{};
     }
 
     /*!

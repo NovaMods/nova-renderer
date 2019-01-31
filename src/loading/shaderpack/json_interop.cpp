@@ -36,7 +36,7 @@ namespace nova {
         pass.depth_texture = get_json_value<texture_attachment>(j, "depthTexture");
         pass.input_buffers = get_json_array<std::string>(j, "inputBuffers");
         pass.output_buffers = get_json_array<std::string>(j, "outputBuffers");
-        pass.name = get_json_value<std::string>(j, "name", "<NAME_MISSING>");
+        pass.name = get_json_value<std::string>(j, "name").value_or("<NAME_MISSING>");
     }
 
     void from_json(const nlohmann::json &j, stencil_op_state &stencil_op) {
@@ -78,27 +78,27 @@ namespace nova {
         pipeline.render_queue = get_json_value<render_queue_enum>(j, "renderQueue", render_queue_enum::Opaque, render_queue_enum_from_string);
 
 
-        pipeline.vertex_shader.filename = get_json_value<std::string>(j, "vertexShader", "<SHADER_MISSING>");
+        pipeline.vertex_shader.filename = get_json_value<std::string>(j, "vertexShader").value_or("<NAME_MISSING>");
 
-        std::optional<std::string> geometry_shader_name = get_json_value<std::string>(j, "geometryShader");
+        std::optional<std::string> geometry_shader_name = get_json_value<std::string>(j, "geometryShader", true);
         if(geometry_shader_name) {
             pipeline.geometry_shader = std::make_optional<shader_source>();
             (*pipeline.geometry_shader).filename = *geometry_shader_name;
         }
 
-        std::optional<std::string> tess_control_shader_name = get_json_value<std::string>(j, "tessellationControlShader");
+        std::optional<std::string> tess_control_shader_name = get_json_value<std::string>(j, "tessellationControlShader", true);
         if(tess_control_shader_name) {
             pipeline.tessellation_control_shader = std::make_optional<shader_source>();
             (*pipeline.tessellation_control_shader).filename = *tess_control_shader_name;
         }
 
-        std::optional<std::string> tess_eval_shader_name = get_json_value<std::string>(j, "tessellationEvalShader");
+        std::optional<std::string> tess_eval_shader_name = get_json_value<std::string>(j, "tessellationEvalShader", true);
         if(tess_eval_shader_name) {
             pipeline.tessellation_evaluation_shader = std::make_optional<shader_source>();
             (*pipeline.tessellation_evaluation_shader).filename = *tess_eval_shader_name;
         }
 
-        std::optional<std::string> fragment_shader_name = get_json_value<std::string>(j, "fragmentShader");
+        std::optional<std::string> fragment_shader_name = get_json_value<std::string>(j, "fragmentShader", true);
         if(fragment_shader_name) {
             pipeline.fragment_shader = std::make_optional<shader_source>();
             (*pipeline.fragment_shader).filename = *fragment_shader_name;

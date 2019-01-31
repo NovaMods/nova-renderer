@@ -56,7 +56,7 @@ namespace nova {
 
     validation_report validate_graphics_pipeline(nlohmann::json &pipeline_json) {
         validation_report report;
-        const std::string name = get_json_value<std::string>(pipeline_json, "name", "<NAME_MISSING>");
+        const std::string name = get_json_value<std::string>(pipeline_json, "name").value_or("<NAME_MISSING>");
         // Don't need to check for the name's existence here, it'll be checked with the rest of the required fields
 
         const std::string pipeline_context = "Pipeline " + name;
@@ -178,7 +178,7 @@ namespace nova {
 
     validation_report validate_sampler_data(nlohmann::json &sampler_json) {
         validation_report report;
-        const std::string name = get_json_value<std::string>(sampler_json, "name", "<NAME_MISSING>");
+        const std::string name = get_json_value<std::string>(sampler_json, "name").value_or("<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
             report.errors.emplace_back(SAMPLER_MSG(name, "Missing field name"));
         }
@@ -202,7 +202,7 @@ namespace nova {
     validation_report validate_material(nlohmann::json &material_json) {
         validation_report report;
 
-        const std::string name = get_json_value<std::string>(material_json, "name", "<NAME_MISSING>");
+        const std::string name = get_json_value<std::string>(material_json, "name").value_or("<NAME_MISSING>");
         if(name == "<NAME_MISSING>") {
             report.errors.emplace_back(MATERIAL_MSG(name, "Missing material name"));
         }
@@ -228,7 +228,7 @@ namespace nova {
             }
 
             for(const auto &pass_json : passes_json) {
-                const std::string pass_name = get_json_value<std::string>(pass_json, "name", "<NAME_MISSING>");
+                const std::string pass_name = get_json_value<std::string>(pass_json, "name").value_or("<NAME_MISSING>");
                 if(pass_name == "<NAME_MISSING>") {
                     report.errors.emplace_back(MATERIAL_PASS_MSG(name, pass_name, "Missing field name"));
                 }
