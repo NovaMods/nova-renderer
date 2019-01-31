@@ -123,6 +123,7 @@ namespace nova {
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
 
     void vulkan_render_engine::transition_dynamic_textures() {
+        NOVA_LOG(TRACE) << "Transitioning dynamic textures to color attachment layouts";
         std::vector<VkImageMemoryBarrier> color_barriers;
         color_barriers.reserve(textures.size());
 
@@ -621,7 +622,7 @@ namespace nova {
                     desc.flags = 0;
                     desc.format = swapchain->get_swapchain_format();
                     desc.samples = VK_SAMPLE_COUNT_1_BIT;
-                    desc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+                    desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                     desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -678,7 +679,7 @@ namespace nova {
                     desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                     desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                    desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
                     attachments.push_back(desc);
 
@@ -1413,15 +1414,6 @@ namespace nova {
         } else {
             submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
         }
-
-        for(const texture_attachment& attachment : renderpass.data.texture_outputs) {
-            if(attachment.name == "Backbuffer") {
-                continue;
-            }
-
-            vk_texture& texture = textures.at(attachment.name);
-            texture.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        }
     }
 
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass &renderpass) {
@@ -1579,10 +1571,6 @@ namespace nova {
     }
 
     void vulkan_render_engine::reset_render_finished_semaphores() {
-        for(VkSemaphore& semaphore : render_finished_semaphores_by_frame[current_frame]) {
-            vkDestroySemaphore(device, semaphore, nullptr);
-        }
-
         render_finished_semaphores_by_frame[current_frame].clear();
     }
 
