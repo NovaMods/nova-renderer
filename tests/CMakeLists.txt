@@ -13,7 +13,6 @@ add_executable(nova-test-end-to-end src/end_to_end_runner.cpp src/general_test_s
 target_compile_definitions(nova-test-end-to-end PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources/")
 target_link_libraries(nova-test-end-to-end PRIVATE nova-renderer gtest gtest_main Threads::Threads)
 
-add_test(NAME nova-end-to-end-test COMMAND nova-test-end-to-end)
 remove_permissive(nova-test-end-to-end)
 
 # Unit tests
@@ -21,11 +20,7 @@ add_executable(nova-test-unit unit_tests/loading/filesystem_test.cpp src/general
 target_compile_definitions(nova-test-unit PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX="${CMAKE_CURRENT_LIST_DIR}/resources/")
 target_link_libraries(nova-test-unit nova-renderer gtest gtest_main Threads::Threads)
 
-gtest_discover_tests(nova-test-unit)
-add_test(NAME nova-unit-tests COMMAND nova-test-unit)
 remove_permissive(nova-test-unit)
 
 set(CMAKE_CXX_FLAGS "${NOVA_CXX_FLAGS}")
 
-set_property(TARGET gtest PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET gtest_main PROPERTY EXCLUDE_FROM_ALL True)

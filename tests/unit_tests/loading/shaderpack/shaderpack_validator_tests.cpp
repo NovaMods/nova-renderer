@@ -1529,8 +1529,8 @@ TEST(graphics_pipeline_validator, missing_tessellation_control_shader) {
         {"msaaSupport", "None"},
         {"primitiveMode", "Triangles"},
         {"sourceBlendFactor", "One"},
-        { "destinationBlendFactor", "Zero" },
-        { "fallback", "" },
+        {"destinationBlendFactor", "Zero" },
+        {"fallback", "" },
         {"alphaSrc", "One"},
         {"alphaDst", "Zero"},
         {"depthFunc", "Less"},
@@ -2237,11 +2237,11 @@ TEST(material_validator, bindings_empty) {
             {
                 {
                     { "name", "main" },
-                    { "pipeline", "TexturedLit" }
+                    { "pipeline", "TexturedLit" },
+                    { "bindings", {} }
                 }
             }
         },
-        { "bindings", {} },
         { "filter", "geometry_type::block" }
     };
 

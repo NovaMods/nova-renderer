@@ -34,4 +34,4 @@ build:
   project: C:\projects\nova-renderer\build\nova-renderer.sln
 
 test_script:
-- cmd: C:\projects\nova-renderer\build\bin\%CONFIGURATION%\nova-test-unit.exe
+- cmd: C:\projects\nova-renderer\build\%CONFIGURATION%\nova-test-unit.exe
