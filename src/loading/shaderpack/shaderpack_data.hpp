@@ -20,6 +20,7 @@
 #include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
+#include <unordered_set>
 
 namespace nova {
     NOVA_EXCEPTION(validation_failure_exception);
@@ -465,6 +466,8 @@ namespace nova {
          * If the texture is a color buffer, it gets cleared to (0, 0, 0, 0)
          */
         bool clear = false;
+
+        bool operator==(const texture_attachment& other) const;
     };
 
     /*!
@@ -500,11 +503,11 @@ namespace nova {
         /*!
          * \brief The textures that this pass will read from
          */
-        std::vector<std::string> texture_inputs;
+        std::unordered_set<std::string> texture_inputs;
         /*!
          * \brief The textures that this pass will write to
          */
-        std::vector<texture_attachment> texture_outputs;
+        std::unordered_set<texture_attachment> texture_outputs;
         /*!
          * \brief The depth texture this pass will write to
          */

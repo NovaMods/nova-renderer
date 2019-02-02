@@ -88,6 +88,16 @@ namespace nova {
         VkRect2D render_area;
         VkFence fence;
 
+        /*!
+         * \brief The barriers that should be applied before this pass
+         * 
+         * When a shaderpack is loaded, Nova inspects the resources used by each renderpass. When renderpass B depends 
+         * on renderpass A, and renderpass A writes to a texture that renderpass B reads from, Nova adds a barrier for 
+         * that transition. Nova will add a barrier for the opposite situation as well, so that you don't get 
+         * read-after-write errors
+         */
+        std::vector<VkImageMemoryBarrier> before_pass_barriers;
+        
         bool writes_to_backbuffer = false;
     };
 
@@ -159,7 +169,7 @@ namespace nova {
         void render_frame() override;
         
         std::shared_ptr<iwindow> get_window() const override;
-
+        
         void set_shaderpack(const shaderpack_data& data) override;
 
         std::future<uint32_t> add_mesh(const mesh_data& input_mesh) override;
@@ -345,6 +355,14 @@ namespace nova {
          * \brief Creates descriptor sets for all the materials that are loaded
          */
         void create_material_descriptor_sets();
+
+        std::vector<VkImageMemoryBarrier> make_color_attachment_to_shader_read_only_barriers(const std::unordered_set<std::string>& textures);
+
+        /*!
+         * \brief Looks at all the renderpasses and generates barriers for resources that are written to in one pass 
+         * and read from in a downstream pass
+         */
+        void generate_barriers_for_dynamic_resources();
 
         /*!
          * \brief Binds this material's resources to its descriptor sets

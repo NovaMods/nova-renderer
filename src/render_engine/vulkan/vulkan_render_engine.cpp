@@ -98,17 +98,17 @@ namespace nova {
 
         NOVA_THROW_IF_VK_ERROR(vkCreateDebugReportCallbackEXT(vk_instance, &debug_create_info, nullptr, &debug_callback), render_engine_initialization_exception);
 #endif
-        // First we open the window. This doesn't depend on anything except the VkInstance/ This method also creates 
+        // First we open the window. This doesn't depend on anything except the VkInstance/ This method also creates
         // the VkSurfaceKHR we can render to
         open_window(settings.get_options().window.width, settings.get_options().window.height);
 
-        // Create the device. This depends on both the VkInstance and the VkSurfaceKHR: we need the VkSurfaceKHR to 
+        // Create the device. This depends on both the VkInstance and the VkSurfaceKHR: we need the VkSurfaceKHR to
         // make sure we find a device that can present to that surface
         create_device();
 
         create_per_thread_command_pools();
 
-        // Create the swapchain. This depends on the VkInstance, VkPhysicalDevice, our pre-thread command pools, and 
+        // Create the swapchain. This depends on the VkInstance, VkPhysicalDevice, our pre-thread command pools, and
         // VkSurfaceKHR. This method also fills out a lot of the information in our vk_gpu_info
         create_swapchain();
 
@@ -120,7 +120,9 @@ namespace nova {
         create_default_samplers();
     }
 
-    vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
+    vulkan_render_engine::~vulkan_render_engine() {
+        vkDeviceWaitIdle(device);
+    }
 
     void vulkan_render_engine::transition_dynamic_textures() {
         NOVA_LOG(TRACE) << "Transitioning dynamic textures to color attachment layouts";
@@ -130,7 +132,7 @@ namespace nova {
         std::vector<VkImageMemoryBarrier> depth_barriers;
         depth_barriers.reserve(textures.size());
 
-        for(const auto&[texture_name, texture] : textures) {
+        for(const auto& [texture_name, texture] : textures) {
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -157,7 +159,6 @@ namespace nova {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
                 color_barriers.push_back(barrier);
-
             }
         }
 
@@ -177,17 +178,9 @@ namespace nova {
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vkBeginCommandBuffer(cmds, &begin_info);
 
-        vkCmdPipelineBarrier(cmds,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
-            0, nullptr,
-            0, nullptr,
-            color_barriers.size(), color_barriers.data());
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, color_barriers.size(), color_barriers.data());
 
-        vkCmdPipelineBarrier(cmds,
-            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
-            0, nullptr,
-            0, nullptr,
-            depth_barriers.size(), depth_barriers.data());
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, depth_barriers.size(), depth_barriers.data());
 
         vkEndCommandBuffer(cmds);
 
@@ -210,7 +203,7 @@ namespace nova {
 
         dynamic_textures_need_to_transition = false;
     }
-    
+
     void vulkan_render_engine::create_swapchain() {
         NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities), render_engine_initialization_exception);
 
@@ -258,12 +251,10 @@ namespace nova {
             throw std::runtime_error("vertex_memory_settings.buffer_part_size must be a multiple of sizeof(full_vertex) (which equals " + std::to_string(sizeof(full_vertex)) + ")");
         }
         if(options.new_buffer_size % options.buffer_part_size != 0) {
-            throw std::runtime_error(
-                "vertex_memory_settings.new_buffer_size must be a multiple of vertex_memory_settings.buffer_part_size (which equals " + std::to_string(options.buffer_part_size) + ")");
+            throw std::runtime_error("vertex_memory_settings.new_buffer_size must be a multiple of vertex_memory_settings.buffer_part_size (which equals " + std::to_string(options.buffer_part_size) + ")");
         }
         if(options.max_total_allocation % options.new_buffer_size != 0) {
-            throw std::runtime_error(
-                "vertex_memory_settings.max_total_allocation must be a multiple of vertex_memory_settings.new_buffer_size (which equals " + std::to_string(options.max_total_allocation) + ")");
+            throw std::runtime_error("vertex_memory_settings.max_total_allocation must be a multiple of vertex_memory_settings.new_buffer_size (which equals " + std::to_string(options.max_total_allocation) + ")");
         }
     }
 
@@ -282,7 +273,7 @@ namespace nova {
             VkPhysicalDevice current_device = physical_devices[device_idx];
             vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
-            if(gpu.props.vendorID == 0x8086 && device_count - 1 > device_idx) {  // Intel GPU... they are not powerful and we have more available, so skip it
+            if(gpu.props.vendorID == 0x8086 && device_count - 1 > device_idx) { // Intel GPU... they are not powerful and we have more available, so skip it
                 continue;
             }
 
@@ -331,7 +322,7 @@ namespace nova {
         }
 
         vkGetPhysicalDeviceFeatures(gpu.phys_device, &gpu.supported_features);
-        
+
         const float priority = 1.0;
 
         VkDeviceQueueCreateInfo graphics_queue_create_info{};
@@ -372,7 +363,7 @@ namespace nova {
         vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
         copy_family_index = copy_family_idx;
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
-        
+
         delete[] physical_devices;
     }
 
@@ -405,7 +396,7 @@ namespace nova {
 
         VkSemaphoreCreateInfo semaphore_info = {};
         semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        
+
         frame_fences.resize(max_frames_in_queue);
         image_available_semaphores.resize(max_frames_in_queue);
         render_finished_semaphores_by_frame.resize(max_frames_in_queue);
@@ -449,6 +440,8 @@ namespace nova {
         create_material_descriptor_sets();
         NOVA_LOG(TRACE) << "Material descriptor sets created";
 
+        generate_barriers_for_dynamic_resources();
+
         shaderpack_loaded = true;
     }
 
@@ -458,8 +451,8 @@ namespace nova {
     }
 
     VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() {
-        const uint32_t cur_thread_idx = scheduler->get_current_thread_idx(); 
-        return descriptor_pools_by_thread_idx.at(cur_thread_idx); 
+        const uint32_t cur_thread_idx = scheduler->get_current_thread_idx();
+        return descriptor_pools_by_thread_idx.at(cur_thread_idx);
     }
 
     void vulkan_render_engine::create_default_samplers() {
@@ -505,8 +498,7 @@ namespace nova {
         allocation_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
         allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        NOVA_THROW_IF_VK_ERROR(
-            vmaCreateBuffer(vma_allocator, &buffer_create_info, &allocation_create_info, &new_buffer.buffer, &new_buffer.allocation, &new_buffer.alloc_info), render_engine_rendering_exception);
+        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator, &buffer_create_info, &allocation_create_info, &new_buffer.buffer, &new_buffer.allocation, &new_buffer.alloc_info), render_engine_rendering_exception);
 
         return new_buffer;
     }
@@ -524,7 +516,7 @@ namespace nova {
                 const uint32_t index_size = input_mesh->indices.size() * sizeof(uint32_t);
 
                 // TODO: Make the extra memory allocation configurable
-                const uint32_t total_memory_needed = std::round((vertex_size + index_size) * 1.1);  // Extra size so chunks can grow
+                const uint32_t total_memory_needed = std::round((vertex_size + index_size) * 1.1); // Extra size so chunks can grow
 
                 vk_buffer staging_buffer = get_or_allocate_mesh_staging_buffer(total_memory_needed);
                 std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh->vertex_data[0], vertex_size);
@@ -537,7 +529,9 @@ namespace nova {
 
                 return mesh_id;
             },
-            &input_mesh, &mesh_upload_queue_mutex, &mesh_upload_queue);
+            &input_mesh,
+            &mesh_upload_queue_mutex,
+            &mesh_upload_queue);
     }
 
     void vulkan_render_engine::delete_mesh(uint32_t mesh_id) {
@@ -551,7 +545,9 @@ namespace nova {
         return other.set == set && other.binding == binding && other.descriptorCount == descriptorCount && other.descriptorType == descriptorType;
     }
 
-    bool vk_resource_binding::operator!=(const vk_resource_binding& other) const { return !(*this == other); }
+    bool vk_resource_binding::operator!=(const vk_resource_binding& other) const {
+        return !(*this == other);
+    }
 
     void vulkan_render_engine::create_render_passes(const std::vector<render_pass_data>& passes) {
         NOVA_LOG(DEBUG) << "Flattening frame graph...";
@@ -650,22 +646,22 @@ namespace nova {
 
                     framebuffer_attachments.push_back(tex.image_view);
 
-                    const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
+                    const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({swapchain_extent.width, swapchain_extent.height});
 
                     if(framebuffer_width == 0) {
                         framebuffer_width = attachment_size.x;
 
                     } else if(attachment_size.x != framebuffer_width) {
-                        NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
-                            << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
+                        NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of " << framebuffer_width
+                                        << ". This is illegal, all input textures of a single renderpass must be the same size";
                     }
 
                     if(framebuffer_height == 0) {
                         framebuffer_height = attachment_size.y;
 
                     } else if(attachment_size.y != framebuffer_height) {
-                        NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
-                            << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
+                        NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of " << framebuffer_height
+                                        << ". This is illegal, all input textures of a single renderpass must be the same size";
                     }
 
                     NOVA_LOG(TRACE) << "Adding image view " << textures.at(attachment.name).image_view << " from image " << attachment.name << " to framebuffer for renderpass " << pass.data.name;
@@ -699,22 +695,22 @@ namespace nova {
 
                 textures_in_framebuffer.push_back(&textures.at(pass.data.depth_texture->name));
 
-                const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({ swapchain_extent.width, swapchain_extent.height });
+                const glm::uvec2 attachment_size = tex.data.format.get_size_in_pixels({swapchain_extent.width, swapchain_extent.height});
 
                 if(framebuffer_width == 0) {
                     framebuffer_width = attachment_size.x;
 
                 } else if(attachment_size.x != framebuffer_width) {
-                    NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
-                        << framebuffer_width << ". This is illegal, all input textures of a single renderpass must be the same size";
+                    NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a width of " << attachment_size.x << ", but the framebuffer has a width of " << framebuffer_width
+                                    << ". This is illegal, all input textures of a single renderpass must be the same size";
                 }
 
                 if(framebuffer_height == 0) {
                     framebuffer_height = attachment_size.y;
 
                 } else if(attachment_size.y != framebuffer_height) {
-                    NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
-                        << framebuffer_height << ". This is illegal, all input textures of a single renderpass must be the same size";
+                    NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name << " has a height of " << attachment_size.y << ", but the framebuffer has a height of " << framebuffer_height
+                                    << ". This is illegal, all input textures of a single renderpass must be the same size";
                 }
 
                 VkAttachmentDescription desc = {};
@@ -736,20 +732,17 @@ namespace nova {
             }
 
             if(framebuffer_width == 0) {
-                NOVA_LOG(ERROR)
-                    << "Framebuffer width for pass " << pass.data.name
-                    << " is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero width";
+                NOVA_LOG(ERROR) << "Framebuffer width for pass " << pass.data.name
+                                << " is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero width";
             }
 
             if(framebuffer_height == 0) {
-                NOVA_LOG(ERROR)
-                    << "Framebuffer height for pass " << pass.data.name
-                    << " is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero height";
+                NOVA_LOG(ERROR) << "Framebuffer height for pass " << pass.data.name
+                                << " is 0. This is illegal! Make sure that there is at least one attachment for this render pass, and ensure that all attachments used by this pass have a non-zero height";
             }
 
             if(framebuffer_attachments.size() > gpu.props.limits.maxColorAttachments) {
-                NOVA_LOG(ERROR) << "Framebuffer for pass " << pass.data.name << " has " << framebuffer_attachments.size() << " color attachments, but your GPU only supports "
-                                << gpu.props.limits.maxColorAttachments
+                NOVA_LOG(ERROR) << "Framebuffer for pass " << pass.data.name << " has " << framebuffer_attachments.size() << " color attachments, but your GPU only supports " << gpu.props.limits.maxColorAttachments
                                 << ". Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures";
             }
 
@@ -763,8 +756,7 @@ namespace nova {
 
             if(writes_to_backbuffer) {
                 if(pass.data.texture_outputs.size() > 1) {
-                    NOVA_LOG(ERROR) << "Pass " << pass.data.name
-                                    << " writes to the backbuffer, and other textures. Passes that write to the backbuffer are not allowed to write to any other textures";
+                    NOVA_LOG(ERROR) << "Pass " << pass.data.name << " writes to the backbuffer, and other textures. Passes that write to the backbuffer are not allowed to write to any other textures";
                 }
 
                 render_passes[pass_name].framebuffer.framebuffer = nullptr;
@@ -850,7 +842,7 @@ namespace nova {
             NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout), render_engine_initialization_exception);
             nova_pipeline.layout = layout;
 
-            for(const auto& [stage, shader_module]: shader_modules) {
+            for(const auto& [stage, shader_module] : shader_modules) {
                 VkPipelineShaderStageCreateInfo shader_stage_create_info;
                 shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 shader_stage_create_info.pNext = nullptr;
@@ -1004,7 +996,7 @@ namespace nova {
             pipeline_create_info.basePipelineIndex = -1;
 
             NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.pipeline), render_engine_initialization_exception);
-            
+
             pipelines_by_renderpass[data.pass].push_back(nova_pipeline);
         }
     }
@@ -1074,7 +1066,7 @@ namespace nova {
             mesh_draw_command.vertexOffset = static_cast<uint32_t>(mem->offset);
             mesh_draw_command.firstInstance = 0;
 
-            meshes[cmd.mesh_id] = { mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command };
+            meshes[cmd.mesh_id] = {mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command};
 
             freed_buffers.insert(freed_buffers.end(), cmd.staging_buffer);
         }
@@ -1106,15 +1098,14 @@ namespace nova {
         available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), freed_buffers.begin(), freed_buffers.end());
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
-        VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* msg, void* user_data) {
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* msg, void* user_data) {
         if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
             NOVA_LOG(ERROR) << "[" << layer_prefix << "] " << msg;
 
         } else if(flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
             // Warnings may hint at unexpected / non-spec API usage
             NOVA_LOG(WARN) << "[" << layer_prefix << "] " << msg;
-            
+
         } else if(flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
             // May indicate sub-optimal usage of the API
             NOVA_LOG(WARN) << "PERFORMANCE WARNING: [" << layer_prefix << "] " << msg;
@@ -1141,7 +1132,9 @@ namespace nova {
         return VK_FALSE;
     }
 
-    std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }
+    std::shared_ptr<iwindow> vulkan_render_engine::get_window() const {
+        return window;
+    }
 
     void vulkan_render_engine::render_frame() {
         reset_render_finished_semaphores();
@@ -1151,10 +1144,10 @@ namespace nova {
         vkResetFences(device, 1, &frame_fences.at(current_frame));
 
         swapchain->acquire_next_swapchain_image(image_available_semaphores.at(current_frame));
-        
+
         // Record command buffers
         // We can't upload a new shaderpack in the middle of a frame!
-        // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the frame 
+        // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the frame
         shaderpack_loading_mutex.lock();
 
         if(dynamic_textures_need_to_transition) {
@@ -1165,7 +1158,7 @@ namespace nova {
             execute_renderpass(&renderpass_name);
         }
         shaderpack_loading_mutex.unlock();
-        
+
         // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has
         // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
         upload_new_mesh_parts();
@@ -1250,7 +1243,7 @@ namespace nova {
             }
         }
     }
-    
+
     void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
         vkResetFences(device, 1, &renderpass.fence);
@@ -1269,7 +1262,7 @@ namespace nova {
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-                
+
         const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
 
         std::vector<VkCommandBuffer> secondary_command_buffers(pipelines.size());
@@ -1339,11 +1332,7 @@ namespace nova {
         }
 
         if(!barriers.empty()) {
-            vkCmdPipelineBarrier(cmds,
-                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
-                0, nullptr,
-                0, nullptr,
-                barriers.size(), barriers.data());
+            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, barriers.size(), barriers.data());
         }
 
         if(renderpass.data.depth_texture) {
@@ -1371,19 +1360,15 @@ namespace nova {
             }
 
             if(!barriers.empty()) {
-                vkCmdPipelineBarrier(cmds,
-                    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
-                    0, nullptr,
-                    0, nullptr,
-                    barriers.size(), barriers.data());
+                vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, barriers.size(), barriers.data());
             }
         }
 #pragma endregion
 
         VkClearValue clear_value = {};
-        clear_value.color = { 0, 0, 0, 0 };
+        clear_value.color = {0, 0, 0, 0};
 
-        VkClearValue clear_values[] = { clear_value, clear_value };
+        VkClearValue clear_values[] = {clear_value, clear_value};
 
         VkRenderPassBeginInfo rp_begin_info = {};
         rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1409,14 +1394,14 @@ namespace nova {
 
         // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's fence
         if(renderpass.writes_to_backbuffer) {
-            submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), { image_available_semaphores.at(current_frame) });
+            submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), {image_available_semaphores.at(current_frame)});
 
         } else {
             submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
         }
     }
 
-    void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass &renderpass) {
+    void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass) {
         // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
         // command pool for its thread, since command pools need to be externally synchronized
         const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
@@ -1452,7 +1437,7 @@ namespace nova {
 
             draw_all_for_material(pass, *cmds);
         }
-        
+
         vkEndCommandBuffer(*cmds);
     }
 
@@ -1477,7 +1462,7 @@ namespace nova {
 
             return;
         }
-        
+
         const std::unordered_map<VkBuffer, std::vector<render_object>>& renderables_by_buffer = renderables_by_material.at(pass.name);
 
         for(const auto& [buffer, renderables] : renderables_by_buffer) {
@@ -1528,7 +1513,7 @@ namespace nova {
 
             render_finished_semaphores.push_back(semaphore);
         }
-        
+
         VkSubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.pNext = nullptr;
@@ -1618,7 +1603,7 @@ namespace nova {
 
     VkDescriptorPool vulkan_render_engine::make_new_descriptor_pool() const {
         std::vector<VkDescriptorPoolSize> pool_sizes;
-        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 5});  // Virtual textures greatly reduces the number of total textures
+        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 5}); // Virtual textures greatly reduces the number of total textures
         pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 5});
         pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 5000});
 
@@ -1702,8 +1687,7 @@ namespace nova {
         dynamic_textures_need_to_transition = true;
     }
 
-    void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
-            const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, const VkDescriptorType type) {
+    void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, const VkDescriptorType type) {
         const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
 
@@ -1801,7 +1785,7 @@ namespace nova {
                     layouts.reserve(pipeline.layouts.size());
 
                     // CLion might tell you to simplify this into a foreach loop... DO NOT! The layouts need to be added in set
-                            // order, not map order which is what you'll get if you use a foreach - AND IT'S WRONG
+                    // order, not map order which is what you'll get if you use a foreach - AND IT'S WRONG
                     for(uint32_t i = 0; i < pipeline.layouts.size(); i++) {
                         layouts.push_back(pipeline.layouts.at(static_cast<int32_t>(i)));
                     }
@@ -1818,6 +1802,73 @@ namespace nova {
                     update_material_descriptor_sets(mat_pass, pipeline.bindings);
                 }
             }
+        }
+    }
+
+    std::vector<VkImageMemoryBarrier> vulkan_render_engine::make_color_attachment_to_shader_read_only_barriers(const std::unordered_set<std::string>& textures) {
+        
+    }    
+
+    void vulkan_render_engine::generate_barriers_for_dynamic_resources() {
+        for(auto& [name, pass] : render_passes) {
+            std::unordered_set<std::string> read_textures_that_might_need_barriers = pass.data.texture_inputs;
+            std::unordered_set<std::string> read_textures_that_do_not_need_barriers;
+            std::unordered_set<std::string> read_textures_that_definitely_need_barriers;
+
+            for(uint32_t i = 0; i < render_passes_by_order.size(); i++) {
+                if(render_passes_by_order.at(i) == name) {
+                    // We found our render pass! Now let's walk backward to find any usages of the resources we write to
+                    // If we encounter another pass that writes to the same resource that we write to, we don't need
+                    // to care about that resource. The other pass (or one even earlier) will have the appropriate barrier
+                    // The same logic applies to resources we read from - if we find another pass that reads from it
+                    // before we find one that writes to it, we don't need a barrier because it will happen earlier
+                    for(int back_idx = i; back_idx >= 0; back_idx--) {
+                        const std::string& back_pass_name = render_passes_by_order.at(i);
+                        const vk_render_pass& previous_pass = render_passes.at(back_pass_name);
+
+                        for(const std::string& texture_name : read_textures_that_might_need_barriers) {
+                            // Find all the textures that we read from that the previous pass writes to. We'll need to 
+                            // barrier these for sure
+                            for(const texture_attachment& tex : previous_pass.data.texture_outputs) {
+                                if(tex.name == texture_name) {
+                                    // We definitely need a barrier
+                                    read_textures_that_definitely_need_barriers.emplace(texture_name);
+                                }
+                            }
+
+                            // Find all the passes that we read from that this previous pass also reads from
+                            // The previous pass (or a pass even earlier) will have the barrier for that texture
+                            read_textures_that_do_not_need_barriers.clear();
+                            std::set_intersection(read_textures_that_might_need_barriers.begin(),
+                                                  read_textures_that_might_need_barriers.end(),
+                                                  previous_pass.data.texture_inputs.begin(),
+                                                  pass.data.texture_inputs.end(),
+                                                  std::inserter(read_textures_that_do_not_need_barriers, read_textures_that_do_not_need_barriers.begin()));
+                        }
+
+                        // Remove the textures that we know we won't write to 
+                        std::unordered_set<std::string> difference;
+                        std::set_difference(read_textures_that_might_need_barriers.begin(),
+                                            read_textures_that_might_need_barriers.end(),
+                                            read_textures_that_do_not_need_barriers.begin(),
+                                            read_textures_that_do_not_need_barriers.end(),
+                                            std::inserter(difference, difference.begin()));
+                        read_textures_that_might_need_barriers = difference;
+
+                        difference.clear();
+
+                        // Remove the textures that we know we will write to
+                        std::set_difference(read_textures_that_might_need_barriers.begin(),
+                                            read_textures_that_might_need_barriers.end(),
+                                            read_textures_that_definitely_need_barriers.begin(),
+                                            read_textures_that_definitely_need_barriers.end(),
+                                            std::inserter(difference, difference.begin()));
+                        read_textures_that_might_need_barriers = difference;
+                    }
+                }
+            }
+
+            const std::vector<VkImageMemoryBarrier> barriers_fo_read_textures = make_color_attachment_to_shader_read_only_barriers(read_textures_that_definitely_need_barriers);
         }
     }
 
@@ -1842,7 +1893,8 @@ namespace nova {
                 if(pipeline.data.name == mat.pipeline) {
                     for(const auto& [descriptor_name, resource_name] : mat.bindings) {
                         if(pipeline.bindings.find(descriptor_name) == pipeline.bindings.end()) {
-                            NOVA_LOG(DEBUG) << "Material pass " << mat.name << " in material " << mat.material_name << " wants to bind " << resource_name << " to descriptor set " << descriptor_name << ", but it doesn't exist in pipeline " << pipeline.data.name << ", which this material pass uses";
+                            NOVA_LOG(DEBUG) << "Material pass " << mat.name << " in material " << mat.material_name << " wants to bind " << resource_name << " to descriptor set " << descriptor_name << ", but it doesn't exist in pipeline "
+                                            << pipeline.data.name << ", which this material pass uses";
                         }
                     }
 
@@ -1855,7 +1907,7 @@ namespace nova {
                 }
             }
         }
-        
+
         for(const auto& [descriptor_name, resource_name] : mat.bindings) {
             const auto& descriptor_info = name_to_descriptor.at(descriptor_name);
             const auto descriptor_set = mat.descriptor_sets[descriptor_info.set];
@@ -1912,4 +1964,4 @@ namespace nova {
         write.pBufferInfo = &buffer_infos[buffer_infos.size() - 1];
         write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     }
-}  // namespace nova
+} // namespace nova
