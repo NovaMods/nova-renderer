@@ -356,7 +356,9 @@ namespace nova {
          */
         void create_material_descriptor_sets();
 
-        std::vector<VkImageMemoryBarrier> make_color_attachment_to_shader_read_only_barriers(const std::unordered_set<std::string>& textures);
+        std::vector<VkImageMemoryBarrier> make_attachment_to_shader_read_only_barriers(const std::unordered_set<std::string>& textures);
+
+        void create_barriers_for_renderpass(const vk_render_pass& pass);
 
         /*!
          * \brief Looks at all the renderpasses and generates barriers for resources that are written to in one pass 

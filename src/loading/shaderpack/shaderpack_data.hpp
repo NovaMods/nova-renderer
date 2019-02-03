@@ -503,11 +503,11 @@ namespace nova {
         /*!
          * \brief The textures that this pass will read from
          */
-        std::unordered_set<std::string> texture_inputs;
+        std::vector<std::string> texture_inputs;
         /*!
          * \brief The textures that this pass will write to
          */
-        std::unordered_set<texture_attachment> texture_outputs;
+        std::vector<texture_attachment> texture_outputs;
         /*!
          * \brief The depth texture this pass will write to
          */

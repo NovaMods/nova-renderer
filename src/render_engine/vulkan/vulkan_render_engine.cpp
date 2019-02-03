@@ -1805,70 +1805,212 @@ namespace nova {
         }
     }
 
-    std::vector<VkImageMemoryBarrier> vulkan_render_engine::make_color_attachment_to_shader_read_only_barriers(const std::unordered_set<std::string>& textures) {
-        
-    }    
+    std::vector<VkImageMemoryBarrier> vulkan_render_engine::make_attachment_to_shader_read_only_barriers(const std::unordered_set<std::string>& textures) {
+        std::vector<VkImageMemoryBarrier> barriers;
+        barriers.reserve(textures.size());
 
-    void vulkan_render_engine::generate_barriers_for_dynamic_resources() {
-        for(auto& [name, pass] : render_passes) {
-            std::unordered_set<std::string> read_textures_that_might_need_barriers = pass.data.texture_inputs;
-            std::unordered_set<std::string> read_textures_that_do_not_need_barriers;
-            std::unordered_set<std::string> read_textures_that_definitely_need_barriers;
+        for(const std::string& tex_name : textures) {
+            const vk_texture& tex = this->textures.at(tex_name);
 
-            for(uint32_t i = 0; i < render_passes_by_order.size(); i++) {
-                if(render_passes_by_order.at(i) == name) {
-                    // We found our render pass! Now let's walk backward to find any usages of the resources we write to
-                    // If we encounter another pass that writes to the same resource that we write to, we don't need
-                    // to care about that resource. The other pass (or one even earlier) will have the appropriate barrier
-                    // The same logic applies to resources we read from - if we find another pass that reads from it
-                    // before we find one that writes to it, we don't need a barrier because it will happen earlier
-                    for(int back_idx = i; back_idx >= 0; back_idx--) {
-                        const std::string& back_pass_name = render_passes_by_order.at(i);
-                        const vk_render_pass& previous_pass = render_passes.at(back_pass_name);
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcQueueFamilyIndex = graphics_family_index;
+            barrier.dstQueueFamilyIndex = graphics_family_index;
+            barrier.image = tex.image;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
 
-                        for(const std::string& texture_name : read_textures_that_might_need_barriers) {
-                            // Find all the textures that we read from that the previous pass writes to. We'll need to 
-                            // barrier these for sure
-                            for(const texture_attachment& tex : previous_pass.data.texture_outputs) {
-                                if(tex.name == texture_name) {
-                                    // We definitely need a barrier
-                                    read_textures_that_definitely_need_barriers.emplace(texture_name);
-                                }
-                            }
+            if(tex.is_depth_tex) {
+                barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-                            // Find all the passes that we read from that this previous pass also reads from
-                            // The previous pass (or a pass even earlier) will have the barrier for that texture
-                            read_textures_that_do_not_need_barriers.clear();
-                            std::set_intersection(read_textures_that_might_need_barriers.begin(),
-                                                  read_textures_that_might_need_barriers.end(),
-                                                  previous_pass.data.texture_inputs.begin(),
-                                                  pass.data.texture_inputs.end(),
-                                                  std::inserter(read_textures_that_do_not_need_barriers, read_textures_that_do_not_need_barriers.begin()));
+            } else {
+                barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            }
+
+            barriers.push_back(barrier);
+        }
+
+        return barriers;
+    }
+
+    enum class barrier_necessity { maybe, yes, no };
+
+    void vulkan_render_engine::create_barriers_for_renderpass(const vk_render_pass& pass) {
+        /*
+         * For each renderpass:
+         * - Walk backwards through previous renderpasses
+         * - If we find one that writes to a resource we read from before we find one that reads from a resource we read from, add a barrier
+         * - If we find one that reads from a resource we write to before we find one that writes to a resource we write to, add a barrier
+         */
+
+        std::unordered_map<std::string, barrier_necessity> read_texture_barrier_necessity;
+        read_texture_barrier_necessity.reserve(pass.data.texture_inputs.size());
+        for(const std::string& tex_name : pass.data.texture_inputs) {
+            read_texture_barrier_necessity[tex_name] = barrier_necessity::maybe;
+        }
+
+        // Find where we are in the list of passes
+        auto itr = render_passes_by_order.rbegin();
+        while(itr != render_passes_by_order.rend()) {
+            if(*itr == pass.data.name) {
+                break;
+            }
+
+            ++itr;
+        }
+
+        ++itr;
+
+        // Walk backwards from where we are, checking if any of the textures the previous pass writes to are textures we need to barrier
+        while(itr != render_passes_by_order.rend()) {
+            const vk_render_pass& previous_pass = render_passes.at(*itr);
+            {
+                // If the previous pass reads from a texture that we read from, it (or a even earlier pass) will have the barrier
+                const std::vector<std::string> read_textures = previous_pass.data.texture_inputs;
+
+                // If the previous pass reads from a texture that we read from, we don't need to barrier it
+                for(const std::string& prev_read_texture : read_textures) {
+                    if(read_texture_barrier_necessity.find(prev_read_texture) != read_texture_barrier_necessity.end()) {
+                        if(read_texture_barrier_necessity.at(prev_read_texture) == barrier_necessity::maybe) {
+                            read_texture_barrier_necessity[prev_read_texture] = barrier_necessity::no;
                         }
+                    }
+                }
 
-                        // Remove the textures that we know we won't write to 
-                        std::unordered_set<std::string> difference;
-                        std::set_difference(read_textures_that_might_need_barriers.begin(),
-                                            read_textures_that_might_need_barriers.end(),
-                                            read_textures_that_do_not_need_barriers.begin(),
-                                            read_textures_that_do_not_need_barriers.end(),
-                                            std::inserter(difference, difference.begin()));
-                        read_textures_that_might_need_barriers = difference;
-
-                        difference.clear();
-
-                        // Remove the textures that we know we will write to
-                        std::set_difference(read_textures_that_might_need_barriers.begin(),
-                                            read_textures_that_might_need_barriers.end(),
-                                            read_textures_that_definitely_need_barriers.begin(),
-                                            read_textures_that_definitely_need_barriers.end(),
-                                            std::inserter(difference, difference.begin()));
-                        read_textures_that_might_need_barriers = difference;
+                // If the previous pass write to a texture that we read from, we need a barrier
+                for(const texture_attachment& prev_write_tex : previous_pass.data.texture_outputs) {
+                    if(read_texture_barrier_necessity.find(prev_write_tex.name) != read_texture_barrier_necessity.end()) {
+                        if(read_texture_barrier_necessity.at(prev_write_tex.name) == barrier_necessity::maybe) {
+                            read_texture_barrier_necessity[prev_write_tex.name] = barrier_necessity::yes;
+                        }
                     }
                 }
             }
+        }
 
-            const std::vector<VkImageMemoryBarrier> barriers_fo_read_textures = make_color_attachment_to_shader_read_only_barriers(read_textures_that_definitely_need_barriers);
+        std::unordered_set<std::string> read_textures_that_might_need_barriers = pass.data.texture_inputs;
+        std::unordered_set<std::string> read_textures_that_do_not_need_barriers;
+        std::unordered_set<std::string> read_textures_that_definitely_need_barriers;
+
+        std::unordered_set<std::string> write_textures_that_might_need_barriers;
+        write_textures_that_might_need_barriers.reserve(pass.data.texture_outputs.size());
+        for(const texture_attachment& attach : pass.data.texture_outputs) {
+            write_textures_that_might_need_barriers.emplace(attach.name);
+        }
+        std::unordered_set<std::string> write_textures_that_do_not_need_barriers;
+        std::unordered_set<std::string> write_textures_that_definitely_need_barriers;
+
+        for(uint32_t i = 0; i < render_passes_by_order.size(); i++) {
+            if(render_passes_by_order.at(i) == pass.data.name) {
+                // We found our render pass! Now let's walk backward to find any usages of the resources we write to
+                // If we encounter another pass that writes to the same resource that we write to, we don't need
+                // to care about that resource. The other pass (or one even earlier) will have the appropriate barrier
+                // The same logic applies to resources we read from - if we find another pass that reads from it
+                // before we find one that writes to it, we don't need a barrier because it will happen earlier
+                for(int back_idx = i; back_idx >= 0; back_idx--) {
+                    const std::string& back_pass_name = render_passes_by_order.at(i);
+                    const vk_render_pass& previous_pass = render_passes.at(back_pass_name);
+
+#pragma region Read Textures
+                    for(const std::string& texture_name : read_textures_that_might_need_barriers) {
+                        // Find all the textures that we read from that the previous pass writes to. We'll need to
+                        // barrier these for sure
+                        for(const texture_attachment& tex : previous_pass.data.texture_outputs) {
+                            if(tex.name == texture_name) {
+                                // We definitely need a barrier
+                                read_textures_that_definitely_need_barriers.emplace(texture_name);
+                            }
+                        }
+
+                        // Find all the passes that we read from that this previous pass also reads from
+                        // The previous pass (or a pass even earlier) will have the barrier for that texture
+                        read_textures_that_do_not_need_barriers.clear();
+                        std::set_intersection(read_textures_that_might_need_barriers.begin(),
+                                              read_textures_that_might_need_barriers.end(),
+                                              previous_pass.data.texture_inputs.begin(),
+                                              pass.data.texture_inputs.end(),
+                                              std::inserter(read_textures_that_do_not_need_barriers, read_textures_that_do_not_need_barriers.begin()));
+                    }
+
+                    // Remove the textures that we know we won't write to
+                    std::unordered_set<std::string> difference;
+                    std::set_difference(read_textures_that_might_need_barriers.begin(),
+                                        read_textures_that_might_need_barriers.end(),
+                                        read_textures_that_do_not_need_barriers.begin(),
+                                        read_textures_that_do_not_need_barriers.end(),
+                                        std::inserter(difference, difference.begin()));
+                    read_textures_that_might_need_barriers = difference;
+
+                    difference.clear();
+
+                    // Remove the textures that we know we will write to
+                    std::set_difference(read_textures_that_might_need_barriers.begin(),
+                                        read_textures_that_might_need_barriers.end(),
+                                        read_textures_that_definitely_need_barriers.begin(),
+                                        read_textures_that_definitely_need_barriers.end(),
+                                        std::inserter(difference, difference.begin()));
+                    read_textures_that_might_need_barriers = difference;
+#pragma endregion
+
+#pragma region Write Textures
+                    for(const std::string& texture_name : write_textures_that_might_need_barriers) {
+                        // Find all the textures that we write to that the previous pass reads from. We'll need to
+                        // barrier these for sure
+                        // Theoretically people will use different textures for situations like this but maybe you
+                        // want to blend in colors or maybe you want to
+                        for(const std::string& tex : previous_pass.data.texture_inputs) {
+                            if(tex == texture_name) {
+                                // We definitely need a barrier
+                                write_textures_that_definitely_need_barriers.emplace(texture_name);
+                            }
+                        }
+
+                        // Find all the passes that we read from that this previous pass also writes from
+                        // The previous pass (or a pass even earlier) will have the barrier for that texture
+                        write_textures_that_do_not_need_barriers.clear();
+                        std::set_intersection(write_textures_that_might_need_barriers.begin(),
+                                              write_textures_that_might_need_barriers.end(),
+                                              previous_pass.data.texture_inputs.begin(),
+                                              pass.data.texture_inputs.end(),
+                                              std::inserter(write_textures_that_do_not_need_barriers, write_textures_that_do_not_need_barriers.begin()));
+                    }
+
+                    // Remove the textures that we know we won't write to
+                    difference.clear();
+                    std::set_difference(write_textures_that_might_need_barriers.begin(),
+                                        write_textures_that_might_need_barriers.end(),
+                                        write_textures_that_do_not_need_barriers.begin(),
+                                        write_textures_that_do_not_need_barriers.end(),
+                                        std::inserter(difference, difference.begin()));
+                    write_textures_that_might_need_barriers = difference;
+
+                    difference.clear();
+
+                    // Remove the textures that we know we will write to
+                    std::set_difference(write_textures_that_might_need_barriers.begin(),
+                                        write_textures_that_might_need_barriers.end(),
+                                        write_textures_that_definitely_need_barriers.begin(),
+                                        write_textures_that_definitely_need_barriers.end(),
+                                        std::inserter(difference, difference.begin()));
+                    write_textures_that_might_need_barriers = difference;
+#pragma endregion
+                }
+            }
+        }
+
+        const std::vector<VkImageMemoryBarrier> barriers_for_read_textures = make_attachment_to_shader_read_only_barriers(read_textures_that_definitely_need_barriers);
+    }
+
+    void vulkan_render_engine::generate_barriers_for_dynamic_resources() {
+        for(auto& [name, pass] : render_passes) {
+            create_barriers_for_renderpass(pass);
         }
     }
 
