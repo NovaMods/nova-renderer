@@ -24,8 +24,10 @@ if(NOT ${NOVA_IN_SUBMODULE})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
-include(CCache)
-include(ClangFormat)
+if(NOVA_CCACHE)
+    include(CCache)
+    include(ClangFormat)
+endif()
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/build)
 
