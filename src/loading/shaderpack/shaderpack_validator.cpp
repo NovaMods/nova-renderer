@@ -19,13 +19,13 @@ namespace nova {
      * If a field is in `pipeline_data` but not in this structure, it is a required field and cannot be given a
      * default value. It will thus cause an exception
      */
-    nlohmann::json default_graphics_pipeline =
+     nlohmann::json default_graphics_pipeline =
         {
             {"parentName", ""},
-            {"defines", {}},
-            {"states", {}},
-            {"frontFace", {}},
-            {"backFace", {}},
+            {"defines", std::array<std::string, 0>{}},
+            {"states", std::array<std::string, 0>{}},
+            {"frontFace", nlohmann::json::object_t()},
+            {"backFace", nlohmann::json::object_t()},
             {"fallback", ""},
             {"depthBias", 0},
             {"slopeScaledDepthBias", 0},

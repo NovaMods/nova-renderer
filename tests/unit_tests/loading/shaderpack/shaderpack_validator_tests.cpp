@@ -460,7 +460,7 @@ TEST(graphics_pipeline_validator, missing_defines) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field defines. A default value of 'null' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field defines. A default value of '[]' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_states) {
@@ -523,7 +523,7 @@ TEST(graphics_pipeline_validator, missing_states) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field states. A default value of 'null' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field states. A default value of '[]' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_front_face) {
@@ -579,7 +579,7 @@ TEST(graphics_pipeline_validator, missing_front_face) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field frontFace. A default value of 'null' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field frontFace. A default value of '{}' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_back_face) {
@@ -635,7 +635,7 @@ TEST(graphics_pipeline_validator, missing_back_face) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field backFace. A default value of 'null' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field backFace. A default value of '{}' will be used");
 }
 
 TEST(graphics_pipeline_validator, missing_fallback) {
