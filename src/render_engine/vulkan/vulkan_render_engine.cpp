@@ -140,7 +140,7 @@ namespace nova {
         std::vector<VkImageMemoryBarrier> depth_barriers;
         depth_barriers.reserve(textures.size());
 
-        for(const auto& [texture_name, texture] : textures) {
+        for(const auto& [_, texture] : textures) {
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
