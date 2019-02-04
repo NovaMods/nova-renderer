@@ -1346,6 +1346,25 @@ namespace nova {
             vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, renderpass.write_texture_barriers.size(), renderpass.write_texture_barriers.data());
         }
 
+        if(renderpass.writes_to_backbuffer) {
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.srcQueueFamilyIndex = graphics_family_index;
+            barrier.dstQueueFamilyIndex = graphics_family_index;
+            barrier.image = swapchain->get_current_image();
+            barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL; // Each swapchain image **will** be rendered to before it is presented
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        }
+
         // TODO: Any barriers for aliased textures if we're at an aliased boundary
         // TODO: Something about the depth buffer
 #pragma endregion
