@@ -35,8 +35,9 @@ endif()
 # Options for nova's builds #
 #############################
 option(NOVA_TEST "Enable tests." OFF)
-option(ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as well as in the CMake files" OFF)
-if(ENABLE_EXPERIMENTAL)
+option(NOVA_ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as well as in the CMake files" OFF)
+option(NOVA_TREAT_WARNINGS_AS_ERRORS "Add -Werror flag or /WX for MSVC" OFF)
+if(NOVA_ENABLE_EXPERIMENTAL)
     set(CMAKE_LINK_WHAT_YOU_USE TRUE) # Warn about unsued linked libraries
 endif()
 
@@ -183,7 +184,15 @@ set(3RD_PARTY_SOURCE
 if (UNIX)
     add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always)
     add_link_options(-fno-omit-frame-pointer)
-endif (UNIX)
+endif()
+
+if(NOVA_TREAT_WARNINGS_AS_ERRORS)
+    if(MSVC)
+        add_compile_options(/WX)
+    else()
+        add_compile_options(-Werror)
+    endif()
+endif()
 
 ##########################################
 # Setup required options for backtracing #
