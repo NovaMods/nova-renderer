@@ -1147,11 +1147,19 @@ namespace nova {
         if(pCallbackData->objectCount != 0) {
             ss << " Objects: ";
             for(uint32_t i = 0; i < pCallbackData->objectCount; i++) {
-                ss << vulkan::to_string(pCallbackData->pObjects[i].objectType) << pCallbackData->pObjects[i].pObjectName << " (" << pCallbackData->pObjects[i].objectHandle << ") ";
+                ss << vulkan::to_string(pCallbackData->pObjects[i].objectType);
+                if(pCallbackData->pObjects[i].pObjectName != nullptr) {
+                    ss << pCallbackData->pObjects[i].pObjectName;
+                }
+                ss << " (" << pCallbackData->pObjects[i].objectHandle << ") ";
                 if(i != pCallbackData->objectCount - 1) {
                     ss << ", ";
                 }
             }
+        }
+
+        if(pCallbackData->pMessage != nullptr) {
+            ss << pCallbackData->pMessage;
         }
 
         const std::string msg = ss.str();
