@@ -40,6 +40,8 @@ namespace nova {
 
         file_tree_node *files = nullptr;
 
+        void delete_file_tree(file_tree_node *node);
+
         void build_file_tree();
 
         bool does_resource_exist_on_filesystem(const fs::path &resource_path) override;

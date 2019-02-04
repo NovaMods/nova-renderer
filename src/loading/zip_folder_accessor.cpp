@@ -20,7 +20,18 @@ namespace nova {
     }
 
     zip_folder_accessor::~zip_folder_accessor() {
-        delete files;
+        mz_zip_reader_end(&zip_archive);
+        delete_file_tree(files);
+    }
+
+    void zip_folder_accessor::delete_file_tree(nova::file_tree_node *node) {
+        for(auto *child : node->children) {
+            if(child) {
+                delete_file_tree(child);
+            }
+        }
+
+        delete node;
     }
 
     std::string zip_folder_accessor::read_text_file(const fs::path &resource_path) {
@@ -102,6 +113,7 @@ namespace nova {
             filename_buffer[num_bytes_in_filename] = '\0';
             all_filenames.emplace_back(filename_buffer);
         }
+        delete[] filename_buffer;
 
         // Build a tree from all the files
         for(const std::string &filename : all_filenames) {
@@ -131,8 +143,6 @@ namespace nova {
                 cur_node->children.push_back(new_node);
 
                 cur_node = new_node;
-
-                continue;
             }
         }
     }
