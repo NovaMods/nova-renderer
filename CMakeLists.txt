@@ -1,19 +1,48 @@
 cmake_minimum_required(VERSION 3.10)
 project(nova-renderer)
 
+################################################################
+# Check if nova is in a submodule (nova as a cmake dependency) #
+################################################################
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     set(NOVA_IN_SUBMODULE False)
 else()
     set(NOVA_IN_SUBMODULE True)
 endif()
 
+############################################################
+# Fix build type because of possible capitalization issues #
+############################################################
+if(NOT NOVA_IN_SUBMODULE)
+    string(TOLOWER ${CMAKE_BUILD_TYPE} TMP_BUILD_TYPE)
+    set(BUILD_TYPE_FIXED_BY_NOVA FALSE)
+    if("${TMP_BUILD_TYPE}" STREQUAL "debug" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set(ORIGINAL_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+        set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Specifies the build type on single-configuration generators. (Fixed to Debug from '${TMP_BUILD_TYPE}' by nova-renderer)" FORCE)
+        set(BUILD_TYPE_FIXED_BY_NOVA TRUE)
+    elseif(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set(ORIGINAL_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+        set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Specifies the build type on single-configuration generators. (Fixed to Release from '${TMP_BUILD_TYPE}' by nova-renderer)" FORCE)
+        set(BUILD_TYPE_FIXED_BY_NOVA TRUE)
+    endif()
+
+    if(BUILD_TYPE_FIXED_BY_NOVA)
+        message(WARNING "CMAKE_BUILD_TYPE build type has been fixed to ${CMAKE_BUILD_TYPE} from ${ORIGINAL_BUILD_TYPE}")
+    endif()
+endif()
+
+#############################
+# Options for nova's builds #
+#############################
 option(NOVA_TEST "Enable tests." OFF)
 option(ENABLE_EXPERIMENTAL "Enable experimental features, may be in code as well as in the CMake files" OFF)
 if(ENABLE_EXPERIMENTAL)
     set(CMAKE_LINK_WHAT_YOU_USE TRUE) # Warn about unsued linked libraries
 endif()
 
-# Initialize cmake options
+############################
+# Initialize cmake options #
+############################
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
@@ -24,23 +53,27 @@ if(NOT ${NOVA_IN_SUBMODULE})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
 
+#################################
+# Setup our own cmake additions #
+#################################
 include(ClangFormat)
+include(RemovePermissive)
+include(CompilerOptionsUtils)
+include(CheckCXXCompilerFlag)
+include(CheckIncludeFileCXX)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/build)
-
 set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 
-# Setup 3rd party dependencies.
+#################################
+# Setup 3rd party dependencies. #
+#################################
 set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
-
 include(${3RD_PARTY_DIR}/3rdparty.cmake)
 
 ######################################
 # Make dependencies' headers visible #
 ######################################
-
-include(cmake/RemovePermissive.cmake)
-
 include_directories(SYSTEM
         $ENV{VULKAN_SDK}/include
         ${3RD_PARTY_DIR}/RenderDoc-Manager
@@ -53,9 +86,6 @@ include_directories(SYSTEM
 ########################
 # Add Nova source code #
 ########################
-
-set(SPIRV_CROSS_ROOT ${3RD_PARTY_DIR}/SPIRV-Cross)
-
 set(NOVA_SOURCE
         src/platform.hpp
         src/loading/zip_folder_accessor.hpp
@@ -110,6 +140,9 @@ set(NOVA_SOURCE
         src/debugging/renderdoc.hpp
         )
 
+##################################
+# Select platform dependent code #
+##################################
 if(WIN32)
     set(NOVA_SOURCE
         ${NOVA_SOURCE}
@@ -138,40 +171,55 @@ else()
         )
 endif()
 
+##########################
+# Setup 3rd party source #
+##########################
 set(3RD_PARTY_SOURCE
         ${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp)
 
-include(CompilerOptionsUtils)
+##########################################
+# Set platform dependent compile options #
+##########################################
 if (UNIX)
-    add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC)
+    add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always)
     add_link_options(-fno-omit-frame-pointer)
 endif (UNIX)
 
+##########################################
+# Setup required options for backtracing #
+##########################################
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     add_compile_options_if_supported(-g -rdynamic)
     message(STATUS "Enabling symbol output")
 endif()
 
-if(NOT WIN32)
-    add_compile_options_if_supported("-fdiagnostics-color=always")
-endif()
-
+#################
+# Organize code #
+#################
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
 source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE})
 
+##########################
+# Setup the nova library #
+##########################
 add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
 # clang_format(nova-renderer NOVA_SOURCE) <= TODO: Uncomment when .clang-format is perfect
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-
 target_compile_definitions(nova-renderer PUBLIC NOMINMAX)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 
+##################################
+# Add extra warnings if possible #
+##################################
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wno-long-long -pedantic-errors -Wdefaulted-function-deleted)
+    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wno-long-long -pedantic -Wdefaulted-function-deleted)
 endif()
 
+#########################
+# Set libraries to link #
+#########################
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      glm::glm
                      nlohmann::json
@@ -188,8 +236,11 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      SPIRV
                      ${SPIRV_SHARED_LIBRARIES}
                      ${Vulkan_LIBRARIES})
-include(CheckCXXCompilerFlag)
-include(CheckIncludeFileCXX)
+
+##############################
+# Find C++ filesystem header #
+##############################
+# On some toolchains its still <experimental/filesystem> while on others its already <filesystem>
 check_include_file_cxx("filesystem" CXX_STD_FILESYSTEM)
 if(NOT CXX_STD_FILESYSTEM)
     check_include_file_cxx("experimental/filesystem" CXX_STD_FILESYSTEM_EXPERIMENTAL)
@@ -201,6 +252,9 @@ else()
     target_compile_definitions(nova-renderer PUBLIC NOVA_STD_FILESYSTEM=1)
 endif()
 
+############################
+# Platform dependent fixes #
+############################
 if(WIN32)
     find_package(WindowsSDK)
     get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
@@ -227,11 +281,23 @@ else()
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
 endif()
 
+###############################
+# Link all required libraries #
+###############################
 target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 
+#############################
+# Fix issue with permissive #
+#############################
 remove_permissive(nova-renderer)
 
-set(NOVA_TEST ON)
+##########################
+# Add tests if requested #
+##########################
+if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT NOVA_IN_SUBMODULE)
+    message(STATUS "Enabling nova tests by default because build type is Debug")
+    set(NOVA_TEST ON)
+endif()
 
 if(NOVA_TEST)
     add_subdirectory(tests)
