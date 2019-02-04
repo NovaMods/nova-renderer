@@ -28,11 +28,6 @@ include(ClangFormat)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/build)
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    # Update if necessary
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
-endif()
-
 set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 
 # Setup 3rd party dependencies.
@@ -146,22 +141,20 @@ endif()
 set(3RD_PARTY_SOURCE
         ${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp)
 
+include(CompilerOptionsUtils)
 if (UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-omit-frame-pointer -fPIC")
-    set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer")
+    add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC)
+    add_link_options(-fno-omit-frame-pointer)
 endif (UNIX)
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g -rdynamic")
-    set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -g -rdynamic")
-    message("Enabling symbol output")
+    add_compile_options_if_supported(-g -rdynamic)
+    message(STATUS "Enabling symbol output")
 endif()
 
 if(NOT WIN32)
-    add_compile_options("-fdiagnostics-color=always")
+    add_compile_options_if_supported("-fdiagnostics-color=always")
 endif()
-
-set(NOVA_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 # For now just put everthing in a single nova source group
 # because there are several sub groups that would be extremely small
@@ -173,8 +166,11 @@ target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 target_compile_definitions(nova-renderer PUBLIC NOMINMAX)
-
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
+
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wno-long-long -pedantic-errors -Wdefaulted-function-deleted)
+endif()
 
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      glm::glm
@@ -210,16 +206,7 @@ if(WIN32)
     get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
 
     # MSVC 15.9 broke the Windows SDK by implementing two phase lookup. "/Zc:twoPhase-" disables it.
-
-    check_cxx_compiler_flag(/Zc:twoPhase- TWO_PHASE_LOOKUP)
-    if (TWO_PHASE_LOOKUP)
-        add_compile_options(/Zc:twoPhase-)
-    endif()
-
-    check_cxx_compiler_flag(/permissive PERMISSIVE)
-    if (PERMISSIVE)
-        add_compile_options(/permissive)
-    endif()
+    add_compile_options_if_supported(/Zc:twoPhase- /permissive)
 
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler)
@@ -236,11 +223,7 @@ if(WIN32)
     
 else()
     # GCC and Clang complain loudly about the #pragma region stuff. This shuts them up.
-    check_cxx_compiler_flag(-Wno-unknown-pragmas W_NO_UNKNOWN_PRAGMAS)
-    if (W_NO_UNKNOWN_PRAGMAS)
-        target_compile_options(nova-renderer PUBLIC -Wno-unknown-pragmas)
-    endif()
-
+    target_compile_options_if_supported(nova-renderer PRIVATE -Wno-unknown-pragmas)
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} stdc++fs X11)
 endif()
 
