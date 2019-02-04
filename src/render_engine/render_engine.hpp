@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by jannis on 29.08.18.
 //
@@ -50,8 +52,8 @@ namespace nova {
      */
     class render_engine {
     public:
-        render_engine(render_engine&& other) noexcept = default;
-        render_engine& operator=(render_engine&& other) noexcept = default;
+        render_engine(render_engine&& other) = default;
+        render_engine& operator=(render_engine&& other) noexcept = delete;
 
         render_engine(const render_engine& other) = delete;
         render_engine& operator=(const render_engine& other) = delete;
@@ -104,7 +106,7 @@ namespace nova {
          *
          * \attention Called by nova
          */
-        explicit render_engine(const nova_settings& settings, ttl::task_scheduler* scheduler) : scheduler(scheduler){};
+        explicit render_engine(const nova_settings & /* settings */, ttl::task_scheduler* scheduler) : scheduler(scheduler){};
 
         /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window

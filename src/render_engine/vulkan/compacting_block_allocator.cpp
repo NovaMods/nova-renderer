@@ -145,13 +145,12 @@ namespace nova {
         }
 
         block_t* best_fit = nullptr;
-        block_t* previous;
 
         VkDeviceSize padding = 0;
         VkDeviceSize offset = 0;
         VkDeviceSize aligned_size = 0;
 
-        for(block_t* current = head; current != nullptr; previous = current, current = current->next) {
+        for(block_t* current = head; current != nullptr; current = current->next) {
             if(!current->free) {
                 continue;
             }
@@ -188,7 +187,7 @@ namespace nova {
         }
 
         if(best_fit->size > needed_size) {
-            block_t* chunk = new block_t;
+            auto* chunk = new block_t;
             block_t* next = best_fit->next;
 
             chunk->id = next_block_id++;

@@ -10,7 +10,7 @@ namespace nova::ttl {
     task_scheduler::per_thread_data::per_thread_data() : task_queue(new wait_free_queue<std::function<void()>>), things_in_queue_mutex(new std::mutex),
         things_in_queue_cv(new std::condition_variable), is_sleeping(new std::atomic<bool>(false)) {}
 
-    task_scheduler::task_scheduler(const uint32_t num_threads, const empty_queue_behavior behavior) : num_threads(num_threads), should_shutdown(new std::atomic<bool>(false)), initialized_mutex(new std::mutex), initialized_cv(new std::condition_variable) {
+    task_scheduler::task_scheduler(const uint32_t num_threads, const empty_queue_behavior /* behavior */) : num_threads(num_threads), should_shutdown(new std::atomic<bool>(false)), initialized_mutex(new std::mutex), initialized_cv(new std::condition_variable) {
         threads.reserve(num_threads);
         thread_local_data.resize(num_threads);
 

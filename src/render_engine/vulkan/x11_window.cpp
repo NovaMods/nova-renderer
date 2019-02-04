@@ -46,7 +46,7 @@ namespace nova {
             XNextEvent(display, &event);
             switch(event.type) {
                 case ClientMessage: {
-                    if(event.xclient.message_type == wm_protocols && event.xclient.data.l[0] == wm_delete_window) {
+                    if(event.xclient.message_type == wm_protocols && event.xclient.data.l[0] == (long) wm_delete_window) {
                         should_window_close = true;
                     }
                     break;

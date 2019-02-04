@@ -48,7 +48,7 @@ namespace nova {
         const log_level level;
 
     public:
-        __log_stream(log_level level);
+        explicit __log_stream(log_level level);
 
         __log_stream(__log_stream &&other) noexcept;
 

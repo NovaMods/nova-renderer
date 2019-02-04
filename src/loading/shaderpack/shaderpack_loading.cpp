@@ -21,17 +21,17 @@
 namespace nova {
     std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path& shaderpack_name);
 
-    shaderpack_resources_data load_dynamic_resources_file(std::shared_ptr<folder_accessor_base> folder_access);
+    shaderpack_resources_data load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base> &folder_access);
 
-    std::vector<render_pass_data> load_passes_file(std::shared_ptr<folder_accessor_base> folder_access);
+    std::vector<render_pass_data> load_passes_file(const std::shared_ptr<folder_accessor_base> &folder_access);
 
-    std::vector<pipeline_data> load_pipeline_files(std::shared_ptr<folder_accessor_base> folder_access);
-    pipeline_data load_single_pipeline(std::shared_ptr<folder_accessor_base> folder_access, const fs::path &pipeline_path);
+    std::vector<pipeline_data> load_pipeline_files(const std::shared_ptr<folder_accessor_base> &folder_access);
+    pipeline_data load_single_pipeline(const std::shared_ptr<folder_accessor_base> &folder_access, const fs::path &pipeline_path);
 
-    std::vector<material_data> load_material_files(std::shared_ptr<folder_accessor_base> folder_access);
-    material_data load_single_material(std::shared_ptr<folder_accessor_base> folder_access, const fs::path &material_path);
+    std::vector<material_data> load_material_files(const std::shared_ptr<folder_accessor_base> &folder_access);
+    material_data load_single_material(const std::shared_ptr<folder_accessor_base> &folder_access, const fs::path &material_path);
 
-    std::vector<uint32_t> load_shader_file(const fs::path& filename, std::shared_ptr<folder_accessor_base> folder_access, EShLanguage stage, const std::vector<std::string>& defines);
+    std::vector<uint32_t> load_shader_file(const fs::path& filename, const std::shared_ptr<folder_accessor_base> &folder_access, EShLanguage stage, const std::vector<std::string>& defines);
 
     bool loading_failed = false;
 
@@ -75,7 +75,7 @@ namespace nova {
         }
     }
 
-    shaderpack_resources_data load_dynamic_resources_file(std::shared_ptr<folder_accessor_base> folder_access) {
+    shaderpack_resources_data load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base> &folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
         std::string resources_string = folder_access->read_text_file("resources.json");
         try {
@@ -106,7 +106,7 @@ namespace nova {
         return {};
     }
 
-    std::vector<render_pass_data> load_passes_file(std::shared_ptr<folder_accessor_base> folder_access) {
+    std::vector<render_pass_data> load_passes_file(const std::shared_ptr<folder_accessor_base> &folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
@@ -138,7 +138,7 @@ namespace nova {
         return {};
     }
 
-    std::vector<pipeline_data> load_pipeline_files(std::shared_ptr<folder_accessor_base> folder_access) {
+    std::vector<pipeline_data> load_pipeline_files(const std::shared_ptr<folder_accessor_base> &folder_access) {
         NOVA_LOG(TRACE) << "load_pipeline_files called";
         std::vector<fs::path> potential_pipeline_files;
         try {
@@ -164,7 +164,7 @@ namespace nova {
         return output;
     }
 
-    pipeline_data load_single_pipeline(std::shared_ptr<folder_accessor_base> folder_access, const fs::path& pipeline_path) {
+    pipeline_data load_single_pipeline(const std::shared_ptr<folder_accessor_base> &folder_access, const fs::path& pipeline_path) {
         NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
@@ -179,7 +179,7 @@ namespace nova {
             return {};
         }
 
-        pipeline_data new_pipeline = json_pipeline.get<pipeline_data>();
+        auto new_pipeline = json_pipeline.get<pipeline_data>();
         NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path;
         new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access,
             EShLangVertex, new_pipeline.defines);
@@ -210,7 +210,8 @@ namespace nova {
         return new_pipeline;
     }
 
-    std::vector<uint32_t> load_shader_file(const fs::path& filename, std::shared_ptr<folder_accessor_base> folder_access, const EShLanguage stage, const std::vector<std::string>& defines) {
+    std::vector<uint32_t> load_shader_file(const fs::path& filename, const std::shared_ptr<folder_accessor_base> &folder_access,
+            const EShLanguage stage, const std::vector<std::string>& defines) {
         static std::unordered_map<EShLanguage, std::vector<fs::path>> extensions_by_shader_stage = {
             {EShLangVertex,  {
                 ".vert.spirv",
@@ -296,24 +297,33 @@ namespace nova {
 
             glslang::TShader shader(stage);
 
-            // TODO: Figure out how to handle shader options
-            // Maybe add them into the preamble?
-
             // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded 
             // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
             if(extension.string().find(".spirv") != std::string::npos) {
                 // SPIR-V file!
+                // TODO: figure out how to handle defines with SPIRV
                 return folder_access->read_spirv_file(full_filename);
 
             } else if(extension.string().find(".hlsl") != std::string::npos) {
                 shader.setEnvInput(glslang::EShSourceHlsl, stage, glslang::EShClientVulkan, 0);
-
             } else {
                 // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
                 shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, 0);
             }
 
-            const std::string shader_source = folder_access->read_text_file(full_filename);
+            std::string shader_source = folder_access->read_text_file(full_filename);
+            std::string::size_type version_pos = shader_source.find("#version");
+            std::string::size_type inject_pos = 0;
+            if(version_pos != std::string::npos) {
+                std::string::size_type break_after_version_pos = shader_source.find('\n', version_pos);
+                if(break_after_version_pos != std::string::npos) {
+                    inject_pos = break_after_version_pos + 1;
+                }
+            }
+            for(auto i = defines.crbegin(); i != defines.crend(); ++i) {
+                shader_source.insert(inject_pos, "#define " + *i + "\n");
+            }
+
             auto* shader_source_data = shader_source.data();
             shader.setStrings(&shader_source_data, 1);
             const bool shader_compiled = shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
@@ -350,7 +360,7 @@ namespace nova {
         throw resource_not_found_exception("Could not find shader " + filename.string());
     }
 
-    std::vector<material_data> load_material_files(std::shared_ptr<folder_accessor_base> folder_access) {
+    std::vector<material_data> load_material_files(const std::shared_ptr<folder_accessor_base> &folder_access) {
         std::vector<fs::path> potential_material_files;
         try {
             potential_material_files = folder_access->get_all_items_in_folder("materials");
@@ -374,7 +384,7 @@ namespace nova {
         return output;
     }
 
-    material_data load_single_material(std::shared_ptr<folder_accessor_base> folder_access, const fs::path &material_path) {
+    material_data load_single_material(const std::shared_ptr<folder_accessor_base> &folder_access, const fs::path &material_path) {
         const std::string material_text = folder_access->read_text_file(material_path);
 
         auto json_material = nlohmann::json::parse(material_text);

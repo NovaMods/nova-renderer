@@ -221,9 +221,9 @@ namespace nova {
         NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, gpu.surface_formats.data()), render_engine_initialization_exception);
 
         uint32_t num_surface_present_modes;
-        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_formats, nullptr), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr), render_engine_initialization_exception);
         gpu.present_modes.resize(num_surface_formats);
-        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_formats, gpu.present_modes.data()), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, gpu.present_modes.data()), render_engine_initialization_exception);
 
         swapchain = std::make_unique<swapchain_manager>(3, *this, window->get_window_size());
     }
@@ -577,7 +577,6 @@ namespace nova {
         const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
         for(const auto& [pass_name, pass] : render_passes) {
-            bool is_forward = pass_name == "Forward";
             VkSubpassDescription subpass_description;
             subpass_description.flags = 0;
             subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -1113,7 +1112,7 @@ namespace nova {
         available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), freed_buffers.begin(), freed_buffers.end());
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* /* pUserData */) {
         std::string type = "General";
         if(messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
             type = "Validation";
@@ -1370,7 +1369,7 @@ namespace nova {
 #pragma endregion
 
         VkClearValue clear_value = {};
-        clear_value.color = {0, 0, 0, 0};
+        clear_value.color = {{0, 0, 0, 0}};
 
         const VkClearValue clear_values[] = {clear_value, clear_value};
 
@@ -1873,8 +1872,6 @@ namespace nova {
         for(const texture_attachment& attach : pass.data.texture_outputs) {
             write_texture_barrier_necessity[attach.name] = barrier_necessity::maybe;
         }
-
-        barrier_necessity depth_buffer_barrier_necessity = barrier_necessity::maybe;
 
         // Find where we are in the list of passes
         auto itr = render_passes_by_order.rbegin();

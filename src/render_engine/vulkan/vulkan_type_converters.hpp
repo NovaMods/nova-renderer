@@ -36,6 +36,7 @@ namespace nova::vulkan {
                 case blend_factor_enum::SrcAlpha: return VK_BLEND_FACTOR_SRC_ALPHA;
                 case blend_factor_enum::SrcColor: return VK_BLEND_FACTOR_SRC_COLOR;
                 case blend_factor_enum::Zero: return VK_BLEND_FACTOR_ZERO;
+                default: return VK_BLEND_FACTOR_ZERO;
             }
         }
 
