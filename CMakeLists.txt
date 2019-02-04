@@ -13,7 +13,7 @@ endif()
 ############################################################
 # Fix build type because of possible capitalization issues #
 ############################################################
-if(NOT NOVA_IN_SUBMODULE)
+if(NOT NOVA_IN_SUBMODULE AND CMAKE_BUILD_TYPE)
     string(TOLOWER ${CMAKE_BUILD_TYPE} TMP_BUILD_TYPE)
     set(BUILD_TYPE_FIXED_BY_NOVA FALSE)
     if("${TMP_BUILD_TYPE}" STREQUAL "debug" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -29,6 +29,8 @@ if(NOT NOVA_IN_SUBMODULE)
     if(BUILD_TYPE_FIXED_BY_NOVA)
         message(WARNING "CMAKE_BUILD_TYPE build type has been fixed to ${CMAKE_BUILD_TYPE} from ${ORIGINAL_BUILD_TYPE}")
     endif()
+elseif(NOT CMAKE_BUILD_TYPE AND NOT MSVC)
+    set(CMAKE_BUILD_TYPE "Release")
 endif()
 
 #############################
@@ -304,7 +306,7 @@ remove_permissive(nova-renderer)
 # Add tests if requested #
 ##########################
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT NOVA_IN_SUBMODULE)
-    message(STATUS "Enabling nova tests by default because build type is Debug")
+    message(STATUS "Enabling nova tests by default because build type is Debug (wont overwrite if set manually)")
     set(NOVA_TEST ON)
 endif()
 
