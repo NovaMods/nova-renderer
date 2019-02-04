@@ -1186,7 +1186,7 @@ namespace nova {
         }
 
 #ifdef NOVA_LINUX
-        if(flags & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+        if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
             nova_backtrace();
         }
 #endif
