@@ -13,8 +13,8 @@ namespace nova::vulkan {
     class vulkan_utils {
     public:
         static std::string vk_result_to_string(VkResult result) {
-#define ERROR_CASE(r)                                                                                                                                                                                  \
-    case VK_##r:                                                                                                                                                                                       \
+#define ERROR_CASE(r)                                                                                                                                                                                                                                    \
+    case VK_##r:                                                                                                                                                                                                                                         \
         return #r
             switch(result) {
                 ERROR_CASE(SUCCESS);
@@ -34,23 +34,24 @@ namespace nova::vulkan {
         }
     };
 
+    std::string to_string(VkObjectType obj_type);
+
     std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
 
     std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
-}  // namespace nova::vulkan
-
+} // namespace nova::vulkan
 
 // Only validate errors in debug mode
-// Release mode needs to be fast A F 
+// Release mode needs to be fast A F
 #ifndef NDEBUG
-#define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                                                                                        \
-    do {                                                                                                                                                                                               \
-        VkResult val = (expr);                                                                                                                                                                         \
-        if(val != VK_SUCCESS) {                                                                                                                                                                        \
-            throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " + ::nova::vulkan::vulkan_utils::vk_result_to_string(val));                                                  \
-        }                                                                                                                                                                                              \
+#define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                                                                                                                                          \
+    do {                                                                                                                                                                                                                                                 \
+        const VkResult result = (expr);                                                                                                                                                                                                                  \
+        if(result != VK_SUCCESS) {                                                                                                                                                                                                                       \
+            throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " + ::nova::vulkan::vulkan_utils::vk_result_to_string(result));                                                                                                 \
+        }                                                                                                                                                                                                                                                \
     } while(false);
-#else 
+#else
 #define NOVA_THROW_IF_VK_ERROR(expr, exception) expr
 #endif
-#endif  // NOVA_RENDERER_VULKAN_UTILS_HPP
+#endif // NOVA_RENDERER_VULKAN_UTILS_HPP

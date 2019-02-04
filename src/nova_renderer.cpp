@@ -40,7 +40,7 @@ namespace nova {
             if(render_doc) {
                 render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
-                RENDERDOC_InputButton captureKey = eRENDERDOC_Key_F12;
+                RENDERDOC_InputButton captureKey = eRENDERDOC_Key_PrtScrn;
                 render_doc->SetCaptureKeys(&captureKey, 1);
 
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, true);

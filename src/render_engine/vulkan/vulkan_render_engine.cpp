@@ -85,18 +85,19 @@ namespace nova {
         NOVA_LOG(TRACE) << "Supported extensions:\n" << ss.str();
 
 #ifndef NDEBUG
-        vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(vk_instance, "vkCreateDebugReportCallbackEXT"));
-        vkDebugReportMessageEXT = reinterpret_cast<PFN_vkDebugReportMessageEXT>(vkGetInstanceProcAddr(vk_instance, "vkDebugReportMessageEXT"));
+        vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(vk_instance, "vkCreateDebugUtilsMessengerEXT"));
         vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(vk_instance, "vkDestroyDebugReportCallbackEXT"));
 
-        VkDebugReportCallbackCreateInfoEXT debug_create_info;
-        debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+        VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
+        debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         debug_create_info.pNext = nullptr;
         debug_create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
-        debug_create_info.pfnCallback = reinterpret_cast<PFN_vkDebugReportCallbackEXT>(&debug_report_callback);
+        debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        debug_create_info.pfnUserCallback = reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(&debug_report_callback);
         debug_create_info.pUserData = this;
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateDebugReportCallbackEXT(vk_instance, &debug_create_info, nullptr, &debug_callback), render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateDebugUtilsMessengerEXT(vk_instance, &debug_create_info, nullptr, &debug_callback), render_engine_initialization_exception);
 #endif
         // First we open the window. This doesn't depend on anything except the VkInstance/ This method also creates
         // the VkSurfaceKHR we can render to
@@ -118,6 +119,13 @@ namespace nova {
         create_global_sync_objects();
         create_per_thread_descriptor_pools();
         create_default_samplers();
+
+#ifndef NDEBUG
+        vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
+        if(vkSetDebugUtilsObjectNameEXT == nullptr) {
+            NOVA_LOG(ERROR) << "Could not load the debug name function";
+        }
+#endif
     }
 
     vulkan_render_engine::~vulkan_render_engine() {
@@ -147,7 +155,7 @@ namespace nova {
             if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
                 barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
                 barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
                 depth_barriers.push_back(barrier);
@@ -155,7 +163,7 @@ namespace nova {
             } else {
                 barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
                 barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
                 color_barriers.push_back(barrier);
@@ -622,13 +630,13 @@ namespace nova {
                     desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                    desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                    desc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                    desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
                     attachments.push_back(desc);
 
                     VkAttachmentReference ref = {};
-                    ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    ref.layout = VK_IMAGE_LAYOUT_GENERAL;
                     ref.attachment = attachments.size() - 1;
                     attachment_references.push_back(ref);
 
@@ -674,13 +682,13 @@ namespace nova {
                     desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                    desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                    desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
                     attachments.push_back(desc);
 
                     VkAttachmentReference ref = {};
-                    ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    ref.layout = VK_IMAGE_LAYOUT_GENERAL;
                     ref.attachment = attachments.size() - 1;
                     attachment_references.push_back(ref);
                 }
@@ -721,12 +729,12 @@ namespace nova {
                 desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                 desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                desc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                desc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
                 attachments.push_back(desc);
 
-                depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                depth_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
                 depth_reference.attachment = attachments.size() - 1;
                 subpass_description.pDepthStencilAttachment = &depth_reference;
             }
@@ -785,6 +793,13 @@ namespace nova {
             }
 
             render_passes[pass_name].render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
+
+            VkDebugUtilsObjectNameInfoEXT object_name = {};
+            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+            object_name.objectHandle = reinterpret_cast<uint64_t>(render_passes[pass_name].pass);
+            object_name.pObjectName = pass_name.c_str();
+            vkSetDebugUtilsObjectNameEXT(device, &object_name);
         }
     }
 
@@ -1098,30 +1113,68 @@ namespace nova {
         available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), freed_buffers.begin(), freed_buffers.end());
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* msg, void* user_data) {
-        if(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
-            NOVA_LOG(ERROR) << "[" << layer_prefix << "] " << msg;
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+        std::string type = "General";
+        if(messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
+            type = "Validation";
 
-        } else if(flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+        } else if(messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) {
+            type = "Performance";
+        }
+
+        std::stringstream ss;
+        ss << "[" << type << "]";
+        if(pCallbackData->queueLabelCount != 0) {
+            ss << " Queues: ";
+            for(uint32_t i = 0; i < pCallbackData->queueLabelCount; i++) {
+                ss << pCallbackData->pQueueLabels[i].pLabelName;
+                if(i != pCallbackData->queueLabelCount - 1) {
+                    ss << ", ";
+                }
+            }
+        }
+
+        if(pCallbackData->cmdBufLabelCount != 0) {
+            ss << " Command Buffers: ";
+            for(uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; i++) {
+                ss << pCallbackData->pCmdBufLabels[i].pLabelName;
+                if(i != pCallbackData->cmdBufLabelCount - 1) {
+                    ss << ", ";
+                }
+            }
+        }
+
+        if(pCallbackData->objectCount != 0) {
+            ss << " Objects: ";
+            for(uint32_t i = 0; i < pCallbackData->objectCount; i++) {
+                ss << vulkan::to_string(pCallbackData->pObjects[i].objectType) << pCallbackData->pObjects[i].pObjectName << " (" << pCallbackData->pObjects[i].objectHandle << ") ";
+                if(i != pCallbackData->objectCount - 1) {
+                    ss << ", ";
+                }
+            }
+        }
+
+        const std::string msg = ss.str();
+
+        if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+            NOVA_LOG(ERROR) << "[" << type << "] " << msg;
+
+        } else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
             // Warnings may hint at unexpected / non-spec API usage
-            NOVA_LOG(WARN) << "[" << layer_prefix << "] " << msg;
+            NOVA_LOG(WARN) << "[" << type << "] " << msg;
 
-        } else if(flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
-            // May indicate sub-optimal usage of the API
-            NOVA_LOG(WARN) << "PERFORMANCE WARNING: [" << layer_prefix << "] " << msg;
-
-        } else if(flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
+        } else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
             // Informal messages that may become handy during debugging
-            NOVA_LOG(INFO) << "[" << layer_prefix << "] " << msg;
+            NOVA_LOG(INFO) << "[" << type << "] " << msg;
 
-        } else if(flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
+        } else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
             // Diagnostic info from the Vulkan loader and layers
             // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
-            NOVA_LOG(DEBUG) << "[" << layer_prefix << "] " << msg;
+            NOVA_LOG(DEBUG) << "[" << type << "] " << msg;
 
         } else {
             // Catch-all to be super sure
-            NOVA_LOG(INFO) << "[" << layer_prefix << "]" << msg;
+            NOVA_LOG(INFO) << "[" << type << "]" << msg;
         }
 
 #ifdef NOVA_LINUX
@@ -1185,13 +1238,13 @@ namespace nova {
             color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-            color_attachment.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            color_attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            color_attachment.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+            color_attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
             attachment_descriptions.push_back(color_attachment);
 
             VkAttachmentReference color_attachment_reference;
             color_attachment_reference.attachment = static_cast<uint32_t>(attachment_references.size());
-            color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            color_attachment_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
             attachment_references.push_back(color_attachment_reference);
         }
 
@@ -1277,98 +1330,22 @@ namespace nova {
         vkBeginCommandBuffer(cmds, &begin_info);
 
 #pragma region Texture attachment layout transition
-        std::vector<VkImageMemoryBarrier> barriers;
-        barriers.reserve(renderpass.data.texture_inputs.size());
-
-        for(const texture_attachment& attachment : renderpass.data.texture_outputs) {
-            if(attachment.name == "Backbuffer") {
-                VkImageMemoryBarrier barrier = {};
-                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                barrier.oldLayout = swapchain->get_current_layout();
-                barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                barrier.srcQueueFamilyIndex = graphics_family_index;
-                barrier.dstQueueFamilyIndex = graphics_family_index;
-                barrier.image = swapchain->get_current_image();
-
-                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                barrier.subresourceRange.baseMipLevel = 0;
-                barrier.subresourceRange.levelCount = 1;
-                barrier.subresourceRange.baseArrayLayer = 0;
-                barrier.subresourceRange.layerCount = 1;
-
-                barriers.push_back(barrier);
-                swapchain->set_current_layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-            } else {
-                vk_texture& texture = textures.at(attachment.name);
-                if(texture.layout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
-                    VkImageMemoryBarrier barrier = {};
-                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                    barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                    barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                    barrier.oldLayout = texture.layout;
-                    barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                    barrier.srcQueueFamilyIndex = graphics_family_index;
-                    barrier.dstQueueFamilyIndex = graphics_family_index;
-                    barrier.image = texture.image;
-
-                    if(texture.is_depth_tex) {
-                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-                    } else {
-                        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                    }
-                    barrier.subresourceRange.baseMipLevel = 0;
-                    barrier.subresourceRange.levelCount = 1;
-                    barrier.subresourceRange.baseArrayLayer = 0;
-                    barrier.subresourceRange.layerCount = 1;
-
-                    barriers.push_back(barrier);
-                    texture.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                }
-            }
+        if(!renderpass.read_texture_barriers.empty()) {
+            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, renderpass.read_texture_barriers.size(), renderpass.read_texture_barriers.data());
         }
 
-        if(!barriers.empty()) {
-            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, barriers.size(), barriers.data());
+        if(!renderpass.write_texture_barriers.empty()) {
+            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, renderpass.write_texture_barriers.size(), renderpass.write_texture_barriers.data());
         }
 
-        if(renderpass.data.depth_texture) {
-            vk_texture& texture = textures.at(renderpass.data.depth_texture.value().name);
-            if(texture.layout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-                barriers.clear();
-                VkImageMemoryBarrier barrier = {};
-                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                barrier.oldLayout = texture.layout;
-                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                barrier.srcQueueFamilyIndex = graphics_family_index;
-                barrier.dstQueueFamilyIndex = graphics_family_index;
-                barrier.image = texture.image;
-
-                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-                barrier.subresourceRange.baseMipLevel = 0;
-                barrier.subresourceRange.levelCount = 1;
-                barrier.subresourceRange.baseArrayLayer = 0;
-                barrier.subresourceRange.layerCount = 1;
-
-                barriers.push_back(barrier);
-                texture.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            }
-
-            if(!barriers.empty()) {
-                vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, barriers.size(), barriers.data());
-            }
-        }
+        // TODO: Any barriers for aliased textures if we're at an aliased boundary
+        // TODO: Something about the depth buffer
 #pragma endregion
 
         VkClearValue clear_value = {};
         clear_value.color = {0, 0, 0, 0};
 
-        VkClearValue clear_values[] = {clear_value, clear_value};
+        const VkClearValue clear_values[] = {clear_value, clear_value};
 
         VkRenderPassBeginInfo rp_begin_info = {};
         rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1681,6 +1658,13 @@ namespace nova {
 
             vkCreateImageView(device, &image_view_create_info, nullptr, &texture.image_view);
 
+            VkDebugUtilsObjectNameInfoEXT object_name = {};
+            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+            object_name.objectHandle = reinterpret_cast<uint64_t>(texture.image);
+            object_name.pObjectName = texture_data.name.c_str();
+            vkSetDebugUtilsObjectNameEXT(device, &object_name);
+
             textures[texture_data.name] = texture;
         }
 
@@ -1816,7 +1800,7 @@ namespace nova {
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
             barrier.srcQueueFamilyIndex = graphics_family_index;
             barrier.dstQueueFamilyIndex = graphics_family_index;
             barrier.image = tex.image;
@@ -1826,11 +1810,11 @@ namespace nova {
             barrier.subresourceRange.layerCount = 1;
 
             if(tex.is_depth_tex) {
-                barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
             } else {
-                barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             }
 
@@ -1842,7 +1826,7 @@ namespace nova {
 
     enum class barrier_necessity { maybe, yes, no };
 
-    void vulkan_render_engine::create_barriers_for_renderpass(const vk_render_pass& pass) {
+    void vulkan_render_engine::create_barriers_for_renderpass(vk_render_pass& pass) {
         /*
          * For each renderpass:
          * - Walk backwards through previous renderpasses
@@ -1861,6 +1845,8 @@ namespace nova {
         for(const texture_attachment& attach : pass.data.texture_outputs) {
             write_texture_barrier_necessity[attach.name] = barrier_necessity::maybe;
         }
+
+        barrier_necessity depth_buffer_barrier_necessity = barrier_necessity::maybe;
 
         // Find where we are in the list of passes
         auto itr = render_passes_by_order.rbegin();
@@ -1890,7 +1876,7 @@ namespace nova {
                 }
 
                 // If the previous pass reads from a texture that we write to, we need a barrier
-                if(write_texture_barrier_necessity.find(prev_read_texture) != read_texture_barrier_necessity.end()) {
+                if(write_texture_barrier_necessity.find(prev_read_texture) != write_texture_barrier_necessity.end()) {
                     if(write_texture_barrier_necessity.at(prev_read_texture) == barrier_necessity::maybe) {
                         NOVA_LOG(TRACE) << "Need a barrier for write texture " << prev_read_texture << " before renderpass " << pass.data.name << " because pass " << previous_pass.data.name << " reads from it";
                         write_texture_barrier_necessity[prev_read_texture] = barrier_necessity::no;
@@ -1908,18 +1894,66 @@ namespace nova {
                 }
 
                 // If the previous pass write to a texture that we write to, we don't need to barrier it
-                if(write_texture_barrier_necessity.find(prev_write_tex.name) != read_texture_barrier_necessity.end()) {
+                if(write_texture_barrier_necessity.find(prev_write_tex.name) != write_texture_barrier_necessity.end()) {
                     if(write_texture_barrier_necessity.at(prev_write_tex.name) == barrier_necessity::maybe) {
                         NOVA_LOG(TRACE) << "Do not need a barrier for write texture " << prev_write_tex.name << " before renderpass " << pass.data.name << " because pass " << previous_pass.data.name << " writes to it as well";
                         write_texture_barrier_necessity[prev_write_tex.name] = barrier_necessity::yes;
                     }
                 }
             }
+
+            ++itr;
+        }
+
+        for(const auto& [tex_name, necessity] : read_texture_barrier_necessity) {
+            const vk_texture& tex = textures.at(tex_name);
+
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.srcQueueFamilyIndex = graphics_family_index;
+            barrier.dstQueueFamilyIndex = graphics_family_index;
+            barrier.image = tex.image;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+
+            pass.read_texture_barriers.push_back(barrier);
+        }
+
+        for(const auto& [tex_name, necessity] : write_texture_barrier_necessity) {
+            if(tex_name == "Backbuffer") {
+                continue;
+            }
+
+            const VkImage image = textures.at(tex_name).image;
+
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.srcQueueFamilyIndex = graphics_family_index;
+            barrier.dstQueueFamilyIndex = graphics_family_index;
+            barrier.image = image;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+
+            pass.write_texture_barriers.push_back(barrier);
         }
     }
 
     void vulkan_render_engine::generate_barriers_for_dynamic_resources() {
-        for(const auto& [name, pass] : render_passes) {
+        for(auto& [name, pass] : render_passes) {
             create_barriers_for_renderpass(pass);
         }
     }
@@ -1996,7 +2030,7 @@ namespace nova {
     void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo>& image_infos) const {
         VkDescriptorImageInfo image_info = {};
         image_info.imageView = texture.image_view;
-        image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
         image_info.sampler = point_sampler;
 
         image_infos.push_back(image_info);

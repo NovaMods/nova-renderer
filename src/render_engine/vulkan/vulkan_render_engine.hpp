@@ -96,7 +96,18 @@ namespace nova {
          * that transition. Nova will add a barrier for the opposite situation as well, so that you don't get 
          * read-after-write errors
          */
-        std::vector<VkImageMemoryBarrier> before_pass_barriers;
+        std::vector<VkImageMemoryBarrier> read_texture_barriers;
+        /*!
+         * \brief The barriers that should be applied before this pass
+         *
+         * When a shaderpack is loaded, Nova inspects the resources used by each renderpass. When renderpass B depends
+         * on renderpass A, and renderpass A writes to a texture that renderpass B reads from, Nova adds a barrier for
+         * that transition. Nova will add a barrier for the opposite situation as well, so that you don't get
+         * read-after-write errors
+         */
+        std::vector<VkImageMemoryBarrier> write_texture_barriers;
+
+		std::optional<VkImageMemoryBarrier> depth_buffer_barrier;
         
         bool writes_to_backbuffer = false;
     };
@@ -358,7 +369,7 @@ namespace nova {
 
         std::vector<VkImageMemoryBarrier> make_attachment_to_shader_read_only_barriers(const std::unordered_set<std::string>& textures);
 
-        void create_barriers_for_renderpass(const vk_render_pass& pass);
+        void create_barriers_for_renderpass(vk_render_pass& pass);
 
         /*!
          * \brief Looks at all the renderpasses and generates barriers for resources that are written to in one pass 
@@ -522,18 +533,18 @@ namespace nova {
 #pragma endregion
 
 #ifndef NDEBUG
-        PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
-        PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
+        PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 
-        VkDebugReportCallbackEXT debug_callback;
+        VkDebugUtilsMessengerEXT debug_callback;
+
+        PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
 #endif
 
         static VkFormat to_vk_format(pixel_format_enum format);
     };
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(
-        VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t message_code, const char* layer_prefix, const char* message, void* user_data);
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
