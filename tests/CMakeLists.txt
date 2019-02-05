@@ -44,3 +44,15 @@ remove_permissive(nova-test-unit)
 if(DEFINED BUILD_SHARED_LIBS_ORIGINAL_NOVA)
     set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_ORIGINAL_NOVA} CACHE BOOL "Reset BUILD_SHARED_LIBS value changed by nova to ${BUILD_SHARED_LIBS_ORIGINAL_NOVA}" FORCE)
 endif()
+
+if(MSVC)
+    # TODO: Non-hacky solution when someone who knows what they're doing can do things
+    string(REPLACE "/" "\\" WINDOWS_SAFE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    add_custom_command(TARGET nova-test-unit
+        POST_BUILD
+        COMMAND IF EXIST "${WINDOWS_SAFE_BINARY_DIR}\\..\\bin\\Debug\\gtestd.dll"       copy /Y "${WINDOWS_SAFE_BINARY_DIR}\\..\\bin\\Debug\\gtestd.dll" "${WINDOWS_SAFE_BINARY_DIR}\\..\\Debug\\gtestd.dll"
+        COMMAND IF EXIST "${WINDOWS_SAFE_BINARY_DIR}\\..\\bin\\Debug\\gtest_maind.dll"  copy /Y "${WINDOWS_SAFE_BINARY_DIR}\\..\\bin\\Debug\\gtest_maind.dll" "${WINDOWS_SAFE_BINARY_DIR}\\..\\Debug\\gtest_maind.dll"
+        COMMAND IF EXIST "${WINDOWS_SAFE_BINARY_DIR}\\..\\bin\\Release\\gtest.dll"      copy /Y "${WINDOWS_SAFE_BINARY_DIR}\\..\\bin\\Release\\gtest.dll" "${WINDOWS_SAFE_BINARY_DIR}\\..\\Release\\gtest.dll"
+        COMMAND IF EXIST "${WINDOWS_SAFE_BINARY_DIR}\\..\\bin\\Release\\gtest_main.dll" copy /Y "${WINDOWS_SAFE_BINARY_DIR}\\..\\bin\\Release\\gtest_main.dll" "${WINDOWS_SAFE_BINARY_DIR}\\..\\Release\\gtest_main.dll"
+        )
+endif()
