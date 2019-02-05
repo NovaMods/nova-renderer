@@ -7,9 +7,9 @@
 #undef TEST
 
 #include <iostream>
-#include <gtest/gtest.h>
 
 #ifdef __linux__
+#include <signal.h>
 void sigsegv_handler(int signal);
 void sigabrt_handler(int signal);
 #include "../../src/util/linux_utils.hpp"
