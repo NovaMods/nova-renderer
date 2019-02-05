@@ -7,7 +7,6 @@
 #undef TEST
 
 #include <iostream>
-#include <gtest/gtest.h>
 
 #ifdef __linux__
 void sigsegv_handler(int signal);
