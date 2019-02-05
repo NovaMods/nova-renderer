@@ -49,7 +49,7 @@ namespace nova {
         NOVA_THROW_IF_VK_ERROR(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &real_num_swapchain_images, swapchain_images.data()), swapchain_creation_failed);
         swapchain_image_layouts.resize(real_num_swapchain_images);
         for(uint32_t i = 0; i < swapchain_image_layouts.size(); i++) {
-            swapchain_image_layouts[i] = VK_IMAGE_LAYOUT_GENERAL;
+            swapchain_image_layouts[i] = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         }
 
         if(swapchain_images.empty()) {
@@ -61,13 +61,13 @@ namespace nova {
         color_attachment.format = swapchain_format;
         color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
         color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        color_attachment.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
-        color_attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+        color_attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        color_attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
         VkAttachmentReference color_ref = {};
         color_ref.attachment = 0;
-        color_ref.layout = VK_IMAGE_LAYOUT_GENERAL;
+        color_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         VkSubpassDescription subpass = {};
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -214,7 +214,7 @@ namespace nova {
             barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL; // Each swapchain image **will** be rendered to before it is presented
+            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Each swapchain image **will** be rendered to before it is presented
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.baseArrayLayer = 0;

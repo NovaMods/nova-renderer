@@ -301,15 +301,17 @@ target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
 #############################
 remove_permissive(nova-renderer)
 
-##########################
-# Add tests if requested #
-##########################
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT NOVA_IN_SUBMODULE)
+#########################################################
+# Enable tests if not in submodule and debug or if MSVC #
+#########################################################
+if ((CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT NOVA_IN_SUBMODULE) OR MSVC)
     message(STATUS "Enabling nova tests by default because build type is Debug (wont overwrite if set manually)")
     set(NOVA_TEST ON)
 endif()
 
-set(NOVA_TEST ON)
+##########################
+# Add tests if requested #
+##########################
 if(NOVA_TEST)
     add_subdirectory(tests)
 endif()

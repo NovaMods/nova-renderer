@@ -155,7 +155,7 @@ namespace nova {
             if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
                 barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
                 barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
                 depth_barriers.push_back(barrier);
@@ -163,7 +163,7 @@ namespace nova {
             } else {
                 barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
                 barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
                 color_barriers.push_back(barrier);
@@ -629,14 +629,16 @@ namespace nova {
                     desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                    desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
-                    desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
                     attachments.push_back(desc);
 
                     VkAttachmentReference ref = {};
-                    ref.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                     ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
+
                     attachment_references.push_back(ref);
 
                     framebuffer_width = swapchain_extent.width;
@@ -681,14 +683,16 @@ namespace nova {
                     desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                    desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
-                    desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    desc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    desc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
                     attachments.push_back(desc);
 
                     VkAttachmentReference ref = {};
-                    ref.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                     ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
+
                     attachment_references.push_back(ref);
                 }
             }
@@ -728,13 +732,14 @@ namespace nova {
                 desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                 desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
-                desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+                desc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                desc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
                 attachments.push_back(desc);
 
-                depth_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+                depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
                 depth_reference.attachment = static_cast<uint32_t>(attachments.size()) - 1;
+
                 subpass_description.pDepthStencilAttachment = &depth_reference;
             }
 
@@ -1245,13 +1250,13 @@ namespace nova {
             color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-            color_attachment.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
-            color_attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+            color_attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            color_attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachment_descriptions.push_back(color_attachment);
 
             VkAttachmentReference color_attachment_reference;
             color_attachment_reference.attachment = static_cast<uint32_t>(attachment_references.size());
-            color_attachment_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+            color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachment_references.push_back(color_attachment_reference);
         }
 
@@ -1354,7 +1359,7 @@ namespace nova {
             barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL; // Each swapchain image **will** be rendered to before it is presented
+            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Each swapchain image **will** be rendered to before it is presented
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.baseArrayLayer = 0;
@@ -1392,6 +1397,25 @@ namespace nova {
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
 
         vkCmdEndRenderPass(cmds);
+
+        if(renderpass.writes_to_backbuffer) {
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.srcQueueFamilyIndex = graphics_family_index;
+            barrier.dstQueueFamilyIndex = graphics_family_index;
+            barrier.image = swapchain->get_current_image();
+            barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        }
 
         vkEndCommandBuffer(cmds);
 
@@ -1827,7 +1851,7 @@ namespace nova {
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             barrier.srcQueueFamilyIndex = graphics_family_index;
             barrier.dstQueueFamilyIndex = graphics_family_index;
             barrier.image = tex.image;
@@ -1837,11 +1861,11 @@ namespace nova {
             barrier.subresourceRange.layerCount = 1;
 
             if(tex.is_depth_tex) {
-                barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
             } else {
-                barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             }
 
@@ -1874,20 +1898,17 @@ namespace nova {
         }
 
         // Find where we are in the list of passes
-        auto itr = render_passes_by_order.rbegin();
-        while(itr != render_passes_by_order.rend()) {
-            if(*itr == pass.data.name) {
+        uint64_t idx = 0;
+        for(; idx < render_passes_by_order.size(); idx++) {
+            if(render_passes_by_order.at(idx) == pass.data.name) {
                 break;
             }
-
-            ++itr;
         }
 
-        ++itr;
-
         // Walk backwards from where we are, checking if any of the textures the previous pass writes to are textures we need to barrier
-        while(itr != render_passes_by_order.rend()) {
-            const vk_render_pass& previous_pass = render_passes.at(*itr);
+        while(true) {
+            const std::string& prev_pass_name = render_passes_by_order.at(idx);
+            const vk_render_pass& previous_pass = render_passes.at(prev_pass_name);
             // If the previous pass reads from a texture that we read from, it (or a even earlier pass) will have the barrier
             const std::vector<std::string> read_textures = previous_pass.data.texture_inputs;
 
@@ -1927,18 +1948,22 @@ namespace nova {
                 }
             }
 
-            ++itr;
+            if(idx == 0) {
+                break;
+            } else {
+                idx--;
+            }
         }
 
-        for(const auto& [tex_name, necessity] : read_texture_barrier_necessity) {
+        for(const auto& [tex_name, _] : read_texture_barrier_necessity) {
             const vk_texture& tex = textures.at(tex_name);
 
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             barrier.srcQueueFamilyIndex = graphics_family_index;
             barrier.dstQueueFamilyIndex = graphics_family_index;
             barrier.image = tex.image;
@@ -1951,7 +1976,7 @@ namespace nova {
             pass.read_texture_barriers.push_back(barrier);
         }
 
-        for(const auto& [tex_name, necessity] : write_texture_barrier_necessity) {
+        for(const auto& [tex_name, _] : write_texture_barrier_necessity) {
             if(tex_name == "Backbuffer") {
                 continue;
             }
@@ -1962,8 +1987,8 @@ namespace nova {
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
             barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             barrier.srcQueueFamilyIndex = graphics_family_index;
             barrier.dstQueueFamilyIndex = graphics_family_index;
             barrier.image = image;
@@ -2055,7 +2080,7 @@ namespace nova {
     void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo>& image_infos) const {
         VkDescriptorImageInfo image_info = {};
         image_info.imageView = texture.image_view;
-        image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+        image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         image_info.sampler = point_sampler;
 
         image_infos.push_back(image_info);
