@@ -1950,7 +1950,7 @@ namespace nova {
             }
         }
 
-        for(const auto& [tex_name, necessity] : read_texture_barrier_necessity) {
+        for(const auto& [tex_name, _] : read_texture_barrier_necessity) {
             const vk_texture& tex = textures.at(tex_name);
 
             VkImageMemoryBarrier barrier = {};
@@ -1971,7 +1971,7 @@ namespace nova {
             pass.read_texture_barriers.push_back(barrier);
         }
 
-        for(const auto& [tex_name, necessity] : write_texture_barrier_necessity) {
+        for(const auto& [tex_name, _] : write_texture_barrier_necessity) {
             if(tex_name == "Backbuffer") {
                 continue;
             }
