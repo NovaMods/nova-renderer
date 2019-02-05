@@ -1874,20 +1874,17 @@ namespace nova {
         }
 
         // Find where we are in the list of passes
-        auto itr = render_passes_by_order.rbegin();
-        while(itr != render_passes_by_order.rend()) {
-            if(*itr == pass.data.name) {
+        int32_t idx = 0;    // Signed so it can be negative so the `for` loop will exit
+        for(; idx < render_passes_by_order.size(); idx++) {
+            if(render_passes_by_order.at(idx) == pass.data.name) {
                 break;
             }
-
-            ++itr;
         }
 
-        ++itr;
-
         // Walk backwards from where we are, checking if any of the textures the previous pass writes to are textures we need to barrier
-        while(itr != render_passes_by_order.rend()) {
-            const vk_render_pass& previous_pass = render_passes.at(*itr);
+        for(; idx >= 0; idx--) {
+            const std::string& prev_pass_name = render_passes_by_order.at(idx);
+            const vk_render_pass& previous_pass = render_passes.at(prev_pass_name);
             // If the previous pass reads from a texture that we read from, it (or a even earlier pass) will have the barrier
             const std::vector<std::string> read_textures = previous_pass.data.texture_inputs;
 
@@ -1926,8 +1923,6 @@ namespace nova {
                     }
                 }
             }
-
-            ++itr;
         }
 
         for(const auto& [tex_name, necessity] : read_texture_barrier_necessity) {
