@@ -23,17 +23,22 @@ void nova_backtrace() {
         std::string str(data[i]);
 
         if(str.find_last_of('(') != std::string::npos && str.find_last_of(')') != std::string::npos) {
-            std::string path = str.substr(0, str.find_last_of('('));
-            std::string symbol = str.substr(str.find_last_of('(') + 1, str.find_last_of('+') - str.find_last_of('(') - 1);
-            std::string address = str.substr(str.find_last_of('+'), str.find_last_of(')') - str.find_last_of('+'));
+            try {
+                std::string path = str.substr(0, str.find_last_of('('));
+                std::string symbol = str.substr(str.find_last_of('(') + 1,
+                                                str.find_last_of('+') - str.find_last_of('(') - 1);
+                std::string address = str.substr(str.find_last_of('+'), str.find_last_of(')') - str.find_last_of('+'));
 
-            if(symbol.length() > 0) {
-                char *name = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, nullptr);
-                symbol = std::string(name);
-                free(name);
+                if (symbol.length() > 0) {
+                    char *name = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, nullptr);
+                    symbol = std::string(name);
+                    free(name);
 
-                str = "";
-                str.append(path).append("(").append(symbol).append(address).append(")");
+                    str = "";
+                    str.append(path).append("(").append(symbol).append(address).append(")");
+                }
+            } catch (const std::exception &e) {
+                NOVA_LOG(WARN) << "Demangle failed: " << e.what() << std::endl;
             }
         }
 
