@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.10)
 project(nova-renderer)
 
 ################################################################
@@ -185,7 +185,8 @@ set(3RD_PARTY_SOURCE
 ##########################################
 if (UNIX)
     add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always)
-    add_link_options(-fno-omit-frame-pointer)
+    # TODO: Find a CMake 3.12-compatible way to do this
+    # add_link_options(-fno-omit-frame-pointer)
 endif()
 
 if(NOVA_TREAT_WARNINGS_AS_ERRORS)
