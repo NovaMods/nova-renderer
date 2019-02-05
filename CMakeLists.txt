@@ -310,6 +310,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT NOVA_IN_SUBMODULE)
     set(NOVA_TEST ON)
 endif()
 
+set(NOVA_TEST ON)
 if(NOVA_TEST)
     add_subdirectory(tests)
 endif()
