@@ -244,7 +244,7 @@ namespace nova {
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
             0, nullptr,
             0, nullptr,
-            barriers.size(), barriers.data());
+            static_cast<uint32_t>(barriers.size()), barriers.data());
         
         vkEndCommandBuffer(cmds);
 

@@ -440,8 +440,8 @@ namespace nova {
 
                 } else {
                     dimensions = swapchain_dimensions;
-                    dimensions.x *= format.width;
-                    dimensions.y *= format.height;
+                    dimensions.x *= static_cast<uint32_t>(format.width);
+                    dimensions.y *= static_cast<uint32_t>(format.height);
                 }
 
                 const DXGI_FORMAT dx12_format = to_dxgi_format(format.pixel_format);
@@ -489,7 +489,7 @@ namespace nova {
                 }
                 texture->SetName(s2ws(texture_name).c_str());
 
-                auto new_tex_index = dynamic_textures.size();
+                const uint32_t new_tex_index = static_cast<uint32_t>(dynamic_textures.size());
                 dynamic_textures[texture_name] = dx12_texture(textures.at(texture_name), texture);
                 dynamic_tex_name_to_idx.emplace(texture_name, new_tex_index);
 
@@ -506,7 +506,7 @@ namespace nova {
 
     void dx12_render_engine::create_gpu_query_heap(size_t num_queries) {
         D3D12_QUERY_HEAP_DESC heap_desc = {};
-        heap_desc.Count = num_queries;
+        heap_desc.Count =static_cast<UINT>(num_queries);
         heap_desc.NodeMask = 0;
         heap_desc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
 
@@ -616,7 +616,7 @@ namespace nova {
             raster_desc.CullMode = D3D12_CULL_MODE_BACK;
         }
         raster_desc.FrontCounterClockwise = true;
-        raster_desc.DepthBias = input.depth_bias;
+        raster_desc.DepthBias = static_cast<UINT>(std::round(input.depth_bias));
         raster_desc.SlopeScaledDepthBias = input.slope_scaled_depth_bias;
         raster_desc.DepthClipEnable = true;
         if(input.msaa_support != msaa_support_enum::None) {
@@ -679,7 +679,7 @@ namespace nova {
             input_descs.push_back(desc);
         }
 
-        pipeline_state_desc.InputLayout.NumElements = input_descs.size();
+        pipeline_state_desc.InputLayout.NumElements = static_cast<UINT>(input_descs.size());
         pipeline_state_desc.InputLayout.pInputElementDescs = input_descs.data();
 
         /*
@@ -857,7 +857,7 @@ namespace nova {
             D3D12_ROOT_PARAMETER1& parameter = params.at(cur_param);
             parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
             parameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-            parameter.DescriptorTable.NumDescriptorRanges = table.second.size();
+            parameter.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(table.second.size());
             parameter.DescriptorTable.pDescriptorRanges = table.second.data();
 
             cur_param++;
@@ -865,7 +865,7 @@ namespace nova {
 
         D3D12_VERSIONED_ROOT_SIGNATURE_DESC versioned_sig = {};
         versioned_sig.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
-        versioned_sig.Desc_1_1.NumParameters = params.size();
+        versioned_sig.Desc_1_1.NumParameters = static_cast<UINT>(params.size());
         versioned_sig.Desc_1_1.pParameters = params.data();
 
         ComPtr<ID3DBlob> compiled_root_sig;

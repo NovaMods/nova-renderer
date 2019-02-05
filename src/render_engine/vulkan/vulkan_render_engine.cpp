@@ -186,9 +186,9 @@ namespace nova {
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vkBeginCommandBuffer(cmds, &begin_info);
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, color_barriers.size(), color_barriers.data());
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(color_barriers.size()), color_barriers.data());
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, depth_barriers.size(), depth_barriers.data());
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(depth_barriers.size()), depth_barriers.data());
 
         vkEndCommandBuffer(cmds);
 
@@ -454,12 +454,12 @@ namespace nova {
     }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
-        const uint32_t cur_thread_idx = scheduler->get_current_thread_idx();
+        const std::size_t cur_thread_idx = scheduler->get_current_thread_idx();
         return command_pools_by_thread_idx.at(cur_thread_idx).at(queue_index);
     }
 
     VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() {
-        const uint32_t cur_thread_idx = scheduler->get_current_thread_idx();
+        const std::size_t cur_thread_idx = scheduler->get_current_thread_idx();
         return descriptor_pools_by_thread_idx.at(cur_thread_idx);
     }
 
@@ -520,11 +520,11 @@ namespace nova {
     std::future<uint32_t> vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
         return scheduler->add_task(
             [&](ttl::task_scheduler*, const mesh_data* input_mesh, std::mutex* mesh_upload_queue_mutex, std::queue<mesh_staging_buffer_upload_command>* mesh_upload_queue) {
-                const uint32_t vertex_size = input_mesh->vertex_data.size() * sizeof(full_vertex);
-                const uint32_t index_size = input_mesh->indices.size() * sizeof(uint32_t);
+                const uint32_t vertex_size = static_cast<uint32_t>(input_mesh->vertex_data.size()) * sizeof(full_vertex);
+                const uint32_t index_size = static_cast<uint32_t>(input_mesh->indices.size()) * sizeof(uint32_t);
 
                 // TODO: Make the extra memory allocation configurable
-                const uint32_t total_memory_needed = std::round((vertex_size + index_size) * 1.1); // Extra size so chunks can grow
+                const uint32_t total_memory_needed = static_cast<uint32_t>(std::round((vertex_size + index_size) * 1.1)); // Extra size so chunks can grow
 
                 vk_buffer staging_buffer = get_or_allocate_mesh_staging_buffer(total_memory_needed);
                 std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh->vertex_data[0], vertex_size);
@@ -636,7 +636,7 @@ namespace nova {
 
                     VkAttachmentReference ref = {};
                     ref.layout = VK_IMAGE_LAYOUT_GENERAL;
-                    ref.attachment = attachments.size() - 1;
+                    ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
                     attachment_references.push_back(ref);
 
                     framebuffer_width = swapchain_extent.width;
@@ -688,7 +688,7 @@ namespace nova {
 
                     VkAttachmentReference ref = {};
                     ref.layout = VK_IMAGE_LAYOUT_GENERAL;
-                    ref.attachment = attachments.size() - 1;
+                    ref.attachment = static_cast<uint32_t>(attachments.size()) - 1;
                     attachment_references.push_back(ref);
                 }
             }
@@ -734,7 +734,7 @@ namespace nova {
                 attachments.push_back(desc);
 
                 depth_reference.layout = VK_IMAGE_LAYOUT_GENERAL;
-                depth_reference.attachment = attachments.size() - 1;
+                depth_reference.attachment = static_cast<uint32_t>(attachments.size()) - 1;
                 subpass_description.pDepthStencilAttachment = &depth_reference;
             }
 
@@ -753,10 +753,10 @@ namespace nova {
                                 << ". Please reduce the number of attachments that this pass uses, possibly by changing some of your input attachments to bound textures";
             }
 
-            subpass_description.colorAttachmentCount = attachment_references.size();
+            subpass_description.colorAttachmentCount = static_cast<uint32_t>(attachment_references.size());
             subpass_description.pColorAttachments = attachment_references.data();
 
-            render_pass_create_info.attachmentCount = attachments.size();
+            render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
             render_pass_create_info.pAttachments = attachments.data();
 
             NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_passes[pass_name].pass), render_engine_initialization_exception);
@@ -1338,11 +1338,11 @@ namespace nova {
 
 #pragma region Texture attachment layout transition
         if(!renderpass.read_texture_barriers.empty()) {
-            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, renderpass.read_texture_barriers.size(), renderpass.read_texture_barriers.data());
+            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(renderpass.read_texture_barriers.size()), renderpass.read_texture_barriers.data());
         }
 
         if(!renderpass.write_texture_barriers.empty()) {
-            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, renderpass.write_texture_barriers.size(), renderpass.write_texture_barriers.data());
+            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(renderpass.write_texture_barriers.size()), renderpass.write_texture_barriers.data());
         }
 
         if(renderpass.writes_to_backbuffer) {
@@ -1498,7 +1498,7 @@ namespace nova {
             vkCmdBindVertexBuffers(cmds, 0, 1, &buffer, nullptr);
             vkCmdBindIndexBuffer(cmds, buffer, 0, VK_INDEX_TYPE_UINT32);
 
-            vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, renderables.size(), 0);
+            vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, static_cast<uint32_t>(renderables.size()), 0);
         }
     }
 
@@ -1527,7 +1527,7 @@ namespace nova {
 
         const bool one_null_semaphore = wait_semaphores.size() == 1 && wait_semaphores.at(0) == VK_NULL_HANDLE;
         if(!one_null_semaphore) {
-            submit_info.waitSemaphoreCount = wait_semaphores.size();
+            submit_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
             submit_info.pWaitSemaphores = wait_semaphores.data();
         }
         submit_info.signalSemaphoreCount = 1;
@@ -1613,7 +1613,7 @@ namespace nova {
         VkDescriptorPoolCreateInfo pool_create_info = {};
         pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         pool_create_info.maxSets = 5000;
-        pool_create_info.poolSizeCount = pool_sizes.size();
+        pool_create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
         pool_create_info.pPoolSizes = pool_sizes.data();
 
         VkDescriptorPool pool;
@@ -1764,7 +1764,7 @@ namespace nova {
 
             VkDescriptorSetLayoutCreateInfo create_info = {};
             create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            create_info.bindingCount = bindings.size();
+            create_info.bindingCount = static_cast<uint32_t>(bindings.size());
             create_info.pBindings = bindings.data();
 
             dsl_create_infos.push_back(create_info);
@@ -1804,7 +1804,7 @@ namespace nova {
                     VkDescriptorSetAllocateInfo alloc_info = {};
                     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
                     alloc_info.descriptorPool = get_descriptor_pool_for_current_thread();
-                    alloc_info.descriptorSetCount = layouts.size();
+                    alloc_info.descriptorSetCount = static_cast<uint32_t>(layouts.size());
                     alloc_info.pSetLayouts = layouts.data();
 
                     mat_pass.descriptor_sets.resize(layouts.size());
@@ -2049,7 +2049,7 @@ namespace nova {
             }
         }
 
-        vkUpdateDescriptorSets(device, writes.size(), writes.data(), 0, nullptr);
+        vkUpdateDescriptorSets(device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
 
     void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo>& image_infos) const {

@@ -311,7 +311,7 @@ namespace nova {
             barriers.push_back(barrier);
         }
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, pools.size(), barriers.data(), 0, nullptr);
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, static_cast<uint32_t>(pools.size()), barriers.data(), 0, nullptr);
     }
 
     void compacting_block_allocator::add_barriers_after_data_upload(VkCommandBuffer cmds) const {
@@ -331,7 +331,7 @@ namespace nova {
             barriers.push_back(barrier);
         }
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, pools.size(), barriers.data(), 0, nullptr);
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, static_cast<uint32_t>(pools.size()), barriers.data(), 0, nullptr);
 
     }
 }  // namespace nova
