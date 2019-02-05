@@ -188,6 +188,7 @@ if (UNIX)
     add_link_options(-fno-omit-frame-pointer)
 endif()
 
+
 if(NOVA_TREAT_WARNINGS_AS_ERRORS)
     if(MSVC)
         add_compile_options(/WX)
