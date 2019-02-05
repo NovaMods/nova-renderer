@@ -6,7 +6,6 @@ platform:
   - x64
 
 clone_folder: c:\projects\nova-renderer
-clone_depth: 1
 skip_tags: true
 
 environment:
