@@ -13,6 +13,7 @@ cd build-clang
 cmake ..\
     -DNOVA_TEST=ON\
     -DCMAKE_BUILD_TYPE=Debug\
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=On\
     -DNOVA_TREAT_WARNINGS_AS_ERRORS=On\
     -DCMAKE_C_COMPILER=clang-8 -DCMAKE_CXX_COMPILER=clang++-8\
     -DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache\
@@ -41,6 +42,16 @@ lcov -c -i -d . -o empty-coverage.info --gcov-tool gcov-7
 echo "End GCC-Build"
 ./nova-test-unit
 echo "End GCC-Tests"
+cd ..
+
+# Linting
+cd build-clang
+run-clang-tidy-8 -export-fixes test.yaml -j8 -header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'`
+test `cat test2.yaml | wc -c` -eq 1
+echo "End linting"
+cd ..
+
+cd build-gcc
 lcov -c -d . -o live-coverage.info --gcov-tool gcov-7
 lcov -a empty-coverage.info -a live-coverage.info -o coverage.info --gcov-tool gcov-7
 lcov --remove coverage.info "/usr/*" "$WORKSPACE/3rdparty/*" "$WORKSPACE/tests/*" --output-file coverage.info
