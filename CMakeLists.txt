@@ -187,6 +187,10 @@ if (UNIX)
     add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always)
 endif()
 
+if(MSVC)
+    add_definitions(/D_CRT_SECURE_NO_WARNINGS=1)
+endif()
+
 if(NOVA_TREAT_WARNINGS_AS_ERRORS)
     if(MSVC)
         add_compile_options(/WX)
