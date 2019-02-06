@@ -199,7 +199,7 @@ if(NOVA_COVERAGE)
     if(MSVC)
         message(FATAL_ERROR "Coverage not supported on MSVC.")
     else()
-        add_compile_options_if_supported(-g -O0 --coverage -fprofile-arcs -ftest-coverage)
+        add_compile_options(-g -O0 --coverage -fprofile-arcs -ftest-coverage)
     endif()
 endif()
 
