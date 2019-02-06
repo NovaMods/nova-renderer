@@ -1,57 +1,65 @@
-######################################
-# Add dependencies as subdirectories #
-######################################
+#############################
+# Overriding default values #
+#############################
 
 set(BUILD_DEMOS OFF CACHE BOOL "Disable demos" FORCE)
 set(BUILD_ICD OFF CACHE BOOL "Disable ICD" FORCE)
 
 set(BUILD_SHARED_LIBS OFF)
 
-add_library(glm::glm INTERFACE IMPORTED)
-set_target_properties(glm::glm PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/glm"
-    INTERFACE_COMPILE_FEATURES cxx_std_17
-    INTERFACE_COMPILE_DEFINITIONS "GLM_ENABLE_EXPERIMENTAL"
-)
+include(IncludeTarget)
+include(TargetIncludesSystem)
+
+#########################
+# External dependencies #
+#########################
+
+find_package(Vulkan)
+if ($ENV{VULKAN_SDK})
+    set(VULKAN_INCLUDE $ENV{VULKAN_SDK})
+else()
+    set(VULKAN_INCLUDE "")
+endif()
+
+#########################
+# Header only libraries #
+#########################
+
+include_target(glm::glm "${CMAKE_CURRENT_LIST_DIR}/glm")
+set_target_properties(glm::glm PROPERTIES INTERFACE_COMPILE_DEFINITIONS "GLM_ENABLE_EXPERIMENTAL")
+
+include_target(nlohmann::json "${CMAKE_CURRENT_LIST_DIR}/json/single_include")
+include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
+include_target(vma::vma "${3RD_PARTY_DIR}/VulkanMemoryAllocator/src")
+include_target(vulkan::sdk "${VULKAN_INCLUDE}")
+
+#######################
+# Submodule libraries #
+#######################
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/profiler)
-        
-add_library(nlohmann::json INTERFACE IMPORTED)
-set_target_properties(nlohmann::json PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/json/single_include"
-    INTERFACE_COMPILE_FEATURES cxx_std_17
-)
 
-# Miniz's cmake sucks, so doing it here
-set(MINIZ_SOURCE ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz.c 
-                 ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz_zip.c
-                 ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz_tinfl.c
-                 ${CMAKE_CURRENT_LIST_DIR}/miniz/miniz_tdef.c)
-add_library(miniz ${MINIZ_SOURCE})
-target_include_directories(miniz PUBLIC ${CMAKE_CURRENT_LIST_DIR}/miniz)
-
-
-# minitrace has no cmake :(
-set(MINITRACE_SOURCE ${CMAKE_CURRENT_LIST_DIR}/minitrace/minitrace.c
-                     ${CMAKE_CURRENT_LIST_DIR}/minitrace/minitrace.h)
-add_library(minitrace ${MINITRACE_SOURCE})
-target_include_directories(minitrace PUBLIC ${CMAKE_CURRENT_LIST_DIR}/minitrace)
-
-
-set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
-add_library(spirv::headers INTERFACE IMPORTED)
-set_target_properties(spirv::headers PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers"
-    INTERFACE_COMPILE_FEATURES cxx_std_17
-)
 set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers)
+set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
 set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
 
 set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
-find_package(Vulkan)
+target_includes_system(glslang)
+
+############################
+# Manually built libraries #
+############################
+        
+include(miniz)
+include(minitrace)
+
+#####################################
+# Hide unnecessary targets from all #
+#####################################
 
 set_property(TARGET glslang PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET glslang-default-resource-limits PROPERTY EXCLUDE_FROM_ALL True)
