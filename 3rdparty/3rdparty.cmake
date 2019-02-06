@@ -15,9 +15,11 @@ include(TargetIncludesSystem)
 #########################
 
 find_package(Vulkan)
-if ($ENV{VULKAN_SDK})
-    set(VULKAN_INCLUDE $ENV{VULKAN_SDK})
+if (DEFINED $ENV{VULKAN_SDK})
+    message(STATUS "Vulkan environment variable: $ENV{VULKAN_SDK}")
+    set(VULKAN_INCLUDE "$ENV{VULKAN_SDK}")
 else()
+    message(STATUS "Vulkan environment variable: undefined")
     set(VULKAN_INCLUDE "")
 endif()
 
