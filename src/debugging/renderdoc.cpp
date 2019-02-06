@@ -4,7 +4,7 @@
 #include "../util/logger.hpp"
 
 #if NOVA_WINDOWS
-#include <windows.h>
+#include "../util/windows.hpp"
 #include "../util/windows_utils.hpp"
 
 // Fucking hell

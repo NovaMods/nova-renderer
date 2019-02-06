@@ -4,7 +4,7 @@
  */
 
 #include "windows_utils.hpp"
-#include <windows.h>
+#include "windows.hpp"
 #include <string>
 
 std::wstring s2ws(const std::string &s) {

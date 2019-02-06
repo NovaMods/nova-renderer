@@ -141,6 +141,7 @@ namespace nova {
         depth_barriers.reserve(textures.size());
 
         for(const auto& [_, texture] : textures) {
+            (void) _;
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -1104,6 +1105,7 @@ namespace nova {
 
         // Be super duper sure that mesh rendering is done
         for(const auto& [pass_name, pass] : render_passes) {
+            (void) pass_name;
             vkWaitForFences(device, 1, &pass.fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
         }
         vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
@@ -1265,6 +1267,7 @@ namespace nova {
 
     void vulkan_render_engine::destroy_render_passes() {
         for(const auto& [pass_name, pass] : render_passes) {
+            (void) pass_name;
             vkDestroyRenderPass(device, pass.pass, nullptr);
         }
 
@@ -1274,6 +1277,7 @@ namespace nova {
 
     void vulkan_render_engine::destroy_graphics_pipelines() {
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
+            (void) renderpass_name;
             for(const auto& pipeline : pipelines) {
                 vkDestroyPipeline(device, pipeline.pipeline, nullptr);
             }
@@ -1805,6 +1809,7 @@ namespace nova {
 
     void vulkan_render_engine::create_material_descriptor_sets() {
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
+            (void) renderpass_name;
             for(const auto& pipeline : pipelines) {
                 std::vector<material_pass>& material_passes = material_passes_by_pipeline.at(pipeline.data.name);
                 for(material_pass& mat_pass : material_passes) {
@@ -1956,6 +1961,7 @@ namespace nova {
         }
 
         for(const auto& [tex_name, _] : read_texture_barrier_necessity) {
+            (void) _;
             const vk_texture& tex = textures.at(tex_name);
 
             VkImageMemoryBarrier barrier = {};
@@ -1977,6 +1983,7 @@ namespace nova {
         }
 
         for(const auto& [tex_name, _] : write_texture_barrier_necessity) {
+            (void) _;
             if(tex_name == "Backbuffer") {
                 continue;
             }
@@ -2004,6 +2011,7 @@ namespace nova {
 
     void vulkan_render_engine::generate_barriers_for_dynamic_resources() {
         for(auto& [name, pass] : render_passes) {
+            (void) name;
             create_barriers_for_renderpass(pass);
         }
     }
@@ -2023,6 +2031,7 @@ namespace nova {
         std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
 
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
+            (void) renderpass_name;
             bool should_break = false;
 
             for(const vk_pipeline& pipeline : pipelines) {

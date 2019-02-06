@@ -187,6 +187,10 @@ if (UNIX)
     add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always)
 endif()
 
+if(MSVC)
+    add_definitions(/D_CRT_SECURE_NO_WARNINGS=1)
+endif()
+
 if(NOVA_TREAT_WARNINGS_AS_ERRORS)
     if(MSVC)
         add_compile_options(/WX)
@@ -194,6 +198,17 @@ if(NOVA_TREAT_WARNINGS_AS_ERRORS)
         add_compile_options(-Werror)
     endif()
 endif()
+
+macro(add_coverage target)
+    if(NOVA_COVERAGE)
+        if(MSVC)
+            message(FATAL_ERROR "Coverage not supported on MSVC.")
+        else()
+            target_compile_options(${target} PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage)
+            target_link_libraries(${target} PRIVATE -g --coverage)
+        endif()
+    endif()
+endmacro()
 
 ##########################################
 # Setup required options for backtracing #
@@ -217,7 +232,6 @@ add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
 # clang_format(nova-renderer NOVA_SOURCE) <= TODO: Uncomment when .clang-format is perfect
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-target_compile_definitions(nova-renderer PUBLIC NOMINMAX)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 
 ##################################
@@ -226,6 +240,8 @@ target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wno-long-long -pedantic -Wdefaulted-function-deleted)
 endif()
+
+add_coverage(nova-renderer)
 
 #########################
 # Set libraries to link #
@@ -294,7 +310,7 @@ endif()
 ###############################
 # Link all required libraries #
 ###############################
-target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
+target_link_libraries(nova-renderer PUBLIC ${COMMON_LINK_LIBS})
 
 #############################
 # Fix issue with permissive #
