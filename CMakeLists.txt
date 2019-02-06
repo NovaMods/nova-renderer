@@ -46,7 +46,8 @@ endif()
 ############################
 # Initialize cmake options #
 ############################
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake" "${3RD_PARTY_DIR}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -71,20 +72,7 @@ set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 #################################
 # Setup 3rd party dependencies. #
 #################################
-set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
-include(${3RD_PARTY_DIR}/3rdparty.cmake)
-
-######################################
-# Make dependencies' headers visible #
-######################################
-include_directories(SYSTEM
-        $ENV{VULKAN_SDK}/include
-        ${3RD_PARTY_DIR}/RenderDoc-Manager
-        ${3RD_PARTY_DIR}/cpptoml/include
-        ${3RD_PARTY_DIR}/glslang
-        ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
-        ${3RD_PARTY_DIR}/SPIRV-Cross
-)
+include(3rdparty)
 
 ########################
 # Add Nova source code #
@@ -259,8 +247,9 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      miniz
                      minitrace
                      glslang
+                     vulkan::sdk
+                     vma::vma
                      SPIRV
-                     ${SPIRV_SHARED_LIBRARIES}
                      ${Vulkan_LIBRARIES})
 
 ##############################
