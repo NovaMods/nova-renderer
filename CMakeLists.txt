@@ -217,8 +217,8 @@ add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
 # clang_format(nova-renderer NOVA_SOURCE) <= TODO: Uncomment when .clang-format is perfect
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-target_compile_definitions(nova-renderer PUBLIC NOMINMAX)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
+target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 
 ##################################
 # Add extra warnings if possible #
@@ -304,8 +304,8 @@ remove_permissive(nova-renderer)
 #########################################################
 # Enable tests if not in submodule and debug or if MSVC #
 #########################################################
-if ((CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT NOVA_IN_SUBMODULE) OR MSVC)
-    message(STATUS "Enabling nova tests by default because build type is Debug (wont overwrite if set manually)")
+if(NOT NOVA_IN_SUBMODULE)
+    message(STATUS "Enabling nova tests by default because Nova is not a submodule (wont overwrite if set manually)")
     set(NOVA_TEST ON)
 endif()
 
