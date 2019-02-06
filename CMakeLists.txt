@@ -199,13 +199,15 @@ if(NOVA_TREAT_WARNINGS_AS_ERRORS)
     endif()
 endif()
 
-if(NOVA_COVERAGE)
-    if(MSVC)
-        message(FATAL_ERROR "Coverage not supported on MSVC.")
-    else()
-        add_compile_options(-g -O0 --coverage -fprofile-arcs -ftest-coverage)
+macro(add_coverage target)
+    if(NOVA_COVERAGE)
+        if(MSVC)
+            message(FATAL_ERROR "Coverage not supported on MSVC.")
+        else()
+                target_compile_options(${target} PUBLIC -g -O0 --coverage -fprofile-arcs -ftest-coverage)
+        endif()
     endif()
-endif()
+endmacro()
 
 ##########################################
 # Setup required options for backtracing #
@@ -237,6 +239,8 @@ target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wno-long-long -pedantic -Wdefaulted-function-deleted)
 endif()
+
+add_coverage(nova-renderer)
 
 #########################
 # Set libraries to link #

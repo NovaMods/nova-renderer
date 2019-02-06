@@ -30,6 +30,7 @@ target_compile_definitions(nova-test-end-to-end PRIVATE CMAKE_DEFINED_RESOURCES_
 target_compile_options_if_supported(nova-test-end-to-end PRIVATE -Wno-unknown-pragmas)
 target_link_libraries(nova-test-end-to-end PRIVATE nova-renderer Threads::Threads)
 remove_permissive(nova-test-end-to-end)
+add_coverage(nova-test-end-to-end)
 
 ##############
 # Unit tests #
@@ -39,6 +40,7 @@ target_compile_definitions(nova-test-unit PRIVATE CMAKE_DEFINED_RESOURCES_PREFIX
 target_link_libraries(nova-test-unit nova-renderer gtest_main Threads::Threads)
 target_compile_options_if_supported(nova-test-unit PRIVATE -Wno-unknown-pragmas)
 remove_permissive(nova-test-unit)
+add_coverage(nova-test-unit)
 
 # Reset shared libraries option if changed by us
 if(DEFINED BUILD_SHARED_LIBS_ORIGINAL_NOVA)
