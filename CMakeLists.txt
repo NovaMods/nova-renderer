@@ -310,7 +310,7 @@ endif()
 ###############################
 # Link all required libraries #
 ###############################
-target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
+target_link_libraries(nova-renderer PRIVATE ${COMMON_LINK_LIBS})
 
 #############################
 # Fix issue with permissive #
