@@ -195,6 +195,14 @@ if(NOVA_TREAT_WARNINGS_AS_ERRORS)
     endif()
 endif()
 
+if(NOVA_COVERAGE)
+    if(MSVC)
+        message(FATAL_ERROR "Coverage not supported on MSVC.")
+    else()
+        add_compile_options_if_supported(-g -O0 --coverage -fprofile-arcs -ftest-coverage)
+    endif()
+endif()
+
 ##########################################
 # Setup required options for backtracing #
 ##########################################
