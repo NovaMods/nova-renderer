@@ -3,7 +3,7 @@
  * \date 30-Aug-18.
  */
 
-#include <windows.h>
+#include "../../util/windows.hpp"
 #include <D3DCompiler.h>
 
 #include "dx12_render_engine.hpp"
