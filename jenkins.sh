@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Fail if failed
+set -e
+
 # Coverage
 curl -so codecov.bash https://codecov.io/bash
 echo "End Clone"
