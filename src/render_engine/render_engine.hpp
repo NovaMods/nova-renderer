@@ -43,6 +43,8 @@ namespace nova {
         std::vector<uint32_t> indices;
     };
 
+    using mesh_id_t = uint32_t;
+
     /*!
      * \brief Abstract class for render backends
      *
@@ -81,7 +83,7 @@ namespace nova {
          * \param mesh The mesh data to send to the GPU
          * \return The ID of the mesh that was just created
          */
-        virtual std::future<uint32_t> add_mesh(const mesh_data& mesh) = 0;
+        virtual mesh_id_t add_mesh(const mesh_data& mesh) = 0;
 
         /*!
          * \brief Deletes the mesh with the provided ID from the GPU

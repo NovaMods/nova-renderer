@@ -36,7 +36,35 @@ namespace nova {
 
         renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
-        std::shared_ptr<iwindow> window = renderer->get_engine()->get_window();
+        render_engine* engine = renderer->get_engine();
+        std::shared_ptr<iwindow> window = engine->get_window();
+
+        mesh_data cube = {};
+        cube.vertex_data = {
+            full_vertex{{-1, -1, -1}, {}, {}, {}, {}, {}, {}},
+            full_vertex{{-1, -1, 1}, {}, {}, {}, {}, {}, {}},
+            full_vertex{{-1, 1, -1}, {}, {}, {}, {}, {}, {}},
+            full_vertex{{-1, 1, 1}, {}, {}, {}, {}, {}, {}},
+            full_vertex{{1, -1, -1}, {}, {}, {}, {}, {}, {}},
+            full_vertex{{1, -1, 1}, {}, {}, {}, {}, {}, {}},
+            full_vertex{{1, 1, -1}, {}, {}, {}, {}, {}, {}},
+            full_vertex{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
+        };
+        cube.indices = {
+            0, 1, 3,
+            6, 0, 2,
+            5, 0, 4,
+            6, 4, 0,
+            0, 3, 2,
+            5, 1, 0,
+            3, 1, 5,
+            7, 4, 6,
+            4, 7, 5,
+            7, 6, 2,
+            7, 2, 3,
+            7, 3, 5
+        };
+        engine->add_mesh(cube);
 
         while(!window->should_close()) {
             renderer->execute_frame();
