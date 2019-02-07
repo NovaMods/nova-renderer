@@ -1,6 +1,6 @@
 #pragma once
 
-#include <VmaUsage.h>
+#include "../../util/vma_usage.hpp"
 #include <vulkan/vulkan.h>
 #include <vector>
 #include "../../settings/nova_settings.hpp"

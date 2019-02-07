@@ -46,7 +46,8 @@ endif()
 ############################
 # Initialize cmake options #
 ############################
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake" "${3RD_PARTY_DIR}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -71,20 +72,7 @@ set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 #################################
 # Setup 3rd party dependencies. #
 #################################
-set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
-include(${3RD_PARTY_DIR}/3rdparty.cmake)
-
-######################################
-# Make dependencies' headers visible #
-######################################
-include_directories(SYSTEM
-        $ENV{VULKAN_SDK}/include
-        ${3RD_PARTY_DIR}/RenderDoc-Manager
-        ${3RD_PARTY_DIR}/cpptoml/include
-        ${3RD_PARTY_DIR}/glslang
-        ${3RD_PARTY_DIR}/VulkanMemoryAllocator/src
-        ${3RD_PARTY_DIR}/SPIRV-Cross
-)
+include(3rdparty)
 
 ########################
 # Add Nova source code #
@@ -187,6 +175,10 @@ if (UNIX)
     add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always)
 endif()
 
+if(MSVC)
+    add_definitions(/D_CRT_SECURE_NO_WARNINGS=1)
+endif()
+
 if(NOVA_TREAT_WARNINGS_AS_ERRORS)
     if(MSVC)
         add_compile_options(/WX)
@@ -194,6 +186,17 @@ if(NOVA_TREAT_WARNINGS_AS_ERRORS)
         add_compile_options(-Werror)
     endif()
 endif()
+
+macro(add_coverage target)
+    if(NOVA_COVERAGE)
+        if(MSVC)
+            message(FATAL_ERROR "Coverage not supported on MSVC.")
+        else()
+            target_compile_options(${target} PRIVATE -g -O0 --coverage -fprofile-arcs -ftest-coverage)
+            target_link_libraries(${target} PRIVATE -g --coverage)
+        endif()
+    endif()
+endmacro()
 
 ##########################################
 # Setup required options for backtracing #
@@ -227,6 +230,8 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_
     target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wno-long-long -pedantic -Wdefaulted-function-deleted)
 endif()
 
+add_coverage(nova-renderer)
+
 #########################
 # Set libraries to link #
 #########################
@@ -243,8 +248,9 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      miniz
                      minitrace
                      glslang
+                     vulkan::sdk
+                     vma::vma
                      SPIRV
-                     ${SPIRV_SHARED_LIBRARIES}
                      ${Vulkan_LIBRARIES})
 
 ##############################
@@ -294,7 +300,7 @@ endif()
 ###############################
 # Link all required libraries #
 ###############################
-target_link_libraries(nova-renderer ${COMMON_LINK_LIBS})
+target_link_libraries(nova-renderer PUBLIC ${COMMON_LINK_LIBS})
 
 #############################
 # Fix issue with permissive #

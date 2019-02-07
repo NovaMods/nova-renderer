@@ -27,7 +27,7 @@ before_build:
   - cmd: cd C:\projects\nova-renderer
   - cmd: md build
   - cmd: cd build
-  - cmd: cmake .. -G "Visual Studio 15 2017 Win64" -DNOVA_TEST=On "-DCMAKE_C_FLAGS=/D_CRT_SECURE_NO_WARNINGS=1" "-DCMAKE_CXX_FLAGS=/D_CRT_SECURE_NO_WARNINGS=1"
+  - cmd: cmake .. -G "Visual Studio 15 2017 Win64" -DNOVA_TEST=On -DNOVA_TREAT_WARNINGS_AS_ERRORS=On
 
 build:
   project: C:\projects\nova-renderer\build\nova-renderer.sln

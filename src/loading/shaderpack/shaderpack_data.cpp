@@ -3,6 +3,8 @@
  * \date 23-Aug-18.
  */
 
+#include "../../util/vma_usage.hpp"
+
 #include <Common.h>
 #include "shaderpack_data.hpp"
 #include "../json_utils.hpp"
