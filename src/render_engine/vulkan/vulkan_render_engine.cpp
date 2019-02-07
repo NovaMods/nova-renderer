@@ -91,7 +91,7 @@ namespace nova {
         VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
         debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         debug_create_info.pNext = nullptr;
-        debug_create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+        debug_create_info.flags = 0;
         debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         debug_create_info.pfnUserCallback = reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(&debug_report_callback);
@@ -794,12 +794,14 @@ namespace nova {
 
             render_passes[pass_name].render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
 
+#ifndef NDEBUG
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
             object_name.objectHandle = reinterpret_cast<uint64_t>(render_passes[pass_name].pass);
             object_name.pObjectName = pass_name.c_str();
             NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
+#endif
         }
     }
 
@@ -1707,12 +1709,14 @@ namespace nova {
 
             vkCreateImageView(device, &image_view_create_info, nullptr, &texture.image_view);
 
+#ifndef NDEBUG
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
             object_name.objectHandle = reinterpret_cast<uint64_t>(texture.image);
             object_name.pObjectName = texture_data.name.c_str();
             NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
+#endif
             NOVA_LOG(INFO) << "Set object " << texture.image << " to have name " << texture_data.name;
 
             textures[texture_data.name] = texture;
