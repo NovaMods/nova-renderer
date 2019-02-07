@@ -518,29 +518,23 @@ namespace nova {
         available_mesh_staging_buffers.push_back(buffer);
     }
 
-    std::future<uint32_t> vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
-        return scheduler->add_task(
-            [&](ttl::task_scheduler*, const mesh_data* input_mesh, std::mutex* mesh_upload_queue_mutex, std::queue<mesh_staging_buffer_upload_command>* mesh_upload_queue) {
-                const uint32_t vertex_size = static_cast<uint32_t>(input_mesh->vertex_data.size()) * sizeof(full_vertex);
-                const uint32_t index_size = static_cast<uint32_t>(input_mesh->indices.size()) * sizeof(uint32_t);
+    mesh_id_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
+        const uint32_t vertex_size = static_cast<uint32_t>(input_mesh.vertex_data.size()) * sizeof(full_vertex);
+        const uint32_t index_size = static_cast<uint32_t>(input_mesh.indices.size()) * sizeof(uint32_t);
 
-                // TODO: Make the extra memory allocation configurable
-                const uint32_t total_memory_needed = static_cast<uint32_t>(std::round((vertex_size + index_size) * 1.1)); // Extra size so chunks can grow
+        // TODO: Make the extra memory allocation configurable
+        const uint32_t total_memory_needed = static_cast<uint32_t>(std::round((vertex_size + index_size) * 1.1)); // Extra size so chunks can grow
 
-                vk_buffer staging_buffer = get_or_allocate_mesh_staging_buffer(total_memory_needed);
-                std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh->vertex_data[0], vertex_size);
-                std::memcpy(reinterpret_cast<uint8_t*>(staging_buffer.alloc_info.pMappedData) + vertex_size, &input_mesh->indices[0], index_size);
+        vk_buffer staging_buffer = get_or_allocate_mesh_staging_buffer(total_memory_needed);
+        std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh.vertex_data[0], vertex_size);
+        std::memcpy(reinterpret_cast<uint8_t*>(staging_buffer.alloc_info.pMappedData) + vertex_size, &input_mesh.indices[0], index_size);
 
-                const uint32_t mesh_id = next_mesh_id.fetch_add(1);
+        const uint32_t mesh_id = next_mesh_id.fetch_add(1);
 
-                std::lock_guard l(*mesh_upload_queue_mutex);
-                mesh_upload_queue->push(mesh_staging_buffer_upload_command{staging_buffer, mesh_id, vertex_size, vertex_size + index_size});
-
-                return mesh_id;
-            },
-            &input_mesh,
-            &mesh_upload_queue_mutex,
-            &mesh_upload_queue);
+        std::lock_guard l(mesh_upload_queue_mutex);
+        mesh_upload_queue.push(mesh_staging_buffer_upload_command{staging_buffer, mesh_id, vertex_size, vertex_size + index_size});
+        
+        return mesh_id;
     }
 
     void vulkan_render_engine::delete_mesh(uint32_t mesh_id) {
@@ -568,6 +562,7 @@ namespace nova {
             render_passes[pass_data.name].data = pass_data;
             VkFenceCreateInfo fence_info = {};
             fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
             vkCreateFence(device, &fence_info, nullptr, &render_passes[pass_data.name].fence);
             regular_render_passes[pass_data.name] = pass_data;
@@ -1212,6 +1207,10 @@ namespace nova {
 
         swapchain->acquire_next_swapchain_image(image_available_semaphores.at(current_frame));
 
+        // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has
+        // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
+        upload_new_mesh_parts();
+
         // Record command buffers
         // We can't upload a new shaderpack in the middle of a frame!
         // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the frame
@@ -1225,11 +1224,7 @@ namespace nova {
             execute_renderpass(&renderpass_name);
         }
         shaderpack_loading_mutex.unlock();
-
-        // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has
-        // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
-        upload_new_mesh_parts();
-
+        
         swapchain->present_current_image(render_finished_semaphores_by_frame.at(current_frame));
         current_frame = (current_frame + 1) % max_frames_in_queue;
     }

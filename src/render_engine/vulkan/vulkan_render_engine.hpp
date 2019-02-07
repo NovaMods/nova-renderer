@@ -183,7 +183,7 @@ namespace nova {
         
         void set_shaderpack(const shaderpack_data& data) override;
 
-        std::future<uint32_t> add_mesh(const mesh_data& input_mesh) override;
+        mesh_id_t add_mesh(const mesh_data& input_mesh) override;
 
         void delete_mesh(uint32_t mesh_id) override;
 
