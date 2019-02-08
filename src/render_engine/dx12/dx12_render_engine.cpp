@@ -3,7 +3,7 @@
  * \date 30-Aug-18.
  */
 
-#include <windows.h>
+#include "../../util/windows.hpp"
 #include <D3DCompiler.h>
 
 #include "dx12_render_engine.hpp"
@@ -372,7 +372,7 @@ namespace nova {
         make_pipeline_state_objects(data.pipelines, scheduler);
     }
 
-    std::future<uint32_t> dx12_render_engine::add_mesh(const mesh_data&) {
+    mesh_id_t dx12_render_engine::add_mesh(const mesh_data&) {
         // TODO
 
         return {};
