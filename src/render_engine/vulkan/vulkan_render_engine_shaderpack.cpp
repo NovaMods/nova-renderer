@@ -590,6 +590,7 @@ namespace nova {
 
     void vulkan_render_engine::create_material_descriptor_sets() {
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
+            (void) renderpass_name;
             for(const auto& pipeline : pipelines) {
                 std::vector<material_pass>& material_passes = material_passes_by_pipeline.at(pipeline.data.name);
                 for(material_pass& mat_pass : material_passes) {
@@ -640,6 +641,7 @@ namespace nova {
         std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
 
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
+            (void) renderpass_name;
             for(const vk_pipeline& pipeline : pipelines) {
                 if(pipeline.data.name == mat.pipeline) {
                     for(const auto& [descriptor_name, resource_name] : mat.bindings) {
@@ -772,6 +774,7 @@ namespace nova {
         }
 
         for(const auto& [tex_name, _] : read_texture_barrier_necessity) {
+            (void) _;
             const vk_texture& tex = textures.at(tex_name);
 
             VkImageMemoryBarrier barrier = {};
@@ -793,6 +796,7 @@ namespace nova {
         }
 
         for(const auto& [tex_name, _] : write_texture_barrier_necessity) {
+            (void) _;
             if(tex_name == "Backbuffer") {
                 continue;
             }
