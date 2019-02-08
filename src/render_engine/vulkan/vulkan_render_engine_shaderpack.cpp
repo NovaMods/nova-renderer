@@ -691,6 +691,7 @@ namespace nova {
 
     void vulkan_render_engine::generate_barriers_for_dynamic_resources() {
         for(auto& [name, pass] : render_passes) {
+            (void) name;
             create_barriers_for_renderpass(pass);
         }
     }
