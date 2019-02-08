@@ -116,6 +116,7 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_render_engine_init.cpp
         src/render_engine/vulkan/vulkan_render_engine_shaderpack.cpp
+        src/render_engine/vulkan/vulkan_render_engine_render_frame.cpp
         src/render_engine/vulkan/vulkan_utils.hpp
         src/render_engine/vulkan/vulkan_type_converters.hpp
         src/render_engine/vulkan/compacting_block_allocator.cpp 
