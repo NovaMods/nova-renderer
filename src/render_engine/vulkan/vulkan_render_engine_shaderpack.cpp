@@ -8,6 +8,7 @@
 #include "../../../tests/src/general_test_setup.hpp"
 #include "swapchain.hpp"
 #include "vulkan_type_converters.hpp"
+#include "../../loading/shaderpack/render_graph_builder.hpp"
 
 namespace nova {
     enum class barrier_necessity { maybe, yes, no };
@@ -639,8 +640,6 @@ namespace nova {
         std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
 
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
-            bool should_break = false;
-
             for(const vk_pipeline& pipeline : pipelines) {
                 if(pipeline.data.name == mat.pipeline) {
                     for(const auto& [descriptor_name, resource_name] : mat.bindings) {
