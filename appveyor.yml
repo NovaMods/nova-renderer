@@ -31,6 +31,8 @@ before_build:
 
 build:
   project: C:\projects\nova-renderer\build\nova-renderer.sln
+  parallel: true
+  verbosity: minimal
 
 test_script:
 - cmd: dir C:\projects\nova-renderer\build\%CONFIGURATION%\
