@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 project(nova-renderer)
 
 ################################################################
@@ -114,6 +114,8 @@ set(NOVA_SOURCE
         src/loading/shaderpack/render_graph_builder.hpp
         src/render_engine/vulkan/vulkan_render_engine.hpp
         src/render_engine/vulkan/vulkan_render_engine.cpp
+        src/render_engine/vulkan/vulkan_render_engine_init.cpp
+        src/render_engine/vulkan/vulkan_render_engine_shaderpack.cpp
         src/render_engine/vulkan/vulkan_utils.hpp
         src/render_engine/vulkan/vulkan_type_converters.hpp
         src/render_engine/vulkan/compacting_block_allocator.cpp 
@@ -129,6 +131,8 @@ set(NOVA_SOURCE
         src/tasks/condition_counter.hpp
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
+
+
         )
 
 ##################################

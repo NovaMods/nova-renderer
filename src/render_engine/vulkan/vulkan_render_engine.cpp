@@ -911,4 +911,14 @@ namespace nova {
         write.pBufferInfo = &buffer_infos[buffer_infos.size() - 1];
         write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     }
+
+    void vulkan_render_engine::destroy_render_passes() {
+        for(const auto& [pass_name, pass] : render_passes) {
+            (void) pass_name;
+            vkDestroyRenderPass(device, pass.pass, nullptr);
+        }
+
+        render_passes.clear();
+        render_passes_by_order.clear();
+    }
 } // namespace nova

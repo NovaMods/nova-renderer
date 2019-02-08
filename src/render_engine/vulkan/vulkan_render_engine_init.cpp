@@ -4,6 +4,8 @@
  */
 
 #include "vulkan_render_engine.hpp"
+#include "vulkan_utils.hpp"
+#include "swapchain.hpp"
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler) : render_engine(settings, task_scheduler) {

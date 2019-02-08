@@ -4,6 +4,10 @@
  */
 
 #include "vulkan_render_engine.hpp"
+#include "vulkan_utils.hpp"
+#include "../../../tests/src/general_test_setup.hpp"
+#include "swapchain.hpp"
+#include "vulkan_type_converters.hpp"
 
 namespace nova {
     enum class barrier_necessity { maybe, yes, no };
@@ -646,11 +650,6 @@ namespace nova {
                         }
                     }
 
-                    should_break = true;
-                    break;
-                }
-
-                if(should_break) {
                     break;
                 }
             }
