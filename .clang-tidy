@@ -235,7 +235,7 @@ CheckOptions:
   - key:             readability-magic-numbers.IgnoredFloatingPointValues
     value:           '1.0;100.0;'
   - key:             readability-magic-numbers.IgnoredIntegerValues
-    value:           '1;2;3;4;8;16;32;64;128;256;512;1024;2048;4096;8192'
+    value:           '1;2;3;4;8;16;32;64;128;256;512;1024;2048;4096;8192;42'
   - key:             readability-redundant-smartptr-get.IgnoreMacros
     value:           '1'
   - key:             readability-simplify-boolean-expr.ChainedConditionalAssignment
