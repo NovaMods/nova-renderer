@@ -31,3 +31,6 @@
 [submodule "3rdparty/minitrace"]
 	path = 3rdparty/minitrace
 	url = https://github.com/hrydgard/minitrace.git
+[submodule "3rdparty/run-clang-tidy"]
+	path = 3rdparty/run-clang-tidy
+	url = https://github.com/cwfitzgerald/run-clang-tidy.git
