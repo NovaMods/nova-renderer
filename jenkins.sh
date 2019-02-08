@@ -46,7 +46,7 @@ cd ..
 
 # Linting
 cd build-clang
-run-clang-tidy-8 -export-fixes test.yaml -j8 -header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'`
+./3rdparty/run-clang-tidy/run-clang-tidy.py -export-fixes fixes.yaml -j8 -header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` -clang-tidy-binary clang-tidy-8
 test `cat test2.yaml | wc -c` -eq 1
 echo "End linting"
 cd ..
