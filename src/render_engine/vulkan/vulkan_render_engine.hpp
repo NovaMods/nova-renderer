@@ -21,7 +21,6 @@
 #endif
 
 #include <vulkan/vulkan.h>
-#include <thread>
 
 #include <vk_mem_alloc.h>
 #include <queue>
@@ -30,10 +29,9 @@
 
 #include "../../render_objects/render_object.hpp"
 #include <mutex>
+#include "swapchain.hpp"
 
 namespace nova {
-    class swapchain_manager;
-
     namespace ttl {
         class task_scheduler;
     }

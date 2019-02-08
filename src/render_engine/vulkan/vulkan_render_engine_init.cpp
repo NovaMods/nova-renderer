@@ -6,6 +6,7 @@
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 #include "swapchain.hpp"
+#include <set>
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler) : render_engine(settings, task_scheduler) {
@@ -256,6 +257,20 @@ namespace nova {
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
 
         delete[] physical_devices;
+    }
+
+    bool vulkan_render_engine::does_device_support_extensions(VkPhysicalDevice device) {
+        uint32_t extension_count;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
+        std::vector<VkExtensionProperties> available(extension_count);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
+
+        std::set<std::string> required = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        for(const auto& extension : available) {
+            required.erase(extension.extensionName);
+        }
+
+        return required.empty();
     }
 
     void vulkan_render_engine::create_per_thread_command_pools() {
