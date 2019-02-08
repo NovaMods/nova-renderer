@@ -39,6 +39,94 @@ namespace nova {
         current_frame = (current_frame + 1) % max_frames_in_queue;
     }
 
+    void vulkan_render_engine::reset_render_finished_semaphores() {
+        render_finished_semaphores_by_frame[current_frame].clear();
+    }
+
+    void vulkan_render_engine::upload_new_mesh_parts() {
+        if(mesh_upload_queue.empty()) {
+            // Early out yay
+            return;
+        }
+
+        VkCommandBuffer mesh_upload_cmds;
+
+        VkCommandBufferAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        alloc_info.commandBufferCount = 1;
+        alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_family_index);
+        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+        vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);
+
+        VkCommandBufferBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        vkBeginCommandBuffer(mesh_upload_cmds, &begin_info);
+
+        // Ensure that all reads from this buffer have finished. I don't care about writes because the only
+        // way two dudes would be writing to the same region of a megamesh at the same time was if there was a
+        // horrible problem
+
+        mesh_memory->add_barriers_before_data_upload(mesh_upload_cmds);
+
+        mesh_upload_queue_mutex.lock();
+        meshes_mutex.lock();
+
+        std::vector<vk_buffer> freed_buffers;
+        freed_buffers.reserve(mesh_upload_queue.size() * 2);
+        while(!mesh_upload_queue.empty()) {
+            const mesh_staging_buffer_upload_command cmd = mesh_upload_queue.front();
+            mesh_upload_queue.pop();
+
+            compacting_block_allocator::allocation_info* mem = mesh_memory->allocate(cmd.staging_buffer.alloc_info.size);
+
+            VkBufferCopy copy = {};
+            copy.size = cmd.staging_buffer.alloc_info.size;
+            copy.srcOffset = 0;
+            copy.dstOffset = mem->offset;
+            vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffer.buffer, mem->block->get_buffer(), 1, &copy);
+
+            VkDrawIndexedIndirectCommand mesh_draw_command = {};
+            mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
+            mesh_draw_command.instanceCount = 1;
+            mesh_draw_command.firstIndex = 0;
+            mesh_draw_command.vertexOffset = static_cast<uint32_t>(mem->offset);
+            mesh_draw_command.firstInstance = 0;
+
+            meshes[cmd.mesh_id] = {mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command};
+
+            freed_buffers.insert(freed_buffers.end(), cmd.staging_buffer);
+        }
+
+        mesh_memory->add_barriers_after_data_upload(mesh_upload_cmds);
+
+        mesh_upload_queue_mutex.unlock();
+        meshes_mutex.unlock();
+
+        vkEndCommandBuffer(mesh_upload_cmds);
+
+        VkSubmitInfo submit_info = {};
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.commandBufferCount = 1;
+        submit_info.pCommandBuffers = &mesh_upload_cmds;
+
+        // Be super duper sure that mesh rendering is done
+        for(const auto& [pass_name, pass] : render_passes) {
+            (void) pass_name;
+            vkWaitForFences(device, 1, &pass.fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        }
+        vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
+
+        vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
+
+        vkResetFences(device, 1, &upload_to_megamesh_buffer_done);
+
+        // Once the upload is done, return all the staging buffers to the pool
+        std::lock_guard l(mesh_staging_buffers_mutex);
+        available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), freed_buffers.begin(), freed_buffers.end());
+    }
+
     void vulkan_render_engine::transition_dynamic_textures() {
         NOVA_LOG(TRACE) << "Transitioning dynamic textures to color attachment layouts";
         std::vector<VkImageMemoryBarrier> color_barriers;

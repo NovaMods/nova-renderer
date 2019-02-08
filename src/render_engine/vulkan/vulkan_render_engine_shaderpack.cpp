@@ -9,6 +9,7 @@
 #include "swapchain.hpp"
 #include "vulkan_type_converters.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
+#include "../../loading/shaderpack/shaderpack_loading.hpp"
 
 namespace nova {
     enum class barrier_necessity { maybe, yes, no };
@@ -588,6 +589,101 @@ namespace nova {
         }
     }
 
+    VkShaderModule vulkan_render_engine::create_shader_module(const std::vector<uint32_t>& spirv) const {
+        VkShaderModuleCreateInfo shader_module_create_info;
+        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.pNext = nullptr;
+        shader_module_create_info.flags = 0;
+        shader_module_create_info.pCode = spirv.data();
+        shader_module_create_info.codeSize = spirv.size() * 4;
+
+        VkShaderModule module;
+        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module), render_engine_initialization_exception);
+
+        return module;
+    }
+
+    void vulkan_render_engine::get_shader_module_descriptors(const std::vector<uint32_t>& spirv, std::unordered_map<std::string, vk_resource_binding>& bindings) {
+        const spirv_cross::CompilerGLSL shader_compiler(spirv);
+        const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
+
+        for(const spirv_cross::Resource& resource : resources.sampled_images) {
+            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        }
+
+        for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
+            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        }
+    }
+
+    void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings, const spirv_cross::CompilerGLSL& shader_compiler, const spirv_cross::Resource& resource, const VkDescriptorType type) {
+        const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+        vk_resource_binding new_binding = {};
+        new_binding.set = set;
+        new_binding.binding = binding;
+        new_binding.descriptorType = type;
+        new_binding.descriptorCount = 1;
+
+        if(bindings.find(resource.name) == bindings.end()) {
+            // Totally new binding!
+            bindings[resource.name] = new_binding;
+
+        } else {
+            // Existing binding. Is it the same as our binding?
+            const vk_resource_binding& existing_binding = bindings.at(resource.name);
+            if(existing_binding != new_binding) {
+                // They have two different bindings with the same name. Not allowed
+                NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name << " in different shader stages. This is not allowed. Use unique names";
+            }
+        }
+    }
+
+    std::vector<VkDescriptorSetLayout> vulkan_render_engine::create_descriptor_set_layouts(std::unordered_map<std::string, vk_resource_binding> all_bindings) const {
+        std::unordered_map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
+
+        for(const auto& named_binding : all_bindings) {
+            const vk_resource_binding& binding = named_binding.second;
+            VkDescriptorSetLayoutBinding new_binding = {};
+            new_binding.binding = binding.binding;
+            new_binding.descriptorCount = binding.descriptorCount;
+            new_binding.descriptorType = binding.descriptorType;
+            new_binding.pImmutableSamplers = binding.pImmutableSamplers;
+            new_binding.stageFlags = VK_SHADER_STAGE_ALL;
+
+            bindings_by_set[binding.set].push_back(new_binding);
+        }
+
+        std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
+        dsl_create_infos.reserve(bindings_by_set.size());
+        for(uint32_t i = 0; i < bindings_by_set.size(); i++) {
+            if(bindings_by_set.find(i) == bindings_by_set.end()) {
+                NOVA_LOG(ERROR) << "Could not get information for descriptor set " << i << "; most likely you skipped"
+                                << " a descriptor set in your shader. Ensure that all shaders for this pipeline together don't have"
+                                << " any gaps in the descriptor sets they declare";
+                throw shader_layout_creation_failed("Descriptor set " + std::to_string(i) + " not present");
+            }
+
+            const std::vector<VkDescriptorSetLayoutBinding>& bindings = bindings_by_set.at(i);
+
+            VkDescriptorSetLayoutCreateInfo create_info = {};
+            create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            create_info.bindingCount = static_cast<uint32_t>(bindings.size());
+            create_info.pBindings = bindings.data();
+
+            dsl_create_infos.push_back(create_info);
+        }
+
+        std::vector<VkDescriptorSetLayout> layouts;
+        layouts.resize(dsl_create_infos.size());
+        for(uint32_t i = 0; i < dsl_create_infos.size(); i++) {
+            vkCreateDescriptorSetLayout(device, &dsl_create_infos[i], nullptr, &layouts[i]);
+        }
+
+        return layouts;
+    }
+
     void vulkan_render_engine::create_material_descriptor_sets() {
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             (void) renderpass_name;
@@ -687,6 +783,30 @@ namespace nova {
         }
 
         vkUpdateDescriptorSets(device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+    }
+
+    void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture, VkWriteDescriptorSet& write, std::vector<VkDescriptorImageInfo>& image_infos) const {
+        VkDescriptorImageInfo image_info = {};
+        image_info.imageView = texture.image_view;
+        image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        image_info.sampler = point_sampler;
+
+        image_infos.push_back(image_info);
+
+        write.pImageInfo = &image_infos.at(image_infos.size() - 1);
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    }
+
+    void vulkan_render_engine::write_buffer_to_descriptor(const vk_buffer& buffer, VkWriteDescriptorSet& write, std::vector<VkDescriptorBufferInfo>& buffer_infos) {
+        VkDescriptorBufferInfo buffer_info = {};
+        buffer_info.buffer = buffer.buffer;
+        buffer_info.offset = 0;
+        buffer_info.range = buffer.alloc_info.size;
+
+        buffer_infos.push_back(buffer_info);
+
+        write.pBufferInfo = &buffer_infos[buffer_infos.size() - 1];
+        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     }
 
     void vulkan_render_engine::generate_barriers_for_dynamic_resources() {
