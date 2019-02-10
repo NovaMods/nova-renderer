@@ -153,8 +153,8 @@ namespace nova {
     void vulkan_render_engine::create_device() {
         uint32_t device_count;
         NOVA_THROW_IF_VK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, nullptr), render_engine_initialization_exception);
-        auto physical_devices = std::make_unique<VkPhysicalDevice[]>(device_count);
-        NOVA_THROW_IF_VK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, physical_devices.get()), render_engine_initialization_exception);
+        auto physical_devices = std::vector<VkPhysicalDevice>(device_count);
+        NOVA_THROW_IF_VK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, physical_devices.data()), render_engine_initialization_exception);
 
         uint32_t graphics_family_idx = 0xFFFFFFFF;
         uint32_t compute_family_idx = 0xFFFFFFFF;
