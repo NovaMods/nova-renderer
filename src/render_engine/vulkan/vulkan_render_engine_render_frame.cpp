@@ -166,7 +166,7 @@ namespace nova {
             }
         }
 
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -212,7 +212,7 @@ namespace nova {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
         vkResetFences(device, 1, &renderpass.fence);
 
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -348,7 +348,7 @@ namespace nova {
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass) {
         // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
         // command pool for its thread, since command pools need to be externally synchronized
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
         VkCommandBufferAllocateInfo cmds_info = {};
         cmds_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

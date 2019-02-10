@@ -922,7 +922,7 @@ namespace nova {
                 continue;
             }
 
-            const VkImage image = textures.at(tex_name).image;
+            VkImage image = textures.at(tex_name).image;
 
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
