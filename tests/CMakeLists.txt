@@ -3,14 +3,6 @@
 #################################
 include(CompilerOptionsUtils)
 
-##########################################
-# Enable shared libraries for nova tests #
-##########################################
-if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
-    set(BUILD_SHARED_LIBS ON CACHE BOOL "Temporarly enable BUILD_SHARED_LIBS" FORCE)
-    set(BUILD_SHARED_LIBS_ORIGINAL_NOVA ${BUILD_SHARED_LIBS})
-endif()
-
 # We need threads
 find_package(Threads REQUIRED)
 
