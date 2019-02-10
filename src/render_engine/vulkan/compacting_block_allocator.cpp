@@ -262,7 +262,7 @@ namespace nova {
             // e.g. current == end
 
             // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-            block_t* end_block = new block_t;
+            auto* const end_block = new block_t;
             end_block->id = next_block_id;
             next_block_id++;
             end_block->size = amount_compacted;

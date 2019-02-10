@@ -429,7 +429,7 @@ namespace nova {
             NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator, &buffer_create_info, &alloc_create_info, &indirect_draw_commands_buffer, &allocation, &alloc_info), buffer_allocate_failed);
 
             // Version 1: write commands for all things to the indirect draw buffer
-            VkDrawIndexedIndirectCommand* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
+            auto* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
 
             for(size_t i = 0; i < renderables.size(); i++) {
                 const render_object& cur_obj = renderables[i];
