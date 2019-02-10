@@ -68,6 +68,7 @@ namespace nova {
     }
 
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_data>& passes) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         NOVA_PROFILER_SCOPE;
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
         std::vector<std::string> ordered_passes;

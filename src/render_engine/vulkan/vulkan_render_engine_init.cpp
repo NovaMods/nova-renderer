@@ -6,6 +6,7 @@
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 #include "swapchain.hpp"
+#include <fmt/format.h>
 #include <set>
 
 namespace nova {
@@ -61,12 +62,12 @@ namespace nova {
         gpu.available_extensions.resize(num_extensions);
         vkEnumerateInstanceExtensionProperties(nullptr, &num_extensions, gpu.available_extensions.data());
 
-        std::stringstream ss;
+        fmt::memory_buffer buf;
         for(const VkExtensionProperties& props : gpu.available_extensions) {
-            ss << "\t" << props.extensionName << " version " << props.specVersion << "\n";
+            format_to(buf, fmt("\t{:s} version {:d}\n"), props.extensionName, props.specVersion);
         }
 
-        NOVA_LOG(TRACE) << "Supported extensions:\n" << ss.str();
+        NOVA_LOG(TRACE) << format(fmt("Supported extensions:\n{:s}"), fmt::to_string(buf));
 
 #ifndef NDEBUG
         vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(vk_instance, "vkCreateDebugUtilsMessengerEXT"));
@@ -203,7 +204,7 @@ namespace nova {
             }
 
             if(graphics_family_idx != 0xFFFFFFFF) {
-                NOVA_LOG(INFO) << "Selected GPU " << gpu.props.deviceName;
+                NOVA_LOG(INFO) << format(fmt("Selected GPU {:s}"), gpu.props.deviceName);
                 gpu.phys_device = current_device;
                 break;
             }
@@ -265,7 +266,7 @@ namespace nova {
 
         std::set<std::string> required = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
         for(const auto& extension : available) {
-            required.erase(extension.extensionName);
+            required.erase(static_cast<const char*>(extension.extensionName));
         }
 
         return required.empty();
