@@ -7,7 +7,7 @@
 #undef TEST
 #include <gtest/gtest.h>
 
-TEST(nova_filesystem, zip_reading) {
+TEST(NovaFilesystem, ZipReading) {
     TEST_SETUP_LOGGER();
 
     auto file_test = nova::zip_folder_accessor(fs::path{CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack.zip"});
