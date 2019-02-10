@@ -44,4 +44,4 @@ namespace nova::ttl {
             cv.wait(l, [&, this] {return counter == this->wait_val; });
         }
     }
-}
+} // namespace nova::ttl

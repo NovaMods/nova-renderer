@@ -193,4 +193,4 @@ namespace nova::vulkan {
 
         return attribute_descriptions;
     }
-}
+} // namespace nova::vulkan

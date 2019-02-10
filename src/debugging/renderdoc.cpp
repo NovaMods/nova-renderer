@@ -62,4 +62,4 @@ namespace nova {
         }
         return api;
     }
-}
+} // namespace nova

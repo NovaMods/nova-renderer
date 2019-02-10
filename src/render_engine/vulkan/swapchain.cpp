@@ -324,4 +324,4 @@ namespace nova {
     VkFence swapchain_manager::get_current_frame_fence() {
         return fences[cur_swapchain_index];
     }
-}
+} // namespace nova

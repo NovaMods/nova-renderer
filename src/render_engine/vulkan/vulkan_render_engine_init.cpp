@@ -385,4 +385,4 @@ namespace nova {
         NOVA_THROW_IF_VK_ERROR(vkCreateSampler(device, &point_sampler_create, nullptr, &point_sampler), render_engine_initialization_exception);
     }
 
-}
+} // namespace nova

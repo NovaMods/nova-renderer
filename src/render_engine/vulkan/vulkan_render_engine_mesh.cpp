@@ -71,4 +71,4 @@ namespace nova {
 
         mesh_memory->free(mesh.memory);
     }
-}
+} // namespace nova

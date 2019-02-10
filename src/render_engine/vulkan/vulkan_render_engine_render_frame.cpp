@@ -478,4 +478,4 @@ namespace nova {
         current_semaphore_idx++;
     }
 
-}
+} // namespace nova

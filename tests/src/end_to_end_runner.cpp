@@ -75,7 +75,7 @@ namespace nova {
 
         return 0;
     }
-}
+} // namespace nova
 
 
 int main() {
