@@ -52,7 +52,7 @@ namespace nova {
 
     void ensure_field_exists(nlohmann::json &j, const std::string &field_name, const std::string &context, const nlohmann::json &default_value, validation_report &report);
 
-#define PIPELINE_MSG(name, msg) "Pipeline " + name + ": " + msg
+#define PIPELINE_MSG(name, msg) ("Pipeline " + (name) + ": " + (msg))
 
     validation_report validate_graphics_pipeline(nlohmann::json &pipeline_json) {
         validation_report report;
@@ -77,7 +77,7 @@ namespace nova {
         return report;
     }
 
-#define RESOURCES_MSG(msg) (std::string("Resources file: ") + msg)
+#define RESOURCES_MSG(msg) (std::string("Resources file: ") + (msg))
 
     validation_report validate_shaderpack_resources_data(nlohmann::json &resources_json) {
         validation_report report;
@@ -126,7 +126,7 @@ namespace nova {
         return report;
     }
 
-#define TEXTURE_MSG(name, msg) "Texture " + name + ": " + msg
+#define TEXTURE_MSG(name, msg) ("Texture " + (name) + ": " + (msg))
 
     validation_report validate_texture_data(nlohmann::json &texture_json) {
         validation_report report;
@@ -153,7 +153,7 @@ namespace nova {
         return report;
     }
 
-#define FORMAT_MSG(tex_name, msg) "Format of texture " + tex_name + ": " + msg
+#define FORMAT_MSG(tex_name, msg) ("Format of texture " + (tex_name) + ": " + (msg))
 
     validation_report validate_texture_format(nlohmann::json &format_json, const std::string &texture_name) {
         validation_report report;
@@ -174,7 +174,7 @@ namespace nova {
         return report;
     }
 
-#define SAMPLER_MSG(name, msg) "Sampler " + name + ": " + msg
+#define SAMPLER_MSG(name, msg) ("Sampler " + (name) + ": " + (msg))
 
     validation_report validate_sampler_data(nlohmann::json &sampler_json) {
         validation_report report;
@@ -196,8 +196,8 @@ namespace nova {
         return report;
     }
 
-#define MATERIAL_MSG(name, error) "Material " + name + ": " + error
-#define MATERIAL_PASS_MSG(mat_name, pass_name, error) "Material pass " + pass_name + " in material " + mat_name + ": " + error
+#define MATERIAL_MSG(name, error) ("Material " + (name) + ": " + (error))
+#define MATERIAL_PASS_MSG(mat_name, pass_name, error) ("Material pass " + (pass_name) + " in material " + (mat_name) + ": " + (error))
 
     validation_report validate_material(nlohmann::json &material_json) {
         validation_report report;
