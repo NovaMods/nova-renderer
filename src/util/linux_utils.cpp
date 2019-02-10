@@ -5,6 +5,7 @@
 #include <execinfo.h>
 #include <cxxabi.h>
 #include <cstring>
+#include <fmt/format.h>
 #include "logger.hpp"
 #include "linux_utils.hpp"
 
@@ -30,11 +31,10 @@ void nova_backtrace() {
 
                 if (symbol.length() > 0) {
                     char *name = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, nullptr);
-                    symbol = std::string(name);
+                    str = format(fmt("{:s}({:s}{:s})"), path, name, address);
+                    
+                    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
                     free(name);
-
-                    str = "";
-                    str.append(path).append("(").append(symbol).append(address).append(")");
                 }
             } catch (const std::exception &e) {
                 NOVA_LOG(WARN) << "Demangle failed: " << e.what() << std::endl;
@@ -47,6 +47,7 @@ void nova_backtrace() {
 
         NOVA_LOG(ERROR) << "\t" << str;
     }
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
     free(data);
 }
 
