@@ -15,6 +15,11 @@ message(STATUS "Found clang-format at ${CLANG_FORMAT_PROGRAM}")
 add_custom_target(format VERBATIM)
 add_custom_target(reformat VERBATIM)
 
+file(GLOB_RECURSE CLANG_FORMAT_PATHS CONFIGURE_DEPENDS "*.clang-format")
+foreach(PATH ${CLANG_FORMAT_PATHS})
+    message(STATUS "Found .clang-format at ${PATH}")
+endforeach()
+
 function(format TARGET)
     list(APPEND TOUCH_PATHS)
 
@@ -33,7 +38,7 @@ function(format TARGET)
             OUTPUT "${FULL_TOUCH_PATH}"
             COMMAND "${CLANG_FORMAT_PROGRAM}" -i -style=file "${SOURCE_FILE}"
             COMMAND "${CMAKE_COMMAND}" -E touch "${FULL_TOUCH_PATH}"
-            DEPENDS "${FULL_SOURCE_PATH}"
+            DEPENDS "${FULL_SOURCE_PATH}" ${CLANG_FORMAT_PATHS}
             COMMENT "${SOURCE_FILE}"
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         )
