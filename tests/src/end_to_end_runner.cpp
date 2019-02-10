@@ -9,7 +9,7 @@
 #include <iostream>
 
 #ifdef __linux__
-#include <signal.h>
+#include <csignal>
 void sigsegv_handler(int signal);
 void sigabrt_handler(int signal);
 #include "../../src/util/linux_utils.hpp"
