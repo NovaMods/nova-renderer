@@ -48,8 +48,8 @@ namespace nova {
         swapchain_images.resize(real_num_swapchain_images);
         NOVA_THROW_IF_VK_ERROR(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &real_num_swapchain_images, swapchain_images.data()), swapchain_creation_failed);
         swapchain_image_layouts.resize(real_num_swapchain_images);
-        for(uint32_t i = 0; i < swapchain_image_layouts.size(); i++) {
-            swapchain_image_layouts[i] = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        for (auto &swapchain_image_layout : swapchain_image_layouts) {
+            swapchain_image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         }
 
         if(swapchain_images.empty()) {

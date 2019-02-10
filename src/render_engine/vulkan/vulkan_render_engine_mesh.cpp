@@ -33,9 +33,9 @@ namespace nova {
             // Try to find a buffer that's big enough
             uint32_t potential_staging_buffer_idx = std::numeric_limits<uint32_t>::max();
 
-            for(uint32_t i = 0; i < available_mesh_staging_buffers.size(); i++) {
+            for(size_t i = 0; i < available_mesh_staging_buffers.size(); i++) {
                 if(available_mesh_staging_buffers[i].alloc_info.size >= needed_size && available_mesh_staging_buffers[i].alloc_info.size > available_mesh_staging_buffers[potential_staging_buffer_idx].alloc_info.size) {
-                    potential_staging_buffer_idx = i;
+                    potential_staging_buffer_idx = static_cast<uint32_t>(i);
                 }
             }
 

@@ -431,8 +431,8 @@ namespace nova {
             // Version 1: write commands for all things to the indirect draw buffer
             VkDrawIndexedIndirectCommand* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
 
-            for(uint32_t i = 0; i < renderables.size(); i++) {
-                const render_object& cur_obj = renderables.at(i);
+            for(size_t i = 0; i < renderables.size(); i++) {
+                const render_object& cur_obj = renderables[i];
                 indirect_commands[i] = cur_obj.mesh->draw_cmd;
             }
 
