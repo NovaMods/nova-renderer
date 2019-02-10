@@ -78,6 +78,7 @@ target_includes_system(spirv-cross-util)
         
 include(miniz)
 include(minitrace)
+include(glslang)
 
 #####################################
 # Hide unnecessary targets from all #

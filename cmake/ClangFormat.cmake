@@ -12,20 +12,35 @@ if(NOT CLANG_FORMAT_PROGRAM)
 endif()
 
 message(STATUS "Found clang-format at ${CLANG_FORMAT_PROGRAM}")
+add_custom_target(format VERBATIM)
 
-function(format TARGET SOURCES)
-    list(APPEND SOURCE_LIST)
-    add_custom_target(${TARGET}-format VERBATIM)
-    foreach(SOURCE_FILE IN LISTS ${SOURCES})
-        list(APPEND SOURCE_LIST ${SOURCE_FILE})
+function(format TARGET)
+    list(APPEND TOUCH_PATHS)
+
+    get_property(TARGET_SOURCES TARGET ${TARGET} PROPERTY SOURCES)
+    get_property(TARGET_DIR TARGET ${TARGET} PROPERTY SOURCE_DIR)
+    foreach(SOURCE_FILE ${TARGET_SOURCES})
+        set(FULL_SOURCE_PATH "${TARGET_DIR}/${SOURCE_FILE}")
+        file(RELATIVE_PATH REL_PATH "${CMAKE_SOURCE_DIR}" "${FULL_SOURCE_PATH}")
+
+        set(FULL_TOUCH_PATH "${CMAKE_BINARY_DIR}/${REL_PATH}.touch")
+        get_filename_component(TOUCH_DIR "${FULL_TOUCH_PATH}" DIRECTORY)
+        list(APPEND TOUCH_PATHS "${FULL_TOUCH_PATH}")
+
+        file(MAKE_DIRECTORY "${TOUCH_DIR}")
+        message(STATUS "Formatting to ${FULL_TOUCH_PATH}")
         add_custom_command(
-                COMMAND ${CLANG_FORMAT_PROGRAM} -i -style=file ${SOURCE_FILE}
-                DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_FILE}
-                COMMENT "Formatting ${SOURCE_FILE} with ${CLANG_FORMAT_PROGRAM}"
-                TARGET ${TARGET}-format
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                OUTPUT "${FULL_TOUCH_PATH}"
+                COMMAND "${CLANG_FORMAT_PROGRAM}" -i -style=file "${SOURCE_FILE}"
+                COMMAND "${CMAKE_COMMAND}" -E touch "${FULL_TOUCH_PATH}"
+                DEPENDS "${FULL_SOURCE_PATH}"
+                COMMENT "${SOURCE_FILE}"
+                WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         )
     endforeach()
+    message(STATUS ${TOUCH_PATHS})
 
-    add_dependencies(${TARGET} ${TARGET}-format)
+    add_custom_target(${TARGET}-format VERBATIM DEPENDS ${TOUCH_PATHS})
+
+    add_dependencies(format ${TARGET}-format)
 endfunction()

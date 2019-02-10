@@ -169,12 +169,6 @@ else()
         )
 endif()
 
-##########################
-# Setup 3rd party source #
-##########################
-set(3RD_PARTY_SOURCE
-        ${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp)
-
 ##########################################
 # Set platform dependent compile options #
 ##########################################
@@ -224,7 +218,7 @@ source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE})
 # Setup the nova library #
 ##########################
 add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
-# format(nova-renderer NOVA_SOURCE) <= TODO: Uncomment when .clang-format is perfect
+format(nova-renderer ${NOVA_SOURCE})
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
@@ -246,6 +240,7 @@ add_coverage(nova-renderer)
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      fmt::fmt
                      glm::glm
+                     glsl-standalone
                      glslang
                      minitrace
                      miniz
