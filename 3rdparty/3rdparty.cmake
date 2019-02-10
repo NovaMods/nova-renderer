@@ -58,7 +58,15 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
+target_includes_system(SPIRV)
+target_includes_system(spirv-cross-core)
+target_includes_system(spirv-cross-glsl)
+target_includes_system(spirv-cross-hlsl)
+target_includes_system(spirv-cross-reflect)
+target_includes_system(spirv-cross-util)
 target_includes_system(glslang)
+target_includes_system(gtest)
+target_includes_system(gtest_main)
 
 ############################
 # Manually built libraries #
