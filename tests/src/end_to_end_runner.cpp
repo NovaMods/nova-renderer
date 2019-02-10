@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 30-Aug-18.
  */
 
@@ -27,7 +27,7 @@ namespace nova {
         settings_options settings;
         settings.api = graphics_api::vulkan;
         settings.vulkan.application_name = "Nova Renderer test";
-        settings.vulkan.application_version = { 0, 8, 0 };
+        settings.vulkan.application_version = {0, 8, 0};
         settings.debug.enabled = true;
         settings.debug.renderdoc.enabled = false;
         settings.window.width = 640;
@@ -36,7 +36,7 @@ namespace nova {
 
         renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
-        render_engine* engine = renderer->get_engine();
+        render_engine *engine = renderer->get_engine();
         std::shared_ptr<iwindow> window = engine->get_window();
 
         mesh_data cube = {};
@@ -50,20 +50,7 @@ namespace nova {
             full_vertex{{1, 1, -1}, {}, {}, {}, {}, {}, {}},
             full_vertex{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
         };
-        cube.indices = {
-            0, 1, 3,
-            6, 0, 2,
-            5, 0, 4,
-            6, 4, 0,
-            0, 3, 2,
-            5, 1, 0,
-            3, 1, 5,
-            7, 4, 6,
-            4, 7, 5,
-            7, 6, 2,
-            7, 2, 3,
-            7, 3, 5
-        };
+        cube.indices = {0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0, 3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
         engine->add_mesh(cube);
 
         while(!window->should_close()) {
@@ -76,7 +63,6 @@ namespace nova {
         return 0;
     }
 } // namespace nova
-
 
 int main() {
 #ifdef NOVA_LINUX

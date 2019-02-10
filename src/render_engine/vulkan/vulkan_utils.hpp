@@ -5,9 +5,9 @@
 #ifndef NOVA_RENDERER_VULKAN_UTILS_HPP
 #define NOVA_RENDERER_VULKAN_UTILS_HPP
 
-#include <vulkan/vulkan.h>
 #include <string>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 namespace nova::vulkan {
     class vulkan_utils {
@@ -36,9 +36,9 @@ namespace nova::vulkan {
 
     std::string to_string(VkObjectType obj_type);
 
-    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
+    std::vector<VkVertexInputBindingDescription> &get_vertex_input_binding_descriptions();
 
-    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
+    std::vector<VkVertexInputAttributeDescription> &get_vertex_input_attribute_descriptions();
 } // namespace nova::vulkan
 
 // Only validate errors in debug mode

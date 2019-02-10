@@ -10,7 +10,7 @@
 #include <fmt/format.h>
 
 void nova_backtrace() {
-    std::array<void*, 50> array;
+    std::array<void *, 50> array;
 
     // get void*'s for all entries on the stack
     int size = backtrace(array.data(), 10);
@@ -25,18 +25,17 @@ void nova_backtrace() {
         if(str.find_last_of('(') != std::string::npos && str.find_last_of(')') != std::string::npos) {
             try {
                 std::string path = str.substr(0, str.find_last_of('('));
-                std::string symbol = str.substr(str.find_last_of('(') + 1,
-                                                str.find_last_of('+') - str.find_last_of('(') - 1);
+                std::string symbol = str.substr(str.find_last_of('(') + 1, str.find_last_of('+') - str.find_last_of('(') - 1);
                 std::string address = str.substr(str.find_last_of('+'), str.find_last_of(')') - str.find_last_of('+'));
 
-                if (symbol.length() > 0) {
+                if(symbol.length() > 0) {
                     char *name = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, nullptr);
                     str = format(fmt("{:s}({:s}{:s})"), path, name, address);
-                    
+
                     // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
                     free(name);
                 }
-            } catch (const std::exception &e) {
+            } catch(const std::exception &e) {
                 NOVA_LOG(WARN) << "Demangle failed: " << e.what() << std::endl;
             }
         }

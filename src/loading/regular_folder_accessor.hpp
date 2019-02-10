@@ -14,7 +14,7 @@ namespace nova {
      */
     class regular_folder_accessor : public folder_accessor_base {
     public:
-        explicit regular_folder_accessor(const fs::path& folder);
+        explicit regular_folder_accessor(const fs::path &folder);
 
         std::string read_text_file(const fs::path &resource_path) override;
 
@@ -23,6 +23,6 @@ namespace nova {
     protected:
         bool does_resource_exist_on_filesystem(const fs::path &resource_path) override;
     };
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H
+#endif // NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H

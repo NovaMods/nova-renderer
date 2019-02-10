@@ -18,7 +18,6 @@ namespace nova {
      */
     class iwindow {
     public:
-
         /*!
          * \brief Handles what should happen when the frame is done. This includes telling the operating system that
          * we're still alive
@@ -40,6 +39,6 @@ namespace nova {
          */
         virtual glm::uvec2 get_window_size() const = 0;
     };
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_WINDOW_HPP
+#endif // NOVA_RENDERER_WINDOW_HPP

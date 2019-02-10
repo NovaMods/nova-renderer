@@ -3,10 +3,10 @@
  * \date 12-Sep-18.
  */
 
+#include "shaderpack_validator.hpp"
 #include "../../../tests/src/general_test_setup.hpp"
 #include "../../util/utils.hpp"
 #include "../json_utils.hpp"
-#include "shaderpack_validator.hpp"
 
 #include <fmt/format.h>
 
@@ -21,32 +21,29 @@ namespace nova {
      * If a field is in `pipeline_data` but not in this structure, it is a required field and cannot be given a
      * default value. It will thus cause an exception
      */
-     nlohmann::json default_graphics_pipeline =
-        {
-            {"parentName", ""},
-            {"defines", std::array<std::string, 0>{}},
-            {"states", std::array<std::string, 0>{}},
-            {"frontFace", nlohmann::json::object_t()},
-            {"backFace", nlohmann::json::object_t()},
-            {"fallback", ""},
-            {"depthBias", 0},
-            {"slopeScaledDepthBias", 0},
-            {"stencilRef", 0},
-            {"stencilReadMask", 0},
-            {"stencilWriteMask", 0},
-            {"msaaSupport", "None"},
-            {"primitiveMode", "Triangles"},
-            {"sourceBlendFactor", "One"},
-            {"destinationBlendFactor", "Zero"},
-            {"alphaSrc", "One"},
-            {"alphaDst", "Zero"},
-            {"depthFunc", "Less"},
-            {"renderQueue", "Opaque"},
-            {"fragmentShader", ""},
-            {"tessellationControlShader", ""},
-            {"tessellationEvaluationShader", ""},
-            {"geometryShader", ""}
-        };
+    nlohmann::json default_graphics_pipeline = {{"parentName", ""},
+                                                {"defines", std::array<std::string, 0>{}},
+                                                {"states", std::array<std::string, 0>{}},
+                                                {"frontFace", nlohmann::json::object_t()},
+                                                {"backFace", nlohmann::json::object_t()},
+                                                {"fallback", ""},
+                                                {"depthBias", 0},
+                                                {"slopeScaledDepthBias", 0},
+                                                {"stencilRef", 0},
+                                                {"stencilReadMask", 0},
+                                                {"stencilWriteMask", 0},
+                                                {"msaaSupport", "None"},
+                                                {"primitiveMode", "Triangles"},
+                                                {"sourceBlendFactor", "One"},
+                                                {"destinationBlendFactor", "Zero"},
+                                                {"alphaSrc", "One"},
+                                                {"alphaDst", "Zero"},
+                                                {"depthFunc", "Less"},
+                                                {"renderQueue", "Opaque"},
+                                                {"fragmentShader", ""},
+                                                {"tessellationControlShader", ""},
+                                                {"tessellationEvaluationShader", ""},
+                                                {"geometryShader", ""}};
 
     std::vector<std::string> required_graphics_pipeline_fields = {"name", "pass", "vertexFields", "vertexShader"};
 
@@ -54,7 +51,7 @@ namespace nova {
 
     void ensure_field_exists(nlohmann::json &j, const std::string &field_name, const std::string &context, const nlohmann::json &default_value, validation_report &report);
 
-    static std::string pipeline_msg(const std::string& name, const std::string field_name) {
+    static std::string pipeline_msg(const std::string &name, const std::string field_name) {
         return format(fmt("Pipeline {:s}: Missing field {:s}"), name, field_name);
     }
 
@@ -81,7 +78,7 @@ namespace nova {
         return report;
     }
 
-    static std::string resources_msg(const std::string& msg) {
+    static std::string resources_msg(const std::string &msg) {
         return format(fmt("Resources file: {:s}"), msg);
     }
 
@@ -132,7 +129,7 @@ namespace nova {
         return report;
     }
 
-    static std::string texture_msg(const std::string& name, const std::string& msg) {
+    static std::string texture_msg(const std::string &name, const std::string &msg) {
         return format(fmt("Texture {:s}: {:s}"), name, msg);
     }
 
@@ -161,7 +158,7 @@ namespace nova {
         return report;
     }
 
-    static std::string format_msg(const std::string& tex_name, const std::string& msg) {
+    static std::string format_msg(const std::string &tex_name, const std::string &msg) {
         return format(fmt("Format of texture {:s}: {:s}"), tex_name, msg);
     }
 
@@ -185,7 +182,7 @@ namespace nova {
         return report;
     }
 
-    static std::string sampler_msg(const std::string& name, const std::string& msg) {
+    static std::string sampler_msg(const std::string &name, const std::string &msg) {
         return format(fmt("Sampler {:s}: {:s}"), name, msg);
     }
 
@@ -209,10 +206,10 @@ namespace nova {
         return report;
     }
 
-    static std::string material_msg(const std::string& name, const std::string& msg) {
+    static std::string material_msg(const std::string &name, const std::string &msg) {
         return format(fmt("Material {:s}: {:s}"), name, msg);
     }
-    static std::string material_pass_msg(const std::string& mat_name, const std::string& pass_name, const std::string& error) {
+    static std::string material_pass_msg(const std::string &mat_name, const std::string &pass_name, const std::string &error) {
         return format(fmt("Material pass {:s} in material {:s}: {:s}"), pass_name, mat_name, error);
     }
 
@@ -291,4 +288,4 @@ namespace nova {
         errors.insert(errors.end(), other.errors.begin(), other.errors.end());
         warnings.insert(warnings.begin(), other.warnings.begin(), other.warnings.end());
     }
-}  // namespace nova
+} // namespace nova

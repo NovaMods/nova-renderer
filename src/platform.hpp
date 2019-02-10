@@ -25,4 +25,4 @@
 #define NOVA_LINUX 1
 #endif
 
-#endif  // NOVA_RENDERER_PLATFORM_H
+#endif // NOVA_RENDERER_PLATFORM_H

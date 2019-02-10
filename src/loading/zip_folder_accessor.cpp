@@ -11,7 +11,7 @@
 #include <memory>
 
 namespace nova {
-    zip_folder_accessor::zip_folder_accessor(const fs::path& folder) : folder_accessor_base(folder), files(new file_tree_node) {
+    zip_folder_accessor::zip_folder_accessor(const fs::path &folder) : folder_accessor_base(folder), files(new file_tree_node) {
         const auto folder_string = folder.string();
 
         if(!mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0)) {
@@ -27,7 +27,7 @@ namespace nova {
         delete_file_tree(files);
     }
 
-    void zip_folder_accessor::delete_file_tree(std::unique_ptr<file_tree_node>& node) {
+    void zip_folder_accessor::delete_file_tree(std::unique_ptr<file_tree_node> &node) {
         node = nullptr;
     }
 
@@ -75,7 +75,7 @@ namespace nova {
         // Get the node at this path
         for(const std::string &part : folder_path_parts) {
             bool found_node = false;
-            for(std::unique_ptr<file_tree_node>& child : cur_node->children) {
+            for(std::unique_ptr<file_tree_node> &child : cur_node->children) {
                 if(child->name == part) {
                     cur_node = child.get();
                     found_node = true;
@@ -136,7 +136,7 @@ namespace nova {
                 new_node->name = part;
                 new_node->parent = cur_node;
 
-                auto* new_node_raw = new_node.get();
+                auto *new_node_raw = new_node.get();
                 cur_node->children.push_back(std::move(new_node));
 
                 cur_node = new_node_raw;
@@ -194,4 +194,4 @@ namespace nova {
         // Skip the last string in the vector, since it's the resourcepack root node
         return join({++names.rbegin(), names.rend()}, "/");
     }
-}  // namespace nova
+} // namespace nova

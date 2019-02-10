@@ -3,8 +3,8 @@
  * \date 18-May-16.
  */
 
-#include "logger.hpp"
 #include "utils.hpp"
+#include "logger.hpp"
 #include <cstring>
 #include <utility>
 
@@ -44,7 +44,7 @@ namespace nova {
         return str.str();
     }
 
-    std::string print_array(int* const data, int size) {
+    std::string print_array(int *const data, int size) {
         std::stringstream ss;
 
         for(int i = 0; i < size; i++) {
@@ -62,7 +62,7 @@ namespace nova {
         }
     }
 
-    void write_to_file(const std::string& data, const fs::path& filepath) {
+    void write_to_file(const std::string &data, const fs::path &filepath) {
         std::ofstream os(filepath);
         if(os.good()) {
             os << data;
@@ -70,23 +70,27 @@ namespace nova {
         os.close();
     }
 
-    void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath) {
+    void write_to_file(const std::vector<uint32_t> &data, const fs::path &filepath) {
         std::ofstream os(filepath, std::ios::binary);
         if(os.good()) {
-            os.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size() * 4));
+            os.write(reinterpret_cast<const char *>(data.data()), static_cast<std::streamsize>(data.size() * 4));
         }
         os.close();
     }
 
-    nova_exception::nova_exception() : msg(generate_msg(typeid(*this).name(), std::nullopt)) {}
+    nova_exception::nova_exception() : msg(generate_msg(typeid(*this).name(), std::nullopt)) {
+    }
 
-    nova_exception::nova_exception(const std::exception& cause) : msg(generate_msg("", cause)) {}
+    nova_exception::nova_exception(const std::exception &cause) : msg(generate_msg("", cause)) {
+    }
 
-    nova_exception::nova_exception(std::string msg) : msg(generate_msg(msg, std::nullopt)) {}
+    nova_exception::nova_exception(std::string msg) : msg(generate_msg(msg, std::nullopt)) {
+    }
 
-    nova_exception::nova_exception(std::string msg, const std::exception& cause) : msg(generate_msg(msg, cause)){}
+    nova_exception::nova_exception(std::string msg, const std::exception &cause) : msg(generate_msg(msg, cause)) {
+    }
 
-    std::string nova_exception::generate_msg(const std::string &msg, const std::optional<std::exception>& exception){
+    std::string nova_exception::generate_msg(const std::string &msg, const std::optional<std::exception> &exception) {
         std::stringstream ss;
 
         ss << msg;
@@ -101,4 +105,4 @@ namespace nova {
     const char *nova_exception::what() const noexcept {
         return msg.c_str();
     }
-}  // namespace nova
+} // namespace nova

@@ -22,11 +22,11 @@
  * limitations under the License.
  */
 
- /**
-  * This is an implementation of 'Correct and Efficient Work-Stealing for Weak Memory Models' by Le et. al [2013]
-  *
-  * https://hal.inria.fr/hal-00802885
-  */
+/**
+ * This is an implementation of 'Correct and Efficient Work-Stealing for Weak Memory Models' by Le et. al [2013]
+ *
+ * https://hal.inria.fr/hal-00802885
+ */
 
 #pragma once
 
@@ -39,13 +39,13 @@
 
 namespace nova {
 
-    template<typename T>
+    template <typename T>
     class wait_free_queue {
     public:
         wait_free_queue()
-            : m_top(1), // m_top and m_bottom must start at 1
-            m_bottom(1), // Otherwise, the first Pop on an empty queue will underflow m_bottom
-            m_array(new circular_array(32)) {
+            : m_top(1),    // m_top and m_bottom must start at 1
+              m_bottom(1), // Otherwise, the first Pop on an empty queue will underflow m_bottom
+              m_array(new circular_array(32)) {
         }
         ~wait_free_queue() {
             delete m_array.load(std::memory_order_relaxed);
@@ -54,8 +54,7 @@ namespace nova {
     private:
         class circular_array {
         public:
-            circular_array(std::size_t n)
-                : items(n) {
+            circular_array(std::size_t n) : items(n) {
                 assert(n != 0 && !(n & (n - 1)) && "n must be a power of 2");
             }
 
@@ -92,7 +91,6 @@ namespace nova {
         alignas(CACHE_LINE_SIZE) std::atomic<uint64_t> m_top;
         alignas(CACHE_LINE_SIZE) std::atomic<uint64_t> m_bottom;
         alignas(CACHE_LINE_SIZE) std::atomic<circular_array *> m_array;
-
 
     public:
         void push(T value) {
@@ -175,4 +173,4 @@ namespace nova {
         }
     };
 
-} // End of namespace ftl
+} // namespace nova

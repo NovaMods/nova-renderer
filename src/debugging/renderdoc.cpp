@@ -17,7 +17,7 @@
 #endif
 
 namespace nova {
-    RENDERDOC_API_1_3_0* load_renderdoc(const std::string& renderdoc_dll_path) {
+    RENDERDOC_API_1_3_0 *load_renderdoc(const std::string &renderdoc_dll_path) {
 #if NOVA_WINDOWS
         HINSTANCE const renderdoc_dll = LoadLibrary(renderdoc_dll_path.c_str());
         if(!renderdoc_dll) {
@@ -53,8 +53,8 @@ namespace nova {
         }
 #endif
 
-        RENDERDOC_API_1_3_0* api;
-        const int32_t ret = get_api(eRENDERDOC_API_Version_1_3_0, reinterpret_cast<void**>(&api));
+        RENDERDOC_API_1_3_0 *api;
+        const int32_t ret = get_api(eRENDERDOC_API_Version_1_3_0, reinterpret_cast<void **>(&api));
         if(ret != 1) {
             NOVA_LOG(ERROR) << "Could not load RenderDoc API";
 

@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 15-Dec-18.
  */
 
@@ -7,10 +7,11 @@
 #include <utility>
 
 namespace nova::ttl {
-    task_scheduler::per_thread_data::per_thread_data() : task_queue(new wait_free_queue<std::function<void()>>), things_in_queue_mutex(new std::mutex),
-        things_in_queue_cv(new std::condition_variable), is_sleeping(new std::atomic<bool>(false)) {}
+    task_scheduler::per_thread_data::per_thread_data() : task_queue(new wait_free_queue<std::function<void()>>), things_in_queue_mutex(new std::mutex), things_in_queue_cv(new std::condition_variable), is_sleeping(new std::atomic<bool>(false)) {
+    }
 
-    task_scheduler::task_scheduler(const uint32_t num_threads, const empty_queue_behavior /* behavior */) : num_threads(num_threads), should_shutdown(new std::atomic<bool>(false)), initialized_mutex(new std::mutex), initialized_cv(new std::condition_variable) {
+    task_scheduler::task_scheduler(const uint32_t num_threads, const empty_queue_behavior /* behavior */)
+        : num_threads(num_threads), should_shutdown(new std::atomic<bool>(false)), initialized_mutex(new std::mutex), initialized_cv(new std::condition_variable) {
         threads.reserve(num_threads);
         thread_local_data.resize(num_threads);
 
@@ -36,7 +37,7 @@ namespace nova::ttl {
     task_scheduler::~task_scheduler() {
         should_shutdown->store(true);
 
-        for(auto& thread : threads) {
+        for(auto &thread : threads) {
             thread.join();
         }
     }
@@ -49,7 +50,7 @@ namespace nova::ttl {
             }
         }
 
-        // If none of the threads in the pool are the thread we were called from, the user is doing something 
+        // If none of the threads in the pool are the thread we were called from, the user is doing something
         // unsupported so they must be punished
         // throw called_from_external_thread();
 
@@ -137,7 +138,7 @@ namespace nova::ttl {
         }
 
         const std::size_t thread_idx = pool->get_current_thread_idx();
-        task_scheduler::per_thread_data& tls = pool->thread_local_data[thread_idx];
+        task_scheduler::per_thread_data &tls = pool->thread_local_data[thread_idx];
 
         while(!pool->should_shutdown->load()) {
             // Get a new task from the queue, and execute it
@@ -151,24 +152,23 @@ namespace nova::ttl {
                 // We failed to find a Task from any of the queues
                 // What we do now depends on behavior_of_empty_queues, which we loaded above
                 switch(behavior) {
-                case empty_queue_behavior::YIELD:
-                    std::this_thread::yield();
-                    break;
+                    case empty_queue_behavior::YIELD:
+                        std::this_thread::yield();
+                        break;
 
-                case empty_queue_behavior::SLEEP:
-                {
-                    std::unique_lock<std::mutex> lock(*tls.things_in_queue_mutex);
-                    tls.is_sleeping->store(true);
+                    case empty_queue_behavior::SLEEP: {
+                        std::unique_lock<std::mutex> lock(*tls.things_in_queue_mutex);
+                        tls.is_sleeping->store(true);
 
-                    tls.things_in_queue_cv->wait(lock);
+                        tls.things_in_queue_cv->wait(lock);
 
-                    break;
-                }
-                
-                case empty_queue_behavior::SPIN:
-                default:
-                    // Just fall through and continue the next loop
-                    break;
+                        break;
+                    }
+
+                    case empty_queue_behavior::SPIN:
+                    default:
+                        // Just fall through and continue the next loop
+                        break;
                 }
             }
         }

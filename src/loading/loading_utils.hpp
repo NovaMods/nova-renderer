@@ -17,6 +17,6 @@ namespace nova {
      * \return True if the folder in question is a zip folder, false otherwise
      */
     bool is_zip_folder(const fs::path &path_to_folder);
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_LOADING_UTILS_HPP
+#endif // NOVA_RENDERER_LOADING_UTILS_HPP

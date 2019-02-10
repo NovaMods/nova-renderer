@@ -19,9 +19,11 @@ namespace nova {
         }
     }
 
-    __log_stream::__log_stream(log_level level) : level(level) {}
+    __log_stream::__log_stream(log_level level) : level(level) {
+    }
 
-    __log_stream::__log_stream(__log_stream &&other) noexcept : std::stringstream(std::move(other)), level(other.level) {}
+    __log_stream::__log_stream(__log_stream &&other) noexcept : std::stringstream(std::move(other)), level(other.level) {
+    }
 
     __log_stream::~__log_stream() {
         logger::instance.log(level, str());
@@ -30,4 +32,4 @@ namespace nova {
     __log_stream logger::log(log_level level) const {
         return __log_stream(level);
     }
-}  // namespace nova
+} // namespace nova

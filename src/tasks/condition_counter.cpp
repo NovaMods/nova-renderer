@@ -1,12 +1,13 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 17-Dec-18.
  */
 
 #include "condition_counter.hpp"
 
 namespace nova::ttl {
-    condition_counter::condition_counter(uint32_t initial_value) : counter(initial_value) {}
+    condition_counter::condition_counter(uint32_t initial_value) : counter(initial_value) {
+    }
 
     void condition_counter::add(const uint32_t num) {
         bool should_trigger = false;
@@ -31,7 +32,7 @@ namespace nova::ttl {
 
         if(should_trigger) {
             cv.notify_all();
-        }        
+        }
     }
 
     void condition_counter::wait_for_value(const uint32_t val) {
@@ -39,9 +40,9 @@ namespace nova::ttl {
 
         {
             std::unique_lock l(mut);
-            // I want to explicitly copy wait_val so that the same condition variable can be waited on for different 
+            // I want to explicitly copy wait_val so that the same condition variable can be waited on for different
             // values, but I need to copy counter by reference
-            cv.wait(l, [&, this] {return counter == this->wait_val; });
+            cv.wait(l, [&, this] { return counter == this->wait_val; });
         }
     }
 } // namespace nova::ttl

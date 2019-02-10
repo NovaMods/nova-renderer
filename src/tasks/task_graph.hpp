@@ -1,5 +1,4 @@
 #pragma once
 #include <functional>
 
-namespace nova::ttl {
-}
+namespace nova::ttl {}

@@ -48,7 +48,7 @@ namespace nova {
         stencil_op.write_mask = get_json_value<uint32_t>(j, "writeMask", 0);
     }
 
-    void from_json(const nlohmann::json& j, vertex_field_data& vertex_data) {
+    void from_json(const nlohmann::json &j, vertex_field_data &vertex_data) {
         vertex_data.semantic_name = get_json_value<std::string>(j, "name").value();
         vertex_data.field = get_json_value<vertex_field_enum>(j, "field", vertex_field_enum_from_string).value();
     }
@@ -76,7 +76,6 @@ namespace nova {
         pipeline.alpha_dst = get_json_value<blend_factor_enum>(j, "alphaDest", blend_factor_enum::Zero, blend_factor_enum_from_string);
         pipeline.depth_func = get_json_value<compare_op_enum>(j, "depthFunc", compare_op_enum::Less, compare_op_enum_from_string);
         pipeline.render_queue = get_json_value<render_queue_enum>(j, "renderQueue", render_queue_enum::Opaque, render_queue_enum_from_string);
-
 
         pipeline.vertex_shader.filename = get_json_value<std::string>(j, "vertexShader").value_or("<NAME_MISSING>");
 
@@ -116,7 +115,7 @@ namespace nova {
         mat.passes = get_json_array<material_pass>(j, "passes");
         mat.geometry_filter = get_json_value<std::string>(j, "filter").value();
 
-        for(material_pass& pass : mat.passes) {
+        for(material_pass &pass : mat.passes) {
             pass.material_name = mat.name;
         }
     }
@@ -131,4 +130,4 @@ namespace nova {
             passes.push_back(node.get<render_pass_data>());
         }
     }
-}  // namespace nova
+} // namespace nova

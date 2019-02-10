@@ -23,7 +23,7 @@ namespace nova {
 
     void from_json(const nlohmann::json &j, stencil_op_state &stencil_op);
 
-    void from_json(const nlohmann::json& j, vertex_field_data& vertex_data);
+    void from_json(const nlohmann::json &j, vertex_field_data &vertex_data);
 
     void from_json(const nlohmann::json &j, render_pass_data &pass);
 
@@ -32,6 +32,6 @@ namespace nova {
     void from_json(const nlohmann::json &j, material_pass &pass);
 
     void from_json(const nlohmann::json &j, material_data &pass);
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_JSON_INTEROP_HPP
+#endif // NOVA_RENDERER_JSON_INTEROP_HPP

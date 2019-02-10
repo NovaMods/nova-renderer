@@ -6,9 +6,9 @@
 #ifndef NOVA_RENDERER_SHADERPACK_LOADING_HPP
 #define NOVA_RENDERER_SHADERPACK_LOADING_HPP
 
+#include "../../util/filesystem.hpp"
 #include "shaderpack_data.hpp"
 #include <future>
-#include "../../util/filesystem.hpp"
 
 namespace nova {
     namespace ttl {
@@ -38,6 +38,6 @@ namespace nova {
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
     shaderpack_data load_shaderpack_data(const fs::path &shaderpack_name);
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_SHADERPACK_LOADING_HPP
+#endif // NOVA_RENDERER_SHADERPACK_LOADING_HPP

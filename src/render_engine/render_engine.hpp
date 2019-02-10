@@ -7,26 +7,26 @@
 #ifndef NOVA_RENDERER_RENDER_ENGINE_HPP
 #define NOVA_RENDERER_RENDER_ENGINE_HPP
 
-#include <memory>
 #include "../loading/shaderpack/shaderpack_data.hpp"
 #include "../platform.hpp"
 #include "../settings/nova_settings.hpp"
+#include "../tasks/task_scheduler.hpp"
 #include "../util/utils.hpp"
 #include "window.hpp"
-#include "../tasks/task_scheduler.hpp"
+#include <memory>
 
 namespace nova {
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
     struct full_vertex {
-        glm::vec3 position;           // 12 bytes
-        glm::vec3 normal;             // 12 bytes
-        glm::vec3 tangent;            // 12 bytes
-        glm::u16vec2 main_uv;         // 4 bytes
-        glm::u8vec2 secondary_uv;     // 2 bytes
-        uint32_t virtual_texture_id;  // 4 bytes
-        glm::vec4 additional_stuff;   // 16 bytes
+        glm::vec3 position;          // 12 bytes
+        glm::vec3 normal;            // 12 bytes
+        glm::vec3 tangent;           // 12 bytes
+        glm::u16vec2 main_uv;        // 4 bytes
+        glm::u8vec2 secondary_uv;    // 2 bytes
+        uint32_t virtual_texture_id; // 4 bytes
+        glm::vec4 additional_stuff;  // 16 bytes
     };
 
     static_assert(sizeof(full_vertex) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
@@ -54,12 +54,12 @@ namespace nova {
      */
     class render_engine {
     public:
-        render_engine(render_engine&& other) = default;
-        render_engine& operator=(render_engine&& other) noexcept = delete;
+        render_engine(render_engine &&other) = default;
+        render_engine &operator=(render_engine &&other) noexcept = delete;
 
-        render_engine(const render_engine& other) = delete;
-        render_engine& operator=(const render_engine& other) = delete;
-        
+        render_engine(const render_engine &other) = delete;
+        render_engine &operator=(const render_engine &other) = delete;
+
         /*!
          * \brief Needed to make destructor of subclasses called
          */
@@ -72,7 +72,7 @@ namespace nova {
          *
          * \param data The shaderpack to load
          */
-        virtual void set_shaderpack(const shaderpack_data& data) = 0;
+        virtual void set_shaderpack(const shaderpack_data &data) = 0;
 
         /*!
          * \brief Adds a mesh to this render engine
@@ -83,7 +83,7 @@ namespace nova {
          * \param mesh The mesh data to send to the GPU
          * \return The ID of the mesh that was just created
          */
-        virtual mesh_id_t add_mesh(const mesh_data& mesh) = 0;
+        virtual mesh_id_t add_mesh(const mesh_data &mesh) = 0;
 
         /*!
          * \brief Deletes the mesh with the provided ID from the GPU
@@ -108,7 +108,7 @@ namespace nova {
          *
          * \attention Called by nova
          */
-        explicit render_engine(const nova_settings & /* settings */, ttl::task_scheduler* scheduler) : scheduler(scheduler){};
+        explicit render_engine(const nova_settings & /* settings */, ttl::task_scheduler *scheduler) : scheduler(scheduler){};
 
         /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window
@@ -117,8 +117,8 @@ namespace nova {
          */
         virtual void open_window(uint32_t width, uint32_t height) = 0;
 
-        ttl::task_scheduler* scheduler;
+        ttl::task_scheduler *scheduler;
     };
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_RENDER_ENGINE_HPP
+#endif // NOVA_RENDERER_RENDER_ENGINE_HPP

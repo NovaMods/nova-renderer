@@ -6,8 +6,8 @@
 #ifndef NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
 #define NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
 
-#include <miniz_zip.h>
 #include "folder_accessor.hpp"
+#include <miniz_zip.h>
 
 namespace nova {
     struct file_tree_node {
@@ -23,7 +23,7 @@ namespace nova {
      */
     class zip_folder_accessor : public folder_accessor_base {
     public:
-        explicit zip_folder_accessor(const fs::path& folder);
+        explicit zip_folder_accessor(const fs::path &folder);
         ~zip_folder_accessor() override;
 
         std::string read_text_file(const fs::path &resource_path) override;
@@ -40,7 +40,7 @@ namespace nova {
 
         std::unique_ptr<file_tree_node> files = nullptr;
 
-        void delete_file_tree(std::unique_ptr<file_tree_node>& node);
+        void delete_file_tree(std::unique_ptr<file_tree_node> &node);
 
         void build_file_tree();
 
@@ -51,6 +51,6 @@ namespace nova {
      * \brief Prints out the nodes in a depth-first fashion
      */
     void print_file_tree(const std::unique_ptr<file_tree_node> &folder, uint32_t depth);
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
+#endif // NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H

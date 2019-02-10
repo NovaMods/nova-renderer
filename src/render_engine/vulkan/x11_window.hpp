@@ -32,7 +32,7 @@ namespace nova {
 
         glm::uvec2 get_window_size() const override;
     };
-}  // namespace nova
+} // namespace nova
 
 #endif
 
@@ -49,4 +49,4 @@ namespace nova {
 #undef Bool
 #endif
 
-#endif  // NOVA_RENDERER_X_11_WINDOW_HPP
+#endif // NOVA_RENDERER_X_11_WINDOW_HPP

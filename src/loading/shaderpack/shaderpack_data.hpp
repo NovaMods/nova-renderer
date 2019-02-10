@@ -8,14 +8,14 @@
 #ifndef NOVA_RENDERER_SHADERPACK_DATA_HPP
 #define NOVA_RENDERER_SHADERPACK_DATA_HPP
 
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <cstdint>
-#include <optional>
-#include <nlohmann/json.hpp>
 #include "../../util/filesystem.hpp"
 #include "../../util/utils.hpp"
+#include <cstdint>
+#include <nlohmann/json.hpp>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include <vulkan/vulkan.h>
 
@@ -395,7 +395,7 @@ namespace nova {
          */
         float height;
 
-        glm::uvec2 get_size_in_pixels(const glm::uvec2& screen_size) const;
+        glm::uvec2 get_size_in_pixels(const glm::uvec2 &screen_size) const;
 
         bool operator==(const texture_format &other) const;
         bool operator!=(const texture_format &other) const;
@@ -467,7 +467,7 @@ namespace nova {
          */
         bool clear = false;
 
-        bool operator==(const texture_attachment& other) const;
+        bool operator==(const texture_attachment &other) const;
     };
 
     /*!
@@ -581,6 +581,6 @@ namespace nova {
     std::string to_string(render_queue_enum val);
     std::string to_string(state_enum val);
     std::string to_string(vertex_field_enum val);
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_SHADERPACK_DATA_HPP
+#endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

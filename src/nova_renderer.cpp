@@ -13,7 +13,7 @@
 
 #if NOVA_WINDOWS
 #include "render_engine/dx12/dx12_render_engine.hpp"
-#endif 
+#endif
 
 #include "debugging/renderdoc.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
@@ -23,8 +23,7 @@
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer::nova_renderer(const settings_options &settings) : 
-        render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
+    nova_renderer::nova_renderer(const settings_options &settings) : render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
         mtr_init("trace.json");
 
@@ -52,17 +51,16 @@ namespace nova {
         }
 
         switch(settings.api) {
-        case graphics_api::dx12:
-            #if NOVA_WINDOWS
-        {
-            MTR_SCOPE("Init", "InitDirectX12RenderEngine");
-            engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
-        }
-            break;
-            #endif
-        case graphics_api::vulkan:
-            MTR_SCOPE("Init", "InitVulkanRenderEngine");
-            engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler);
+            case graphics_api::dx12:
+#if NOVA_WINDOWS
+            {
+                MTR_SCOPE("Init", "InitDirectX12RenderEngine");
+                engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
+            } break;
+#endif
+            case graphics_api::vulkan:
+                MTR_SCOPE("Init", "InitVulkanRenderEngine");
+                engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler);
         }
     }
 
@@ -99,7 +97,7 @@ namespace nova {
         return instance.get();
     }
 
-    nova_renderer *nova_renderer::initialize(const settings_options& settings) {
+    nova_renderer *nova_renderer::initialize(const settings_options &settings) {
         return (instance = std::make_unique<nova_renderer>(settings)).get();
     }
 
@@ -110,4 +108,4 @@ namespace nova {
     ttl::task_scheduler &nova_renderer::get_task_scheduler() {
         return task_scheduler;
     }
-}  // namespace nova
+} // namespace nova

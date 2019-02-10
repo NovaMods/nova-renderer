@@ -9,8 +9,8 @@
 #ifndef NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 #define NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
 
-#include <string>
 #include <nlohmann/json.hpp>
+#include <string>
 
 namespace nova {
     struct validation_report {
@@ -74,6 +74,6 @@ namespace nova {
      * \return A list of all errors encountered when validating this material
      */
     validation_report validate_material(nlohmann::json &material_json);
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP
+#endif // NOVA_RENDERER_SHADERPACK_VALIDATOR_HPP

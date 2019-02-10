@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 07-Feb-19.
  */
 
@@ -7,7 +7,7 @@
 #include "vulkan_utils.hpp"
 
 namespace nova {
-    mesh_id_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
+    mesh_id_t vulkan_render_engine::add_mesh(const mesh_data &input_mesh) {
         const auto vertex_size = static_cast<uint32_t>(input_mesh.vertex_data.size() * sizeof(full_vertex));
         const auto index_size = static_cast<uint32_t>(input_mesh.indices.size() * sizeof(uint32_t));
 
@@ -16,7 +16,7 @@ namespace nova {
 
         const vk_buffer staging_buffer = get_or_allocate_mesh_staging_buffer(total_memory_needed);
         std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh.vertex_data[0], vertex_size);
-        std::memcpy(reinterpret_cast<uint8_t*>(staging_buffer.alloc_info.pMappedData) + vertex_size, &input_mesh.indices[0], index_size);
+        std::memcpy(reinterpret_cast<uint8_t *>(staging_buffer.alloc_info.pMappedData) + vertex_size, &input_mesh.indices[0], index_size);
 
         const uint32_t mesh_id = next_mesh_id.fetch_add(1);
 

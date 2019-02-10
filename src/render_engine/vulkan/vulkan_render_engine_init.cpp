@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 06-Feb-19.
  */
 
@@ -10,14 +10,14 @@
 #include <set>
 
 namespace nova {
-    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler) : render_engine(settings, task_scheduler) {
+    vulkan_render_engine::vulkan_render_engine(const nova_settings &settings, ttl::task_scheduler *task_scheduler) : render_engine(settings, task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
-        const settings_options& options = settings.get_options();
+        const settings_options &options = settings.get_options();
 
         validate_mesh_options(options.vertex_memory_settings);
 
-        const auto& version = options.vulkan.application_version;
+        const auto &version = options.vulkan.application_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -38,7 +38,7 @@ namespace nova {
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_validation_layer_names.size());
         create_info.ppEnabledLayerNames = enabled_validation_layer_names.data();
 
-        std::vector<const char*> enabled_extension_names;
+        std::vector<const char *> enabled_extension_names;
         enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #ifdef NOVA_LINUX
         enabled_extension_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
@@ -63,7 +63,7 @@ namespace nova {
         vkEnumerateInstanceExtensionProperties(nullptr, &num_extensions, gpu.available_extensions.data());
 
         fmt::memory_buffer buf;
-        for(const VkExtensionProperties& props : gpu.available_extensions) {
+        for(const VkExtensionProperties &props : gpu.available_extensions) {
             format_to(buf, fmt("\t{:s} version {:d}\n"), props.extensionName, props.specVersion);
         }
 
@@ -113,7 +113,7 @@ namespace nova {
 #endif
     }
 
-    void vulkan_render_engine::validate_mesh_options(const settings_options::block_allocator_settings& options) const {
+    void vulkan_render_engine::validate_mesh_options(const settings_options::block_allocator_settings &options) const {
         if(options.buffer_part_size % sizeof(full_vertex) != 0) {
             throw std::runtime_error("vertex_memory_settings.buffer_part_size must be a multiple of sizeof(full_vertex) (which equals " + std::to_string(sizeof(full_vertex)) + ")");
         }
@@ -241,7 +241,7 @@ namespace nova {
         device_create_info.pQueueCreateInfos = queue_create_infos.data();
         device_create_info.pEnabledFeatures = &physical_device_features;
         device_create_info.enabledExtensionCount = 1;
-        const char* swapchain_extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+        const char *swapchain_extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
         device_create_info.ppEnabledExtensionNames = &swapchain_extension;
         device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_validation_layer_names.size());
         if(!enabled_validation_layer_names.empty()) {
@@ -265,8 +265,8 @@ namespace nova {
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available.data());
 
         std::set<std::string> required = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-        for(const auto& extension : available) {
-            required.erase(static_cast<const char*>(extension.extensionName));
+        for(const auto &extension : available) {
+            required.erase(static_cast<const char *>(extension.extensionName));
         }
 
         return required.empty();

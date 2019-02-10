@@ -8,11 +8,11 @@
 #ifndef NOVA_RENDERER_LOGGER_HPP
 #define NOVA_RENDERER_LOGGER_HPP
 
-#include <string>
 #include <functional>
-#include <unordered_map>
-#include <sstream>
 #include <mutex>
+#include <sstream>
+#include <string>
+#include <unordered_map>
 
 #ifdef ERROR
 #undef ERROR
@@ -55,8 +55,8 @@ namespace nova {
         ~__log_stream() override;
     };
 
-}  // namespace nova
+} // namespace nova
 
 #define NOVA_LOG(LEVEL) ::nova::logger::instance.log(::nova::log_level::LEVEL)
 
-#endif  // NOVA_RENDERER_LOGGER_HPP
+#endif // NOVA_RENDERER_LOGGER_HPP

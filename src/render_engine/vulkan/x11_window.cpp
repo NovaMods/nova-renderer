@@ -54,7 +54,8 @@ namespace nova {
                     break;
                 }
 
-                default: break;
+                default:
+                    break;
             }
         }
     }
@@ -76,6 +77,6 @@ namespace nova {
 
         return {width, height};
     }
-}  // namespace nova
+} // namespace nova
 
 #endif

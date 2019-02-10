@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../../util/vma_usage.hpp"
-#include <vulkan/vulkan.h>
-#include <vector>
 #include "../../settings/nova_settings.hpp"
 #include "../../util/utils.hpp"
+#include "../../util/vma_usage.hpp"
 #include <mutex>
+#include <vector>
+#include <vulkan/vulkan.h>
 
 namespace ftl {
     class TaskScheduler;
@@ -37,7 +37,7 @@ namespace nova {
         class block_allocator_buffer;
 
         struct allocation_info {
-            block_allocator_buffer* block = nullptr;
+            block_allocator_buffer *block = nullptr;
             uint32_t block_id = 0;
             VkDeviceSize offset = 0;
             VkDeviceSize size = 0;
@@ -55,11 +55,11 @@ namespace nova {
              */
             block_allocator_buffer(VkDeviceSize size, VmaAllocator allocator);
 
-            block_allocator_buffer(const block_allocator_buffer& other) = delete;
-            block_allocator_buffer(block_allocator_buffer&& other) noexcept;
+            block_allocator_buffer(const block_allocator_buffer &other) = delete;
+            block_allocator_buffer(block_allocator_buffer &&other) noexcept;
 
-            block_allocator_buffer& operator=(const block_allocator_buffer& other) = delete;
-            block_allocator_buffer& operator=(block_allocator_buffer&& other) noexcept;
+            block_allocator_buffer &operator=(const block_allocator_buffer &other) = delete;
+            block_allocator_buffer &operator=(block_allocator_buffer &&other) noexcept;
 
             ~block_allocator_buffer();
 
@@ -73,7 +73,7 @@ namespace nova {
              * \param needed_size The size of the allocation that we need
              * \return A pointer to the newly-created allocation, or `nullptr` if the allocation couldn't be made
              */
-            allocation_info* allocate(VkDeviceSize needed_size);
+            allocation_info *allocate(VkDeviceSize needed_size);
 
             /*!
              * \brief Frees the provided allocation
@@ -81,7 +81,7 @@ namespace nova {
              * If the allocation is next to an existing free allocation, it is merged with that one. If it's not next
              * to a free allocation,
              */
-            void free(allocation_info* alloc);
+            void free(allocation_info *alloc);
 
             VkBuffer get_buffer() const;
 
@@ -95,11 +95,11 @@ namespace nova {
                 uint32_t id = 0;
                 VkDeviceSize size = 0;
                 VkDeviceSize offset = 0;
-                block_t* prev = nullptr;
-                block_t* next = nullptr;
+                block_t *prev = nullptr;
+                block_t *next = nullptr;
                 bool free = true;
             };
-            block_t* head;
+            block_t *head;
 
             VmaAllocator allocator;
 
@@ -113,12 +113,12 @@ namespace nova {
             VkDeviceSize size;
             VkDeviceSize allocated = 0;
 
-            allocation_info* allocate_internal(VkDeviceSize needed_size, bool can_compact);
+            allocation_info *allocate_internal(VkDeviceSize needed_size, bool can_compact);
 
             void compact_all_memory();
         };
 
-        compacting_block_allocator(const settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
+        compacting_block_allocator(const settings_options::block_allocator_settings &settings, VmaAllocator vma_allocator, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
 
         /*!
          * \brief Allocates memory of the requested size and gives that to you
@@ -131,25 +131,25 @@ namespace nova {
          *
          * \param size The size, in bytes, of the allocation you want
          */
-        allocation_info* allocate(VkDeviceSize size);
+        allocation_info *allocate(VkDeviceSize size);
 
         /*!
          * \brief Frees a specific allocation
          *
          * \param allocation The allocation to free
          */
-        void free(allocation_info* allocation);
+        void free(allocation_info *allocation);
 
         /*!
          * \brief Adds barriers to the provided command buffer to ensure that reading vertex data has finished before transfers
-         * 
+         *
          * \param cmds The command buffer to add commands to
          */
         void add_barriers_before_data_upload(VkCommandBuffer cmds) const;
 
         /*!
          * \brief Adds barriers to the provided command buffer to ensure that transfers are done before reading vertex data has started
-         * 
+         *
          * \param cmds The command buffer to add commands to
          */
         void add_barriers_after_data_upload(VkCommandBuffer cmds) const;
@@ -164,4 +164,4 @@ namespace nova {
         uint32_t copy_queue_idx;
     };
 
-}  // namespace nova
+} // namespace nova

@@ -72,8 +72,8 @@ namespace nova {
 
             /*!
              * \breif Controls if the API-specific validation layers are enabled
-             * 
-             * This should be enabled most of the time for Nova developers and almost never for shaderpack authors. 
+             *
+             * This should be enabled most of the time for Nova developers and almost never for shaderpack authors.
              * Nova developers need it on to debug their Vulkan or DX12 usage, while Nova should be robust enough that
              * errors that the validation layers would catch never happen in a shipping build
              */
@@ -95,7 +95,7 @@ namespace nova {
                  * \brief The base path for RenderDoc captures
                  */
                 std::string capture_path = "logs/captures";
-                
+
             } renderdoc;
         } debug;
 
@@ -187,7 +187,7 @@ namespace nova {
          *
          * \param new_config The updated configuration
          */
-        virtual void on_config_change(const settings_options& new_config) = 0;
+        virtual void on_config_change(const settings_options &new_config) = 0;
 
         /*!
          * \brief Tells listeners that the configuration has been loaded
@@ -203,7 +203,7 @@ namespace nova {
          *
          * \param config The configuration that was loaded
          */
-        virtual void on_config_loaded(const settings_options& config) = 0;
+        virtual void on_config_loaded(const settings_options &config) = 0;
     };
 
     /*!
@@ -219,9 +219,9 @@ namespace nova {
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer
          */
-        void register_change_listener(iconfig_listener* new_listener);
+        void register_change_listener(iconfig_listener *new_listener);
 
-        settings_options& get_options();
+        settings_options &get_options();
         settings_options get_options() const;
 
         /*!
@@ -241,8 +241,8 @@ namespace nova {
 
     private:
         settings_options options;
-        std::vector<iconfig_listener*> config_change_listeners;
+        std::vector<iconfig_listener *> config_change_listeners;
     };
-}  // namespace nova
+} // namespace nova
 
-#endif  // RENDERER_CONFIG_H
+#endif // RENDERER_CONFIG_H

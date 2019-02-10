@@ -8,13 +8,13 @@
 #ifndef NOVA_RENDERER_NOVA_RENDERER_H
 #define NOVA_RENDERER_NOVA_RENDERER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "settings/nova_settings.hpp"
-#include "render_engine/render_engine.hpp"
-#include "tasks/task_scheduler.hpp"
 #include "debugging/renderdoc_app.h"
+#include "render_engine/render_engine.hpp"
+#include "settings/nova_settings.hpp"
+#include "tasks/task_scheduler.hpp"
 
 namespace nova {
     NOVA_EXCEPTION(already_initialized_exception);
@@ -28,7 +28,7 @@ namespace nova {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit nova_renderer(const settings_options& settings);
+        explicit nova_renderer(const settings_options &settings);
 
         ~nova_renderer();
 
@@ -41,20 +41,20 @@ namespace nova {
          *
          * \param shaderpack_name The name of the shaderpack to load
          */
-        void load_shaderpack(const std::string& shaderpack_name) const;
+        void load_shaderpack(const std::string &shaderpack_name) const;
 
         /*!
          * \brief Executes a single frame
          */
         void execute_frame() const;
 
-        nova_settings& get_settings();
+        nova_settings &get_settings();
 
-        render_engine* get_engine() const;
+        render_engine *get_engine() const;
 
-        ttl::task_scheduler& get_task_scheduler();
+        ttl::task_scheduler &get_task_scheduler();
 
-        static nova_renderer* initialize(const settings_options& settings);
+        static nova_renderer *initialize(const settings_options &settings);
 
         static nova_renderer *get_instance();
 
@@ -67,9 +67,9 @@ namespace nova {
         ttl::task_scheduler task_scheduler;
         std::future<void> frame_done_future;
 
-        RENDERDOC_API_1_3_0* render_doc;
+        RENDERDOC_API_1_3_0 *render_doc;
         static std::unique_ptr<nova_renderer> instance;
     };
 } // namespace nova
 
-#endif  // NOVA_RENDERER_NOVA_RENDERER_H
+#endif // NOVA_RENDERER_NOVA_RENDERER_H

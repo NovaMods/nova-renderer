@@ -8,8 +8,8 @@
 #include "vulkan_utils.hpp"
 
 namespace nova {
-    swapchain_manager::swapchain_manager(const uint32_t num_swapchain_images, vulkan_render_engine& render_engine, const glm::ivec2 window_dimensions) :
-        render_engine(render_engine), swapchain_extent{ static_cast<uint32_t>(window_dimensions.x), static_cast<uint32_t>(window_dimensions.y) } {
+    swapchain_manager::swapchain_manager(const uint32_t num_swapchain_images, vulkan_render_engine &render_engine, const glm::ivec2 window_dimensions)
+        : render_engine(render_engine), swapchain_extent{static_cast<uint32_t>(window_dimensions.x), static_cast<uint32_t>(window_dimensions.y)} {
         const auto surface_format = choose_surface_format(render_engine.gpu.surface_formats);
         const auto present_mode = choose_present_mode(render_engine.gpu.present_modes);
         const auto extent = choose_surface_extent(render_engine.gpu.surface_capabilities, window_dimensions);
@@ -48,7 +48,7 @@ namespace nova {
         swapchain_images.resize(real_num_swapchain_images);
         NOVA_THROW_IF_VK_ERROR(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &real_num_swapchain_images, swapchain_images.data()), swapchain_creation_failed);
         swapchain_image_layouts.resize(real_num_swapchain_images);
-        for (auto &swapchain_image_layout : swapchain_image_layouts) {
+        for(auto &swapchain_image_layout : swapchain_image_layouts) {
             swapchain_image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         }
 
@@ -147,7 +147,7 @@ namespace nova {
         }
 
         // We want 32 bit rgba and srgb nonlinear... I think? Will have to read up on it more and figure out what's up
-        for(auto& fmt : formats) {
+        for(auto &fmt : formats) {
             if(fmt.format == VK_FORMAT_B8G8R8A8_UNORM && fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return fmt;
             }
@@ -161,7 +161,7 @@ namespace nova {
         const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 
         // Mailbox mode is best mode (also not sure why)
-        for(auto& mode : modes) {
+        for(auto &mode : modes) {
             if(mode == desired_mode) {
                 return desired_mode;
             }
@@ -171,7 +171,7 @@ namespace nova {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D swapchain_manager::choose_surface_extent(const VkSurfaceCapabilitiesKHR &caps, const glm::ivec2& window_dimensions) {
+    VkExtent2D swapchain_manager::choose_surface_extent(const VkSurfaceCapabilitiesKHR &caps, const glm::ivec2 &window_dimensions) {
         VkExtent2D extent;
 
         if(caps.currentExtent.width == 0xFFFFFFFF) {
@@ -205,7 +205,7 @@ namespace nova {
         std::vector<VkImageMemoryBarrier> barriers;
         barriers.reserve(images.size());
 
-        for(const VkImage& image : images) {
+        for(const VkImage &image : images) {
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.srcQueueFamilyIndex = render_engine.graphics_family_index;
@@ -240,12 +240,8 @@ namespace nova {
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vkBeginCommandBuffer(cmds, &begin_info);
 
-        vkCmdPipelineBarrier(cmds,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
-            0, nullptr,
-            0, nullptr,
-            static_cast<uint32_t>(barriers.size()), barriers.data());
-        
+        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(barriers.size()), barriers.data());
+
         vkEndCommandBuffer(cmds);
 
         VkFence transition_done_fence;

@@ -6,9 +6,9 @@
 #ifndef NOVA_RENDERER_UTILS_HPP
 #define NOVA_RENDERER_UTILS_HPP
 
-#include <optional>
-#include <nlohmann/json.hpp>
 #include "../util/logger.hpp"
+#include <nlohmann/json.hpp>
+#include <optional>
 
 namespace nova {
     // Keeps the compiler happy
@@ -21,7 +21,7 @@ namespace nova {
      * \param key The name of the value
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      */
-    template <typename ValType, std::enable_if_t <!std::is_same_v<ValType, std::string>>** = nullptr>
+    template <typename ValType, std::enable_if_t<!std::is_same_v<ValType, std::string>> ** = nullptr>
     std::optional<ValType> get_json_value(const nlohmann::json &json_obj, const std::string &key) {
         const auto &itr = json_obj.find(key);
         if(itr != json_obj.end()) {
@@ -40,7 +40,7 @@ namespace nova {
      * \param empty_means_not_present If set to true an empty string will be interpreted as not found
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      */
-     template <typename ValType, std::enable_if_t<std::is_same_v<ValType, std::string>>** = nullptr>
+    template <typename ValType, std::enable_if_t<std::is_same_v<ValType, std::string>> ** = nullptr>
     std::optional<ValType> get_json_value(const nlohmann::json &json_obj, const std::string &key, bool empty_means_not_present = false) {
         const auto &itr = json_obj.find(key);
         if(itr != json_obj.end()) {
@@ -164,6 +164,6 @@ namespace nova {
 
         return std::vector<ValType>{};
     }
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_UTILS_HPP
+#endif // NOVA_RENDERER_UTILS_HPP

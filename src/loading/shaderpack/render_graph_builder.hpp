@@ -6,9 +6,9 @@
 #ifndef NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
 #define NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
 
+#include "shaderpack_data.hpp"
 #include <string>
 #include <unordered_map>
-#include "shaderpack_data.hpp"
 
 namespace nova {
     NOVA_EXCEPTION(pass_ordering_exception);
@@ -63,8 +63,9 @@ namespace nova {
      *
      * \return A map from texture name to the name of the texture the first texture can be aliased with
      */
-    std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
-        const std::unordered_map<std::string, texture_resource_data> &textures, const std::unordered_map<std::string, range> &resource_used_range, const std::vector<std::string> &resources_in_order);
-}  // namespace nova
+    std::unordered_map<std::string, std::string> determine_aliasing_of_textures(const std::unordered_map<std::string, texture_resource_data> &textures,
+                                                                                const std::unordered_map<std::string, range> &resource_used_range,
+                                                                                const std::vector<std::string> &resources_in_order);
+} // namespace nova
 
-#endif  // NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP
+#endif // NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP

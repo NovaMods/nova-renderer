@@ -6,24 +6,25 @@
 #ifndef NOVA_RENDERER_RESOURCEPACK_H
 #define NOVA_RENDERER_RESOURCEPACK_H
 
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <optional>
 #include "../util/filesystem.hpp"
 #include "../util/utils.hpp"
 #include <mutex>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace nova {
     NOVA_EXCEPTION(resource_not_found_exception);
 
-    class filesystem_exception : public std::exception {  // Convert fs::filesystem_error into a nova class
+    class filesystem_exception : public std::exception { // Convert fs::filesystem_error into a nova class
     private:
         const std::string message;
         const std::error_code error_code;
 
     public:
-        explicit filesystem_exception(const fs::filesystem_error &error) : message(error.what()), error_code(error.code()) {}
+        explicit filesystem_exception(const fs::filesystem_error &error) : message(error.what()), error_code(error.code()) {
+        }
 
         const char *what() const noexcept override {
             return message.c_str();
@@ -49,20 +50,20 @@ namespace nova {
          */
         folder_accessor_base(fs::path folder);
 
-        folder_accessor_base(folder_accessor_base&& other) noexcept = default;
-        folder_accessor_base& operator=(folder_accessor_base&& other) noexcept = default;
+        folder_accessor_base(folder_accessor_base &&other) noexcept = default;
+        folder_accessor_base &operator=(folder_accessor_base &&other) noexcept = default;
 
-        folder_accessor_base(const folder_accessor_base& other) = delete;
-        folder_accessor_base& operator=(const folder_accessor_base& other) = delete;
+        folder_accessor_base(const folder_accessor_base &other) = delete;
+        folder_accessor_base &operator=(const folder_accessor_base &other) = delete;
 
         virtual ~folder_accessor_base() = default;
 
         /*!
          * \brief Checks if the given resource exists
-         * 
-         * This function locks resource_existence_mutex, so any methods which are called by this - 
+         *
+         * This function locks resource_existence_mutex, so any methods which are called by this -
          * does_resource_exist_internal and does_resource_exist_in_map - MUST not try to lock resource_existence_mutex
-         * 
+         *
          * \param resource_path The path to the resource you want to know the existence of, relative to this
          * resourcepack's root
          * \return True if the resource exists, false if it does not
@@ -78,11 +79,11 @@ namespace nova {
 
         /*!
          * \brief Loads the file at the provided path as a series of 32-bit numbers
-         * 
+         *
          * \param resource_path The path to the SPIR-V file to load, relative to this resourcepack's root
          * \return All the 32-bit numbers in the SPIR-V file
          */
-        std::vector<uint32_t> read_spirv_file(fs::path& resource_path);
+        std::vector<uint32_t> read_spirv_file(fs::path &resource_path);
 
         /*!
          * \brief Retrieves the paths of all the items in the specified folder
@@ -123,6 +124,6 @@ namespace nova {
      * \return True if `path` has `root` as its root, false otherwise
      */
     bool has_root(const fs::path &path, const fs::path &root);
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_RESOURCEPACK_H
+#endif // NOVA_RENDERER_RESOURCEPACK_H
