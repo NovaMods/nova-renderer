@@ -179,7 +179,7 @@ set(3RD_PARTY_SOURCE
 # Set platform dependent compile options #
 ##########################################
 if (UNIX)
-    add_compile_options_if_supported(-g -fno-omit-frame-pointer -Wall -Wextra -Wpedantic -Wconversion -fPIC -fdiagnostics-color=always)
+    add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always)
 endif()
 
 if(MSVC)
@@ -229,12 +229,13 @@ target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
+target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
 
 ##################################
 # Add extra warnings if possible #
 ##################################
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wno-long-long -pedantic -Wdefaulted-function-deleted)
+    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wpedantic -Wconversion -Wno-sign-conversion -Wdefaulted-function-deleted)
 endif()
 
 add_coverage(nova-renderer)
@@ -243,21 +244,22 @@ add_coverage(nova-renderer)
 # Set libraries to link #
 #########################
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
+                     fmt::fmt
                      glm::glm
+                     glslang
+                     minitrace
+                     miniz
                      nlohmann::json
-                     spirv::headers
+                     nova-profiler
+                     SPIRV
                      spirv-cross-core
                      spirv-cross-glsl
                      spirv-cross-hlsl
                      spirv-cross-reflect
                      spirv-cross-util
-                     nova-profiler
-                     miniz
-                     minitrace
-                     glslang
-                     vulkan::sdk
+                     spirv::headers
                      vma::vma
-                     SPIRV
+                     vulkan::sdk
                      ${Vulkan_LIBRARIES})
 
 ##############################

@@ -48,6 +48,7 @@ include(GoogleTest)
 # Submodule libraries #
 #######################
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/fmtlib)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/profiler)
 

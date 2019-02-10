@@ -34,3 +34,6 @@
 [submodule "3rdparty/run-clang-tidy"]
 	path = 3rdparty/run-clang-tidy
 	url = https://github.com/cwfitzgerald/run-clang-tidy.git
+[submodule "3rdparty/fmtlib"]
+	path = 3rdparty/fmtlib
+	url = https://github.com/fmtlib/fmt.git
