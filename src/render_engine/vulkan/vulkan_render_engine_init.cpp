@@ -85,7 +85,7 @@ namespace nova {
 #endif
         // First we open the window. This doesn't depend on anything except the VkInstance/ This method also creates
         // the VkSurfaceKHR we can render to
-        open_window(settings.get_options().window.width, settings.get_options().window.height);
+        vulkan_render_engine::open_window(settings.get_options().window.width, settings.get_options().window.height);
 
         // Create the device. This depends on both the VkInstance and the VkSurfaceKHR: we need the VkSurfaceKHR to
         // make sure we find a device that can present to that surface
