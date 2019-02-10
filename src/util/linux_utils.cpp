@@ -33,7 +33,7 @@ void nova_backtrace() {
                     char *name = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, nullptr);
                     str = format(fmt("{:s}({:s}{:s})"), path, name, address);
                     
-                    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
+                    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
                     free(name);
                 }
             } catch (const std::exception &e) {
@@ -47,7 +47,7 @@ void nova_backtrace() {
 
         NOVA_LOG(ERROR) << "\t" << str;
     }
-    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc)
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
     free(data);
 }
 

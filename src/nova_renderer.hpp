@@ -54,9 +54,7 @@ namespace nova {
 
         ttl::task_scheduler& get_task_scheduler();
 
-        static nova_renderer* initialize(const settings_options& settings) {
-            return (instance = new nova_renderer(settings));
-        }
+        static nova_renderer* initialize(const settings_options& settings);
 
         static nova_renderer *get_instance();
 
@@ -70,7 +68,7 @@ namespace nova {
         std::future<void> frame_done_future;
 
         RENDERDOC_API_1_3_0* render_doc;
-        static nova_renderer *instance;
+        static std::unique_ptr<nova_renderer> instance;
     };
 } // namespace nova
 

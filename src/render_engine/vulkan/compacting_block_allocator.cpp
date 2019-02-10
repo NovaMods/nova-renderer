@@ -25,6 +25,7 @@ namespace nova {
         NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(allocator, &buffer_info, &allocate_info, &buffer, &vma_allocation, &vma_allocation_info), buffer_allocation_failed);
 
         // Setup the first block.
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
         head = new block_t();
         head->size = size;
         head->offset = 0;
@@ -73,12 +74,14 @@ namespace nova {
         block_t* current = head;
         while(true) {
             if(current->next == nullptr) {
+                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                 delete current;
                 break;
 
             } else {
                 prev = current;
                 current = current->next;
+                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                 delete prev;
             }
         }
@@ -115,6 +118,7 @@ namespace nova {
 
             prev->size += current->size;
 
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
             delete current;
             current = prev;
         }
@@ -130,6 +134,7 @@ namespace nova {
 
             current->size += next->size;
 
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
             delete next;
         }
 
@@ -187,6 +192,7 @@ namespace nova {
         }
 
         if(best_fit->size > needed_size) {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
             auto* chunk = new block_t;
             block_t* next = best_fit->next;
 
@@ -209,6 +215,7 @@ namespace nova {
 
         allocated += aligned_size;
 
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
         auto* allocation = new allocation_info;
 
         allocation->size = best_fit->size;
@@ -254,6 +261,7 @@ namespace nova {
             // Create a free block at the end - after iterating through the list of blocks, we are at the end
             // e.g. current == end
 
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
             block_t* end_block = new block_t;
             end_block->id = next_block_id;
             next_block_id++;

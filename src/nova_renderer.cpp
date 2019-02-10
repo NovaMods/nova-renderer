@@ -21,7 +21,7 @@
 #include "minitrace.h"
 
 namespace nova {
-    nova_renderer *nova_renderer::instance;
+    std::unique_ptr<nova_renderer> nova_renderer::instance;
 
     nova_renderer::nova_renderer(const settings_options &settings) : 
         render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
@@ -96,11 +96,15 @@ namespace nova {
     }
 
     nova_renderer *nova_renderer::get_instance() {
-        return instance;
+        return instance.get();
+    }
+
+    nova_renderer *nova_renderer::initialize(const settings_options& settings) {
+        return (instance = std::make_unique<nova_renderer>(settings)).get();
     }
 
     void nova_renderer::deinitialize() {
-        delete instance;
+        instance = nullptr;
     }
 
     ttl::task_scheduler &nova_renderer::get_task_scheduler() {

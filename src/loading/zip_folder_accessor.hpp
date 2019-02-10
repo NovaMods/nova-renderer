@@ -12,7 +12,7 @@
 namespace nova {
     struct file_tree_node {
         std::string name;
-        std::vector<file_tree_node *> children;
+        std::vector<std::unique_ptr<file_tree_node>> children;
         file_tree_node *parent = nullptr;
 
         std::string get_full_path() const;
@@ -38,9 +38,9 @@ namespace nova {
 
         mz_zip_archive zip_archive = {};
 
-        file_tree_node *files = nullptr;
+        std::unique_ptr<file_tree_node> files = nullptr;
 
-        void delete_file_tree(file_tree_node *node);
+        void delete_file_tree(std::unique_ptr<file_tree_node>& node);
 
         void build_file_tree();
 
@@ -50,7 +50,7 @@ namespace nova {
     /*!
      * \brief Prints out the nodes in a depth-first fashion
      */
-    void print_file_tree(const file_tree_node *folder, uint32_t depth);
+    void print_file_tree(const std::unique_ptr<file_tree_node> &folder, uint32_t depth);
 }  // namespace nova
 
 #endif  // NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
