@@ -1,8 +1,8 @@
 if(NOT CLANG_FORMAT_COMMAND)
-    set(CLANG_FORMAT_COMMAND "clang-format-6" "clang-format-7" "clang-format-8" "clang-format")
+    set(CLANG_FORMAT_COMMAND "clang-format-9" "clang-format-8" "clang-format-7" "clang-format-6.0" "clang-format")
 endif()
 
-find_program(CLANG_FORMAT_PROGRAM ${CLANG_FORMAT_COMMAND})
+find_program(CLANG_FORMAT_PROGRAM NAMES ${CLANG_FORMAT_COMMAND})
 if(NOT CLANG_FORMAT_PROGRAM)
     message(STATUS "clang-format not found")
     function(format)
