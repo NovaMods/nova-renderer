@@ -7,6 +7,9 @@
 #include "../util/logger.hpp"
 #include "../util/utils.hpp"
 
+#include <array>
+#include <memory>
+
 namespace nova {
     zip_folder_accessor::zip_folder_accessor(const fs::path& folder) : folder_accessor_base(folder), files(new file_tree_node) {
         const auto folder_string = folder.string();
