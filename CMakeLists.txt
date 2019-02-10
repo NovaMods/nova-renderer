@@ -61,6 +61,7 @@ endif()
 # Setup our own cmake additions #
 #################################
 include(ClangFormat)
+include(ClangTidy)
 include(RemovePermissive)
 include(CompilerOptionsUtils)
 include(CheckCXXCompilerFlag)
