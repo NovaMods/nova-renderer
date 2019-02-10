@@ -1,5 +1,21 @@
 if(NOT CLANG_TIDY_COMMAND)
-    set(CLANG_TIDY_COMMAND "clang-tidy-9" "clang-tidy-8" "clang-tidy-7" "clang-tidy-6.0" "clang-tidy" CACHE STRING "Possible names of clang-tidy")
+    set(CLANG_TIDY_COMMAND
+        "clang-tidy-9"
+        "clang-tidy-8"
+        "clang-tidy-7"
+        "clang-tidy-6.0"
+        "clang-tidy"
+        CACHE STRING "Possible names of clang-tidy")
+endif()
+
+if(NOT CLANG_APPLY_REPLACEMENTS_COMMAND)
+    set(CLANG_APPLY_REPLACEMENTS_COMMAND 
+        "clang-apply-replacements-9"
+        "clang-apply-replacements-8"
+        "clang-apply-replacements-7"
+        "clang-apply-replacements-6.0"
+        "clang-apply-replacements"
+        CACHE STRING "Possible names of clang-apply-replacements")
 endif()
 
 find_program(CLANG_TIDY_PROGRAM NAMES ${CLANG_TIDY_COMMAND})
@@ -17,14 +33,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 find_package(Python3)
 
 if(NOT Python3_FOUND)
-	return()
+    return()
 endif()
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/tools/lint.bash.in" "${CMAKE_CURRENT_BINARY_DIR}/tools/unexec/lint.bash" @ONLY NEWLINE_STYLE LF)
 file(COPY "${CMAKE_CURRENT_BINARY_DIR}/tools/unexec/lint.bash"
-	 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/tools"
-	 FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-	 GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/tools"
+     FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+     GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 file(REMOVE_RECURSE "${CMAKE_CURRENT_BINARY_DIR}/tools/unexec")
 
 message(STATUS "Linting enabled through ./tools/lint.bash")
@@ -33,6 +49,13 @@ add_custom_target(lint "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "f
 add_custom_target(lint-by-file "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "file" USES_TERMINAL)
 add_custom_target(lint-by-diagnostic "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "diagnostic"  USES_TERMINAL)
 
+find_program(CLANG_APPLY_REPLACEMENTS_PROGRAM NAMES ${CLANG_APPLY_REPLACEMENTS_COMMAND})
+if(CLANG_APPLY_REPLACEMENTS_PROGRAM)
+    message(STATUS "Found clang-apply-replacements at ${CLANG_APPLY_REPLACEMENTS_PROGRAM}")
+    add_custom_target(lint-fix "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "file" "--fix" "--clang-apply-replacements" "${CLANG_APPLY_REPLACEMENTS_PROGRAM}" USES_TERMINAL)
+else()
+    message(STATUS "clang-apply-replacements not found")
+endif()
 # function(lint TARGET)
 #     add_custom_target(${TARGET}-lint VERBATIM)
     
