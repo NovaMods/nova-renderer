@@ -23,7 +23,9 @@ file(REMOVE_RECURSE "${CMAKE_CURRENT_BINARY_DIR}/tools/unexec")
 
 message(STATUS "Linting enabled through ./tools/lint.bash")
 
-add_custom_target(lint "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" USES_TERMINAL)
+add_custom_target(lint "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "file" USES_TERMINAL)
+add_custom_target(lint-by-file "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "file" USES_TERMINAL)
+add_custom_target(lint-by-diagnostic "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "diagnostic"  USES_TERMINAL)
 
 # function(lint TARGET)
 #     add_custom_target(${TARGET}-lint VERBATIM)
