@@ -73,7 +73,7 @@ namespace nova {
     void write_to_file(const std::vector<uint32_t>& data, const fs::path& filepath) {
         std::ofstream os(filepath, std::ios::binary);
         if(os.good()) {
-            os.write(reinterpret_cast<const char*>(data.data()), data.size() * 4);
+            os.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size() * 4));
         }
         os.close();
     }

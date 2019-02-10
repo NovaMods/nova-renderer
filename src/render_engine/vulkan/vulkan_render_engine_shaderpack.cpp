@@ -658,14 +658,14 @@ namespace nova {
         std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
         dsl_create_infos.reserve(bindings_by_set.size());
         for(size_t i = 0; i < bindings_by_set.size(); i++) {
-            if(bindings_by_set.find(i) == bindings_by_set.end()) {
+            if(bindings_by_set.find(static_cast<uint32_t>(i)) == bindings_by_set.end()) {
                 NOVA_LOG(ERROR) << "Could not get information for descriptor set " << i << "; most likely you skipped"
                                 << " a descriptor set in your shader. Ensure that all shaders for this pipeline together don't have"
                                 << " any gaps in the descriptor sets they declare";
                 throw shader_layout_creation_failed("Descriptor set " + std::to_string(i) + " not present");
             }
 
-            const std::vector<VkDescriptorSetLayoutBinding>& bindings = bindings_by_set[i];
+            const std::vector<VkDescriptorSetLayoutBinding>& bindings = bindings_by_set[static_cast<uint32_t>(i)];
 
             VkDescriptorSetLayoutCreateInfo create_info = {};
             create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -704,7 +704,7 @@ namespace nova {
                     // CLion might tell you to simplify this into a foreach loop... DO NOT! The layouts need to be added in set
                     // order, not map order which is what you'll get if you use a foreach - AND IT'S WRONG
                     for(size_t i = 0; i < pipeline.layouts.size(); i++) {
-                        layouts.push_back(pipeline.layouts.at(static_cast<int32_t>(i)));
+                        layouts.push_back(pipeline.layouts[static_cast<uint32_t>(i)]);
                     }
 
                     VkDescriptorSetAllocateInfo alloc_info = {};

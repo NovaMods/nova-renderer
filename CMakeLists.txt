@@ -179,7 +179,7 @@ set(3RD_PARTY_SOURCE
 # Set platform dependent compile options #
 ##########################################
 if (UNIX)
-    add_compile_options_if_supported(-g -fno-omit-frame-pointer -fPIC -fdiagnostics-color=always)
+    add_compile_options_if_supported(-g -fno-omit-frame-pointer -Wall -Wextra -Wpedantic -Wconversion -fPIC -fdiagnostics-color=always)
 endif()
 
 if(MSVC)

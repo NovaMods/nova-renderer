@@ -54,7 +54,7 @@ namespace nova {
 #endif
 
         RENDERDOC_API_1_3_0* api;
-        const uint32_t ret = get_api(eRENDERDOC_API_Version_1_3_0, reinterpret_cast<void**>(&api));
+        const int32_t ret = get_api(eRENDERDOC_API_Version_1_3_0, reinterpret_cast<void**>(&api));
         if(ret != 1) {
             NOVA_LOG(ERROR) << "Could not load RenderDoc API";
 

@@ -91,7 +91,7 @@ namespace nova {
             mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
             mesh_draw_command.instanceCount = 1;
             mesh_draw_command.firstIndex = 0;
-            mesh_draw_command.vertexOffset = static_cast<uint32_t>(mem->offset);
+            mesh_draw_command.vertexOffset = static_cast<int32_t>(mem->offset);
             mesh_draw_command.firstInstance = 0;
 
             meshes[cmd.mesh_id] = {mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command};
