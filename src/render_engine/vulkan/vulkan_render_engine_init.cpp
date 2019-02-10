@@ -3,9 +3,9 @@
  * \date 06-Feb-19.
  */
 
+#include "swapchain.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
-#include "swapchain.hpp"
 #include <fmt/format.h>
 #include <set>
 

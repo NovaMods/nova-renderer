@@ -3,10 +3,10 @@
  * \date 17-Sep-18.
  */
 
-#include "render_graph_builder.hpp"
-#include <unordered_set>
 #include "../../util/logger.hpp"
 #include "nova/profiler.h"
+#include "render_graph_builder.hpp"
+#include <unordered_set>
 
 namespace nova {
     /*!

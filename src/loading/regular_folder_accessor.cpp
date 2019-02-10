@@ -3,9 +3,9 @@
  * \date 14-Aug-18.
  */
 
-#include <fstream>
-#include "regular_folder_accessor.hpp"
 #include "../util/logger.hpp"
+#include "regular_folder_accessor.hpp"
+#include <fstream>
 
 namespace nova {
     regular_folder_accessor::regular_folder_accessor(const fs::path& folder) : folder_accessor_base(folder) {}

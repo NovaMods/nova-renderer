@@ -3,13 +3,13 @@
  * \date 06-Feb-19.
  */
 
-#include "vulkan_render_engine.hpp"
-#include "vulkan_utils.hpp"
 #include "../../../tests/src/general_test_setup.hpp"
-#include "swapchain.hpp"
-#include "vulkan_type_converters.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
+#include "swapchain.hpp"
+#include "vulkan_render_engine.hpp"
+#include "vulkan_type_converters.hpp"
+#include "vulkan_utils.hpp"
 
 namespace nova {
     enum class barrier_necessity { maybe, yes, no };

@@ -3,10 +3,10 @@
  * \date 12-Sep-18.
  */
 
-#include "shaderpack_validator.hpp"
-#include "../json_utils.hpp"
-#include "../../util/utils.hpp"
 #include "../../../tests/src/general_test_setup.hpp"
+#include "../../util/utils.hpp"
+#include "../json_utils.hpp"
+#include "shaderpack_validator.hpp"
 
 #include <fmt/format.h>
 

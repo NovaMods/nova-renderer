@@ -3,8 +3,8 @@
  * \date 15-Dec-18.
  */
 
-#include <utility>
 #include "task_scheduler.hpp"
+#include <utility>
 
 namespace nova::ttl {
     task_scheduler::per_thread_data::per_thread_data() : task_queue(new wait_free_queue<std::function<void()>>), things_in_queue_mutex(new std::mutex),

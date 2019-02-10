@@ -3,10 +3,10 @@
  * \date 18-May-16.
  */
 
+#include "logger.hpp"
+#include "utils.hpp"
 #include <cstring>
 #include <utility>
-#include "utils.hpp"
-#include "logger.hpp"
 
 namespace nova {
     // taken from https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/

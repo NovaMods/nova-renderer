@@ -7,16 +7,16 @@
 
 #include "nova_renderer.hpp"
 
-#include "util/logger.hpp"
 #include "glslang/MachineIndependent/Initialize.h"
 #include "loading/shaderpack/shaderpack_loading.hpp"
+#include "util/logger.hpp"
 
 #if NOVA_WINDOWS
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif 
 
-#include "render_engine/vulkan/vulkan_render_engine.hpp"
 #include "debugging/renderdoc.hpp"
+#include "render_engine/vulkan/vulkan_render_engine.hpp"
 
 #include "minitrace.h"
 

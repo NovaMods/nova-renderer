@@ -2,12 +2,12 @@
 // Created by jannis on 22.12.18.
 //
 
-#include <execinfo.h>
-#include <cxxabi.h>
-#include <cstring>
-#include <fmt/format.h>
-#include "logger.hpp"
 #include "linux_utils.hpp"
+#include "logger.hpp"
+#include <cstring>
+#include <cxxabi.h>
+#include <execinfo.h>
+#include <fmt/format.h>
 
 void nova_backtrace() {
     std::array<void*, 50> array;
