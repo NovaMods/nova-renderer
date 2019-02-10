@@ -235,7 +235,7 @@ target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
 # Add extra warnings if possible #
 ##################################
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wpedantic -Wconversion -Wno-sign-conversion -Wdefaulted-function-deleted)
+    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wpedantic -Wconversion -Wdefaulted-function-deleted)
 endif()
 
 add_coverage(nova-renderer)
