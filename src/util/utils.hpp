@@ -12,6 +12,7 @@
 #include <string>
 #include <algorithm>
 #include <exception>
+#include <optional>
 
 #include <fstream>
 
@@ -49,7 +50,8 @@ namespace nova {
     class nova_exception : public std::exception {
     private:
         std::string msg;
-        std::exception cause;
+
+        std::string generate_msg(const std::string& msg, const std::optional<std::exception>& exception);
 
     public:
         nova_exception();
