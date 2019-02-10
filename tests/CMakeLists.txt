@@ -11,14 +11,6 @@ if(DEFINED BUILD_SHARED_LIBS AND NOT BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS_ORIGINAL_NOVA ${BUILD_SHARED_LIBS})
 endif()
 
-#####################
-# Setup google test #
-#####################
-set(INSTALL_GTEST OFF)
-set(BUILD_GMOCK OFF CACHE BOOL "Build GMOCK shared library" FORCE)
-add_subdirectory(3rdparty/googletest)
-include(GoogleTest)
-
 # We need threads
 find_package(Threads REQUIRED)
 
