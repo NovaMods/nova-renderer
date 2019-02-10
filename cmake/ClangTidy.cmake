@@ -14,6 +14,12 @@ endif()
 message(STATUS "Found clang-tidy at ${CLANG_TIDY_PROGRAM}")
 set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 
+find_package(Python3)
+
+if(NOT Python3_FOUND)
+	return()
+endif()
+
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/tools/lint.bash.in" "${CMAKE_CURRENT_BINARY_DIR}/tools/unexec/lint.bash" @ONLY NEWLINE_STYLE LF)
 file(COPY "${CMAKE_CURRENT_BINARY_DIR}/tools/unexec/lint.bash"
 	 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/tools"
