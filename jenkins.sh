@@ -35,6 +35,7 @@ cmake ..\
     -DNOVA_TREAT_WARNINGS_AS_ERRORS=On\
     -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7\
     -DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache\
+    -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=gold"\
     -DNOVA_COVERAGE=On\
     -GNinja
 NINJA_STATUS="[%f/%t: %p - %r processes @ %c|%o files/s %es] " nice ninja -j8
