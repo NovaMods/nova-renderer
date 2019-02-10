@@ -39,7 +39,7 @@ namespace nova {
 
     std::string print_color(unsigned int color);
 
-    std::string print_array(int data[], int num_elements);
+    std::string print_array(int* data, int num_elements);
 
     bool ends_with(const std::string &string, const std::string &ending);
 

@@ -293,7 +293,7 @@ namespace nova {
         VkClearValue clear_value = {};
         clear_value.color = {{0, 0, 0, 0}};
 
-        const VkClearValue clear_values[] = {clear_value, clear_value};
+        const std::array<VkClearValue, 2> clear_values = {clear_value, clear_value};
 
         VkRenderPassBeginInfo rp_begin_info = {};
         rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -301,7 +301,7 @@ namespace nova {
         rp_begin_info.framebuffer = renderpass.framebuffer.framebuffer;
         rp_begin_info.renderArea = renderpass.render_area;
         rp_begin_info.clearValueCount = 2;
-        rp_begin_info.pClearValues = clear_values;
+        rp_begin_info.pClearValues = clear_values.data();
 
         if(rp_begin_info.framebuffer == nullptr) {
             rp_begin_info.framebuffer = swapchain->get_current_framebuffer();

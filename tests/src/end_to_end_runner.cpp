@@ -19,9 +19,9 @@ namespace nova {
     int main() {
         TEST_SETUP_LOGGER();
 
-        char buff[FILENAME_MAX];
-        getcwd(buff, FILENAME_MAX);
-        NOVA_LOG(DEBUG) << "Running in " << buff << std::flush;
+        std::array<char, FILENAME_MAX> buff;
+        getcwd(buff.data(), FILENAME_MAX);
+        NOVA_LOG(DEBUG) << "Running in " << buff.data() << std::flush;
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
         settings_options settings;

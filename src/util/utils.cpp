@@ -44,7 +44,7 @@ namespace nova {
         return str.str();
     }
 
-    std::string print_array(int data[], int size) {
+    std::string print_array(int* const data, int size) {
         std::stringstream ss;
 
         for(int i = 0; i < size; i++) {

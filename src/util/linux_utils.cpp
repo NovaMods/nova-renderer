@@ -9,15 +9,14 @@
 #include "linux_utils.hpp"
 
 void nova_backtrace() {
-    void *array[50];
-    int size;
+    std::array<void*, 50> array;
 
     // get void*'s for all entries on the stack
-    size = backtrace(array, 10);
+    int size = backtrace(array.data(), 10);
 
     // print out all the frames to stderr
     NOVA_LOG(ERROR) << "Stacktrace: ";
-    char **data = backtrace_symbols(array, size);
+    char **data = backtrace_symbols(array.data(), size);
 
     for(int i = 0; i < size; i++) {
         std::string str(data[i]);
