@@ -33,8 +33,8 @@ namespace nova {
         float pixel_height = height;
 
         if(dimension_type == texture_dimension_type_enum::ScreenRelative) {
-            pixel_width *= screen_size.x;
-            pixel_height *= screen_size.y;
+            pixel_width *= static_cast<float>(screen_size.x);
+            pixel_height *= static_cast<float>(screen_size.y);
         }
 
         return {std::round(pixel_width), std::round(pixel_height)};

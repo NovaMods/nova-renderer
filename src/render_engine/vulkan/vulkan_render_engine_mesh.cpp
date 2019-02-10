@@ -8,8 +8,8 @@
 
 namespace nova {
     mesh_id_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
-        const uint32_t vertex_size = static_cast<uint32_t>(input_mesh.vertex_data.size()) * sizeof(full_vertex);
-        const uint32_t index_size = static_cast<uint32_t>(input_mesh.indices.size()) * sizeof(uint32_t);
+        const uint32_t vertex_size = static_cast<uint32_t>(input_mesh.vertex_data.size() * sizeof(full_vertex));
+        const uint32_t index_size = static_cast<uint32_t>(input_mesh.indices.size() * sizeof(uint32_t));
 
         // TODO: Make the extra memory allocation configurable
         const uint32_t total_memory_needed = static_cast<uint32_t>(std::round((vertex_size + index_size) * 1.1)); // Extra size so chunks can grow

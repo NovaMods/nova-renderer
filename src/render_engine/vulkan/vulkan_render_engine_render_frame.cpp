@@ -88,7 +88,7 @@ namespace nova {
             vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffer.buffer, mem->block->get_buffer(), 1, &copy);
 
             VkDrawIndexedIndirectCommand mesh_draw_command = {};
-            mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
+            mesh_draw_command.indexCount = static_cast<uint32_t>((cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t));
             mesh_draw_command.instanceCount = 1;
             mesh_draw_command.firstIndex = 0;
             mesh_draw_command.vertexOffset = static_cast<int32_t>(mem->offset);
