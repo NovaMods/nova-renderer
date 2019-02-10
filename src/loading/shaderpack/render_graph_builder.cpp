@@ -40,27 +40,33 @@ namespace nova {
 
     unsigned range::last_used_pass() const {
         unsigned last_pass = 0;
-        if(has_writer())
+        if(has_writer()) {
             last_pass = std::max(last_pass, last_write_pass);
-        if(has_reader())
+        }
+        if(has_reader()) {
             last_pass = std::max(last_pass, last_read_pass);
+        }
         return last_pass;
     }
 
     unsigned range::first_used_pass() const {
         unsigned first_pass = ~0u;
-        if(has_writer())
+        if(has_writer()) {
             first_pass = std::min(first_pass, first_write_pass);
-        if(has_reader())
+        }
+        if(has_reader()) {
             first_pass = std::min(first_pass, first_read_pass);
+        }
         return first_pass;
     }
 
     bool range::is_disjoint_with(const range& other) const {
-        if(!is_used() || !other.is_used())
+        if(!is_used() || !other.is_used()) {
             return false;
-        if(!can_alias() || !other.can_alias())
+        }
+        if(!can_alias() || !other.can_alias()) {
             return false;
+        }
 
         const bool left = last_used_pass() < other.first_used_pass();
         const bool right = other.last_used_pass() < first_used_pass();
