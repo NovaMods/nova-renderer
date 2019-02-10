@@ -46,7 +46,7 @@ namespace nova {
             }
         }
 
-        const auto get_api = (pRENDERDOC_GetAPI) dlsym(renderdoc_so, "RENDERDOC_GetAPI");
+        const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(renderdoc_so, "RENDERDOC_GetAPI"));
         if(!get_api) {
             NOVA_LOG(ERROR) << "Could not find the RenderDoc API loading function. Error: " << dlerror();
             return nullptr;

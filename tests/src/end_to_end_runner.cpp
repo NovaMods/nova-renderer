@@ -79,7 +79,7 @@ namespace nova {
 
 
 int main() {
-#ifdef __linux__
+#ifdef NOVA_LINUX
     signal(SIGSEGV, sigsegv_handler);
     signal(SIGABRT, sigabrt_handler);
 #endif
@@ -88,6 +88,7 @@ int main() {
 
 #ifdef __linux__
 void sigsegv_handler(int sig) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     signal(sig, SIG_IGN);
 
     std::cerr << "!!!SIGSEGV!!!" << std::endl;
@@ -97,6 +98,7 @@ void sigsegv_handler(int sig) {
 }
 
 void sigabrt_handler(int sig) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     signal(sig, SIG_IGN);
 
     std::cerr << "!!!SIGABRT!!!" << std::endl;

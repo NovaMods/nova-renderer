@@ -15,7 +15,9 @@ namespace nova {
             throw window_creation_error("Failed to open XDisplay");
         }
 
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         int screen = DefaultScreen(display);
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         window = XCreateSimpleWindow(display, RootWindow(display, screen), 50, 50, width, height, 1, BlackPixel(display, screen), WhitePixel(display, screen));
 
         wm_protocols = XInternAtom(display, "WM_PROTOCOLS", false);
@@ -46,7 +48,7 @@ namespace nova {
             XNextEvent(display, &event);
             switch(event.type) {
                 case ClientMessage: {
-                    if(event.xclient.message_type == wm_protocols && event.xclient.data.l[0] == (long) wm_delete_window) {
+                    if(event.xclient.message_type == wm_protocols && event.xclient.data.l[0] == static_cast<long>(wm_delete_window)) {
                         should_window_close = true;
                     }
                     break;
