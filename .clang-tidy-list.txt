@@ -22,6 +22,7 @@ readability*
 -*-pro-bounds-pointer-arithmetic
 -*-pro-type-reinterpret-cast
 -*-pro-type-union-access
+-*-readability-todo
 -*-runtime-int
 -*-runtime-references
 -*-string-constructor

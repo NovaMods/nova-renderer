@@ -24,6 +24,7 @@ readability*
 -*-pro-type-reinterpret-cast
 -*-pro-type-union-access
 -*-pro-type-vararg
+-*-readability-todo
 -*-runtime-int
 -*-runtime-references
 -*-special-member-functions
