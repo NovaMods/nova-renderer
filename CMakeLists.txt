@@ -224,7 +224,7 @@ source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE})
 # Setup the nova library #
 ##########################
 add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
-# clang_format(nova-renderer NOVA_SOURCE) <= TODO: Uncomment when .clang-format is perfect
+# format(nova-renderer NOVA_SOURCE) <= TODO: Uncomment when .clang-format is perfect
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
