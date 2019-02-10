@@ -1,10 +1,10 @@
 ---
-Checks:          '-*non-private-member-variables-in-classes,boost*,bugprone*,cert*,-cert-dcl59-cpp,-cert-err58-cpp,clang-analizer-*,clang-analyzer-*,clang-diagnostic-*,cppcoreguidelines*,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-type-member-init,-cppcoreguidelines-pro-type-union-access,google*,-google-build-namespaces,-google-runtime-int,-google-runtime-references,llvm*,-llvm-header-guard,misc*,modernize*,performance*,-performance-move-const-arg,readability*'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*non-private-member-variables-in-classes,boost*,bugprone*,cert*,-cert-dcl59-cpp,-cert-err58-cpp,clang-analizer-*,cppcoreguidelines*,google*,-google-runtime-int,hicpp-multiway-paths-covered,hicpp-signed-bitwise,llvm*,-llvm-header-guard,misc*,modernize*,performance*,-performance-move-const-arg,readability*'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
-User:            nova
+User:            connor
 CheckOptions:    
   - key:             bugprone-argument-comment.StrictMode
     value:           '0'
@@ -48,8 +48,6 @@ CheckOptions:
     value:           '0'
   - key:             bugprone-unused-return-value.CheckedFunctions
     value:           '::std::async;::std::launder;::std::remove;::std::remove_if;::std::unique;::std::unique_ptr::release;::std::basic_string::empty;::std::vector::empty'
-  - key:             cert-dcl16-c.IgnoreMacros
-    value:           '1'
   - key:             cert-dcl16-c.NewSuffixes
     value:           'L;LL;LU;LLU'
   - key:             cert-err09-cpp.CheckThrowTemporaries
@@ -84,10 +82,18 @@ CheckOptions:
     value:           '::free;::realloc;::freopen;::fclose'
   - key:             cppcoreguidelines-owning-memory.LegacyResourceProducers
     value:           '::malloc;::aligned_alloc;::realloc;::calloc;::fopen;::freopen;::tmpfile'
+  - key:             cppcoreguidelines-pro-bounds-constant-array-index.GslHeader
+    value:           ''
+  - key:             cppcoreguidelines-pro-bounds-constant-array-index.IncludeStyle
+    value:           '0'
+  - key:             cppcoreguidelines-pro-type-member-init.IgnoreArrays
+    value:           '0'
   - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
     value:           '0'
   - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
     value:           '0'
+  - key:             google-build-namespaces.HeaderFileExtensions
+    value:           ',h,hh,hpp,hxx'
   - key:             google-global-names-in-headers.HeaderFileExtensions
     value:           ',h,hh,hpp,hxx'
   - key:             google-readability-braces-around-statements.ShortStatementLines
@@ -108,12 +114,10 @@ CheckOptions:
     value:           '10'
   - key:             google-readability-namespace-comments.SpacesBeforeComments
     value:           '2'
-  - key:             google-runtime-int.SignedTypePrefix
-    value:           int
-  - key:             google-runtime-int.TypeSuffix
+  - key:             google-runtime-references.WhiteListTypes
     value:           ''
-  - key:             google-runtime-int.UnsignedTypePrefix
-    value:           uint
+  - key:             hicpp-multiway-paths-covered.WarnOnMissingElse
+    value:           '0'
   - key:             llvm-namespace-comment.ShortNamespaceLines
     value:           '1'
   - key:             llvm-namespace-comment.SpacesBeforeComments
@@ -135,7 +139,7 @@ CheckOptions:
   - key:             modernize-make-shared.IgnoreMacros
     value:           '1'
   - key:             modernize-make-shared.IncludeStyle
-    value:           '1'
+    value:           '0'
   - key:             modernize-make-shared.MakeSmartPtrFunction
     value:           'std::make_shared'
   - key:             modernize-make-shared.MakeSmartPtrFunctionHeader
@@ -143,7 +147,7 @@ CheckOptions:
   - key:             modernize-make-unique.IgnoreMacros
     value:           '1'
   - key:             modernize-make-unique.IncludeStyle
-    value:           '1'
+    value:           '0'
   - key:             modernize-make-unique.MakeSmartPtrFunction
     value:           'std::make_unique'
   - key:             modernize-make-unique.MakeSmartPtrFunctionHeader
@@ -246,8 +250,6 @@ CheckOptions:
     value:           '::std::basic_string;::std::basic_string_view;::std::vector;::std::array'
   - key:             readability-static-accessed-through-instance.NameSpecifierNestingThreshold
     value:           '3'
-  - key:             readability-uppercase-literal-suffix.IgnoreMacros
-    value:           '1'
   - key:             readability-uppercase-literal-suffix.NewSuffixes
     value:           ''
 ...
