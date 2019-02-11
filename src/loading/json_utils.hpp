@@ -114,8 +114,9 @@ namespace nova {
             return value;
         }
 
-        using namespace std;
+        using std::to_string;
         NOVA_LOG(DEBUG) << key << " not found - defaulting to " << to_string(default_value);
+
         return default_value;
     }
 
