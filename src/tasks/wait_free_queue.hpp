@@ -56,6 +56,7 @@ namespace nova {
         class circular_array {
         public:
             explicit circular_array(std::size_t n) : items(n) {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
                 assert(n != 0 && !(n & (n - 1)) && "n must be a power of 2");
             }
 
