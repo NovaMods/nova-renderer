@@ -54,7 +54,7 @@ if [ `cat fixes.yaml | wc -c` -eq 0 ]; then
     echo "No linting warnings found."
 else 
     echo "Lining warnings found. Aborting."
-    # exit 1
+    exit 1
 fi
 cd ..
 
@@ -70,7 +70,7 @@ if [ `git status --porcelain src tests | wc -c` -eq 0 ]; then
 else
     echo "Formatting errors found."
     git diff src tests --numstat
-    # exit 1
+    exit 1
 fi
 
 cd build-gcc
