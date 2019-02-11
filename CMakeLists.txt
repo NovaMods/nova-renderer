@@ -134,6 +134,7 @@ set(NOVA_SOURCE
         src/tasks/condition_counter.hpp
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
+        src/debugging/renderdoc_app.h
 
 
         )
