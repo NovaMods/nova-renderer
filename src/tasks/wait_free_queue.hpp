@@ -162,12 +162,12 @@ namespace nova {
                 /* Non-empty queue. */
                 circular_array *array = m_array.load(std::memory_order_consume);
                 *value = array->get(t);
-                if(!std::atomic_compare_exchange_strong_explicit(&m_top, &t, t + 1, std::memory_order_seq_cst, std::memory_order_relaxed)) {
-                    /* Failed race. */
-                    return false;
-                }
 
-                return true;
+                return std::atomic_compare_exchange_strong_explicit(&m_top,
+                                                                    &t,
+                                                                    t + 1,
+                                                                    std::memory_order_seq_cst,
+                                                                    std::memory_order_relaxed);
             }
 
             return false;
