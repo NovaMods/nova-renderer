@@ -39,7 +39,7 @@ namespace nova {
 
     std::string print_color(unsigned int color);
 
-    std::string print_array(int *data, int num_elements);
+    std::string print_array(int *data, int size);
 
     bool ends_with(const std::string &string, const std::string &ending);
 
@@ -55,21 +55,22 @@ namespace nova {
 
     public:
         nova_exception();
-        explicit nova_exception(std::string msg);
+        explicit nova_exception(const std::string &msg);
 
         explicit nova_exception(const std::exception &cause);
-        nova_exception(std::string msg, const std::exception &cause);
-        const char *what() const noexcept override;
+        nova_exception(const std::string &msg, const std::exception &cause);
+        [[nodiscard]] const char *what() const noexcept override;
     };
 
-#define NOVA_EXCEPTION(name)                                                                                                                                                                                                                             \
-    class name : public ::nova::nova_exception {                                                                                                                                                                                                         \
-    public:                                                                                                                                                                                                                                              \
-        name(){};                                                                                                                                                                                                                                        \
-        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)){};                                                                                                                                                                       \
-                                                                                                                                                                                                                                                         \
-        explicit name(const std::exception &cause) : ::nova::nova_exception(cause){};                                                                                                                                                                    \
-        name(std::string msg, const std::exception &cause) : ::nova::nova_exception(std::move(msg), cause){};                                                                                                                                            \
+#define NOVA_EXCEPTION(name)                                                                                                               \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses)*/                                                                                        \
+    class name : public ::nova::nova_exception {                                                                                           \
+    public:                                                                                                                                \
+        name(){};                                                                                                                          \
+        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)){};                                                         \
+                                                                                                                                           \
+        explicit name(const std::exception &cause) : ::nova::nova_exception(cause){};                                                      \
+        name(std::string msg, const std::exception &cause) : ::nova::nova_exception(std::move(msg), cause){};                              \
     }
 
     NOVA_EXCEPTION(out_of_gpu_memory);

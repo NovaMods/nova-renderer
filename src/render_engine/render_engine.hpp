@@ -65,7 +65,7 @@ namespace nova {
          */
         virtual ~render_engine() = default;
 
-        virtual std::shared_ptr<iwindow> get_window() const = 0;
+        [[nodiscard]] virtual std::shared_ptr<iwindow> get_window() const = 0;
 
         /*!
          * \brief Loads the specified shaderpack, building API-specific data structures

@@ -10,7 +10,7 @@
 #include <fmt/format.h>
 
 void nova_backtrace() {
-    std::array<void *, 50> array;
+    std::array<void *, 50> array{};
 
     // get void*'s for all entries on the stack
     int size = backtrace(array.data(), 10);
@@ -35,7 +35,8 @@ void nova_backtrace() {
                     // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
                     free(name);
                 }
-            } catch(const std::exception &e) {
+            }
+            catch(const std::exception &e) {
                 NOVA_LOG(WARN) << "Demangle failed: " << e.what() << std::endl;
             }
         }
@@ -52,7 +53,7 @@ void nova_backtrace() {
 
 std::string get_last_linux_error() {
     char *errstr = strerror(errno);
-    if(!errstr) {
+    if(errstr == nullptr) {
         return std::string("unkown error");
     }
     errno = 0;

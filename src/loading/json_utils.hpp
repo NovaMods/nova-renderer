@@ -80,7 +80,9 @@ namespace nova {
      * \return An optional that contains the value, if it can be found, or an empty optional if the value cannot be found
      */
     template <typename ValType>
-    std::optional<ValType> get_json_value(const nlohmann::json &json_obj, const std::string &key, std::function<ValType(const nlohmann::json &)> deserializer) {
+    std::optional<ValType> get_json_value(const nlohmann::json &json_obj,
+                                          const std::string &key,
+                                          std::function<ValType(const nlohmann::json &)> deserializer) {
         const auto &itr = json_obj.find(key);
         if(itr != json_obj.end()) {
             auto &json_node = json_obj.at(key);
@@ -101,7 +103,10 @@ namespace nova {
      * \return The value from the JSON if the key exists in the JSON, or `default_value` if it does not
      */
     template <typename ValType>
-    ValType get_json_value(const nlohmann::json &json_obj, const std::string &key, ValType default_value, std::function<ValType(const nlohmann::json &)> deserializer) {
+    ValType get_json_value(const nlohmann::json &json_obj,
+                           const std::string &key,
+                           ValType default_value,
+                           std::function<ValType(const nlohmann::json &)> deserializer) {
         const auto &itr = json_obj.find(key);
         if(itr != json_obj.end()) {
             auto &json_node = json_obj.at(key);
@@ -148,7 +153,9 @@ namespace nova {
      * \return An array of values, if the value can be found, or an empty vector if the values cannot be found
      */
     template <typename ValType>
-    std::vector<ValType> get_json_array(const nlohmann::json &json_obj, const std::string &key, std::function<ValType(const nlohmann::json &)> deserializer) {
+    std::vector<ValType> get_json_array(const nlohmann::json &json_obj,
+                                        const std::string &key,
+                                        std::function<ValType(const nlohmann::json &)> deserializer) {
         const auto &itr = json_obj.find(key);
         if(itr != json_obj.end()) {
             auto &json_node = json_obj.at(key);

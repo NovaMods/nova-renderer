@@ -1258,7 +1258,8 @@ TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field destinationBlendFactor. A default value of '\"Zero\"' will be used");
+    EXPECT_EQ(report.warnings[0],
+              "Pipeline TestPipeline: Missing field destinationBlendFactor. A default value of '\"Zero\"' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingAlphaSrc) {
@@ -1660,7 +1661,8 @@ TEST(GraphicsPipelineValidator, MissingTessellationEvaluationShader) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationEvaluationShader. A default value of '\"\"' will be used");
+    EXPECT_EQ(report.warnings[0],
+              "Pipeline TestPipeline: Missing field tessellationEvaluationShader. A default value of '\"\"' will be used");
 }
 
 TEST(GraphicsPipelineValidator, MissingGeometryShader) {
@@ -1860,7 +1862,8 @@ TEST(ResourcesValidator, TextureMissing) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Resources file: Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message");
+    EXPECT_EQ(report.warnings[0],
+              "Resources file: Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message");
 }
 
 TEST(ResourcesValidator, SamplersMissing) {
@@ -1892,7 +1895,9 @@ TEST(ResourcesValidator, SamplersMissing) {
     EXPECT_EQ(report.warnings.size(), 0);
 
     ASSERT_EQ(report.errors.size(), 1);
-    EXPECT_EQ(report.errors[0], "Resources file: No samplers defined, but dynamic textures are defined. You need to define your own samplers to access a texture with");
+    EXPECT_EQ(
+        report.errors[0],
+        "Resources file: No samplers defined, but dynamic textures are defined. You need to define your own samplers to access a texture with");
 }
 
 TEST(ResourcesValidator, TextureWarningsPropagate) {
@@ -2133,7 +2138,8 @@ TEST(TextureFormatValidator, DimensionTypeMissing) {
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field dimensionType. A default value of '\"Absolute\"' will be used");
+    EXPECT_EQ(report.warnings[0],
+              "Format of texture TestTexture: Missing field dimensionType. A default value of '\"Absolute\"' will be used");
 
     EXPECT_EQ(texture_format.at("dimensionType").get<std::string>(), "Absolute");
 }

@@ -50,7 +50,7 @@ namespace nova {
 
         nova_settings &get_settings();
 
-        render_engine *get_engine() const;
+        [[nodiscard]] render_engine *get_engine() const;
 
         ttl::task_scheduler &get_task_scheduler();
 

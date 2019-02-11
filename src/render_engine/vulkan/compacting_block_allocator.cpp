@@ -11,7 +11,8 @@
 namespace nova {
     uint32_t compacting_block_allocator::block_allocator_buffer::next_id = 0;
 
-    compacting_block_allocator::block_allocator_buffer::block_allocator_buffer(const VkDeviceSize size, VmaAllocator allocator) : allocator(allocator), id(next_id++), size(size) {
+    compacting_block_allocator::block_allocator_buffer::block_allocator_buffer(const VkDeviceSize size, VmaAllocator allocator)
+        : allocator(allocator), id(next_id++), size(size) {
         VmaAllocationCreateInfo allocate_info = {};
         allocate_info.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
         allocate_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -21,7 +22,8 @@ namespace nova {
         buffer_info.size = size;
         buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(allocator, &buffer_info, &allocate_info, &buffer, &vma_allocation, &vma_allocation_info), buffer_allocation_failed);
+        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(allocator, &buffer_info, &allocate_info, &buffer, &vma_allocation, &vma_allocation_info),
+                               buffer_allocation_failed);
 
         // Setup the first block.
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
@@ -34,12 +36,14 @@ namespace nova {
     }
 
     compacting_block_allocator::block_allocator_buffer::block_allocator_buffer(block_allocator_buffer &&other) noexcept
-        : head(other.head), allocator(other.allocator), id(other.id), next_block_id(other.next_block_id), buffer(other.buffer), vma_allocation(other.vma_allocation), vma_allocation_info(other.vma_allocation_info), size(other.size),
+        : head(other.head), allocator(other.allocator), id(other.id), next_block_id(other.next_block_id), buffer(other.buffer),
+          vma_allocation(other.vma_allocation), vma_allocation_info(other.vma_allocation_info), size(other.size),
           allocated(other.allocated) {
         other.buffer = VK_NULL_HANDLE;
     }
 
-    compacting_block_allocator::block_allocator_buffer &compacting_block_allocator::block_allocator_buffer::operator=(block_allocator_buffer &&other) noexcept {
+    compacting_block_allocator::block_allocator_buffer &compacting_block_allocator::block_allocator_buffer::operator=(
+        block_allocator_buffer &&other) noexcept {
         head = other.head;
         id = other.id;
         next_block_id = other.next_block_id;
@@ -69,19 +73,18 @@ namespace nova {
                 // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                 delete current;
                 break;
-
-            } else {
-                prev = current;
-                current = current->next;
-                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-                delete prev;
             }
+            prev = current;
+            current = current->next;
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
+            delete prev;
         }
 
         head = nullptr;
     }
 
-    compacting_block_allocator::allocation_info *compacting_block_allocator::block_allocator_buffer::allocate(const VkDeviceSize needed_size) {
+    compacting_block_allocator::allocation_info *compacting_block_allocator::block_allocator_buffer::allocate(
+        const VkDeviceSize needed_size) {
         return allocate_internal(needed_size, true);
     }
 
@@ -94,17 +97,18 @@ namespace nova {
         }
 
         if(current == nullptr) {
-            NOVA_LOG(ERROR) << "compacting_block_allocator::block_allocator_buffer::free: Tried to free an unknown allocation. AllocatorL " << this << " block ID: " << alloc->block_id;
+            NOVA_LOG(ERROR) << "compacting_block_allocator::block_allocator_buffer::free: Tried to free an unknown allocation. AllocatorL "
+                            << this << " block ID: " << alloc->block_id;
             return;
         }
 
         current->free = true;
 
-        if(current->prev && current->prev->free) {
+        if((current->prev != nullptr) && current->prev->free) {
             block_t *prev = current->prev;
 
             prev->next = current->next;
-            if(current->next) {
+            if(current->next != nullptr) {
                 current->next->prev = prev;
             }
 
@@ -115,10 +119,10 @@ namespace nova {
             current = prev;
         }
 
-        if(current->next && current->next->free) {
+        if((current->next != nullptr) && current->next->free) {
             block_t *next = current->next;
 
-            if(next->next) {
+            if(next->next != nullptr) {
                 next->next->prev = current;
             }
 
@@ -137,7 +141,8 @@ namespace nova {
         return buffer;
     }
 
-    compacting_block_allocator::allocation_info *compacting_block_allocator::block_allocator_buffer::allocate_internal(VkDeviceSize needed_size, bool can_compact) {
+    compacting_block_allocator::allocation_info *compacting_block_allocator::block_allocator_buffer::allocate_internal(
+        VkDeviceSize needed_size, bool can_compact) {
         const VkDeviceSize free_size = needed_size - allocated;
         if(free_size < needed_size) {
             return nullptr;
@@ -179,10 +184,8 @@ namespace nova {
             if(can_compact) {
                 compact_all_memory();
                 return allocate_internal(needed_size, false);
-
-            } else {
-                return nullptr;
             }
+            return nullptr;
         }
 
         if(best_fit->size > needed_size) {
@@ -195,7 +198,7 @@ namespace nova {
             best_fit->next = chunk;
 
             chunk->next = next;
-            if(next) {
+            if(next != nullptr) {
                 next->prev = chunk;
             }
 
@@ -235,8 +238,8 @@ namespace nova {
 
                 // Don't read from memory that's free
                 amount_compacted += current->size;
-
-            } else {
+            }
+            else {
                 if(amount_compacted > 0) {
                     // The write and read pointers are different, which means that we need to move the current
                     // allocation back to fill the empty space
@@ -266,7 +269,10 @@ namespace nova {
         }
     }
 
-    compacting_block_allocator::compacting_block_allocator(const settings_options::block_allocator_settings &settings, VmaAllocator vma_allocator, const uint32_t graphics_queue_idx, const uint32_t copy_queue_idx)
+    compacting_block_allocator::compacting_block_allocator(const settings_options::block_allocator_settings &settings,
+                                                           VmaAllocator vma_allocator,
+                                                           const uint32_t graphics_queue_idx,
+                                                           const uint32_t copy_queue_idx)
         : settings(settings), vma_allocator(vma_allocator), graphics_queue_idx(graphics_queue_idx), copy_queue_idx(copy_queue_idx) {
 
         pools.emplace_back(block_allocator_buffer{settings.new_buffer_size, vma_allocator});
@@ -311,7 +317,16 @@ namespace nova {
             barriers.push_back(barrier);
         }
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, static_cast<uint32_t>(pools.size()), barriers.data(), 0, nullptr);
+        vkCmdPipelineBarrier(cmds,
+                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VK_DEPENDENCY_BY_REGION_BIT,
+                             0,
+                             nullptr,
+                             static_cast<uint32_t>(pools.size()),
+                             barriers.data(),
+                             0,
+                             nullptr);
     }
 
     void compacting_block_allocator::add_barriers_after_data_upload(VkCommandBuffer cmds) const {
@@ -331,6 +346,15 @@ namespace nova {
             barriers.push_back(barrier);
         }
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, static_cast<uint32_t>(pools.size()), barriers.data(), 0, nullptr);
+        vkCmdPipelineBarrier(cmds,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                             VK_DEPENDENCY_BY_REGION_BIT,
+                             0,
+                             nullptr,
+                             static_cast<uint32_t>(pools.size()),
+                             barriers.data(),
+                             0,
+                             nullptr);
     }
 } // namespace nova

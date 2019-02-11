@@ -14,7 +14,7 @@ namespace nova {
     zip_folder_accessor::zip_folder_accessor(const fs::path &folder) : folder_accessor_base(folder), files(new file_tree_node) {
         const auto folder_string = folder.string();
 
-        if(!mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0)) {
+        if(mz_zip_reader_init_file(&zip_archive, folder_string.c_str(), 0) == 0) {
             NOVA_LOG(DEBUG) << "Could not open zip archive " << folder_string;
             throw resource_not_found_exception(folder_string);
         }
@@ -44,7 +44,7 @@ namespace nova {
 
         mz_zip_archive_file_stat file_stat = {};
         const mz_bool has_file_stat = mz_zip_reader_file_stat(&zip_archive, file_idx, &file_stat);
-        if(!has_file_stat) {
+        if(has_file_stat == 0) {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             const std::string err = mz_zip_get_error_string(err_code);
 
@@ -55,8 +55,12 @@ namespace nova {
         std::vector<char> resource_buffer;
         resource_buffer.reserve(static_cast<uint64_t>(file_stat.m_uncomp_size));
 
-        const mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive, file_idx, resource_buffer.data(), resource_buffer.size(), 0);
-        if(!file_extracted) {
+        const mz_bool file_extracted = mz_zip_reader_extract_to_mem(&zip_archive,
+                                                                    file_idx,
+                                                                    resource_buffer.data(),
+                                                                    resource_buffer.size(),
+                                                                    0);
+        if(file_extracted == 0) {
             const mz_zip_error err_code = mz_zip_get_last_error(&zip_archive);
             const std::string err = mz_zip_get_error_string(err_code);
 
@@ -157,12 +161,10 @@ namespace nova {
             resource_indexes.emplace(resource_string, ret_val);
             resource_existence.emplace(resource_string, true);
             return true;
-
-        } else {
-            // resource not found
-            resource_existence.emplace(resource_string, false);
-            return false;
         }
+        // resource not found
+        resource_existence.emplace(resource_string, false);
+        return false;
     }
 
     void print_file_tree(const std::unique_ptr<file_tree_node> &folder, uint32_t depth) {

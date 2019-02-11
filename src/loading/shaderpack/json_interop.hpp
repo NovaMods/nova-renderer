@@ -31,7 +31,7 @@ namespace nova {
 
     void from_json(const nlohmann::json &j, material_pass &pass);
 
-    void from_json(const nlohmann::json &j, material_data &pass);
+    void from_json(const nlohmann::json &j, material_data &mat);
 } // namespace nova
 
 #endif // NOVA_RENDERER_JSON_INTEROP_HPP

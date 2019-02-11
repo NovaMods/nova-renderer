@@ -9,7 +9,10 @@
 namespace nova {
     void from_json(const nlohmann::json &j, texture_format &format) {
         format.pixel_format = get_json_value<pixel_format_enum>(j, "pixelFormat", pixel_format_enum::RGBA8, pixel_format_enum_from_string);
-        format.dimension_type = get_json_value<texture_dimension_type_enum>(j, "dimensionType", texture_dimension_type_enum::ScreenRelative, texture_dimension_type_enum_from_string);
+        format.dimension_type = get_json_value<texture_dimension_type_enum>(j,
+                                                                            "dimensionType",
+                                                                            texture_dimension_type_enum::ScreenRelative,
+                                                                            texture_dimension_type_enum_from_string);
         format.width = get_json_value<float>(j, "width").value_or(0);
         format.height = get_json_value<float>(j, "height").value_or(0);
     }
@@ -69,13 +72,25 @@ namespace nova {
         pipeline.stencil_read_mask = get_json_value<uint32_t>(j, "stencilReadMask", 0);
         pipeline.stencil_write_mask = get_json_value<uint32_t>(j, "stencilWriteMask", 0);
         pipeline.msaa_support = get_json_value<msaa_support_enum>(j, "msaaSupport", msaa_support_enum::None, msaa_support_enum_from_string);
-        pipeline.primitive_mode = get_json_value<primitive_topology_enum>(j, "primitiveMode", primitive_topology_enum::Triangles, primitive_topology_enum_from_string);
-        pipeline.source_blend_factor = get_json_value<blend_factor_enum>(j, "sourceBlendFactor", blend_factor_enum::One, blend_factor_enum_from_string);
-        pipeline.destination_blend_factor = get_json_value<blend_factor_enum>(j, "destBlendFactor", blend_factor_enum::Zero, blend_factor_enum_from_string);
+        pipeline.primitive_mode = get_json_value<primitive_topology_enum>(j,
+                                                                          "primitiveMode",
+                                                                          primitive_topology_enum::Triangles,
+                                                                          primitive_topology_enum_from_string);
+        pipeline.source_blend_factor = get_json_value<blend_factor_enum>(j,
+                                                                         "sourceBlendFactor",
+                                                                         blend_factor_enum::One,
+                                                                         blend_factor_enum_from_string);
+        pipeline.destination_blend_factor = get_json_value<blend_factor_enum>(j,
+                                                                              "destBlendFactor",
+                                                                              blend_factor_enum::Zero,
+                                                                              blend_factor_enum_from_string);
         pipeline.alpha_src = get_json_value<blend_factor_enum>(j, "alphaSrc", blend_factor_enum::One, blend_factor_enum_from_string);
         pipeline.alpha_dst = get_json_value<blend_factor_enum>(j, "alphaDest", blend_factor_enum::Zero, blend_factor_enum_from_string);
         pipeline.depth_func = get_json_value<compare_op_enum>(j, "depthFunc", compare_op_enum::Less, compare_op_enum_from_string);
-        pipeline.render_queue = get_json_value<render_queue_enum>(j, "renderQueue", render_queue_enum::Opaque, render_queue_enum_from_string);
+        pipeline.render_queue = get_json_value<render_queue_enum>(j,
+                                                                  "renderQueue",
+                                                                  render_queue_enum::Opaque,
+                                                                  render_queue_enum_from_string);
 
         pipeline.vertex_shader.filename = get_json_value<std::string>(j, "vertexShader").value_or("<NAME_MISSING>");
 

@@ -123,12 +123,12 @@ namespace nova {
             /*!
              * \brief The width of the window
              */
-            uint32_t width;
+            uint32_t width{};
 
             /*!
              * \brief The height of the window
              */
-            uint32_t height;
+            uint32_t height{};
         } window;
 
         /*!
@@ -222,7 +222,7 @@ namespace nova {
         void register_change_listener(iconfig_listener *new_listener);
 
         settings_options &get_options();
-        settings_options get_options() const;
+        [[nodiscard]] settings_options get_options() const;
 
         /*!
          * \brief Updates all the change listeners with the current state of the settings

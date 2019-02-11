@@ -7,11 +7,14 @@
 #include <utility>
 
 namespace nova::ttl {
-    task_scheduler::per_thread_data::per_thread_data() : task_queue(new wait_free_queue<std::function<void()>>), things_in_queue_mutex(new std::mutex), things_in_queue_cv(new std::condition_variable), is_sleeping(new std::atomic<bool>(false)) {
+    task_scheduler::per_thread_data::per_thread_data()
+        : task_queue(new wait_free_queue<std::function<void()>>), things_in_queue_mutex(new std::mutex),
+          things_in_queue_cv(new std::condition_variable), is_sleeping(new std::atomic<bool>(false)) {
     }
 
     task_scheduler::task_scheduler(const uint32_t num_threads, const empty_queue_behavior /* behavior */)
-        : num_threads(num_threads), should_shutdown(new std::atomic<bool>(false)), initialized_mutex(new std::mutex), initialized_cv(new std::condition_variable) {
+        : num_threads(num_threads), should_shutdown(new std::atomic<bool>(false)), initialized_mutex(new std::mutex),
+          initialized_cv(new std::condition_variable) {
         threads.reserve(num_threads);
         thread_local_data.resize(num_threads);
 
@@ -69,7 +72,8 @@ namespace nova::ttl {
             }
 
             thread_idx = last_task_queue_index++;
-        } else if(behavior_of_task_queue_search == task_queue_search_behavior::MOST_EMPTY) {
+        }
+        else if(behavior_of_task_queue_search == task_queue_search_behavior::MOST_EMPTY) {
             size_t lowest_size = std::numeric_limits<size_t>::max();
             for(size_t i = 0; i < thread_local_data.size(); i++) {
                 size_t size = thread_local_data[i].task_queue->size();
@@ -148,7 +152,8 @@ namespace nova::ttl {
 
             if(success) {
                 next_task();
-            } else {
+            }
+            else {
                 // We failed to find a Task from any of the queues
                 // What we do now depends on behavior_of_empty_queues, which we loaded above
                 switch(behavior) {

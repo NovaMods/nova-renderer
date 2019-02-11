@@ -11,17 +11,25 @@
 namespace nova {
     x11_window::x11_window(uint32_t width, uint32_t height) {
         display = XOpenDisplay(nullptr);
-        if(!display) {
+        if(display == nullptr) {
             throw window_creation_error("Failed to open XDisplay");
         }
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         int screen = DefaultScreen(display);
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
-        window = XCreateSimpleWindow(display, RootWindow(display, screen), 50, 50, width, height, 1, BlackPixel(display, screen), WhitePixel(display, screen));
+        window = XCreateSimpleWindow(display,
+                                     RootWindow(display, screen),
+                                     50,
+                                     50,
+                                     width,
+                                     height,
+                                     1,
+                                     BlackPixel(display, screen),
+                                     WhitePixel(display, screen));
 
-        wm_protocols = XInternAtom(display, "WM_PROTOCOLS", false);
-        wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", false);
+        wm_protocols = XInternAtom(display, "WM_PROTOCOLS", 0);
+        wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", 0);
         XSetWMProtocols(display, window, &wm_delete_window, 1);
 
         XSelectInput(display, window, ExposureMask | ButtonPressMask | KeyPressMask);
@@ -44,7 +52,7 @@ namespace nova {
 
     void x11_window::on_frame_end() {
         XEvent event;
-        while(XPending(display)) {
+        while(XPending(display) != 0) {
             XNextEvent(display, &event);
             switch(event.type) {
                 case ClientMessage: {

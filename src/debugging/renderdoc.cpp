@@ -37,17 +37,17 @@ namespace nova {
 
 #elif NOVA_LINUX
         void *renderdoc_so = dlopen(renderdoc_dll_path.c_str(), RTLD_NOW);
-        if(!renderdoc_so) {
+        if(renderdoc_so == nullptr) {
             // Try to load system-wide version of renderdoc
             renderdoc_so = dlopen("librenderdoc.so", RTLD_NOW);
-            if(!renderdoc_so) {
+            if(renderdoc_so == nullptr) {
                 NOVA_LOG(ERROR) << "Could not load RenderdDoc. Error: " << dlerror();
                 return nullptr;
             }
         }
 
         const auto get_api = reinterpret_cast<pRENDERDOC_GetAPI>(dlsym(renderdoc_so, "RENDERDOC_GetAPI"));
-        if(!get_api) {
+        if(get_api == nullptr) {
             NOVA_LOG(ERROR) << "Could not find the RenderDoc API loading function. Error: " << dlerror();
             return nullptr;
         }

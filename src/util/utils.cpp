@@ -57,9 +57,8 @@ namespace nova {
     bool ends_with(const std::string &string, const std::string &ending) {
         if(string.length() >= ending.length()) {
             return (0 == string.compare(string.length() - ending.length(), ending.length(), ending));
-        } else {
-            return false;
         }
+        return false;
     }
 
     void write_to_file(const std::string &data, const fs::path &filepath) {
@@ -84,10 +83,10 @@ namespace nova {
     nova_exception::nova_exception(const std::exception &cause) : msg(generate_msg("", cause)) {
     }
 
-    nova_exception::nova_exception(std::string msg) : msg(generate_msg(msg, std::nullopt)) {
+    nova_exception::nova_exception(const std::string &msg) : msg(generate_msg(msg, std::nullopt)) {
     }
 
-    nova_exception::nova_exception(std::string msg, const std::exception &cause) : msg(generate_msg(msg, cause)) {
+    nova_exception::nova_exception(const std::string &msg, const std::exception &cause) : msg(generate_msg(msg, cause)) {
     }
 
     std::string nova_exception::generate_msg(const std::string &msg, const std::optional<std::exception> &exception) {

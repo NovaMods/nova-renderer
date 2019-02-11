@@ -28,27 +28,27 @@
 #include "../../src/util/logger.hpp"
 
 #ifndef TEST_SETUP_LOGGER // Tests are weird... this is done to avoid some linking errors
-#define TEST_SETUP_LOGGER                                                                                                                                                                                                                                \
-    [] {                                                                                                                                                                                                                                                 \
-        auto error_log = std::make_shared<std::ofstream>();                                                                                                                                                                                              \
-        error_log->open("test_error_log.txt");                                                                                                                                                                                                           \
-        auto &log = nova::logger::instance;                                                                                                                                                                                                              \
-        log.add_log_handler(nova::log_level::TRACE, [](auto msg) { std::cout << "TRACE: " << msg << std::endl; });                                                                                                                                       \
-        log.add_log_handler(nova::log_level::DEBUG, [](auto msg) { std::cout << "DEBUG: " << msg << std::endl; });                                                                                                                                       \
-        log.add_log_handler(nova::log_level::INFO, [](auto msg) { std::cout << "INFO: " << msg << std::endl; });                                                                                                                                         \
-        log.add_log_handler(nova::log_level::WARN, [](auto msg) { std::cerr << "WARN: " << msg << std::endl; });                                                                                                                                         \
-        log.add_log_handler(nova::log_level::ERROR, [error_log](auto msg) {                                                                                                                                                                              \
-            std::cerr << "ERROR: " << msg << std::endl;                                                                                                                                                                                                  \
-            *error_log << "ERROR: " << msg << std::endl << std::flush;                                                                                                                                                                                   \
-        });                                                                                                                                                                                                                                              \
-        log.add_log_handler(nova::log_level::FATAL, [error_log](auto msg) {                                                                                                                                                                              \
-            std::cerr << "FATAL: " << msg << std::endl;                                                                                                                                                                                                  \
-            *error_log << "FATAL: " << msg << std::endl << std::flush;                                                                                                                                                                                   \
-        });                                                                                                                                                                                                                                              \
-        log.add_log_handler(nova::log_level::MAX_LEVEL, [error_log](auto msg) {                                                                                                                                                                          \
-            std::cerr << "MAX_LEVEL: " << msg << std::endl;                                                                                                                                                                                              \
-            *error_log << "MAX_LEVEL: " << msg << std::endl << std::flush;                                                                                                                                                                               \
-        });                                                                                                                                                                                                                                              \
+#define TEST_SETUP_LOGGER                                                                                                                  \
+    [] {                                                                                                                                   \
+        auto error_log = std::make_shared<std::ofstream>();                                                                                \
+        error_log->open("test_error_log.txt");                                                                                             \
+        auto &log = nova::logger::instance;                                                                                                \
+        log.add_log_handler(nova::log_level::TRACE, [](auto msg) { std::cout << "TRACE: " << msg << std::endl; });                         \
+        log.add_log_handler(nova::log_level::DEBUG, [](auto msg) { std::cout << "DEBUG: " << msg << std::endl; });                         \
+        log.add_log_handler(nova::log_level::INFO, [](auto msg) { std::cout << "INFO: " << msg << std::endl; });                           \
+        log.add_log_handler(nova::log_level::WARN, [](auto msg) { std::cerr << "WARN: " << msg << std::endl; });                           \
+        log.add_log_handler(nova::log_level::ERROR, [error_log](auto msg) {                                                                \
+            std::cerr << "ERROR: " << msg << std::endl;                                                                                    \
+            *error_log << "ERROR: " << msg << std::endl << std::flush;                                                                     \
+        });                                                                                                                                \
+        log.add_log_handler(nova::log_level::FATAL, [error_log](auto msg) {                                                                \
+            std::cerr << "FATAL: " << msg << std::endl;                                                                                    \
+            *error_log << "FATAL: " << msg << std::endl << std::flush;                                                                     \
+        });                                                                                                                                \
+        log.add_log_handler(nova::log_level::MAX_LEVEL, [error_log](auto msg) {                                                            \
+            std::cerr << "MAX_LEVEL: " << msg << std::endl;                                                                                \
+            *error_log << "MAX_LEVEL: " << msg << std::endl << std::flush;                                                                 \
+        });                                                                                                                                \
     }
 #endif
 

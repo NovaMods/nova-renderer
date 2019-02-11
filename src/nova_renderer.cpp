@@ -23,7 +23,8 @@
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer::nova_renderer(const settings_options &settings) : render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
+    nova_renderer::nova_renderer(const settings_options &settings)
+        : render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
         mtr_init("trace.json");
 
@@ -36,17 +37,17 @@ namespace nova {
             MTR_SCOPE("Init", "LoadRenderdoc");
             render_doc = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
 
-            if(render_doc) {
+            if(render_doc != nullptr) {
                 render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
                 RENDERDOC_InputButton captureKey = eRENDERDOC_Key_PrtScrn;
                 render_doc->SetCaptureKeys(&captureKey, 1);
 
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, true);
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, true);
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_VerifyMapWrites, true);
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, true);
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, true);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, 1U);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, 1U);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_VerifyMapWrites, 1U);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, 1U);
+                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
             }
         }
 

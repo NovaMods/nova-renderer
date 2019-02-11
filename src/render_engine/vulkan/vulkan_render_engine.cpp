@@ -40,7 +40,8 @@ namespace nova {
         return descriptor_pools_by_thread_idx.at(cur_thread_idx);
     }
 
-    std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>> vulkan_render_engine::to_vk_attachment_info(std::vector<std::string> &attachment_names) {
+    std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>> vulkan_render_engine::to_vk_attachment_info(
+        std::vector<std::string> &attachment_names) {
         std::vector<VkAttachmentDescription> attachment_descriptions;
         attachment_descriptions.reserve(attachment_names.size());
 
@@ -111,8 +112,8 @@ namespace nova {
                 vmaDestroyImage(vma_allocator, tex.image, tex.allocation);
 
                 itr = textures.erase(itr);
-
-            } else {
+            }
+            else {
                 ++itr;
             }
         }
@@ -123,8 +124,8 @@ namespace nova {
                 vmaDestroyBuffer(vma_allocator, buf.buffer, buf.allocation);
 
                 itr = buffers.erase(itr);
-
-            } else {
+            }
+            else {
                 ++itr;
             }
         }
@@ -141,19 +142,23 @@ namespace nova {
     }
 
     bool vk_resource_binding::operator==(const vk_resource_binding &other) const {
-        return other.set == set && other.binding == binding && other.descriptorCount == descriptorCount && other.descriptorType == descriptorType;
+        return other.set == set && other.binding == binding && other.descriptorCount == descriptorCount &&
+               other.descriptorType == descriptorType;
     }
 
     bool vk_resource_binding::operator!=(const vk_resource_binding &other) const {
         return !(*this == other);
     }
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageTypes, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void * /* pUserData */) {
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                         VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+                                                         const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+                                                         void * /* pUserData */) {
         std::string type = "General";
-        if(messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
+        if((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
             type = "Validation";
-
-        } else if(messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) {
+        }
+        else if((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) != 0U) {
             type = "Performance";
         }
 
@@ -199,29 +204,29 @@ namespace nova {
 
         const std::string msg = ss.str();
 
-        if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+        if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
             NOVA_LOG(ERROR) << "[" << type << "] " << msg;
-
-        } else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+        }
+        else if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
             // Warnings may hint at unexpected / non-spec API usage
             NOVA_LOG(WARN) << "[" << type << "] " << msg;
-
-        } else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+        }
+        else if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) {
             // Informal messages that may become handy during debugging
             NOVA_LOG(INFO) << "[" << type << "] " << msg;
-
-        } else if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
+        }
+        else if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
             // Diagnostic info from the Vulkan loader and layers
             // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
             NOVA_LOG(DEBUG) << "[" << type << "] " << msg;
-
-        } else {
+        }
+        else {
             // Catch-all to be super sure
             NOVA_LOG(INFO) << "[" << type << "]" << msg;
         }
 
 #ifdef NOVA_LINUX
-        if(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+        if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
             nova_backtrace();
         }
 #endif

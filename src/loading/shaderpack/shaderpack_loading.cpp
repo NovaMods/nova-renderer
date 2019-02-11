@@ -31,7 +31,10 @@ namespace nova {
     std::vector<material_data> load_material_files(const std::shared_ptr<folder_accessor_base> &folder_access);
     material_data load_single_material(const std::shared_ptr<folder_accessor_base> &folder_access, const fs::path &material_path);
 
-    std::vector<uint32_t> load_shader_file(const fs::path &filename, const std::shared_ptr<folder_accessor_base> &folder_access, EShLanguage stage, const std::vector<std::string> &defines);
+    std::vector<uint32_t> load_shader_file(const fs::path &filename,
+                                           const std::shared_ptr<folder_accessor_base> &folder_access,
+                                           EShLanguage stage,
+                                           const std::vector<std::string> &defines);
 
     bool loading_failed = false;
 
@@ -65,14 +68,13 @@ namespace nova {
             // zip folder in shaderpacks folder
             path_to_shaderpack.replace_extension(".zip");
             return std::make_shared<zip_folder_accessor>(path_to_shaderpack);
-
-        } else if(fs::exists(path_to_shaderpack)) {
+        }
+        if(fs::exists(path_to_shaderpack)) {
             // regular folder in shaderpacks folder
             return std::make_shared<regular_folder_accessor>(path_to_shaderpack);
-
-        } else {
-            throw resource_not_found_exception(shaderpack_name.string());
         }
+
+        throw resource_not_found_exception(shaderpack_name.string());
     }
 
     shaderpack_resources_data load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base> &folder_access) {
@@ -88,17 +90,17 @@ namespace nova {
             }
 
             return json_resources.get<shaderpack_resources_data>();
-
-        } catch(resource_not_found_exception &) {
+        }
+        catch(resource_not_found_exception &) {
             // No resources defined.. I guess they think they don't need any?
             NOVA_LOG(WARN) << "No resources file found for shaderpack at " << folder_access->get_root();
             loading_failed = true;
-
-        } catch(nlohmann::json::parse_error &err) {
+        }
+        catch(nlohmann::json::parse_error &err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's resources.json: " << err.what();
             loading_failed = true;
-
-        } catch(validation_failure_exception &err) {
+        }
+        catch(validation_failure_exception &err) {
             NOVA_LOG(ERROR) << "Could not validate resources.json: " << err.what();
             loading_failed = true;
         }
@@ -126,8 +128,8 @@ namespace nova {
             }
 
             return passes;
-
-        } catch(nlohmann::json::parse_error &err) {
+        }
+        catch(nlohmann::json::parse_error &err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's passes.json: " << err.what();
             loading_failed = true;
         }
@@ -143,7 +145,8 @@ namespace nova {
         std::vector<fs::path> potential_pipeline_files;
         try {
             potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
-        } catch(const filesystem_exception &exception) {
+        }
+        catch(const filesystem_exception &exception) {
             throw pipeline_load_failed("Materials folder does not exist", exception);
         }
 
@@ -181,21 +184,37 @@ namespace nova {
 
         auto new_pipeline = json_pipeline.get<pipeline_data>();
         NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path;
-        new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access, EShLangVertex, new_pipeline.defines);
+        new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
+                                                             folder_access,
+                                                             EShLangVertex,
+                                                             new_pipeline.defines);
 
         if(new_pipeline.geometry_shader) {
-            (*new_pipeline.geometry_shader).source = load_shader_file((*new_pipeline.geometry_shader).filename, folder_access, EShLangGeometry, new_pipeline.defines);
+            (*new_pipeline.geometry_shader).source = load_shader_file((*new_pipeline.geometry_shader).filename,
+                                                                      folder_access,
+                                                                      EShLangGeometry,
+                                                                      new_pipeline.defines);
         }
 
         if(new_pipeline.tessellation_control_shader) {
-            (*new_pipeline.tessellation_control_shader).source = load_shader_file((*new_pipeline.tessellation_control_shader).filename, folder_access, EShLangTessControl, new_pipeline.defines);
+            (*new_pipeline.tessellation_control_shader).source = load_shader_file((*new_pipeline.tessellation_control_shader).filename,
+                                                                                  folder_access,
+                                                                                  EShLangTessControl,
+                                                                                  new_pipeline.defines);
         }
         if(new_pipeline.tessellation_evaluation_shader) {
-            (*new_pipeline.tessellation_evaluation_shader).source = load_shader_file((*new_pipeline.tessellation_evaluation_shader).filename, folder_access, EShLangTessEvaluation, new_pipeline.defines);
+            (*new_pipeline.tessellation_evaluation_shader)
+                .source = load_shader_file((*new_pipeline.tessellation_evaluation_shader).filename,
+                                           folder_access,
+                                           EShLangTessEvaluation,
+                                           new_pipeline.defines);
         }
 
         if(new_pipeline.fragment_shader) {
-            (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename, folder_access, EShLangFragment, new_pipeline.defines);
+            (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename,
+                                                                      folder_access,
+                                                                      EShLangFragment,
+                                                                      new_pipeline.defines);
         }
 
         NOVA_LOG(TRACE) << "Load of pipeline " << pipeline_path << " succeeded";
@@ -203,7 +222,10 @@ namespace nova {
         return new_pipeline;
     }
 
-    std::vector<uint32_t> load_shader_file(const fs::path &filename, const std::shared_ptr<folder_accessor_base> &folder_access, const EShLanguage stage, const std::vector<std::string> &defines) {
+    std::vector<uint32_t> load_shader_file(const fs::path &filename,
+                                           const std::shared_ptr<folder_accessor_base> &folder_access,
+                                           const EShLanguage stage,
+                                           const std::vector<std::string> &defines) {
         static std::unordered_map<EShLanguage, std::vector<fs::path>> extensions_by_shader_stage = {{EShLangVertex,
                                                                                                      {
                                                                                                          ".vert.spirv",
@@ -298,10 +320,11 @@ namespace nova {
                 // SPIR-V file!
                 // TODO: figure out how to handle defines with SPIRV
                 return folder_access->read_spirv_file(full_filename);
-
-            } else if(extension.string().find(".hlsl") != std::string::npos) {
+            }
+            if(extension.string().find(".hlsl") != std::string::npos) {
                 shader.setEnvInput(glslang::EShSourceHlsl, stage, glslang::EShClientVulkan, 0);
-            } else {
+            }
+            else {
                 // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
                 shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, 0);
             }
@@ -321,7 +344,12 @@ namespace nova {
 
             auto *shader_source_data = shader_source.data();
             shader.setStrings(&shader_source_data, 1);
-            const bool shader_compiled = shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
+            const bool shader_compiled = shader.parse(&glslang::DefaultTBuiltInResource,
+                                                      450,
+                                                      ECoreProfile,
+                                                      false,
+                                                      false,
+                                                      EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
 
             const char *info_log = shader.getInfoLog();
             if(std::strlen(info_log) > 0) {
@@ -359,8 +387,8 @@ namespace nova {
         std::vector<fs::path> potential_material_files;
         try {
             potential_material_files = folder_access->get_all_items_in_folder("materials");
-
-        } catch(filesystem_exception &exception) {
+        }
+        catch(filesystem_exception &exception) {
             throw material_load_failed("Materials folder does not exist", exception);
         }
 

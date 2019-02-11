@@ -23,7 +23,8 @@ namespace nova {
 
         // Record command buffers
         // We can't upload a new shaderpack in the middle of a frame!
-        // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the frame
+        // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the
+        // frame
         shaderpack_loading_mutex.lock();
 
         if(dynamic_textures_need_to_transition) {
@@ -155,8 +156,8 @@ namespace nova {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
                 depth_barriers.push_back(barrier);
-
-            } else {
+            }
+            else {
                 barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
                 barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -182,9 +183,27 @@ namespace nova {
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vkBeginCommandBuffer(cmds, &begin_info);
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(color_barriers.size()), color_barriers.data());
+        vkCmdPipelineBarrier(cmds,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             0,
+                             0,
+                             nullptr,
+                             0,
+                             nullptr,
+                             static_cast<uint32_t>(color_barriers.size()),
+                             color_barriers.data());
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(depth_barriers.size()), depth_barriers.data());
+        vkCmdPipelineBarrier(cmds,
+                             VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                             VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                             0,
+                             0,
+                             nullptr,
+                             0,
+                             nullptr,
+                             static_cast<uint32_t>(depth_barriers.size()),
+                             depth_barriers.data());
 
         vkEndCommandBuffer(cmds);
 
@@ -276,14 +295,24 @@ namespace nova {
             barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Each swapchain image **will** be rendered to before it is presented
+            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Each swapchain image **will** be rendered to before it is
+                                                                          // presented
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = 1;
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+            vkCmdPipelineBarrier(cmds,
+                                 VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+                                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                 0,
+                                 0,
+                                 nullptr,
+                                 0,
+                                 nullptr,
+                                 1,
+                                 &barrier);
         }
 
         // TODO: Any barriers for aliased textures if we're at an aliased boundary
@@ -331,16 +360,26 @@ namespace nova {
             barrier.subresourceRange.layerCount = 1;
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+            vkCmdPipelineBarrier(cmds,
+                                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                 VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+                                 0,
+                                 0,
+                                 nullptr,
+                                 0,
+                                 nullptr,
+                                 1,
+                                 &barrier);
         }
 
         vkEndCommandBuffer(cmds);
 
-        // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's fence
+        // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's
+        // fence
         if(renderpass.writes_to_backbuffer) {
             submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), {image_available_semaphores.at(current_frame)});
-
-        } else {
+        }
+        else {
             submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
         }
     }
@@ -392,8 +431,8 @@ namespace nova {
     void vulkan_render_engine::draw_all_for_material(const material_pass &pass, VkCommandBuffer cmds) {
         // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
         // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
-        // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute shader
-        // Version 2: Incorporate occlusion queries so we know what with all certainty what is and isn't visible
+        // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute
+        // shader Version 2: Incorporate occlusion queries so we know what with all certainty what is and isn't visible
 
         // At the current time I'm making version 1
 
@@ -426,7 +465,13 @@ namespace nova {
             VmaAllocation allocation;
             VmaAllocationInfo alloc_info;
 
-            NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator, &buffer_create_info, &alloc_create_info, &indirect_draw_commands_buffer, &allocation, &alloc_info), buffer_allocate_failed);
+            NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator,
+                                                   &buffer_create_info,
+                                                   &alloc_create_info,
+                                                   &indirect_draw_commands_buffer,
+                                                   &allocation,
+                                                   &alloc_info),
+                                   buffer_allocate_failed);
 
             // Version 1: write commands for all things to the indirect draw buffer
             auto *indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand *>(alloc_info.pMappedData);
@@ -443,7 +488,10 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence, const std::vector<VkSemaphore> &wait_semaphores) {
+    void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds,
+                                               VkQueue queue,
+                                               VkFence cmd_buffer_done_fence,
+                                               const std::vector<VkSemaphore> &wait_semaphores) {
         std::lock_guard l(render_done_sync_mutex);
         std::vector<VkSemaphore> &render_finished_semaphores = render_finished_semaphores_by_frame.at(current_frame);
 

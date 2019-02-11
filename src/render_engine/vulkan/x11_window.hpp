@@ -9,7 +9,7 @@
 
 #include "../window.hpp"
 #include <X11/Xlib.h>
-#include <stdint.h>
+#include <cstdint>
 
 namespace nova {
     class x11_window : public iwindow {
@@ -28,9 +28,9 @@ namespace nova {
         Display *get_display();
 
         void on_frame_end() override;
-        bool should_close() const override;
+        [[nodiscard]] bool should_close() const override;
 
-        glm::uvec2 get_window_size() const override;
+        [[nodiscard]] glm::uvec2 get_window_size() const override;
     };
 } // namespace nova
 

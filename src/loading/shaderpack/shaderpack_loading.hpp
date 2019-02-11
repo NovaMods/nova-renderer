@@ -13,7 +13,7 @@
 namespace nova {
     namespace ttl {
         class task_scheduler;
-    }
+    } // namespace ttl
 
     NOVA_EXCEPTION(shader_compilation_failed);
     NOVA_EXCEPTION(shader_reflection_failed);

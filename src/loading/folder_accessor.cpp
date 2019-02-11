@@ -7,7 +7,8 @@
 #include "../util/logger.hpp"
 
 namespace nova {
-    folder_accessor_base::folder_accessor_base(fs::path folder) : root_folder(std::make_shared<fs::path>(folder)), resource_existence_mutex(new std::mutex) {
+    folder_accessor_base::folder_accessor_base(const fs::path &folder)
+        : root_folder(std::make_shared<fs::path>(folder)), resource_existence_mutex(new std::mutex) {
     }
 
     bool folder_accessor_base::does_resource_exist(const fs::path &resource_path) {

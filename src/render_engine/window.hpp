@@ -30,14 +30,14 @@ namespace nova {
          * While a fully native program can handle program shutdown entirely on its own, Nova needs a way for the game
          * it's running in to know if the user has requested window closing. This method is that way
          */
-        virtual bool should_close() const = 0;
+        [[nodiscard]] virtual bool should_close() const = 0;
 
         /*!
          * \brief Gets the current window size
          *
          * \return The current size of the window
          */
-        virtual glm::uvec2 get_window_size() const = 0;
+        [[nodiscard]] virtual glm::uvec2 get_window_size() const = 0;
     };
 } // namespace nova
 

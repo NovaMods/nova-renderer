@@ -54,7 +54,7 @@ namespace nova {
     private:
         class circular_array {
         public:
-            circular_array(std::size_t n) : items(n) {
+            explicit circular_array(std::size_t n) : items(n) {
                 assert(n != 0 && !(n & (n - 1)) && "n must be a power of 2");
             }
 
@@ -63,7 +63,7 @@ namespace nova {
             std::unique_ptr<circular_array> previous;
 
         public:
-            std::size_t size() const {
+            [[nodiscard]] std::size_t size() const {
                 return items.size();
             }
 
@@ -128,13 +128,18 @@ namespace nova {
                 *value = array->get(b);
                 if(t == b) {
                     /* Single last element in queue. */
-                    if(!std::atomic_compare_exchange_strong_explicit(&m_top, &t, t + 1, std::memory_order_seq_cst, std::memory_order_relaxed)) {
+                    if(!std::atomic_compare_exchange_strong_explicit(&m_top,
+                                                                     &t,
+                                                                     t + 1,
+                                                                     std::memory_order_seq_cst,
+                                                                     std::memory_order_relaxed)) {
                         /* Failed race. */
                         result = false;
                     }
                     m_bottom.store(b + 1, std::memory_order_relaxed);
                 }
-            } else {
+            }
+            else {
                 /* Empty queue. */
                 result = false;
                 m_bottom.store(b + 1, std::memory_order_relaxed);

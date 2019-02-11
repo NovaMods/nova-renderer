@@ -27,7 +27,7 @@ namespace nova::ttl {
 
     using ArgumentExtractorType = std::function<void(task_scheduler *)>;
 
-    typedef void (*TaskFunction)(task_scheduler *task_scheduler, void *arg);
+    using TaskFunction = void (*)(task_scheduler *, void *);
 
     struct task {
         TaskFunction function;
@@ -114,7 +114,7 @@ namespace nova::ttl {
          * \param num_threads The number of threads for this thread pool
          * \param behavior The behavior of empty task queues. See \enum empty_queue_behavior for more info
          */
-        task_scheduler(const uint32_t num_threads, const empty_queue_behavior behavior);
+        task_scheduler(uint32_t num_threads, empty_queue_behavior behavior);
 
         task_scheduler(task_scheduler &&other) noexcept = default;
         task_scheduler &operator=(task_scheduler &&other) noexcept = default;
@@ -136,17 +136,21 @@ namespace nova::ttl {
          * \return A future to the data that your task will produce
          */
         template <class F, class... Args>
-        auto add_task(F &&function, Args &&... args) -> std::future<decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...))> {
+        auto add_task(F &&function, Args &&... args)
+            -> std::future<decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...))> {
             using RetVal = decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...));
 
-            auto task = std::make_shared<std::packaged_task<RetVal()>>(std::bind(std::forward<F>(function), this, std::forward<Args>(args)...));
+            auto task = std::make_shared<std::packaged_task<RetVal()>>(
+                std::bind(std::forward<F>(function), this, std::forward<Args>(args)...));
             std::future<RetVal> future = task->get_future();
 
             add_task_proxy([task] {
                 try {
                     task.get()->operator()();
-                } catch(...) {
-                    // TODO: Better way of giving the user a chance to handle this, see https://en.cppreference.com/w/cpp/error/current_exception
+                }
+                catch(...) {
+                    // TODO: Better way of giving the user a chance to handle this, see
+                    // https://en.cppreference.com/w/cpp/error/current_exception
                     NOVA_LOG(FATAL) << "Task failed executing!";
 #ifdef NOVA_LINUX
                     nova_backtrace();
@@ -171,7 +175,8 @@ namespace nova::ttl {
          * \return A future to the data that your task will produce
          */
         template <class F, class... Args>
-        auto add_task(condition_counter *counter, F &&function, Args &&... args) -> std::future<decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...))> {
+        auto add_task(condition_counter *counter, F &&function, Args &&... args)
+            -> std::future<decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...))> {
             using RetVal = decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...));
 
             auto task = std::make_shared<std::packaged_task<RetVal()>>(std::bind(function, this, std::forward<Args>(args)...));
@@ -182,8 +187,10 @@ namespace nova::ttl {
                 try {
                     task.get()->operator()();
                     counter->sub(1);
-                } catch(...) {
-                    // TODO: Better way of giving the user a chance to handle this, see https://en.cppreference.com/w/cpp/error/current_exception
+                }
+                catch(...) {
+                    // TODO: Better way of giving the user a chance to handle this, see
+                    // https://en.cppreference.com/w/cpp/error/current_exception
                     NOVA_LOG(FATAL) << "Task failed executing!";
 #ifdef NOVA_LINUX
                     nova_backtrace();
@@ -207,7 +214,7 @@ namespace nova::ttl {
 
         friend void thread_func(task_scheduler *pool);
 
-        uint32_t get_num_threads() const;
+        [[nodiscard]] uint32_t get_num_threads() const;
 
     private:
         uint32_t num_threads;

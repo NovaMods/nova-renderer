@@ -9,12 +9,12 @@
 
 namespace ftl {
     class TaskScheduler;
-}
+} // namespace ftl
 
 namespace nova {
     namespace ttl {
         class task_scheduler;
-    }
+    } // namespace ttl
 
     NOVA_EXCEPTION(buffer_allocation_failed);
 
@@ -83,7 +83,7 @@ namespace nova {
              */
             void free(allocation_info *alloc);
 
-            VkBuffer get_buffer() const;
+            [[nodiscard]] VkBuffer get_buffer() const;
 
         private:
             // The pool is a simple linked list of allocated blocks.
@@ -108,8 +108,8 @@ namespace nova {
 
             uint32_t next_block_id = 0;
             VkBuffer buffer = VK_NULL_HANDLE;
-            VmaAllocation vma_allocation;
-            VmaAllocationInfo vma_allocation_info;
+            VmaAllocation vma_allocation{};
+            VmaAllocationInfo vma_allocation_info{};
             VkDeviceSize size;
             VkDeviceSize allocated = 0;
 
@@ -118,7 +118,10 @@ namespace nova {
             void compact_all_memory();
         };
 
-        compacting_block_allocator(const settings_options::block_allocator_settings &settings, VmaAllocator vma_allocator, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
+        compacting_block_allocator(const settings_options::block_allocator_settings &settings,
+                                   VmaAllocator vma_allocator,
+                                   uint32_t graphics_queue_idx,
+                                   uint32_t copy_queue_idx);
 
         /*!
          * \brief Allocates memory of the requested size and gives that to you

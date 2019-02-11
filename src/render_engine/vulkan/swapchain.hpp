@@ -27,7 +27,7 @@ namespace nova {
      */
     class swapchain_manager {
     public:
-        swapchain_manager(uint32_t num_swapchain_images, vulkan_render_engine &render_engine, const glm::ivec2 window_dimensions);
+        swapchain_manager(uint32_t num_swapchain_images, vulkan_render_engine &render_engine, glm::ivec2 window_dimensions);
 
         void present_current_image(const std::vector<VkSemaphore> &wait_semaphores) const;
 
@@ -40,18 +40,18 @@ namespace nova {
 
         VkImage get_current_image();
         VkImageLayout get_current_layout();
-        VkExtent2D get_swapchain_extent() const;
-        VkFormat get_swapchain_format() const;
+        [[nodiscard]] VkExtent2D get_swapchain_extent() const;
+        [[nodiscard]] VkFormat get_swapchain_format() const;
 
         // I've had a lot of bugs with RAII so here's an explicit cleanup method
         void deinit();
 
-        uint32_t get_current_index() const;
+        [[nodiscard]] uint32_t get_current_index() const;
 
     private:
         vulkan_render_engine &render_engine;
 
-        VkSwapchainKHR swapchain;
+        VkSwapchainKHR swapchain{};
         VkExtent2D swapchain_extent;
         VkPresentModeKHR present_mode;
         VkFormat swapchain_format;

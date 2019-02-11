@@ -15,7 +15,7 @@ namespace nova {
         std::vector<std::unique_ptr<file_tree_node>> children;
         file_tree_node *parent = nullptr;
 
-        std::string get_full_path() const;
+        [[nodiscard]] std::string get_full_path() const;
     };
 
     /*!

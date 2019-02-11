@@ -189,7 +189,18 @@ namespace nova {
 
     enum class primitive_topology_enum { Triangles, Lines };
 
-    enum class blend_factor_enum { One, Zero, SrcColor, DstColor, OneMinusSrcColor, OneMinusDstColor, SrcAlpha, DstAlpha, OneMinusSrcAlpha, OneMinusDstAlpha };
+    enum class blend_factor_enum {
+        One,
+        Zero,
+        SrcColor,
+        DstColor,
+        OneMinusSrcColor,
+        OneMinusDstColor,
+        SrcAlpha,
+        DstAlpha,
+        OneMinusSrcAlpha,
+        OneMinusDstAlpha
+    };
 
     enum class render_queue_enum { Transparent, Opaque, Cutout };
 
@@ -298,27 +309,27 @@ namespace nova {
         /*!
          * \brief A bias to apply to the depth
          */
-        float depth_bias;
+        float depth_bias{};
 
         /*!
          * \brief The depth bias, scaled by slope I guess?
          */
-        float slope_scaled_depth_bias;
+        float slope_scaled_depth_bias{};
 
         /*!
          * \brief The reference value to use for the stencil test
          */
-        uint32_t stencil_ref;
+        uint32_t stencil_ref{};
 
         /*!
          * \brief The mask to use when reading from the stencil buffer
          */
-        uint32_t stencil_read_mask;
+        uint32_t stencil_read_mask{};
 
         /*!
          * \brief The mask to use when writing to the stencil buffer
          */
-        uint32_t stencil_write_mask;
+        uint32_t stencil_write_mask{};
 
         /*!
          * \brief How to handle MSAA for this state
@@ -372,7 +383,7 @@ namespace nova {
         /*!
          * \brief Merges this pipeline with the parent, returning the merged pipeline
          */
-        pipeline_data merge_with_parent(const pipeline_data &parent_pipeline) const;
+        [[nodiscard]] pipeline_data merge_with_parent(const pipeline_data &parent_pipeline) const;
     };
 
     struct texture_format {
@@ -395,7 +406,7 @@ namespace nova {
          */
         float height;
 
-        glm::uvec2 get_size_in_pixels(const glm::uvec2 &screen_size) const;
+        [[nodiscard]] glm::uvec2 get_size_in_pixels(const glm::uvec2 &screen_size) const;
 
         bool operator==(const texture_format &other) const;
         bool operator!=(const texture_format &other) const;
@@ -441,7 +452,7 @@ namespace nova {
          */
         std::string name;
 
-        texture_format format;
+        texture_format format{};
     };
 
     struct shaderpack_resources_data {

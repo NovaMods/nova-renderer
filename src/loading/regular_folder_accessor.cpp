@@ -16,8 +16,8 @@ namespace nova {
         fs::path full_resource_path;
         if(has_root(resource_path, *root_folder)) {
             full_resource_path = resource_path;
-
-        } else {
+        }
+        else {
             full_resource_path = *root_folder / resource_path;
         }
 
@@ -62,7 +62,8 @@ namespace nova {
             for(const fs::directory_entry &entry : folder_itr) {
                 paths.push_back(entry.path());
             }
-        } catch(const fs::filesystem_error &error) {
+        }
+        catch(const fs::filesystem_error &error) {
             throw filesystem_exception(error);
         }
 
@@ -82,11 +83,9 @@ namespace nova {
             // NOVA_LOG(TRACE) << resource_path << " exists";
             resource_existence.emplace(resource_string, true);
             return true;
-
-        } else {
-            // NOVA_LOG(TRACE) << resource_path << " does not exist";
-            resource_existence.emplace(resource_string, false);
-            return false;
         }
+        // NOVA_LOG(TRACE) << resource_path << " does not exist";
+        resource_existence.emplace(resource_string, false);
+        return false;
     }
 } // namespace nova

@@ -26,11 +26,11 @@ namespace nova {
         explicit filesystem_exception(const fs::filesystem_error &error) : message(error.what()), error_code(error.code()) {
         }
 
-        const char *what() const noexcept override {
+        [[nodiscard]] const char *what() const noexcept override {
             return message.c_str();
         }
 
-        const std::error_code code() const noexcept {
+        [[nodiscard]] std::error_code code() const noexcept {
             return error_code;
         }
     };
@@ -48,7 +48,7 @@ namespace nova {
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
-        folder_accessor_base(fs::path folder);
+        explicit folder_accessor_base(const fs::path &folder);
 
         folder_accessor_base(folder_accessor_base &&other) noexcept = default;
         folder_accessor_base &operator=(folder_accessor_base &&other) noexcept = default;
