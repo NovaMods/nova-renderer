@@ -52,11 +52,12 @@ ${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml
 echo "End linting"
 cd ..
 
+
 # Formatting
 cd build-clang
 ninja format
 cd ..
-test `git status --porcelain | wc -c` -eq 0  # No changes made
+test `git status --porcelain src tests | wc -c` -eq 0  # No changes made
 echo "End formatting"
 
 cd build-gcc
