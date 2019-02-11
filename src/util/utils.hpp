@@ -67,7 +67,7 @@ namespace nova {
     class name : public ::nova::nova_exception {                                                                                           \
     public:                                                                                                                                \
         name(){};                                                                                                                          \
-        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)){};                                                         \
+        explicit name(const std::string& msg) : ::nova::nova_exception(msg){};                                                         \
                                                                                                                                            \
         explicit name(const std::exception &cause) : ::nova::nova_exception(cause){};                                                      \
         name(const std::string &msg, const std::exception &cause) : ::nova::nova_exception(msg, cause){};                                  \
