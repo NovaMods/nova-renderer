@@ -4,7 +4,7 @@
 #include "../../platform.hpp"
 #include "../window.hpp"
 
-#if SUPPORT_DX12
+#ifdef SUPPORT_DX12
 
 #ifndef UNICODE
 #define UNICODE
