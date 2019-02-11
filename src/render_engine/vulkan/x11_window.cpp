@@ -26,7 +26,7 @@ namespace nova {
                                      height,
                                      1,
                                      BlackPixel(display, screen), // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
-                                     WhitePixel(display, screen)); 
+                                     WhitePixel(display, screen)); // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
         wm_protocols = XInternAtom(display, "WM_PROTOCOLS", 0);
         wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", 0);
