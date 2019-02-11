@@ -30,6 +30,12 @@ namespace nova {
          */
         explicit nova_renderer(const settings_options &settings);
 
+        nova_renderer(nova_renderer &&other) noexcept = delete;
+        nova_renderer &operator=(nova_renderer &&other) noexcept = delete;
+
+        nova_renderer(const nova_renderer &other) = delete;
+        nova_renderer &operator=(const nova_renderer &other) = delete;
+
         ~nova_renderer();
 
         /*!

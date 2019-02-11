@@ -54,7 +54,7 @@ namespace nova {
      */
     class render_engine {
     public:
-        render_engine(render_engine &&other) = default;
+        render_engine(render_engine &&other) = delete;
         render_engine &operator=(render_engine &&other) noexcept = delete;
 
         render_engine(const render_engine &other) = delete;

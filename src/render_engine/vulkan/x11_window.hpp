@@ -22,6 +22,13 @@ namespace nova {
 
     public:
         explicit x11_window(uint32_t width, uint32_t height);
+
+        x11_window(x11_window &&other) noexcept = delete;
+        x11_window &operator=(x11_window &&other) noexcept = delete;
+
+        x11_window(const x11_window &other) = delete;
+        x11_window &operator=(const x11_window &other) = delete;
+
         virtual ~x11_window();
 
         Window &get_x11_window();

@@ -107,6 +107,8 @@ namespace nova::ttl {
 
             per_thread_data(const per_thread_data &other) = delete;
             per_thread_data &operator=(const per_thread_data &other) = delete;
+
+            ~per_thread_data() = default;
         };
 
         /*!

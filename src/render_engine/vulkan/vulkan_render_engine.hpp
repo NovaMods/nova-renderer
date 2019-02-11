@@ -173,6 +173,13 @@ namespace nova {
 #pragma endregion
 
         vulkan_render_engine(const nova_settings &settings, ttl::task_scheduler *task_scheduler);
+
+        vulkan_render_engine(vulkan_render_engine &&other) = delete;
+        vulkan_render_engine &operator=(vulkan_render_engine &&other) noexcept = delete;
+
+        vulkan_render_engine(const vulkan_render_engine &other) = delete;
+        vulkan_render_engine &operator=(const vulkan_render_engine &other) = delete;
+
         ~vulkan_render_engine() override;
 
         void render_frame() override;

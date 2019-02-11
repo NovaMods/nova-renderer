@@ -21,7 +21,7 @@
 namespace nova {
     enum log_level { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, MAX_LEVEL };
 
-    class __log_stream;
+    class _log_stream;
     /*!
      * \brief A logger interface that can be implemented for whatever game Nova uses
      */
@@ -35,7 +35,7 @@ namespace nova {
 
         void log(log_level level, const std::string &msg);
 
-        __log_stream log(log_level level) const;
+        _log_stream log(log_level level) const;
 
     private:
         std::unordered_map<log_level, std::function<void(std::string)>> log_handlers;
@@ -43,16 +43,21 @@ namespace nova {
     };
 
     // Allow stream logging
-    class __log_stream : public std::stringstream {
+    // Todo: Fix this junk
+    class _log_stream : public std::stringstream {
     private:
-        const log_level level;
+        log_level level;
 
     public:
-        explicit __log_stream(log_level level);
+        explicit _log_stream(log_level level);
 
-        __log_stream(__log_stream &&other) noexcept;
+        _log_stream(const _log_stream &other) = delete;
+        _log_stream &operator=(const _log_stream &other) = delete;
 
-        ~__log_stream() override;
+        _log_stream(_log_stream &&other) noexcept;
+        _log_stream &operator=(_log_stream &&other) noexcept;
+
+        ~_log_stream() override;
     };
 
 } // namespace nova

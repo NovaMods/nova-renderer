@@ -47,6 +47,13 @@ namespace nova {
               m_bottom(1), // Otherwise, the first Pop on an empty queue will underflow m_bottom
               m_array(new circular_array(32)) {
         }
+
+        wait_free_queue(wait_free_queue &&other) = delete;
+        wait_free_queue &operator=(wait_free_queue &&other) noexcept = delete;
+
+        wait_free_queue(const wait_free_queue &other) = delete;
+        wait_free_queue &operator=(const wait_free_queue &other) = delete;
+
         ~wait_free_queue() {
             // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
             delete m_array.load(std::memory_order_relaxed);
