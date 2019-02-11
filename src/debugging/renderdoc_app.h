@@ -68,7 +68,7 @@ extern "C" {
 // RenderDoc capture options
 //
 
-typedef enum RENDERDOC_CaptureOption {
+enum RENDERDOC_CaptureOption {
     // Allow the application to enable vsync
     //
     // Default - enabled
@@ -209,7 +209,7 @@ typedef enum RENDERDOC_CaptureOption {
     // necessary as directed by a RenderDoc developer.
     eRENDERDOC_Option_AllowUnsupportedVendorExtensions = 12,
 
-} RENDERDOC_CaptureOption;
+};
 
 // Sets an option that controls how RenderDoc behaves on capture.
 //
@@ -228,7 +228,7 @@ using pRENDERDOC_GetCaptureOptionU32 = uint32_t (*)(RENDERDOC_CaptureOption);
 // If the option is invalid, -FLT_MAX is returned
 using pRENDERDOC_GetCaptureOptionF32 = float (*)(RENDERDOC_CaptureOption);
 
-typedef enum RENDERDOC_InputButton {
+enum RENDERDOC_InputButton {
     // '0' - '9' matches ASCII values
     eRENDERDOC_Key_0 = 0x30,
     eRENDERDOC_Key_1 = 0x31,
@@ -304,7 +304,7 @@ typedef enum RENDERDOC_InputButton {
     eRENDERDOC_Key_Pause,
 
     eRENDERDOC_Key_Max,
-} RENDERDOC_InputButton;
+};
 
 // Sets which key or keys can be used to toggle focus between multiple windows
 //
@@ -316,7 +316,7 @@ using pRENDERDOC_SetFocusToggleKeys = void (*)(RENDERDOC_InputButton *, int);
 // If keys is NULL or num is 0, captures keys will be disabled
 using pRENDERDOC_SetCaptureKeys = void (*)(RENDERDOC_InputButton *, int);
 
-typedef enum RENDERDOC_OverlayBits {
+enum RENDERDOC_OverlayBits {
     // This single bit controls whether the overlay is enabled or disabled globally
     eRENDERDOC_Overlay_Enabled = 0x1,
 
@@ -338,7 +338,7 @@ typedef enum RENDERDOC_OverlayBits {
 
     // Disable all bits
     eRENDERDOC_Overlay_None = 0,
-} RENDERDOC_OverlayBits;
+};
 
 // returns the overlay bits that have been set
 using pRENDERDOC_GetOverlayBits = uint32_t (*)();
@@ -516,7 +516,7 @@ using pRENDERDOC_EndFrameCapture = uint32_t (*)(RENDERDOC_DevicePointer, RENDERD
 // Note that this means the API returned can be higher than the one you might have requested.
 // e.g. if you are running against a newer RenderDoc that supports 1.0.1, it will be returned
 // instead of 1.0.0. You can check this with the GetAPIVersion entry point
-typedef enum RENDERDOC_Version {
+enum RENDERDOC_Version {
     eRENDERDOC_API_Version_1_0_0 = 10000, // RENDERDOC_API_1_0_0 = 1 00 00
     eRENDERDOC_API_Version_1_0_1 = 10001, // RENDERDOC_API_1_0_1 = 1 00 01
     eRENDERDOC_API_Version_1_0_2 = 10002, // RENDERDOC_API_1_0_2 = 1 00 02
@@ -525,7 +525,7 @@ typedef enum RENDERDOC_Version {
     eRENDERDOC_API_Version_1_1_2 = 10102, // RENDERDOC_API_1_1_2 = 1 01 02
     eRENDERDOC_API_Version_1_2_0 = 10200, // RENDERDOC_API_1_2_0 = 1 02 00
     eRENDERDOC_API_Version_1_3_0 = 10300, // RENDERDOC_API_1_3_0 = 1 03 00
-} RENDERDOC_Version;
+};
 
 // API version changelog:
 //
@@ -549,7 +549,7 @@ typedef enum RENDERDOC_Version {
 //         eRENDERDOC_Option_VerifyBufferAccess, which now also controls initialisation to
 //         0xdddddddd of uninitialised buffer contents.
 
-typedef struct RENDERDOC_API_1_3_0 {
+struct RENDERDOC_API_1_3_0 {
     pRENDERDOC_GetAPIVersion GetAPIVersion;
 
     pRENDERDOC_SetCaptureOptionU32 SetCaptureOptionU32;
@@ -608,7 +608,7 @@ typedef struct RENDERDOC_API_1_3_0 {
 
     // new function in 1.2.0
     pRENDERDOC_SetCaptureFileComments SetCaptureFileComments;
-} RENDERDOC_API_1_3_0;
+};
 
 using RENDERDOC_API_1_0_0 = RENDERDOC_API_1_3_0;
 using RENDERDOC_API_1_0_1 = RENDERDOC_API_1_3_0;
