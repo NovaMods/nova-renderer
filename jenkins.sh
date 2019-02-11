@@ -48,8 +48,14 @@ cd ..
 # Linting
 cd build-clang
 ${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml -j8 --header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` --clang-tidy-binary clang-tidy-8
-# test `cat fixes.yaml | wc -c` -eq 1
 echo "End linting"
+
+if [ `cat fixes.yaml | wc -c` -eq 0 ]; then
+    echo "No linting warnings found."
+else 
+    echo "Lining warnings found. Aborting."
+    # exit 1
+fi
 cd ..
 
 
@@ -57,8 +63,15 @@ cd ..
 cd build-clang
 ninja format
 cd ..
-test `git status --porcelain src tests | wc -c` -eq 0  # No changes made
 echo "End formatting"
+
+if [ `git status --porcelain src tests | wc -c` -eq 0 ]; then
+    echo "No formatting errors found."
+else
+    echo "Formatting errors found."
+    git diff src tests --numstat
+    # exit 1
+fi
 
 cd build-gcc
 lcov -c -d . -o live-coverage.info --gcov-tool gcov-7
