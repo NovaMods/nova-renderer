@@ -233,7 +233,7 @@ namespace nova {
             barriers.push_back(barrier);
         }
 
-        VkCommandPool const command_pool = render_engine.get_command_buffer_pool_for_current_thread(render_engine.graphics_family_index);
+        VkCommandPool command_pool = render_engine.get_command_buffer_pool_for_current_thread(render_engine.graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
