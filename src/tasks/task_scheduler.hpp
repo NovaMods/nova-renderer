@@ -39,6 +39,7 @@ namespace nova::ttl {
 
         (*func)(scheduler);
 
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
         delete func;
     }
 

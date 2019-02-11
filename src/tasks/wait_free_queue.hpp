@@ -48,6 +48,7 @@ namespace nova {
               m_array(new circular_array(32)) {
         }
         ~wait_free_queue() {
+            // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
             delete m_array.load(std::memory_order_relaxed);
         }
 
@@ -79,6 +80,7 @@ namespace nova {
             // linked list of all previous arrays. This is done because other threads
             // could still be accessing elements from the smaller arrays.
             circular_array *grow(std::size_t top, std::size_t bottom) {
+                // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
                 auto *new_array = new circular_array(size() * 2);
                 new_array->previous.reset(this);
                 for(std::size_t i = top; i != bottom; i++) {
