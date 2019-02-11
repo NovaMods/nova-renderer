@@ -17,16 +17,16 @@ namespace nova {
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         int screen = DefaultScreen(display);
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
+        
         window = XCreateSimpleWindow(display,
-                                     RootWindow(display, screen),
+                                     RootWindow(display, screen), // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                                      50,
                                      50,
                                      width,
                                      height,
                                      1,
-                                     BlackPixel(display, screen),
-                                     WhitePixel(display, screen));
+                                     BlackPixel(display, screen), // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                                     WhitePixel(display, screen)); 
 
         wm_protocols = XInternAtom(display, "WM_PROTOCOLS", 0);
         wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", 0);
