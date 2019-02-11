@@ -50,9 +50,14 @@ add_custom_target(lint-by-file "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--
 add_custom_target(lint-by-diagnostic "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "diagnostic"  USES_TERMINAL)
 
 find_program(CLANG_APPLY_REPLACEMENTS_PROGRAM NAMES ${CLANG_APPLY_REPLACEMENTS_COMMAND})
-if(CLANG_APPLY_REPLACEMENTS_PROGRAM)
+if(CLANG_APPLY_REPLACEMENTS_PROGRAM AND CLANG_FORMAT_PROGRAM)
     message(STATUS "Found clang-apply-replacements at ${CLANG_APPLY_REPLACEMENTS_PROGRAM}")
-    add_custom_target(lint-fix "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "file" "--fix" "--clang-apply-replacements" "${CLANG_APPLY_REPLACEMENTS_PROGRAM}" USES_TERMINAL)
+    add_custom_target(
+        lint-fix 
+        COMMAND "${CMAKE_CURRENT_BINARY_DIR}/tools/lint.bash" "--sort" "file" "--fix" "--clang-apply-replacements" "${CLANG_APPLY_REPLACEMENTS_PROGRAM}" 
+        COMMAND "${CMAKE_COMMAND}" "--build" "." "--target" "format"
+        USES_TERMINAL
+    )
 else()
     message(STATUS "clang-apply-replacements not found")
 endif()
