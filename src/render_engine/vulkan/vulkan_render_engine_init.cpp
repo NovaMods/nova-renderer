@@ -43,7 +43,7 @@ namespace nova {
         enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 #ifdef NOVA_LINUX
         enabled_extension_names.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-#elif NOVA_WINDOWS
+#elif defined(NOVA_WINDOWS)
         enabled_extension_names.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #else
 #error Unsupported Operating system
@@ -154,7 +154,7 @@ namespace nova {
 
         NOVA_THROW_IF_VK_ERROR(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface),
                                render_engine_initialization_exception);
-#elif NOVA_WINDOWS
+#elif defined(NOVA_WINDOWS)
         window = std::make_shared<win32_window>(width, height);
 
         VkWin32SurfaceCreateInfoKHR win32_surface_create = {};

@@ -35,7 +35,7 @@
 #include <memory>
 #include <vector>
 
-#define CACHE_LINE_SIZE 64
+constexpr static size_t CACHE_LINE_SIZE = 64;
 
 namespace nova {
 

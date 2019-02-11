@@ -22,12 +22,14 @@
 #endif
 
 #ifndef CMAKE_DEFINED_RESOURCES_PREFIX
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define CMAKE_DEFINED_RESOURCES_PREFIX ""
 #endif
 
 #include "../../src/util/logger.hpp"
 
 #ifndef TEST_SETUP_LOGGER // Tests are weird... this is done to avoid some linking errors
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define TEST_SETUP_LOGGER                                                                                                                  \
     [] {                                                                                                                                   \
         auto error_log = std::make_shared<std::ofstream>();                                                                                \

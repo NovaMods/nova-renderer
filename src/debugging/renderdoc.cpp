@@ -3,7 +3,7 @@
 #include "../platform.hpp"
 #include "../util/logger.hpp"
 
-#if NOVA_WINDOWS
+#if defined(NOVA_WINDOWS)
 #include "../util/windows.hpp"
 #include "../util/windows_utils.hpp"
 
@@ -11,14 +11,14 @@
 #ifdef ERROR
 #undef ERROR
 #endif
-#elif NOVA_LINUX
+#elif defined(NOVA_LINUX)
 #include "../util/linux_utils.hpp"
 #include <dlfcn.h>
 #endif
 
 namespace nova {
     RENDERDOC_API_1_3_0 *load_renderdoc(const std::string &renderdoc_dll_path) {
-#if NOVA_WINDOWS
+#if defined(NOVA_WINDOWS)
         HINSTANCE const renderdoc_dll = LoadLibrary(renderdoc_dll_path.c_str());
         if(!renderdoc_dll) {
             const std::string error = get_last_windows_error();
@@ -35,7 +35,7 @@ namespace nova {
             return nullptr;
         }
 
-#elif NOVA_LINUX
+#elif defined(NOVA_LINUX)
         void *renderdoc_so = dlopen(renderdoc_dll_path.c_str(), RTLD_NOW);
         if(renderdoc_so == nullptr) {
             // Try to load system-wide version of renderdoc

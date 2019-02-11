@@ -62,12 +62,13 @@ namespace nova {
         [[nodiscard]] const char *what() const noexcept override;
     };
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_EXCEPTION(name)                                                                                                               \
     /* NOLINTNEXTLINE(bugprone-macro-parentheses)*/                                                                                        \
     class name : public ::nova::nova_exception {                                                                                           \
     public:                                                                                                                                \
         name(){};                                                                                                                          \
-        explicit name(const std::string& msg) : ::nova::nova_exception(msg){};                                                         \
+        explicit name(const std::string &msg) : ::nova::nova_exception(msg){};                                                             \
                                                                                                                                            \
         explicit name(const std::exception &cause) : ::nova::nova_exception(cause){};                                                      \
         name(const std::string &msg, const std::exception &cause) : ::nova::nova_exception(msg, cause){};                                  \

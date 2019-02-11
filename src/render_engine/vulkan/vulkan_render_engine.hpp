@@ -7,15 +7,15 @@
 
 #include "../render_engine.hpp"
 #ifdef NOVA_LINUX
-#define VK_USE_PLATFORM_XLIB_KHR 1 // Use X11 for window creating on Linux... TODO: Wayland?
-#define NOVA_VK_XLIB 1
+#define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
+#define NOVA_VK_XLIB
 #include "../../util/linux_utils.hpp"
 #include "x11_window.hpp"
 #include <vulkan/vulkan_xlib.h>
 
-#elif NOVA_WINDOWS
+#elif defined(NOVA_WINDOWS)
 #define VK_USE_PLATFORM_WIN32_KHR
-#define NOVA_USE_WIN32 1
+#define NOVA_USE_WIN32
 #include "../dx12/win32_window.hpp"
 #include <vulkan/vulkan_win32.h>
 #endif
@@ -203,7 +203,7 @@ namespace nova {
 
 #ifdef NOVA_LINUX
         std::shared_ptr<x11_window> window;
-#elif NOVA_WINDOWS
+#elif defined(NOVA_WINDOWS)
         std::shared_ptr<win32_window> window;
 #endif
 

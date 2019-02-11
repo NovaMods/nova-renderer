@@ -17,7 +17,7 @@ namespace nova {
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
         int screen = DefaultScreen(display);
-        
+
         window = XCreateSimpleWindow(display,
                                      RootWindow(display, screen), // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                                      50,
@@ -25,7 +25,7 @@ namespace nova {
                                      width,
                                      height,
                                      1,
-                                     BlackPixel(display, screen), // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+                                     BlackPixel(display, screen),  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                                      WhitePixel(display, screen)); // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
 
         wm_protocols = XInternAtom(display, "WM_PROTOCOLS", 0);

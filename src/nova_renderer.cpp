@@ -11,7 +11,7 @@
 #include "loading/shaderpack/shaderpack_loading.hpp"
 #include "util/logger.hpp"
 
-#if NOVA_WINDOWS
+#if defined(NOVA_WINDOWS)
 #include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
 
@@ -53,7 +53,7 @@ namespace nova {
 
         switch(settings.api) {
             case graphics_api::dx12:
-#if NOVA_WINDOWS
+#if defined(NOVA_WINDOWS)
             {
                 MTR_SCOPE("Init", "InitDirectX12RenderEngine");
                 engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);

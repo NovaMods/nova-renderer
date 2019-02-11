@@ -54,14 +54,17 @@ extern "C" {
 // information can be found to match up with a stripped shader.
 // the define can be used like so: const GUID RENDERDOC_ShaderDebugMagicValue =
 // RENDERDOC_ShaderDebugMagicValue_value
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define RENDERDOC_ShaderDebugMagicValue_struct                                                                                             \
     { 0xeab25520, 0x6670, 0x4865, 0x84, 0x29, 0x6c, 0x8, 0x51, 0x54, 0x00, 0xff }
 
 // as an alternative when you want a byte array (assuming x86 endianness):
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define RENDERDOC_ShaderDebugMagicValue_bytearray                                                                                          \
     { 0x20, 0x55, 0xb2, 0xea, 0x70, 0x66, 0x65, 0x48, 0x84, 0x29, 0x6c, 0x8, 0x51, 0x54, 0x00, 0xff }
 
 // truncated version when only a uint64_t is available (e.g. Vulkan tags):
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define RENDERDOC_ShaderDebugMagicValue_truncated 0x48656670eab25520ULL
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -461,6 +464,7 @@ using RENDERDOC_WindowHandle = void *;
 // Specifically, the value needed is the dispatch table pointer, which sits as the first
 // pointer-sized object in the memory pointed to by the VkInstance. Thus we cast to a void** and
 // indirect once.
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define RENDERDOC_DEVICEPOINTER_FROM_VKINSTANCE(inst) (*((void **) (inst)))
 
 // This sets the RenderDoc in-app overlay in the API/window pair as 'active' and it will

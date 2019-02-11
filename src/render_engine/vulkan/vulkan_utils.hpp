@@ -13,6 +13,7 @@ namespace nova::vulkan {
     class vulkan_utils {
     public:
         static std::string vk_result_to_string(VkResult result) {
+            // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define ERROR_CASE(r)                                                                                                                      \
     case VK_##r:                                                                                                                           \
         return #r
@@ -44,6 +45,7 @@ namespace nova::vulkan {
 // Only validate errors in debug mode
 // Release mode needs to be fast A F
 #ifndef NDEBUG
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                            \
     do {                                                                                                                                   \
         const VkResult result = (expr);                                                                                                    \

@@ -57,6 +57,7 @@ namespace nova {
 
 } // namespace nova
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_LOG(LEVEL) ::nova::logger::instance.log(::nova::log_level::LEVEL)
 
 #endif // NOVA_RENDERER_LOGGER_HPP
