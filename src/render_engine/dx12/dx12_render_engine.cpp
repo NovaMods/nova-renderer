@@ -7,24 +7,25 @@
 #include <D3DCompiler.h>
 
 #include "dx12_render_engine.hpp"
-#include <d3d12sdklayers.h>
 #include <algorithm>
+#include <d3d12sdklayers.h>
 #include <unordered_set>
 
-#include "../../util/logger.hpp"
-#include "../../loading/shaderpack/render_graph_builder.hpp"
-#include "../../util/windows_utils.hpp"
 #include "../../../3rdparty/SPIRV-Cross/spirv_cross.hpp"
+#include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
-#include "vertex_attributes.hpp"
-#include "d3dx12.h"
 #include "../../nova_renderer.hpp"
+#include "../../util/logger.hpp"
+#include "../../util/windows_utils.hpp"
+#include "d3dx12.h"
 #include "dx12_utils.hpp"
+#include "vertex_attributes.hpp"
 
 #include "../../tasks/task_scheduler.hpp"
 
 namespace nova {
-    dx12_render_engine::dx12_render_engine(const nova_settings& settings, ttl::task_scheduler* scheduler) : render_engine(settings, scheduler), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
+    dx12_render_engine::dx12_render_engine(const nova_settings &settings, ttl::task_scheduler *scheduler)
+        : render_engine(settings, scheduler), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
         NOVA_LOG(INFO) << "Initializing Direct3D 12 rendering";
 
         create_device();
@@ -32,7 +33,7 @@ namespace nova {
         create_full_frame_fences();
 
         std::vector<command_list_base *> direct_buffers;
-        direct_buffers.reserve(32);  // Not sure how many we need, this should be enough
+        direct_buffers.reserve(32); // Not sure how many we need, this should be enough
         buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_DIRECT, direct_buffers);
 
         std::vector<command_list_base *> copy_buffers;
@@ -145,14 +146,21 @@ namespace nova {
 
         ComPtr<IDXGISwapChain1> swapchain_uncast;
         // No target window specified in DXGI_SWAP_CHAIN_DESC, and no window associated with owning factory. [ MISCELLANEOUS ERROR #6: ]
-        HRESULT hr = dxgi_factory->CreateSwapChainForHwnd(direct_command_queue.Get(), window->get_window_handle(), &swapchain_description, nullptr, nullptr, &swapchain_uncast);
+        HRESULT hr = dxgi_factory->CreateSwapChainForHwnd(direct_command_queue.Get(),
+                                                          window->get_window_handle(),
+                                                          &swapchain_description,
+                                                          nullptr,
+                                                          nullptr,
+                                                          &swapchain_uncast);
         if(FAILED(hr)) {
             NOVA_LOG(FATAL) << "Could not create swapchain";
             if(hr == DXGI_ERROR_INVALID_CALL) {
                 NOVA_LOG(INFO) << "Invalid call - one or more of the parameters was wrong";
-            } else if(hr == DXGI_STATUS_OCCLUDED) {
+            }
+            else if(hr == DXGI_STATUS_OCCLUDED) {
                 NOVA_LOG(INFO) << "Fullscreen is unavaible";
-            } else if(hr == E_OUTOFMEMORY) {
+            }
+            else if(hr == E_OUTOFMEMORY) {
                 NOVA_LOG(INFO) << "Out of memory. Soz bro :/";
             }
 
@@ -201,7 +209,7 @@ namespace nova {
     std::shared_ptr<iwindow> dx12_render_engine::get_window() const {
         return window;
     }
-    
+
     void dx12_render_engine::render_frame() {
         wait_for_previous_frame();
 
@@ -215,16 +223,22 @@ namespace nova {
 
         present_commands->list->Reset(present_commands->allocator.Get(), nullptr);
 
-        CD3DX12_RESOURCE_BARRIER to_render_target = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        CD3DX12_RESOURCE_BARRIER to_render_target = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(),
+                                                                                         D3D12_RESOURCE_STATE_PRESENT,
+                                                                                         D3D12_RESOURCE_STATE_RENDER_TARGET);
         present_commands->list->ResourceBarrier(1, &to_render_target);
 
-        CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(), frame_index, rtv_descriptor_size);
+        CD3DX12_CPU_DESCRIPTOR_HANDLE current_framebuffer_rtv(rtv_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
+                                                              frame_index,
+                                                              rtv_descriptor_size);
         present_commands->list->OMSetRenderTargets(1, &current_framebuffer_rtv, false, nullptr);
 
         glm::vec4 clear_color(0, 0.2f, 0.4f, 1.0f);
         present_commands->list->ClearRenderTargetView(current_framebuffer_rtv, &clear_color.x, 0, nullptr);
 
-        CD3DX12_RESOURCE_BARRIER to_presentable = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+        CD3DX12_RESOURCE_BARRIER to_presentable = CD3DX12_RESOURCE_BARRIER::Transition(rendertargets[frame_index].Get(),
+                                                                                       D3D12_RESOURCE_STATE_RENDER_TARGET,
+                                                                                       D3D12_RESOURCE_STATE_PRESENT);
         present_commands->list->ResourceBarrier(1, &to_presentable);
 
         present_commands->list->Close();
@@ -240,7 +254,7 @@ namespace nova {
         release_command_list(present_commands);
     }
 
-    void dx12_render_engine::wait_for_previous_frame() {  // Wait for the previous frame at our index to finish
+    void dx12_render_engine::wait_for_previous_frame() { // Wait for the previous frame at our index to finish
         frame_index = swapchain->GetCurrentBackBufferIndex();
         if(frame_fences.at(frame_index)->GetCompletedValue() < frame_fence_values.at(frame_index)) {
             frame_fences.at(frame_index)->SetEventOnCompletion(frame_fence_values.at(frame_index), full_frame_fence_event);
@@ -295,8 +309,8 @@ namespace nova {
             new_list->allocator = alloc_list->allocator;
             new_list->submission_fence = alloc_list->submission_fence;
             new_list->fence_value = alloc_list->fence_value;
-
-        } else {
+        }
+        else {
             command_list_base *pool_list = buffers.back();
             pool_list->is_done = false;
             buffers.pop_back();
@@ -326,7 +340,8 @@ namespace nova {
             hr = device->CreateFence(1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
             if(SUCCEEDED(hr)) {
                 frame_fences[i] = fence;
-            } else {
+            }
+            else {
                 NOVA_LOG(FATAL) << "Could not create fence for from index " << frame_index;
                 throw render_engine_initialization_exception("Could not create fence for from index " + std::to_string(frame_index));
             }
@@ -336,7 +351,7 @@ namespace nova {
         full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 
-    void dx12_render_engine::set_shaderpack(const shaderpack_data& data) {
+    void dx12_render_engine::set_shaderpack(const shaderpack_data &data) {
         // Let's build our data from the ground up!
         // To load a new shaderpack, we need to first clear out all the data from the old shaderpack. Then, we can
         // make the new dynamic textures and samplers, then the PSOs, then the material definitions, then the
@@ -364,7 +379,7 @@ namespace nova {
 
         std::vector<render_pass_data> passes_in_submission_order;
         passes_in_submission_order.reserve(ordered_passes.size());
-        for(const std::string& pass_name : ordered_passes) {
+        for(const std::string &pass_name : ordered_passes) {
             passes_in_submission_order.push_back(render_passes.at(pass_name));
         }
         create_dynamic_textures(data.resources.textures, passes_in_submission_order);
@@ -372,7 +387,7 @@ namespace nova {
         make_pipeline_state_objects(data.pipelines, scheduler);
     }
 
-    mesh_id_t dx12_render_engine::add_mesh(const mesh_data&) {
+    mesh_id_t dx12_render_engine::add_mesh(const mesh_data &) {
         // TODO
 
         return {};
@@ -394,11 +409,14 @@ namespace nova {
             }
         }
 
-        const auto erase_itr = std::remove_if(lists_to_free.begin(), lists_to_free.end(), [](const command_list_base *list) { return list->is_done; });
+        const auto erase_itr = std::remove_if(lists_to_free.begin(), lists_to_free.end(), [](const command_list_base *list) {
+            return list->is_done;
+        });
         lists_to_free.erase(erase_itr, lists_to_free.end());
     }
 
-    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_resource_data> &texture_datas, std::vector<render_pass_data> passes) {
+    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_resource_data> &texture_datas,
+                                                     std::vector<render_pass_data> passes) {
         std::unordered_map<std::string, texture_resource_data> textures;
         for(const texture_resource_data &data : texture_datas) {
             textures[data.name] = data;
@@ -410,7 +428,9 @@ namespace nova {
 
         NOVA_LOG(TRACE) << "Ordered resources";
 
-        const std::unordered_map<std::string, std::string> aliases = determine_aliasing_of_textures(textures, resource_used_range, resources_in_order);
+        const std::unordered_map<std::string, std::string> aliases = determine_aliasing_of_textures(textures,
+                                                                                                    resource_used_range,
+                                                                                                    resources_in_order);
         NOVA_LOG(TRACE) << "Figured out which resources can be aliased";
 
         glm::uvec2 swapchain_dimensions;
@@ -437,8 +457,8 @@ namespace nova {
                 if(format.dimension_type == texture_dimension_type_enum::Absolute) {
                     dimensions.x = static_cast<uint32_t>(format.width);
                     dimensions.y = static_cast<uint32_t>(format.height);
-
-                } else {
+                }
+                else {
                     dimensions = swapchain_dimensions;
                     dimensions.x *= static_cast<uint32_t>(format.width);
                     dimensions.y *= static_cast<uint32_t>(format.height);
@@ -468,22 +488,27 @@ namespace nova {
 
                 ComPtr<ID3D12Resource> texture;
                 auto heap_props = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-                const HRESULT hr = device->CreateCommittedResource(&heap_props, D3D12_HEAP_FLAG_NONE, &texture_desc, 
-                    D3D12_RESOURCE_STATE_RENDER_TARGET, nullptr, IID_PPV_ARGS(&texture));
+                const HRESULT hr = device->CreateCommittedResource(&heap_props,
+                                                                   D3D12_HEAP_FLAG_NONE,
+                                                                   &texture_desc,
+                                                                   D3D12_RESOURCE_STATE_RENDER_TARGET,
+                                                                   nullptr,
+                                                                   IID_PPV_ARGS(&texture));
 
                 if(FAILED(hr)) {
                     std::string error_description;
                     switch(hr) {
-                    case E_OUTOFMEMORY:
-                        error_description = "Out of memory";
-                        break;
+                        case E_OUTOFMEMORY:
+                            error_description = "Out of memory";
+                            break;
 
-                    case E_INVALIDARG:
-                        error_description = "One or more arguments are invalid";
-                        break;
+                        case E_INVALIDARG:
+                            error_description = "One or more arguments are invalid";
+                            break;
                     }
 
-                    NOVA_LOG(ERROR) << "Could not create texture " << texture_name << ": Error code " << hr << ", Error description '" << error_description << ", Windows error: '" << get_last_windows_error() << "'";
+                    NOVA_LOG(ERROR) << "Could not create texture " << texture_name << ": Error code " << hr << ", Error description '"
+                                    << error_description << ", Windows error: '" << get_last_windows_error() << "'";
 
                     continue;
                 }
@@ -495,8 +520,8 @@ namespace nova {
 
                 NOVA_LOG(TRACE) << "Added texture " << texture_name << " to the dynamic textures";
                 NOVA_LOG(TRACE) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
-
-            } else {
+            }
+            else {
                 NOVA_LOG(TRACE) << "The physical resource already exists, so we're just gonna use that";
                 // The texture we're aliasing already has a real texture behind it - so let's use that
                 dynamic_tex_name_to_idx[named_texture.first] = dynamic_tex_name_to_idx[texture_name];
@@ -506,39 +531,42 @@ namespace nova {
 
     void dx12_render_engine::create_gpu_query_heap(size_t num_queries) {
         D3D12_QUERY_HEAP_DESC heap_desc = {};
-        heap_desc.Count =static_cast<UINT>(num_queries);
+        heap_desc.Count = static_cast<UINT>(num_queries);
         heap_desc.NodeMask = 0;
         heap_desc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
 
         device->CreateQueryHeap(&heap_desc, IID_PPV_ARGS(&renderpass_timestamp_query_heap));
     }
 
-    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ttl::task_scheduler* scheduler) {
+    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data> &pipelines, ttl::task_scheduler *scheduler) {
         std::vector<std::future<pipeline>> future_pipelines(pipelines.size());
         std::size_t write_pipeline = 0;
 
-        for(const pipeline_data& data : pipelines) {
+        for(const pipeline_data &data : pipelines) {
             if(!data.name.empty()) {
-                future_pipelines[write_pipeline] = scheduler->add_task([&](ttl::task_scheduler* task_scheduler, const pipeline_data data) {
-                    try {
-                        return make_single_pso(data);
-                    } catch(shader_compilation_failed& err) {
-                        NOVA_LOG(ERROR) << "Could not compile shaders for PSO " << data.name << ": " << err.what();
-                        return pipeline{};
-                    }
-                }, data);
+                future_pipelines[write_pipeline] = scheduler->add_task(
+                    [&](ttl::task_scheduler *task_scheduler, const pipeline_data data) {
+                        try {
+                            return make_single_pso(data);
+                        }
+                        catch(shader_compilation_failed &err) {
+                            NOVA_LOG(ERROR) << "Could not compile shaders for PSO " << data.name << ": " << err.what();
+                            return pipeline{};
+                        }
+                    },
+                    data);
                 write_pipeline++;
             }
         }
 
-        for(auto& future_pipeline : future_pipelines) {
+        for(auto &future_pipeline : future_pipelines) {
             future_pipeline.wait();
             // TODO
         }
     }
-    
-    pipeline dx12_render_engine::make_single_pso(const pipeline_data& input) {
-        const render_pass_data& render_pass = render_passes.at(input.pass);
+
+    pipeline dx12_render_engine::make_single_pso(const pipeline_data &input) {
+        const render_pass_data &render_pass = render_passes.at(input.pass);
         const auto states_begin = input.states.begin();
         const auto states_end = input.states.end();
         pipeline output;
@@ -564,12 +592,18 @@ namespace nova {
         }
 
         if(input.tessellation_control_shader) {
-            ComPtr<ID3DBlob> tessellation_control_blob = compile_shader(*input.tessellation_control_shader, "hs_5_1", options, shader_inputs);
+            ComPtr<ID3DBlob> tessellation_control_blob = compile_shader(*input.tessellation_control_shader,
+                                                                        "hs_5_1",
+                                                                        options,
+                                                                        shader_inputs);
             pipeline_state_desc.HS.BytecodeLength = tessellation_control_blob->GetBufferSize();
             pipeline_state_desc.HS.pShaderBytecode = tessellation_control_blob->GetBufferPointer();
         }
         if(input.tessellation_evaluation_shader) {
-            ComPtr<ID3DBlob> tessellation_evaluation_blob = compile_shader(*input.tessellation_evaluation_shader, "ds_5_1", options, shader_inputs);
+            ComPtr<ID3DBlob> tessellation_evaluation_blob = compile_shader(*input.tessellation_evaluation_shader,
+                                                                           "ds_5_1",
+                                                                           options,
+                                                                           shader_inputs);
             pipeline_state_desc.DS.BytecodeLength = tessellation_evaluation_blob->GetBufferSize();
             pipeline_state_desc.DS.pShaderBytecode = tessellation_evaluation_blob->GetBufferPointer();
         }
@@ -579,17 +613,18 @@ namespace nova {
             pipeline_state_desc.PS.BytecodeLength = fragment_blob->GetBufferSize();
             pipeline_state_desc.PS.pShaderBytecode = fragment_blob->GetBufferPointer();
         }
-        
+
         output.root_signature = create_root_signature(shader_inputs);
         pipeline_state_desc.pRootSignature = output.root_signature.Get();
 
         /*
-        * Blend state
-        */
+         * Blend state
+         */
 
-        pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin, states_end, state_enum::EnableAlphaToCoverage) != states_end;
+        pipeline_state_desc.BlendState.AlphaToCoverageEnable = std::find(states_begin, states_end, state_enum::EnableAlphaToCoverage) !=
+                                                               states_end;
         pipeline_state_desc.BlendState.IndependentBlendEnable = false;
-        D3D12_RENDER_TARGET_BLEND_DESC& blend_state = pipeline_state_desc.BlendState.RenderTarget[0];
+        D3D12_RENDER_TARGET_BLEND_DESC &blend_state = pipeline_state_desc.BlendState.RenderTarget[0];
         blend_state.BlendEnable = std::find(states_begin, states_end, state_enum::Blending) != states_end;
         blend_state.SrcBlend = to_dx12_blend(input.source_blend_factor);
         blend_state.DestBlend = to_dx12_blend(input.destination_blend_factor);
@@ -604,15 +639,15 @@ namespace nova {
          * Rasterizer state
          */
 
-        D3D12_RASTERIZER_DESC& raster_desc = pipeline_state_desc.RasterizerState;
+        D3D12_RASTERIZER_DESC &raster_desc = pipeline_state_desc.RasterizerState;
         raster_desc.FillMode = D3D12_FILL_MODE_SOLID;
         if(std::find(states_begin, states_end, state_enum::InvertCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_FRONT;
-
-        } else if(std::find(states_begin, states_end, state_enum::DisableCulling) != states_end) {
+        }
+        else if(std::find(states_begin, states_end, state_enum::DisableCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_NONE;
-
-        } else {
+        }
+        else {
             raster_desc.CullMode = D3D12_CULL_MODE_BACK;
         }
         raster_desc.FrontCounterClockwise = true;
@@ -629,12 +664,12 @@ namespace nova {
          * Depth and Stencil
          */
 
-        D3D12_DEPTH_STENCIL_DESC& ds_desc = pipeline_state_desc.DepthStencilState;
+        D3D12_DEPTH_STENCIL_DESC &ds_desc = pipeline_state_desc.DepthStencilState;
         ds_desc.DepthEnable = std::find(states_begin, states_end, state_enum::DisableDepthTest) == states_end;
         if(std::find(states_begin, states_end, state_enum::DisableDepthWrite) != states_end) {
             ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-
-        } else {
+        }
+        else {
             ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
         }
 
@@ -643,14 +678,14 @@ namespace nova {
         ds_desc.StencilReadMask = input.stencil_read_mask;
         ds_desc.StencilWriteMask = input.stencil_write_mask;
         if(input.front_face) {
-            const stencil_op_state& front_face = *input.front_face;
+            const stencil_op_state &front_face = *input.front_face;
             ds_desc.FrontFace.StencilFailOp = to_dx12_stencil_op(front_face.fail_op);
             ds_desc.FrontFace.StencilDepthFailOp = to_dx12_stencil_op(front_face.depth_fail_op);
             ds_desc.FrontFace.StencilPassOp = to_dx12_stencil_op(front_face.pass_op);
             ds_desc.FrontFace.StencilFunc = to_dx12_compare_func(front_face.compare_op);
         }
         if(input.back_face) {
-            const stencil_op_state& back_face = *input.back_face;
+            const stencil_op_state &back_face = *input.back_face;
             ds_desc.BackFace.StencilFailOp = to_dx12_stencil_op(back_face.fail_op);
             ds_desc.BackFace.StencilDepthFailOp = to_dx12_stencil_op(back_face.depth_fail_op);
             ds_desc.BackFace.StencilPassOp = to_dx12_stencil_op(back_face.pass_op);
@@ -665,8 +700,8 @@ namespace nova {
 
         std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs;
         input_descs.reserve(input.vertex_fields.size());
-        for(const vertex_field_data& vertex_field : input.vertex_fields) {
-            const vertex_attribute& attr = all_formats.at(vertex_field.field);
+        for(const vertex_field_data &vertex_field : input.vertex_fields) {
+            const vertex_attribute &attr = all_formats.at(vertex_field.field);
 
             D3D12_INPUT_ELEMENT_DESC desc = {};
             desc.SemanticName = vertex_field.semantic_name.data();
@@ -695,12 +730,12 @@ namespace nova {
 
         uint32_t i = 0;
         for(i = 0; i < render_pass.texture_outputs.size(); i++) {
-            const texture_attachment& attachment = render_pass.texture_outputs.at(i);
-            const dx12_texture& tex = dynamic_textures.at(attachment.name);
+            const texture_attachment &attachment = render_pass.texture_outputs.at(i);
+            const dx12_texture &tex = dynamic_textures.at(attachment.name);
             if(tex.is_depth_texture()) {
                 pipeline_state_desc.DSVFormat = tex.get_dxgi_format();
-
-            } else {
+            }
+            else {
                 pipeline_state_desc.RTVFormats[i] = to_dxgi_format(tex.get_data().format.pixel_format);
             }
         }
@@ -735,7 +770,10 @@ namespace nova {
         return output;
     }
 
-    void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type, const D3D12_SHADER_INPUT_BIND_DESC & bind_desc, const uint32_t set, std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+    void add_resource_to_descriptor_table(D3D12_DESCRIPTOR_RANGE_TYPE descriptor_type,
+                                          const D3D12_SHADER_INPUT_BIND_DESC &bind_desc,
+                                          const uint32_t set,
+                                          std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> &tables) {
         D3D12_DESCRIPTOR_RANGE1 range = {};
         range.BaseShaderRegister = bind_desc.BindPoint;
         range.RegisterSpace = bind_desc.Space;
@@ -745,9 +783,11 @@ namespace nova {
 
         tables[set].push_back(range);
     }
-    
-    ComPtr<ID3DBlob> compile_shader(const shader_source& shader, const std::string& target, 
-        const spirv_cross::CompilerHLSL::Options& options, std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {
+
+    ComPtr<ID3DBlob> compile_shader(const shader_source &shader,
+                                    const std::string &target,
+                                    const spirv_cross::CompilerHLSL::Options &options,
+                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> &tables) {
 
         spirv_cross::CompilerHLSL shader_compiler(shader.source);
         shader_compiler.set_hlsl_options(options);
@@ -757,35 +797,45 @@ namespace nova {
         // Make maps of all the types of things we care about
         std::unordered_map<std::string, spirv_cross::Resource> spirv_sampled_images;
         spirv_sampled_images.reserve(resources.sampled_images.size());
-        for(const spirv_cross::Resource& sampled_image : resources.sampled_images) {
+        for(const spirv_cross::Resource &sampled_image : resources.sampled_images) {
             spirv_sampled_images[sampled_image.name] = sampled_image;
         }
-        
+
         std::unordered_map<std::string, spirv_cross::Resource> spirv_uniform_buffers;
         spirv_uniform_buffers.reserve(resources.uniform_buffers.size());
-        for(const spirv_cross::Resource& uniform_buffer : resources.uniform_buffers) {
+        for(const spirv_cross::Resource &uniform_buffer : resources.uniform_buffers) {
             spirv_uniform_buffers[uniform_buffer.name] = uniform_buffer;
         }
-        
+
         std::string shader_hlsl = shader_compiler.compile();
 
-        const fs::path& filename = shader.filename;
+        const fs::path &filename = shader.filename;
         fs::path debug_path = filename.filename();
         debug_path.replace_extension(target + ".generated.hlsl");
         write_to_file(shader_hlsl, debug_path);
 
         ComPtr<ID3DBlob> shader_blob;
         ComPtr<ID3DBlob> shader_compile_errors;
-        HRESULT hr = D3DCompile2(shader_hlsl.data(), shader_hlsl.size(), filename.string().c_str(), nullptr,
-            D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", target.c_str(),
-            D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, 0, nullptr,
-            0, &shader_blob, &shader_compile_errors);
+        HRESULT hr = D3DCompile2(shader_hlsl.data(),
+                                 shader_hlsl.size(),
+                                 filename.string().c_str(),
+                                 nullptr,
+                                 D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                                 "main",
+                                 target.c_str(),
+                                 D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3,
+                                 0,
+                                 0,
+                                 nullptr,
+                                 0,
+                                 &shader_blob,
+                                 &shader_compile_errors);
         if(FAILED(hr)) {
             std::stringstream ss;
-            ss << "Could not compile vertex shader for pipeline " << filename.string() << ": " << static_cast<char*>(shader_compile_errors->GetBufferPointer());
+            ss << "Could not compile vertex shader for pipeline " << filename.string() << ": "
+               << static_cast<char *>(shader_compile_errors->GetBufferPointer());
             throw shader_compilation_failed(ss.str());
         }
-
 
         ComPtr<ID3D12ShaderReflection> shader_reflector;
         hr = D3DReflect(shader_blob->GetBufferPointer(), shader_blob->GetBufferSize(), IID_PPV_ARGS(&shader_reflector));
@@ -800,7 +850,8 @@ namespace nova {
         }
 
         std::unordered_map<std::string, D3D12_SHADER_INPUT_BIND_DESC> shader_inputs(shader_desc.BoundResources);
-        // For each resource in the DX12 shader, find its set and binding in SPIR-V. Translate the sets and bindings into places in descriptor tables
+        // For each resource in the DX12 shader, find its set and binding in SPIR-V. Translate the sets and bindings into places in
+        // descriptor tables
         for(uint32_t i = 0; i < shader_desc.BoundResources; i++) {
             D3D12_SHADER_INPUT_BIND_DESC bind_desc;
             hr = shader_reflector->GetResourceBindingDesc(i, &bind_desc);
@@ -838,9 +889,9 @@ namespace nova {
                 case D3D_SIT_STRUCTURED:
                 case D3D_SIT_UAV_RWTYPED:
                 case D3D_SIT_UAV_RWSTRUCTURED:
-                case D3D_SIT_UAV_RWBYTEADDRESS: 
-                case D3D_SIT_UAV_APPEND_STRUCTURED: 
-                case D3D_SIT_UAV_CONSUME_STRUCTURED: 
+                case D3D_SIT_UAV_RWBYTEADDRESS:
+                case D3D_SIT_UAV_APPEND_STRUCTURED:
+                case D3D_SIT_UAV_CONSUME_STRUCTURED:
                 case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER:
                     descriptor_type = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
                     break;
@@ -849,12 +900,13 @@ namespace nova {
 
         return shader_blob;
     }
-    
-    ComPtr<ID3D12RootSignature> dx12_render_engine::create_root_signature(const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) const {
+
+    ComPtr<ID3D12RootSignature> dx12_render_engine::create_root_signature(
+        const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> &tables) const {
         std::vector<D3D12_ROOT_PARAMETER1> params(tables.size());
         std::size_t cur_param = 0;
-        for(const auto& table : tables) {
-            D3D12_ROOT_PARAMETER1& parameter = params.at(cur_param);
+        for(const auto &table : tables) {
+            D3D12_ROOT_PARAMETER1 &parameter = params.at(cur_param);
             parameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
             parameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
             parameter.DescriptorTable.NumDescriptorRanges = static_cast<UINT>(table.second.size());
@@ -872,46 +924,49 @@ namespace nova {
         ComPtr<ID3DBlob> root_sig_compile_error;
         HRESULT hr = D3D12SerializeVersionedRootSignature(&versioned_sig, &compiled_root_sig, &root_sig_compile_error);
         if(FAILED(hr)) {
-            const std::string root_sig_compile_error_str = static_cast<char*>(root_sig_compile_error->GetBufferPointer());
+            const std::string root_sig_compile_error_str = static_cast<char *>(root_sig_compile_error->GetBufferPointer());
             throw shader_compilation_failed("Could not compile root signature: " + root_sig_compile_error_str);
         }
 
         ComPtr<ID3D12RootSignature> root_sig;
-        hr = device->CreateRootSignature(0, compiled_root_sig->GetBufferPointer(), compiled_root_sig->GetBufferSize(), IID_PPV_ARGS(&root_sig));
+        hr = device->CreateRootSignature(0,
+                                         compiled_root_sig->GetBufferPointer(),
+                                         compiled_root_sig->GetBufferSize(),
+                                         IID_PPV_ARGS(&root_sig));
         if(FAILED(hr)) {
             throw shader_compilation_failed("Could not create root signature");
         }
-        
+
         return root_sig;
     }
 
-    bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) {
+    bool operator==(const D3D12_ROOT_PARAMETER1 &param1, const D3D12_ROOT_PARAMETER1 &param2) {
         if(param1.ParameterType != param2.ParameterType) {
             return false;
         }
 
         switch(param1.ParameterType) {
-        case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
-            return param1.DescriptorTable == param2.DescriptorTable;
+            case D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE:
+                return param1.DescriptorTable == param2.DescriptorTable;
 
-        case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
-            return param1.Constants == param2.Constants;
+            case D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS:
+                return param1.Constants == param2.Constants;
 
-        case D3D12_ROOT_PARAMETER_TYPE_CBV:
-        case D3D12_ROOT_PARAMETER_TYPE_SRV:
-        case D3D12_ROOT_PARAMETER_TYPE_UAV:
-            return param1.Descriptor == param2.Descriptor;
+            case D3D12_ROOT_PARAMETER_TYPE_CBV:
+            case D3D12_ROOT_PARAMETER_TYPE_SRV:
+            case D3D12_ROOT_PARAMETER_TYPE_UAV:
+                return param1.Descriptor == param2.Descriptor;
 
-        default:
-            return false;
+            default:
+                return false;
         }
     }
 
-    bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) {
+    bool operator!=(const D3D12_ROOT_PARAMETER1 &param1, const D3D12_ROOT_PARAMETER1 &param2) {
         return !(param1 == param2);
     }
 
-    bool operator==(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2) {
+    bool operator==(const D3D12_ROOT_DESCRIPTOR_TABLE1 &table1, const D3D12_ROOT_DESCRIPTOR_TABLE1 &table2) {
         if(table1.NumDescriptorRanges != table2.NumDescriptorRanges) {
             return false;
         }
@@ -925,32 +980,26 @@ namespace nova {
         return true;
     }
 
-    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2) {
+    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1 &table1, const D3D12_ROOT_DESCRIPTOR_TABLE1 &table2) {
         return !(table1 == table2);
     }
 
-    bool operator==(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2) {
-        return range1.RangeType == range2.RangeType &&
-            range1.NumDescriptors == range2.NumDescriptors &&
-            range1.BaseShaderRegister == range2.BaseShaderRegister &&
-            range1.RegisterSpace == range2.RegisterSpace &&
-            range1.Flags == range2.Flags &&
-            range1.OffsetInDescriptorsFromTableStart == range2.OffsetInDescriptorsFromTableStart;
+    bool operator==(const D3D12_DESCRIPTOR_RANGE1 &range1, const D3D12_DESCRIPTOR_RANGE1 &range2) {
+        return range1.RangeType == range2.RangeType && range1.NumDescriptors == range2.NumDescriptors &&
+               range1.BaseShaderRegister == range2.BaseShaderRegister && range1.RegisterSpace == range2.RegisterSpace &&
+               range1.Flags == range2.Flags && range1.OffsetInDescriptorsFromTableStart == range2.OffsetInDescriptorsFromTableStart;
     }
 
-    bool operator!=(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2) {
+    bool operator!=(const D3D12_DESCRIPTOR_RANGE1 &range1, const D3D12_DESCRIPTOR_RANGE1 &range2) {
         return !(range1 == range2);
     }
-    
-    bool operator==(const D3D12_ROOT_CONSTANTS& lhs, const D3D12_ROOT_CONSTANTS& rhs) {
-        return lhs.ShaderRegister == rhs.ShaderRegister &&
-            lhs.RegisterSpace == rhs.RegisterSpace &&
-            lhs.Num32BitValues == rhs.Num32BitValues;
+
+    bool operator==(const D3D12_ROOT_CONSTANTS &lhs, const D3D12_ROOT_CONSTANTS &rhs) {
+        return lhs.ShaderRegister == rhs.ShaderRegister && lhs.RegisterSpace == rhs.RegisterSpace &&
+               lhs.Num32BitValues == rhs.Num32BitValues;
     }
 
-    bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs) {
-        return lhs.ShaderRegister == rhs.ShaderRegister &&
-            lhs.RegisterSpace == rhs.RegisterSpace &&
-            lhs.Flags == rhs.Flags;
+    bool operator==(const D3D12_ROOT_DESCRIPTOR1 &lhs, const D3D12_ROOT_DESCRIPTOR1 &rhs) {
+        return lhs.ShaderRegister == rhs.ShaderRegister && lhs.RegisterSpace == rhs.RegisterSpace && lhs.Flags == rhs.Flags;
     }
-}  // namespace nova
+} // namespace nova

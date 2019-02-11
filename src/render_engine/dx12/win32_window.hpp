@@ -17,8 +17,8 @@
 // C RunTime Header Files
 #include <tchar.h>
 
-#include <dxgi1_2.h>
 #include <DirectXMath.h>
+#include <dxgi1_2.h>
 #include <glm/glm.hpp>
 
 #ifdef ERROR
@@ -98,7 +98,7 @@ namespace nova {
          */
         static LRESULT CALLBACK window_procedure_wrapper(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     };
-}  // namespace nova
+} // namespace nova
 
 #endif
 #endif

@@ -1,7 +1,7 @@
 /*!
  * \brief Utility functions for handling Windows
  *
- * \author ddubois 
+ * \author ddubois
  * \date 10-Oct-18.
  */
 
@@ -24,4 +24,4 @@ std::wstring s2ws(const std::string &s);
  */
 std::string get_last_windows_error();
 
-#endif  // NOVA_RENDERER_WINDOWS_UTILS_HPP
+#endif // NOVA_RENDERER_WINDOWS_UTILS_HPP

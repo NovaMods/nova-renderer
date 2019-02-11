@@ -142,32 +142,34 @@ set(NOVA_SOURCE
 ##################################
 # Select platform dependent code #
 ##################################
+set(WINDOWS_NOVA_SOURCE
+    src/util/windows_utils.cpp
+    src/util/windows_utils.hpp
+    src/render_engine/dx12/pipeline_state_object.cpp
+    src/render_engine/dx12/pipeline_state_object.hpp
+    src/render_engine/dx12/vertex_attributes.hpp
+    src/render_engine/dx12/dx12_texture.cpp
+    src/render_engine/dx12/dx12_texture.hpp
+    src/render_engine/dx12/dx12_utils.cpp
+    src/render_engine/dx12/dx12_utils.hpp
+    src/render_engine/dx12/win32_window.hpp
+    src/render_engine/dx12/win32_window.cpp
+    src/render_engine/dx12/dx12_render_engine.cpp
+    src/render_engine/dx12/dx12_render_engine.hpp
+    src/render_engine/dx12/d3dx12.h
+)
+set(UNIX_NOVA_SOURCE
+    src/render_engine/vulkan/x11_window.cpp
+    src/render_engine/vulkan/x11_window.hpp
+    src/util/linux_utils.cpp
+    src/util/linux_utils.hpp
+)
 if(WIN32)
-    set(NOVA_SOURCE
-        ${NOVA_SOURCE}
-        src/util/windows_utils.cpp
-        src/util/windows_utils.hpp
-        src/render_engine/dx12/pipeline_state_object.cpp
-        src/render_engine/dx12/pipeline_state_object.hpp
-        src/render_engine/dx12/vertex_attributes.hpp
-        src/render_engine/dx12/dx12_texture.cpp
-        src/render_engine/dx12/dx12_texture.hpp
-        src/render_engine/dx12/dx12_utils.cpp
-        src/render_engine/dx12/dx12_utils.hpp
-        src/render_engine/dx12/win32_window.hpp
-        src/render_engine/dx12/win32_window.cpp
-        src/render_engine/dx12/dx12_render_engine.cpp
-        src/render_engine/dx12/dx12_render_engine.hpp
-        src/render_engine/dx12/d3dx12.h
-        )
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
+    set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
 else()
-    set(NOVA_SOURCE
-        ${NOVA_SOURCE}
-        src/render_engine/vulkan/x11_window.cpp
-        src/render_engine/vulkan/x11_window.hpp
-        src/util/linux_utils.cpp
-        src/util/linux_utils.hpp
-        )
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE})
+    set(OTHER_NOVA_SOURCE ${WINDOWS_NOVA_SOURCE})
 endif()
 
 ##########################################
@@ -219,7 +221,7 @@ source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE})
 # Setup the nova library #
 ##########################
 add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
-format(nova-renderer ${NOVA_SOURCE})
+format(nova-renderer "${OTHER_NOVA_SOURCE}")
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)

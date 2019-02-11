@@ -1,14 +1,15 @@
 #include <string>
 #include <strsafe.h>
 
-#include "win32_window.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
+#include "win32_window.hpp"
 
 #if SUPPORT_DX12
 
 namespace nova {
-    win32_window::win32_window(const uint32_t width, const uint32_t height) : window_class_name(const_cast<WCHAR *>(L"NovaWindowClass")), window_should_close(false), size{width, height} {
+    win32_window::win32_window(const uint32_t width, const uint32_t height)
+        : window_class_name(const_cast<WCHAR *>(L"NovaWindowClass")), window_should_close(false), size{width, height} {
         // Very strongly inspired by GLFW's Win32 variant of createNativeWindow - but GLFW is strictly geared towards
         // OpenGL/Vulkan so I don't want to try and fit it into here
 
@@ -34,7 +35,18 @@ namespace nova {
 
         auto *title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
 
-        window_handle = CreateWindowExW(extended_style, window_class_name, title, style, -1000, 100, width, height, nullptr, nullptr, GetModuleHandleW(nullptr), this);
+        window_handle = CreateWindowExW(extended_style,
+                                        window_class_name,
+                                        title,
+                                        style,
+                                        -1000,
+                                        100,
+                                        width,
+                                        height,
+                                        nullptr,
+                                        nullptr,
+                                        GetModuleHandleW(nullptr),
+                                        this);
         if(window_handle == nullptr) {
             const auto windows_error = get_last_windows_error();
             NOVA_LOG(FATAL) << "Could not create window: " << windows_error;
@@ -81,15 +93,15 @@ namespace nova {
                     return FALSE;
                 }
             }
-
-        } else {
+        }
+        else {
             view = reinterpret_cast<win32_window *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
         }
 
         if(view) {
             return view->window_procedure(hWnd, message, wParam, lParam);
-
-        } else {
+        }
+        else {
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
     }
@@ -107,10 +119,11 @@ namespace nova {
                 window_should_close = true;
                 return 0;
 
-            default: return DefWindowProc(hWnd, message, wParam, lParam);
+            default:
+                return DefWindowProc(hWnd, message, wParam, lParam);
         }
     }
-    
+
     bool win32_window::should_close() const {
         return window_should_close;
     }
@@ -134,6 +147,6 @@ namespace nova {
     glm::uvec2 win32_window::get_window_size() const {
         return size;
     }
-}  // namespace nova
+} // namespace nova
 
 #endif
