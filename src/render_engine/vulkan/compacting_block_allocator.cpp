@@ -232,7 +232,7 @@ namespace nova {
         VkDeviceSize amount_compacted = 0;
 
         block_t *current = nullptr;
-        for(current = head; current != nullptr; current = current->next) {
+        for(current = head; current != nullptr;) {
             if(current->free && current->next != nullptr) {
                 // Free block! Now we need to move things back
 
@@ -251,6 +251,12 @@ namespace nova {
                 }
 
                 write_ptr = reinterpret_cast<uint8_t *>(write_ptr) + current->size;
+            }
+            if(current->next != nullptr) {
+                current = current->next;
+            }
+            else {
+                break;
             }
         }
 
