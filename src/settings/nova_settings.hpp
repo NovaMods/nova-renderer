@@ -157,7 +157,7 @@ namespace nova {
          *
          * DirectX 12 is only supported on Windows 10. On other platforms Vulkan will be used, regardless of what you've chosen
          */
-        graphics_api api;
+        graphics_api api{};
 
         uint32_t max_in_flight_frames = 3;
 

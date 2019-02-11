@@ -228,12 +228,12 @@ namespace nova {
          * texel_aa does something that I don't want to figure out right now. Bilinear is your regular bilinear filter,
          * and point is the point filter. Aniso isn't an option and I kinda hope it stays that way
          */
-        texture_filter_enum filter;
+        texture_filter_enum filter{};
 
         /*!
          * \brief How the texture should wrap at the edges
          */
-        wrap_mode_enum wrap_mode;
+        wrap_mode_enum wrap_mode{};
     };
 
     struct stencil_op_state {
@@ -252,7 +252,7 @@ namespace nova {
 
     struct vertex_field_data {
         std::string semantic_name;
-        vertex_field_enum field;
+        vertex_field_enum field{};
     };
 
     /*!
@@ -334,46 +334,46 @@ namespace nova {
         /*!
          * \brief How to handle MSAA for this state
          */
-        msaa_support_enum msaa_support;
+        msaa_support_enum msaa_support{};
 
         /*!
          * \brief
          */
-        primitive_topology_enum primitive_mode;
+        primitive_topology_enum primitive_mode{};
 
         /*!
          * \brief Where to get the blending factor for the soource
          */
-        blend_factor_enum source_blend_factor;
+        blend_factor_enum source_blend_factor{};
 
         /*!
          * \brief Where to get the blending factor for the destination
          */
-        blend_factor_enum destination_blend_factor;
+        blend_factor_enum destination_blend_factor{};
 
         /*!
          * \brief How to get the source alpha in a blend
          */
-        blend_factor_enum alpha_src;
+        blend_factor_enum alpha_src{};
 
         /*!
          * \brief How to get the destination alpha in a blend
          */
-        blend_factor_enum alpha_dst;
+        blend_factor_enum alpha_dst{};
 
         /*!
          * \brief The function to use for the depth test
          */
-        compare_op_enum depth_func;
+        compare_op_enum depth_func{};
 
         /*!
          * \brief The render queue that this pass belongs to
          *
          * This may or may not be removed depending on what is actually needed by Nova
          */
-        render_queue_enum render_queue;
+        render_queue_enum render_queue{};
 
-        shader_source vertex_shader;
+        shader_source vertex_shader{};
 
         std::optional<shader_source> geometry_shader;
         std::optional<shader_source> tessellation_control_shader;

@@ -62,8 +62,8 @@ namespace nova {
         VmaAllocationInfo vma_info{};
 
         bool is_dynamic = false;
-        VkFormat format;
-        VkImageLayout layout;
+        VkFormat format{};
+        VkImageLayout layout{};
         bool is_depth_tex = false;
     };
 
