@@ -61,10 +61,12 @@ ForEachMacros:
   - BOOST_FOREACH
 IncludeBlocks:   Preserve
 IncludeCategories:
-  - Regex:           '^".*"'
-    Priority:        2
-  - Regex:           '.*'
-    Priority:        1
+  - Regex:           'x11'
+    Priority:        4
+  - Regex:           '^<.*>'
+    Priority:        5
+  - Regex:           '".*"'
+    Priority:        6
 IncludeIsMainRegex: '(Test)?$'
 IndentCaseLabels: true
 IndentPPDirectives: AfterHash
