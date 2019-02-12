@@ -12,8 +12,8 @@
 #undef ERROR
 #endif
 #elif defined(NOVA_LINUX)
-#include "../util/linux_utils.hpp"
 #include <dlfcn.h>
+#include "../util/linux_utils.hpp"
 #endif
 
 namespace nova {

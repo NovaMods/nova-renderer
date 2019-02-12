@@ -3,13 +3,13 @@
  * \date 30-Aug-18.
  */
 
-#include "../../util/windows.hpp"
 #include <D3DCompiler.h>
+#include "../../util/windows.hpp"
 
-#include "dx12_render_engine.hpp"
 #include <algorithm>
 #include <d3d12sdklayers.h>
 #include <unordered_set>
+#include "dx12_render_engine.hpp"
 
 #include "../../../3rdparty/SPIRV-Cross/spirv_cross.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"

@@ -6,15 +6,15 @@
 #ifndef NOVA_RENDERER_THREAD_POOL_HPP
 #define NOVA_RENDERER_THREAD_POOL_HPP
 
+#include <atomic>
+#include <cstdint>
+#include <functional>
+#include <future>
 #include "../util/logger.hpp"
 #include "../util/utils.hpp"
 #include "condition_counter.hpp"
 #include "task_graph.hpp"
 #include "wait_free_queue.hpp"
-#include <atomic>
-#include <cstdint>
-#include <functional>
-#include <future>
 
 #ifdef NOVA_LINUX
 #include "../util/linux_utils.hpp"

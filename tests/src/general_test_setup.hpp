@@ -13,12 +13,12 @@
 #include "../../src/platform.hpp"
 #include "../../src/settings/nova_settings.hpp"
 #ifdef _WIN32
-#include "../../src/render_engine/dx12/dx12_render_engine.hpp"
 #include <direct.h>
+#include "../../src/render_engine/dx12/dx12_render_engine.hpp"
 #define getcwd _getcwd
 #else
-#include "../../src/render_engine/vulkan/vulkan_render_engine.hpp"
 #include <unistd.h>
+#include "../../src/render_engine/vulkan/vulkan_render_engine.hpp"
 #endif
 
 #ifndef CMAKE_DEFINED_RESOURCES_PREFIX

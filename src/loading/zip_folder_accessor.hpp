@@ -6,8 +6,8 @@
 #ifndef NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
 #define NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
 
-#include "folder_accessor.hpp"
 #include <miniz_zip.h>
+#include "folder_accessor.hpp"
 
 namespace nova {
     struct file_tree_node {

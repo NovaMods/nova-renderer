@@ -6,9 +6,9 @@
 #ifndef NOVA_RENDERER_UTILS_HPP
 #define NOVA_RENDERER_UTILS_HPP
 
-#include "../util/logger.hpp"
 #include <nlohmann/json.hpp>
 #include <optional>
+#include "../util/logger.hpp"
 
 namespace nova {
     // Keeps the compiler happy

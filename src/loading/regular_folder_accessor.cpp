@@ -4,8 +4,8 @@
  */
 
 #include "regular_folder_accessor.hpp"
-#include "../util/logger.hpp"
 #include <fstream>
+#include "../util/logger.hpp"
 
 namespace nova {
     regular_folder_accessor::regular_folder_accessor(const fs::path &folder) : folder_accessor_base(folder) {

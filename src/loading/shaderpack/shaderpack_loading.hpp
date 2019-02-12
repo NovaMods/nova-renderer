@@ -6,9 +6,9 @@
 #ifndef NOVA_RENDERER_SHADERPACK_LOADING_HPP
 #define NOVA_RENDERER_SHADERPACK_LOADING_HPP
 
+#include <future>
 #include "../../util/filesystem.hpp"
 #include "shaderpack_data.hpp"
-#include <future>
 
 namespace nova {
     namespace ttl {

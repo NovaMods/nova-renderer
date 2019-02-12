@@ -3,11 +3,11 @@
  * \date 06-Feb-19.
  */
 
+#include <fmt/format.h>
+#include <set>
 #include "swapchain.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
-#include <fmt/format.h>
-#include <set>
 
 namespace nova {
     vulkan_render_engine::vulkan_render_engine(const nova_settings &settings, ttl::task_scheduler *task_scheduler)

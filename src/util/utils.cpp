@@ -4,9 +4,9 @@
  */
 
 #include "utils.hpp"
-#include "logger.hpp"
 #include <cstring>
 #include <utility>
+#include "logger.hpp"
 
 namespace nova {
     // taken from https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/

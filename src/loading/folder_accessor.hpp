@@ -6,13 +6,13 @@
 #ifndef NOVA_RENDERER_RESOURCEPACK_H
 #define NOVA_RENDERER_RESOURCEPACK_H
 
-#include "../util/filesystem.hpp"
-#include "../util/utils.hpp"
 #include <mutex>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "../util/filesystem.hpp"
+#include "../util/utils.hpp"
 
 namespace nova {
     NOVA_EXCEPTION(resource_not_found_exception);

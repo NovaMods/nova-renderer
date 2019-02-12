@@ -3,6 +3,8 @@
 //
 
 #include "vulkan_render_engine.hpp"
+#include <spirv_glsl.hpp>
+#include <vector>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../platform.hpp"
@@ -10,8 +12,6 @@
 #include "../../util/utils.hpp"
 #include "../dx12/win32_window.hpp"
 #include "vulkan_utils.hpp"
-#include <spirv_glsl.hpp>
-#include <vector>
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 

@@ -6,9 +6,9 @@
 #ifndef NOVA_RENDERER_DX_12_TEXTURE_HPP
 #define NOVA_RENDERER_DX_12_TEXTURE_HPP
 
-#include "../../loading/shaderpack/shaderpack_data.hpp"
 #include <d3d12.h>
 #include <wrl.h>
+#include "../../loading/shaderpack/shaderpack_data.hpp"
 
 using Microsoft::WRL::ComPtr;
 

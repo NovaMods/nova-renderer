@@ -9,27 +9,27 @@
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB
+#include <vulkan/vulkan_xlib.h>
 #include "../../util/linux_utils.hpp"
 #include "x11_window.hpp"
-#include <vulkan/vulkan_xlib.h>
 
 #elif defined(NOVA_WINDOWS)
 #define VK_USE_PLATFORM_WIN32_KHR
 #define NOVA_USE_WIN32
-#include "../dx12/win32_window.hpp"
 #include <vulkan/vulkan_win32.h>
+#include "../dx12/win32_window.hpp"
 #endif
 
 #include <vulkan/vulkan.h>
 
-#include "compacting_block_allocator.hpp"
-#include "spirv_glsl.hpp"
 #include <queue>
 #include <vk_mem_alloc.h>
+#include "compacting_block_allocator.hpp"
+#include "spirv_glsl.hpp"
 
+#include <mutex>
 #include "../../render_objects/render_object.hpp"
 #include "swapchain.hpp"
-#include <mutex>
 
 namespace nova {
     namespace ttl {

@@ -3,11 +3,11 @@
 //
 
 #include "linux_utils.hpp"
-#include "logger.hpp"
 #include <cstring>
 #include <cxxabi.h>
 #include <execinfo.h>
 #include <fmt/format.h>
+#include "logger.hpp"
 
 void nova_backtrace() {
     std::array<void *, 50> array{};

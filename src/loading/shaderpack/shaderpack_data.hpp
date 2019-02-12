@@ -8,14 +8,14 @@
 #ifndef NOVA_RENDERER_SHADERPACK_DATA_HPP
 #define NOVA_RENDERER_SHADERPACK_DATA_HPP
 
-#include "../../util/filesystem.hpp"
-#include "../../util/utils.hpp"
 #include <cstdint>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "../../util/filesystem.hpp"
+#include "../../util/utils.hpp"
 
 #include <vulkan/vulkan.h>
 

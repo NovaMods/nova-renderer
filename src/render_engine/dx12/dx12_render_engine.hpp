@@ -8,19 +8,19 @@
 
 #include "../render_engine.hpp"
 
-#include "win32_window.hpp"
 #include <DirectXMath.h>
 #include <d3d12.h>
 #include <dxgi1_2.h>
 #include <dxgi1_4.h>
+#include "win32_window.hpp"
 
-#include "../../../3rdparty/SPIRV-Cross/spirv_hlsl.hpp"
-#include "../../loading/shaderpack/render_graph_builder.hpp"
-#include "dx12_texture.hpp"
 #include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <wrl.h>
+#include "../../../3rdparty/SPIRV-Cross/spirv_hlsl.hpp"
+#include "../../loading/shaderpack/render_graph_builder.hpp"
+#include "dx12_texture.hpp"
 
 using Microsoft::WRL::ComPtr;
 

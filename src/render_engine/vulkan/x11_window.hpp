@@ -7,9 +7,9 @@
 
 #ifdef NOVA_LINUX
 
-#include "../window.hpp"
 #include <X11/Xlib.h>
 #include <cstdint>
+#include "../window.hpp"
 
 namespace nova {
     class x11_window : public iwindow {
