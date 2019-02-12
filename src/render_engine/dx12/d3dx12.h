@@ -2046,16 +2046,33 @@ struct CD3DX12_PIPELINE_STATE_STREAM1 {
     CD3DX12_PIPELINE_STATE_STREAM1() {
     }
     CD3DX12_PIPELINE_STATE_STREAM1(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& Desc)
-        : Flags(Desc.Flags), NodeMask(Desc.NodeMask), pRootSignature(Desc.pRootSignature), InputLayout(Desc.InputLayout),
-          IBStripCutValue(Desc.IBStripCutValue), PrimitiveTopologyType(Desc.PrimitiveTopologyType), VS(Desc.VS), GS(Desc.GS),
-          StreamOutput(Desc.StreamOutput), HS(Desc.HS), DS(Desc.DS), PS(Desc.PS), BlendState(CD3DX12_BLEND_DESC(Desc.BlendState)),
-          DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC1(Desc.DepthStencilState)), DSVFormat(Desc.DSVFormat),
+        : Flags(Desc.Flags),
+          NodeMask(Desc.NodeMask),
+          pRootSignature(Desc.pRootSignature),
+          InputLayout(Desc.InputLayout),
+          IBStripCutValue(Desc.IBStripCutValue),
+          PrimitiveTopologyType(Desc.PrimitiveTopologyType),
+          VS(Desc.VS),
+          GS(Desc.GS),
+          StreamOutput(Desc.StreamOutput),
+          HS(Desc.HS),
+          DS(Desc.DS),
+          PS(Desc.PS),
+          BlendState(CD3DX12_BLEND_DESC(Desc.BlendState)),
+          DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC1(Desc.DepthStencilState)),
+          DSVFormat(Desc.DSVFormat),
           RasterizerState(CD3DX12_RASTERIZER_DESC(Desc.RasterizerState)),
-          RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets)), SampleDesc(Desc.SampleDesc),
-          SampleMask(Desc.SampleMask), CachedPSO(Desc.CachedPSO), ViewInstancingDesc(CD3DX12_VIEW_INSTANCING_DESC(CD3DX12_DEFAULT())) {
+          RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets)),
+          SampleDesc(Desc.SampleDesc),
+          SampleMask(Desc.SampleMask),
+          CachedPSO(Desc.CachedPSO),
+          ViewInstancingDesc(CD3DX12_VIEW_INSTANCING_DESC(CD3DX12_DEFAULT())) {
     }
     CD3DX12_PIPELINE_STATE_STREAM1(const D3D12_COMPUTE_PIPELINE_STATE_DESC& Desc)
-        : Flags(Desc.Flags), NodeMask(Desc.NodeMask), pRootSignature(Desc.pRootSignature), CS(CD3DX12_SHADER_BYTECODE(Desc.CS)),
+        : Flags(Desc.Flags),
+          NodeMask(Desc.NodeMask),
+          pRootSignature(Desc.pRootSignature),
+          CS(CD3DX12_SHADER_BYTECODE(Desc.CS)),
           CachedPSO(Desc.CachedPSO) {
         static_cast<D3D12_DEPTH_STENCIL_DESC1&>(DepthStencilState).DepthEnable = false;
     }
@@ -2123,16 +2140,32 @@ struct CD3DX12_PIPELINE_STATE_STREAM {
     CD3DX12_PIPELINE_STATE_STREAM() {
     }
     CD3DX12_PIPELINE_STATE_STREAM(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& Desc)
-        : Flags(Desc.Flags), NodeMask(Desc.NodeMask), pRootSignature(Desc.pRootSignature), InputLayout(Desc.InputLayout),
-          IBStripCutValue(Desc.IBStripCutValue), PrimitiveTopologyType(Desc.PrimitiveTopologyType), VS(Desc.VS), GS(Desc.GS),
-          StreamOutput(Desc.StreamOutput), HS(Desc.HS), DS(Desc.DS), PS(Desc.PS), BlendState(CD3DX12_BLEND_DESC(Desc.BlendState)),
-          DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC1(Desc.DepthStencilState)), DSVFormat(Desc.DSVFormat),
+        : Flags(Desc.Flags),
+          NodeMask(Desc.NodeMask),
+          pRootSignature(Desc.pRootSignature),
+          InputLayout(Desc.InputLayout),
+          IBStripCutValue(Desc.IBStripCutValue),
+          PrimitiveTopologyType(Desc.PrimitiveTopologyType),
+          VS(Desc.VS),
+          GS(Desc.GS),
+          StreamOutput(Desc.StreamOutput),
+          HS(Desc.HS),
+          DS(Desc.DS),
+          PS(Desc.PS),
+          BlendState(CD3DX12_BLEND_DESC(Desc.BlendState)),
+          DepthStencilState(CD3DX12_DEPTH_STENCIL_DESC1(Desc.DepthStencilState)),
+          DSVFormat(Desc.DSVFormat),
           RasterizerState(CD3DX12_RASTERIZER_DESC(Desc.RasterizerState)),
-          RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets)), SampleDesc(Desc.SampleDesc),
-          SampleMask(Desc.SampleMask), CachedPSO(Desc.CachedPSO) {
+          RTVFormats(CD3DX12_RT_FORMAT_ARRAY(Desc.RTVFormats, Desc.NumRenderTargets)),
+          SampleDesc(Desc.SampleDesc),
+          SampleMask(Desc.SampleMask),
+          CachedPSO(Desc.CachedPSO) {
     }
     CD3DX12_PIPELINE_STATE_STREAM(const D3D12_COMPUTE_PIPELINE_STATE_DESC& Desc)
-        : Flags(Desc.Flags), NodeMask(Desc.NodeMask), pRootSignature(Desc.pRootSignature), CS(CD3DX12_SHADER_BYTECODE(Desc.CS)),
+        : Flags(Desc.Flags),
+          NodeMask(Desc.NodeMask),
+          pRootSignature(Desc.pRootSignature),
+          CS(CD3DX12_SHADER_BYTECODE(Desc.CS)),
           CachedPSO(Desc.CachedPSO) {
     }
     CD3DX12_PIPELINE_STATE_STREAM_FLAGS Flags;

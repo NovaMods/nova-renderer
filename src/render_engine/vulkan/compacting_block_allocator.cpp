@@ -36,8 +36,14 @@ namespace nova {
     }
 
     compacting_block_allocator::block_allocator_buffer::block_allocator_buffer(block_allocator_buffer&& other) noexcept
-        : head(other.head), allocator(other.allocator), id(other.id), next_block_id(other.next_block_id), buffer(other.buffer),
-          vma_allocation(other.vma_allocation), vma_allocation_info(other.vma_allocation_info), size(other.size),
+        : head(other.head),
+          allocator(other.allocator),
+          id(other.id),
+          next_block_id(other.next_block_id),
+          buffer(other.buffer),
+          vma_allocation(other.vma_allocation),
+          vma_allocation_info(other.vma_allocation_info),
+          size(other.size),
           allocated(other.allocated) {
         other.buffer = VK_NULL_HANDLE;
     }
