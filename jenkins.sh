@@ -55,7 +55,7 @@ if [ `git status --porcelain src tests | wc -c` -eq 0 ]; then
     echo "No formatting errors found."
 else
     echo "Formatting errors found."
-    git diff src tests --numstat
+    git diff -numstat src tests
     exit 1
 fi
 
