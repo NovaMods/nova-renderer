@@ -61,12 +61,14 @@ ForEachMacros:
   - BOOST_FOREACH
 IncludeBlocks:   Preserve
 IncludeCategories:
+  - Regex:           '[w|W]indows.h(pp)?'
+    Priority:        1
   - Regex:           'x11'
-    Priority:        4
+    Priority:        1
   - Regex:           '^<.*>'
-    Priority:        5
+    Priority:        2
   - Regex:           '".*"'
-    Priority:        6
+    Priority:        3
 IncludeIsMainRegex: '(Test)?$'
 IndentCaseLabels: true
 IndentPPDirectives: AfterHash

@@ -3,8 +3,8 @@
  * \date 30-Aug-18.
  */
 
-#include <D3DCompiler.h>
 #include "../../util/windows.hpp"
+#include <D3DCompiler.h>
 
 #include <algorithm>
 #include <d3d12sdklayers.h>
