@@ -65,13 +65,9 @@ namespace nova {
         }
     }
 
-    nova_renderer::~nova_renderer() {
-        mtr_shutdown();
-    }
+    nova_renderer::~nova_renderer() { mtr_shutdown(); }
 
-    nova_settings& nova_renderer::get_settings() {
-        return render_settings;
-    }
+    nova_settings& nova_renderer::get_settings() { return render_settings; }
 
     void nova_renderer::execute_frame() const {
         MTR_SCOPE("RenderLoop", "execute_frame");
@@ -90,23 +86,15 @@ namespace nova {
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
     }
 
-    render_engine* nova_renderer::get_engine() const {
-        return engine.get();
-    }
+    render_engine* nova_renderer::get_engine() const { return engine.get(); }
 
-    nova_renderer* nova_renderer::get_instance() {
-        return instance.get();
-    }
+    nova_renderer* nova_renderer::get_instance() { return instance.get(); }
 
     nova_renderer* nova_renderer::initialize(const settings_options& settings) {
         return (instance = std::make_unique<nova_renderer>(settings)).get();
     }
 
-    void nova_renderer::deinitialize() {
-        instance = nullptr;
-    }
+    void nova_renderer::deinitialize() { instance = nullptr; }
 
-    ttl::task_scheduler& nova_renderer::get_task_scheduler() {
-        return task_scheduler;
-    }
+    ttl::task_scheduler& nova_renderer::get_task_scheduler() { return task_scheduler; }
 } // namespace nova

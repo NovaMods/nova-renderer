@@ -42,13 +42,9 @@ namespace nova {
         XCloseDisplay(display);
     }
 
-    Window& x11_window::get_x11_window() {
-        return window;
-    }
+    Window& x11_window::get_x11_window() { return window; }
 
-    Display* x11_window::get_display() {
-        return display;
-    }
+    Display* x11_window::get_display() { return display; }
 
     void x11_window::on_frame_end() {
         XEvent event;
@@ -68,9 +64,7 @@ namespace nova {
         }
     }
 
-    bool x11_window::should_close() const {
-        return should_window_close;
-    }
+    bool x11_window::should_close() const { return should_window_close; }
 
     glm::uvec2 x11_window::get_window_size() const {
         Window root_window;

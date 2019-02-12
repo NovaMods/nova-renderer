@@ -77,17 +77,13 @@ namespace nova {
         os.close();
     }
 
-    nova_exception::nova_exception() : msg(generate_msg(typeid(*this).name(), std::nullopt)) {
-    }
+    nova_exception::nova_exception() : msg(generate_msg(typeid(*this).name(), std::nullopt)) {}
 
-    nova_exception::nova_exception(const std::exception& cause) : msg(generate_msg("", cause)) {
-    }
+    nova_exception::nova_exception(const std::exception& cause) : msg(generate_msg("", cause)) {}
 
-    nova_exception::nova_exception(const std::string& msg) : msg(generate_msg(msg, std::nullopt)) {
-    }
+    nova_exception::nova_exception(const std::string& msg) : msg(generate_msg(msg, std::nullopt)) {}
 
-    nova_exception::nova_exception(const std::string& msg, const std::exception& cause) : msg(generate_msg(msg, cause)) {
-    }
+    nova_exception::nova_exception(const std::string& msg, const std::exception& cause) : msg(generate_msg(msg, cause)) {}
 
     std::string nova_exception::generate_msg(const std::string& msg, const std::optional<std::exception>& exception) {
         std::stringstream ss;
@@ -101,7 +97,5 @@ namespace nova {
         return ss.str();
     }
 
-    const char* nova_exception::what() const noexcept {
-        return msg.c_str();
-    }
+    const char* nova_exception::what() const noexcept { return msg.c_str(); }
 } // namespace nova

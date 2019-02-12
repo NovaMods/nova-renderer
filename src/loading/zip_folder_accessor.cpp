@@ -27,9 +27,7 @@ namespace nova {
         delete_file_tree(files);
     }
 
-    void zip_folder_accessor::delete_file_tree(std::unique_ptr<file_tree_node>& node) {
-        node = nullptr;
-    }
+    void zip_folder_accessor::delete_file_tree(std::unique_ptr<file_tree_node>& node) { node = nullptr; }
 
     std::string zip_folder_accessor::read_text_file(const fs::path& resource_path) {
         const fs::path full_path = *root_folder / resource_path;

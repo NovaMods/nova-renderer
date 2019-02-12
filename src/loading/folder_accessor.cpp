@@ -8,8 +8,7 @@
 
 namespace nova {
     folder_accessor_base::folder_accessor_base(const fs::path& folder)
-        : root_folder(std::make_shared<fs::path>(folder)), resource_existence_mutex(new std::mutex) {
-    }
+        : root_folder(std::make_shared<fs::path>(folder)), resource_existence_mutex(new std::mutex) {}
 
     bool folder_accessor_base::does_resource_exist(const fs::path& resource_path) {
         std::lock_guard l(*resource_existence_mutex);
@@ -37,9 +36,7 @@ namespace nova {
         return {};
     }
 
-    std::shared_ptr<fs::path> folder_accessor_base::get_root() const {
-        return root_folder;
-    }
+    std::shared_ptr<fs::path> folder_accessor_base::get_root() const { return root_folder; }
 
     bool has_root(const fs::path& path, const fs::path& root) {
         if(std::distance(path.begin(), path.end()) < std::distance(root.begin(), root.end())) {

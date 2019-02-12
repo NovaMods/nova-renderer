@@ -21,13 +21,9 @@ namespace nova {
                height == other.height;
     }
 
-    bool texture_format::operator!=(const texture_format& other) const {
-        return !(*this == other);
-    }
+    bool texture_format::operator!=(const texture_format& other) const { return !(*this == other); }
 
-    bool texture_attachment::operator==(const texture_attachment& other) const {
-        return other.name == name;
-    }
+    bool texture_attachment::operator==(const texture_attachment& other) const { return other.name == name; }
 
     glm::uvec2 texture_format::get_size_in_pixels(const glm::uvec2& screen_size) const {
         float pixel_width = width;

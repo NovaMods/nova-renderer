@@ -40,9 +40,7 @@ namespace nova {
         current_frame = (current_frame + 1) % max_frames_in_queue;
     }
 
-    void vulkan_render_engine::reset_render_finished_semaphores() {
-        render_finished_semaphores_by_frame[current_frame].clear();
-    }
+    void vulkan_render_engine::reset_render_finished_semaphores() { render_finished_semaphores_by_frame[current_frame].clear(); }
 
     void vulkan_render_engine::upload_new_mesh_parts() {
         if(mesh_upload_queue.empty()) {

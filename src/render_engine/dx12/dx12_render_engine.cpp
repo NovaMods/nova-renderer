@@ -51,9 +51,7 @@ namespace nova {
         create_render_target_descriptor_heap();
     }
 
-    const std::string dx12_render_engine::get_engine_name() {
-        return "DirectX 12";
-    }
+    const std::string dx12_render_engine::get_engine_name() { return "DirectX 12"; }
 
     void dx12_render_engine::create_device() {
         //#ifndef NDEBUG
@@ -206,9 +204,7 @@ namespace nova {
         }
     }
 
-    std::shared_ptr<iwindow> dx12_render_engine::get_window() const {
-        return window;
-    }
+    std::shared_ptr<iwindow> dx12_render_engine::get_window() const { return window; }
 
     void dx12_render_engine::render_frame() {
         wait_for_previous_frame();
@@ -962,9 +958,7 @@ namespace nova {
         }
     }
 
-    bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) {
-        return !(param1 == param2);
-    }
+    bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2) { return !(param1 == param2); }
 
     bool operator==(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2) {
         if(table1.NumDescriptorRanges != table2.NumDescriptorRanges) {
@@ -980,9 +974,7 @@ namespace nova {
         return true;
     }
 
-    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2) {
-        return !(table1 == table2);
-    }
+    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2) { return !(table1 == table2); }
 
     bool operator==(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2) {
         return range1.RangeType == range2.RangeType && range1.NumDescriptors == range2.NumDescriptors &&
@@ -990,9 +982,7 @@ namespace nova {
                range1.Flags == range2.Flags && range1.OffsetInDescriptorsFromTableStart == range2.OffsetInDescriptorsFromTableStart;
     }
 
-    bool operator!=(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2) {
-        return !(range1 == range2);
-    }
+    bool operator!=(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2) { return !(range1 == range2); }
 
     bool operator==(const D3D12_ROOT_CONSTANTS& lhs, const D3D12_ROOT_CONSTANTS& rhs) {
         return lhs.ShaderRegister == rhs.ShaderRegister && lhs.RegisterSpace == rhs.RegisterSpace &&

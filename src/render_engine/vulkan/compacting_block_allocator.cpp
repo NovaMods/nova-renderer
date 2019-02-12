@@ -143,9 +143,7 @@ namespace nova {
         allocated -= alloc->size;
     }
 
-    VkBuffer compacting_block_allocator::block_allocator_buffer::get_buffer() const {
-        return buffer;
-    }
+    VkBuffer compacting_block_allocator::block_allocator_buffer::get_buffer() const { return buffer; }
 
     compacting_block_allocator::allocation_info* compacting_block_allocator::block_allocator_buffer::allocate_internal(
         VkDeviceSize needed_size, bool can_compact) {

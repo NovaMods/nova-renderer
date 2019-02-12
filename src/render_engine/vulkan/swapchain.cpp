@@ -294,9 +294,7 @@ namespace nova {
         }
     }
 
-    uint32_t swapchain_manager::get_current_index() const {
-        return cur_swapchain_index;
-    }
+    uint32_t swapchain_manager::get_current_index() const { return cur_swapchain_index; }
 
     void swapchain_manager::acquire_next_swapchain_image(VkSemaphore image_acquire_semaphore) {
         const auto acquire_result = vkAcquireNextImageKHR(render_engine.device,
@@ -316,32 +314,20 @@ namespace nova {
         }
     }
 
-    void swapchain_manager::set_current_layout(VkImageLayout new_layout) {
-        swapchain_image_layouts[cur_swapchain_index] = new_layout;
-    }
+    void swapchain_manager::set_current_layout(VkImageLayout new_layout) { swapchain_image_layouts[cur_swapchain_index] = new_layout; }
 
     VkFramebuffer swapchain_manager::get_current_framebuffer() {
         NOVA_LOG(TRACE) << "Getting swapchain framebuffer " << cur_swapchain_index << " out of " << framebuffers.size();
         return framebuffers[cur_swapchain_index];
     }
 
-    VkImage swapchain_manager::get_current_image() {
-        return swapchain_images[cur_swapchain_index];
-    }
+    VkImage swapchain_manager::get_current_image() { return swapchain_images[cur_swapchain_index]; }
 
-    VkImageLayout swapchain_manager::get_current_layout() {
-        return swapchain_image_layouts[cur_swapchain_index];
-    }
+    VkImageLayout swapchain_manager::get_current_layout() { return swapchain_image_layouts[cur_swapchain_index]; }
 
-    VkExtent2D swapchain_manager::get_swapchain_extent() const {
-        return swapchain_extent;
-    }
+    VkExtent2D swapchain_manager::get_swapchain_extent() const { return swapchain_extent; }
 
-    VkFormat swapchain_manager::get_swapchain_format() const {
-        return swapchain_format;
-    }
+    VkFormat swapchain_manager::get_swapchain_format() const { return swapchain_format; }
 
-    VkFence swapchain_manager::get_current_frame_fence() {
-        return fences[cur_swapchain_index];
-    }
+    VkFence swapchain_manager::get_current_frame_fence() { return fences[cur_swapchain_index]; }
 } // namespace nova

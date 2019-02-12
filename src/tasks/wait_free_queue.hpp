@@ -45,8 +45,7 @@ namespace nova {
         wait_free_queue()
             : m_top(1),    // m_top and m_bottom must start at 1
               m_bottom(1), // Otherwise, the first Pop on an empty queue will underflow m_bottom
-              m_array(new circular_array(32)) {
-        }
+              m_array(new circular_array(32)) {}
 
         wait_free_queue(wait_free_queue&& other) = delete;
         wait_free_queue& operator=(wait_free_queue&& other) noexcept = delete;
@@ -72,17 +71,11 @@ namespace nova {
             std::unique_ptr<circular_array> previous;
 
         public:
-            [[nodiscard]] std::size_t size() const {
-                return items.size();
-            }
+            [[nodiscard]] std::size_t size() const { return items.size(); }
 
-            T get(std::size_t index) {
-                return items[index & (size() - 1)];
-            }
+            T get(std::size_t index) { return items[index & (size() - 1)]; }
 
-            void put(std::size_t index, T x) {
-                items[index & (size() - 1)] = x;
-            }
+            void put(std::size_t index, T x) { items[index & (size() - 1)] = x; }
 
             // Growing the array returns a new circular_array object and keeps a
             // linked list of all previous arrays. This is done because other threads
@@ -183,9 +176,7 @@ namespace nova {
             return false;
         }
 
-        size_t size() {
-            return m_array.load(std::memory_order_relaxed)->size();
-        }
+        size_t size() { return m_array.load(std::memory_order_relaxed)->size(); }
     };
 
 } // namespace nova

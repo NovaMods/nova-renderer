@@ -30,17 +30,11 @@ namespace nova {
                               const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
                               uint32_t depth);
 
-    bool range::has_writer() const {
-        return first_write_pass <= last_write_pass;
-    }
+    bool range::has_writer() const { return first_write_pass <= last_write_pass; }
 
-    bool range::has_reader() const {
-        return first_read_pass <= last_read_pass;
-    }
+    bool range::has_reader() const { return first_read_pass <= last_read_pass; }
 
-    bool range::is_used() const {
-        return has_writer() || has_reader();
-    }
+    bool range::is_used() const { return has_writer() || has_reader(); }
 
     bool range::can_alias() const {
         // If we read before we have completely written to a resource we need to preserve it, so no alias is possible.

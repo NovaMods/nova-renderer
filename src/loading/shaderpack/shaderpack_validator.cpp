@@ -82,9 +82,7 @@ namespace nova {
         return report;
     }
 
-    static std::string resources_msg(const std::string& msg) {
-        return format(fmt("Resources file: {:s}"), msg);
-    }
+    static std::string resources_msg(const std::string& msg) { return format(fmt("Resources file: {:s}"), msg); }
 
     validation_report validate_shaderpack_resources_data(nlohmann::json& resources_json) {
         validation_report report;
@@ -135,9 +133,7 @@ namespace nova {
         return report;
     }
 
-    static std::string texture_msg(const std::string& name, const std::string& msg) {
-        return format(fmt("Texture {:s}: {:s}"), name, msg);
-    }
+    static std::string texture_msg(const std::string& name, const std::string& msg) { return format(fmt("Texture {:s}: {:s}"), name, msg); }
 
     validation_report validate_texture_data(nlohmann::json& texture_json) {
         validation_report report;
@@ -188,9 +184,7 @@ namespace nova {
         return report;
     }
 
-    static std::string sampler_msg(const std::string& name, const std::string& msg) {
-        return format(fmt("Sampler {:s}: {:s}"), name, msg);
-    }
+    static std::string sampler_msg(const std::string& name, const std::string& msg) { return format(fmt("Sampler {:s}: {:s}"), name, msg); }
 
     validation_report validate_sampler_data(nlohmann::json& sampler_json) {
         validation_report report;

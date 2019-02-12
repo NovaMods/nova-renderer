@@ -25,9 +25,7 @@ namespace nova {
         UpdateWindow(window_handle);
     }
 
-    win32_window::~win32_window() {
-        unregister_window_class();
-    }
+    win32_window::~win32_window() { unregister_window_class(); }
 
     void win32_window::create_window(const uint32_t width, const uint32_t height) {
         const DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;
@@ -76,9 +74,7 @@ namespace nova {
         }
     }
 
-    void win32_window::unregister_window_class() const {
-        UnregisterClassW(window_class_name, nullptr);
-    }
+    void win32_window::unregister_window_class() const { UnregisterClassW(window_class_name, nullptr); }
 
     LRESULT win32_window::window_procedure_wrapper(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
         win32_window* view;
@@ -124,13 +120,9 @@ namespace nova {
         }
     }
 
-    bool win32_window::should_close() const {
-        return window_should_close;
-    }
+    bool win32_window::should_close() const { return window_should_close; }
 
-    HWND win32_window::get_window_handle() const {
-        return window_handle;
-    }
+    HWND win32_window::get_window_handle() const { return window_handle; }
 
     void win32_window::on_frame_end() {
         MSG msg = {};
@@ -144,9 +136,7 @@ namespace nova {
         }
     }
 
-    glm::uvec2 win32_window::get_window_size() const {
-        return size;
-    }
+    glm::uvec2 win32_window::get_window_size() const { return size; }
 } // namespace nova
 
 #endif

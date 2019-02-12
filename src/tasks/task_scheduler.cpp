@@ -11,8 +11,7 @@ namespace nova::ttl {
         : task_queue(new wait_free_queue<std::function<void()>>),
           things_in_queue_mutex(new std::mutex),
           things_in_queue_cv(new std::condition_variable),
-          is_sleeping(new std::atomic<bool>(false)) {
-    }
+          is_sleeping(new std::atomic<bool>(false)) {}
 
     task_scheduler::task_scheduler(const uint32_t num_threads, const empty_queue_behavior /* behavior */)
         : num_threads(num_threads),
@@ -64,9 +63,7 @@ namespace nova::ttl {
         return 0;
     }
 
-    uint32_t task_scheduler::get_num_threads() const {
-        return num_threads;
-    }
+    uint32_t task_scheduler::get_num_threads() const { return num_threads; }
 
     void task_scheduler::add_task(std::function<void()> task) {
         size_t thread_idx = 0;
@@ -104,9 +101,7 @@ namespace nova::ttl {
         }
     }
 
-    void task_scheduler::add_task_proxy(std::function<void()> task) {
-        add_task(std::move(task));
-    }
+    void task_scheduler::add_task_proxy(std::function<void()> task) { add_task(std::move(task)); }
 
     bool task_scheduler::get_next_task(std::function<void()>* task) {
         const std::size_t current_thread_index = get_current_thread_idx();

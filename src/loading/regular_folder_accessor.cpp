@@ -8,8 +8,7 @@
 #include "../util/logger.hpp"
 
 namespace nova {
-    regular_folder_accessor::regular_folder_accessor(const fs::path& folder) : folder_accessor_base(folder) {
-    }
+    regular_folder_accessor::regular_folder_accessor(const fs::path& folder) : folder_accessor_base(folder) {}
 
     std::string regular_folder_accessor::read_text_file(const fs::path& resource_path) {
         std::lock_guard l(*resource_existence_mutex);

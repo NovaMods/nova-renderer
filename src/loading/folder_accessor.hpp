@@ -23,16 +23,11 @@ namespace nova {
         const std::error_code error_code;
 
     public:
-        explicit filesystem_exception(const fs::filesystem_error& error) : message(error.what()), error_code(error.code()) {
-        }
+        explicit filesystem_exception(const fs::filesystem_error& error) : message(error.what()), error_code(error.code()) {}
 
-        [[nodiscard]] const char* what() const noexcept override {
-            return message.c_str();
-        }
+        [[nodiscard]] const char* what() const noexcept override { return message.c_str(); }
 
-        [[nodiscard]] std::error_code code() const noexcept {
-            return error_code;
-        }
+        [[nodiscard]] std::error_code code() const noexcept { return error_code; }
     };
 
     /*!

@@ -22,13 +22,9 @@
 #endif
 
 namespace nova {
-    vulkan_render_engine::~vulkan_render_engine() {
-        vkDeviceWaitIdle(device);
-    }
+    vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
 
-    std::shared_ptr<iwindow> vulkan_render_engine::get_window() const {
-        return window;
-    }
+    std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
         const std::size_t cur_thread_idx = scheduler->get_current_thread_idx();
@@ -146,9 +142,7 @@ namespace nova {
                other.descriptorType == descriptorType;
     }
 
-    bool vk_resource_binding::operator!=(const vk_resource_binding& other) const {
-        return !(*this == other);
-    }
+    bool vk_resource_binding::operator!=(const vk_resource_binding& other) const { return !(*this == other); }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                          VkDebugUtilsMessageTypeFlagsEXT messageTypes,
