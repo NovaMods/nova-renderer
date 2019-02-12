@@ -1,3 +1,7 @@
+if(MSVC)
+   return()
+endif()
+
 if(NOT CLANG_TIDY_COMMAND)
     set(CLANG_TIDY_COMMAND
         "clang-tidy-9"
