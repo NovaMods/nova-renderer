@@ -6,7 +6,7 @@
 
 #ifdef NOVA_LINUX
 
-#include "x11_window.hpp"
+#    include "x11_window.hpp"
 
 namespace nova {
     x11_window::x11_window(uint32_t width, uint32_t height) {

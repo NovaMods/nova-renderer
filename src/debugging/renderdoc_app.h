@@ -30,17 +30,17 @@
 //
 
 #if !defined(RENDERDOC_NO_STDINT)
-#include <cstdint>
+#    include <cstdint>
 #endif
 
 #if defined(_WIN32)
-#define RENDERDOC_CC __cdecl
+#    define RENDERDOC_CC __cdecl
 #elif defined(__linux__)
-#define RENDERDOC_CC
+#    define RENDERDOC_CC
 #elif defined(__APPLE__)
-#define RENDERDOC_CC
+#    define RENDERDOC_CC
 #else
-#error "Unknown platform"
+#    error "Unknown platform"
 #endif
 
 #ifdef __cplusplus

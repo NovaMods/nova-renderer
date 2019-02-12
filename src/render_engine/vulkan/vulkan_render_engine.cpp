@@ -16,8 +16,8 @@
 #include <vk_mem_alloc.h>
 
 #ifdef NOVA_LINUX
-#include <cxxabi.h>
-#include <execinfo.h>
+#    include <cxxabi.h>
+#    include <execinfo.h>
 
 #endif
 

@@ -46,15 +46,15 @@ namespace nova::vulkan {
 // Release mode needs to be fast A F
 #ifndef NDEBUG
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                            \
-    do {                                                                                                                                   \
-        const VkResult result = (expr);                                                                                                    \
-        if(result != VK_SUCCESS) {                                                                                                         \
-            throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " +                                               \
-                            ::nova::vulkan::vulkan_utils::vk_result_to_string(result));                                                    \
-        }                                                                                                                                  \
-    } while(false);
+#    define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                        \
+        do {                                                                                                                               \
+            const VkResult result = (expr);                                                                                                \
+            if(result != VK_SUCCESS) {                                                                                                     \
+                throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " +                                           \
+                                ::nova::vulkan::vulkan_utils::vk_result_to_string(result));                                                \
+            }                                                                                                                              \
+        } while(false);
 #else
-#define NOVA_THROW_IF_VK_ERROR(expr, exception) expr
+#    define NOVA_THROW_IF_VK_ERROR(expr, exception) expr
 #endif
 #endif // NOVA_RENDERER_VULKAN_UTILS_HPP

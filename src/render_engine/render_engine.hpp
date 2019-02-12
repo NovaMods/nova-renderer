@@ -5,15 +5,15 @@
 //
 
 #ifndef NOVA_RENDERER_RENDER_ENGINE_HPP
-#define NOVA_RENDERER_RENDER_ENGINE_HPP
+#    define NOVA_RENDERER_RENDER_ENGINE_HPP
 
-#include <memory>
-#include "../loading/shaderpack/shaderpack_data.hpp"
-#include "../platform.hpp"
-#include "../settings/nova_settings.hpp"
-#include "../tasks/task_scheduler.hpp"
-#include "../util/utils.hpp"
-#include "window.hpp"
+#    include <memory>
+#    include "../loading/shaderpack/shaderpack_data.hpp"
+#    include "../platform.hpp"
+#    include "../settings/nova_settings.hpp"
+#    include "../tasks/task_scheduler.hpp"
+#    include "../util/utils.hpp"
+#    include "window.hpp"
 
 namespace nova {
     NOVA_EXCEPTION(render_engine_initialization_exception);

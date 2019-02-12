@@ -6,17 +6,17 @@
  */
 
 #ifndef NOVA_RENDERER_LOGGER_HPP
-#define NOVA_RENDERER_LOGGER_HPP
+#    define NOVA_RENDERER_LOGGER_HPP
 
-#include <functional>
-#include <mutex>
-#include <sstream>
-#include <string>
-#include <unordered_map>
+#    include <functional>
+#    include <mutex>
+#    include <sstream>
+#    include <string>
+#    include <unordered_map>
 
-#ifdef ERROR
-#undef ERROR
-#endif
+#    ifdef ERROR
+#        undef ERROR
+#    endif
 
 namespace nova {
     enum log_level { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, MAX_LEVEL };
@@ -63,6 +63,6 @@ namespace nova {
 } // namespace nova
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define NOVA_LOG(LEVEL) ::nova::logger::instance.log(::nova::log_level::LEVEL)
+#    define NOVA_LOG(LEVEL) ::nova::logger::instance.log(::nova::log_level::LEVEL)
 
 #endif // NOVA_RENDERER_LOGGER_HPP

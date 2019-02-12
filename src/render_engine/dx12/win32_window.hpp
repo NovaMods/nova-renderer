@@ -6,24 +6,24 @@
 
 #ifdef SUPPORT_DX12
 
-#ifndef UNICODE
-#define UNICODE
-#endif
+#    ifndef UNICODE
+#        define UNICODE
+#    endif
 
-#include <SDKDDKVer.h>
+#    include <SDKDDKVer.h>
 
-#include "../../util/windows.hpp"
+#    include "../../util/windows.hpp"
 
 // C RunTime Header Files
-#include <tchar.h>
+#    include <tchar.h>
 
-#include <DirectXMath.h>
-#include <dxgi1_2.h>
-#include <glm/glm.hpp>
+#    include <DirectXMath.h>
+#    include <dxgi1_2.h>
+#    include <glm/glm.hpp>
 
-#ifdef ERROR
-#undef ERROR
-#endif
+#    ifdef ERROR
+#        undef ERROR
+#    endif
 
 namespace nova {
     /*!
