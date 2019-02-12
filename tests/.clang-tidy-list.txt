@@ -16,6 +16,7 @@ readability*
 -*-dcl59-cpp
 -*-err58-cpp
 -*-header-guard
+-*-include-order
 -*-magic-numbers
 -*-move-const-arg
 -*-non-private-member-variables-in-classes
