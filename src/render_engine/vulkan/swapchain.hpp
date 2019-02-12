@@ -27,9 +27,9 @@ namespace nova {
      */
     class swapchain_manager {
     public:
-        swapchain_manager(uint32_t num_swapchain_images, vulkan_render_engine &render_engine, glm::ivec2 window_dimensions);
+        swapchain_manager(uint32_t num_swapchain_images, vulkan_render_engine& render_engine, glm::ivec2 window_dimensions);
 
-        void present_current_image(const std::vector<VkSemaphore> &wait_semaphores) const;
+        void present_current_image(const std::vector<VkSemaphore>& wait_semaphores) const;
 
         void acquire_next_swapchain_image(VkSemaphore image_acquire_semaphore);
 
@@ -49,7 +49,7 @@ namespace nova {
         [[nodiscard]] uint32_t get_current_index() const;
 
     private:
-        vulkan_render_engine &render_engine;
+        vulkan_render_engine& render_engine;
 
         VkSwapchainKHR swapchain{};
         VkExtent2D swapchain_extent;
@@ -64,13 +64,13 @@ namespace nova {
 
         uint32_t cur_swapchain_index = 0;
 
-        static VkSurfaceFormatKHR choose_surface_format(const std::vector<VkSurfaceFormatKHR> &formats);
+        static VkSurfaceFormatKHR choose_surface_format(const std::vector<VkSurfaceFormatKHR>& formats);
 
-        static VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR> &modes);
+        static VkPresentModeKHR choose_present_mode(const std::vector<VkPresentModeKHR>& modes);
 
-        static VkExtent2D choose_surface_extent(const VkSurfaceCapabilitiesKHR &caps, const glm::ivec2 &window_dimensions);
+        static VkExtent2D choose_surface_extent(const VkSurfaceCapabilitiesKHR& caps, const glm::ivec2& window_dimensions);
 
-        void transition_swapchain_images_into_correct_layout(const std::vector<VkImage> &images) const;
+        void transition_swapchain_images_into_correct_layout(const std::vector<VkImage>& images) const;
     };
 } // namespace nova
 

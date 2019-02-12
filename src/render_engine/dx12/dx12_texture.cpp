@@ -7,10 +7,10 @@
 #include "dx12_utils.hpp"
 
 namespace nova {
-    dx12_texture::dx12_texture(const texture_resource_data &data, ComPtr<ID3D12Resource> resource) : data(data), resource(resource) {
+    dx12_texture::dx12_texture(const texture_resource_data& data, ComPtr<ID3D12Resource> resource) : data(data), resource(resource) {
     }
 
-    const texture_resource_data &dx12_texture::get_data() const {
+    const texture_resource_data& dx12_texture::get_data() const {
         return data;
     }
 

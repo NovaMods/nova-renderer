@@ -10,14 +10,14 @@
 #include "logger.hpp"
 
 void nova_backtrace() {
-    std::array<void *, 50> array{};
+    std::array<void*, 50> array{};
 
     // get void*'s for all entries on the stack
     int size = backtrace(array.data(), 10);
 
     // print out all the frames to stderr
     NOVA_LOG(ERROR) << "Stacktrace: ";
-    char **data = backtrace_symbols(array.data(), size);
+    char** data = backtrace_symbols(array.data(), size);
 
     for(int i = 0; i < size; i++) {
         std::string str(data[i]);
@@ -29,14 +29,14 @@ void nova_backtrace() {
                 std::string address = str.substr(str.find_last_of('+'), str.find_last_of(')') - str.find_last_of('+'));
 
                 if(symbol.length() > 0) {
-                    char *name = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, nullptr);
+                    char* name = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, nullptr);
                     str = format(fmt("{:s}({:s}{:s})"), path, name, address);
 
                     // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,cppcoreguidelines-owning-memory)
                     free(name);
                 }
             }
-            catch(const std::exception &e) {
+            catch(const std::exception& e) {
                 NOVA_LOG(WARN) << "Demangle failed: " << e.what() << std::endl;
             }
         }
@@ -52,7 +52,7 @@ void nova_backtrace() {
 }
 
 std::string get_last_linux_error() {
-    char *errstr = strerror(errno);
+    char* errstr = strerror(errno);
     if(errstr == nullptr) {
         return std::string("unkown error");
     }

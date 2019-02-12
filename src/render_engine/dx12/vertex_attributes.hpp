@@ -33,7 +33,7 @@ namespace nova {
 
     inline uint32_t get_total_vertex_size() {
         uint32_t total_size = 0;
-        for(const auto &attribute : get_all_vertex_attributes()) {
+        for(const auto& attribute : get_all_vertex_attributes()) {
             uint32_t size;
             switch(attribute.second.format) {
                 case DXGI_FORMAT_R32_UINT:

@@ -14,7 +14,7 @@
 namespace nova {
     enum class barrier_necessity { maybe, yes, no };
 
-    void vulkan_render_engine::set_shaderpack(const shaderpack_data &data) {
+    void vulkan_render_engine::set_shaderpack(const shaderpack_data& data) {
         NOVA_LOG(DEBUG) << "Vulkan render engine loading new shaderpack";
         if(shaderpack_loaded) {
             destroy_render_passes();
@@ -28,10 +28,10 @@ namespace nova {
 
         create_textures(data.resources.textures);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
-        for(const material_data &mat_data : data.materials) {
+        for(const material_data& mat_data : data.materials) {
             materials[mat_data.name] = mat_data;
 
-            for(const material_pass &mat : mat_data.passes) {
+            for(const material_pass& mat : mat_data.passes) {
                 material_passes_by_pipeline[mat.pipeline].push_back(mat);
             }
         }
@@ -50,10 +50,10 @@ namespace nova {
         shaderpack_loaded = true;
     }
 
-    void vulkan_render_engine::create_textures(const std::vector<texture_resource_data> &texture_datas) {
+    void vulkan_render_engine::create_textures(const std::vector<texture_resource_data>& texture_datas) {
         const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
         const glm::uvec2 swapchain_extent_glm = {swapchain_extent.width, swapchain_extent.height};
-        for(const texture_resource_data &texture_data : texture_datas) {
+        for(const texture_resource_data& texture_data : texture_datas) {
             vk_texture texture;
             texture.is_dynamic = true;
             texture.data = texture_data;
@@ -126,13 +126,13 @@ namespace nova {
         dynamic_textures_need_to_transition = true;
     }
 
-    void vulkan_render_engine::create_render_passes(const std::vector<render_pass_data> &passes) {
+    void vulkan_render_engine::create_render_passes(const std::vector<render_pass_data>& passes) {
         NOVA_LOG(DEBUG) << "Flattening frame graph...";
 
         std::unordered_map<std::string, render_pass_data> regular_render_passes;
         regular_render_passes.reserve(passes.size());
         render_passes.reserve(passes.size());
-        for(const render_pass_data &pass_data : passes) {
+        for(const render_pass_data& pass_data : passes) {
             render_passes[pass_data.name].data = pass_data;
             VkFenceCreateInfo fence_info = {};
             fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -145,7 +145,7 @@ namespace nova {
 
         const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
-        for(const auto &[pass_name, pass] : render_passes) {
+        for(const auto& [pass_name, pass] : render_passes) {
             VkSubpassDescription subpass_description;
             subpass_description.flags = 0;
             subpass_description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -180,11 +180,11 @@ namespace nova {
             uint32_t framebuffer_width = 0;
             uint32_t framebuffer_height = 0;
 
-            std::vector<vk_texture *> textures_in_framebuffer;
+            std::vector<vk_texture*> textures_in_framebuffer;
             textures_in_framebuffer.reserve(pass.data.texture_outputs.size() + (pass.data.depth_texture ? 1 : 0));
             bool writes_to_backbuffer = false;
             // Collect framebuffer size information from color output attachments
-            for(const texture_attachment &attachment : pass.data.texture_outputs) {
+            for(const texture_attachment& attachment : pass.data.texture_outputs) {
                 if(attachment.name == "Backbuffer") {
                     // Handle backbuffer
                     // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
@@ -218,7 +218,7 @@ namespace nova {
 
                     break;
                 }
-                const vk_texture &tex = textures.at(attachment.name);
+                const vk_texture& tex = textures.at(attachment.name);
                 // the textures array _should_ _never_ change from this point onward. If it does, this pointer will probably point to
                 // undefined data
                 textures_in_framebuffer.push_back(&textures.at(attachment.name));
@@ -273,7 +273,7 @@ namespace nova {
             // Collect framebuffer size information from the depth attachment
             if(pass.data.depth_texture) {
 
-                const vk_texture &tex = textures.at(pass.data.depth_texture->name);
+                const vk_texture& tex = textures.at(pass.data.depth_texture->name);
                 framebuffer_attachments.push_back(tex.image_view);
 
                 textures_in_framebuffer.push_back(&textures.at(pass.data.depth_texture->name));
@@ -367,7 +367,7 @@ namespace nova {
                 framebuffer_create_info.layers = 1;
 
                 std::stringstream ss;
-                for(const VkImageView &attachment : framebuffer_attachments) {
+                for(const VkImageView& attachment : framebuffer_attachments) {
                     ss << attachment << ", ";
                 }
 
@@ -392,10 +392,10 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::create_graphics_pipelines(const std::vector<pipeline_data> &pipelines) {
+    void vulkan_render_engine::create_graphics_pipelines(const std::vector<pipeline_data>& pipelines) {
         const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
-        for(const pipeline_data &data : pipelines) {
+        for(const pipeline_data& data : pipelines) {
             NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
             vk_pipeline nova_pipeline;
             nova_pipeline.data = data;
@@ -448,7 +448,7 @@ namespace nova {
                                    render_engine_initialization_exception);
             nova_pipeline.layout = layout;
 
-            for(const auto &[stage, shader_module] : shader_modules) {
+            for(const auto& [stage, shader_module] : shader_modules) {
                 VkPipelineShaderStageCreateInfo shader_stage_create_info;
                 shader_stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
                 shader_stage_create_info.pNext = nullptr;
@@ -461,10 +461,10 @@ namespace nova {
                 shader_stages.push_back(shader_stage_create_info);
             }
 
-            const std::vector<VkVertexInputBindingDescription>
-                &vertex_binding_descriptions = vulkan::get_vertex_input_binding_descriptions();
-            const std::vector<VkVertexInputAttributeDescription>
-                &vertex_attribute_descriptions = vulkan::get_vertex_input_attribute_descriptions();
+            const std::vector<VkVertexInputBindingDescription>&
+                vertex_binding_descriptions = vulkan::get_vertex_input_binding_descriptions();
+            const std::vector<VkVertexInputAttributeDescription>&
+                vertex_attribute_descriptions = vulkan::get_vertex_input_attribute_descriptions();
 
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -619,7 +619,7 @@ namespace nova {
         }
     }
 
-    VkShaderModule vulkan_render_engine::create_shader_module(const std::vector<uint32_t> &spirv) const {
+    VkShaderModule vulkan_render_engine::create_shader_module(const std::vector<uint32_t>& spirv) const {
         VkShaderModuleCreateInfo shader_module_create_info;
         shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
         shader_module_create_info.pNext = nullptr;
@@ -634,23 +634,23 @@ namespace nova {
         return module;
     }
 
-    void vulkan_render_engine::get_shader_module_descriptors(const std::vector<uint32_t> &spirv,
-                                                             std::unordered_map<std::string, vk_resource_binding> &bindings) {
+    void vulkan_render_engine::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+                                                             std::unordered_map<std::string, vk_resource_binding>& bindings) {
         const spirv_cross::CompilerGLSL shader_compiler(spirv);
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
-        for(const spirv_cross::Resource &resource : resources.sampled_images) {
+        for(const spirv_cross::Resource& resource : resources.sampled_images) {
             add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
 
-        for(const spirv_cross::Resource &resource : resources.uniform_buffers) {
+        for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
             add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
     }
 
-    void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding> &bindings,
-                                                        const spirv_cross::CompilerGLSL &shader_compiler,
-                                                        const spirv_cross::Resource &resource,
+    void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
+                                                        const spirv_cross::CompilerGLSL& shader_compiler,
+                                                        const spirv_cross::Resource& resource,
                                                         const VkDescriptorType type) {
         const uint32_t set = shader_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const uint32_t binding = shader_compiler.get_decoration(resource.id, spv::DecorationBinding);
@@ -667,7 +667,7 @@ namespace nova {
         }
         else {
             // Existing binding. Is it the same as our binding?
-            const vk_resource_binding &existing_binding = bindings.at(resource.name);
+            const vk_resource_binding& existing_binding = bindings.at(resource.name);
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
@@ -677,11 +677,11 @@ namespace nova {
     }
 
     std::vector<VkDescriptorSetLayout> vulkan_render_engine::create_descriptor_set_layouts(
-        const std::unordered_map<std::string, vk_resource_binding> &all_bindings) const {
+        const std::unordered_map<std::string, vk_resource_binding>& all_bindings) const {
         std::unordered_map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
 
-        for(const auto &named_binding : all_bindings) {
-            const vk_resource_binding &binding = named_binding.second;
+        for(const auto& named_binding : all_bindings) {
+            const vk_resource_binding& binding = named_binding.second;
             VkDescriptorSetLayoutBinding new_binding = {};
             new_binding.binding = binding.binding;
             new_binding.descriptorCount = binding.descriptorCount;
@@ -702,7 +702,7 @@ namespace nova {
                 throw shader_layout_creation_failed("Descriptor set " + std::to_string(i) + " not present");
             }
 
-            const std::vector<VkDescriptorSetLayoutBinding> &bindings = bindings_by_set[static_cast<uint32_t>(i)];
+            const std::vector<VkDescriptorSetLayoutBinding>& bindings = bindings_by_set[static_cast<uint32_t>(i)];
 
             VkDescriptorSetLayoutCreateInfo create_info = {};
             create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -722,11 +722,11 @@ namespace nova {
     }
 
     void vulkan_render_engine::create_material_descriptor_sets() {
-        for(const auto &[renderpass_name, pipelines] : pipelines_by_renderpass) {
+        for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             (void) renderpass_name;
-            for(const auto &pipeline : pipelines) {
-                std::vector<material_pass> &material_passes = material_passes_by_pipeline.at(pipeline.data.name);
-                for(material_pass &mat_pass : material_passes) {
+            for(const auto& pipeline : pipelines) {
+                std::vector<material_pass>& material_passes = material_passes_by_pipeline.at(pipeline.data.name);
+                for(material_pass& mat_pass : material_passes) {
                     if(pipeline.layouts.empty()) {
                         // If there's no layouts, we're done
                         NOVA_LOG(TRACE) << "No layouts for pipeline " << pipeline.data.name << ", which material pass " << mat_pass.name
@@ -762,7 +762,7 @@ namespace nova {
     }
 
     void vulkan_render_engine::update_material_descriptor_sets(
-        const material_pass &mat, const std::unordered_map<std::string, vk_resource_binding> &name_to_descriptor) {
+        const material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor) {
         // for each resource:
         //  - Get its set and binding from the pipeline
         //  - Update its descriptor set
@@ -776,11 +776,11 @@ namespace nova {
 
         std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
 
-        for(const auto &[renderpass_name, pipelines] : pipelines_by_renderpass) {
+        for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             (void) renderpass_name;
-            for(const vk_pipeline &pipeline : pipelines) {
+            for(const vk_pipeline& pipeline : pipelines) {
                 if(pipeline.data.name == mat.pipeline) {
-                    for(const auto &[descriptor_name, resource_name] : mat.bindings) {
+                    for(const auto& [descriptor_name, resource_name] : mat.bindings) {
                         if(pipeline.bindings.find(descriptor_name) == pipeline.bindings.end()) {
                             NOVA_LOG(DEBUG) << "Material pass " << mat.name << " in material " << mat.material_name << " wants to bind "
                                             << resource_name << " to descriptor set " << descriptor_name
@@ -794,8 +794,8 @@ namespace nova {
             }
         }
 
-        for(const auto &[descriptor_name, resource_name] : mat.bindings) {
-            const auto &descriptor_info = name_to_descriptor.at(descriptor_name);
+        for(const auto& [descriptor_name, resource_name] : mat.bindings) {
+            const auto& descriptor_info = name_to_descriptor.at(descriptor_name);
             const auto descriptor_set = mat.descriptor_sets[descriptor_info.set];
             bool is_known = true;
 
@@ -807,11 +807,11 @@ namespace nova {
             write.dstArrayElement = 0;
 
             if(textures.find(resource_name) != textures.end()) {
-                const vk_texture &texture = textures.at(resource_name);
+                const vk_texture& texture = textures.at(resource_name);
                 write_texture_to_descriptor(texture, write, image_infos);
             }
             else if(buffers.find(resource_name) != buffers.end()) {
-                const vk_buffer &buffer = buffers.at(resource_name);
+                const vk_buffer& buffer = buffers.at(resource_name);
                 write_buffer_to_descriptor(buffer, write, buffer_infos);
             }
             else {
@@ -828,9 +828,9 @@ namespace nova {
         vkUpdateDescriptorSets(device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
     }
 
-    void vulkan_render_engine::write_texture_to_descriptor(const vk_texture &texture,
-                                                           VkWriteDescriptorSet &write,
-                                                           std::vector<VkDescriptorImageInfo> &image_infos) const {
+    void vulkan_render_engine::write_texture_to_descriptor(const vk_texture& texture,
+                                                           VkWriteDescriptorSet& write,
+                                                           std::vector<VkDescriptorImageInfo>& image_infos) const {
         VkDescriptorImageInfo image_info = {};
         image_info.imageView = texture.image_view;
         image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -842,9 +842,9 @@ namespace nova {
         write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     }
 
-    void vulkan_render_engine::write_buffer_to_descriptor(const vk_buffer &buffer,
-                                                          VkWriteDescriptorSet &write,
-                                                          std::vector<VkDescriptorBufferInfo> &buffer_infos) {
+    void vulkan_render_engine::write_buffer_to_descriptor(const vk_buffer& buffer,
+                                                          VkWriteDescriptorSet& write,
+                                                          std::vector<VkDescriptorBufferInfo>& buffer_infos) {
         VkDescriptorBufferInfo buffer_info = {};
         buffer_info.buffer = buffer.buffer;
         buffer_info.offset = 0;
@@ -857,13 +857,13 @@ namespace nova {
     }
 
     void vulkan_render_engine::generate_barriers_for_dynamic_resources() {
-        for(auto &[name, pass] : render_passes) {
+        for(auto& [name, pass] : render_passes) {
             (void) name;
             create_barriers_for_renderpass(pass);
         }
     }
 
-    void vulkan_render_engine::create_barriers_for_renderpass(vk_render_pass &pass) {
+    void vulkan_render_engine::create_barriers_for_renderpass(vk_render_pass& pass) {
         /*
          * For each renderpass:
          * - Walk backwards through previous renderpasses
@@ -873,13 +873,13 @@ namespace nova {
 
         std::unordered_map<std::string, barrier_necessity> read_texture_barrier_necessity;
         read_texture_barrier_necessity.reserve(pass.data.texture_inputs.size());
-        for(const std::string &tex_name : pass.data.texture_inputs) {
+        for(const std::string& tex_name : pass.data.texture_inputs) {
             read_texture_barrier_necessity[tex_name] = barrier_necessity::maybe;
         }
 
         std::unordered_map<std::string, barrier_necessity> write_texture_barrier_necessity;
         write_texture_barrier_necessity.reserve(pass.data.texture_outputs.size());
-        for(const texture_attachment &attach : pass.data.texture_outputs) {
+        for(const texture_attachment& attach : pass.data.texture_outputs) {
             write_texture_barrier_necessity[attach.name] = barrier_necessity::maybe;
         }
 
@@ -893,12 +893,12 @@ namespace nova {
 
         // Walk backwards from where we are, checking if any of the textures the previous pass writes to are textures we need to barrier
         while(true) {
-            const std::string &prev_pass_name = render_passes_by_order.at(idx);
-            const vk_render_pass &previous_pass = render_passes.at(prev_pass_name);
+            const std::string& prev_pass_name = render_passes_by_order.at(idx);
+            const vk_render_pass& previous_pass = render_passes.at(prev_pass_name);
             // If the previous pass reads from a texture that we read from, it (or a even earlier pass) will have the barrier
             const std::vector<std::string> read_textures = previous_pass.data.texture_inputs;
 
-            for(const std::string &prev_read_texture : read_textures) {
+            for(const std::string& prev_read_texture : read_textures) {
                 // If the previous pass reads from a texture that we read from, we don't need to barrier it
                 if(read_texture_barrier_necessity.find(prev_read_texture) != read_texture_barrier_necessity.end()) {
                     if(read_texture_barrier_necessity.at(prev_read_texture) == barrier_necessity::maybe) {
@@ -918,7 +918,7 @@ namespace nova {
                 }
             }
 
-            for(const texture_attachment &prev_write_tex : previous_pass.data.texture_outputs) {
+            for(const texture_attachment& prev_write_tex : previous_pass.data.texture_outputs) {
                 // If the previous pass write to a texture that we read from, we need a barrier
                 if(read_texture_barrier_necessity.find(prev_write_tex.name) != read_texture_barrier_necessity.end()) {
                     if(read_texture_barrier_necessity.at(prev_write_tex.name) == barrier_necessity::maybe) {
@@ -944,9 +944,9 @@ namespace nova {
             idx--;
         }
 
-        for(const auto &[tex_name, _] : read_texture_barrier_necessity) {
+        for(const auto& [tex_name, _] : read_texture_barrier_necessity) {
             (void) _;
-            const vk_texture &tex = textures.at(tex_name);
+            const vk_texture& tex = textures.at(tex_name);
 
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -966,7 +966,7 @@ namespace nova {
             pass.read_texture_barriers.push_back(barrier);
         }
 
-        for(const auto &[tex_name, _] : write_texture_barrier_necessity) {
+        for(const auto& [tex_name, _] : write_texture_barrier_necessity) {
             (void) _;
             if(tex_name == "Backbuffer") {
                 continue;

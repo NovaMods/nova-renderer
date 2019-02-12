@@ -37,9 +37,9 @@ namespace nova::vulkan {
 
     std::string to_string(VkObjectType obj_type);
 
-    std::vector<VkVertexInputBindingDescription> &get_vertex_input_binding_descriptions();
+    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
 
-    std::vector<VkVertexInputAttributeDescription> &get_vertex_input_attribute_descriptions();
+    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
 } // namespace nova::vulkan
 
 // Only validate errors in debug mode

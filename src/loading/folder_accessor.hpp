@@ -23,10 +23,10 @@ namespace nova {
         const std::error_code error_code;
 
     public:
-        explicit filesystem_exception(const fs::filesystem_error &error) : message(error.what()), error_code(error.code()) {
+        explicit filesystem_exception(const fs::filesystem_error& error) : message(error.what()), error_code(error.code()) {
         }
 
-        [[nodiscard]] const char *what() const noexcept override {
+        [[nodiscard]] const char* what() const noexcept override {
             return message.c_str();
         }
 
@@ -48,13 +48,13 @@ namespace nova {
          * \brief Initializes this resourcepack to load resources from the folder/zip file with the provided name
          * \param folder The name of the folder or zip file to load resources from, relative to Nova's working directory
          */
-        explicit folder_accessor_base(const fs::path &folder);
+        explicit folder_accessor_base(const fs::path& folder);
 
-        folder_accessor_base(folder_accessor_base &&other) noexcept = default;
-        folder_accessor_base &operator=(folder_accessor_base &&other) noexcept = default;
+        folder_accessor_base(folder_accessor_base&& other) noexcept = default;
+        folder_accessor_base& operator=(folder_accessor_base&& other) noexcept = default;
 
-        folder_accessor_base(const folder_accessor_base &other) = delete;
-        folder_accessor_base &operator=(const folder_accessor_base &other) = delete;
+        folder_accessor_base(const folder_accessor_base& other) = delete;
+        folder_accessor_base& operator=(const folder_accessor_base& other) = delete;
 
         virtual ~folder_accessor_base() = default;
 
@@ -68,14 +68,14 @@ namespace nova {
          * resourcepack's root
          * \return True if the resource exists, false if it does not
          */
-        bool does_resource_exist(const fs::path &resource_path);
+        bool does_resource_exist(const fs::path& resource_path);
 
         /*!
          * \brief Loads the resource with the given path
          * \param resource_path The path to the resource to load, relative to this resourcepack's root
          * \return All the bytes in the loaded resource
          */
-        virtual std::string read_text_file(const fs::path &resource_path) = 0;
+        virtual std::string read_text_file(const fs::path& resource_path) = 0;
 
         /*!
          * \brief Loads the file at the provided path as a series of 32-bit numbers
@@ -83,14 +83,14 @@ namespace nova {
          * \param resource_path The path to the SPIR-V file to load, relative to this resourcepack's root
          * \return All the 32-bit numbers in the SPIR-V file
          */
-        std::vector<uint32_t> read_spirv_file(fs::path &resource_path);
+        std::vector<uint32_t> read_spirv_file(fs::path& resource_path);
 
         /*!
          * \brief Retrieves the paths of all the items in the specified folder
          * \param folder The folder to get all items from
          * \return A list of all the paths in the provided folder
          */
-        virtual std::vector<fs::path> get_all_items_in_folder(const fs::path &folder) = 0;
+        virtual std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) = 0;
 
         std::shared_ptr<fs::path> get_root() const;
 
@@ -107,14 +107,14 @@ namespace nova {
 
         std::unique_ptr<std::mutex> resource_existence_mutex;
 
-        std::optional<bool> does_resource_exist_in_map(const std::string &resource_string) const;
+        std::optional<bool> does_resource_exist_in_map(const std::string& resource_string) const;
 
         /*!
          * \brief Like the non-internal one, but does not add the folder's root to resource_path
          *
          * \param resource_path The path to the resource, with `our_root` already appended
          */
-        virtual bool does_resource_exist_on_filesystem(const fs::path &resource_path) = 0;
+        virtual bool does_resource_exist_on_filesystem(const fs::path& resource_path) = 0;
     };
 
     /*!
@@ -123,7 +123,7 @@ namespace nova {
      * \param root The potential root path of the file
      * \return True if `path` has `root` as its root, false otherwise
      */
-    bool has_root(const fs::path &path, const fs::path &root);
+    bool has_root(const fs::path& path, const fs::path& root);
 } // namespace nova
 
 #endif // NOVA_RENDERER_RESOURCEPACK_H

@@ -383,7 +383,7 @@ namespace nova {
         /*!
          * \brief Merges this pipeline with the parent, returning the merged pipeline
          */
-        [[nodiscard]] pipeline_data merge_with_parent(const pipeline_data &parent_pipeline) const;
+        [[nodiscard]] pipeline_data merge_with_parent(const pipeline_data& parent_pipeline) const;
     };
 
     struct texture_format {
@@ -406,10 +406,10 @@ namespace nova {
          */
         float height;
 
-        [[nodiscard]] glm::uvec2 get_size_in_pixels(const glm::uvec2 &screen_size) const;
+        [[nodiscard]] glm::uvec2 get_size_in_pixels(const glm::uvec2& screen_size) const;
 
-        bool operator==(const texture_format &other) const;
-        bool operator!=(const texture_format &other) const;
+        bool operator==(const texture_format& other) const;
+        bool operator!=(const texture_format& other) const;
     };
 
     /*!
@@ -478,7 +478,7 @@ namespace nova {
          */
         bool clear = false;
 
-        bool operator==(const texture_attachment &other) const;
+        bool operator==(const texture_attachment& other) const;
     };
 
     /*!
@@ -567,18 +567,18 @@ namespace nova {
         shaderpack_resources_data resources;
     };
 
-    pixel_format_enum pixel_format_enum_from_string(const std::string &str);
-    texture_dimension_type_enum texture_dimension_type_enum_from_string(const std::string &str);
-    texture_filter_enum texture_filter_enum_from_string(const std::string &str);
-    wrap_mode_enum wrap_mode_enum_from_string(const std::string &str);
-    stencil_op_enum stencil_op_enum_from_string(const std::string &str);
-    compare_op_enum compare_op_enum_from_string(const std::string &str);
-    msaa_support_enum msaa_support_enum_from_string(const std::string &str);
-    primitive_topology_enum primitive_topology_enum_from_string(const std::string &str);
-    blend_factor_enum blend_factor_enum_from_string(const std::string &str);
-    render_queue_enum render_queue_enum_from_string(const std::string &str);
-    state_enum state_enum_from_string(const std::string &str);
-    vertex_field_enum vertex_field_enum_from_string(const std::string &str);
+    pixel_format_enum pixel_format_enum_from_string(const std::string& str);
+    texture_dimension_type_enum texture_dimension_type_enum_from_string(const std::string& str);
+    texture_filter_enum texture_filter_enum_from_string(const std::string& str);
+    wrap_mode_enum wrap_mode_enum_from_string(const std::string& str);
+    stencil_op_enum stencil_op_enum_from_string(const std::string& str);
+    compare_op_enum compare_op_enum_from_string(const std::string& str);
+    msaa_support_enum msaa_support_enum_from_string(const std::string& str);
+    primitive_topology_enum primitive_topology_enum_from_string(const std::string& str);
+    blend_factor_enum blend_factor_enum_from_string(const std::string& str);
+    render_queue_enum render_queue_enum_from_string(const std::string& str);
+    state_enum state_enum_from_string(const std::string& str);
+    vertex_field_enum vertex_field_enum_from_string(const std::string& str);
 
     std::string to_string(pixel_format_enum val);
     std::string to_string(texture_dimension_type_enum val);

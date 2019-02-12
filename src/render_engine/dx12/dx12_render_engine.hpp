@@ -61,7 +61,7 @@ namespace nova {
          * \param settings The settings that may or may not influence initialization
          * \param scheduler The task scheduler that this render engine should use
          */
-        explicit dx12_render_engine(const nova_settings &settings, ttl::task_scheduler *scheduler);
+        explicit dx12_render_engine(const nova_settings& settings, ttl::task_scheduler* scheduler);
 
         static const std::string get_engine_name();
 
@@ -71,9 +71,9 @@ namespace nova {
 
         std::shared_ptr<iwindow> get_window() const override;
 
-        void set_shaderpack(const shaderpack_data &data) override;
+        void set_shaderpack(const shaderpack_data& data) override;
 
-        mesh_id_t add_mesh(const mesh_data &) override;
+        mesh_id_t add_mesh(const mesh_data&) override;
 
         void delete_mesh(uint32_t) override;
 
@@ -98,7 +98,7 @@ namespace nova {
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
         // Maps from command buffer type to command buffer list
-        std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<command_list_base *>> buffer_pool;
+        std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<command_list_base*>> buffer_pool;
         std::mutex buffer_pool_mutex;
 
         /*
@@ -116,7 +116,7 @@ namespace nova {
          * Now we get to the fourth frame. Nova has a maximum number of in-flight frames, which defaults to three. The
          * fourth frame has to wait for the first frame to finish
          */
-        std::vector<command_list_base *> lists_to_free;
+        std::vector<command_list_base*> lists_to_free;
         std::mutex lists_to_free_mutex;
 
         uint32_t frame_index = 0;
@@ -161,11 +161,11 @@ namespace nova {
          */
         void create_render_target_descriptor_heap();
 
-        command_list *allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const;
+        command_list* allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const;
 
-        gfx_command_list *get_graphics_command_list();
+        gfx_command_list* get_graphics_command_list();
 
-        void release_command_list(command_list_base *list);
+        void release_command_list(command_list_base* list);
 
         void create_full_frame_fences();
 
@@ -173,14 +173,14 @@ namespace nova {
 
         void try_to_free_command_lists();
 
-        void create_dynamic_textures(const std::vector<texture_resource_data> &texture_datas, std::vector<render_pass_data> passes);
+        void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> passes);
 
-        void make_pipeline_state_objects(const std::vector<pipeline_data> &pipelines, ttl::task_scheduler *scheduler);
+        void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ttl::task_scheduler* scheduler);
 
-        pipeline make_single_pso(const pipeline_data &input);
+        pipeline make_single_pso(const pipeline_data& input);
 
         ComPtr<ID3D12RootSignature> create_root_signature(
-            const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> &tables) const;
+            const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) const;
 
         /*!
          * \brief Creates a timestamp query heap with enough space to time every render pass
@@ -200,23 +200,23 @@ namespace nova {
      *
      * \return The compiled shader
      */
-    ComPtr<ID3DBlob> compile_shader(const shader_source &shader,
-                                    const std::string &target,
-                                    const spirv_cross::CompilerHLSL::Options &options,
-                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>> &tables);
+    ComPtr<ID3DBlob> compile_shader(const shader_source& shader,
+                                    const std::string& target,
+                                    const spirv_cross::CompilerHLSL::Options& options,
+                                    std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);
 
-    bool operator==(const D3D12_ROOT_PARAMETER1 &param1, const D3D12_ROOT_PARAMETER1 &param2);
-    bool operator!=(const D3D12_ROOT_PARAMETER1 &param1, const D3D12_ROOT_PARAMETER1 &param2);
+    bool operator==(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
+    bool operator!=(const D3D12_ROOT_PARAMETER1& param1, const D3D12_ROOT_PARAMETER1& param2);
 
-    bool operator==(const D3D12_ROOT_DESCRIPTOR_TABLE1 &table1, const D3D12_ROOT_DESCRIPTOR_TABLE1 &table2);
-    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1 &table1, const D3D12_ROOT_DESCRIPTOR_TABLE1 &table2);
+    bool operator==(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2);
+    bool operator!=(const D3D12_ROOT_DESCRIPTOR_TABLE1& table1, const D3D12_ROOT_DESCRIPTOR_TABLE1& table2);
 
-    bool operator==(const D3D12_DESCRIPTOR_RANGE1 &range1, const D3D12_DESCRIPTOR_RANGE1 &range2);
-    bool operator!=(const D3D12_DESCRIPTOR_RANGE1 &range1, const D3D12_DESCRIPTOR_RANGE1 &range2);
+    bool operator==(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2);
+    bool operator!=(const D3D12_DESCRIPTOR_RANGE1& range1, const D3D12_DESCRIPTOR_RANGE1& range2);
 
-    bool operator==(const D3D12_ROOT_CONSTANTS &lhs, const D3D12_ROOT_CONSTANTS &rhs);
+    bool operator==(const D3D12_ROOT_CONSTANTS& lhs, const D3D12_ROOT_CONSTANTS& rhs);
 
-    bool operator==(const D3D12_ROOT_DESCRIPTOR1 &lhs, const D3D12_ROOT_DESCRIPTOR1 &rhs);
+    bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs);
 } // namespace nova
 
 #endif // NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP

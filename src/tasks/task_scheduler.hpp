@@ -25,17 +25,17 @@ namespace nova::ttl {
 
     class task_scheduler;
 
-    using ArgumentExtractorType = std::function<void(task_scheduler *)>;
+    using ArgumentExtractorType = std::function<void(task_scheduler*)>;
 
-    using TaskFunction = void (*)(task_scheduler *, void *);
+    using TaskFunction = void (*)(task_scheduler*, void*);
 
     struct task {
         TaskFunction function;
-        void *arg_data;
+        void* arg_data;
     };
 
-    inline void argument_extractor(task_scheduler *scheduler, void *arg) {
-        auto *func = static_cast<ArgumentExtractorType *>(arg);
+    inline void argument_extractor(task_scheduler* scheduler, void* arg) {
+        auto* func = static_cast<ArgumentExtractorType*>(arg);
 
         (*func)(scheduler);
 
@@ -102,11 +102,11 @@ namespace nova::ttl {
 
             per_thread_data();
 
-            per_thread_data(per_thread_data &&other) noexcept = default;
-            per_thread_data &operator=(per_thread_data &&other) noexcept = default;
+            per_thread_data(per_thread_data&& other) noexcept = default;
+            per_thread_data& operator=(per_thread_data&& other) noexcept = default;
 
-            per_thread_data(const per_thread_data &other) = delete;
-            per_thread_data &operator=(const per_thread_data &other) = delete;
+            per_thread_data(const per_thread_data& other) = delete;
+            per_thread_data& operator=(const per_thread_data& other) = delete;
 
             ~per_thread_data() = default;
         };
@@ -119,13 +119,13 @@ namespace nova::ttl {
          */
         task_scheduler(uint32_t num_threads, empty_queue_behavior behavior);
 
-        task_scheduler(task_scheduler &&other) noexcept = default;
-        task_scheduler &operator=(task_scheduler &&other) noexcept = default;
+        task_scheduler(task_scheduler&& other) noexcept = default;
+        task_scheduler& operator=(task_scheduler&& other) noexcept = default;
 
         ~task_scheduler();
 
-        task_scheduler(const task_scheduler &other) = delete;
-        task_scheduler &operator=(const task_scheduler &other) = delete;
+        task_scheduler(const task_scheduler& other) = delete;
+        task_scheduler& operator=(const task_scheduler& other) = delete;
 
         /*!
          * \brief Adds a task to the internal queue. Allocates internally
@@ -139,9 +139,9 @@ namespace nova::ttl {
          * \return A future to the data that your task will produce
          */
         template <class F, class... Args>
-        auto add_task(F &&function, Args &&... args)
-            -> std::future<decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...))> {
-            using RetVal = decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...));
+        auto add_task(F&& function, Args&&... args)
+            -> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
+            using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
 
             auto task = std::make_shared<std::packaged_task<RetVal()>>(
                 std::bind(std::forward<F>(function), this, std::forward<Args>(args)...));
@@ -178,9 +178,9 @@ namespace nova::ttl {
          * \return A future to the data that your task will produce
          */
         template <class F, class... Args>
-        auto add_task(condition_counter *counter, F &&function, Args &&... args)
-            -> std::future<decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...))> {
-            using RetVal = decltype(function(std::declval<task_scheduler *>(), std::forward<Args>(args)...));
+        auto add_task(condition_counter* counter, F&& function, Args&&... args)
+            -> std::future<decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...))> {
+            using RetVal = decltype(function(std::declval<task_scheduler*>(), std::forward<Args>(args)...));
 
             auto task = std::make_shared<std::packaged_task<RetVal()>>(std::bind(function, this, std::forward<Args>(args)...));
             std::future<RetVal> future = task->get_future();
@@ -215,7 +215,7 @@ namespace nova::ttl {
          */
         std::size_t get_current_thread_idx();
 
-        friend void thread_func(task_scheduler *pool);
+        friend void thread_func(task_scheduler* pool);
 
         [[nodiscard]] uint32_t get_num_threads() const;
 
@@ -253,10 +253,10 @@ namespace nova::ttl {
          * \param task The memory to write the next task to
          * \return True if there was a task, false if there was not
          */
-        bool get_next_task(std::function<void()> *task);
+        bool get_next_task(std::function<void()>* task);
     };
 
-    void thread_func(task_scheduler *pool);
+    void thread_func(task_scheduler* pool);
 } // namespace nova::ttl
 
 #endif // NOVA_RENDERER_THREAD_POOL_HPP

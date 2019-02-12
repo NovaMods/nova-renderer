@@ -9,7 +9,7 @@
 
 namespace nova {
     win32_window::win32_window(const uint32_t width, const uint32_t height)
-        : window_class_name(const_cast<WCHAR *>(L"NovaWindowClass")), window_should_close(false), size{width, height} {
+        : window_class_name(const_cast<WCHAR*>(L"NovaWindowClass")), window_should_close(false), size{width, height} {
         // Very strongly inspired by GLFW's Win32 variant of createNativeWindow - but GLFW is strictly geared towards
         // OpenGL/Vulkan so I don't want to try and fit it into here
 
@@ -33,7 +33,7 @@ namespace nova {
         const DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;
         const DWORD extended_style = WS_EX_APPWINDOW | WS_EX_TOPMOST;
 
-        auto *title = const_cast<WCHAR *>(L"Minecraft Nova Renderer");
+        auto* title = const_cast<WCHAR*>(L"Minecraft Nova Renderer");
 
         window_handle = CreateWindowExW(extended_style,
                                         window_class_name,
@@ -81,11 +81,11 @@ namespace nova {
     }
 
     LRESULT win32_window::window_procedure_wrapper(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-        win32_window *view;
+        win32_window* view;
 
         if(message == WM_NCCREATE) {
-            auto *cs = reinterpret_cast<CREATESTRUCT *>(lParam);
-            view = static_cast<win32_window *>(cs->lpCreateParams);
+            auto* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
+            view = static_cast<win32_window*>(cs->lpCreateParams);
 
             SetLastError(0);
             if(SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(view)) == 0) {
@@ -95,7 +95,7 @@ namespace nova {
             }
         }
         else {
-            view = reinterpret_cast<win32_window *>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+            view = reinterpret_cast<win32_window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
         }
 
         if(view) {

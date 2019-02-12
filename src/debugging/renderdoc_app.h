@@ -312,12 +312,12 @@ enum RENDERDOC_InputButton {
 // Sets which key or keys can be used to toggle focus between multiple windows
 //
 // If keys is NULL or num is 0, toggle keys will be disabled
-using pRENDERDOC_SetFocusToggleKeys = void (*)(RENDERDOC_InputButton *, int);
+using pRENDERDOC_SetFocusToggleKeys = void (*)(RENDERDOC_InputButton*, int);
 
 // Sets which key or keys can be used to capture the next frame
 //
 // If keys is NULL or num is 0, captures keys will be disabled
-using pRENDERDOC_SetCaptureKeys = void (*)(RENDERDOC_InputButton *, int);
+using pRENDERDOC_SetCaptureKeys = void (*)(RENDERDOC_InputButton*, int);
 
 enum RENDERDOC_OverlayBits {
     // This single bit controls whether the overlay is enabled or disabled globally
@@ -380,10 +380,10 @@ using pRENDERDOC_UnloadCrashHandler = void (*)();
 //
 // Capture #1 -> my_captures/example_frame123.rdc
 // Capture #2 -> my_captures/example_frame456.rdc
-using pRENDERDOC_SetCaptureFilePathTemplate = void (*)(const char *);
+using pRENDERDOC_SetCaptureFilePathTemplate = void (*)(const char*);
 
 // returns the current capture path template, see SetCaptureFileTemplate above, as a UTF-8 string
-using pRENDERDOC_GetCaptureFilePathTemplate = const char *(*) ();
+using pRENDERDOC_GetCaptureFilePathTemplate = const char* (*) ();
 
 // DEPRECATED: compatibility for code compiled against pre-1.1.2 headers.
 using pRENDERDOC_SetLogFilePathTemplate = pRENDERDOC_SetCaptureFilePathTemplate;
@@ -406,7 +406,7 @@ using pRENDERDOC_GetNumCaptures = uint32_t (*)();
 //
 // Note: when captures are deleted in the UI they will remain in this list, so the
 // capture path may not exist anymore.
-using pRENDERDOC_GetCapture = uint32_t (*)(uint32_t, char *, uint32_t *, uint64_t *);
+using pRENDERDOC_GetCapture = uint32_t (*)(uint32_t, char*, uint32_t*, uint64_t*);
 
 // Sets the comments associated with a capture file. These comments are displayed in the
 // UI program when opening.
@@ -416,7 +416,7 @@ using pRENDERDOC_GetCapture = uint32_t (*)(uint32_t, char *, uint32_t *, uint64_
 // comments should be a NULL-terminated UTF-8 string to add as comments.
 //
 // Any existing comments will be overwritten.
-using pRENDERDOC_SetCaptureFileComments = void (*)(const char *, const char *);
+using pRENDERDOC_SetCaptureFileComments = void (*)(const char*, const char*);
 
 // returns 1 if the RenderDoc UI is connected to this application, 0 otherwise
 using pRENDERDOC_IsTargetControlConnected = uint32_t (*)();
@@ -436,12 +436,12 @@ using pRENDERDOC_IsRemoteAccessConnected = pRENDERDOC_IsTargetControlConnected;
 // if cmdline is NULL, the command line will be empty.
 //
 // returns the PID of the replay UI if successful, 0 if not successful.
-using pRENDERDOC_LaunchReplayUI = uint32_t (*)(uint32_t, const char *);
+using pRENDERDOC_LaunchReplayUI = uint32_t (*)(uint32_t, const char*);
 
 // RenderDoc can return a higher version than requested if it's backwards compatible,
 // this function returns the actual version returned. If a parameter is NULL, it will be
 // ignored and the others will be filled out.
-using pRENDERDOC_GetAPIVersion = void (*)(int *, int *, int *);
+using pRENDERDOC_GetAPIVersion = void (*)(int*, int*, int*);
 
 //////////////////////////////////////////////////////////////////////////
 // Capturing functions
@@ -450,12 +450,12 @@ using pRENDERDOC_GetAPIVersion = void (*)(int *, int *, int *);
 // A device pointer is a pointer to the API's root handle.
 //
 // This would be an ID3D11Device, HGLRC/GLXContext, ID3D12Device, etc
-using RENDERDOC_DevicePointer = void *;
+using RENDERDOC_DevicePointer = void*;
 
 // A window handle is the OS's native window handle
 //
 // This would be an HWND, GLXDrawable, etc
-using RENDERDOC_WindowHandle = void *;
+using RENDERDOC_WindowHandle = void*;
 
 // A helper macro for Vulkan, where the device handle cannot be used directly.
 //
@@ -465,7 +465,7 @@ using RENDERDOC_WindowHandle = void *;
 // pointer-sized object in the memory pointed to by the VkInstance. Thus we cast to a void** and
 // indirect once.
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define RENDERDOC_DEVICEPOINTER_FROM_VKINSTANCE(inst) (*((void **) (inst)))
+#define RENDERDOC_DEVICEPOINTER_FROM_VKINSTANCE(inst) (*((void**) (inst)))
 
 // This sets the RenderDoc in-app overlay in the API/window pair as 'active' and it will
 // respond to keypresses. Neither parameter can be NULL
@@ -644,7 +644,7 @@ using RENDERDOC_API_1_2_0 = RENDERDOC_API_1_3_0;
 //   1 - if the outAPIPointers has been filled with a pointer to the API struct requested
 //   0 - if the requested version is not supported or the arguments are invalid.
 //
-using pRENDERDOC_GetAPI = int (*)(RENDERDOC_Version, void **);
+using pRENDERDOC_GetAPI = int (*)(RENDERDOC_Version, void**);
 
 #ifdef __cplusplus
 } // extern "C"

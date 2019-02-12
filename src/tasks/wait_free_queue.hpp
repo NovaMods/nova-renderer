@@ -48,11 +48,11 @@ namespace nova {
               m_array(new circular_array(32)) {
         }
 
-        wait_free_queue(wait_free_queue &&other) = delete;
-        wait_free_queue &operator=(wait_free_queue &&other) noexcept = delete;
+        wait_free_queue(wait_free_queue&& other) = delete;
+        wait_free_queue& operator=(wait_free_queue&& other) noexcept = delete;
 
-        wait_free_queue(const wait_free_queue &other) = delete;
-        wait_free_queue &operator=(const wait_free_queue &other) = delete;
+        wait_free_queue(const wait_free_queue& other) = delete;
+        wait_free_queue& operator=(const wait_free_queue& other) = delete;
 
         ~wait_free_queue() {
             // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
@@ -87,9 +87,9 @@ namespace nova {
             // Growing the array returns a new circular_array object and keeps a
             // linked list of all previous arrays. This is done because other threads
             // could still be accessing elements from the smaller arrays.
-            circular_array *grow(std::size_t top, std::size_t bottom) {
+            circular_array* grow(std::size_t top, std::size_t bottom) {
                 // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-                auto *new_array = new circular_array(size() * 2);
+                auto* new_array = new circular_array(size() * 2);
                 new_array->previous.reset(this);
                 for(std::size_t i = top; i != bottom; i++) {
                     new_array->put(i, get(i));
@@ -100,13 +100,13 @@ namespace nova {
 
         alignas(CACHE_LINE_SIZE) std::atomic<uint64_t> m_top;
         alignas(CACHE_LINE_SIZE) std::atomic<uint64_t> m_bottom;
-        alignas(CACHE_LINE_SIZE) std::atomic<circular_array *> m_array;
+        alignas(CACHE_LINE_SIZE) std::atomic<circular_array*> m_array;
 
     public:
         void push(T value) {
             uint64_t b = m_bottom.load(std::memory_order_relaxed);
             uint64_t t = m_top.load(std::memory_order_acquire);
-            circular_array *array = m_array.load(std::memory_order_relaxed);
+            circular_array* array = m_array.load(std::memory_order_relaxed);
 
             if(b - t > array->size() - 1) {
                 /* Full queue. */
@@ -124,9 +124,9 @@ namespace nova {
             m_bottom.store(b + 1, std::memory_order_relaxed);
         }
 
-        bool pop(T *value) {
+        bool pop(T* value) {
             uint64_t b = m_bottom.load(std::memory_order_relaxed) - 1;
-            circular_array *array = m_array.load(std::memory_order_relaxed);
+            circular_array* array = m_array.load(std::memory_order_relaxed);
             m_bottom.store(b, std::memory_order_relaxed);
 
             std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -158,7 +158,7 @@ namespace nova {
             return result;
         }
 
-        bool steal(T *value) {
+        bool steal(T* value) {
             uint64_t t = m_top.load(std::memory_order_acquire);
 
 #if defined(FTL_STRONG_MEMORY_MODEL)
@@ -170,7 +170,7 @@ namespace nova {
             uint64_t b = m_bottom.load(std::memory_order_acquire);
             if(t < b) {
                 /* Non-empty queue. */
-                circular_array *array = m_array.load(std::memory_order_consume);
+                circular_array* array = m_array.load(std::memory_order_consume);
                 *value = array->get(t);
 
                 return std::atomic_compare_exchange_strong_explicit(&m_top,

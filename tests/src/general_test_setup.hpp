@@ -34,7 +34,7 @@
     [] {                                                                                                                                   \
         auto error_log = std::make_shared<std::ofstream>();                                                                                \
         error_log->open("test_error_log.txt");                                                                                             \
-        auto &log = nova::logger::instance;                                                                                                \
+        auto& log = nova::logger::instance;                                                                                                \
         log.add_log_handler(nova::log_level::TRACE, [](auto msg) { std::cout << "TRACE: " << msg << std::endl; });                         \
         log.add_log_handler(nova::log_level::DEBUG, [](auto msg) { std::cout << "DEBUG: " << msg << std::endl; });                         \
         log.add_log_handler(nova::log_level::INFO, [](auto msg) { std::cout << "INFO: " << msg << std::endl; });                           \

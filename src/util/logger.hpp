@@ -31,9 +31,9 @@ namespace nova {
 
         explicit logger() = default;
 
-        void add_log_handler(log_level level, const std::function<void(std::string)> &log_handler);
+        void add_log_handler(log_level level, const std::function<void(std::string)>& log_handler);
 
-        void log(log_level level, const std::string &msg);
+        void log(log_level level, const std::string& msg);
 
         _log_stream log(log_level level) const;
 
@@ -51,11 +51,11 @@ namespace nova {
     public:
         explicit _log_stream(log_level level);
 
-        _log_stream(const _log_stream &other) = delete;
-        _log_stream &operator=(const _log_stream &other) = delete;
+        _log_stream(const _log_stream& other) = delete;
+        _log_stream& operator=(const _log_stream& other) = delete;
 
-        _log_stream(_log_stream &&other) noexcept;
-        _log_stream &operator=(_log_stream &&other) noexcept;
+        _log_stream(_log_stream&& other) noexcept;
+        _log_stream& operator=(_log_stream&& other) noexcept;
 
         ~_log_stream() override;
     };

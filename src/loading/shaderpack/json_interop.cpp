@@ -7,7 +7,7 @@
 #include "../json_utils.hpp"
 
 namespace nova {
-    void from_json(const nlohmann::json &j, texture_format &format) {
+    void from_json(const nlohmann::json& j, texture_format& format) {
         format.pixel_format = get_json_value<pixel_format_enum>(j, "pixelFormat", pixel_format_enum::RGBA8, pixel_format_enum_from_string);
         format.dimension_type = get_json_value<texture_dimension_type_enum>(j,
                                                                             "dimensionType",
@@ -17,22 +17,22 @@ namespace nova {
         format.height = get_json_value<float>(j, "height").value_or(0);
     }
 
-    void from_json(const nlohmann::json &j, texture_resource_data &tex) {
+    void from_json(const nlohmann::json& j, texture_resource_data& tex) {
         tex.name = get_json_value<std::string>(j, "name").value();
         tex.format = get_json_value<texture_format>(j, "format").value();
     }
 
-    void from_json(const nlohmann::json &j, sampler_state_data &sampler) {
+    void from_json(const nlohmann::json& j, sampler_state_data& sampler) {
         sampler.filter = get_json_value<texture_filter_enum>(j, "filter", texture_filter_enum::Point, texture_filter_enum_from_string);
         sampler.wrap_mode = get_json_value<wrap_mode_enum>(j, "wrapMode", wrap_mode_enum::Clamp, wrap_mode_enum_from_string);
     }
 
-    void from_json(const nlohmann::json &j, shaderpack_resources_data &res) {
+    void from_json(const nlohmann::json& j, shaderpack_resources_data& res) {
         res.textures = get_json_array<texture_resource_data>(j, "textures");
         res.samplers = get_json_array<sampler_state_data>(j, "samplers");
     }
 
-    void from_json(const nlohmann::json &j, render_pass_data &pass) {
+    void from_json(const nlohmann::json& j, render_pass_data& pass) {
         pass.dependencies = get_json_array<std::string>(j, "dependencies");
         pass.texture_inputs = get_json_array<std::string>(j, "textureInputs");
         pass.texture_outputs = get_json_array<texture_attachment>(j, "textureOutputs");
@@ -42,7 +42,7 @@ namespace nova {
         pass.name = get_json_value<std::string>(j, "name").value_or("<NAME_MISSING>");
     }
 
-    void from_json(const nlohmann::json &j, stencil_op_state &stencil_op) {
+    void from_json(const nlohmann::json& j, stencil_op_state& stencil_op) {
         stencil_op.fail_op = get_json_value<stencil_op_enum>(j, "failOp", stencil_op_enum::Keep, stencil_op_enum_from_string);
         stencil_op.pass_op = get_json_value<stencil_op_enum>(j, "passOp", stencil_op_enum::Keep, stencil_op_enum_from_string);
         stencil_op.depth_fail_op = get_json_value<stencil_op_enum>(j, "depthFailOp", stencil_op_enum::Keep, stencil_op_enum_from_string);
@@ -51,12 +51,12 @@ namespace nova {
         stencil_op.write_mask = get_json_value<uint32_t>(j, "writeMask", 0);
     }
 
-    void from_json(const nlohmann::json &j, vertex_field_data &vertex_data) {
+    void from_json(const nlohmann::json& j, vertex_field_data& vertex_data) {
         vertex_data.semantic_name = get_json_value<std::string>(j, "name").value();
         vertex_data.field = get_json_value<vertex_field_enum>(j, "field", vertex_field_enum_from_string).value();
     }
 
-    void from_json(const nlohmann::json &j, pipeline_data &pipeline) {
+    void from_json(const nlohmann::json& j, pipeline_data& pipeline) {
         pipeline.name = get_json_value<std::string>(j, "name").value();
         pipeline.parent_name = get_json_value<std::string>(j, "parent").value_or("");
         pipeline.pass = get_json_value<std::string>(j, "pass").value();
@@ -119,29 +119,29 @@ namespace nova {
         }
     }
 
-    void from_json(const nlohmann::json &j, material_pass &pass) {
+    void from_json(const nlohmann::json& j, material_pass& pass) {
         pass.name = get_json_value<std::string>(j, "name").value();
         pass.pipeline = get_json_value<std::string>(j, "pipeline").value();
         pass.bindings = get_json_value<std::unordered_map<std::string, std::string>>(j, "bindings").value();
     }
 
-    void from_json(const nlohmann::json &j, material_data &mat) {
+    void from_json(const nlohmann::json& j, material_data& mat) {
         mat.name = get_json_value<std::string>(j, "name").value();
         mat.passes = get_json_array<material_pass>(j, "passes");
         mat.geometry_filter = get_json_value<std::string>(j, "filter").value();
 
-        for(material_pass &pass : mat.passes) {
+        for(material_pass& pass : mat.passes) {
             pass.material_name = mat.name;
         }
     }
 
-    void from_json(const nlohmann::json &j, texture_attachment &tex) {
+    void from_json(const nlohmann::json& j, texture_attachment& tex) {
         tex.name = get_json_value<std::string>(j, "name").value();
         tex.clear = get_json_value<bool>(j, "clear", false);
     }
 
-    void from_json(const nlohmann::json &j, std::vector<render_pass_data> &passes) {
-        for(const auto &node : j) {
+    void from_json(const nlohmann::json& j, std::vector<render_pass_data>& passes) {
+        for(const auto& node : j) {
             passes.push_back(node.get<render_pass_data>());
         }
     }

@@ -42,11 +42,11 @@ namespace nova {
         XCloseDisplay(display);
     }
 
-    Window &x11_window::get_x11_window() {
+    Window& x11_window::get_x11_window() {
         return window;
     }
 
-    Display *x11_window::get_display() {
+    Display* x11_window::get_display() {
         return display;
     }
 

@@ -16,20 +16,20 @@ namespace nova {
      */
     pipeline_data default_pipeline;
 
-    bool texture_format::operator==(const texture_format &other) const {
+    bool texture_format::operator==(const texture_format& other) const {
         return pixel_format == other.pixel_format && dimension_type == other.dimension_type && width == other.width &&
                height == other.height;
     }
 
-    bool texture_format::operator!=(const texture_format &other) const {
+    bool texture_format::operator!=(const texture_format& other) const {
         return !(*this == other);
     }
 
-    bool texture_attachment::operator==(const texture_attachment &other) const {
+    bool texture_attachment::operator==(const texture_attachment& other) const {
         return other.name == name;
     }
 
-    glm::uvec2 texture_format::get_size_in_pixels(const glm::uvec2 &screen_size) const {
+    glm::uvec2 texture_format::get_size_in_pixels(const glm::uvec2& screen_size) const {
         float pixel_width = width;
         float pixel_height = height;
 
@@ -41,7 +41,7 @@ namespace nova {
         return {std::round(pixel_width), std::round(pixel_height)};
     }
 
-    pixel_format_enum pixel_format_enum_from_string(const std::string &str) {
+    pixel_format_enum pixel_format_enum_from_string(const std::string& str) {
         if(str == "RGBA8") {
             return pixel_format_enum::RGBA8;
         }
@@ -62,7 +62,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported pixel format " + str);
     }
 
-    texture_dimension_type_enum texture_dimension_type_enum_from_string(const std::string &str) {
+    texture_dimension_type_enum texture_dimension_type_enum_from_string(const std::string& str) {
         if(str == "ScreenRelative") {
             return texture_dimension_type_enum ::ScreenRelative;
         }
@@ -74,7 +74,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported texture dimension type " + str);
     }
 
-    texture_filter_enum texture_filter_enum_from_string(const std::string &str) {
+    texture_filter_enum texture_filter_enum_from_string(const std::string& str) {
         if(str == "TexelAA") {
             return texture_filter_enum::TexelAA;
         }
@@ -89,7 +89,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported texture filter " + str);
     }
 
-    wrap_mode_enum wrap_mode_enum_from_string(const std::string &str) {
+    wrap_mode_enum wrap_mode_enum_from_string(const std::string& str) {
         if(str == "Repeat") {
             return wrap_mode_enum::Repeat;
         }
@@ -101,7 +101,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported wrap mode " + str);
     }
 
-    stencil_op_enum stencil_op_enum_from_string(const std::string &str) {
+    stencil_op_enum stencil_op_enum_from_string(const std::string& str) {
         if(str == "Keep") {
             return stencil_op_enum::Keep;
         }
@@ -131,7 +131,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported stencil op " + str);
     }
 
-    compare_op_enum compare_op_enum_from_string(const std::string &str) {
+    compare_op_enum compare_op_enum_from_string(const std::string& str) {
         if(str == "Never") {
             return compare_op_enum::Never;
         }
@@ -161,7 +161,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported compare op " + str);
     }
 
-    msaa_support_enum msaa_support_enum_from_string(const std::string &str) {
+    msaa_support_enum msaa_support_enum_from_string(const std::string& str) {
         if(str == "MSAA") {
             return msaa_support_enum::MSAA;
         }
@@ -176,7 +176,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported antialiasing mode " + str);
     }
 
-    primitive_topology_enum primitive_topology_enum_from_string(const std::string &str) {
+    primitive_topology_enum primitive_topology_enum_from_string(const std::string& str) {
         if(str == "Triangles") {
             return primitive_topology_enum::Triangles;
         }
@@ -188,7 +188,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported primitive mode " + str);
     }
 
-    blend_factor_enum blend_factor_enum_from_string(const std::string &str) {
+    blend_factor_enum blend_factor_enum_from_string(const std::string& str) {
         if(str == "One") {
             return blend_factor_enum::One;
         }
@@ -224,7 +224,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported blend factor " + str);
     }
 
-    render_queue_enum render_queue_enum_from_string(const std::string &str) {
+    render_queue_enum render_queue_enum_from_string(const std::string& str) {
         if(str == "Transparent") {
             return render_queue_enum::Transparent;
         }
@@ -239,7 +239,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported render queue " + str);
     }
 
-    state_enum state_enum_from_string(const std::string &str) {
+    state_enum state_enum_from_string(const std::string& str) {
         if(str == "Blending") {
             return state_enum::Blending;
         }
@@ -275,7 +275,7 @@ namespace nova {
         throw validation_failure_exception("Unsupported state enum " + str);
     }
 
-    vertex_field_enum vertex_field_enum_from_string(const std::string &str) {
+    vertex_field_enum vertex_field_enum_from_string(const std::string& str) {
         if(str == "Position") {
             return vertex_field_enum::Position;
         }

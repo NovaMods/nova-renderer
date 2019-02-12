@@ -23,7 +23,7 @@
 namespace nova {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer::nova_renderer(const settings_options &settings)
+    nova_renderer::nova_renderer(const settings_options& settings)
         : render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
 
         mtr_init("trace.json");
@@ -69,7 +69,7 @@ namespace nova {
         mtr_shutdown();
     }
 
-    nova_settings &nova_renderer::get_settings() {
+    nova_settings& nova_renderer::get_settings() {
         return render_settings;
     }
 
@@ -80,7 +80,7 @@ namespace nova {
         mtr_flush();
     }
 
-    void nova_renderer::load_shaderpack(const std::string &shaderpack_name) const {
+    void nova_renderer::load_shaderpack(const std::string& shaderpack_name) const {
         MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
 
@@ -90,15 +90,15 @@ namespace nova {
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
     }
 
-    render_engine *nova_renderer::get_engine() const {
+    render_engine* nova_renderer::get_engine() const {
         return engine.get();
     }
 
-    nova_renderer *nova_renderer::get_instance() {
+    nova_renderer* nova_renderer::get_instance() {
         return instance.get();
     }
 
-    nova_renderer *nova_renderer::initialize(const settings_options &settings) {
+    nova_renderer* nova_renderer::initialize(const settings_options& settings) {
         return (instance = std::make_unique<nova_renderer>(settings)).get();
     }
 
@@ -106,7 +106,7 @@ namespace nova {
         instance = nullptr;
     }
 
-    ttl::task_scheduler &nova_renderer::get_task_scheduler() {
+    ttl::task_scheduler& nova_renderer::get_task_scheduler() {
         return task_scheduler;
     }
 } // namespace nova

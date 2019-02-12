@@ -28,13 +28,13 @@ namespace nova {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit nova_renderer(const settings_options &settings);
+        explicit nova_renderer(const settings_options& settings);
 
-        nova_renderer(nova_renderer &&other) noexcept = delete;
-        nova_renderer &operator=(nova_renderer &&other) noexcept = delete;
+        nova_renderer(nova_renderer&& other) noexcept = delete;
+        nova_renderer& operator=(nova_renderer&& other) noexcept = delete;
 
-        nova_renderer(const nova_renderer &other) = delete;
-        nova_renderer &operator=(const nova_renderer &other) = delete;
+        nova_renderer(const nova_renderer& other) = delete;
+        nova_renderer& operator=(const nova_renderer& other) = delete;
 
         ~nova_renderer();
 
@@ -47,22 +47,22 @@ namespace nova {
          *
          * \param shaderpack_name The name of the shaderpack to load
          */
-        void load_shaderpack(const std::string &shaderpack_name) const;
+        void load_shaderpack(const std::string& shaderpack_name) const;
 
         /*!
          * \brief Executes a single frame
          */
         void execute_frame() const;
 
-        nova_settings &get_settings();
+        nova_settings& get_settings();
 
-        [[nodiscard]] render_engine *get_engine() const;
+        [[nodiscard]] render_engine* get_engine() const;
 
-        ttl::task_scheduler &get_task_scheduler();
+        ttl::task_scheduler& get_task_scheduler();
 
-        static nova_renderer *initialize(const settings_options &settings);
+        static nova_renderer* initialize(const settings_options& settings);
 
-        static nova_renderer *get_instance();
+        static nova_renderer* get_instance();
 
         static void deinitialize();
 
@@ -73,7 +73,7 @@ namespace nova {
         ttl::task_scheduler task_scheduler;
         std::future<void> frame_done_future;
 
-        RENDERDOC_API_1_3_0 *render_doc;
+        RENDERDOC_API_1_3_0* render_doc;
         static std::unique_ptr<nova_renderer> instance;
     };
 } // namespace nova

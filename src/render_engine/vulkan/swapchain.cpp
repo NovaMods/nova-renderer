@@ -9,7 +9,7 @@
 
 namespace nova {
     swapchain_manager::swapchain_manager(const uint32_t num_swapchain_images,
-                                         vulkan_render_engine &render_engine,
+                                         vulkan_render_engine& render_engine,
                                          const glm::ivec2 window_dimensions)
         : render_engine(render_engine), swapchain_extent{static_cast<uint32_t>(window_dimensions.x),
                                                          static_cast<uint32_t>(window_dimensions.y)} {
@@ -56,7 +56,7 @@ namespace nova {
                                                        swapchain_images.data()),
                                swapchain_creation_failed);
         swapchain_image_layouts.resize(real_num_swapchain_images);
-        for(auto &swapchain_image_layout : swapchain_image_layouts) {
+        for(auto& swapchain_image_layout : swapchain_image_layouts) {
             swapchain_image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         }
 
@@ -145,7 +145,7 @@ namespace nova {
         transition_swapchain_images_into_correct_layout(swapchain_images);
     }
 
-    VkSurfaceFormatKHR swapchain_manager::choose_surface_format(const std::vector<VkSurfaceFormatKHR> &formats) {
+    VkSurfaceFormatKHR swapchain_manager::choose_surface_format(const std::vector<VkSurfaceFormatKHR>& formats) {
         VkSurfaceFormatKHR result;
 
         if(formats.size() == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
@@ -155,7 +155,7 @@ namespace nova {
         }
 
         // We want 32 bit rgba and srgb nonlinear... I think? Will have to read up on it more and figure out what's up
-        for(auto &fmt : formats) {
+        for(auto& fmt : formats) {
             if(fmt.format == VK_FORMAT_B8G8R8A8_UNORM && fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return fmt;
             }
@@ -165,11 +165,11 @@ namespace nova {
         return formats[0];
     }
 
-    VkPresentModeKHR swapchain_manager::choose_present_mode(const std::vector<VkPresentModeKHR> &modes) {
+    VkPresentModeKHR swapchain_manager::choose_present_mode(const std::vector<VkPresentModeKHR>& modes) {
         const VkPresentModeKHR desired_mode = VK_PRESENT_MODE_MAILBOX_KHR;
 
         // Mailbox mode is best mode (also not sure why)
-        for(auto &mode : modes) {
+        for(auto& mode : modes) {
             if(mode == desired_mode) {
                 return desired_mode;
             }
@@ -179,7 +179,7 @@ namespace nova {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D swapchain_manager::choose_surface_extent(const VkSurfaceCapabilitiesKHR &caps, const glm::ivec2 &window_dimensions) {
+    VkExtent2D swapchain_manager::choose_surface_extent(const VkSurfaceCapabilitiesKHR& caps, const glm::ivec2& window_dimensions) {
         VkExtent2D extent;
 
         if(caps.currentExtent.width == 0xFFFFFFFF) {
@@ -193,7 +193,7 @@ namespace nova {
         return extent;
     }
 
-    void swapchain_manager::present_current_image(const std::vector<VkSemaphore> &wait_semaphores) const {
+    void swapchain_manager::present_current_image(const std::vector<VkSemaphore>& wait_semaphores) const {
 
         VkResult swapchain_result = {};
 
@@ -209,11 +209,11 @@ namespace nova {
         vkQueuePresentKHR(render_engine.graphics_queue, &present_info);
     }
 
-    void swapchain_manager::transition_swapchain_images_into_correct_layout(const std::vector<VkImage> &images) const {
+    void swapchain_manager::transition_swapchain_images_into_correct_layout(const std::vector<VkImage>& images) const {
         std::vector<VkImageMemoryBarrier> barriers;
         barriers.reserve(images.size());
 
-        for(const VkImage &image : images) {
+        for(const VkImage& image : images) {
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.srcQueueFamilyIndex = render_engine.graphics_family_index;
@@ -281,15 +281,15 @@ namespace nova {
     }
 
     void swapchain_manager::deinit() {
-        for(auto &i : swapchain_images) {
+        for(auto& i : swapchain_images) {
             vkDestroyImage(render_engine.device, i, nullptr);
         }
 
-        for(auto &iv : swapchain_image_views) {
+        for(auto& iv : swapchain_image_views) {
             vkDestroyImageView(render_engine.device, iv, nullptr);
         }
 
-        for(auto &f : fences) {
+        for(auto& f : fences) {
             vkDestroyFence(render_engine.device, f, nullptr);
         }
     }

@@ -16,7 +16,7 @@
  * \param s The string to convert
  * \return The converted string
  */
-std::wstring s2ws(const std::string &s);
+std::wstring s2ws(const std::string& s);
 
 /*!
  * \brief Retrieves the most recent Windows error and returns it to the user

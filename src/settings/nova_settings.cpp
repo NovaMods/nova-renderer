@@ -10,11 +10,11 @@ namespace nova {
     nova_settings::nova_settings(settings_options options) : options(std::move(options)) {
     }
 
-    void nova_settings::register_change_listener(iconfig_listener *new_listener) {
+    void nova_settings::register_change_listener(iconfig_listener* new_listener) {
         config_change_listeners.push_back(new_listener);
     }
 
-    settings_options &nova_settings::get_options() {
+    settings_options& nova_settings::get_options() {
         return options;
     }
 
@@ -23,13 +23,13 @@ namespace nova {
     }
 
     void nova_settings::update_config_changed() {
-        for(iconfig_listener *l : config_change_listeners) {
+        for(iconfig_listener* l : config_change_listeners) {
             l->on_config_change(options);
         }
     }
 
     void nova_settings::update_config_loaded() {
-        for(iconfig_listener *l : config_change_listeners) {
+        for(iconfig_listener* l : config_change_listeners) {
             l->on_config_loaded(options);
         }
     }

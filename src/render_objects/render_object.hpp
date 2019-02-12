@@ -13,7 +13,7 @@ namespace nova {
     struct vk_mesh;
 
     struct render_object {
-        vk_mesh *mesh;
+        vk_mesh* mesh;
 
         glm::vec3 pos;
     };

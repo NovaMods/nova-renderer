@@ -41,15 +41,15 @@ namespace nova {
     }
 
     std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>> vulkan_render_engine::to_vk_attachment_info(
-        std::vector<std::string> &attachment_names) {
+        std::vector<std::string>& attachment_names) {
         std::vector<VkAttachmentDescription> attachment_descriptions;
         attachment_descriptions.reserve(attachment_names.size());
 
         std::vector<VkAttachmentReference> attachment_references;
         attachment_references.reserve(attachment_names.size());
 
-        for(const std::string &name : attachment_names) {
-            const vk_texture &tex = textures.at(name);
+        for(const std::string& name : attachment_names) {
+            const vk_texture& tex = textures.at(name);
 
             VkAttachmentDescription color_attachment;
             color_attachment.flags = 0;
@@ -94,9 +94,9 @@ namespace nova {
     }
 
     void vulkan_render_engine::destroy_graphics_pipelines() {
-        for(const auto &[renderpass_name, pipelines] : pipelines_by_renderpass) {
+        for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             (void) renderpass_name;
-            for(const auto &pipeline : pipelines) {
+            for(const auto& pipeline : pipelines) {
                 vkDestroyPipeline(device, pipeline.pipeline, nullptr);
             }
         }
@@ -106,7 +106,7 @@ namespace nova {
 
     void vulkan_render_engine::destroy_dynamic_resources() {
         for(auto itr = std::begin(textures); itr != std::end(textures);) {
-            const vk_texture &tex = itr->second;
+            const vk_texture& tex = itr->second;
             if(tex.is_dynamic) {
                 vkDestroyImageView(device, tex.image_view, nullptr);
                 vmaDestroyImage(vma_allocator, tex.image, tex.allocation);
@@ -119,7 +119,7 @@ namespace nova {
         }
 
         for(auto itr = std::begin(buffers); itr != std::end(buffers);) {
-            const vk_buffer &buf = itr->second;
+            const vk_buffer& buf = itr->second;
             if(buf.is_dynamic) {
                 vmaDestroyBuffer(vma_allocator, buf.buffer, buf.allocation);
 
@@ -132,7 +132,7 @@ namespace nova {
     }
 
     void vulkan_render_engine::destroy_render_passes() {
-        for(const auto &[pass_name, pass] : render_passes) {
+        for(const auto& [pass_name, pass] : render_passes) {
             (void) pass_name;
             vkDestroyRenderPass(device, pass.pass, nullptr);
         }
@@ -141,19 +141,19 @@ namespace nova {
         render_passes_by_order.clear();
     }
 
-    bool vk_resource_binding::operator==(const vk_resource_binding &other) const {
+    bool vk_resource_binding::operator==(const vk_resource_binding& other) const {
         return other.set == set && other.binding == binding && other.descriptorCount == descriptorCount &&
                other.descriptorType == descriptorType;
     }
 
-    bool vk_resource_binding::operator!=(const vk_resource_binding &other) const {
+    bool vk_resource_binding::operator!=(const vk_resource_binding& other) const {
         return !(*this == other);
     }
 
     VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                          VkDebugUtilsMessageTypeFlagsEXT messageTypes,
-                                                         const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-                                                         void * /* pUserData */) {
+                                                         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                         void* /* pUserData */) {
         std::string type = "General";
         if((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) != 0U) {
             type = "Validation";

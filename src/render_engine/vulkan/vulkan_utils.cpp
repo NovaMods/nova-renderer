@@ -90,7 +90,7 @@ namespace nova::vulkan {
         }
     }
 
-    std::vector<VkVertexInputBindingDescription> &get_vertex_input_binding_descriptions() {
+    std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions() {
         static std::vector<VkVertexInputBindingDescription> input_descriptions = {
             VkVertexInputBindingDescription{
                 0,                          // binding
@@ -132,7 +132,7 @@ namespace nova::vulkan {
         return input_descriptions;
     }
 
-    std::vector<VkVertexInputAttributeDescription> &get_vertex_input_attribute_descriptions() {
+    std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions() {
         static std::vector<VkVertexInputAttributeDescription> attribute_descriptions = {
             // Position
             VkVertexInputAttributeDescription{

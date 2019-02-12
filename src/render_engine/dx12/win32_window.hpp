@@ -52,7 +52,7 @@ namespace nova {
 
     private:
         HWND window_handle;
-        WCHAR *window_class_name;
+        WCHAR* window_class_name;
         ATOM window_class_id;
 
         bool window_should_close;

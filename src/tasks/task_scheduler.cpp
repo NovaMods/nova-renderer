@@ -40,7 +40,7 @@ namespace nova::ttl {
     task_scheduler::~task_scheduler() {
         should_shutdown->store(true);
 
-        for(auto &thread : threads) {
+        for(auto& thread : threads) {
             thread.join();
         }
     }
@@ -104,9 +104,9 @@ namespace nova::ttl {
         add_task(std::move(task));
     }
 
-    bool task_scheduler::get_next_task(std::function<void()> *task) {
+    bool task_scheduler::get_next_task(std::function<void()>* task) {
         const std::size_t current_thread_index = get_current_thread_idx();
-        per_thread_data &tls = thread_local_data[current_thread_index];
+        per_thread_data& tls = thread_local_data[current_thread_index];
 
         // Try to pop from our own queue
         if(tls.task_queue->pop(task)) {
@@ -121,7 +121,7 @@ namespace nova::ttl {
                 continue;
             }
 
-            per_thread_data &other_tls = thread_local_data[thread_index_to_steal_from];
+            per_thread_data& other_tls = thread_local_data[thread_index_to_steal_from];
             if(other_tls.task_queue->steal(task)) {
                 tls.last_successful_steal = thread_index_to_steal_from;
                 return true;
@@ -135,14 +135,14 @@ namespace nova::ttl {
      * \brief Function for each thread in the thread pool. We check if there's any tasks to execute. If so they get
      * executed, if not we check again
      */
-    void thread_func(task_scheduler *pool) {
+    void thread_func(task_scheduler* pool) {
         {
             std::unique_lock l(*pool->initialized_mutex);
             pool->initialized_cv->wait(l, [=] { return pool->initialized; });
         }
 
         const std::size_t thread_idx = pool->get_current_thread_idx();
-        task_scheduler::per_thread_data &tls = pool->thread_local_data[thread_idx];
+        task_scheduler::per_thread_data& tls = pool->thread_local_data[thread_idx];
 
         while(!pool->should_shutdown->load()) {
             // Get a new task from the queue, and execute it
