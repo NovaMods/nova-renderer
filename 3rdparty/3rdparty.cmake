@@ -38,11 +38,13 @@ include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 #####################
 # Setup google test #
 #####################
-set(INSTALL_GTEST OFF)
-set(gtest_force_shared_crt ON CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
-set(BUILD_GMOCK OFF CACHE BOOL "Build GMOCK shared library" FORCE)
-add_subdirectory(3rdparty/googletest)
-include(GoogleTest)
+if(NOVA_TEST)
+	set(INSTALL_GTEST OFF)
+	set(gtest_force_shared_crt ON CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
+	set(BUILD_GMOCK OFF CACHE BOOL "Build GMOCK shared library" FORCE)
+	add_subdirectory(3rdparty/googletest)
+	include(GoogleTest)
+endif()
 
 #######################
 # Submodule libraries #
