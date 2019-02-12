@@ -10,8 +10,9 @@
 #    define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
 #    define NOVA_VK_XLIB
 #    include <vulkan/vulkan_xlib.h>
-#    include "../../util/linux_utils.hpp"
 #    include "x11_window.hpp"
+
+#    include "../../util/linux_utils.hpp"
 
 #elif defined(NOVA_WINDOWS)
 #    define VK_USE_PLATFORM_WIN32_KHR
