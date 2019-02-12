@@ -4,8 +4,8 @@
  */
 
 #include "windows_utils.hpp"
-#include <string>
 #include "windows.hpp"
+#include <string>
 
 std::wstring s2ws(const std::string& s) {
     const int slength = static_cast<int>(s.length()) + 1;

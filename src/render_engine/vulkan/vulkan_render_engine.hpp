@@ -16,6 +16,7 @@
 #elif defined(NOVA_WINDOWS)
 #    define VK_USE_PLATFORM_WIN32_KHR
 #    define NOVA_USE_WIN32
+#    include "../../util/windows.hpp"
 #    include <vulkan/vulkan_win32.h>
 #    include "../dx12/win32_window.hpp"
 #endif
