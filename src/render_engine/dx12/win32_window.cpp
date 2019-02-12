@@ -5,7 +5,7 @@
 #include "../../util/windows_utils.hpp"
 #include "win32_window.hpp"
 
-#if SUPPORT_DX12
+#ifdef SUPPORT_DX12
 
 namespace nova {
     win32_window::win32_window(const uint32_t width, const uint32_t height)
