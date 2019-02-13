@@ -1,10 +1,22 @@
 if(NOT CLANG_FORMAT_COMMAND)
-    set(CLANG_FORMAT_COMMAND "clang-format-9" "clang-format-8" "clang-format-7" "clang-format-6.0" "clang-format")
+    set(CLANG_FORMAT_COMMAND "clang-format-9" "clang-format-8" "clang-format-7" "clang-format")
 endif()
 
 find_program(CLANG_FORMAT_PROGRAM NAMES ${CLANG_FORMAT_COMMAND})
+
+execute_process(COMMAND "${CLANG_FORMAT_PROGRAM}" "--version"
+                OUTPUT_VARIABLE CLANG_TIDY_VERSION_FULL_STRING)
+string(REGEX MATCH [=[[0-9]\.[0-9].[0-9]]=] VERSION ${CLANG_TIDY_VERSION_FULL_STRING})
+if(VERSION VERSION_LESS "7.0.0")
+    message(STATUS "clang-format version ${VERSION} is not greater or equal to 7.0.0")
+    set(CLANG_FORMAT_TERMINATE On)
+endif()
 if(NOT CLANG_FORMAT_PROGRAM)
     message(STATUS "clang-format not found")
+    set(CLANG_FORMAT_TERMINATE On)
+endif()
+if(CLANG_FORMAT_TERMINATE)
+    message(STATUS "Disabling formatting.")
     function(format)
         # no-op
     endfunction()
@@ -12,6 +24,7 @@ if(NOT CLANG_FORMAT_PROGRAM)
 endif()
 
 message(STATUS "Found clang-format at ${CLANG_FORMAT_PROGRAM}")
+
 add_custom_target(format VERBATIM)
 add_custom_target(reformat VERBATIM)
 
