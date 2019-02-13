@@ -71,6 +71,14 @@ if(CLANG_APPLY_REPLACEMENTS_PROGRAM AND CLANG_FORMAT_PROGRAM)
 else()
     message(STATUS "clang-apply-replacements not found")
 endif()
+
+if(TARGET all_pch)
+    add_dependencies(lint all_pch)
+    add_dependencies(lint-by-file all_pch)
+    add_dependencies(lint-by-diagnostic all_pch)
+    add_dependencies(lint-fix all_pch)
+endif()
+
 # function(lint TARGET)
 #     add_custom_target(${TARGET}-lint VERBATIM)
     
