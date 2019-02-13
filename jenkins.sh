@@ -47,7 +47,7 @@ cd ..
 
 # Formatting
 cd build-clang
-ninja format
+nice ninja format
 cd ..
 echo "End formatting"
 
@@ -61,7 +61,7 @@ fi
 
 # Linting
 cd build-clang
-${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml -j8 --header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` --clang-tidy-binary clang-tidy-8
+nice ${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml -j8 --header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` --clang-tidy-binary clang-tidy-8
 echo "End linting"
 
 if [ `cat fixes.yaml | wc -c` -eq 0 ]; then
