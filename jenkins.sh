@@ -20,7 +20,7 @@ cmake ..\
     -DCMAKE_{C,CXX}_FLAGS="-fsanitize=address,undefined"\
     -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=lld"\
     -GNinja
-NINJA_STATUS="[%f/%t: %p - %r processes @ %c|%o files/s %es] " nice ninja -j8
+nice ninja -j8
 echo "End Clang-Build"
 ./nova-test-unit
 echo "End Clang-Tests"
@@ -38,7 +38,7 @@ cmake ..\
     -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=gold"\
     -DNOVA_COVERAGE=On\
     -GNinja
-NINJA_STATUS="[%f/%t: %p - %r processes @ %c|%o files/s %es] " nice ninja -j8
+nice ninja -j8
 lcov -c -i -d . -o empty-coverage.info --gcov-tool gcov-7
 echo "End GCC-Build"
 ./nova-test-unit
