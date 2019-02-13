@@ -1,7 +1,6 @@
 boost*
 bugprone*
 cert*
-clang-analizer-*
 clang-analyzer-*
 clang-diagnostic-*
 cppcoreguidelines*
