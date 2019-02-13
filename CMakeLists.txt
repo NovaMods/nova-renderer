@@ -43,6 +43,14 @@ if(NOVA_ENABLE_EXPERIMENTAL)
     set(CMAKE_LINK_WHAT_YOU_USE TRUE) # Warn about unsued linked libraries
 endif()
 
+#########################################################
+# Enable tests if not in submodule and debug or if MSVC #
+#########################################################
+if(NOT NOVA_IN_SUBMODULE)
+    message(STATUS "Enabling nova tests by default because Nova is not a submodule (wont overwrite if set manually)")
+    set(NOVA_TEST ON)
+endif()
+
 ############################
 # Initialize cmake options #
 ############################
@@ -313,14 +321,6 @@ target_link_libraries(nova-renderer PUBLIC ${COMMON_LINK_LIBS})
 # Fix issue with permissive #
 #############################
 remove_permissive(nova-renderer)
-
-#########################################################
-# Enable tests if not in submodule and debug or if MSVC #
-#########################################################
-if(NOT NOVA_IN_SUBMODULE)
-    message(STATUS "Enabling nova tests by default because Nova is not a submodule (wont overwrite if set manually)")
-    set(NOVA_TEST ON)
-endif()
 
 ##########################
 # Add tests if requested #
