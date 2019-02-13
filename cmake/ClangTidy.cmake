@@ -1,3 +1,9 @@
+if(__NOVA_CLANG_TIDY_INCLUDE_GUARD)
+    return()
+else()
+    set(__NOVA_CLANG_TIDY_INCLUDE_GUARD On)
+endif()
+
 if(MSVC)
    return()
 endif()

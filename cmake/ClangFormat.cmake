@@ -1,3 +1,9 @@
+if(__NOVA_CLANG_FORMAT_INCLUDE_GUARD)
+    return()
+else()
+    set(__NOVA_CLANG_FORMAT_INCLUDE_GUARD On)
+endif()
+
 if(NOT CLANG_FORMAT_COMMAND)
     set(CLANG_FORMAT_COMMAND "clang-format-9" "clang-format-8" "clang-format-7" "clang-format")
 endif()
