@@ -20,7 +20,7 @@ cmake ..\
     -DCMAKE_{C,CXX}_FLAGS="-fsanitize=address,undefined"\
     -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=lld"\
     -GNinja
-nice ninja -j8
+ninja -j8
 echo "End Clang-Build"
 ./nova-test-unit
 echo "End Clang-Tests"
@@ -38,7 +38,7 @@ cmake ..\
     -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=gold"\
     -DNOVA_COVERAGE=On\
     -GNinja
-nice ninja -j8
+ninja -j8
 lcov -c -i -d . -o empty-coverage.info --gcov-tool gcov-7
 echo "End GCC-Build"
 ./nova-test-unit
@@ -47,7 +47,7 @@ cd ..
 
 # Formatting
 cd build-clang
-nice ninja format
+ninja format
 cd ..
 echo "End formatting"
 
@@ -61,7 +61,7 @@ fi
 
 # Linting
 cd build-clang
-nice ${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml -j8 --header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` --clang-tidy-binary clang-tidy-8
+${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml -j8 --header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` --clang-tidy-binary clang-tidy-8
 echo "End linting"
 
 if [ `cat fixes.yaml | wc -c` -eq 0 ]; then
