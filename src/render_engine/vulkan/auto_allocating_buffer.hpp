@@ -1,9 +1,9 @@
 #ifndef RENDERER_AUTO_ALLOCATED_BUFFER_H
 #define RENDERER_AUTO_ALLOCATED_BUFFER_H
 
-#include <vulkan/vulkan.h>
 #include <string>
 #include <vector>
+#include <vulkan/vulkan.h>
 #include "uniform_buffer.hpp"
 
 namespace nova {
@@ -38,7 +38,16 @@ namespace nova {
          * \param min_alloc_size The minimum size of an allocation from this buffer
          * \param mapped If true, make this buffer always mapped
          */
-        auto_buffer(const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t min_alloc_size, bool mapped);
+        auto_buffer(
+            const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t min_alloc_size, bool mapped);
+
+        auto_buffer(const auto_buffer& other) = delete;
+        auto_buffer& operator=(const auto_buffer& other) = delete;
+
+        auto_buffer(auto_buffer&& old) noexcept;
+        auto_buffer& operator=(auto_buffer&& old) noexcept;
+
+        ~auto_buffer() = default;
 
         /*!
          * \brief Allocates a chunk of the underlying buffer for your personal user

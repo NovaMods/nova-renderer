@@ -2,7 +2,7 @@
 #include "../../util/logger.hpp"
 
 namespace nova {
-    uniform_buffer::uniform_buffer(std::string name, VmaAllocator allocator, VkBufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped) : name(std::move(name)), min_alloc_size(min_alloc_size), allocator(allocator) {
+    uniform_buffer::uniform_buffer(const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t min_alloc_size, const bool mapped) : name(std::move(name)), min_alloc_size(min_alloc_size), allocator(allocator) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 

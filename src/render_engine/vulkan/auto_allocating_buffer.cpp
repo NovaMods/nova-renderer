@@ -17,6 +17,20 @@ namespace nova {
         chunks.emplace_back(auto_buffer_chunk{VkDeviceSize(0), create_info.size});
     }
 
+    auto_buffer::auto_buffer(auto_buffer&& old) noexcept : uniform_buffer(std::forward<uniform_buffer>(old)) {
+        chunks = std::move(old.chunks);
+        old.chunks.clear();
+    }
+
+    auto_buffer& auto_buffer::operator=(auto_buffer&& old) noexcept {
+        uniform_buffer::operator=(std::forward<uniform_buffer>(old));
+
+        chunks = std::move(old.chunks);
+        old.chunks.clear();
+
+        return *this;
+    }
+
     VkDescriptorBufferInfo auto_buffer::allocate_space(uint64_t size) {
         size = size > min_alloc_size ? size : min_alloc_size;
         int32_t index_to_allocate_from = -1;

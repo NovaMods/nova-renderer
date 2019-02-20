@@ -17,7 +17,7 @@ namespace nova {
     public:
         uniform_buffer() = default;
 
-        uniform_buffer(std::string name, VmaAllocator allocator, VkBufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
+        uniform_buffer(const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t min_alloc_size, bool mapped);
 
         uniform_buffer(const uniform_buffer& other) = delete;
         uniform_buffer& operator=(const uniform_buffer& other) = delete;
