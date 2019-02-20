@@ -10,7 +10,7 @@ namespace nova::renderer {
         info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        uint32_t alignment = gpu.props.limits.minUniformBufferOffsetAlignment;
+        const uint32_t alignment = static_cast<uint32_t>(gpu.props.limits.minUniformBufferOffsetAlignment);
 
         static_model_matrix_buffer = std::make_unique<auto_buffer>("NovaStaticModelUBO", vma_allocator, info, alignment, false);
     }

@@ -79,6 +79,6 @@ namespace nova::renderer {
 
         return {width, height};
     }
-} // namespace nova
+} // namespace nova::renderer
 
 #endif

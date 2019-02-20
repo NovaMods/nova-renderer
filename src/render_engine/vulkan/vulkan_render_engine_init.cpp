@@ -116,7 +116,7 @@ namespace nova::renderer {
         create_default_samplers();
 
         create_builtin_uniform_buffers();
-        
+
 #ifndef NDEBUG
         vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
             vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));

@@ -13,7 +13,7 @@ namespace ftl {
 
 namespace nova::ttl {
     class task_scheduler;
-} // namespace ttl
+} // namespace nova::ttl
 
 namespace nova::renderer {
 
