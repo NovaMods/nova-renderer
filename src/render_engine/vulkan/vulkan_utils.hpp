@@ -5,16 +5,17 @@
 #ifndef NOVA_RENDERER_VULKAN_UTILS_HPP
 #define NOVA_RENDERER_VULKAN_UTILS_HPP
 
-#include <vulkan/vulkan.h>
 #include <string>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 namespace nova::vulkan {
     class vulkan_utils {
     public:
         static std::string vk_result_to_string(VkResult result) {
-#define ERROR_CASE(r)                                                                                                                                                                                                                                    \
-    case VK_##r:                                                                                                                                                                                                                                         \
+            // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define ERROR_CASE(r)                                                                                                                      \
+    case VK_##r:                                                                                                                           \
         return #r
             switch(result) {
                 ERROR_CASE(SUCCESS);
@@ -44,12 +45,14 @@ namespace nova::vulkan {
 // Only validate errors in debug mode
 // Release mode needs to be fast A F
 #ifndef NDEBUG
-#define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                                                                                                                                          \
-    do {                                                                                                                                                                                                                                                 \
-        const VkResult result = (expr);                                                                                                                                                                                                                  \
-        if(result != VK_SUCCESS) {                                                                                                                                                                                                                       \
-            throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " + ::nova::vulkan::vulkan_utils::vk_result_to_string(result));                                                                                                 \
-        }                                                                                                                                                                                                                                                \
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define NOVA_THROW_IF_VK_ERROR(expr, exception)                                                                                            \
+    do {                                                                                                                                   \
+        const VkResult result = (expr);                                                                                                    \
+        if(result != VK_SUCCESS) {                                                                                                         \
+            throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " +                                               \
+                            ::nova::vulkan::vulkan_utils::vk_result_to_string(result));                                                    \
+        }                                                                                                                                  \
     } while(false);
 #else
 #define NOVA_THROW_IF_VK_ERROR(expr, exception) expr

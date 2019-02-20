@@ -1,9 +1,9 @@
 .idea
-build/out
+build*/
 Makefile
 glfw3-prefix/
 cmake-build-*/
-build/
+codecov.bash
 
 # Created by https://www.gitignore.io/api/cmake,c++,python
 

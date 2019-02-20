@@ -1,7 +1,7 @@
 /*!
  * \brief Utility functions for handling Windows
  *
- * \author ddubois 
+ * \author ddubois
  * \date 10-Oct-18.
  */
 
@@ -16,7 +16,7 @@
  * \param s The string to convert
  * \return The converted string
  */
-std::wstring s2ws(const std::string &s);
+std::wstring s2ws(const std::string& s);
 
 /*!
  * \brief Retrieves the most recent Windows error and returns it to the user
@@ -24,4 +24,4 @@ std::wstring s2ws(const std::string &s);
  */
 std::string get_last_windows_error();
 
-#endif  // NOVA_RENDERER_WINDOWS_UTILS_HPP
+#endif // NOVA_RENDERER_WINDOWS_UTILS_HPP

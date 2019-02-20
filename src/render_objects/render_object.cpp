@@ -4,6 +4,4 @@
 
 #include "render_object.hpp"
 
-namespace nova {
-
-}  // namespace nova
+namespace nova {} // namespace nova

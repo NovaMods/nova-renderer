@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 30-Aug-18.
  */
 
@@ -9,7 +9,7 @@
 #include <iostream>
 
 #ifdef __linux__
-#include <signal.h>
+#include <csignal>
 void sigsegv_handler(int signal);
 void sigabrt_handler(int signal);
 #include "../../src/util/linux_utils.hpp"
@@ -19,15 +19,15 @@ namespace nova {
     int main() {
         TEST_SETUP_LOGGER();
 
-        char buff[FILENAME_MAX];
-        getcwd(buff, FILENAME_MAX);
-        NOVA_LOG(DEBUG) << "Running in " << buff << std::flush;
+        std::array<char, FILENAME_MAX> buff{};
+        getcwd(buff.data(), FILENAME_MAX);
+        NOVA_LOG(DEBUG) << "Running in " << buff.data() << std::flush;
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
         settings_options settings;
         settings.api = graphics_api::vulkan;
         settings.vulkan.application_name = "Nova Renderer test";
-        settings.vulkan.application_version = { 0, 8, 0 };
+        settings.vulkan.application_version = {0, 8, 0};
         settings.debug.enabled = true;
         settings.debug.renderdoc.enabled = false;
         settings.window.width = 640;
@@ -50,20 +50,7 @@ namespace nova {
             full_vertex{{1, 1, -1}, {}, {}, {}, {}, {}, {}},
             full_vertex{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
         };
-        cube.indices = {
-            0, 1, 3,
-            6, 0, 2,
-            5, 0, 4,
-            6, 4, 0,
-            0, 3, 2,
-            5, 1, 0,
-            3, 1, 5,
-            7, 4, 6,
-            4, 7, 5,
-            7, 6, 2,
-            7, 2, 3,
-            7, 3, 5
-        };
+        cube.indices = {0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0, 3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
         engine->add_mesh(cube);
 
         while(!window->should_close()) {
@@ -75,11 +62,10 @@ namespace nova {
 
         return 0;
     }
-}
-
+} // namespace nova
 
 int main() {
-#ifdef __linux__
+#ifdef NOVA_LINUX
     signal(SIGSEGV, sigsegv_handler);
     signal(SIGABRT, sigabrt_handler);
 #endif
@@ -88,6 +74,7 @@ int main() {
 
 #ifdef __linux__
 void sigsegv_handler(int sig) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     signal(sig, SIG_IGN);
 
     std::cerr << "!!!SIGSEGV!!!" << std::endl;
@@ -97,6 +84,7 @@ void sigsegv_handler(int sig) {
 }
 
 void sigabrt_handler(int sig) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-cstyle-cast)
     signal(sig, SIG_IGN);
 
     std::cerr << "!!!SIGABRT!!!" << std::endl;

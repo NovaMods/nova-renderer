@@ -7,7 +7,8 @@
 #include "../util/logger.hpp"
 
 namespace nova {
-    folder_accessor_base::folder_accessor_base(fs::path folder) : root_folder(std::make_shared<fs::path>(folder)), resource_existence_mutex(new std::mutex) {}
+    folder_accessor_base::folder_accessor_base(const fs::path& folder)
+        : root_folder(std::make_shared<fs::path>(folder)), resource_existence_mutex(new std::mutex) {}
 
     bool folder_accessor_base::does_resource_exist(const fs::path& resource_path) {
         std::lock_guard l(*resource_existence_mutex);
@@ -27,19 +28,17 @@ namespace nova {
         return ret_val;
     }
 
-    std::optional<bool> folder_accessor_base::does_resource_exist_in_map(const std::string &resource_string) const {
+    std::optional<bool> folder_accessor_base::does_resource_exist_in_map(const std::string& resource_string) const {
         if(resource_existence.find(resource_string) != resource_existence.end()) {
             return std::make_optional<bool>(resource_existence.at(resource_string));
         }
 
         return {};
     }
-    
-    std::shared_ptr<fs::path> folder_accessor_base::get_root() const {
-        return root_folder;
-    }
 
-    bool has_root(const fs::path &path, const fs::path &root) {
+    std::shared_ptr<fs::path> folder_accessor_base::get_root() const { return root_folder; }
+
+    bool has_root(const fs::path& path, const fs::path& root) {
         if(std::distance(path.begin(), path.end()) < std::distance(root.begin(), root.end())) {
             // The path is shorter than the root path - the root can't possible be contained in the path
             return false;
@@ -60,4 +59,4 @@ namespace nova {
 
         return true;
     }
-}  // namespace nova
+} // namespace nova

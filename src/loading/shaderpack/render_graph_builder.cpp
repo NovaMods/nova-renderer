@@ -24,8 +24,11 @@ namespace nova {
      * \param depth The depth in the tree that we're at. If this number ever grows bigger than the total number of
      * passes, there's a circular dependency somewhere in the render graph. This is Bad and we hate it
      */
-    void add_dependent_passes(const std::string& pass_name, const std::unordered_map<std::string, render_pass_data>& passes, std::vector<std::string>& ordered_passes,
-        const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass, uint32_t depth);
+    void add_dependent_passes(const std::string& pass_name,
+                              const std::unordered_map<std::string, render_pass_data>& passes,
+                              std::vector<std::string>& ordered_passes,
+                              const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
+                              uint32_t depth);
 
     bool range::has_writer() const { return first_write_pass <= last_write_pass; }
 
@@ -40,27 +43,33 @@ namespace nova {
 
     unsigned range::last_used_pass() const {
         unsigned last_pass = 0;
-        if(has_writer())
+        if(has_writer()) {
             last_pass = std::max(last_pass, last_write_pass);
-        if(has_reader())
+        }
+        if(has_reader()) {
             last_pass = std::max(last_pass, last_read_pass);
+        }
         return last_pass;
     }
 
     unsigned range::first_used_pass() const {
-        unsigned first_pass = ~0u;
-        if(has_writer())
+        unsigned first_pass = ~0U;
+        if(has_writer()) {
             first_pass = std::min(first_pass, first_write_pass);
-        if(has_reader())
+        }
+        if(has_reader()) {
             first_pass = std::min(first_pass, first_read_pass);
+        }
         return first_pass;
     }
 
     bool range::is_disjoint_with(const range& other) const {
-        if(!is_used() || !other.is_used())
+        if(!is_used() || !other.is_used()) {
             return false;
-        if(!can_alias() || !other.can_alias())
+        }
+        if(!can_alias() || !other.can_alias()) {
             return false;
+        }
 
         const bool left = last_used_pass() < other.first_used_pass();
         const bool right = other.last_used_pass() < first_used_pass();
@@ -68,6 +77,7 @@ namespace nova {
     }
 
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_data>& passes) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         NOVA_PROFILER_SCOPE;
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
         std::vector<std::string> ordered_passes;
@@ -100,46 +110,49 @@ namespace nova {
         NOVA_LOG(TRACE) << "First pass at ordering passes...";
         // The passes, in simple dependency order
         if(resource_to_write_pass.find("Backbuffer") == resource_to_write_pass.end()) {
-            NOVA_LOG(ERROR) << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
+            NOVA_LOG(ERROR)
+                << "This render graph does not write to the backbuffer. Unable to load this shaderpack because it can't render anything";
             throw pass_ordering_exception("Failed to order passes because no backbuffer was found");
+        } // This block never returns.
 
-        } else {  // While the throw should make it clear that this is a separate branch, I forgot so here's an else
-            auto backbuffer_writes = resource_to_write_pass["Backbuffer"];
-            ordered_passes.insert(ordered_passes.end(), backbuffer_writes.begin(), backbuffer_writes.end());
+        auto backbuffer_writes = resource_to_write_pass["Backbuffer"];
+        ordered_passes.insert(ordered_passes.end(), backbuffer_writes.begin(), backbuffer_writes.end());
 
-            for(const auto& pass : backbuffer_writes) {
-                add_dependent_passes(pass, passes, ordered_passes, resource_to_write_pass, 1);
-            }
-
-            std::reverse(ordered_passes.begin(), ordered_passes.end());
-
-            // We're going to loop through the original list of passes and remove them from the original list of passes
-            // We want to keep the original passes around
-
-            // This code taken from `RenderGraph::filter_passes` in the Granite engine
-            // It loops through the ordered passes. When it sees the name of a new pass, it writes the pass to
-            // ordered_passes and increments the write position. After all the passes are written, we remove all the
-            // passes after the last one we wrote to, shrinking the list of ordered passes to only include the exact passes we want
-            std::unordered_set<std::string> seen;
-
-            auto output_itr = ordered_passes.begin();
-            for(const auto& pass : ordered_passes) {
-                if(!seen.count(pass)) {
-                    *output_itr = pass;
-                    seen.insert(pass);
-                    ++output_itr;
-                }
-            }
-            ordered_passes.erase(output_itr, ordered_passes.end());
+        for(const auto& pass : backbuffer_writes) {
+            add_dependent_passes(pass, passes, ordered_passes, resource_to_write_pass, 1);
         }
+
+        std::reverse(ordered_passes.begin(), ordered_passes.end());
+
+        // We're going to loop through the original list of passes and remove them from the original list of passes
+        // We want to keep the original passes around
+
+        // This code taken from `RenderGraph::filter_passes` in the Granite engine
+        // It loops through the ordered passes. When it sees the name of a new pass, it writes the pass to
+        // ordered_passes and increments the write position. After all the passes are written, we remove all the
+        // passes after the last one we wrote to, shrinking the list of ordered passes to only include the exact passes we want
+        std::unordered_set<std::string> seen;
+
+        auto output_itr = ordered_passes.begin();
+        for(const auto& pass : ordered_passes) {
+            if(seen.count(pass) == 0U) {
+                *output_itr = pass;
+                seen.insert(pass);
+                ++output_itr;
+            }
+        }
+        ordered_passes.erase(output_itr, ordered_passes.end());
 
         // Granite does some reordering to try and find a submission order that has the fewest pipeline barriers. Not
         // gonna worry about that now
         return ordered_passes;
     }
 
-    void add_dependent_passes(const std::string& pass_name, const std::unordered_map<std::string, render_pass_data>& passes, std::vector<std::string>& ordered_passes,
-        const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass, const uint32_t depth) {
+    void add_dependent_passes(const std::string& pass_name,
+                              const std::unordered_map<std::string, render_pass_data>& passes,
+                              std::vector<std::string>& ordered_passes,
+                              const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
+                              const uint32_t depth) {
         if(depth > passes.size()) {
             NOVA_LOG(ERROR) << "Circular render graph detected! Please fix your render graph to not have circular dependencies";
             throw circular_rendergraph_exception("Render graph has circular dependencies");
@@ -157,8 +170,8 @@ namespace nova {
             if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
                 // TODO: Ignore the implicitly defined resources
                 NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";
-
-            } else {
+            }
+            else {
                 const auto& write_passes = resource_to_write_pass.at(texture_name);
                 ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
 
@@ -171,8 +184,8 @@ namespace nova {
         for(const auto& buffer_name : pass.input_buffers) {
             if(resource_to_write_pass.find(buffer_name) == resource_to_write_pass.end()) {
                 NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from buffer " << buffer_name << ", but no passes write to it";
-
-            } else {
+            }
+            else {
                 const auto& write_passes = resource_to_write_pass.at(buffer_name);
                 ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
 
@@ -183,24 +196,26 @@ namespace nova {
         }
     }
 
-    void determine_usage_order_of_textures(const std::vector<render_pass_data>& passes, std::unordered_map<std::string, range>& resource_used_range, std::vector<std::string>& resources_in_order) {
+    void determine_usage_order_of_textures(const std::vector<render_pass_data>& passes,
+                                           std::unordered_map<std::string, range>& resource_used_range,
+                                           std::vector<std::string>& resources_in_order) {
         uint32_t pass_idx = 0;
         for(const auto& pass : passes) {
-             // color attachments
-             for(const auto& input : pass.texture_inputs) {
-                 auto& tex_range = resource_used_range[input];
+            // color attachments
+            for(const auto& input : pass.texture_inputs) {
+                auto& tex_range = resource_used_range[input];
 
-                 if(pass_idx < tex_range.first_write_pass) {
-                     tex_range.first_write_pass = pass_idx;
+                if(pass_idx < tex_range.first_write_pass) {
+                    tex_range.first_write_pass = pass_idx;
+                }
+                else if(pass_idx > tex_range.last_write_pass) {
+                    tex_range.last_write_pass = pass_idx;
+                }
 
-                 } else if(pass_idx > tex_range.last_write_pass) {
-                     tex_range.last_write_pass = pass_idx;
-                 }
-
-                 if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
-                     resources_in_order.push_back(input);
-                 }
-             }
+                if(std::find(resources_in_order.begin(), resources_in_order.end(), input) == resources_in_order.end()) {
+                    resources_in_order.push_back(input);
+                }
+            }
 
             if(!pass.texture_outputs.empty()) {
                 for(const auto& output : pass.texture_outputs) {
@@ -208,8 +223,8 @@ namespace nova {
 
                     if(pass_idx < tex_range.first_write_pass) {
                         tex_range.first_write_pass = pass_idx;
-
-                    } else if(pass_idx > tex_range.last_write_pass) {
+                    }
+                    else if(pass_idx > tex_range.last_write_pass) {
                         tex_range.last_write_pass = pass_idx;
                     }
 
@@ -224,13 +239,16 @@ namespace nova {
     }
 
     std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
-        const std::unordered_map<std::string, texture_resource_data>& textures, const std::unordered_map<std::string, range>& resource_used_range, const std::vector<std::string>& resources_in_order) {
+        const std::unordered_map<std::string, texture_resource_data>& textures,
+        const std::unordered_map<std::string, range>& resource_used_range,
+        const std::vector<std::string>& resources_in_order) {
         std::unordered_map<std::string, std::string> aliases;
         aliases.reserve(resources_in_order.size());
 
         for(size_t i = 0; i < resources_in_order.size(); i++) {
             const auto& to_alias_name = resources_in_order[i];
-            NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name << "`. Does it exist? " << (textures.find(to_alias_name) != textures.end());
+            NOVA_LOG(TRACE) << "Determining if we can alias `" << to_alias_name << "`. Does it exist? "
+                            << (textures.find(to_alias_name) != textures.end());
             if(to_alias_name == "Backbuffer" || to_alias_name == "backbuffer") {
                 // Yay special cases!
                 continue;
@@ -255,4 +273,4 @@ namespace nova {
         return aliases;
     }
 
-}  // namespace nova
+} // namespace nova

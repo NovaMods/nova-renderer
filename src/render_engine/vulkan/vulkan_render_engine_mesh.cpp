@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 07-Feb-19.
  */
 
@@ -8,11 +8,12 @@
 
 namespace nova {
     mesh_id_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
-        const uint32_t vertex_size = static_cast<uint32_t>(input_mesh.vertex_data.size()) * sizeof(full_vertex);
-        const uint32_t index_size = static_cast<uint32_t>(input_mesh.indices.size()) * sizeof(uint32_t);
+        const auto vertex_size = static_cast<uint32_t>(input_mesh.vertex_data.size() * sizeof(full_vertex));
+        const auto index_size = static_cast<uint32_t>(input_mesh.indices.size() * sizeof(uint32_t));
 
         // TODO: Make the extra memory allocation configurable
-        const uint32_t total_memory_needed = static_cast<uint32_t>(std::round((vertex_size + index_size) * 1.1)); // Extra size so chunks can grow
+        const auto total_memory_needed = static_cast<uint32_t>(
+            std::round((vertex_size + index_size) * 1.1)); // Extra size so chunks can grow
 
         const vk_buffer staging_buffer = get_or_allocate_mesh_staging_buffer(total_memory_needed);
         std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh.vertex_data[0], vertex_size);
@@ -33,9 +34,11 @@ namespace nova {
             // Try to find a buffer that's big enough
             uint32_t potential_staging_buffer_idx = std::numeric_limits<uint32_t>::max();
 
-            for(uint32_t i = 0; i < available_mesh_staging_buffers.size(); i++) {
-                if(available_mesh_staging_buffers[i].alloc_info.size >= needed_size && available_mesh_staging_buffers[i].alloc_info.size > available_mesh_staging_buffers[potential_staging_buffer_idx].alloc_info.size) {
-                    potential_staging_buffer_idx = i;
+            for(size_t i = 0; i < available_mesh_staging_buffers.size(); i++) {
+                if(available_mesh_staging_buffers[i].alloc_info.size >= needed_size &&
+                   available_mesh_staging_buffers[i].alloc_info.size >
+                       available_mesh_staging_buffers[potential_staging_buffer_idx].alloc_info.size) {
+                    potential_staging_buffer_idx = static_cast<uint32_t>(i);
                 }
             }
 
@@ -60,7 +63,13 @@ namespace nova {
         allocation_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
         allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator, &buffer_create_info, &allocation_create_info, &new_buffer.buffer, &new_buffer.allocation, &new_buffer.alloc_info), render_engine_rendering_exception);
+        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator,
+                                               &buffer_create_info,
+                                               &allocation_create_info,
+                                               &new_buffer.buffer,
+                                               &new_buffer.allocation,
+                                               &new_buffer.alloc_info),
+                               render_engine_rendering_exception);
 
         return new_buffer;
     }
@@ -71,4 +80,4 @@ namespace nova {
 
         mesh_memory->free(mesh.memory);
     }
-}
+} // namespace nova

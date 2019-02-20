@@ -8,17 +8,18 @@
 #ifndef RENDERER_UTILS_H
 #define RENDERER_UTILS_H
 
-#include <vector>
-#include <string>
 #include <algorithm>
 #include <exception>
+#include <optional>
+#include <string>
+#include <vector>
 
 #include <fstream>
 
 #include "filesystem.hpp"
 
 namespace nova {
-    template<int Num>
+    template <int Num>
     struct placeholder;
 
     /*!
@@ -32,15 +33,15 @@ namespace nova {
         std::for_each(std::cbegin(container), std::cend(container), thing_to_do);
     }
 
-    std::vector<std::string> split(const std::string &s, char delim);
+    std::vector<std::string> split(const std::string& s, char delim);
 
-    std::string join(const std::vector<std::string> &strings, const std::string &joiner);
+    std::string join(const std::vector<std::string>& strings, const std::string& joiner);
 
     std::string print_color(unsigned int color);
 
-    std::string print_array(int data[], int num_elements);
+    std::string print_array(int* data, int size);
 
-    bool ends_with(const std::string &string, const std::string &ending);
+    bool ends_with(const std::string& string, const std::string& ending);
 
     void write_to_file(const std::string& data, const fs::path& filepath);
 
@@ -49,28 +50,31 @@ namespace nova {
     class nova_exception : public std::exception {
     private:
         std::string msg;
-        std::exception cause;
+
+        std::string generate_msg(const std::string& msg, const std::optional<std::exception>& exception);
 
     public:
         nova_exception();
-        explicit nova_exception(std::string msg);
+        explicit nova_exception(const std::string& msg);
 
         explicit nova_exception(const std::exception& cause);
-        nova_exception(std::string msg, const std::exception& cause);
-        const char *what() const noexcept override;
+        nova_exception(const std::string& msg, const std::exception& cause);
+        [[nodiscard]] const char* what() const noexcept override;
     };
 
-#define NOVA_EXCEPTION(name)                                                                                        \
-    class name : public ::nova::nova_exception {                                                                    \
-    public:                                                                                                         \
-        name() {};                                                                                                  \
-        explicit name(std::string msg) : ::nova::nova_exception(std::move(msg)) {};                                 \
-                                                                                                                    \
-        explicit name(const std::exception& cause) : ::nova::nova_exception(cause) {};                              \
-        name(std::string msg, const std::exception& cause) : ::nova::nova_exception(std::move(msg), cause) {};      \
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define NOVA_EXCEPTION(name)                                                                                                               \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses)*/                                                                                        \
+    class name : public ::nova::nova_exception {                                                                                           \
+    public:                                                                                                                                \
+        name(){};                                                                                                                          \
+        explicit name(const std::string& msg) : ::nova::nova_exception(msg){};                                                             \
+                                                                                                                                           \
+        explicit name(const std::exception& cause) : ::nova::nova_exception(cause){};                                                      \
+        name(const std::string& msg, const std::exception& cause) : ::nova::nova_exception(msg, cause){};                                  \
     }
 
     NOVA_EXCEPTION(out_of_gpu_memory);
-}  // namespace nova
+} // namespace nova
 
-#endif  // RENDERER_UTILS_H
+#endif // RENDERER_UTILS_H

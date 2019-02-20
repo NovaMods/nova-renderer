@@ -3,20 +3,20 @@
  * \date 14-Aug-18.
  */
 
-#include <fstream>
 #include "regular_folder_accessor.hpp"
+#include <fstream>
 #include "../util/logger.hpp"
 
 namespace nova {
     regular_folder_accessor::regular_folder_accessor(const fs::path& folder) : folder_accessor_base(folder) {}
 
-    std::string regular_folder_accessor::read_text_file(const fs::path &resource_path) {
+    std::string regular_folder_accessor::read_text_file(const fs::path& resource_path) {
         std::lock_guard l(*resource_existence_mutex);
         fs::path full_resource_path;
         if(has_root(resource_path, *root_folder)) {
             full_resource_path = resource_path;
-
-        } else {
+        }
+        else {
             full_resource_path = *root_folder / resource_path;
         }
 
@@ -52,23 +52,24 @@ namespace nova {
         return file_string;
     }
 
-    std::vector<fs::path> regular_folder_accessor::get_all_items_in_folder(const fs::path &folder) {
+    std::vector<fs::path> regular_folder_accessor::get_all_items_in_folder(const fs::path& folder) {
         const fs::path full_path = *root_folder / folder;
         std::vector<fs::path> paths = {};
 
         try {
             fs::directory_iterator folder_itr(full_path);
-            for(const fs::directory_entry &entry : folder_itr) {
+            for(const fs::directory_entry& entry : folder_itr) {
                 paths.push_back(entry.path());
             }
-        } catch(const fs::filesystem_error &error) {
+        }
+        catch(const fs::filesystem_error& error) {
             throw filesystem_exception(error);
         }
 
         return paths;
     }
 
-    bool regular_folder_accessor::does_resource_exist_on_filesystem(const fs::path &resource_path) {
+    bool regular_folder_accessor::does_resource_exist_on_filesystem(const fs::path& resource_path) {
         // NOVA_LOG(TRACE) << "Checking resource existence for " << resource_path;
         const auto resource_string = resource_path.string();
         const auto existence_maybe = does_resource_exist_in_map(resource_string);
@@ -81,11 +82,9 @@ namespace nova {
             // NOVA_LOG(TRACE) << resource_path << " exists";
             resource_existence.emplace(resource_string, true);
             return true;
-
-        } else {
-            // NOVA_LOG(TRACE) << resource_path << " does not exist";
-            resource_existence.emplace(resource_string, false);
-            return false;
         }
+        // NOVA_LOG(TRACE) << resource_path << " does not exist";
+        resource_existence.emplace(resource_string, false);
+        return false;
     }
-}  // namespace nova
+} // namespace nova
