@@ -6,14 +6,14 @@
 #ifndef NOVA_RENDERER_SHADERPACK_LOADING_HPP
 #define NOVA_RENDERER_SHADERPACK_LOADING_HPP
 
-#include "shaderpack_data.hpp"
 #include <future>
 #include "../../util/filesystem.hpp"
+#include "shaderpack_data.hpp"
 
 namespace nova {
     namespace ttl {
         class task_scheduler;
-    }
+    } // namespace ttl
 
     NOVA_EXCEPTION(shader_compilation_failed);
     NOVA_EXCEPTION(shader_reflection_failed);
@@ -37,7 +37,7 @@ namespace nova {
      * \param task_scheduler The task scheduler to use when kicking off tasks to process all of the shaderpack data
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    shaderpack_data load_shaderpack_data(const fs::path &shaderpack_name);
-}  // namespace nova
+    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name);
+} // namespace nova
 
-#endif  // NOVA_RENDERER_SHADERPACK_LOADING_HPP
+#endif // NOVA_RENDERER_SHADERPACK_LOADING_HPP

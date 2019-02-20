@@ -8,12 +8,12 @@
 #ifndef NOVA_RENDERER_SHADERPACK_DATA_HPP
 #define NOVA_RENDERER_SHADERPACK_DATA_HPP
 
-#include <string>
-#include <vector>
-#include <unordered_map>
 #include <cstdint>
-#include <optional>
 #include <nlohmann/json.hpp>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 #include "../../util/filesystem.hpp"
 #include "../../util/utils.hpp"
 
@@ -189,7 +189,18 @@ namespace nova {
 
     enum class primitive_topology_enum { Triangles, Lines };
 
-    enum class blend_factor_enum { One, Zero, SrcColor, DstColor, OneMinusSrcColor, OneMinusDstColor, SrcAlpha, DstAlpha, OneMinusSrcAlpha, OneMinusDstAlpha };
+    enum class blend_factor_enum {
+        One,
+        Zero,
+        SrcColor,
+        DstColor,
+        OneMinusSrcColor,
+        OneMinusDstColor,
+        SrcAlpha,
+        DstAlpha,
+        OneMinusSrcAlpha,
+        OneMinusDstAlpha
+    };
 
     enum class render_queue_enum { Transparent, Opaque, Cutout };
 
@@ -217,12 +228,12 @@ namespace nova {
          * texel_aa does something that I don't want to figure out right now. Bilinear is your regular bilinear filter,
          * and point is the point filter. Aniso isn't an option and I kinda hope it stays that way
          */
-        texture_filter_enum filter;
+        texture_filter_enum filter{};
 
         /*!
          * \brief How the texture should wrap at the edges
          */
-        wrap_mode_enum wrap_mode;
+        wrap_mode_enum wrap_mode{};
     };
 
     struct stencil_op_state {
@@ -241,7 +252,7 @@ namespace nova {
 
     struct vertex_field_data {
         std::string semantic_name;
-        vertex_field_enum field;
+        vertex_field_enum field{};
     };
 
     /*!
@@ -298,71 +309,71 @@ namespace nova {
         /*!
          * \brief A bias to apply to the depth
          */
-        float depth_bias;
+        float depth_bias{};
 
         /*!
          * \brief The depth bias, scaled by slope I guess?
          */
-        float slope_scaled_depth_bias;
+        float slope_scaled_depth_bias{};
 
         /*!
          * \brief The reference value to use for the stencil test
          */
-        uint32_t stencil_ref;
+        uint32_t stencil_ref{};
 
         /*!
          * \brief The mask to use when reading from the stencil buffer
          */
-        uint32_t stencil_read_mask;
+        uint32_t stencil_read_mask{};
 
         /*!
          * \brief The mask to use when writing to the stencil buffer
          */
-        uint32_t stencil_write_mask;
+        uint32_t stencil_write_mask{};
 
         /*!
          * \brief How to handle MSAA for this state
          */
-        msaa_support_enum msaa_support;
+        msaa_support_enum msaa_support{};
 
         /*!
          * \brief
          */
-        primitive_topology_enum primitive_mode;
+        primitive_topology_enum primitive_mode{};
 
         /*!
          * \brief Where to get the blending factor for the soource
          */
-        blend_factor_enum source_blend_factor;
+        blend_factor_enum source_blend_factor{};
 
         /*!
          * \brief Where to get the blending factor for the destination
          */
-        blend_factor_enum destination_blend_factor;
+        blend_factor_enum destination_blend_factor{};
 
         /*!
          * \brief How to get the source alpha in a blend
          */
-        blend_factor_enum alpha_src;
+        blend_factor_enum alpha_src{};
 
         /*!
          * \brief How to get the destination alpha in a blend
          */
-        blend_factor_enum alpha_dst;
+        blend_factor_enum alpha_dst{};
 
         /*!
          * \brief The function to use for the depth test
          */
-        compare_op_enum depth_func;
+        compare_op_enum depth_func{};
 
         /*!
          * \brief The render queue that this pass belongs to
          *
          * This may or may not be removed depending on what is actually needed by Nova
          */
-        render_queue_enum render_queue;
+        render_queue_enum render_queue{};
 
-        shader_source vertex_shader;
+        shader_source vertex_shader{};
 
         std::optional<shader_source> geometry_shader;
         std::optional<shader_source> tessellation_control_shader;
@@ -372,7 +383,7 @@ namespace nova {
         /*!
          * \brief Merges this pipeline with the parent, returning the merged pipeline
          */
-        pipeline_data merge_with_parent(const pipeline_data &parent_pipeline) const;
+        [[nodiscard]] pipeline_data merge_with_parent(const pipeline_data& parent_pipeline) const;
     };
 
     struct texture_format {
@@ -395,10 +406,10 @@ namespace nova {
          */
         float height;
 
-        glm::uvec2 get_size_in_pixels(const glm::uvec2& screen_size) const;
+        [[nodiscard]] glm::uvec2 get_size_in_pixels(const glm::uvec2& screen_size) const;
 
-        bool operator==(const texture_format &other) const;
-        bool operator!=(const texture_format &other) const;
+        bool operator==(const texture_format& other) const;
+        bool operator!=(const texture_format& other) const;
     };
 
     /*!
@@ -441,7 +452,7 @@ namespace nova {
          */
         std::string name;
 
-        texture_format format;
+        texture_format format{};
     };
 
     struct shaderpack_resources_data {
@@ -556,18 +567,18 @@ namespace nova {
         shaderpack_resources_data resources;
     };
 
-    pixel_format_enum pixel_format_enum_from_string(const std::string &str);
-    texture_dimension_type_enum texture_dimension_type_enum_from_string(const std::string &str);
-    texture_filter_enum texture_filter_enum_from_string(const std::string &str);
-    wrap_mode_enum wrap_mode_enum_from_string(const std::string &str);
-    stencil_op_enum stencil_op_enum_from_string(const std::string &str);
-    compare_op_enum compare_op_enum_from_string(const std::string &str);
-    msaa_support_enum msaa_support_enum_from_string(const std::string &str);
-    primitive_topology_enum primitive_topology_enum_from_string(const std::string &str);
-    blend_factor_enum blend_factor_enum_from_string(const std::string &str);
-    render_queue_enum render_queue_enum_from_string(const std::string &str);
-    state_enum state_enum_from_string(const std::string &str);
-    vertex_field_enum vertex_field_enum_from_string(const std::string &str);
+    pixel_format_enum pixel_format_enum_from_string(const std::string& str);
+    texture_dimension_type_enum texture_dimension_type_enum_from_string(const std::string& str);
+    texture_filter_enum texture_filter_enum_from_string(const std::string& str);
+    wrap_mode_enum wrap_mode_enum_from_string(const std::string& str);
+    stencil_op_enum stencil_op_enum_from_string(const std::string& str);
+    compare_op_enum compare_op_enum_from_string(const std::string& str);
+    msaa_support_enum msaa_support_enum_from_string(const std::string& str);
+    primitive_topology_enum primitive_topology_enum_from_string(const std::string& str);
+    blend_factor_enum blend_factor_enum_from_string(const std::string& str);
+    render_queue_enum render_queue_enum_from_string(const std::string& str);
+    state_enum state_enum_from_string(const std::string& str);
+    vertex_field_enum vertex_field_enum_from_string(const std::string& str);
 
     std::string to_string(pixel_format_enum val);
     std::string to_string(texture_dimension_type_enum val);
@@ -581,6 +592,6 @@ namespace nova {
     std::string to_string(render_queue_enum val);
     std::string to_string(state_enum val);
     std::string to_string(vertex_field_enum val);
-}  // namespace nova
+} // namespace nova
 
-#endif  // NOVA_RENDERER_SHADERPACK_DATA_HPP
+#endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

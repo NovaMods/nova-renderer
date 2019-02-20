@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 20-Oct-18.
  */
 
@@ -21,7 +21,6 @@ namespace nova {
     D3D12_STENCIL_OP to_dx12_stencil_op(stencil_op_enum op);
 
     D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(primitive_topology_enum primitive_mode);
-}
+} // namespace nova
 
-
-#endif //NOVA_RENDERER_DX_12_UTILS_HPP
+#endif // NOVA_RENDERER_DX_12_UTILS_HPP

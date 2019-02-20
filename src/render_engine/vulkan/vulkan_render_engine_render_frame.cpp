@@ -1,10 +1,10 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 07-Feb-19.
  */
 
-#include "vulkan_render_engine.hpp"
 #include "swapchain.hpp"
+#include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
 namespace nova {
@@ -23,7 +23,8 @@ namespace nova {
 
         // Record command buffers
         // We can't upload a new shaderpack in the middle of a frame!
-        // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the frame
+        // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the
+        // frame
         shaderpack_loading_mutex.lock();
 
         if(dynamic_textures_need_to_transition) {
@@ -39,9 +40,7 @@ namespace nova {
         current_frame = (current_frame + 1) % max_frames_in_queue;
     }
 
-    void vulkan_render_engine::reset_render_finished_semaphores() {
-        render_finished_semaphores_by_frame[current_frame].clear();
-    }
+    void vulkan_render_engine::reset_render_finished_semaphores() { render_finished_semaphores_by_frame[current_frame].clear(); }
 
     void vulkan_render_engine::upload_new_mesh_parts() {
         if(mesh_upload_queue.empty()) {
@@ -88,10 +87,10 @@ namespace nova {
             vkCmdCopyBuffer(mesh_upload_cmds, cmd.staging_buffer.buffer, mem->block->get_buffer(), 1, &copy);
 
             VkDrawIndexedIndirectCommand mesh_draw_command = {};
-            mesh_draw_command.indexCount = (cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t);
+            mesh_draw_command.indexCount = static_cast<uint32_t>((cmd.model_matrix_offset - cmd.indices_offset) / sizeof(uint32_t));
             mesh_draw_command.instanceCount = 1;
             mesh_draw_command.firstIndex = 0;
-            mesh_draw_command.vertexOffset = static_cast<uint32_t>(mem->offset);
+            mesh_draw_command.vertexOffset = static_cast<int32_t>(mem->offset);
             mesh_draw_command.firstInstance = 0;
 
             meshes[cmd.mesh_id] = {mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command};
@@ -155,8 +154,8 @@ namespace nova {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
                 depth_barriers.push_back(barrier);
-
-            } else {
+            }
+            else {
                 barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
                 barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -166,7 +165,7 @@ namespace nova {
             }
         }
 
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -182,9 +181,27 @@ namespace nova {
         begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vkBeginCommandBuffer(cmds, &begin_info);
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(color_barriers.size()), color_barriers.data());
+        vkCmdPipelineBarrier(cmds,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             0,
+                             0,
+                             nullptr,
+                             0,
+                             nullptr,
+                             static_cast<uint32_t>(color_barriers.size()),
+                             color_barriers.data());
 
-        vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, static_cast<uint32_t>(depth_barriers.size()), depth_barriers.data());
+        vkCmdPipelineBarrier(cmds,
+                             VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                             VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                             0,
+                             0,
+                             nullptr,
+                             0,
+                             nullptr,
+                             static_cast<uint32_t>(depth_barriers.size()),
+                             depth_barriers.data());
 
         vkEndCommandBuffer(cmds);
 
@@ -212,7 +229,7 @@ namespace nova {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
         vkResetFences(device, 1, &renderpass.fence);
 
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -276,14 +293,24 @@ namespace nova {
             barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Each swapchain image **will** be rendered to before it is presented
+            barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Each swapchain image **will** be rendered to before it is
+                                                                          // presented
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = 1;
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+            vkCmdPipelineBarrier(cmds,
+                                 VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+                                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                 0,
+                                 0,
+                                 nullptr,
+                                 0,
+                                 nullptr,
+                                 1,
+                                 &barrier);
         }
 
         // TODO: Any barriers for aliased textures if we're at an aliased boundary
@@ -293,7 +320,7 @@ namespace nova {
         VkClearValue clear_value = {};
         clear_value.color = {{0, 0, 0, 0}};
 
-        const VkClearValue clear_values[] = {clear_value, clear_value};
+        const std::array<VkClearValue, 2> clear_values = {clear_value, clear_value};
 
         VkRenderPassBeginInfo rp_begin_info = {};
         rp_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -301,7 +328,7 @@ namespace nova {
         rp_begin_info.framebuffer = renderpass.framebuffer.framebuffer;
         rp_begin_info.renderArea = renderpass.render_area;
         rp_begin_info.clearValueCount = 2;
-        rp_begin_info.pClearValues = clear_values;
+        rp_begin_info.pClearValues = clear_values.data();
 
         if(rp_begin_info.framebuffer == nullptr) {
             rp_begin_info.framebuffer = swapchain->get_current_framebuffer();
@@ -331,16 +358,26 @@ namespace nova {
             barrier.subresourceRange.layerCount = 1;
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-            vkCmdPipelineBarrier(cmds, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+            vkCmdPipelineBarrier(cmds,
+                                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                 VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+                                 0,
+                                 0,
+                                 nullptr,
+                                 0,
+                                 nullptr,
+                                 1,
+                                 &barrier);
         }
 
         vkEndCommandBuffer(cmds);
 
-        // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's fence
+        // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's
+        // fence
         if(renderpass.writes_to_backbuffer) {
             submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), {image_available_semaphores.at(current_frame)});
-
-        } else {
+        }
+        else {
             submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
         }
     }
@@ -348,7 +385,7 @@ namespace nova {
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass) {
         // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
         // command pool for its thread, since command pools need to be externally synchronized
-        const VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
 
         VkCommandBufferAllocateInfo cmds_info = {};
         cmds_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -392,8 +429,8 @@ namespace nova {
     void vulkan_render_engine::draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds) {
         // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
         // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
-        // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute shader
-        // Version 2: Incorporate occlusion queries so we know what with all certainty what is and isn't visible
+        // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute
+        // shader Version 2: Incorporate occlusion queries so we know what with all certainty what is and isn't visible
 
         // At the current time I'm making version 1
 
@@ -426,13 +463,19 @@ namespace nova {
             VmaAllocation allocation;
             VmaAllocationInfo alloc_info;
 
-            NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator, &buffer_create_info, &alloc_create_info, &indirect_draw_commands_buffer, &allocation, &alloc_info), buffer_allocate_failed);
+            NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator,
+                                                   &buffer_create_info,
+                                                   &alloc_create_info,
+                                                   &indirect_draw_commands_buffer,
+                                                   &allocation,
+                                                   &alloc_info),
+                                   buffer_allocate_failed);
 
             // Version 1: write commands for all things to the indirect draw buffer
-            VkDrawIndexedIndirectCommand* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
+            auto* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
 
-            for(uint32_t i = 0; i < renderables.size(); i++) {
-                const render_object& cur_obj = renderables.at(i);
+            for(size_t i = 0; i < renderables.size(); i++) {
+                const render_object& cur_obj = renderables[i];
                 indirect_commands[i] = cur_obj.mesh->draw_cmd;
             }
 
@@ -443,7 +486,10 @@ namespace nova {
         }
     }
 
-    void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds, VkQueue queue, VkFence cmd_buffer_done_fence, const std::vector<VkSemaphore>& wait_semaphores) {
+    void vulkan_render_engine::submit_to_queue(VkCommandBuffer cmds,
+                                               VkQueue queue,
+                                               VkFence cmd_buffer_done_fence,
+                                               const std::vector<VkSemaphore>& wait_semaphores) {
         std::lock_guard l(render_done_sync_mutex);
         std::vector<VkSemaphore>& render_finished_semaphores = render_finished_semaphores_by_frame.at(current_frame);
 
@@ -478,4 +524,4 @@ namespace nova {
         current_semaphore_idx++;
     }
 
-}
+} // namespace nova

@@ -1,20 +1,20 @@
 #pragma once
 
-#include "../../util/vma_usage.hpp"
-#include <vulkan/vulkan.h>
+#include <mutex>
 #include <vector>
+#include <vulkan/vulkan.h>
 #include "../../settings/nova_settings.hpp"
 #include "../../util/utils.hpp"
-#include <mutex>
+#include "../../util/vma_usage.hpp"
 
 namespace ftl {
     class TaskScheduler;
-}
+} // namespace ftl
 
 namespace nova {
     namespace ttl {
         class task_scheduler;
-    }
+    } // namespace ttl
 
     NOVA_EXCEPTION(buffer_allocation_failed);
 
@@ -83,7 +83,7 @@ namespace nova {
              */
             void free(allocation_info* alloc);
 
-            VkBuffer get_buffer() const;
+            [[nodiscard]] VkBuffer get_buffer() const;
 
         private:
             // The pool is a simple linked list of allocated blocks.
@@ -108,8 +108,8 @@ namespace nova {
 
             uint32_t next_block_id = 0;
             VkBuffer buffer = VK_NULL_HANDLE;
-            VmaAllocation vma_allocation;
-            VmaAllocationInfo vma_allocation_info;
+            VmaAllocation vma_allocation{};
+            VmaAllocationInfo vma_allocation_info{};
             VkDeviceSize size;
             VkDeviceSize allocated = 0;
 
@@ -118,7 +118,10 @@ namespace nova {
             void compact_all_memory();
         };
 
-        compacting_block_allocator(const settings_options::block_allocator_settings& settings, VmaAllocator vma_allocator, uint32_t graphics_queue_idx, uint32_t copy_queue_idx);
+        compacting_block_allocator(const settings_options::block_allocator_settings& settings,
+                                   VmaAllocator vma_allocator,
+                                   uint32_t graphics_queue_idx,
+                                   uint32_t copy_queue_idx);
 
         /*!
          * \brief Allocates memory of the requested size and gives that to you
@@ -142,14 +145,14 @@ namespace nova {
 
         /*!
          * \brief Adds barriers to the provided command buffer to ensure that reading vertex data has finished before transfers
-         * 
+         *
          * \param cmds The command buffer to add commands to
          */
         void add_barriers_before_data_upload(VkCommandBuffer cmds) const;
 
         /*!
          * \brief Adds barriers to the provided command buffer to ensure that transfers are done before reading vertex data has started
-         * 
+         *
          * \param cmds The command buffer to add commands to
          */
         void add_barriers_after_data_upload(VkCommandBuffer cmds) const;
@@ -164,4 +167,4 @@ namespace nova {
         uint32_t copy_queue_idx;
     };
 
-}  // namespace nova
+} // namespace nova

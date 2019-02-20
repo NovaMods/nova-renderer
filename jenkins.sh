@@ -20,7 +20,7 @@ cmake ..\
     -DCMAKE_{C,CXX}_FLAGS="-fsanitize=address,undefined"\
     -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=lld"\
     -GNinja
-NINJA_STATUS="[%f/%t: %p - %r processes @ %c|%o files/s %es] " nice ninja -j8
+ninja -j8
 echo "End Clang-Build"
 ./nova-test-unit
 echo "End Clang-Tests"
@@ -35,20 +35,41 @@ cmake ..\
     -DNOVA_TREAT_WARNINGS_AS_ERRORS=On\
     -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7\
     -DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache\
+    -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=gold"\
     -DNOVA_COVERAGE=On\
     -GNinja
-NINJA_STATUS="[%f/%t: %p - %r processes @ %c|%o files/s %es] " nice ninja -j8
+ninja -j8
 lcov -c -i -d . -o empty-coverage.info --gcov-tool gcov-7
 echo "End GCC-Build"
 ./nova-test-unit
 echo "End GCC-Tests"
 cd ..
 
+# Formatting
+cd build-clang
+ninja format
+cd ..
+echo "End formatting"
+
+if [ `git status --porcelain src tests | wc -c` -eq 0 ]; then
+    echo "No formatting errors found."
+else
+    echo "Formatting errors found."
+    git diff -numstat src tests
+    exit 1
+fi
+
 # Linting
 cd build-clang
-${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py -export-fixes fixes.yaml -j8 -header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` -clang-tidy-binary clang-tidy-8
-# test `cat fixes.yaml | wc -c` -eq 1
+${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml -j8 --header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` --clang-tidy-binary clang-tidy-8
 echo "End linting"
+
+if [ `cat fixes.yaml | wc -c` -eq 0 ]; then
+    echo "No linting warnings found."
+else 
+    echo "Lining warnings found. Aborting."
+    exit 1
+fi
 cd ..
 
 cd build-gcc
