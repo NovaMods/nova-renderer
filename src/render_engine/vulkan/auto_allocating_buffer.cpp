@@ -7,7 +7,7 @@
 #include "../../util/logger.hpp"
 
 namespace nova {
-    auto_buffer::auto_buffer(std::string name, const VmaAllocation allocation, VkBufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped = false) : uniform_buffer(name, allocation, create_info, min_alloc_size, mapped) {
+    auto_buffer::auto_buffer(std::string name, VmaAllocation allocation, VkBufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped = false) : uniform_buffer(name, allocation, create_info, min_alloc_size, mapped) {
 
         chunks.emplace_back(auto_buffer_chunk{VkDeviceSize(0), create_info.size});
     }

@@ -22,7 +22,7 @@ namespace nova {
     }
 
     uniform_buffer::uniform_buffer(uniform_buffer&& old) noexcept
-        : name(old.name), min_alloc_size(old.min_alloc_size), allocator(old.allocator), device(old.device), buffer(old.buffer), allocation(old.allocation), allocation_info(old.allocation_info) {
+        : name(std::move(old.name)), min_alloc_size(old.min_alloc_size), allocator(old.allocator), device(old.device), buffer(old.buffer), allocation(old.allocation), allocation_info(old.allocation_info) {
 
         old.device = VkDevice{};
         old.buffer = VkBuffer{};
@@ -52,10 +52,11 @@ namespace nova {
         return buffer;
     }
 
-    const uint64_t uniform_buffer::get_size() const {
+    uint64_t uniform_buffer::get_size() const {
         return min_alloc_size;
     }
 
+    // ReSharper disable once CppMemberFunctionMayBeConst
     void uniform_buffer::set_data(const void* data, uint32_t size) {
         void* mapped_data;
         vmaMapMemory(allocator, allocation, &mapped_data);

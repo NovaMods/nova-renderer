@@ -17,7 +17,7 @@ namespace nova {
     public:
         uniform_buffer() = default;
 
-        uniform_buffer(std::string name, const VmaAllocator allocation, VkBufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
+        uniform_buffer(std::string name, VmaAllocator allocator, VkBufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
 
         uniform_buffer(uniform_buffer&& old) noexcept;
 
@@ -32,19 +32,19 @@ namespace nova {
 
         const VkBuffer& get_vk_buffer() const;
 
-        const uint64_t get_size() const;
+        uint64_t get_size() const;
 
     protected:
         std::string name;
-        uint64_t min_alloc_size;
+        uint64_t min_alloc_size = 64;
 
-        const VmaAllocator allocator;
+        VmaAllocator allocator = {};
 
-        VkDevice device;
-        VkBuffer buffer;
+        VkDevice device = nullptr;
+        VkBuffer buffer = nullptr;
 
-        VmaAllocation allocation;
-        VmaAllocationInfo allocation_info;
+        VmaAllocation allocation = {};
+        VmaAllocationInfo allocation_info = {};
     };
 } // namespace nova
 
