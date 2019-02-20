@@ -32,11 +32,13 @@ namespace nova {
 
         /*!
          * \brief Creates a new auto-allocating buffer of the given size on the provided device
-         * \param total_size The size of the buffer
-         * \param device The device to create the buffer on
+         * \param name The name of the new buffer
+         * \param allocator The allocator to allocate this buffer from
+         * \param create_info Information about creating the buffer
+         * \param min_alloc_size The minimum size of an allocation from this buffer
          * \param mapped If true, make this buffer always mapped
          */
-        auto_buffer(std::string name, const VmaAllocator allocation, VkBufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
+        auto_buffer(const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t min_alloc_size, bool mapped);
 
         /*!
          * \brief Allocates a chunk of the underlying buffer for your personal user

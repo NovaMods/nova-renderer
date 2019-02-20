@@ -19,7 +19,11 @@ namespace nova {
 
         uniform_buffer(std::string name, VmaAllocator allocator, VkBufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped);
 
+        uniform_buffer(const uniform_buffer& other) = delete;
+        uniform_buffer& operator=(const uniform_buffer& other) = delete;
+
         uniform_buffer(uniform_buffer&& old) noexcept;
+        uniform_buffer& operator=(uniform_buffer&& old) noexcept;
 
         virtual ~uniform_buffer();
 
@@ -38,12 +42,12 @@ namespace nova {
         std::string name;
         uint64_t min_alloc_size = 64;
 
-        VmaAllocator allocator = {};
+        VmaAllocator allocator = nullptr;
 
         VkDevice device = nullptr;
         VkBuffer buffer = nullptr;
 
-        VmaAllocation allocation = {};
+        VmaAllocation allocation = nullptr;
         VmaAllocationInfo allocation_info = {};
     };
 } // namespace nova

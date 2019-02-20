@@ -7,7 +7,12 @@
 #include "../../util/logger.hpp"
 
 namespace nova {
-    auto_buffer::auto_buffer(std::string name, VmaAllocation allocation, VkBufferCreateInfo create_info, uint64_t min_alloc_size, bool mapped = false) : uniform_buffer(name, allocation, create_info, min_alloc_size, mapped) {
+    auto_buffer::auto_buffer(const std::string& name,
+                             VmaAllocator allocator,
+                             const VkBufferCreateInfo& create_info,
+                             const uint64_t min_alloc_size,
+                             const bool mapped = false)
+        : uniform_buffer(name, allocator, create_info, min_alloc_size, mapped) {
 
         chunks.emplace_back(auto_buffer_chunk{VkDeviceSize(0), create_info.size});
     }
@@ -62,7 +67,7 @@ namespace nova {
         // Properly we should try to find an allocated space of our size and merge the two allocations on either side of
         // it... but that's marginally harder (maybe I'll do it) so let's just try to find the first slot it will fit
 
-        auto to_free_end = to_free.offset + to_free.range;
+        const auto to_free_end = to_free.offset + to_free.range;
 
         auto& first_chunk = chunks[0];
         auto& last_chunk = chunks[chunks.size() - 1];
@@ -97,8 +102,8 @@ namespace nova {
             auto& behind_space = chunks[i - 1];
             auto& ahead_space = chunks[i];
 
-            auto behind_space_end = behind_space.offset + behind_space.range;
-            auto space_between_allocs = space_between(behind_space, ahead_space);
+            const auto behind_space_end = behind_space.offset + behind_space.range;
+            const auto space_between_allocs = space_between(behind_space, ahead_space);
 
             // Do we fit nicely between the two things?
             if(space_between_allocs == to_free.range) {
