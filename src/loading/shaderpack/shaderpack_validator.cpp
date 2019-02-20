@@ -11,7 +11,7 @@
 #include <fmt/format.h>
 
 #ifdef ERROR
-#    undef ERROR
+#undef ERROR
 #endif
 
 namespace nova {

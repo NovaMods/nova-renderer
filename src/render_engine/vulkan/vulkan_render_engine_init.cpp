@@ -46,7 +46,7 @@ namespace nova {
 #elif defined(NOVA_WINDOWS)
         enabled_extension_names.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #else
-#    error Unsupported Operating system
+#error Unsupported Operating system
 #endif
 
 #ifndef NDEBUG
@@ -165,7 +165,7 @@ namespace nova {
                                render_engine_initialization_exception);
 
 #else
-#    error Unsuported window system
+#error Unsuported window system
 #endif
     }
 

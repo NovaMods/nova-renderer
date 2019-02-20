@@ -7,9 +7,9 @@
 
 #ifdef NOVA_LINUX
 
-#    include <X11/Xlib.h>
-#    include <cstdint>
-#    include "../window.hpp"
+#include <X11/Xlib.h>
+#include <cstdint>
+#include "../window.hpp"
 
 namespace nova {
     class x11_window : public iwindow {
@@ -45,15 +45,15 @@ namespace nova {
 
 // X11 macros that are bad
 #ifdef Always
-#    undef Always
+#undef Always
 #endif
 
 #ifdef None
-#    undef None
+#undef None
 #endif
 
 #ifdef Bool
-#    undef Bool
+#undef Bool
 #endif
 
 #endif // NOVA_RENDERER_X_11_WINDOW_HPP

@@ -9,10 +9,10 @@
 #include <iostream>
 
 #ifdef __linux__
-#    include <csignal>
+#include <csignal>
 void sigsegv_handler(int signal);
 void sigabrt_handler(int signal);
-#    include "../../src/util/linux_utils.hpp"
+#include "../../src/util/linux_utils.hpp"
 #endif
 
 namespace nova {

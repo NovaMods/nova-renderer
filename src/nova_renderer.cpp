@@ -12,7 +12,7 @@
 #include "util/logger.hpp"
 
 #if defined(NOVA_WINDOWS)
-#    include "render_engine/dx12/dx12_render_engine.hpp"
+#include "render_engine/dx12/dx12_render_engine.hpp"
 #endif
 
 #include "debugging/renderdoc.hpp"

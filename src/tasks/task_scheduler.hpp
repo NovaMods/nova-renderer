@@ -17,7 +17,7 @@
 #include "wait_free_queue.hpp"
 
 #ifdef NOVA_LINUX
-#    include "../util/linux_utils.hpp"
+#include "../util/linux_utils.hpp"
 #endif
 
 namespace nova::ttl {
