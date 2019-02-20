@@ -125,7 +125,7 @@ namespace nova::renderer {
             if(space_between_allocs == to_free.range) {
                 // combine these nerds
                 chunks[i - 1].range += to_free.range + ahead_space.range;
-                chunks.erase(chunks.begin() + i);
+                chunks.erase(chunks.begin() + static_cast<long>(I));
                 goto end;
             }
 
@@ -142,7 +142,7 @@ namespace nova::renderer {
                     goto end;
                 }
 
-                chunks.emplace(chunks.begin() + i, auto_buffer_chunk{to_free.offset, to_free.range});
+                chunks.emplace(chunks.begin() + static_cast<long>(I), auto_buffer_chunk{to_free.offset, to_free.range});
                 goto end;
             }
         }
