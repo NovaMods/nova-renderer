@@ -125,6 +125,7 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_render_engine_init.cpp
         src/render_engine/vulkan/vulkan_render_engine_shaderpack.cpp
+        src/render_engine/vulkan/vulkan_render_engine_render_objects.cpp
         src/render_engine/vulkan/vulkan_render_engine_render_frame.cpp
         src/render_engine/vulkan/vulkan_render_engine_mesh.cpp
         src/render_engine/vulkan/vulkan_utils.hpp

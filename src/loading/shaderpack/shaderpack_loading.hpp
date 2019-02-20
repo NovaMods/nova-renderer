@@ -10,7 +10,7 @@
 #include "../../util/filesystem.hpp"
 #include "shaderpack_data.hpp"
 
-namespace nova {
+namespace nova::renderer {
     namespace ttl {
         class task_scheduler;
     } // namespace ttl

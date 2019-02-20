@@ -25,7 +25,7 @@
 #        undef ERROR
 #    endif
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief A Win32 window for the DX12 variant of Nova
      */

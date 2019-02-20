@@ -8,7 +8,7 @@
 
 #include "folder_accessor.hpp"
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief Allows access to resources in a regular folder
      */

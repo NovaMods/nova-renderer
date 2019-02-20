@@ -9,7 +9,7 @@
 #include <miniz_zip.h>
 #include "folder_accessor.hpp"
 
-namespace nova {
+namespace nova::renderer {
     struct file_tree_node {
         std::string name;
         std::vector<std::unique_ptr<file_tree_node>> children;

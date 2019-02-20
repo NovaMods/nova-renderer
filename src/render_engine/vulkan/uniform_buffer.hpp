@@ -9,7 +9,7 @@
 #include <vk_mem_alloc.h>
 #include <string>
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief A nice interface for uniform buffer objects
      */

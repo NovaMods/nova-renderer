@@ -14,7 +14,7 @@
 #undef ERROR
 #endif
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief All the default values for a JSON pipeline
      *

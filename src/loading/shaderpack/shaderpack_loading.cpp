@@ -18,7 +18,7 @@
 
 #include "../../tasks/task_scheduler.hpp"
 
-namespace nova {
+namespace nova::renderer {
     std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path& shaderpack_name);
 
     shaderpack_resources_data load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access);

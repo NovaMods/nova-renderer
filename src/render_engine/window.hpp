@@ -10,7 +10,7 @@
 
 #include <glm/glm.hpp>
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(window_creation_error);
 
     /*!

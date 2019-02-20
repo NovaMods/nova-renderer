@@ -15,7 +15,7 @@ void sigabrt_handler(int signal);
 #include "../../src/util/linux_utils.hpp"
 #endif
 
-namespace nova {
+namespace nova::renderer {
     int main() {
         TEST_SETUP_LOGGER();
 

@@ -18,7 +18,7 @@
 #undef ERROR
 #endif
 
-namespace nova {
+namespace nova::renderer {
     enum log_level { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, MAX_LEVEL };
 
     class _log_stream;

@@ -14,7 +14,7 @@
 #include "../util/filesystem.hpp"
 #include "../util/utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(resource_not_found_exception);
 
     class filesystem_exception : public std::exception { // Convert fs::filesystem_error into a nova class

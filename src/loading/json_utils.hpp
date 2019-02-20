@@ -10,7 +10,7 @@
 #include <optional>
 #include "../util/logger.hpp"
 
-namespace nova {
+namespace nova::renderer {
     // Keeps the compiler happy
     std::string to_string(const std::string& str);
 

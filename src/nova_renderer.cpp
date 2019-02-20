@@ -20,7 +20,7 @@
 
 #include "minitrace.h"
 
-namespace nova {
+namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
     nova_renderer::nova_renderer(const settings_options& settings)

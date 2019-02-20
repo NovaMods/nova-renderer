@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include "shaderpack_data.hpp"
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(pass_ordering_exception);
     NOVA_EXCEPTION(circular_rendergraph_exception);
 

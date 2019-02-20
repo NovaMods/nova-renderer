@@ -9,7 +9,7 @@
 #include <list>
 #include <memory>
 
-namespace nova {
+namespace nova::renderer {
     struct vk_mesh;
 
     struct render_object {

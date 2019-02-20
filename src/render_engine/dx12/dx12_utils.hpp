@@ -10,7 +10,7 @@
 
 #include "../../loading/shaderpack/shaderpack_data.hpp"
 
-namespace nova {
+namespace nova::renderer {
     enum class pixel_format_enum;
     DXGI_FORMAT to_dxgi_format(pixel_format_enum pixel_format);
 

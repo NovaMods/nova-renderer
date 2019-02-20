@@ -12,7 +12,7 @@
 
 using Microsoft::WRL::ComPtr;
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief
      */

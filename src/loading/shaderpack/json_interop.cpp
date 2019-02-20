@@ -6,7 +6,7 @@
 #include "json_interop.hpp"
 #include "../json_utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     void from_json(const nlohmann::json& j, texture_format& format) {
         format.pixel_format = get_json_value<pixel_format_enum>(j, "pixelFormat", pixel_format_enum::RGBA8, pixel_format_enum_from_string);
         format.dimension_type = get_json_value<texture_dimension_type_enum>(j,

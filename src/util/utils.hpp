@@ -18,7 +18,7 @@
 
 #include "filesystem.hpp"
 
-namespace nova {
+namespace nova::renderer {
     template <int Num>
     struct placeholder;
 

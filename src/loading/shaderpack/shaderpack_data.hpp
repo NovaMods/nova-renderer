@@ -22,7 +22,7 @@
 #include <glm/glm.hpp>
 #include <unordered_set>
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(validation_failure_exception);
 
     /*!

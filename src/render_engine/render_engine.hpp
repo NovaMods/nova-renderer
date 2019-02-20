@@ -15,7 +15,7 @@
 #include "../util/utils.hpp"
 #include "window.hpp"
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 

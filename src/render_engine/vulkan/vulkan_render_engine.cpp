@@ -21,7 +21,7 @@
 
 #endif
 
-namespace nova {
+namespace nova::renderer {
     vulkan_render_engine::~vulkan_render_engine() { vkDeviceWaitIdle(device); }
 
     std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }

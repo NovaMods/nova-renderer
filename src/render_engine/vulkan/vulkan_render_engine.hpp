@@ -30,9 +30,10 @@
 
 #include <mutex>
 #include "../../render_objects/render_object.hpp"
+#include "auto_allocating_buffer.hpp"
 #include "swapchain.hpp"
 
-namespace nova {
+namespace nova::renderer {
     namespace ttl {
         class task_scheduler;
     } // namespace ttl
@@ -172,7 +173,7 @@ namespace nova {
         uint32_t copy_family_index{};
         VkQueue copy_queue{};
 #pragma endregion
-
+        
         vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler);
 
         vulkan_render_engine(vulkan_render_engine&& other) = delete;
@@ -496,6 +497,15 @@ namespace nova {
          * \brief Returns the provided buffer to the pool of staging buffers
          */
         void free_mesh_staging_buffer(const vk_buffer& buffer);
+#pragma endregion
+
+#pragma region Render Object
+        /*!
+         * \brief A buffer to hold model matrices for static render objects
+         */
+        std::unique_ptr<auto_buffer> static_model_matrix_buffer;
+
+        void create_builtin_uniform_buffers();
 #pragma endregion
 
 #pragma region Rendering

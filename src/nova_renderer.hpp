@@ -16,7 +16,7 @@
 #include "settings/nova_settings.hpp"
 #include "tasks/task_scheduler.hpp"
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
     NOVA_EXCEPTION(uninitialized_exception);
 

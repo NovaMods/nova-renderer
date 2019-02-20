@@ -6,7 +6,7 @@
 #include "auto_allocating_buffer.hpp"
 #include "../../util/logger.hpp"
 
-namespace nova {
+namespace nova::renderer {
     auto_buffer::auto_buffer(const std::string& name,
                              VmaAllocator allocator,
                              const VkBufferCreateInfo& create_info,

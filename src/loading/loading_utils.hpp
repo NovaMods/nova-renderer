@@ -10,7 +10,7 @@
 
 #include "../util/filesystem.hpp"
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief Determines if a given path refers to a zip folder or a regular folder
      * \param path_to_folder The path from Nova's working directory to the folder you want to check

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace nova {
+namespace nova::renderer {
 
     struct semver {
         uint32_t major;

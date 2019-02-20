@@ -8,7 +8,7 @@
 #include "../render_engine.hpp"
 #include "vulkan_utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     uint32_t compacting_block_allocator::block_allocator_buffer::next_id = 0;
 
     compacting_block_allocator::block_allocator_buffer::block_allocator_buffer(const VkDeviceSize size, VmaAllocator allocator)

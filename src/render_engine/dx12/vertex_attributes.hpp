@@ -12,7 +12,7 @@
 
 #include "../../util/logger.hpp"
 
-namespace nova {
+namespace nova::renderer {
     struct vertex_attribute {
         DXGI_FORMAT format;
         uint32_t offset;

@@ -24,7 +24,7 @@
 
 using Microsoft::WRL::ComPtr;
 
-namespace nova {
+namespace nova::renderer {
     namespace ttl {
         class task_scheduler;
     }

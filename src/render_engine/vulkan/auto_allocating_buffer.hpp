@@ -6,7 +6,7 @@
 #include <vulkan/vulkan.h>
 #include "uniform_buffer.hpp"
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief A chunk of a buffer
      *

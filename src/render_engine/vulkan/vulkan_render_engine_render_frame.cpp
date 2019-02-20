@@ -7,7 +7,7 @@
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     void vulkan_render_engine::render_frame() {
         reset_render_finished_semaphores();
 

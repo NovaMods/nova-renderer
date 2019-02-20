@@ -37,7 +37,7 @@
 
 constexpr static size_t CACHE_LINE_SIZE = 64;
 
-namespace nova {
+namespace nova::renderer {
 
     template <typename T>
     class wait_free_queue {

@@ -9,7 +9,7 @@
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler)
         : render_engine(settings, task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
@@ -68,7 +68,7 @@ namespace nova {
             format_to(buf, fmt("\t{:s} version {:d}\n"), props.extensionName, props.specVersion);
         }
 
-        NOVA_LOG(TRACE) << format(fmt("Supported extensions:\n{:s}"), fmt::to_string(buf));
+        NOVA_LOG(TRACE) << fmt::format(fmt("Supported extensions:\n{:s}"), fmt::to_string(buf));
 
 #ifndef NDEBUG
         vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
@@ -114,6 +114,9 @@ namespace nova {
         create_global_sync_objects();
         create_per_thread_descriptor_pools();
         create_default_samplers();
+
+        create_builtin_uniform_buffers();
+        static_model_matrix_buffer = std::make_unique<auto_buffer>("NovaStaticModelUBO", vma_allocator, , , false);
 
 #ifndef NDEBUG
         vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
@@ -182,7 +185,7 @@ namespace nova {
 
         for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
             graphics_family_idx = 0xFFFFFFFF;
-            VkPhysicalDevice current_device = physical_devices[device_idx];
+            const VkPhysicalDevice current_device = physical_devices[device_idx];
             vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
             if(gpu.props.vendorID == 0x8086 &&
@@ -225,7 +228,7 @@ namespace nova {
             }
 
             if(graphics_family_idx != 0xFFFFFFFF) {
-                NOVA_LOG(INFO) << format(fmt("Selected GPU {:s}"), gpu.props.deviceName);
+                NOVA_LOG(INFO) << fmt::format(fmt("Selected GPU {:s}"), gpu.props.deviceName);
                 gpu.phys_device = current_device;
                 break;
             }

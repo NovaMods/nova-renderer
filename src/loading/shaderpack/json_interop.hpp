@@ -8,7 +8,7 @@
 
 #include "shaderpack_data.hpp"
 
-namespace nova {
+namespace nova::renderer {
     void from_json(const nlohmann::json& j, texture_format& format);
 
     void from_json(const nlohmann::json& j, texture_resource_data& tex);
