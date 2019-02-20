@@ -137,6 +137,6 @@ namespace nova::renderer {
     }
 
     glm::uvec2 win32_window::get_window_size() const { return size; }
-} // namespace nova
+} // namespace nova::renderer
 
 #endif

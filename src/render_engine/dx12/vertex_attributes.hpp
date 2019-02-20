@@ -60,6 +60,6 @@ namespace nova::renderer {
 
         return total_size;
     }
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_VERTEX_ATTRIBUTES_HPP

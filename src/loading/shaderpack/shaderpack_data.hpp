@@ -592,6 +592,6 @@ namespace nova::renderer {
     std::string to_string(render_queue_enum val);
     std::string to_string(state_enum val);
     std::string to_string(vertex_field_enum val);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

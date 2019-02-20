@@ -32,7 +32,7 @@ namespace nova::renderer {
     }
 
     VkDescriptorBufferInfo auto_buffer::allocate_space(uint64_t size) {
-        size = size > min_alloc_size ? size : min_alloc_size;
+        size = size > alignment ? size : alignment;
         int32_t index_to_allocate_from = -1;
         if(!chunks.empty()) {
             // Iterate backwards so that inserting or deleting has a minimal cost
@@ -48,9 +48,11 @@ namespace nova::renderer {
         if(index_to_allocate_from == -1) {
             // Whoops, couldn't find anything
             auto ss = std::stringstream{};
-            ss << "No big enough slots in the buffer. There's " << chunks.size() << " slots. If there's a lot then you got some fragmentation";
+            ss << "No big enough slots in the buffer. There's " << chunks.size()
+               << " slots. If there's a lot then you got some fragmentation";
 
-            NOVA_LOG(ERROR) << "No big enough slots in the buffer. There's " << chunks.size() << " slots. If there's a lot then you got some fragmentation";
+            NOVA_LOG(ERROR) << "No big enough slots in the buffer. There's " << chunks.size()
+                            << " slots. If there's a lot then you got some fragmentation";
             // Halt execution like a boss
             throw std::runtime_error(ss.str());
         }
@@ -147,7 +149,8 @@ namespace nova::renderer {
 
         // We got here... without returning our allocation to the pool. Uhm... Did we double-allocate something? This is
         // a bug in my allocator and not something that should happen during Nova so let's just crash
-        NOVA_LOG(FATAL) << "Could not return allocation {offset=" << to_free.offset << " range=" << to_free.range << "} which should not happen. There's probably a bug in the allocator and you need to debug it";
+        NOVA_LOG(FATAL) << "Could not return allocation {offset=" << to_free.offset << " range=" << to_free.range
+                        << "} which should not happen. There's probably a bug in the allocator and you need to debug it";
 
     end:
         return;
@@ -156,4 +159,4 @@ namespace nova::renderer {
     VkDeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last) {
         return last.offset - (first.offset + first.range);
     }
-} // namespace nova
+} // namespace nova::renderer

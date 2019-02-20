@@ -9,7 +9,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-namespace nova::vulkan {
+namespace nova::renderer::vulkan {
     class vulkan_utils {
     public:
         static std::string vk_result_to_string(VkResult result) {
@@ -40,7 +40,7 @@ namespace nova::vulkan {
     std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
 
     std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
-} // namespace nova::vulkan
+} // namespace nova::renderer::vulkan
 
 // Only validate errors in debug mode
 // Release mode needs to be fast A F
@@ -51,7 +51,7 @@ namespace nova::vulkan {
         const VkResult result = (expr);                                                                                                    \
         if(result != VK_SUCCESS) {                                                                                                         \
             throw exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " +                                               \
-                            ::nova::vulkan::vulkan_utils::vk_result_to_string(result));                                                    \
+                            ::nova::renderer::vulkan::vulkan_utils::vk_result_to_string(result));                                          \
         }                                                                                                                                  \
     } while(false);
 #else

@@ -227,4 +227,4 @@ namespace nova::renderer {
         return VK_FALSE;
     }
 
-} // namespace nova
+} // namespace nova::renderer

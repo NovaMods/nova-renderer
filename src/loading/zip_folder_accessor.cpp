@@ -194,4 +194,4 @@ namespace nova::renderer {
         // Skip the last string in the vector, since it's the resourcepack root node
         return join({++names.rbegin(), names.rend()}, "/");
     }
-} // namespace nova
+} // namespace nova::renderer

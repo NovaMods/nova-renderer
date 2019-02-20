@@ -10,7 +10,7 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
-    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler)
+    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* task_scheduler)
         : render_engine(settings, task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
@@ -116,7 +116,18 @@ namespace nova::renderer {
         create_default_samplers();
 
         create_builtin_uniform_buffers();
-        static_model_matrix_buffer = std::make_unique<auto_buffer>("NovaStaticModelUBO", vma_allocator, , , false);
+
+        // TODO: 
+        const uint32_t static_object_estimate = 5000;
+        VkBufferCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        info.size = static_object_estimate * sizeof(glm::mat4);
+        info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        uint32_t alignment = gpu.props.limits.minUniformBufferOffsetAlignment;
+
+        static_model_matrix_buffer = std::make_unique<auto_buffer>("NovaStaticModelUBO", vma_allocator, info, alignment, false);
 
 #ifndef NDEBUG
         vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
@@ -426,4 +437,4 @@ namespace nova::renderer {
                                render_engine_initialization_exception);
     }
 
-} // namespace nova
+} // namespace nova::renderer

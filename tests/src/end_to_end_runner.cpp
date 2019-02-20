@@ -62,14 +62,14 @@ namespace nova::renderer {
 
         return 0;
     }
-} // namespace nova
+} // namespace nova::renderer
 
 int main() {
 #ifdef NOVA_LINUX
     signal(SIGSEGV, sigsegv_handler);
     signal(SIGABRT, sigabrt_handler);
 #endif
-    return nova::main();
+    return nova::renderer::main();
 }
 
 #ifdef __linux__

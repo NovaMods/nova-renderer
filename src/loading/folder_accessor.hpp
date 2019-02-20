@@ -119,6 +119,6 @@ namespace nova::renderer {
      * \return True if `path` has `root` as its root, false otherwise
      */
     bool has_root(const fs::path& path, const fs::path& root);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_RESOURCEPACK_H

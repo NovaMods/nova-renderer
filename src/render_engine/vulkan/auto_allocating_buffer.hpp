@@ -35,11 +35,11 @@ namespace nova::renderer {
          * \param name The name of the new buffer
          * \param allocator The allocator to allocate this buffer from
          * \param create_info Information about creating the buffer
-         * \param min_alloc_size The minimum size of an allocation from this buffer
+         * \param alignment The minimum size of an allocation from this buffer
          * \param mapped If true, make this buffer always mapped
          */
         auto_buffer(
-            const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t min_alloc_size, bool mapped);
+            const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment, bool mapped);
 
         auto_buffer(const auto_buffer& other) = delete;
         auto_buffer& operator=(const auto_buffer& other) = delete;
@@ -74,6 +74,6 @@ namespace nova::renderer {
     };
 
     VkDeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // RENDERER_AUTO_ALLOCATED_BUFFER_H

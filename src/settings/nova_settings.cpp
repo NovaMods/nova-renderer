@@ -26,4 +26,4 @@ namespace nova::renderer {
             l->on_config_loaded(options);
         }
     }
-} // namespace nova
+} // namespace nova::renderer

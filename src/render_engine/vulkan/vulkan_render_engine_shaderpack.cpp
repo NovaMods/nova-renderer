@@ -992,4 +992,4 @@ namespace nova::renderer {
             pass.write_texture_barriers.push_back(barrier);
         }
     }
-} // namespace nova
+} // namespace nova::renderer

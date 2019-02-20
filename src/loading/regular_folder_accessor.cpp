@@ -87,4 +87,4 @@ namespace nova::renderer {
         resource_existence.emplace(resource_string, false);
         return false;
     }
-} // namespace nova
+} // namespace nova::renderer

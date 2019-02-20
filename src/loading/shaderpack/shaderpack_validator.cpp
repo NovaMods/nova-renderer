@@ -294,4 +294,4 @@ namespace nova::renderer {
         errors.insert(errors.end(), other.errors.begin(), other.errors.end());
         warnings.insert(warnings.begin(), other.warnings.begin(), other.warnings.end());
     }
-} // namespace nova
+} // namespace nova::renderer

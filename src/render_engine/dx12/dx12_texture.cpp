@@ -18,4 +18,4 @@ namespace nova::renderer {
     }
 
     DXGI_FORMAT dx12_texture::get_dxgi_format() const { return to_dxgi_format(data.format.pixel_format); }
-} // namespace nova
+} // namespace nova::renderer

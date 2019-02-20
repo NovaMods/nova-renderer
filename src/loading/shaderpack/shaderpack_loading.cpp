@@ -425,4 +425,4 @@ namespace nova::renderer {
         NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
     }
-} // namespace nova
+} // namespace nova::renderer

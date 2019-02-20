@@ -33,10 +33,11 @@
 #include "auto_allocating_buffer.hpp"
 #include "swapchain.hpp"
 
+namespace nova::ttl {
+    class task_scheduler;
+} // namespace nova::ttl
+
 namespace nova::renderer {
-    namespace ttl {
-        class task_scheduler;
-    } // namespace ttl
 
     NOVA_EXCEPTION(buffer_allocate_failed);
     NOVA_EXCEPTION(shaderpack_loading_error);
@@ -173,8 +174,8 @@ namespace nova::renderer {
         uint32_t copy_family_index{};
         VkQueue copy_queue{};
 #pragma endregion
-        
-        vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler);
+
+        vulkan_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* task_scheduler);
 
         vulkan_render_engine(vulkan_render_engine&& other) = delete;
         vulkan_render_engine& operator=(vulkan_render_engine&& other) noexcept = delete;
@@ -577,6 +578,6 @@ namespace nova::renderer {
                                                          VkDebugUtilsMessageTypeFlagsEXT messageTypes,
                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                          void* pUserData);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP

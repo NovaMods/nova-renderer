@@ -367,4 +367,4 @@ namespace nova::renderer {
                              0,
                              nullptr);
     }
-} // namespace nova
+} // namespace nova::renderer

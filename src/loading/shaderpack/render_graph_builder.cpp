@@ -273,4 +273,4 @@ namespace nova::renderer {
         return aliases;
     }
 
-} // namespace nova
+} // namespace nova::renderer

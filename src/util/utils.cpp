@@ -98,4 +98,4 @@ namespace nova::renderer {
     }
 
     const char* nova_exception::what() const noexcept { return msg.c_str(); }
-} // namespace nova
+} // namespace nova::renderer

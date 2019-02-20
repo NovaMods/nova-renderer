@@ -570,4 +570,4 @@ namespace nova::renderer {
 
         return "Unknown value";
     }
-} // namespace nova
+} // namespace nova::renderer

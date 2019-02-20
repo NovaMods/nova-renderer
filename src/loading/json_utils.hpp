@@ -172,6 +172,6 @@ namespace nova::renderer {
 
         return std::vector<ValType>{};
     }
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_UTILS_HPP

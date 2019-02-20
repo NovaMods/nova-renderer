@@ -39,6 +39,6 @@ namespace nova::renderer {
          */
         [[nodiscard]] virtual glm::uvec2 get_window_size() const = 0;
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_WINDOW_HPP

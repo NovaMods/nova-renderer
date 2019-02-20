@@ -167,4 +167,4 @@ namespace nova::renderer {
         uint32_t copy_queue_idx;
     };
 
-} // namespace nova
+} // namespace nova::renderer

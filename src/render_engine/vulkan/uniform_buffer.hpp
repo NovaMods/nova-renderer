@@ -6,8 +6,8 @@
 #ifndef RENDERER_GL_UNIFORM_BUFFER_H
 #define RENDERER_GL_UNIFORM_BUFFER_H
 
-#include <vk_mem_alloc.h>
 #include <string>
+#include <vk_mem_alloc.h>
 
 namespace nova::renderer {
     /*!
@@ -17,7 +17,8 @@ namespace nova::renderer {
     public:
         uniform_buffer() = default;
 
-        uniform_buffer(const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t min_alloc_size, bool mapped);
+        uniform_buffer(
+            const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment, bool mapped);
 
         uniform_buffer(const uniform_buffer& other) = delete;
         uniform_buffer& operator=(const uniform_buffer& other) = delete;
@@ -40,7 +41,7 @@ namespace nova::renderer {
 
     protected:
         std::string name;
-        uint64_t min_alloc_size = 64;
+        uint64_t alignment = 64;
 
         VmaAllocator allocator = nullptr;
 
@@ -50,6 +51,6 @@ namespace nova::renderer {
         VmaAllocation allocation = nullptr;
         VmaAllocationInfo allocation_info = {};
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // RENDERER_GL_UNIFORM_BUFFER_H

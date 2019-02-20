@@ -59,4 +59,4 @@ namespace nova::renderer {
 
         return true;
     }
-} // namespace nova
+} // namespace nova::renderer

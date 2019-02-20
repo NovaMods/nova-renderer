@@ -330,4 +330,4 @@ namespace nova::renderer {
     VkFormat swapchain_manager::get_swapchain_format() const { return swapchain_format; }
 
     VkFence swapchain_manager::get_current_frame_fence() { return fences[cur_swapchain_index]; }
-} // namespace nova
+} // namespace nova::renderer

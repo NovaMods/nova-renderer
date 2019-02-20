@@ -23,6 +23,6 @@ namespace nova::renderer {
     protected:
         bool does_resource_exist_on_filesystem(const fs::path& resource_path) override;
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_REGULAR_FOLDER_ACCESSOR_H

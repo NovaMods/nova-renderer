@@ -58,6 +58,6 @@ namespace nova::renderer {
      * \brief Prints out the nodes in a depth-first fashion
      */
     void print_file_tree(const std::unique_ptr<file_tree_node>& folder, uint32_t depth);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H

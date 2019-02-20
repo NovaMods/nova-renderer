@@ -135,4 +135,4 @@ namespace nova::renderer {
         }
     }
 
-} // namespace nova
+} // namespace nova::renderer

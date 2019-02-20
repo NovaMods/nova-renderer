@@ -145,4 +145,4 @@ namespace nova::renderer {
             passes.push_back(node.get<render_pass_data>());
         }
     }
-} // namespace nova
+} // namespace nova::renderer

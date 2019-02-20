@@ -32,4 +32,4 @@ namespace nova::renderer {
     _log_stream::~_log_stream() { logger::instance.log(level, str()); }
 
     _log_stream logger::log(log_level level) const { return _log_stream(level); }
-} // namespace nova
+} // namespace nova::renderer

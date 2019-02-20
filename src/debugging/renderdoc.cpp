@@ -62,4 +62,4 @@ namespace nova::renderer {
         }
         return api;
     }
-} // namespace nova
+} // namespace nova::renderer

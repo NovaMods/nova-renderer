@@ -2,7 +2,12 @@
 #include "../../util/logger.hpp"
 
 namespace nova::renderer {
-    uniform_buffer::uniform_buffer(const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t min_alloc_size, const bool mapped) : name(std::move(name)), min_alloc_size(min_alloc_size), allocator(allocator) {
+    uniform_buffer::uniform_buffer(const std::string& name,
+                                   VmaAllocator allocator,
+                                   const VkBufferCreateInfo& create_info,
+                                   const uint64_t min_alloc_size,
+                                   const bool mapped)
+        : name(std::move(name)), alignment(min_alloc_size), allocator(allocator) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
@@ -10,17 +15,29 @@ namespace nova::renderer {
             alloc_create.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
         }
 
-        const VkResult buffer_create_result = vmaCreateBuffer(allocator, reinterpret_cast<const VkBufferCreateInfo*>(&create_info), &alloc_create, reinterpret_cast<VkBuffer*>(&buffer), &allocation, &allocation_info);
+        const VkResult buffer_create_result = vmaCreateBuffer(allocator,
+                                                              reinterpret_cast<const VkBufferCreateInfo*>(&create_info),
+                                                              &alloc_create,
+                                                              reinterpret_cast<VkBuffer*>(&buffer),
+                                                              &allocation,
+                                                              &allocation_info);
 
         if(buffer_create_result != VK_SUCCESS) {
             NOVA_LOG(ERROR) << "Could not allocate a an autobuffer because " << buffer_create_result;
-        } else {
+        }
+        else {
             NOVA_LOG(TRACE) << "Auto buffer allocation success! Buffer ID: " << buffer;
         }
     }
 
     uniform_buffer::uniform_buffer(uniform_buffer&& old) noexcept
-        : name(std::move(old.name)), min_alloc_size(old.min_alloc_size), allocator(old.allocator), device(old.device), buffer(old.buffer), allocation(old.allocation), allocation_info(old.allocation_info) {
+        : name(std::move(old.name)),
+          alignment(old.alignment),
+          allocator(old.allocator),
+          device(old.device),
+          buffer(old.buffer),
+          allocation(old.allocation),
+          allocation_info(old.allocation_info) {
 
         old.device = nullptr;
         old.buffer = nullptr;
@@ -30,7 +47,7 @@ namespace nova::renderer {
 
     uniform_buffer& uniform_buffer::operator=(uniform_buffer&& old) noexcept {
         name = std::move(old.name);
-        min_alloc_size = old.min_alloc_size;
+        alignment = old.alignment;
         allocator = old.allocator;
         device = old.device;
         buffer = old.buffer;
@@ -52,24 +69,14 @@ namespace nova::renderer {
         }
     }
 
-    VmaAllocation& uniform_buffer::get_allocation() {
-        return allocation;
-    }
+    VmaAllocation& uniform_buffer::get_allocation() { return allocation; }
 
-    VmaAllocationInfo& uniform_buffer::get_allocation_info() {
-        return allocation_info;
-    }
-    const std::string& uniform_buffer::get_name() const {
-        return name;
-    }
+    VmaAllocationInfo& uniform_buffer::get_allocation_info() { return allocation_info; }
+    const std::string& uniform_buffer::get_name() const { return name; }
 
-    const VkBuffer& uniform_buffer::get_vk_buffer() const {
-        return buffer;
-    }
+    const VkBuffer& uniform_buffer::get_vk_buffer() const { return buffer; }
 
-    uint64_t uniform_buffer::get_size() const {
-        return min_alloc_size;
-    }
+    uint64_t uniform_buffer::get_size() const { return alignment; }
 
     // ReSharper disable once CppMemberFunctionMayBeConst
     void uniform_buffer::set_data(const void* data, uint32_t size) {
@@ -78,4 +85,4 @@ namespace nova::renderer {
         std::memcpy(mapped_data, data, size);
         vmaUnmapMemory(allocator, allocation);
     }
-} // namespace nova
+} // namespace nova::renderer

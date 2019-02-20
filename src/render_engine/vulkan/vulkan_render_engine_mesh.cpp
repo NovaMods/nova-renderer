@@ -80,4 +80,4 @@ namespace nova::renderer {
 
         mesh_memory->free(mesh.memory);
     }
-} // namespace nova
+} // namespace nova::renderer

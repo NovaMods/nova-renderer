@@ -21,6 +21,6 @@ namespace nova::renderer {
     D3D12_STENCIL_OP to_dx12_stencil_op(stencil_op_enum op);
 
     D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(primitive_topology_enum primitive_mode);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_DX_12_UTILS_HPP

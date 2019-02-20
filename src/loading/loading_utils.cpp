@@ -10,4 +10,4 @@ namespace nova::renderer {
         auto extension = path_to_folder.extension();
         return path_to_folder.has_extension() && extension == ".zip";
     }
-} // namespace nova
+} // namespace nova::renderer

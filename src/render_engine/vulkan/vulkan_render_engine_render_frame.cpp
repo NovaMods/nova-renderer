@@ -248,7 +248,7 @@ namespace nova::renderer {
 
         std::vector<VkCommandBuffer> secondary_command_buffers(pipelines.size());
 
-        ttl::condition_counter pipelines_rendering_counter;
+        nova::ttl::condition_counter pipelines_rendering_counter;
         uint32_t i = 0;
         for(const vk_pipeline& pipe : pipelines) {
             render_pipeline(&pipe, &secondary_command_buffers[i], renderpass);
@@ -524,4 +524,4 @@ namespace nova::renderer {
         current_semaphore_idx++;
     }
 
-} // namespace nova
+} // namespace nova::renderer
