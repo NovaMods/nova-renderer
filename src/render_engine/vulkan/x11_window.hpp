@@ -11,7 +11,7 @@
 #include <cstdint>
 #include "../window.hpp"
 
-namespace nova {
+namespace nova::renderer {
     class x11_window : public iwindow {
     private:
         Window window;
