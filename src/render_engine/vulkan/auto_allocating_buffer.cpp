@@ -63,8 +63,7 @@ namespace nova::renderer {
 
             ret_val = VkDescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, chunk_to_allocate_from.range};
             chunks.erase(chunks.begin() + index_to_allocate_from);
-            // NOLINTNEXTLINE(cppcoreguidelines-avoid-goto)
-            goto end;
+            return ret_val;
         }
 
         // The chunk is bigger than we need. Allocate at the beginning of it so our iteration algorithm finds the next
@@ -75,7 +74,6 @@ namespace nova::renderer {
         chunk_to_allocate_from.offset += size;
         chunk_to_allocate_from.range -= size;
 
-    end:
         return ret_val;
     }
 
