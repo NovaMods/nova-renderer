@@ -31,3 +31,4 @@ readability*
 -*-special-member-functions
 -*-string-constructor
 -*-misplaced-const
+-*-modernize-use-auto

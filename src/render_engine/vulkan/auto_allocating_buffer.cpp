@@ -63,6 +63,7 @@ namespace nova::renderer {
 
             ret_val = VkDescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, chunk_to_allocate_from.range};
             chunks.erase(chunks.begin() + index_to_allocate_from);
+            // NOLINTNEXTLINE(cppcoreguidelines-avoid-goto)
             goto end;
         }
 

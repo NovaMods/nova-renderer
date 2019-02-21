@@ -31,6 +31,7 @@ namespace nova::renderer {
         void set_data(const void* data, uint32_t size);
 
         [[nodiscard]] VmaAllocation& get_allocation();
+
         [[nodiscard]] VmaAllocationInfo& get_allocation_info();
 
         [[nodiscard]] const std::string& get_name() const;
