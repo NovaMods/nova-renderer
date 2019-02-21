@@ -4,11 +4,8 @@
 #include <cstring>
 
 namespace nova::renderer {
-    uniform_buffer::uniform_buffer(const std::string& name,
-                                   VmaAllocator allocator,
-                                   const VkBufferCreateInfo& create_info,
-                                   const uint64_t alignment,
-                                   const bool mapped)
+    uniform_buffer::uniform_buffer(
+        const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t alignment, const bool mapped)
         : name(std::move(name)), alignment(alignment), allocator(allocator) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
