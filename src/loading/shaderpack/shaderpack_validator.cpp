@@ -14,7 +14,7 @@
 #undef ERROR
 #endif
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief All the default values for a JSON pipeline
      *
@@ -294,4 +294,4 @@ namespace nova {
         errors.insert(errors.end(), other.errors.begin(), other.errors.end());
         warnings.insert(warnings.begin(), other.warnings.begin(), other.warnings.end());
     }
-} // namespace nova
+} // namespace nova::renderer

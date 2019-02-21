@@ -24,10 +24,11 @@
 
 using Microsoft::WRL::ComPtr;
 
-namespace nova {
-    namespace ttl {
-        class task_scheduler;
-    }
+namespace nova::ttl {
+    class task_scheduler;
+}
+
+namespace nova::renderer {
 
     struct command_list_base {
         ComPtr<ID3D12CommandAllocator> allocator;
@@ -61,7 +62,7 @@ namespace nova {
          * \param settings The settings that may or may not influence initialization
          * \param scheduler The task scheduler that this render engine should use
          */
-        explicit dx12_render_engine(const nova_settings& settings, ttl::task_scheduler* scheduler);
+        explicit dx12_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* scheduler);
 
         static const std::string get_engine_name();
 
@@ -217,6 +218,6 @@ namespace nova {
     bool operator==(const D3D12_ROOT_CONSTANTS& lhs, const D3D12_ROOT_CONSTANTS& rhs);
 
     bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP

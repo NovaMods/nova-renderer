@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include "shaderpack_data.hpp"
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(pass_ordering_exception);
     NOVA_EXCEPTION(circular_rendergraph_exception);
 
@@ -69,6 +69,6 @@ namespace nova {
         const std::unordered_map<std::string, texture_resource_data>& textures,
         const std::unordered_map<std::string, range>& resource_used_range,
         const std::vector<std::string>& resources_in_order);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_RENDER_GRAPH_BUILDER_HPP

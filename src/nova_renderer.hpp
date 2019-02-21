@@ -16,7 +16,7 @@
 #include "settings/nova_settings.hpp"
 #include "tasks/task_scheduler.hpp"
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
     NOVA_EXCEPTION(uninitialized_exception);
 
@@ -58,7 +58,7 @@ namespace nova {
 
         [[nodiscard]] render_engine* get_engine() const;
 
-        ttl::task_scheduler& get_task_scheduler();
+        nova::ttl::task_scheduler& get_task_scheduler();
 
         static nova_renderer* initialize(const settings_options& settings);
 
@@ -70,12 +70,12 @@ namespace nova {
         nova_settings render_settings;
         std::unique_ptr<render_engine> engine;
 
-        ttl::task_scheduler task_scheduler;
+        nova::ttl::task_scheduler task_scheduler;
         std::future<void> frame_done_future;
 
         RENDERDOC_API_1_3_0* render_doc;
         static std::unique_ptr<nova_renderer> instance;
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_NOVA_RENDERER_H

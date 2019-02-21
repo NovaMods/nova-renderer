@@ -6,7 +6,7 @@
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     mesh_id_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
         const auto vertex_size = static_cast<uint32_t>(input_mesh.vertex_data.size() * sizeof(full_vertex));
         const auto index_size = static_cast<uint32_t>(input_mesh.indices.size() * sizeof(uint32_t));
@@ -80,4 +80,4 @@ namespace nova {
 
         mesh_memory->free(mesh.memory);
     }
-} // namespace nova
+} // namespace nova::renderer

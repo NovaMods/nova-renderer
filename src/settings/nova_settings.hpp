@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace nova {
+namespace nova::renderer {
 
     struct semver {
         uint32_t major;
@@ -243,6 +243,6 @@ namespace nova {
         settings_options options;
         std::vector<iconfig_listener*> config_change_listeners;
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // RENDERER_CONFIG_H

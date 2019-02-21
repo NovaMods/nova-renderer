@@ -16,7 +16,7 @@
 #include "../util/linux_utils.hpp"
 #endif
 
-namespace nova {
+namespace nova::renderer {
     RENDERDOC_API_1_3_0* load_renderdoc(const std::string& renderdoc_dll_path) {
 #if defined(NOVA_WINDOWS)
         HINSTANCE const renderdoc_dll = LoadLibrary(renderdoc_dll_path.c_str());
@@ -62,4 +62,4 @@ namespace nova {
         }
         return api;
     }
-} // namespace nova
+} // namespace nova::renderer

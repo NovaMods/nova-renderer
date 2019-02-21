@@ -12,7 +12,7 @@
 
 using Microsoft::WRL::ComPtr;
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief
      */
@@ -34,6 +34,6 @@ namespace nova {
         texture_resource_data data;
         ComPtr<ID3D12Resource> resource;
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_DX_12_TEXTURE_HPP

@@ -37,7 +37,7 @@
 
 constexpr static size_t CACHE_LINE_SIZE = 64;
 
-namespace nova {
+namespace nova::ttl {
 
     template <typename T>
     class wait_free_queue {
@@ -179,4 +179,4 @@ namespace nova {
         size_t size() { return m_array.load(std::memory_order_relaxed)->size(); }
     };
 
-} // namespace nova
+} // namespace nova::ttl

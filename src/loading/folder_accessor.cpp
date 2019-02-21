@@ -6,7 +6,7 @@
 #include "folder_accessor.hpp"
 #include "../util/logger.hpp"
 
-namespace nova {
+namespace nova::renderer {
     folder_accessor_base::folder_accessor_base(const fs::path& folder)
         : root_folder(std::make_shared<fs::path>(folder)), resource_existence_mutex(new std::mutex) {}
 
@@ -59,4 +59,4 @@ namespace nova {
 
         return true;
     }
-} // namespace nova
+} // namespace nova::renderer

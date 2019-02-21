@@ -15,7 +15,7 @@ void sigabrt_handler(int signal);
 #include "../../src/util/linux_utils.hpp"
 #endif
 
-namespace nova {
+namespace nova::renderer {
     int main() {
         TEST_SETUP_LOGGER();
 
@@ -62,14 +62,14 @@ namespace nova {
 
         return 0;
     }
-} // namespace nova
+} // namespace nova::renderer
 
 int main() {
 #ifdef NOVA_LINUX
     signal(SIGSEGV, sigsegv_handler);
     signal(SIGABRT, sigabrt_handler);
 #endif
-    return nova::main();
+    return nova::renderer::main();
 }
 
 #ifdef __linux__

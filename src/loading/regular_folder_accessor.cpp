@@ -7,7 +7,7 @@
 #include <fstream>
 #include "../util/logger.hpp"
 
-namespace nova {
+namespace nova::renderer {
     regular_folder_accessor::regular_folder_accessor(const fs::path& folder) : folder_accessor_base(folder) {}
 
     std::string regular_folder_accessor::read_text_file(const fs::path& resource_path) {
@@ -87,4 +87,4 @@ namespace nova {
         resource_existence.emplace(resource_string, false);
         return false;
     }
-} // namespace nova
+} // namespace nova::renderer

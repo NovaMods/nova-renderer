@@ -8,7 +8,7 @@
 #include "../../util/logger.hpp"
 #include "nova/profiler.h"
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief Adds all the passes that `pass_name` depends on to the list of ordered passes
      *
@@ -273,4 +273,4 @@ namespace nova {
         return aliases;
     }
 
-} // namespace nova
+} // namespace nova::renderer

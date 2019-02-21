@@ -6,7 +6,7 @@
 #include "vulkan_utils.hpp"
 #include "../render_engine.hpp"
 
-namespace nova::vulkan {
+namespace nova::renderer::vulkan {
     std::string to_string(VkObjectType obj_type) {
         switch(obj_type) {
             case VK_OBJECT_TYPE_UNKNOWN:
@@ -193,4 +193,4 @@ namespace nova::vulkan {
 
         return attribute_descriptions;
     }
-} // namespace nova::vulkan
+} // namespace nova::renderer::vulkan

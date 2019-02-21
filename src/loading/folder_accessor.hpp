@@ -14,7 +14,7 @@
 #include "../util/filesystem.hpp"
 #include "../util/utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(resource_not_found_exception);
 
     class filesystem_exception : public std::exception { // Convert fs::filesystem_error into a nova class
@@ -119,6 +119,6 @@ namespace nova {
      * \return True if `path` has `root` as its root, false otherwise
      */
     bool has_root(const fs::path& path, const fs::path& root);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_RESOURCEPACK_H

@@ -10,7 +10,7 @@
 #include <array>
 #include <memory>
 
-namespace nova {
+namespace nova::renderer {
     zip_folder_accessor::zip_folder_accessor(const fs::path& folder) : folder_accessor_base(folder), files(new file_tree_node) {
         const auto folder_string = folder.string();
 
@@ -194,4 +194,4 @@ namespace nova {
         // Skip the last string in the vector, since it's the resourcepack root node
         return join({++names.rbegin(), names.rend()}, "/");
     }
-} // namespace nova
+} // namespace nova::renderer

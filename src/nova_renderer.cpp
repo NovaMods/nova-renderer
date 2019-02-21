@@ -20,11 +20,11 @@
 
 #include "minitrace.h"
 
-namespace nova {
+namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
     nova_renderer::nova_renderer(const settings_options& settings)
-        : render_settings(settings), task_scheduler(1, ttl::empty_queue_behavior::YIELD) {
+        : render_settings(settings), task_scheduler(1, nova::ttl::empty_queue_behavior::YIELD) {
 
         mtr_init("trace.json");
 
@@ -96,5 +96,5 @@ namespace nova {
 
     void nova_renderer::deinitialize() { instance = nullptr; }
 
-    ttl::task_scheduler& nova_renderer::get_task_scheduler() { return task_scheduler; }
-} // namespace nova
+    nova::ttl::task_scheduler& nova_renderer::get_task_scheduler() { return task_scheduler; }
+} // namespace nova::renderer

@@ -125,6 +125,7 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_render_engine_init.cpp
         src/render_engine/vulkan/vulkan_render_engine_shaderpack.cpp
+        src/render_engine/vulkan/vulkan_render_engine_render_objects.cpp
         src/render_engine/vulkan/vulkan_render_engine_render_frame.cpp
         src/render_engine/vulkan/vulkan_render_engine_mesh.cpp
         src/render_engine/vulkan/vulkan_utils.hpp
@@ -133,7 +134,11 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/compacting_block_allocator.hpp 
         src/render_engine/vulkan/vulkan_utils.cpp 
         src/render_engine/vulkan/swapchain.cpp 
-        src/render_engine/vulkan/swapchain.hpp 
+        src/render_engine/vulkan/swapchain.hpp
+        src/render_engine/vulkan/auto_allocating_buffer.cpp
+        src/render_engine/vulkan/auto_allocating_buffer.hpp
+        src/render_engine/vulkan/uniform_buffer.hpp
+        src/render_engine/vulkan/uniform_buffer.cpp
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp
         src/tasks/task_graph.hpp

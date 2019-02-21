@@ -11,10 +11,11 @@ namespace ftl {
     class TaskScheduler;
 } // namespace ftl
 
-namespace nova {
-    namespace ttl {
-        class task_scheduler;
-    } // namespace ttl
+namespace nova::ttl {
+    class task_scheduler;
+} // namespace nova::ttl
+
+namespace nova::renderer {
 
     NOVA_EXCEPTION(buffer_allocation_failed);
 
@@ -167,4 +168,4 @@ namespace nova {
         uint32_t copy_queue_idx;
     };
 
-} // namespace nova
+} // namespace nova::renderer

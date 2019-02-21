@@ -1,5 +1,5 @@
 ---
-Checks:          'boost*,bugprone*,cert*,clang-analyzer-*,clang-diagnostic-*,cppcoreguidelines*,google*,hicpp-multiway-paths-covered,llvm*,misc*,modernize*,performance*,readability*,-*-avoid-magic-numbers,-*-dcl59-cpp,-*-err58-cpp,-*-header-guard,-*-include-order,-*-magic-numbers,-*-move-const-arg,-*-non-private-member-variables-in-classes,-*-pro-bounds-constant-array-index,-*-pro-bounds-pointer-arithmetic,-*-pro-type-reinterpret-cast,-*-pro-type-union-access,-*-readability-todo,-*-runtime-int,-*-runtime-references,-*-string-constructor'
+Checks:          'boost*,bugprone*,cert*,clang-analyzer-*,clang-diagnostic-*,cppcoreguidelines*,google*,hicpp-multiway-paths-covered,llvm*,misc*,modernize*,performance*,readability*,-*-avoid-magic-numbers,-*-dcl59-cpp,-*-err58-cpp,-*-header-guard,-*-include-order,-*-magic-numbers,-*-move-const-arg,-*-non-private-member-variables-in-classes,-*-pro-bounds-constant-array-index,-*-pro-bounds-pointer-arithmetic,-*-pro-type-reinterpret-cast,-*-pro-type-union-access,-*-readability-todo,-*-runtime-int,-*-runtime-references,-*-string-constructor,-*-use-auto'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -163,7 +163,7 @@ CheckOptions:
   - key:             modernize-replace-random-shuffle.IncludeStyle
     value:           llvm
   - key:             modernize-use-auto.MinTypeNameLength
-    value:           '5'
+    value:           '1'
   - key:             modernize-use-auto.RemoveStars
     value:           '0'
   - key:             modernize-use-default-member-init.IgnoreMacros

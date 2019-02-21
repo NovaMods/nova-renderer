@@ -7,7 +7,7 @@
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     swapchain_manager::swapchain_manager(const uint32_t num_swapchain_images,
                                          vulkan_render_engine& render_engine,
                                          const glm::ivec2 window_dimensions)
@@ -330,4 +330,4 @@ namespace nova {
     VkFormat swapchain_manager::get_swapchain_format() const { return swapchain_format; }
 
     VkFence swapchain_manager::get_current_frame_fence() { return fences[cur_swapchain_index]; }
-} // namespace nova
+} // namespace nova::renderer

@@ -18,7 +18,7 @@
 #undef ERROR
 #endif
 
-namespace nova {
+namespace nova::renderer {
     enum log_level { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, MAX_LEVEL };
 
     class _log_stream;
@@ -60,9 +60,9 @@ namespace nova {
         ~_log_stream() override;
     };
 
-} // namespace nova
+} // namespace nova::renderer
 
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define NOVA_LOG(LEVEL) ::nova::logger::instance.log(::nova::log_level::LEVEL)
+#define NOVA_LOG(LEVEL) ::nova::renderer::logger::instance.log(::nova::renderer::log_level::LEVEL)
 
 #endif // NOVA_RENDERER_LOGGER_HPP

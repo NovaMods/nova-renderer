@@ -10,7 +10,7 @@
 
 #include <glm/glm.hpp>
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(window_creation_error);
 
     /*!
@@ -39,6 +39,6 @@ namespace nova {
          */
         [[nodiscard]] virtual glm::uvec2 get_window_size() const = 0;
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_WINDOW_HPP

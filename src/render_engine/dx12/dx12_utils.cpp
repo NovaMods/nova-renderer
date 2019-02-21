@@ -5,7 +5,7 @@
 
 #include "dx12_utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     D3D12_BLEND to_dx12_blend(const blend_factor_enum blend_factor) {
         switch(blend_factor) {
             case blend_factor_enum::One:
@@ -135,4 +135,4 @@ namespace nova {
         }
     }
 
-} // namespace nova
+} // namespace nova::renderer

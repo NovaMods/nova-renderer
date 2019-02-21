@@ -8,7 +8,7 @@
 
 #include "shaderpack_data.hpp"
 
-namespace nova {
+namespace nova::renderer {
     void from_json(const nlohmann::json& j, texture_format& format);
 
     void from_json(const nlohmann::json& j, texture_resource_data& tex);
@@ -32,6 +32,6 @@ namespace nova {
     void from_json(const nlohmann::json& j, material_pass& pass);
 
     void from_json(const nlohmann::json& j, material_data& mat);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_JSON_INTEROP_HPP

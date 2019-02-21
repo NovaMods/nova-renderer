@@ -23,8 +23,8 @@
 
 #include "../../tasks/task_scheduler.hpp"
 
-namespace nova {
-    dx12_render_engine::dx12_render_engine(const nova_settings& settings, ttl::task_scheduler* scheduler)
+namespace nova::renderer {
+    dx12_render_engine::dx12_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* scheduler)
         : render_engine(settings, scheduler), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
         NOVA_LOG(INFO) << "Initializing Direct3D 12 rendering";
 
@@ -534,7 +534,8 @@ namespace nova {
         device->CreateQueryHeap(&heap_desc, IID_PPV_ARGS(&renderpass_timestamp_query_heap));
     }
 
-    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ttl::task_scheduler* scheduler) {
+    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines,
+                                                         nova::ttl::task_scheduler* scheduler) {
         std::vector<std::future<pipeline>> future_pipelines(pipelines.size());
         std::size_t write_pipeline = 0;
 
@@ -992,4 +993,4 @@ namespace nova {
     bool operator==(const D3D12_ROOT_DESCRIPTOR1& lhs, const D3D12_ROOT_DESCRIPTOR1& rhs) {
         return lhs.ShaderRegister == rhs.ShaderRegister && lhs.RegisterSpace == rhs.RegisterSpace && lhs.Flags == rhs.Flags;
     }
-} // namespace nova
+} // namespace nova::renderer

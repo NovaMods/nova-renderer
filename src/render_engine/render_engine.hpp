@@ -15,7 +15,7 @@
 #include "../util/utils.hpp"
 #include "window.hpp"
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
@@ -108,7 +108,7 @@ namespace nova {
          *
          * \attention Called by nova
          */
-        explicit render_engine(const nova_settings& /* settings */, ttl::task_scheduler* scheduler) : scheduler(scheduler){};
+        explicit render_engine(const nova_settings& /* settings */, nova::ttl::task_scheduler* scheduler) : scheduler(scheduler){};
 
         /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window
@@ -117,8 +117,8 @@ namespace nova {
          */
         virtual void open_window(uint32_t width, uint32_t height) = 0;
 
-        ttl::task_scheduler* scheduler;
+        nova::ttl::task_scheduler* scheduler;
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_RENDER_ENGINE_HPP

@@ -10,8 +10,8 @@
 
 #include "renderdoc_app.h"
 
-namespace nova {
+namespace nova::renderer {
     RENDERDOC_API_1_3_0* load_renderdoc(const std::string& renderdoc_dll_path);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_RENDERDOC_HPP

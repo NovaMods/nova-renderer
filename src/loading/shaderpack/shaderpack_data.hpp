@@ -22,7 +22,7 @@
 #include <glm/glm.hpp>
 #include <unordered_set>
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(validation_failure_exception);
 
     /*!
@@ -592,6 +592,6 @@ namespace nova {
     std::string to_string(render_queue_enum val);
     std::string to_string(state_enum val);
     std::string to_string(vertex_field_enum val);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_SHADERPACK_DATA_HPP

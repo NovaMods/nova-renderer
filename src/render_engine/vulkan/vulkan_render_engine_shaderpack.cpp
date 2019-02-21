@@ -11,7 +11,7 @@
 #include "vulkan_type_converters.hpp"
 #include "vulkan_utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     enum class barrier_necessity { maybe, yes, no };
 
     void vulkan_render_engine::set_shaderpack(const shaderpack_data& data) {
@@ -992,4 +992,4 @@ namespace nova {
             pass.write_texture_barriers.push_back(barrier);
         }
     }
-} // namespace nova
+} // namespace nova::renderer

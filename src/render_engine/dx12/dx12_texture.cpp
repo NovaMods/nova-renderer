@@ -6,7 +6,7 @@
 #include "dx12_texture.hpp"
 #include "dx12_utils.hpp"
 
-namespace nova {
+namespace nova::renderer {
     dx12_texture::dx12_texture(const texture_resource_data& data, ComPtr<ID3D12Resource> resource) : data(data), resource(resource) {}
 
     const texture_resource_data& dx12_texture::get_data() const { return data; }
@@ -18,4 +18,4 @@ namespace nova {
     }
 
     DXGI_FORMAT dx12_texture::get_dxgi_format() const { return to_dxgi_format(data.format.pixel_format); }
-} // namespace nova
+} // namespace nova::renderer

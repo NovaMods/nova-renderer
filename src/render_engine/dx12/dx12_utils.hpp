@@ -10,7 +10,7 @@
 
 #include "../../loading/shaderpack/shaderpack_data.hpp"
 
-namespace nova {
+namespace nova::renderer {
     enum class pixel_format_enum;
     DXGI_FORMAT to_dxgi_format(pixel_format_enum pixel_format);
 
@@ -21,6 +21,6 @@ namespace nova {
     D3D12_STENCIL_OP to_dx12_stencil_op(stencil_op_enum op);
 
     D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(primitive_topology_enum primitive_mode);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_DX_12_UTILS_HPP

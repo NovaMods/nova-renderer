@@ -30,12 +30,14 @@
 
 #include <mutex>
 #include "../../render_objects/render_object.hpp"
+#include "auto_allocating_buffer.hpp"
 #include "swapchain.hpp"
 
-namespace nova {
-    namespace ttl {
-        class task_scheduler;
-    } // namespace ttl
+namespace nova::ttl {
+    class task_scheduler;
+} // namespace nova::ttl
+
+namespace nova::renderer {
 
     NOVA_EXCEPTION(buffer_allocate_failed);
     NOVA_EXCEPTION(shaderpack_loading_error);
@@ -173,7 +175,7 @@ namespace nova {
         VkQueue copy_queue{};
 #pragma endregion
 
-        vulkan_render_engine(const nova_settings& settings, ttl::task_scheduler* task_scheduler);
+        vulkan_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* task_scheduler);
 
         vulkan_render_engine(vulkan_render_engine&& other) = delete;
         vulkan_render_engine& operator=(vulkan_render_engine&& other) noexcept = delete;
@@ -498,6 +500,15 @@ namespace nova {
         void free_mesh_staging_buffer(const vk_buffer& buffer);
 #pragma endregion
 
+#pragma region Render Object
+        /*!
+         * \brief A buffer to hold model matrices for static render objects
+         */
+        std::unique_ptr<auto_buffer> static_model_matrix_buffer;
+
+        void create_builtin_uniform_buffers();
+#pragma endregion
+
 #pragma region Rendering
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
@@ -567,6 +578,6 @@ namespace nova {
                                                          VkDebugUtilsMessageTypeFlagsEXT messageTypes,
                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                          void* pUserData);
-} // namespace nova
+} // namespace nova::renderer
 
 #endif // NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP

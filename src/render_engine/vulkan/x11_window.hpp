@@ -11,7 +11,7 @@
 #include <cstdint>
 #include "../window.hpp"
 
-namespace nova {
+namespace nova::renderer {
     class x11_window : public iwindow {
     private:
         Window window;
@@ -39,7 +39,7 @@ namespace nova {
 
         [[nodiscard]] glm::uvec2 get_window_size() const override;
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif
 

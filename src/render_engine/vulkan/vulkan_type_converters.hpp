@@ -14,7 +14,7 @@
 
 #endif // NOVA_RENDERER_VULKAN_TYPE_CONVERTERS_HPP
 
-namespace nova::vulkan {
+namespace nova::renderer::vulkan {
     class type_converters {
     public:
         static VkPrimitiveTopology to_primitive_topology(primitive_topology_enum topology) {
@@ -115,4 +115,4 @@ namespace nova::vulkan {
             }
         }
     };
-} // namespace nova::vulkan
+} // namespace nova::renderer::vulkan

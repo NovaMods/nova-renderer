@@ -7,7 +7,7 @@
 
 #ifdef SUPPORT_DX12
 
-namespace nova {
+namespace nova::renderer {
     win32_window::win32_window(const uint32_t width, const uint32_t height)
         : window_class_name(const_cast<WCHAR*>(L"NovaWindowClass")), window_should_close(false), size{width, height} {
         // Very strongly inspired by GLFW's Win32 variant of createNativeWindow - but GLFW is strictly geared towards
@@ -137,6 +137,6 @@ namespace nova {
     }
 
     glm::uvec2 win32_window::get_window_size() const { return size; }
-} // namespace nova
+} // namespace nova::renderer
 
 #endif

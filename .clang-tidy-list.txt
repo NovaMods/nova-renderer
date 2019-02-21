@@ -27,3 +27,5 @@ readability*
 -*-runtime-int
 -*-runtime-references
 -*-string-constructor
+-*-misplaced-const
+-*-use-auto
