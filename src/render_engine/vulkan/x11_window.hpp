@@ -39,7 +39,7 @@ namespace nova::renderer {
 
         [[nodiscard]] glm::uvec2 get_window_size() const override;
     };
-} // namespace nova
+} // namespace nova::renderer
 
 #endif
 
