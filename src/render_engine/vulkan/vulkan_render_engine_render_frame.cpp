@@ -444,7 +444,7 @@ namespace nova::renderer {
             return;
         }
 
-        const std::unordered_map<VkBuffer, std::vector<render_object>>& renderables_by_buffer = renderables_by_material.at(pass.name);
+        const std::unordered_map<VkBuffer, std::vector<renderable_id_t>>& renderables_by_buffer = renderables_by_material.at(pass.name);
 
         for(const auto& [buffer, renderables] : renderables_by_buffer) {
             VkBufferCreateInfo buffer_create_info = {};
@@ -475,8 +475,9 @@ namespace nova::renderer {
             auto* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
 
             for(size_t i = 0; i < renderables.size(); i++) {
-                const render_object& cur_obj = renderables[i];
-                indirect_commands[i] = cur_obj.mesh->draw_cmd;
+                const renderable_id_t& cur_obj_id = renderables[i];
+                const vk_static_mesh_renderable& cur_obj = static_mesh_renderers.at(cur_obj_id);
+                indirect_commands[i] = *cur_obj.draw_cmd;
             }
 
             vkCmdBindVertexBuffers(cmds, 0, 1, &buffer, nullptr);

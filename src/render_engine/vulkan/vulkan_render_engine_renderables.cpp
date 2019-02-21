@@ -38,16 +38,20 @@ namespace nova::renderer {
             else {
                 return result<std::vector<const material_pass*>>(std::move(passes));
             }
-        }().map<renderable_id_t>([&](const std::vector<const material_pass*>& passes) {
+        }()
+        .map<renderable_id_t>([&](const std::vector<const material_pass*>& passes) {
             vk_static_mesh_renderable renderable = {};
 
-            auto mesh_result = [&]() {
-                if(meshes.find(data.mesh) == meshes.end()) {
-                    return result<const vk_mesh&>(nova_error(fmt::format(fmt("Could not find mesh with id {:d}"), data.mesh)));
-                }
+            auto mesh_result =
+                [&]() {
+                    if(meshes.find(data.mesh) == meshes.end()) {
+                        return result<const vk_mesh*>(
+                            nova_error(fmt::format(fmt("Could not find mesh with id {:d}"), data.mesh)));
+                    }
 
-                return result<const vk_mesh&>(meshes.at(data.mesh));
-            }();
+                    return result<const vk_mesh*>(&meshes.at(data.mesh));
+                }()
+                .map<int>([](const vk_mesh* mesh) { return 3; });
 
             return 3;
         });
