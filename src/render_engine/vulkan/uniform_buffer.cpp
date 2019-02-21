@@ -1,6 +1,8 @@
 #include "uniform_buffer.hpp"
 #include "../../util/logger.hpp"
 
+#include <cstring>
+
 namespace nova::renderer {
     uniform_buffer::uniform_buffer(const std::string& name,
                                    VmaAllocator allocator,
