@@ -38,8 +38,7 @@ namespace nova::renderer {
          * \param alignment The minimum size of an allocation from this buffer
          * \param mapped If true, make this buffer always mapped
          */
-        auto_buffer(
-            const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment, bool mapped);
+        auto_buffer(const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment, bool mapped);
 
         auto_buffer(const auto_buffer& other) = delete;
         auto_buffer& operator=(const auto_buffer& other) = delete;
@@ -47,7 +46,7 @@ namespace nova::renderer {
         auto_buffer(auto_buffer&& old) noexcept;
         auto_buffer& operator=(auto_buffer&& old) noexcept;
 
-        ~auto_buffer() = default;
+        ~auto_buffer() override = default;
 
         /*!
          * \brief Allocates a chunk of the underlying buffer for your personal user

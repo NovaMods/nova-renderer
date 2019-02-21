@@ -10,9 +10,9 @@ namespace nova::renderer {
     auto_buffer::auto_buffer(const std::string& name,
                              VmaAllocator allocator,
                              const VkBufferCreateInfo& create_info,
-                             const uint64_t min_alloc_size,
+                             const uint64_t alignment,
                              const bool mapped = false)
-        : uniform_buffer(name, allocator, create_info, min_alloc_size, mapped) {
+        : uniform_buffer(name, allocator, create_info, alignment, mapped) {
 
         chunks.emplace_back(auto_buffer_chunk{VkDeviceSize(0), create_info.size});
     }
@@ -90,28 +90,28 @@ namespace nova::renderer {
 
         if(chunks.empty()) {
             chunks.emplace_back(auto_buffer_chunk{to_free.offset, to_free.range});
-            goto end;
+            return;
         }
 
         if(last_chunk.offset + last_chunk.range == to_free.offset) {
             last_chunk.range += to_free.range;
-            goto end;
+            return;
         }
 
         if(last_chunk.offset + last_chunk.range < to_free.offset) {
             chunks.emplace_back(auto_buffer_chunk{to_free.offset, to_free.range});
-            goto end;
+            return;
         }
 
         if(to_free_end == first_chunk.offset) {
             first_chunk.offset -= to_free.range;
             first_chunk.range += to_free.range;
-            goto end;
+            return;
         }
 
         if(to_free_end < first_chunk.offset) {
             chunks.emplace(chunks.begin(), auto_buffer_chunk{to_free.offset, to_free.range});
-            goto end;
+            return;
         }
 
         for(auto i = chunks.size() - 1; i >= 1; i++) {
@@ -126,24 +126,24 @@ namespace nova::renderer {
                 // combine these nerds
                 chunks[i - 1].range += to_free.range + ahead_space.range;
                 chunks.erase(chunks.begin() + static_cast<long>(i));
-                goto end;
+                return;
             }
 
             // Do we fit up against one of the two things?
             if(space_between_allocs > to_free.range) {
                 if(behind_space_end == to_free.offset) {
                     chunks[i - 1].range += to_free.range;
-                    goto end;
+                    return;
                 }
 
                 if(to_free_end == ahead_space.offset) {
                     chunks[i].offset -= to_free.range;
                     chunks[i].range += to_free.range;
-                    goto end;
+                    return;
                 }
 
                 chunks.emplace(chunks.begin() + static_cast<long>(i), auto_buffer_chunk{to_free.offset, to_free.range});
-                goto end;
+                return;
             }
         }
 
@@ -151,9 +151,6 @@ namespace nova::renderer {
         // a bug in my allocator and not something that should happen during Nova so let's just crash
         NOVA_LOG(FATAL) << "Could not return allocation {offset=" << to_free.offset << " range=" << to_free.range
                         << "} which should not happen. There's probably a bug in the allocator and you need to debug it";
-
-    end:
-        return;
     }
 
     VkDeviceSize space_between(const auto_buffer_chunk& first, const auto_buffer_chunk& last) {

@@ -7,9 +7,9 @@ namespace nova::renderer {
     uniform_buffer::uniform_buffer(const std::string& name,
                                    VmaAllocator allocator,
                                    const VkBufferCreateInfo& create_info,
-                                   const uint64_t min_alloc_size,
+                                   const uint64_t alignment,
                                    const bool mapped)
-        : name(std::move(name)), alignment(min_alloc_size), allocator(allocator) {
+        : name(std::move(name)), alignment(alignment), allocator(allocator) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
@@ -65,7 +65,7 @@ namespace nova::renderer {
     }
 
     uniform_buffer::~uniform_buffer() {
-        if(allocator && buffer != VkBuffer()) {
+        if(allocator != nullptr && buffer != nullptr) {
             NOVA_LOG(TRACE) << "uniform_buffer: About to destroy buffer " << buffer;
             vmaDestroyBuffer(allocator, buffer, allocation);
         }
@@ -74,6 +74,7 @@ namespace nova::renderer {
     VmaAllocation& uniform_buffer::get_allocation() { return allocation; }
 
     VmaAllocationInfo& uniform_buffer::get_allocation_info() { return allocation_info; }
+
     const std::string& uniform_buffer::get_name() const { return name; }
 
     const VkBuffer& uniform_buffer::get_vk_buffer() const { return buffer; }

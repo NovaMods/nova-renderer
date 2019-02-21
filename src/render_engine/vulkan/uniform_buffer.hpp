@@ -28,16 +28,16 @@ namespace nova::renderer {
 
         virtual ~uniform_buffer();
 
-        VmaAllocation& get_allocation();
-        VmaAllocationInfo& get_allocation_info();
-
         void set_data(const void* data, uint32_t size);
 
-        const std::string& get_name() const;
+        [[nodiscard]] VmaAllocation& get_allocation();
+        [[nodiscard]] VmaAllocationInfo& get_allocation_info();
 
-        const VkBuffer& get_vk_buffer() const;
+        [[nodiscard]] const std::string& get_name() const;
 
-        uint64_t get_size() const;
+        [[nodiscard]] const VkBuffer& get_vk_buffer() const;
+
+        [[nodiscard]] uint64_t get_size() const;
 
     protected:
         std::string name;

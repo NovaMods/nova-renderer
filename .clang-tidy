@@ -163,7 +163,7 @@ CheckOptions:
   - key:             modernize-replace-random-shuffle.IncludeStyle
     value:           llvm
   - key:             modernize-use-auto.MinTypeNameLength
-    value:           '5'
+    value:           '1'
   - key:             modernize-use-auto.RemoveStars
     value:           '0'
   - key:             modernize-use-default-member-init.IgnoreMacros
