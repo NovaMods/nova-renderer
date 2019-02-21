@@ -5,17 +5,15 @@
 #ifndef NOVA_RENDERER_RENDER_OBJECT_HPP
 #define NOVA_RENDERER_RENDER_OBJECT_HPP
 
-#include <glm/glm.hpp>
-#include <list>
-#include <memory>
+#include <vulkan/vulkan.h>
 
 namespace nova::renderer {
-    struct vk_mesh;
+    struct renderable_base {
+        VkDescriptorSet model_matrix_ubo_descriptor;
+    };
 
-    struct render_object {
-        vk_mesh* mesh;
-
-        glm::vec3 pos;
+    struct vk_static_mesh_renderable : renderable_base {
+        VkDrawIndexedIndirectCommand* draw_cmd;
     };
 } // namespace nova::renderer
 

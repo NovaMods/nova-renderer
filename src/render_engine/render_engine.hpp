@@ -1,5 +1,3 @@
-#include <utility>
-
 //
 // Created by jannis on 29.08.18.
 //
@@ -9,9 +7,9 @@
 
 #include <memory>
 #include "../loading/shaderpack/shaderpack_data.hpp"
-#include "../platform.hpp"
 #include "../settings/nova_settings.hpp"
 #include "../tasks/task_scheduler.hpp"
+#include "../util/result.hpp"
 #include "../util/utils.hpp"
 #include "window.hpp"
 
@@ -44,7 +42,20 @@ namespace nova::renderer {
     };
 
     using mesh_id_t = uint32_t;
-    using render_object_id_t = uint32_t;
+
+    struct static_mesh_renderer_update_data {
+        std::string material_name;
+
+        mesh_id_t mesh;
+    };
+
+    struct static_mesh_renderer_data : static_mesh_renderer_update_data {
+        glm::vec3 initial_position;
+        glm::vec3 initial_rotation;
+        glm::vec3 initial_scale;
+    };
+
+    using renderable_id_t = uint32_t;
 
     /*!
      * \brief Abstract class for render backends
@@ -75,11 +86,40 @@ namespace nova::renderer {
          */
         virtual void set_shaderpack(const shaderpack_data& data) = 0;
 
-        virtual render_object_id_t add_render_object(const render_object_data& data) = 0;
+        /*!
+         * \brief Adds a new static mesh renderable to this render engine
+         *
+         * A static mesh renderable tells Nova to render a specific mesh with a specific material and a specific
+         * transform. Static mesh renderables cannot be updated after creation, letting Nova bake them together if
+         * doing so would help performance
+         *
+         * \param data The initial data for this static mesh renderable. Includes things like initial transform, mesh,
+         * and material
+         *
+         * \return The ID of the newly created renderable
+         */
+        virtual result<renderable_id_t> add_renderable(const static_mesh_renderer_data& data) = 0;
 
-        virtual void update_render_object(render_object_id_t id, const render_object_data& update) = 0;
+        /*!
+         * \brief Sets the visibility of the renderable with the provided ID
+         *
+         * This method allows the host application to perform its own culling on renderables. If the host application
+         * marks a renderable as invisible, that renderable will _always_ be invisible. If the host application marks
+         * a renderable as visible, however, Nova will perform its own culling, which may cause Nova to not render your
+         * renderable anyways
+         *
+         * \param id The ID of the renderable to set the visibility of
+         * \param is_visible If false, the specified renderable will not be rendered. If true, Nova will render the
+         * renderable if the renderable would be visible
+         */
+        virtual void set_renderable_visibility(renderable_id_t id, bool is_visible) = 0;
 
-        virtual void delete_render_object(render_object_id_t id) = 0;
+        /*!
+         * \brief Deletes a renderable from Nova
+         *
+         * \param id The ID of the renderable to delete
+         */
+        virtual void delete_renderable(renderable_id_t id) = 0;
 
         /*!
          * \brief Adds a mesh to this render engine

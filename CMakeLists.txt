@@ -115,8 +115,7 @@ set(NOVA_SOURCE
         src/loading/json_utils.hpp
         src/util/utils.hpp
         src/util/utils.cpp
-        src/render_objects/render_object.cpp
-        src/render_objects/render_object.hpp 
+        src/render_objects/renderables.hpp 
         src/loading/shaderpack/shaderpack_validator.cpp 
         src/loading/shaderpack/shaderpack_validator.hpp 
         src/loading/shaderpack/render_graph_builder.cpp 
@@ -125,7 +124,7 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_render_engine_init.cpp
         src/render_engine/vulkan/vulkan_render_engine_shaderpack.cpp
-        src/render_engine/vulkan/vulkan_render_engine_render_objects.cpp
+        src/render_engine/vulkan/vulkan_render_engine_renderables.cpp
         src/render_engine/vulkan/vulkan_render_engine_render_frame.cpp
         src/render_engine/vulkan/vulkan_render_engine_mesh.cpp
         src/render_engine/vulkan/vulkan_utils.hpp
@@ -148,8 +147,9 @@ set(NOVA_SOURCE
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
         src/debugging/renderdoc_app.h
-
-
+                
+        src/util/result.hpp
+        src/util/result.cpp
         )
 
 ##################################

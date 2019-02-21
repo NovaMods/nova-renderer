@@ -29,7 +29,7 @@
 #include "spirv_glsl.hpp"
 
 #include <mutex>
-#include "../../render_objects/render_object.hpp"
+#include "../../render_objects/renderables.hpp"
 #include "auto_allocating_buffer.hpp"
 #include "swapchain.hpp"
 
@@ -191,7 +191,11 @@ namespace nova::renderer {
 
         void set_shaderpack(const shaderpack_data& data) override;
 
-        render_object_id_t add_render_object(const render_object_data& input_object) override;
+        result<renderable_id_t> add_renderable(const static_mesh_renderer_data& data) override;
+
+        void set_renderable_visibility(renderable_id_t id, bool is_visible) override;
+
+        void delete_renderable(renderable_id_t id) override;
 
         mesh_id_t add_mesh(const mesh_data& input_mesh) override;
 
@@ -502,21 +506,25 @@ namespace nova::renderer {
         void free_mesh_staging_buffer(const vk_buffer& buffer);
 #pragma endregion
 
-#pragma region Render Object
+#pragma region Renderables
         /*!
          * \brief A buffer to hold model matrices for static render objects
          */
         std::unique_ptr<auto_buffer> static_model_matrix_buffer;
 
+        /*
+         * All the renderers that Nova will process
+         */
+
+        std::unordered_map<renderable_id_t, vk_static_mesh_renderable> static_mesh_renderers;
+
         void create_builtin_uniform_buffers();
-
-
 #pragma endregion
 
 #pragma region Rendering
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
-        std::unordered_map<std::string, std::unordered_map<VkBuffer, std::vector<render_object>>> renderables_by_material;
+        std::unordered_map<std::string, std::unordered_map<VkBuffer, std::vector<renderable_id_t>>> renderables_by_material;
 
         std::mutex rendering_mutex;
         std::condition_variable rendering_cv;
