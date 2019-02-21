@@ -73,10 +73,10 @@ namespace nova::renderer {
         template <typename RetVal>
         result<RetVal> map(std::function<RetVal(const ValueType&)>&& func) {
             if(has_value) {
-                return result(func(value));
+                return result<RetVal>(std::move(func(value)));
             }
             else {
-                return result(std::move(error));
+                return result<RetVal>(std::move(error));
             }
         }
     };

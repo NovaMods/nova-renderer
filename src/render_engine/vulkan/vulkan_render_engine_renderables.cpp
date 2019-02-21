@@ -40,8 +40,7 @@ namespace nova::renderer {
             }
         }()
         .map<renderable_id_t>([&](const std::vector<const material_pass*>& passes) {
-            vk_static_mesh_renderable renderable = {};
-
+            static_cast<void>(passes);
             auto mesh_result =
                 [&]() {
                     if(meshes.find(data.mesh) == meshes.end()) {
@@ -51,11 +50,15 @@ namespace nova::renderer {
 
                     return result<const vk_mesh*>(&meshes.at(data.mesh));
                 }()
-                .map<int>([](const vk_mesh* mesh) { return 3; });
+                    .map<int>([](const vk_mesh* mesh) {
+                        static_cast<void>(mesh);
+                    return 3;
+                });
 
             return 3;
         });
     }
 
-    void vulkan_render_engine::delete_renderable(renderable_id_t id) {}
+    void vulkan_render_engine::delete_renderable(renderable_id_t id) { static_cast<void>(id);
+    }
 } // namespace nova::renderer
