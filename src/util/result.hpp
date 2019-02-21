@@ -70,12 +70,14 @@ namespace nova::renderer {
             }
         }
 
-        template <typename RetVal>
-        result<RetVal> map(std::function<RetVal(const ValueType&)>&& func) {
+        template <typename FuncType>
+        auto map(FuncType&& func) -> result<decltype(func(value))> {
+            using RetVal = decltype(func(value));
+
             if(has_value) {
                 return result<RetVal>(std::move(func(value)));
-            }
-            else {
+
+            } else {
                 return result<RetVal>(std::move(error));
             }
         }
