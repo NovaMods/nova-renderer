@@ -5,6 +5,7 @@
 
 #include "auto_allocating_buffer.hpp"
 #include "../../util/logger.hpp"
+#include "fmt/format.h"
 
 namespace nova::renderer {
     auto_buffer::auto_buffer(const std::string& name,
@@ -47,14 +48,13 @@ namespace nova::renderer {
 
         if(index_to_allocate_from == -1) {
             // Whoops, couldn't find anything
-            auto ss = std::stringstream{};
-            ss << "No big enough slots in the buffer. There's " << chunks.size()
-               << " slots. If there's a lot then you got some fragmentation";
+            const std::string msg = fmt::
+                format(fmt("No big enough slots in the buffer. There's {:d} slots. If there's a lot then you got some fragmentation"),
+                       chunks.size());
 
-            NOVA_LOG(ERROR) << "No big enough slots in the buffer. There's " << chunks.size()
-                            << " slots. If there's a lot then you got some fragmentation";
+            NOVA_LOG(ERROR) << msg;
             // Halt execution like a boss
-            throw std::runtime_error(ss.str());
+            throw std::runtime_error(msg);
         }
 
         auto& chunk_to_allocate_from = chunks[static_cast<uint32_t>(index_to_allocate_from)];
