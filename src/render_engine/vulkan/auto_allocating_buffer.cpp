@@ -36,9 +36,9 @@ namespace nova::renderer {
         int32_t index_to_allocate_from = -1;
         if(!chunks.empty()) {
             // Iterate backwards so that inserting or deleting has a minimal cost
-            for(std::size_t i = chunks.size() - 1; i >= 0; --i) {
-                if(chunks[i].range >= size) {
-                    index_to_allocate_from = static_cast<int32_t>(i);
+            for(int32_t i = static_cast<int32_t>(chunks.size() - 1); i >= 0; --i) {
+                if(chunks[static_cast<uint32_t>(i)].range >= size) {
+                    index_to_allocate_from = i;
                 }
             }
         }
