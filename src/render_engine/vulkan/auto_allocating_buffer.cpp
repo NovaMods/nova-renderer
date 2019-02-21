@@ -36,9 +36,9 @@ namespace nova::renderer {
         int32_t index_to_allocate_from = -1;
         if(!chunks.empty()) {
             // Iterate backwards so that inserting or deleting has a minimal cost
-            for(auto i = static_cast<int32_t>(chunks.size() - 1); i >= 0; --i) {
+            for(std::size_t i = chunks.size() - 1; i >= 0; --i) {
                 if(chunks[i].range >= size) {
-                    index_to_allocate_from = i;
+                    index_to_allocate_from = static_cast<int32_t>(i);
                 }
             }
         }
@@ -57,7 +57,7 @@ namespace nova::renderer {
             throw std::runtime_error(ss.str());
         }
 
-        auto& chunk_to_allocate_from = chunks[index_to_allocate_from];
+        auto& chunk_to_allocate_from = chunks[static_cast<uint32_t>(index_to_allocate_from)];
         if(chunk_to_allocate_from.range == size) {
             // Easy: unallocate the chunk, return the chunks
 
@@ -125,7 +125,7 @@ namespace nova::renderer {
             if(space_between_allocs == to_free.range) {
                 // combine these nerds
                 chunks[i - 1].range += to_free.range + ahead_space.range;
-                chunks.erase(chunks.begin() + static_cast<long>(I));
+                chunks.erase(chunks.begin() + static_cast<long>(i));
                 goto end;
             }
 
@@ -142,7 +142,7 @@ namespace nova::renderer {
                     goto end;
                 }
 
-                chunks.emplace(chunks.begin() + static_cast<long>(I), auto_buffer_chunk{to_free.offset, to_free.range});
+                chunks.emplace(chunks.begin() + static_cast<long>(i), auto_buffer_chunk{to_free.offset, to_free.range});
                 goto end;
             }
         }
