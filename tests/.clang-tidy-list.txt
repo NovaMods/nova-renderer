@@ -30,3 +30,4 @@ readability*
 -*-runtime-references
 -*-special-member-functions
 -*-string-constructor
+-*-misplaced-const

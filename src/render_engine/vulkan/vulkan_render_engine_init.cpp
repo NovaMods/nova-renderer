@@ -184,7 +184,7 @@ namespace nova::renderer {
 
         for(uint32_t device_idx = 0; device_idx < device_count; device_idx++) {
             graphics_family_idx = 0xFFFFFFFF;
-            const VkPhysicalDevice const current_device = physical_devices[device_idx];
+            const VkPhysicalDevice current_device = physical_devices[device_idx];
             vkGetPhysicalDeviceProperties(current_device, &gpu.props);
 
             if(gpu.props.vendorID == 0x8086 &&
