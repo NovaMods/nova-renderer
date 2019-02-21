@@ -44,6 +44,7 @@ namespace nova::renderer {
     };
 
     using mesh_id_t = uint32_t;
+    using render_object_id_t = uint32_t;
 
     /*!
      * \brief Abstract class for render backends
@@ -73,6 +74,12 @@ namespace nova::renderer {
          * \param data The shaderpack to load
          */
         virtual void set_shaderpack(const shaderpack_data& data) = 0;
+
+        virtual render_object_id_t add_render_object(const render_object_data& data) = 0;
+
+        virtual void update_render_object(render_object_id_t id, const render_object_data& update) = 0;
+
+        virtual void delete_render_object(render_object_id_t id) = 0;
 
         /*!
          * \brief Adds a mesh to this render engine

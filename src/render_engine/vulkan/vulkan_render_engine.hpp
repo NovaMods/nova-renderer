@@ -191,6 +191,8 @@ namespace nova::renderer {
 
         void set_shaderpack(const shaderpack_data& data) override;
 
+        render_object_id_t add_render_object(const render_object_data& input_object) override;
+
         mesh_id_t add_mesh(const mesh_data& input_mesh) override;
 
         void delete_mesh(uint32_t mesh_id) override;
@@ -507,6 +509,8 @@ namespace nova::renderer {
         std::unique_ptr<auto_buffer> static_model_matrix_buffer;
 
         void create_builtin_uniform_buffers();
+
+
 #pragma endregion
 
 #pragma region Rendering
