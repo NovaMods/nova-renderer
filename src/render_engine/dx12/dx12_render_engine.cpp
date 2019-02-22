@@ -383,6 +383,20 @@ namespace nova::renderer {
         make_pipeline_state_objects(data.pipelines, scheduler);
     }
 
+    result<renderable_id_t> dx12_render_engine::add_renderable(const static_mesh_renderer_data& data) { 
+        static_cast<void>(data);
+        return result<renderable_id_t>(4);
+    }
+
+    void dx12_render_engine::set_renderable_visibility(renderable_id_t id, bool is_visible) { 
+        static_cast<void>(id);
+        static_cast<void>(is_visible);
+    }
+
+    void dx12_render_engine::delete_renderable(renderable_id_t id) { 
+        static_cast<void>(id);
+    }
+
     mesh_id_t dx12_render_engine::add_mesh(const mesh_data&) {
         // TODO
 

@@ -6,8 +6,8 @@
 #define NOVA_RENDERER_RENDER_ENGINE_HPP
 
 #include <memory>
-#include "../platform.hpp"
 #include "../loading/shaderpack/shaderpack_data.hpp"
+#include "../platform.hpp"
 #include "../settings/nova_settings.hpp"
 #include "../tasks/task_scheduler.hpp"
 #include "../util/result.hpp"
@@ -56,7 +56,7 @@ namespace nova::renderer {
         glm::vec3 initial_scale;
     };
 
-    using renderable_id_t = uint32_t;
+    using renderable_id_t = uint64_t;
 
     /*!
      * \brief Abstract class for render backends

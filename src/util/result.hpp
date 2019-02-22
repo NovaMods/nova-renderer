@@ -76,8 +76,8 @@ namespace nova::renderer {
 
             if(has_value) {
                 return result<RetVal>(std::move(func(value)));
-
-            } else {
+            }
+            else {
                 return result<RetVal>(std::move(error));
             }
         }

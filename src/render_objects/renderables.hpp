@@ -13,7 +13,7 @@ namespace nova::renderer {
     };
 
     struct vk_static_mesh_renderable : renderable_base {
-       const VkDrawIndexedIndirectCommand* draw_cmd;
+        const VkDrawIndexedIndirectCommand* draw_cmd;
     };
 } // namespace nova::renderer
 
