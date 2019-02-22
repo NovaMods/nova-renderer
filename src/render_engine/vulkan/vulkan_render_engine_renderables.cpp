@@ -58,7 +58,12 @@ namespace nova::renderer {
     result<renderable_id_t> vulkan_render_engine::register_renderable(const vk_mesh* mesh,
                                                                       const std::vector<const material_pass*>& passes) {
         renderable_metadata meta = {};
-        meta.passes = passes;
+        meta.passes.reserve(meshes.size());
+        for(const material_pass* m : passes) {
+            meta.passes.push_back(m->name);
+        }
+
+        meta.buffer = mesh->memory->block->get_buffer();
 
         // Set all the renderable's data
         vk_static_mesh_renderable renderable = {};
@@ -78,9 +83,11 @@ namespace nova::renderer {
         return result<renderable_id_t>(std::move(id));
     }
 
-    void vulkan_render_engine::set_renderable_visibility(renderable_id_t id, bool is_visible) {
-        static_cast<void>(id);
-        static_cast<void>(is_visible);
+    void vulkan_render_engine::set_renderable_visibility(const renderable_id_t id, const bool is_visible) {
+        const renderable_metadata& meta = metadata_for_renderables.at(id);
+        for(const std::string& pass : meta.passes) {
+            renderables_by_material.at[pass][meta.buffer].is_visible = is_visible;
+        }    
     }
 
     void vulkan_render_engine::delete_renderable(renderable_id_t id) { static_cast<void>(id); }

@@ -13,21 +13,22 @@ namespace nova::renderer {
     static std::atomic<renderable_id_t> RENDERABLE_ID;
 
     struct renderable_metadata {
-        renderable_id_t id;
+        renderable_id_t id = 0;
 
-        std::vector<const material_pass*> passes;
+        std::vector<std::string> passes;
+        VkBuffer buffer = nullptr;
     };
 
     struct renderable_base {
-        renderable_id_t id;
+        renderable_id_t id = 0;
 
         bool is_visible = true;
 
-        VkDescriptorSet model_matrix_ubo_descriptor;
+        VkDescriptorSet model_matrix_ubo_descriptor = nullptr;
     };
 
     struct vk_static_mesh_renderable : renderable_base {
-        const VkDrawIndexedIndirectCommand* draw_cmd;
+        const VkDrawIndexedIndirectCommand* draw_cmd = nullptr;
     };
 } // namespace nova::renderer
 
