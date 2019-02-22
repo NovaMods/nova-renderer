@@ -39,28 +39,28 @@ namespace nova::renderer {
                 return result<std::vector<const material_pass*>>(std::move(passes));
             }
         }()
-                .map([&](const std::vector<const material_pass*>& passes) {
-                    static_cast<void>(passes);
-                    auto mesh_result =
-                        [&]() {
-                            if(meshes.find(data.mesh) == meshes.end()) {
-                                return result<const vk_mesh*>(
-                                    nova_error(fmt::format(fmt("Could not find mesh with id {:d}"), data.mesh)));
-                            }
+                        .map([&](const std::vector<const material_pass*>& passes) {
+                            static_cast<void>(passes);
+                            auto mesh_result =
+                                [&]() {
+                                    if(meshes.find(data.mesh) == meshes.end()) {
+                                        return result<const vk_mesh*>(
+                                            nova_error(fmt::format(fmt("Could not find mesh with id {:d}"), data.mesh)));
+                                    }
 
-                            return result<const vk_mesh*>(&meshes.at(data.mesh));
-                        }()
-                            .map([](const vk_mesh* mesh) {
-                                static_cast<void>(mesh);
+                                    return result<const vk_mesh*>(&meshes.at(data.mesh));
+                                }()
+                                    .map([](const vk_mesh* mesh) {
+                                        static_cast<void>(mesh);
 
-                                // vk_static_mesh_renderable renderable = {};
-                                // renderable.draw_cmd = &mesh->draw_cmd;
+                                        // vk_static_mesh_renderable renderable = {};
+                                        // renderable.draw_cmd = &mesh->draw_cmd;
 
-                                return static_cast<renderable_id_t>(3);
-                            });
+                                        return static_cast<renderable_id_t>(3);
+                                    });
 
-                    return static_cast<renderable_id_t>(3);
-                });
+                            return static_cast<renderable_id_t>(3);
+                        });
     }
 
     void vulkan_render_engine::set_renderable_visibility(renderable_id_t id, bool is_visible) {
