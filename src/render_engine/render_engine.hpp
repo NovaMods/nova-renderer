@@ -44,13 +44,13 @@ namespace nova::renderer {
 
     using mesh_id_t = uint32_t;
 
-    struct static_mesh_renderer_update_data {
+    struct static_mesh_renderable_update_data {
         std::string material_name;
 
         mesh_id_t mesh;
     };
 
-    struct static_mesh_renderer_data : static_mesh_renderer_update_data {
+    struct static_mesh_renderable_data : static_mesh_renderable_update_data {
         glm::vec3 initial_position;
         glm::vec3 initial_rotation;
         glm::vec3 initial_scale;
@@ -99,7 +99,7 @@ namespace nova::renderer {
          *
          * \return The ID of the newly created renderable
          */
-        virtual result<renderable_id_t> add_renderable(const static_mesh_renderer_data& data) = 0;
+        virtual result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) = 0;
 
         /*!
          * \brief Sets the visibility of the renderable with the provided ID

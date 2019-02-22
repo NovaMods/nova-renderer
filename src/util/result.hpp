@@ -35,13 +35,13 @@ namespace nova::renderer {
 
         result(result<ValueType>&& old) noexcept {
             if(old.has_value) {
-                value = old.value;
+                value = std::move(old.value);
                 old.value = {};
 
                 has_value = true;
             }
             else {
-                error = old.error;
+                error = std::move(old.error);
                 old.error = {};
             }
         };
@@ -71,11 +71,11 @@ namespace nova::renderer {
         }
 
         template <typename FuncType>
-        auto map(FuncType&& func) -> result<decltype(func(value))> {
-            using RetVal = decltype(func(value));
+        auto map(FuncType&& func) -> result<decltype(func(value).value)> {
+            using RetVal = decltype(func(value).value);
 
             if(has_value) {
-                return result<RetVal>(std::move(func(value)));
+                return func(value);
             }
             else {
                 return result<RetVal>(std::move(error));

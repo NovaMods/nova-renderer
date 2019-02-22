@@ -476,7 +476,7 @@ namespace nova::renderer {
 
             for(size_t i = 0; i < renderables.size(); i++) {
                 const renderable_id_t& cur_obj_id = renderables[i];
-                const vk_static_mesh_renderable& cur_obj = static_mesh_renderers.at(cur_obj_id);
+                const vk_static_mesh_renderable& cur_obj = static_mesh_renderables.at(cur_obj_id);
                 indirect_commands[i] = *cur_obj.draw_cmd;
             }
 

@@ -17,50 +17,65 @@ namespace nova::renderer {
         static_model_matrix_buffer = std::make_unique<auto_buffer>("NovaStaticModelUBO", vma_allocator, info, alignment, false);
     }
 
-    result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderer_data& data) {
-        return [&]() -> result<std::vector<const material_pass*>> {
-            std::vector<const material_pass*> passes;
+    result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {
+        return get_material_passes_for_renderable(data).map([&](const std::vector<const material_pass*>& passes) {
+            return get_mesh_for_renderable(data).map(
+                std::bind(&vulkan_render_engine::register_renderable, this, std::placeholders::_1, passes));
+        });
+    }
 
-            for(const auto& [pipeline_name, materials] : material_passes_by_pipeline) {
-                static_cast<void>(pipeline_name);
+    result<std::vector<const material_pass*>> vulkan_render_engine::get_material_passes_for_renderable(
+        const static_mesh_renderable_data& data) {
+        std::vector<const material_pass*> passes;
 
-                for(const material_pass& pass : materials) {
-                    if(pass.material_name == data.material_name) {
-                        passes.push_back(&pass);
-                    }
+        for(const auto& [pipeline_name, materials] : material_passes_by_pipeline) {
+            static_cast<void>(pipeline_name);
+
+            for(const material_pass& pass : materials) {
+                if(pass.material_name == data.material_name) {
+                    passes.push_back(&pass);
                 }
             }
+        }
 
-            if(passes.empty()) {
-                return result<std::vector<const material_pass*>>(
-                    nova_error(fmt::format(fmt("Could not find material {:s}"), data.material_name)));
-            }
-            else {
-                return result<std::vector<const material_pass*>>(std::move(passes));
-            }
-        }()
-                        .map([&](const std::vector<const material_pass*>& passes) {
-                            static_cast<void>(passes);
-                            auto mesh_result =
-                                [&]() {
-                                    if(meshes.find(data.mesh) == meshes.end()) {
-                                        return result<const vk_mesh*>(
-                                            nova_error(fmt::format(fmt("Could not find mesh with id {:d}"), data.mesh)));
-                                    }
+        if(passes.empty()) {
+            return result<std::vector<const material_pass*>>(
+                nova_error(fmt::format(fmt("Could not find material {:s}"), data.material_name)));
+        }
+        else {
+            return result<std::vector<const material_pass*>>(std::move(passes));
+        }
+    }
 
-                                    return result<const vk_mesh*>(&meshes.at(data.mesh));
-                                }()
-                                    .map([](const vk_mesh* mesh) {
-                                        static_cast<void>(mesh);
+    result<const vk_mesh*> vulkan_render_engine::get_mesh_for_renderable(const static_mesh_renderable_data& data) {
+        if(meshes.find(data.mesh) == meshes.end()) {
+            return result<const vk_mesh*>(nova_error(fmt::format(fmt("Could not find mesh with id {:d}"), data.mesh)));
+        }
 
-                                        // vk_static_mesh_renderable renderable = {};
-                                        // renderable.draw_cmd = &mesh->draw_cmd;
+        return result<const vk_mesh*>(&meshes.at(data.mesh));
+    }
 
-                                        return static_cast<renderable_id_t>(3);
-                                    });
+    result<renderable_id_t> vulkan_render_engine::register_renderable(const vk_mesh* mesh,
+                                                                      const std::vector<const material_pass*>& passes) {
+        renderable_metadata meta = {};
+        meta.passes = passes;
 
-                            return static_cast<renderable_id_t>(3);
-                        });
+        // Set all the renderable's data
+        vk_static_mesh_renderable renderable = {};
+        renderable.draw_cmd = &mesh->draw_cmd;
+
+        // Generate the renderable ID and store the renderable
+        renderable_id_t id = RENDERABLE_ID.fetch_add(1);
+        renderable.id = id;
+        static_mesh_renderables[id] = renderable;
+        metadata_for_renderables[id] = meta;
+
+        // Find the materials basses that this renderable belongs to, put it in the appropriate maps
+        for(const material_pass* pass : passes) {
+            renderables_by_material[pass->name][mesh->memory->block->get_buffer()].push_back(id);
+        }
+
+        return result<renderable_id_t>(std::move(id));
     }
 
     void vulkan_render_engine::set_renderable_visibility(renderable_id_t id, bool is_visible) {

@@ -74,7 +74,7 @@ namespace nova::renderer {
 
         void set_shaderpack(const shaderpack_data& data) override;
 
-        result<renderable_id_t> add_renderable(const static_mesh_renderer_data& data) override;
+        result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) override;
 
         void set_renderable_visibility(renderable_id_t id, bool is_visible) override;
 

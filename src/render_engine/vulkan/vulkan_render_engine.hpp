@@ -191,7 +191,7 @@ namespace nova::renderer {
 
         void set_shaderpack(const shaderpack_data& data) override;
 
-        result<renderable_id_t> add_renderable(const static_mesh_renderer_data& data) override;
+        result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) override;
 
         void set_renderable_visibility(renderable_id_t id, bool is_visible) override;
 
@@ -516,9 +516,17 @@ namespace nova::renderer {
          * All the renderers that Nova will process
          */
 
-        std::unordered_map<renderable_id_t, vk_static_mesh_renderable> static_mesh_renderers;
+        std::unordered_map<renderable_id_t, vk_static_mesh_renderable> static_mesh_renderables;
+
+        std::unordered_map<renderable_id_t, renderable_metadata> metadata_for_renderables;
 
         void create_builtin_uniform_buffers();
+
+        result<std::vector<const material_pass*>> get_material_passes_for_renderable(const static_mesh_renderable_data& data);
+
+        result<const vk_mesh*> get_mesh_for_renderable(const static_mesh_renderable_data& data);
+
+        result<renderable_id_t> register_renderable(const vk_mesh* mesh, const std::vector<const material_pass*>& passes);
 #pragma endregion
 
 #pragma region Rendering
