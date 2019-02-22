@@ -53,8 +53,8 @@ namespace nova::renderer {
                 .map([](const vk_mesh* mesh) {
                     static_cast<void>(mesh);
 
-                    vk_static_mesh_renderable renderable = {};
-                    renderable.draw_cmd = &mesh->draw_cmd;
+                    // vk_static_mesh_renderable renderable = {};
+                    // renderable.draw_cmd = &mesh->draw_cmd;
 
                     return static_cast<renderable_id_t>(3);
                 });
