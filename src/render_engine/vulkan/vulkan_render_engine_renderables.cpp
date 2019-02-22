@@ -84,10 +84,11 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::set_renderable_visibility(const renderable_id_t id, const bool is_visible) {
-        const renderable_metadata& meta = metadata_for_renderables.at(id);
-        for(const std::string& pass : meta.passes) {
-            renderables_by_material.at[pass][meta.buffer].is_visible = is_visible;
-        }    
+        if(static_mesh_renderables.find(id) != static_mesh_renderables.end()) {
+            static_mesh_renderables[id].is_visible = is_visible;
+        }
+
+        // TODO: Try other types of renderables
     }
 
     void vulkan_render_engine::delete_renderable(renderable_id_t id) { static_cast<void>(id); }
