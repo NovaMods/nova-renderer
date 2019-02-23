@@ -11,7 +11,7 @@ namespace nova::renderer {
     swapchain_manager::swapchain_manager(const uint32_t num_swapchain_images,
                                          vulkan_render_engine& render_engine,
                                          const glm::ivec2 window_dimensions,
-                                        const std::vector<VkPresentModeKHR>& present_modes)
+                                         const std::vector<VkPresentModeKHR>& present_modes)
         : render_engine(render_engine),
           swapchain_extent{static_cast<uint32_t>(window_dimensions.x), static_cast<uint32_t>(window_dimensions.y)} {
         const auto surface_format = choose_surface_format(render_engine.gpu.surface_formats);
