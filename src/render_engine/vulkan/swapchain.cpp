@@ -10,11 +10,12 @@
 namespace nova::renderer {
     swapchain_manager::swapchain_manager(const uint32_t num_swapchain_images,
                                          vulkan_render_engine& render_engine,
-                                         const glm::ivec2 window_dimensions)
+                                         const glm::ivec2 window_dimensions,
+                                        const std::vector<VkPresentModeKHR>& present_modes)
         : render_engine(render_engine),
           swapchain_extent{static_cast<uint32_t>(window_dimensions.x), static_cast<uint32_t>(window_dimensions.y)} {
         const auto surface_format = choose_surface_format(render_engine.gpu.surface_formats);
-        const auto present_mode = choose_present_mode(render_engine.gpu.present_modes);
+        const auto present_mode = choose_present_mode(present_modes);
         const auto extent = choose_surface_extent(render_engine.gpu.surface_capabilities, window_dimensions);
 
         VkSwapchainCreateInfoKHR info = {};

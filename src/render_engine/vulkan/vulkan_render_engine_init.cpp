@@ -346,15 +346,15 @@ namespace nova::renderer {
         uint32_t num_surface_present_modes;
         NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr),
                                render_engine_initialization_exception);
-        gpu.present_modes.resize(num_surface_formats);
+        std::vector<VkPresentModeKHR> present_modes(num_surface_formats);
         NOVA_LOG(DEBUG) << "Resized present_nodes to hold " << num_surface_formats << " formats";
         NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device,
                                                                          surface,
                                                                          &num_surface_present_modes,
-                                                                         gpu.present_modes.data()),
+                                                                         present_modes.data()),
                                render_engine_initialization_exception);
 
-        swapchain = std::make_unique<swapchain_manager>(3, *this, window->get_window_size());
+        swapchain = std::make_unique<swapchain_manager>(3, *this, window->get_window_size(), present_modes);
     }
 
     void vulkan_render_engine::create_memory_allocator() {

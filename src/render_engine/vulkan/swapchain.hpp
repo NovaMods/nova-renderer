@@ -27,7 +27,10 @@ namespace nova::renderer {
      */
     class swapchain_manager {
     public:
-        swapchain_manager(uint32_t num_swapchain_images, vulkan_render_engine& render_engine, glm::ivec2 window_dimensions);
+        swapchain_manager(uint32_t num_swapchain_images,
+                          vulkan_render_engine& render_engine,
+                          glm::ivec2 window_dimensions,
+                          const std::vector<VkPresentModeKHR>& present_modes);
 
         void present_current_image(const std::vector<VkSemaphore>& wait_semaphores) const;
 

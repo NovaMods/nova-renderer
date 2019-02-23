@@ -156,7 +156,6 @@ namespace nova::renderer {
         std::vector<VkSurfaceFormatKHR> surface_formats;
         VkPhysicalDeviceProperties props{};
         VkPhysicalDeviceFeatures supported_features{};
-        std::vector<VkPresentModeKHR> present_modes;
     };
 
     struct vk_renderables {
