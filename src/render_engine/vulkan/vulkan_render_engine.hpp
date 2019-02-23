@@ -159,6 +159,10 @@ namespace nova::renderer {
         std::vector<VkPresentModeKHR> present_modes;
     };
 
+    struct vk_renderables {
+        std::vector<vk_static_mesh_renderable> static_meshes;
+    };
+
     class vulkan_render_engine : public render_engine {
     public:
         VkDevice device{};
@@ -516,8 +520,6 @@ namespace nova::renderer {
          * All the renderers that Nova will process
          */
 
-        std::unordered_map<renderable_id_t, vk_static_mesh_renderable> static_mesh_renderables;
-
         std::unordered_map<renderable_id_t, renderable_metadata> metadata_for_renderables;
 
         void create_builtin_uniform_buffers();
@@ -532,7 +534,7 @@ namespace nova::renderer {
 #pragma region Rendering
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
-        std::unordered_map<std::string, std::unordered_map<VkBuffer, std::vector<renderable_id_t>>> renderables_by_material;
+        std::unordered_map<std::string, std::unordered_map<VkBuffer, vk_renderables>> renderables_by_material;
 
         std::mutex rendering_mutex;
         std::condition_variable rendering_cv;

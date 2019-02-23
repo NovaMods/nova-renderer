@@ -444,12 +444,12 @@ namespace nova::renderer {
             return;
         }
 
-        const std::unordered_map<VkBuffer, std::vector<renderable_id_t>>& renderables_by_buffer = renderables_by_material.at(pass.name);
+        const std::unordered_map<VkBuffer, vk_renderables>& renderables_by_buffer = renderables_by_material.at(pass.name);
 
         for(const auto& [buffer, renderables] : renderables_by_buffer) {
             VkBufferCreateInfo buffer_create_info = {};
             buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            buffer_create_info.size = sizeof(VkDrawIndexedIndirectCommand) * renderables.size();
+            buffer_create_info.size = sizeof(VkDrawIndexedIndirectCommand) * renderables.static_meshes.size();
             buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
             buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             buffer_create_info.queueFamilyIndexCount = 1;
@@ -473,17 +473,15 @@ namespace nova::renderer {
 
             // Version 1: write commands for all things to the indirect draw buffer
             auto* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
-
-            for(size_t i = 0; i < renderables.size(); i++) {
-                const renderable_id_t& cur_obj_id = renderables[i];
-                const vk_static_mesh_renderable& cur_obj = static_mesh_renderables.at(cur_obj_id);
+            for(size_t i = 0; i < renderables.static_meshes.size(); i++) {
+                const vk_static_mesh_renderable& cur_obj = renderables.static_meshes[i];
                 indirect_commands[i] = *cur_obj.draw_cmd;
             }
 
             vkCmdBindVertexBuffers(cmds, 0, 1, &buffer, nullptr);
             vkCmdBindIndexBuffer(cmds, buffer, 0, VK_INDEX_TYPE_UINT32);
 
-            vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, static_cast<uint32_t>(renderables.size()), 0);
+            vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, static_cast<uint32_t>(renderables.static_meshes.size()), 0);
         }
     }
 

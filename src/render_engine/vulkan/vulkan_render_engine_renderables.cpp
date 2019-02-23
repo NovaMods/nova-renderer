@@ -58,7 +58,7 @@ namespace nova::renderer {
     result<renderable_id_t> vulkan_render_engine::register_renderable(const vk_mesh* mesh,
                                                                       const std::vector<const material_pass*>& passes) {
         renderable_metadata meta = {};
-        meta.passes.reserve(meshes.size());
+        meta.passes.reserve(passes.size());
         for(const material_pass* m : passes) {
             meta.passes.push_back(m->name);
         }
@@ -72,20 +72,29 @@ namespace nova::renderer {
         // Generate the renderable ID and store the renderable
         renderable_id_t id = RENDERABLE_ID.fetch_add(1);
         renderable.id = id;
-        static_mesh_renderables[id] = renderable;
         metadata_for_renderables[id] = meta;
 
         // Find the materials basses that this renderable belongs to, put it in the appropriate maps
         for(const material_pass* pass : passes) {
-            renderables_by_material[pass->name][mesh->memory->block->get_buffer()].push_back(id);
+            renderables_by_material[pass->name][mesh->memory->block->get_buffer()].static_meshes.push_back(renderable);
         }
 
         return result<renderable_id_t>(std::move(id));
     }
 
     void vulkan_render_engine::set_renderable_visibility(const renderable_id_t id, const bool is_visible) {
-        if(static_mesh_renderables.find(id) != static_mesh_renderables.end()) {
-            static_mesh_renderables[id].is_visible = is_visible;
+        if(metadata_for_renderables.find(id) != metadata_for_renderables.end()) {
+            const renderable_metadata& meta = metadata_for_renderables.at(id);
+            for(const std::string& pass_name : meta.passes) {
+                if(renderables_by_material.find(pass_name) != renderables_by_material.end()) {
+                    std::vector<vk_static_mesh_renderable>& renderables = renderables_by_material[pass_name][meta.buffer].static_meshes;
+                    for(vk_static_mesh_renderable& renderable : renderables) {
+                        if(renderable.id == meta.id) {
+                            renderable.is_visible = is_visible;
+                        }
+                    }
+                }
+            }
         }
 
         // TODO: Try other types of renderables
