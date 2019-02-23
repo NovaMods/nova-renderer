@@ -15,6 +15,8 @@ namespace nova::renderer {
         explicit nova_error(std::string&& message);
 
         nova_error(std::string&& message, nova_error&& cause);
+
+        std::string to_string() const;
     };
 
     template <typename ValueType>

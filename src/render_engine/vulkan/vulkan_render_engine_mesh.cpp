@@ -7,7 +7,7 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
-    mesh_id_t vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
+    result<mesh_id_t> vulkan_render_engine::add_mesh(const mesh_data& input_mesh) {
         const auto vertex_size = static_cast<uint32_t>(input_mesh.vertex_data.size() * sizeof(full_vertex));
         const auto index_size = static_cast<uint32_t>(input_mesh.indices.size() * sizeof(uint32_t));
 
@@ -19,12 +19,12 @@ namespace nova::renderer {
         std::memcpy(staging_buffer.alloc_info.pMappedData, &input_mesh.vertex_data[0], vertex_size);
         std::memcpy(reinterpret_cast<uint8_t*>(staging_buffer.alloc_info.pMappedData) + vertex_size, &input_mesh.indices[0], index_size);
 
-        const uint32_t mesh_id = next_mesh_id.fetch_add(1);
+        uint32_t mesh_id = next_mesh_id.fetch_add(1);
 
         std::lock_guard l(mesh_upload_queue_mutex);
         mesh_upload_queue.push(mesh_staging_buffer_upload_command{staging_buffer, mesh_id, vertex_size, vertex_size + index_size});
 
-        return mesh_id;
+        return result<mesh_id_t>(std::move(mesh_id));
     }
 
     vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer(const uint32_t needed_size) {

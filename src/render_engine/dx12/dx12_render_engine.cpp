@@ -395,10 +395,11 @@ namespace nova::renderer {
 
     void dx12_render_engine::delete_renderable(renderable_id_t id) { static_cast<void>(id); }
 
-    mesh_id_t dx12_render_engine::add_mesh(const mesh_data&) {
+    result<mesh_id_t> dx12_render_engine::add_mesh(const mesh_data&) {
         // TODO
 
-        return {};
+        mesh_id_t id = 1;
+        return result<mesh_id_t>(std::move(id));
     }
 
     void dx12_render_engine::delete_mesh(uint32_t) {

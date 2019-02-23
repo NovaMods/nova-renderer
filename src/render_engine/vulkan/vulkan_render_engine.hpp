@@ -201,7 +201,7 @@ namespace nova::renderer {
 
         void delete_renderable(renderable_id_t id) override;
 
-        mesh_id_t add_mesh(const mesh_data& input_mesh) override;
+        result<mesh_id_t> add_mesh(const mesh_data& input_mesh) override;
 
         void delete_mesh(uint32_t mesh_id) override;
 

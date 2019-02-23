@@ -51,7 +51,10 @@ namespace nova::renderer {
             full_vertex{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
         };
         cube.indices = {0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0, 3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
-        engine->add_mesh(cube);
+        const result<mesh_id_t> mesh_result = engine->add_mesh(cube);
+        if(!mesh_result.has_value) {
+            NOVA_LOG(FATAL) << "Could not give mesh to the render engine: " << mesh_result.error.to_string();
+        }
 
         while(!window->should_close()) {
             renderer->execute_frame();
