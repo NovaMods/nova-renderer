@@ -65,6 +65,10 @@ namespace nova::renderer {
 
         meta.buffer = mesh->memory->block->get_buffer();
 
+        // TODO: UBO things!
+        // If the renderable is static, allocate its model matrix ubo slot from the static objects UBO
+        // If the renderable is dynamic, allocate its model matrix UBO from the dynamic objects ubo
+
         // Set all the renderable's data
         vk_static_mesh_renderable renderable = {};
         renderable.draw_cmd = &mesh->draw_cmd;

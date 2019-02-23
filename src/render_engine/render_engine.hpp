@@ -54,6 +54,8 @@ namespace nova::renderer {
         glm::vec3 initial_position;
         glm::vec3 initial_rotation;
         glm::vec3 initial_scale = glm::vec3(1);
+
+        bool is_static = true;
     };
 
     using renderable_id_t = uint64_t;
