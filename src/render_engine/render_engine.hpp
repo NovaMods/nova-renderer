@@ -53,7 +53,7 @@ namespace nova::renderer {
     struct static_mesh_renderable_data : static_mesh_renderable_update_data {
         glm::vec3 initial_position;
         glm::vec3 initial_rotation;
-        glm::vec3 initial_scale;
+        glm::vec3 initial_scale = glm::vec3(1);
     };
 
     using renderable_id_t = uint64_t;

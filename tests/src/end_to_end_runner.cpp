@@ -51,9 +51,21 @@ namespace nova::renderer {
             full_vertex{{1, 1, 1}, {}, {}, {}, {}, {}, {}},
         };
         cube.indices = {0, 1, 3, 6, 0, 2, 5, 0, 4, 6, 4, 0, 0, 3, 2, 5, 1, 0, 3, 1, 5, 7, 4, 6, 4, 7, 5, 7, 6, 2, 7, 2, 3, 7, 3, 5};
-        const result<mesh_id_t> mesh_result = engine->add_mesh(cube);
-        if(!mesh_result.has_value) {
-            NOVA_LOG(FATAL) << "Could not give mesh to the render engine: " << mesh_result.error.to_string();
+
+        result<renderable_id_t> renderable_add_result = engine->add_mesh(cube)
+        .map([&](const mesh_id_t& mesh_id) -> result<renderable_id_t> {
+            static_mesh_renderable_data data = {};
+            data.mesh = mesh_id;
+            data.material_name = "gbuffers_terrain";
+            data.initial_position = glm::vec3(0, 0, -0.5);
+            data.initial_scale = glm::vec3(0.5);
+
+            return engine->add_renderable(data);
+        });
+        
+        if(!renderable_add_result.has_value) {
+            NOVA_LOG(ERROR) << "Could not add a renderable to the render engine: " << renderable_add_result.error.to_string();
+            return 1;
         }
 
         while(!window->should_close()) {

@@ -10,7 +10,7 @@
 #include "../render_engine/render_engine.hpp"
 
 namespace nova::renderer {
-    static std::atomic<renderable_id_t> RENDERABLE_ID;
+    static std::atomic<renderable_id_t> next_renderable_id;
 
     struct renderable_metadata {
         renderable_id_t id = 0;

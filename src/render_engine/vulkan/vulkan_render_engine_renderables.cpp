@@ -70,7 +70,7 @@ namespace nova::renderer {
         renderable.draw_cmd = &mesh->draw_cmd;
 
         // Generate the renderable ID and store the renderable
-        renderable_id_t id = RENDERABLE_ID.fetch_add(1);
+        renderable_id_t id = next_renderable_id.fetch_add(1);
         renderable.id = id;
         metadata_for_renderables[id] = meta;
 
