@@ -346,8 +346,8 @@ namespace nova::renderer {
         uint32_t num_surface_present_modes;
         NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr),
                                render_engine_initialization_exception);
-        std::vector<VkPresentModeKHR> present_modes(num_surface_formats);
-        NOVA_LOG(DEBUG) << "Resized present_nodes to hold " << num_surface_formats << " formats";
+        std::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
+        NOVA_LOG(DEBUG) << "Resized present_nodes to hold " << num_surface_present_modes << " formats";
         NOVA_THROW_IF_VK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device,
                                                                          surface,
                                                                          &num_surface_present_modes,
