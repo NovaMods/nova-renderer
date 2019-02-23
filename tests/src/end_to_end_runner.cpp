@@ -62,7 +62,7 @@ namespace nova::renderer {
 
                 return engine->add_renderable(data);
             });
-        
+
         if(!renderable_add_result.has_value) {
             NOVA_LOG(ERROR) << "Could not add a renderable to the render engine: " << renderable_add_result.error.to_string();
             return 1;
