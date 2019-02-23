@@ -473,9 +473,12 @@ namespace nova::renderer {
 
             // Version 1: write commands for all things to the indirect draw buffer
             auto* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
-            for(size_t i = 0; i < renderables.static_meshes.size(); i++) {
-                const vk_static_mesh_renderable& cur_obj = renderables.static_meshes[i];
-                indirect_commands[i] = *cur_obj.draw_cmd;
+            uint32_t draw_idx = 0;
+            for(const vk_static_mesh_renderable& static_mesh : renderables.static_meshes) {
+                if(static_mesh.is_visible) {
+                    indirect_commands[draw_idx] = *static_mesh.draw_cmd;
+                    draw_idx++;
+                }
             }
 
             vkCmdBindVertexBuffers(cmds, 0, 1, &buffer, nullptr);
