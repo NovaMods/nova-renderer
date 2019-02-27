@@ -77,6 +77,13 @@ target_includes_system(spirv-cross-hlsl)
 target_includes_system(spirv-cross-reflect)
 target_includes_system(spirv-cross-util)
 
+############################
+# Manually built libraries #
+############################
+        
+include(minitrace)
+include(glslang)
+
 #####################################
 # Hide unnecessary targets from all #
 #####################################
