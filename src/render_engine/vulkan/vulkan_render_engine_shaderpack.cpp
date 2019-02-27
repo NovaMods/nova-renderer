@@ -136,6 +136,7 @@ namespace nova::renderer {
             render_passes[pass_data.name].data = pass_data;
             VkFenceCreateInfo fence_info = {};
             fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
             vkCreateFence(device, &fence_info, nullptr, &render_passes[pass_data.name].fence);
             regular_render_passes[pass_data.name] = pass_data;

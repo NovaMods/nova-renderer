@@ -559,6 +559,14 @@ namespace nova::renderer {
         void render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass);
 
         /*!
+         * \brief Finds where the per-model buffer should be bound to
+         *
+         * \param mat_pass The material pass to find the binding in
+         * \return The binding point to bind the per-model buffer to
+         */
+        static result<std::string> find_per_model_buffer_binding(const material_pass& mat_pass);
+
+        /*!
          * \brief Binds all the resources that the provided material uses to the given pipeline
          *
          * \param pass The material pass to get resources from
@@ -570,7 +578,7 @@ namespace nova::renderer {
         /*!
          * \brief Renders all the things using the provided material
          */
-        void draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds);
+        void draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds, const result<std::string>& per_model_buffer_binding);
 
         /*!
          * \brief Submits the provided command buffer to the provided queue

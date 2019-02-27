@@ -3,6 +3,7 @@
  * \date 07-Feb-19.
  */
 
+#include "fmt/format.h"
 #include "swapchain.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
@@ -416,21 +417,34 @@ namespace nova::renderer {
         for(const material_pass& pass : materials) {
             bind_material_resources(pass, *pipeline, *cmds);
 
-            draw_all_for_material(pass, *cmds);
+            result<std::string> per_model_buffer_binding = find_per_model_buffer_binding(pass);
+
+            draw_all_for_material(pass, *cmds, per_model_buffer_binding);
         }
 
         vkEndCommandBuffer(*cmds);
     }
 
-    void vulkan_render_engine::bind_material_resources(const material_pass& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
-        vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, &mat_pass.descriptor_sets.at(0), 0, nullptr);
+    result<std::string> vulkan_render_engine::find_per_model_buffer_binding(const material_pass& mat_pass) {
+        for(const auto& [descriptor_name, resource_name] : mat_pass.bindings) {
+            if(resource_name == "NovaPerModelUBO") {
+                return result<std::string>{descriptor_name};
+            }
+        }
+
+        return result<std::string>("Could not find per-model UBO binding"_err);
     }
 
-    void vulkan_render_engine::draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds) {
+    void vulkan_render_engine::bind_material_resources(const material_pass& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
+        vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, mat_pass.descriptor_sets.data(), 0, nullptr);
+    }
+
+    void vulkan_render_engine::draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds, const result<std::string>& per_model_buffer_binding) {
         // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
         // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
         // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute
-        // shader Version 2: Incorporate occlusion queries so we know what with all certainty what is and isn't visible
+        // shader
+        // Version 4: Incorporate occlusion queries so we know what with all certainty what is and isn't visible
 
         // At the current time I'm making version 1
 
@@ -481,7 +495,9 @@ namespace nova::renderer {
                 }
             }
 
-            vkCmdBindVertexBuffers(cmds, 0, 1, &buffer, nullptr);
+            VkDeviceSize offsets[7] = {0, 0, 0, 0, 0, 0, 0};
+            VkBuffer buffers[7] = {buffer, buffer, buffer, buffer, buffer, buffer, buffer};
+            vkCmdBindVertexBuffers(cmds, 0, 7, buffers, offsets);
             vkCmdBindIndexBuffer(cmds, buffer, 0, VK_INDEX_TYPE_UINT32);
 
             vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, static_cast<uint32_t>(renderables.static_meshes.size()), 0);

@@ -63,7 +63,6 @@ namespace nova::renderer {
 
     uniform_buffer::~uniform_buffer() {
         if(allocator != nullptr && buffer != nullptr) {
-            NOVA_LOG(TRACE) << "uniform_buffer: About to destroy buffer " << buffer;
             vmaDestroyBuffer(allocator, buffer, allocation);
         }
     }

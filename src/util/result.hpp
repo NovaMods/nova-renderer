@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <memory>
 #include <string>
 
@@ -19,6 +18,8 @@ namespace nova::renderer {
         [[nodiscard]] std::string to_string() const;
     };
 
+    inline nova_error operator""_err(const char* str, std::size_t size) { return nova_error(std::string(str)); }
+
     template <typename ValueType>
     struct result {
         union {
@@ -29,6 +30,8 @@ namespace nova::renderer {
         bool has_value = false;
 
         explicit result(ValueType&& value) : value(value), has_value(true) {}
+
+        explicit result(const ValueType& value) : value(value), has_value(true) {}
 
         explicit result(nova_error&& error) : error(std::forward<nova_error>(error)) {}
 
