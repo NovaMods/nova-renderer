@@ -49,7 +49,9 @@ endif()
 # Submodule libraries #
 #######################
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/fmtlib)
+find_package(fmt CONFIG REQUIRED)
+find_package(miniz CONFIG REQUIRED)
+
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/profiler)
 
@@ -61,7 +63,7 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
-target_includes_system(fmt)
+target_includes_system(fmt::fmt)
 target_includes_system(glslang)
 if(NOVA_TEST)
 	target_includes_system(gtest)
@@ -74,14 +76,6 @@ target_includes_system(spirv-cross-glsl)
 target_includes_system(spirv-cross-hlsl)
 target_includes_system(spirv-cross-reflect)
 target_includes_system(spirv-cross-util)
-
-############################
-# Manually built libraries #
-############################
-        
-include(miniz)
-include(minitrace)
-include(glslang)
 
 #####################################
 # Hide unnecessary targets from all #

@@ -255,11 +255,11 @@ add_coverage(nova-renderer)
 #########################
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      fmt::fmt
-                     glm::glm
+                     glm
                      glsl-standalone
                      glslang
                      minitrace
-                     miniz
+                     miniz:miniz
                      nlohmann::json
                      nova-profiler
                      SPIRV
