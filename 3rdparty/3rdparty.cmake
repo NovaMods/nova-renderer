@@ -27,7 +27,7 @@ endif()
 # Header only libraries #
 #########################
 
-find_package(GLM REQUIRED)
+find_package(glm CONFIG REQUIRED)
 
 include_target(nlohmann::json "${CMAKE_CURRENT_LIST_DIR}/json/single_include")
 include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
