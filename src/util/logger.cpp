@@ -5,29 +5,31 @@
 
 #include "logger.hpp"
 
-namespace nova {
+namespace nova::renderer {
     logger logger::instance;
 
-    void logger::add_log_handler(log_level level, const std::function<void(std::string)> &log_handler) {
+    void logger::add_log_handler(log_level level, const std::function<void(std::string)>& log_handler) {
         log_handlers.emplace(level, log_handler);
     }
 
-    void logger::log(const log_level level, const std::string &msg) {
+    void logger::log(const log_level level, const std::string& msg) {
         if(log_handlers.at(level)) {
             std::lock_guard<std::mutex> lock(log_lock);
             log_handlers.at(level)(msg);
         }
     }
 
-    __log_stream::__log_stream(log_level level) : level(level) {}
+    _log_stream::_log_stream(log_level level) : level(level) {}
 
-    __log_stream::__log_stream(__log_stream &&other) noexcept : std::stringstream(std::move(other)), level(other.level) {}
+    _log_stream::_log_stream(_log_stream&& other) noexcept : std::stringstream(std::move(other)), level(other.level) {}
 
-    __log_stream::~__log_stream() {
-        logger::instance.log(level, str());
+    _log_stream& _log_stream::operator=(_log_stream&& other) noexcept {
+        level = other.level;
+        std::stringstream::operator=(std::move(other));
+        return *this;
     }
 
-    __log_stream logger::log(log_level level) const {
-        return __log_stream(level);
-    }
-}  // namespace nova
+    _log_stream::~_log_stream() { logger::instance.log(level, str()); }
+
+    _log_stream logger::log(log_level level) const { return _log_stream(level); }
+} // namespace nova::renderer

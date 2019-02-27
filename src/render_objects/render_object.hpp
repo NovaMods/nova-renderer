@@ -6,10 +6,10 @@
 #define NOVA_RENDERER_RENDER_OBJECT_HPP
 
 #include <glm/glm.hpp>
-#include <memory>
 #include <list>
+#include <memory>
 
-namespace nova {
+namespace nova::renderer {
     struct vk_mesh;
 
     struct render_object {
@@ -17,6 +17,6 @@ namespace nova {
 
         glm::vec3 pos;
     };
-}  // namespace nova
+} // namespace nova::renderer
 
-#endif  // NOVA_RENDERER_RENDER_OBJECT_HPP
+#endif // NOVA_RENDERER_RENDER_OBJECT_HPP

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace nova {
+namespace nova::renderer {
 
     struct semver {
         uint32_t major;
@@ -72,8 +72,8 @@ namespace nova {
 
             /*!
              * \breif Controls if the API-specific validation layers are enabled
-             * 
-             * This should be enabled most of the time for Nova developers and almost never for shaderpack authors. 
+             *
+             * This should be enabled most of the time for Nova developers and almost never for shaderpack authors.
              * Nova developers need it on to debug their Vulkan or DX12 usage, while Nova should be robust enough that
              * errors that the validation layers would catch never happen in a shipping build
              */
@@ -95,7 +95,7 @@ namespace nova {
                  * \brief The base path for RenderDoc captures
                  */
                 std::string capture_path = "logs/captures";
-                
+
             } renderdoc;
         } debug;
 
@@ -123,12 +123,12 @@ namespace nova {
             /*!
              * \brief The width of the window
              */
-            uint32_t width;
+            uint32_t width{};
 
             /*!
              * \brief The height of the window
              */
-            uint32_t height;
+            uint32_t height{};
         } window;
 
         /*!
@@ -157,7 +157,7 @@ namespace nova {
          *
          * DirectX 12 is only supported on Windows 10. On other platforms Vulkan will be used, regardless of what you've chosen
          */
-        graphics_api api;
+        graphics_api api{};
 
         uint32_t max_in_flight_frames = 3;
 
@@ -214,7 +214,7 @@ namespace nova {
      */
     class nova_settings {
     public:
-        explicit nova_settings(const settings_options& options);
+        explicit nova_settings(settings_options options);
 
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer
@@ -222,7 +222,7 @@ namespace nova {
         void register_change_listener(iconfig_listener* new_listener);
 
         settings_options& get_options();
-        settings_options get_options() const;
+        [[nodiscard]] settings_options get_options() const;
 
         /*!
          * \brief Updates all the change listeners with the current state of the settings
@@ -243,6 +243,6 @@ namespace nova {
         settings_options options;
         std::vector<iconfig_listener*> config_change_listeners;
     };
-}  // namespace nova
+} // namespace nova::renderer
 
-#endif  // RENDERER_CONFIG_H
+#endif // RENDERER_CONFIG_H

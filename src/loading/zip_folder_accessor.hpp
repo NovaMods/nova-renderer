@@ -9,13 +9,13 @@
 #include <miniz_zip.h>
 #include "folder_accessor.hpp"
 
-namespace nova {
+namespace nova::renderer {
     struct file_tree_node {
         std::string name;
-        std::vector<file_tree_node *> children;
-        file_tree_node *parent = nullptr;
+        std::vector<std::unique_ptr<file_tree_node>> children;
+        file_tree_node* parent = nullptr;
 
-        std::string get_full_path() const;
+        [[nodiscard]] std::string get_full_path() const;
     };
 
     /*!
@@ -24,11 +24,18 @@ namespace nova {
     class zip_folder_accessor : public folder_accessor_base {
     public:
         explicit zip_folder_accessor(const fs::path& folder);
+
+        zip_folder_accessor(zip_folder_accessor&& other) noexcept = default;
+        zip_folder_accessor& operator=(zip_folder_accessor&& other) noexcept = default;
+
+        zip_folder_accessor(const zip_folder_accessor& other) = delete;
+        zip_folder_accessor& operator=(const zip_folder_accessor& other) = delete;
+
         ~zip_folder_accessor() override;
 
-        std::string read_text_file(const fs::path &resource_path) override;
+        std::string read_text_file(const fs::path& resource_path) override;
 
-        std::vector<fs::path> get_all_items_in_folder(const fs::path &folder) override;
+        std::vector<fs::path> get_all_items_in_folder(const fs::path& folder) override;
 
     private:
         /*!
@@ -38,19 +45,19 @@ namespace nova {
 
         mz_zip_archive zip_archive = {};
 
-        file_tree_node *files = nullptr;
+        std::unique_ptr<file_tree_node> files = nullptr;
 
-        void delete_file_tree(file_tree_node *node);
+        void delete_file_tree(std::unique_ptr<file_tree_node>& node);
 
         void build_file_tree();
 
-        bool does_resource_exist_on_filesystem(const fs::path &resource_path) override;
+        bool does_resource_exist_on_filesystem(const fs::path& resource_path) override;
     };
 
     /*!
      * \brief Prints out the nodes in a depth-first fashion
      */
-    void print_file_tree(const file_tree_node *folder, uint32_t depth);
-}  // namespace nova
+    void print_file_tree(const std::unique_ptr<file_tree_node>& folder, uint32_t depth);
+} // namespace nova::renderer
 
-#endif  // NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H
+#endif // NOVA_RENDERER_ZIP_FOLDER_ACCESSOR_H

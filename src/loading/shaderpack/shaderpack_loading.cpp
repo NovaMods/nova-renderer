@@ -4,38 +4,41 @@
  */
 
 #include "shaderpack_loading.hpp"
-#include "../folder_accessor.hpp"
-#include "../loading_utils.hpp"
-#include "../zip_folder_accessor.hpp"
-#include "../regular_folder_accessor.hpp"
-#include "../json_utils.hpp"
-#include "json_interop.hpp"
-#include "shaderpack_validator.hpp"
-#include "render_graph_builder.hpp"
-#include <glslang/Public/ShaderLang.h>
 #include <StandAlone/ResourceLimits.h>
+#include <glslang/Public/ShaderLang.h>
+#include "../folder_accessor.hpp"
+#include "../json_utils.hpp"
+#include "../loading_utils.hpp"
+#include "../regular_folder_accessor.hpp"
+#include "../zip_folder_accessor.hpp"
 #include "SPIRV/GlslangToSpv.h"
+#include "json_interop.hpp"
+#include "render_graph_builder.hpp"
+#include "shaderpack_validator.hpp"
 
 #include "../../tasks/task_scheduler.hpp"
 
-namespace nova {
+namespace nova::renderer {
     std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path& shaderpack_name);
 
-    shaderpack_resources_data load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base> &folder_access);
+    shaderpack_resources_data load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access);
 
-    std::vector<render_pass_data> load_passes_file(const std::shared_ptr<folder_accessor_base> &folder_access);
+    std::vector<render_pass_data> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access);
 
-    std::vector<pipeline_data> load_pipeline_files(const std::shared_ptr<folder_accessor_base> &folder_access);
-    pipeline_data load_single_pipeline(const std::shared_ptr<folder_accessor_base> &folder_access, const fs::path &pipeline_path);
+    std::vector<pipeline_data> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access);
+    pipeline_data load_single_pipeline(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& pipeline_path);
 
-    std::vector<material_data> load_material_files(const std::shared_ptr<folder_accessor_base> &folder_access);
-    material_data load_single_material(const std::shared_ptr<folder_accessor_base> &folder_access, const fs::path &material_path);
+    std::vector<material_data> load_material_files(const std::shared_ptr<folder_accessor_base>& folder_access);
+    material_data load_single_material(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& material_path);
 
-    std::vector<uint32_t> load_shader_file(const fs::path& filename, const std::shared_ptr<folder_accessor_base> &folder_access, EShLanguage stage, const std::vector<std::string>& defines);
+    std::vector<uint32_t> load_shader_file(const fs::path& filename,
+                                           const std::shared_ptr<folder_accessor_base>& folder_access,
+                                           EShLanguage stage,
+                                           const std::vector<std::string>& defines);
 
     bool loading_failed = false;
 
-    shaderpack_data load_shaderpack_data(const fs::path &shaderpack_name) {
+    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name) {
         loading_failed = false;
         const std::shared_ptr<folder_accessor_base> folder_access = get_shaderpack_accessor(shaderpack_name);
 
@@ -53,11 +56,11 @@ namespace nova {
         data.passes = load_passes_file(folder_access);
         data.pipelines = load_pipeline_files(folder_access);
         data.materials = load_material_files(folder_access);
-        
+
         return data;
     }
 
-    std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path &shaderpack_name) {
+    std::shared_ptr<folder_accessor_base> get_shaderpack_accessor(const fs::path& shaderpack_name) {
         fs::path path_to_shaderpack = shaderpack_name;
 
         // Where is the shaderpack, and what kind of folder is it in?
@@ -65,17 +68,16 @@ namespace nova {
             // zip folder in shaderpacks folder
             path_to_shaderpack.replace_extension(".zip");
             return std::make_shared<zip_folder_accessor>(path_to_shaderpack);
-
-        } else if(fs::exists(path_to_shaderpack)) {
+        }
+        if(fs::exists(path_to_shaderpack)) {
             // regular folder in shaderpacks folder
             return std::make_shared<regular_folder_accessor>(path_to_shaderpack);
-
-        } else {
-            throw resource_not_found_exception(shaderpack_name.string());
         }
+
+        throw resource_not_found_exception(shaderpack_name.string());
     }
 
-    shaderpack_resources_data load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base> &folder_access) {
+    shaderpack_resources_data load_dynamic_resources_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
         NOVA_LOG(TRACE) << "load_dynamic_resource_file called";
         std::string resources_string = folder_access->read_text_file("resources.json");
         try {
@@ -88,17 +90,17 @@ namespace nova {
             }
 
             return json_resources.get<shaderpack_resources_data>();
-
-        } catch(resource_not_found_exception &) {
+        }
+        catch(resource_not_found_exception&) {
             // No resources defined.. I guess they think they don't need any?
             NOVA_LOG(WARN) << "No resources file found for shaderpack at " << folder_access->get_root();
             loading_failed = true;
-
-        } catch(nlohmann::json::parse_error &err) {
+        }
+        catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's resources.json: " << err.what();
             loading_failed = true;
-
-        } catch(validation_failure_exception &err) {
+        }
+        catch(validation_failure_exception& err) {
             NOVA_LOG(ERROR) << "Could not validate resources.json: " << err.what();
             loading_failed = true;
         }
@@ -106,7 +108,7 @@ namespace nova {
         return {};
     }
 
-    std::vector<render_pass_data> load_passes_file(const std::shared_ptr<folder_accessor_base> &folder_access) {
+    std::vector<render_pass_data> load_passes_file(const std::shared_ptr<folder_accessor_base>& folder_access) {
         NOVA_LOG(TRACE) << "load_passes_file called";
         const auto passes_bytes = folder_access->read_text_file("passes.json");
         try {
@@ -115,7 +117,7 @@ namespace nova {
 
             std::unordered_map<std::string, render_pass_data> passes_by_name;
             passes_by_name.reserve(passes.size());
-            for(const auto &pass : passes) {
+            for(const auto& pass : passes) {
                 passes_by_name[pass.name] = pass;
             }
 
@@ -126,8 +128,8 @@ namespace nova {
             }
 
             return passes;
-
-        } catch(nlohmann::json::parse_error &err) {
+        }
+        catch(nlohmann::json::parse_error& err) {
             NOVA_LOG(ERROR) << "Could not parse your shaderpack's passes.json: " << err.what();
             loading_failed = true;
         }
@@ -138,12 +140,13 @@ namespace nova {
         return {};
     }
 
-    std::vector<pipeline_data> load_pipeline_files(const std::shared_ptr<folder_accessor_base> &folder_access) {
+    std::vector<pipeline_data> load_pipeline_files(const std::shared_ptr<folder_accessor_base>& folder_access) {
         NOVA_LOG(TRACE) << "load_pipeline_files called";
         std::vector<fs::path> potential_pipeline_files;
         try {
             potential_pipeline_files = folder_access->get_all_items_in_folder("materials");
-        } catch(const filesystem_exception &exception) {
+        }
+        catch(const filesystem_exception& exception) {
             throw pipeline_load_failed("Materials folder does not exist", exception);
         }
 
@@ -153,7 +156,7 @@ namespace nova {
         // so I'm into it
         output.reserve(potential_pipeline_files.size());
 
-        for(const fs::path &potential_file : potential_pipeline_files) {
+        for(const fs::path& potential_file : potential_pipeline_files) {
             if(potential_file.extension() == ".pipeline") {
                 // Pipeline file!
                 const pipeline_data& pipeline = load_single_pipeline(folder_access, potential_file);
@@ -164,7 +167,7 @@ namespace nova {
         return output;
     }
 
-    pipeline_data load_single_pipeline(const std::shared_ptr<folder_accessor_base> &folder_access, const fs::path& pipeline_path) {
+    pipeline_data load_single_pipeline(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& pipeline_path) {
         NOVA_LOG(TRACE) << "Task to load pipeline " << pipeline_path << " started";
         const auto pipeline_bytes = folder_access->read_text_file(pipeline_path);
 
@@ -181,28 +184,37 @@ namespace nova {
 
         auto new_pipeline = json_pipeline.get<pipeline_data>();
         NOVA_LOG(TRACE) << "Parsed JSON into pipeline_data for pipeline " << pipeline_path;
-        new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename, folder_access,
-            EShLangVertex, new_pipeline.defines);
+        new_pipeline.vertex_shader.source = load_shader_file(new_pipeline.vertex_shader.filename,
+                                                             folder_access,
+                                                             EShLangVertex,
+                                                             new_pipeline.defines);
 
         if(new_pipeline.geometry_shader) {
-            (*new_pipeline.geometry_shader).source = load_shader_file((*new_pipeline.geometry_shader).filename, 
-                folder_access, EShLangGeometry, new_pipeline.defines);
+            (*new_pipeline.geometry_shader).source = load_shader_file((*new_pipeline.geometry_shader).filename,
+                                                                      folder_access,
+                                                                      EShLangGeometry,
+                                                                      new_pipeline.defines);
         }
 
         if(new_pipeline.tessellation_control_shader) {
-            (*new_pipeline.tessellation_control_shader).source = load_shader_file(
-                (*new_pipeline.tessellation_control_shader).filename, folder_access, EShLangTessControl, 
-                new_pipeline.defines);
+            (*new_pipeline.tessellation_control_shader).source = load_shader_file((*new_pipeline.tessellation_control_shader).filename,
+                                                                                  folder_access,
+                                                                                  EShLangTessControl,
+                                                                                  new_pipeline.defines);
         }
         if(new_pipeline.tessellation_evaluation_shader) {
-            (*new_pipeline.tessellation_evaluation_shader).source = load_shader_file(
-                (*new_pipeline.tessellation_evaluation_shader).filename, folder_access, EShLangTessEvaluation, 
-                new_pipeline.defines);
+            (*new_pipeline.tessellation_evaluation_shader)
+                .source = load_shader_file((*new_pipeline.tessellation_evaluation_shader).filename,
+                                           folder_access,
+                                           EShLangTessEvaluation,
+                                           new_pipeline.defines);
         }
 
         if(new_pipeline.fragment_shader) {
-            (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename, 
-                folder_access, EShLangFragment, new_pipeline.defines);
+            (*new_pipeline.fragment_shader).source = load_shader_file((*new_pipeline.fragment_shader).filename,
+                                                                      folder_access,
+                                                                      EShLangFragment,
+                                                                      new_pipeline.defines);
         }
 
         NOVA_LOG(TRACE) << "Load of pipeline " << pipeline_path << " succeeded";
@@ -210,80 +222,85 @@ namespace nova {
         return new_pipeline;
     }
 
-    std::vector<uint32_t> load_shader_file(const fs::path& filename, const std::shared_ptr<folder_accessor_base> &folder_access,
-            const EShLanguage stage, const std::vector<std::string>& defines) {
-        static std::unordered_map<EShLanguage, std::vector<fs::path>> extensions_by_shader_stage = {
-            {EShLangVertex,  {
-                ".vert.spirv",
-                ".vsh.spirv",
-                ".vertex.spirv",
+    std::vector<uint32_t> load_shader_file(const fs::path& filename,
+                                           const std::shared_ptr<folder_accessor_base>& folder_access,
+                                           const EShLanguage stage,
+                                           const std::vector<std::string>& defines) {
+        static std::unordered_map<EShLanguage, std::vector<fs::path>> extensions_by_shader_stage = {{EShLangVertex,
+                                                                                                     {
+                                                                                                         ".vert.spirv",
+                                                                                                         ".vsh.spirv",
+                                                                                                         ".vertex.spirv",
 
-                ".vert",
-                ".vsh",
+                                                                                                         ".vert",
+                                                                                                         ".vsh",
 
-                ".vertex",
+                                                                                                         ".vertex",
 
-                ".vert.hlsl",
-                ".vsh.hlsl",
-                ".vertex.hlsl",
-            }},
-            { EShLangFragment, {
-                ".frag.spirv",
-                ".fsh.spirv",
-                ".fragment.spirv",
+                                                                                                         ".vert.hlsl",
+                                                                                                         ".vsh.hlsl",
+                                                                                                         ".vertex.hlsl",
+                                                                                                     }},
+                                                                                                    {EShLangFragment,
+                                                                                                     {
+                                                                                                         ".frag.spirv",
+                                                                                                         ".fsh.spirv",
+                                                                                                         ".fragment.spirv",
 
-                ".frag",
-                ".fsh",
+                                                                                                         ".frag",
+                                                                                                         ".fsh",
 
-                ".fragment",
+                                                                                                         ".fragment",
 
-                ".frag.hlsl",
-                ".fsh.hlsl",
-                ".fragment.hlsl",
-            }},
-            { EShLangGeometry, {
-                ".geom.spirv",
-                ".geo.spirv",
-                ".geometry.spirv",
+                                                                                                         ".frag.hlsl",
+                                                                                                         ".fsh.hlsl",
+                                                                                                         ".fragment.hlsl",
+                                                                                                     }},
+                                                                                                    {EShLangGeometry,
+                                                                                                     {
+                                                                                                         ".geom.spirv",
+                                                                                                         ".geo.spirv",
+                                                                                                         ".geometry.spirv",
 
-                ".geom",
-                ".geo",
+                                                                                                         ".geom",
+                                                                                                         ".geo",
 
-                ".geometry",
+                                                                                                         ".geometry",
 
-                ".geom.hlsl",
-                ".geo.hlsl",
-                ".geometry.hlsl",
-            }},
-            { EShLangTessEvaluation, {
-                ".tese.spirv",
-                ".tse.spirv",
-                ".tess_eval.spirv",
+                                                                                                         ".geom.hlsl",
+                                                                                                         ".geo.hlsl",
+                                                                                                         ".geometry.hlsl",
+                                                                                                     }},
+                                                                                                    {EShLangTessEvaluation,
+                                                                                                     {
+                                                                                                         ".tese.spirv",
+                                                                                                         ".tse.spirv",
+                                                                                                         ".tess_eval.spirv",
 
-                ".tese",
-                ".tse",
+                                                                                                         ".tese",
+                                                                                                         ".tse",
 
-                ".tess_eval",
+                                                                                                         ".tess_eval",
 
-                ".tese.hlsl",
-                ".tse.hlsl",
-                ".tess_eval.hlsl",
-            }},
-            { EShLangTessControl, {
-                ".tesc.spirv",
-                ".tsc.spirv",
-                ".tess_control.spirv",
+                                                                                                         ".tese.hlsl",
+                                                                                                         ".tse.hlsl",
+                                                                                                         ".tess_eval.hlsl",
+                                                                                                     }},
+                                                                                                    {EShLangTessControl,
+                                                                                                     {
+                                                                                                         ".tesc.spirv",
+                                                                                                         ".tsc.spirv",
+                                                                                                         ".tess_control.spirv",
 
-                ".tesc",
-                ".tsc",
+                                                                                                         ".tesc",
+                                                                                                         ".tsc",
 
-                ".tess_control",
+                                                                                                         ".tess_control",
 
-                ".tesc.hlsl",
-                ".tsc.hlsl",
-                ".tess_control.hlsl",
-            }}
-        };
+                                                                                                         ".tesc.hlsl",
+                                                                                                         ".tsc.hlsl",
+                                                                                                         ".tess_control.hlsl",
+                                                                                                     }}};
 
         std::vector<fs::path> extensions_for_current_stage = extensions_by_shader_stage.at(stage);
 
@@ -297,16 +314,17 @@ namespace nova {
 
             glslang::TShader shader(stage);
 
-            // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded 
+            // Check the extension to know what kind of shader file the user has provided. SPIR-V files can be loaded
             // as-is, but GLSL, GLSL ES, and HLSL files need to be transpiled to SPIR-V
             if(extension.string().find(".spirv") != std::string::npos) {
                 // SPIR-V file!
                 // TODO: figure out how to handle defines with SPIRV
                 return folder_access->read_spirv_file(full_filename);
-
-            } else if(extension.string().find(".hlsl") != std::string::npos) {
+            }
+            if(extension.string().find(".hlsl") != std::string::npos) {
                 shader.setEnvInput(glslang::EShSourceHlsl, stage, glslang::EShClientVulkan, 0);
-            } else {
+            }
+            else {
                 // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
                 shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, 0);
             }
@@ -326,7 +344,12 @@ namespace nova {
 
             auto* shader_source_data = shader_source.data();
             shader.setStrings(&shader_source_data, 1);
-            const bool shader_compiled = shader.parse(&glslang::DefaultTBuiltInResource, 450, ECoreProfile, false, false, EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
+            const bool shader_compiled = shader.parse(&glslang::DefaultTBuiltInResource,
+                                                      450,
+                                                      ECoreProfile,
+                                                      false,
+                                                      false,
+                                                      EShMessages(EShMsgVulkanRules | EShMsgSpvRules));
 
             const char* info_log = shader.getInfoLog();
             if(std::strlen(info_log) > 0) {
@@ -360,21 +383,21 @@ namespace nova {
         throw resource_not_found_exception("Could not find shader " + filename.string());
     }
 
-    std::vector<material_data> load_material_files(const std::shared_ptr<folder_accessor_base> &folder_access) {
+    std::vector<material_data> load_material_files(const std::shared_ptr<folder_accessor_base>& folder_access) {
         std::vector<fs::path> potential_material_files;
         try {
             potential_material_files = folder_access->get_all_items_in_folder("materials");
-
-        } catch(filesystem_exception &exception) {
+        }
+        catch(filesystem_exception& exception) {
             throw material_load_failed("Materials folder does not exist", exception);
         }
-        
+
         // The resize will make this vector about twice as big as it should be, but there won't be any reallocating
         // so I'm into it
         std::vector<material_data> output;
         output.reserve(potential_material_files.size());
 
-        for(const fs::path &potential_file : potential_material_files) {
+        for(const fs::path& potential_file : potential_material_files) {
             if(potential_file.extension() == ".mat") {
                 const material_data& material = load_single_material(folder_access, potential_file);
                 output.push_back(material);
@@ -384,7 +407,7 @@ namespace nova {
         return output;
     }
 
-    material_data load_single_material(const std::shared_ptr<folder_accessor_base> &folder_access, const fs::path &material_path) {
+    material_data load_single_material(const std::shared_ptr<folder_accessor_base>& folder_access, const fs::path& material_path) {
         const std::string material_text = folder_access->read_text_file(material_path);
 
         auto json_material = nlohmann::json::parse(material_text);
@@ -402,4 +425,4 @@ namespace nova {
         NOVA_LOG(TRACE) << "Load of material " << material_path << " succeeded";
         return material;
     }
-}  // namespace nova
+} // namespace nova::renderer

@@ -8,15 +8,15 @@
 #ifndef NOVA_RENDERER_NOVA_RENDERER_H
 #define NOVA_RENDERER_NOVA_RENDERER_H
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "settings/nova_settings.hpp"
-#include "render_engine/render_engine.hpp"
-#include "tasks/task_scheduler.hpp"
 #include "debugging/renderdoc_app.h"
+#include "render_engine/render_engine.hpp"
+#include "settings/nova_settings.hpp"
+#include "tasks/task_scheduler.hpp"
 
-namespace nova {
+namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
     NOVA_EXCEPTION(uninitialized_exception);
 
@@ -29,6 +29,12 @@ namespace nova {
          * \brief Initializes the Nova Renderer
          */
         explicit nova_renderer(const settings_options& settings);
+
+        nova_renderer(nova_renderer&& other) noexcept = delete;
+        nova_renderer& operator=(nova_renderer&& other) noexcept = delete;
+
+        nova_renderer(const nova_renderer& other) = delete;
+        nova_renderer& operator=(const nova_renderer& other) = delete;
 
         ~nova_renderer();
 
@@ -50,15 +56,13 @@ namespace nova {
 
         nova_settings& get_settings();
 
-        render_engine* get_engine() const;
+        [[nodiscard]] render_engine* get_engine() const;
 
-        ttl::task_scheduler& get_task_scheduler();
+        nova::ttl::task_scheduler& get_task_scheduler();
 
-        static nova_renderer* initialize(const settings_options& settings) {
-            return (instance = new nova_renderer(settings));
-        }
+        static nova_renderer* initialize(const settings_options& settings);
 
-        static nova_renderer *get_instance();
+        static nova_renderer* get_instance();
 
         static void deinitialize();
 
@@ -66,12 +70,12 @@ namespace nova {
         nova_settings render_settings;
         std::unique_ptr<render_engine> engine;
 
-        ttl::task_scheduler task_scheduler;
+        nova::ttl::task_scheduler task_scheduler;
         std::future<void> frame_done_future;
 
         RENDERDOC_API_1_3_0* render_doc;
-        static nova_renderer *instance;
+        static std::unique_ptr<nova_renderer> instance;
     };
-} // namespace nova
+} // namespace nova::renderer
 
-#endif  // NOVA_RENDERER_NOVA_RENDERER_H
+#endif // NOVA_RENDERER_NOVA_RENDERER_H

@@ -13,9 +13,10 @@
  *      Pipeline validator tests        *
  ****************************************/
 
-TEST(graphics_pipeline_validator, no_warnings_or_errors) {
+TEST(GraphicsPipelineValidator, NoWarningsOrErrors) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "ParentOfTestPipeline"},
@@ -69,17 +70,19 @@ TEST(graphics_pipeline_validator, no_warnings_or_errors) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-TEST(graphics_pipeline_validator, missing_name) {
+TEST(GraphicsPipelineValidator, MissingName) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"parentName", "ParentOfTestPipeline"},
         {"pass", "TestPass"},
@@ -132,9 +135,10 @@ TEST(graphics_pipeline_validator, missing_name) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -142,9 +146,10 @@ TEST(graphics_pipeline_validator, missing_name) {
     EXPECT_EQ(report.errors[0], "Pipeline <NAME_MISSING>: Missing field name");
 }
 
-TEST(graphics_pipeline_validator, missing_pass) {
+TEST(GraphicsPipelineValidator, MissingPass) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "ParentOfTestPipeline"},
@@ -197,9 +202,10 @@ TEST(graphics_pipeline_validator, missing_pass) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -207,9 +213,10 @@ TEST(graphics_pipeline_validator, missing_pass) {
     EXPECT_EQ(report.errors[0], "Pipeline TestPipeline: Missing field pass");
 }
 
-TEST(graphics_pipeline_validator, missing_vertex_fields) {
+TEST(GraphicsPipelineValidator, MissingVertexFields) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "ParentOfTestPipeline"},
@@ -260,9 +267,10 @@ TEST(graphics_pipeline_validator, missing_vertex_fields) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -270,9 +278,10 @@ TEST(graphics_pipeline_validator, missing_vertex_fields) {
     EXPECT_EQ(report.errors[0], "Pipeline TestPipeline: Missing field vertexFields");
 }
 
-TEST(graphics_pipeline_validator, missing_vertex_shader) {
+TEST(GraphicsPipelineValidator, MissingVertexShader) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "ParentOfTestPipeline"},
@@ -325,9 +334,10 @@ TEST(graphics_pipeline_validator, missing_vertex_shader) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -335,9 +345,10 @@ TEST(graphics_pipeline_validator, missing_vertex_shader) {
     EXPECT_EQ(report.errors[0], "Pipeline TestPipeline: Missing field vertexShader");
 }
 
-TEST(graphics_pipeline_validator, missing_parent_name) {
+TEST(GraphicsPipelineValidator, MissingParentName) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"pass", "TestPass"},
@@ -390,9 +401,10 @@ TEST(graphics_pipeline_validator, missing_parent_name) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -400,9 +412,10 @@ TEST(graphics_pipeline_validator, missing_parent_name) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field parentName. A default value of '\"\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_defines) {
+TEST(GraphicsPipelineValidator, MissingDefines) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -453,9 +466,10 @@ TEST(graphics_pipeline_validator, missing_defines) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -463,9 +477,10 @@ TEST(graphics_pipeline_validator, missing_defines) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field defines. A default value of '[]' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_states) {
+TEST(GraphicsPipelineValidator, MissingStates) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -516,9 +531,10 @@ TEST(graphics_pipeline_validator, missing_states) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -526,9 +542,10 @@ TEST(graphics_pipeline_validator, missing_states) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field states. A default value of '[]' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_front_face) {
+TEST(GraphicsPipelineValidator, MissingFrontFace) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -572,9 +589,10 @@ TEST(graphics_pipeline_validator, missing_front_face) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -582,9 +600,10 @@ TEST(graphics_pipeline_validator, missing_front_face) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field frontFace. A default value of '{}' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_back_face) {
+TEST(GraphicsPipelineValidator, MissingBackFace) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -628,9 +647,10 @@ TEST(graphics_pipeline_validator, missing_back_face) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -638,9 +658,10 @@ TEST(graphics_pipeline_validator, missing_back_face) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field backFace. A default value of '{}' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_fallback) {
+TEST(GraphicsPipelineValidator, MissingFallback) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -693,9 +714,10 @@ TEST(graphics_pipeline_validator, missing_fallback) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -703,9 +725,10 @@ TEST(graphics_pipeline_validator, missing_fallback) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field fallback. A default value of '\"\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_depth_bias) {
+TEST(GraphicsPipelineValidator, MissingDepthBias) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -758,9 +781,10 @@ TEST(graphics_pipeline_validator, missing_depth_bias) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -768,9 +792,10 @@ TEST(graphics_pipeline_validator, missing_depth_bias) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field depthBias. A default value of '0' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_slope_scaled_depth_bias) {
+TEST(GraphicsPipelineValidator, MissingSlopeScaledDepthBias) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -823,9 +848,10 @@ TEST(graphics_pipeline_validator, missing_slope_scaled_depth_bias) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -833,9 +859,10 @@ TEST(graphics_pipeline_validator, missing_slope_scaled_depth_bias) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field slopeScaledDepthBias. A default value of '0' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_stencil_ref) {
+TEST(GraphicsPipelineValidator, MissingStencilRef) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -888,9 +915,10 @@ TEST(graphics_pipeline_validator, missing_stencil_ref) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -898,9 +926,10 @@ TEST(graphics_pipeline_validator, missing_stencil_ref) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilRef. A default value of '0' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_stencil_read_mask) {
+TEST(GraphicsPipelineValidator, MissingStencilReadMask) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -953,9 +982,10 @@ TEST(graphics_pipeline_validator, missing_stencil_read_mask) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -963,9 +993,10 @@ TEST(graphics_pipeline_validator, missing_stencil_read_mask) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilReadMask. A default value of '0' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_stencil_write_mask) {
+TEST(GraphicsPipelineValidator, MissingStencilWriteMask) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1018,9 +1049,10 @@ TEST(graphics_pipeline_validator, missing_stencil_write_mask) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1028,9 +1060,10 @@ TEST(graphics_pipeline_validator, missing_stencil_write_mask) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field stencilWriteMask. A default value of '0' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_msaa_support) {
+TEST(GraphicsPipelineValidator, MissingMsaaSupport) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1083,9 +1116,10 @@ TEST(graphics_pipeline_validator, missing_msaa_support) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1093,9 +1127,10 @@ TEST(graphics_pipeline_validator, missing_msaa_support) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field msaaSupport. A default value of '\"None\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_source_blend_factor) {
+TEST(GraphicsPipelineValidator, MissingSourceBlendFactor) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         { "name",                         "TestPipeline" },
         { "parentName",                   "TestParentPipeline" },
@@ -1148,20 +1183,21 @@ TEST(graphics_pipeline_validator, missing_source_blend_factor) {
         { "tessellationEvaluationShader", "TestTessellationEvaluationShader" },
         { "fragmentShader",               "TestFragmentShader" },
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0],
-              "Pipeline TestPipeline: Missing field sourceBlendFactor. A default value of '\"One\"' will be used");
+    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field sourceBlendFactor. A default value of '\"One\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_destination_blend_factor) {
+TEST(GraphicsPipelineValidator, MissingDestinationBlendFactor) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1214,19 +1250,22 @@ TEST(graphics_pipeline_validator, missing_destination_blend_factor) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field destinationBlendFactor. A default value of '\"Zero\"' will be used");
+    EXPECT_EQ(report.warnings[0],
+              "Pipeline TestPipeline: Missing field destinationBlendFactor. A default value of '\"Zero\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_alpha_src) {
+TEST(GraphicsPipelineValidator, MissingAlphaSrc) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1279,9 +1318,10 @@ TEST(graphics_pipeline_validator, missing_alpha_src) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1289,9 +1329,10 @@ TEST(graphics_pipeline_validator, missing_alpha_src) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaSrc. A default value of '\"One\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_alpha_dst) {
+TEST(GraphicsPipelineValidator, MissingAlphaDst) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1344,20 +1385,21 @@ TEST(graphics_pipeline_validator, missing_alpha_dst) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field alphaDst. A default value of '\"Zero\"' will be used");
-
 }
 
-TEST(graphics_pipeline_validator, missing_depth_func) {
+TEST(GraphicsPipelineValidator, MissingDepthFunc) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1410,9 +1452,10 @@ TEST(graphics_pipeline_validator, missing_depth_func) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1420,9 +1463,10 @@ TEST(graphics_pipeline_validator, missing_depth_func) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field depthFunc. A default value of '\"Less\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_render_queue) {
+TEST(GraphicsPipelineValidator, MissingRenderQueue) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1475,9 +1519,10 @@ TEST(graphics_pipeline_validator, missing_render_queue) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1485,9 +1530,10 @@ TEST(graphics_pipeline_validator, missing_render_queue) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field renderQueue. A default value of '\"Opaque\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_tessellation_control_shader) {
+TEST(GraphicsPipelineValidator, MissingTessellationControlShader) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1540,9 +1586,10 @@ TEST(graphics_pipeline_validator, missing_tessellation_control_shader) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1550,9 +1597,10 @@ TEST(graphics_pipeline_validator, missing_tessellation_control_shader) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationControlShader. A default value of '\"\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_tessellation_evaluation_shader) {
+TEST(GraphicsPipelineValidator, MissingTessellationEvaluationShader) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1605,19 +1653,22 @@ TEST(graphics_pipeline_validator, missing_tessellation_evaluation_shader) {
         {"tessellationControlShader", "TestTessellationControlShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field tessellationEvaluationShader. A default value of '\"\"' will be used");
+    EXPECT_EQ(report.warnings[0],
+              "Pipeline TestPipeline: Missing field tessellationEvaluationShader. A default value of '\"\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_geometry_shader) {
+TEST(GraphicsPipelineValidator, MissingGeometryShader) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1670,9 +1721,10 @@ TEST(graphics_pipeline_validator, missing_geometry_shader) {
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
         {"fragmentShader", "TestFragmentShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1680,9 +1732,10 @@ TEST(graphics_pipeline_validator, missing_geometry_shader) {
     EXPECT_EQ(report.warnings[0], "Pipeline TestPipeline: Missing field geometryShader. A default value of '\"\"' will be used");
 }
 
-TEST(graphics_pipeline_validator, missing_fragment_shader) {
+TEST(GraphicsPipelineValidator, MissingFragmentShader) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json pipeline = {
         {"name", "TestPipeline"},
         {"parentName", "TestParentPipeline"},
@@ -1735,9 +1788,10 @@ TEST(graphics_pipeline_validator, missing_fragment_shader) {
         {"tessellationControlShader", "TestTessellationControlShader"},
         {"tessellationEvaluationShader", "TestTessellationEvaluationShader"},
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_graphics_pipeline(pipeline);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_graphics_pipeline(pipeline);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -1749,9 +1803,10 @@ TEST(graphics_pipeline_validator, missing_fragment_shader) {
  *      Dynamic resources validator tests       *
  ************************************************/
 
-TEST(resources_validator, no_errors_or_warnings) {
+TEST(ResourcesValidator, NoErrorsOrWarnings) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json resources = {
         { "textures",
             {
@@ -1778,39 +1833,43 @@ TEST(resources_validator, no_errors_or_warnings) {
             }
         }
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-TEST(resources_validator, texture_missing) {
+TEST(ResourcesValidator, TextureMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json sampler = {
         { "name",     "TestSampler" },
         { "filter",   "Bilinear" },
         { "wrapMode", "Clamp" }
     };
-
+    // clang-format on
 
     nlohmann::json resources;
     resources["samplers"] = nlohmann::json::array({sampler});
-    
-    nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
-    nova::print(report);
+
+    nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
-    
+
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Resources file: Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message");
+    EXPECT_EQ(report.warnings[0],
+              "Resources file: Missing dynamic resources. If you ONLY use the backbuffer in your shaderpack, you can ignore this message");
 }
 
-TEST(resources_validator, samplers_missing) {
+TEST(ResourcesValidator, SamplersMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json resources = {
         { "textures",
             {
@@ -1828,19 +1887,23 @@ TEST(resources_validator, samplers_missing) {
             }
         }
     };
+    // clang-format on
 
-    nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
-    nova::print(report);
+    nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
-    
+
     ASSERT_EQ(report.errors.size(), 1);
-    EXPECT_EQ(report.errors[0], "Resources file: No samplers defined, but dynamic textures are defined. You need to define your own samplers to access a texture with");
+    EXPECT_EQ(
+        report.errors[0],
+        "Resources file: No samplers defined, but dynamic textures are defined. You need to define your own samplers to access a texture with");
 }
 
-TEST(resources_validator, texture_warnings_propagate) {
+TEST(ResourcesValidator, TextureWarningsPropagate) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json resources = {
         { "textures",
             {
@@ -1866,21 +1929,23 @@ TEST(resources_validator, texture_warnings_propagate) {
             }
         }
     };
+    // clang-format on
 
-    nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
-    nova::print(report);
+    nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
-    
+
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field pixelFormat. A default value of '\"RGBA8\"' will be used");
-    
+
     EXPECT_EQ(resources.at("textures").at(0).at("format").at("pixelFormat"), "RGBA8");
 }
 
-TEST(resources_validator, sampler_errors_propagate) {
+TEST(ResourcesValidator, SamplerErrorsPropagate) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json resources = {
         { "textures",
             {
@@ -1906,9 +1971,10 @@ TEST(resources_validator, sampler_errors_propagate) {
             }
         }
     };
+    // clang-format on
 
-    nova::validation_report report = nova::validate_shaderpack_resources_data(resources);
-    nova::print(report);
+    nova::renderer::validation_report report = nova::renderer::validate_shaderpack_resources_data(resources);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1920,9 +1986,10 @@ TEST(resources_validator, sampler_errors_propagate) {
  *      Texture validator tests     *
  ************************************/
 
-TEST(texture_validator, no_errors_or_warnings) {
+TEST(TextureValidator, NoErrorsOrWarnings) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json texture = {
         { "name", "TestTexture" },
         { "format",
@@ -1934,17 +2001,19 @@ TEST(texture_validator, no_errors_or_warnings) {
              }
         }
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_texture_data(texture);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_texture_data(texture);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-TEST(texture_validator, name_missing) {
+TEST(TextureValidator, NameMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json texture = {
             {"format", {
                              {"pixelFormat", "RGBA8"},
@@ -1953,9 +2022,10 @@ TEST(texture_validator, name_missing) {
                              {"height", 1080}
                      }}
     };
+    // clang-format on
 
-    nova::validation_report report = nova::validate_texture_data(texture);
-    nova::print(report);
+    nova::renderer::validation_report report = nova::renderer::validate_texture_data(texture);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1963,15 +2033,17 @@ TEST(texture_validator, name_missing) {
     EXPECT_EQ(report.errors[0], "Texture <NAME_MISSING>: Missing field name");
 }
 
-TEST(texture_validator, format_missing) {
+TEST(TextureValidator, FormatMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json texture = {
             {"name", "TestTexture"}
     };
+    // clang-format on
 
-    nova::validation_report report = nova::validate_texture_data(texture);
-    nova::print(report);
+    nova::renderer::validation_report report = nova::renderer::validate_texture_data(texture);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -1979,9 +2051,10 @@ TEST(texture_validator, format_missing) {
     EXPECT_EQ(report.errors[0], "Texture TestTexture: Missing field format");
 }
 
-TEST(texture_validator, texture_format_warnings_propagate) {
+TEST(TextureValidator, TextureFormatWarningsPropagate) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json texture = {
             {"name", "TestTexture"},
             {"format", {
@@ -1990,9 +2063,10 @@ TEST(texture_validator, texture_format_warnings_propagate) {
                              {"height", 1080}
                      }}
     };
+    // clang-format on
 
-    nova::validation_report report = nova::validate_texture_data(texture);
-    nova::print(report);
+    nova::renderer::validation_report report = nova::renderer::validate_texture_data(texture);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -2006,34 +2080,38 @@ TEST(texture_validator, texture_format_warnings_propagate) {
  *      Texture format validation tests     *
  ********************************************/
 
-TEST(texture_format_validator, no_errors_or_warnings) {
+TEST(TextureFormatValidator, NoErrorsOrWarnings) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
             {"dimensionType", "Absolute"},
             {"width", 1920},
             {"height", 1080}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-TEST(texture_format_validator, pixel_format_missing) {
+TEST(TextureFormatValidator, PixelFormatMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json texture_format = {
             {"dimensionType", "Absolute"},
             {"width", 1920},
             {"height", 1080}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
@@ -2043,37 +2121,42 @@ TEST(texture_format_validator, pixel_format_missing) {
     EXPECT_EQ(texture_format.at("pixelFormat").get<std::string>(), "RGBA8");
 }
 
-TEST(texture_format_validator, dimension_type_missing) {
+TEST(TextureFormatValidator, DimensionTypeMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
             {"width", 1920},
             {"height", 1080}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
 
     ASSERT_EQ(report.warnings.size(), 1);
-    EXPECT_EQ(report.warnings[0], "Format of texture TestTexture: Missing field dimensionType. A default value of '\"Absolute\"' will be used");
+    EXPECT_EQ(report.warnings[0],
+              "Format of texture TestTexture: Missing field dimensionType. A default value of '\"Absolute\"' will be used");
 
     EXPECT_EQ(texture_format.at("dimensionType").get<std::string>(), "Absolute");
 }
 
-TEST(texture_format_validator, width_missing) {
+TEST(TextureFormatValidator, WidthMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
             {"dimensionType", "Absolute"},
             {"height", 1080}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2081,17 +2164,19 @@ TEST(texture_format_validator, width_missing) {
     EXPECT_EQ(report.errors[0], "Format of texture TestTexture: Missing field width");
 }
 
-TEST(texture_format_validator, height_missing) {
+TEST(TextureFormatValidator, HeightMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json texture_format = {
             {"pixelFormat", "RGBA8"},
             {"dimensionType", "Absolute"},
             {"width", 1920}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_texture_format(texture_format, "TestTexture");
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_texture_format(texture_format, "TestTexture");
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2102,33 +2187,37 @@ TEST(texture_format_validator, height_missing) {
 /****************************************
  *      Sampler validation tests        *
  ****************************************/
- 
-TEST(sampler_validator, no_errors_or_warnings) {
+
+TEST(SamplerValidator, NoErrorsOrWarnings) {
     TEST_SETUP_LOGGER();
-    
+
+    // clang-format off
     nlohmann::json sampler = {
         { "name",     "TestSampler" },
         { "filter",   "Bilinear" },
         { "wrapMode", "Clamp" }
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_sampler_data(sampler);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_sampler_data(sampler);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-TEST(sampler_validator, missing_name) {
+TEST(SamplerValidator, MissingName) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json sampler = {
             {"filter", "Bilinear"},
             {"wrapMode", "Clamp"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_sampler_data(sampler);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_sampler_data(sampler);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2136,16 +2225,18 @@ TEST(sampler_validator, missing_name) {
     EXPECT_EQ(report.errors[0], "Sampler <NAME_MISSING>: Missing field name");
 }
 
-TEST(sampler_validator, missing_filter) {
+TEST(SamplerValidator, MissingFilter) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json sampler = {
             {"name", "TestSampler"},
             {"wrapMode", "Clamp"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_sampler_data(sampler);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_sampler_data(sampler);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2153,16 +2244,18 @@ TEST(sampler_validator, missing_filter) {
     EXPECT_EQ(report.errors[0], "Sampler TestSampler: Missing field filter");
 }
 
-TEST(sampler_validator, missing_wrap_mode) {
+TEST(SamplerValidator, MissingWrapMode) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json sampler = {
             {"name", "TestSampler"},
             {"filter", "Bilinear"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_sampler_data(sampler);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_sampler_data(sampler);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2174,9 +2267,10 @@ TEST(sampler_validator, missing_wrap_mode) {
  *      Material validation tests       *
  ****************************************/
 
-TEST(material_validator, no_errors_or_warnings) {
+TEST(MaterialValidator, NoErrorsOrWarnings) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
         {"passes", 
@@ -2196,17 +2290,19 @@ TEST(material_validator, no_errors_or_warnings) {
         },
         {"filter", "geometry_type::block"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
     EXPECT_EQ(report.errors.size(), 0);
 }
 
-TEST(material_validator, bindings_missing) {
+TEST(MaterialValidator, BindingsMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
         {"passes",
@@ -2219,18 +2315,20 @@ TEST(material_validator, bindings_missing) {
         },
         {"filter", "geometry_type::block"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0], "Material pass main in material TestMaterial: Missing field bindings");
 }
 
-TEST(material_validator, bindings_empty) {
+TEST(MaterialValidator, BindingsEmpty) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
         { "name", "TestMaterial" },
         { "passes",
@@ -2244,18 +2342,20 @@ TEST(material_validator, bindings_empty) {
         },
         { "filter", "geometry_type::block" }
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.errors.size(), 0);
     ASSERT_EQ(report.warnings.size(), 1);
     EXPECT_EQ(report.warnings[0], "Material pass main in material TestMaterial: Field bindings exists but it's empty");
 }
 
-TEST(material_validator, filter_missing) {
+TEST(MaterialValidator, FilterMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
         {"passes",
@@ -2274,9 +2374,10 @@ TEST(material_validator, filter_missing) {
             }
         }
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2284,9 +2385,10 @@ TEST(material_validator, filter_missing) {
     EXPECT_EQ(report.errors[0], "Material TestMaterial: Missing geometry filter");
 }
 
-TEST(material_validator, name_missing) {
+TEST(MaterialValidator, NameMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
         {"passes",
             {
@@ -2305,9 +2407,10 @@ TEST(material_validator, name_missing) {
         },
         {"filter", "geometry_type::block"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2315,16 +2418,18 @@ TEST(material_validator, name_missing) {
     EXPECT_EQ(report.errors[0], "Material <NAME_MISSING>: Missing material name");
 }
 
-TEST(material_validator, passes_missing) {
+TEST(MaterialValidator, PassesMissing) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
             {"name", "TestMaterial"},
             {"filter", "geometry_type::block"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2332,17 +2437,19 @@ TEST(material_validator, passes_missing) {
     EXPECT_EQ(report.errors[0], "Material TestMaterial: Missing material passes");
 }
 
-TEST(material_validator, passes_wrong_type) {
+TEST(MaterialValidator, PassesWrongType) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
         {"passes", 42},
         {"filter", "geometry_type::block"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2350,17 +2457,19 @@ TEST(material_validator, passes_wrong_type) {
     EXPECT_EQ(report.errors[0], "Material TestMaterial: Passes field must be an array");
 }
 
-TEST(material_validator, passes_empty_array) {
+TEST(MaterialValidator, PassesEmptyArray) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
             {"name", "TestMaterial"},
             {"passes", std::vector<std::string>{}},
             {"filter", "geometry_type::block"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2368,9 +2477,10 @@ TEST(material_validator, passes_empty_array) {
     EXPECT_EQ(report.errors[0], "Material TestMaterial: Passes field must have at least one item");
 }
 
-TEST(material_validator, pass_no_pipeline) {
+TEST(MaterialValidator, PassNoPipeline) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
         {"passes",
@@ -2389,9 +2499,10 @@ TEST(material_validator, pass_no_pipeline) {
         },
         {"filter", "geometry_type::block"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 
@@ -2399,9 +2510,10 @@ TEST(material_validator, pass_no_pipeline) {
     EXPECT_EQ(report.errors[0], "Material pass main in material TestMaterial: Missing field pipeline");
 }
 
-TEST(material_validator, pass_no_name) {
+TEST(MaterialValidator, PassNoName) {
     TEST_SETUP_LOGGER();
 
+    // clang-format off
     nlohmann::json material = {
         {"name", "TestMaterial"},
         {"passes",
@@ -2420,9 +2532,10 @@ TEST(material_validator, pass_no_name) {
         },
         {"filter", "geometry_type::block"}
     };
+    // clang-format on
 
-    const nova::validation_report report = nova::validate_material(material);
-    nova::print(report);
+    const nova::renderer::validation_report report = nova::renderer::validate_material(material);
+    nova::renderer::print(report);
 
     EXPECT_EQ(report.warnings.size(), 0);
 

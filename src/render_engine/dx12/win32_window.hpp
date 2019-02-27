@@ -4,7 +4,7 @@
 #include "../../platform.hpp"
 #include "../window.hpp"
 
-#if SUPPORT_DX12
+#ifdef SUPPORT_DX12
 
 #ifndef UNICODE
 #define UNICODE
@@ -17,15 +17,15 @@
 // C RunTime Header Files
 #include <tchar.h>
 
-#include <dxgi1_2.h>
 #include <DirectXMath.h>
+#include <dxgi1_2.h>
 #include <glm/glm.hpp>
 
 #ifdef ERROR
 #undef ERROR
 #endif
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief A Win32 window for the DX12 variant of Nova
      */
@@ -52,7 +52,7 @@ namespace nova {
 
     private:
         HWND window_handle;
-        WCHAR *window_class_name;
+        WCHAR* window_class_name;
         ATOM window_class_id;
 
         bool window_should_close;
@@ -98,7 +98,7 @@ namespace nova {
          */
         static LRESULT CALLBACK window_procedure_wrapper(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     };
-}  // namespace nova
+} // namespace nova::renderer
 
 #endif
 #endif

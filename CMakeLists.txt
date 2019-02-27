@@ -43,6 +43,14 @@ if(NOVA_ENABLE_EXPERIMENTAL)
     set(CMAKE_LINK_WHAT_YOU_USE TRUE) # Warn about unsued linked libraries
 endif()
 
+#########################################################
+# Enable tests if not in submodule and debug or if MSVC #
+#########################################################
+if(NOT NOVA_IN_SUBMODULE)
+    message(STATUS "Enabling nova tests by default because Nova is not a submodule (wont overwrite if set manually)")
+    set(NOVA_TEST ON)
+endif()
+
 ############################
 # Initialize cmake options #
 ############################
@@ -61,6 +69,7 @@ endif()
 # Setup our own cmake additions #
 #################################
 include(ClangFormat)
+include(ClangTidy)
 include(RemovePermissive)
 include(CompilerOptionsUtils)
 include(CheckCXXCompilerFlag)
@@ -116,6 +125,7 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_render_engine_init.cpp
         src/render_engine/vulkan/vulkan_render_engine_shaderpack.cpp
+        src/render_engine/vulkan/vulkan_render_engine_render_objects.cpp
         src/render_engine/vulkan/vulkan_render_engine_render_frame.cpp
         src/render_engine/vulkan/vulkan_render_engine_mesh.cpp
         src/render_engine/vulkan/vulkan_utils.hpp
@@ -124,7 +134,11 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/compacting_block_allocator.hpp 
         src/render_engine/vulkan/vulkan_utils.cpp 
         src/render_engine/vulkan/swapchain.cpp 
-        src/render_engine/vulkan/swapchain.hpp 
+        src/render_engine/vulkan/swapchain.hpp
+        src/render_engine/vulkan/auto_allocating_buffer.cpp
+        src/render_engine/vulkan/auto_allocating_buffer.hpp
+        src/render_engine/vulkan/uniform_buffer.hpp
+        src/render_engine/vulkan/uniform_buffer.cpp
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp
         src/tasks/task_graph.hpp
@@ -133,6 +147,7 @@ set(NOVA_SOURCE
         src/tasks/condition_counter.hpp
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
+        src/debugging/renderdoc_app.h
 
 
         )
@@ -140,39 +155,35 @@ set(NOVA_SOURCE
 ##################################
 # Select platform dependent code #
 ##################################
+set(WINDOWS_NOVA_SOURCE
+    src/util/windows_utils.cpp
+    src/util/windows_utils.hpp
+    src/render_engine/dx12/pipeline_state_object.cpp
+    src/render_engine/dx12/pipeline_state_object.hpp
+    src/render_engine/dx12/vertex_attributes.hpp
+    src/render_engine/dx12/dx12_texture.cpp
+    src/render_engine/dx12/dx12_texture.hpp
+    src/render_engine/dx12/dx12_utils.cpp
+    src/render_engine/dx12/dx12_utils.hpp
+    src/render_engine/dx12/win32_window.hpp
+    src/render_engine/dx12/win32_window.cpp
+    src/render_engine/dx12/dx12_render_engine.cpp
+    src/render_engine/dx12/dx12_render_engine.hpp
+    src/render_engine/dx12/d3dx12.h
+)
+set(UNIX_NOVA_SOURCE
+    src/render_engine/vulkan/x11_window.cpp
+    src/render_engine/vulkan/x11_window.hpp
+    src/util/linux_utils.cpp
+    src/util/linux_utils.hpp
+)
 if(WIN32)
-    set(NOVA_SOURCE
-        ${NOVA_SOURCE}
-        src/util/windows_utils.cpp
-        src/util/windows_utils.hpp
-        src/render_engine/dx12/pipeline_state_object.cpp
-        src/render_engine/dx12/pipeline_state_object.hpp
-        src/render_engine/dx12/vertex_attributes.hpp
-        src/render_engine/dx12/dx12_texture.cpp
-        src/render_engine/dx12/dx12_texture.hpp
-        src/render_engine/dx12/dx12_utils.cpp
-        src/render_engine/dx12/dx12_utils.hpp
-        src/render_engine/dx12/win32_window.hpp
-        src/render_engine/dx12/win32_window.cpp
-        src/render_engine/dx12/dx12_render_engine.cpp
-        src/render_engine/dx12/dx12_render_engine.hpp
-        src/render_engine/dx12/d3dx12.h
-        )
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${WINDOWS_NOVA_SOURCE})
+    set(OTHER_NOVA_SOURCE ${UNIX_NOVA_SOURCE})
 else()
-    set(NOVA_SOURCE
-        ${NOVA_SOURCE}
-        src/render_engine/vulkan/x11_window.cpp
-        src/render_engine/vulkan/x11_window.hpp
-        src/util/linux_utils.cpp
-        src/util/linux_utils.hpp
-        )
+    set(NOVA_SOURCE ${NOVA_SOURCE} ${UNIX_NOVA_SOURCE})
+    set(OTHER_NOVA_SOURCE ${WINDOWS_NOVA_SOURCE})
 endif()
-
-##########################
-# Setup 3rd party source #
-##########################
-set(3RD_PARTY_SOURCE
-        ${3RD_PARTY_DIR}/glslang/StandAlone/ResourceLimits.cpp)
 
 ##########################################
 # Set platform dependent compile options #
@@ -223,17 +234,18 @@ source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE})
 # Setup the nova library #
 ##########################
 add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
-# clang_format(nova-renderer NOVA_SOURCE) <= TODO: Uncomment when .clang-format is perfect
+nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
+target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
 
 ##################################
 # Add extra warnings if possible #
 ##################################
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wno-long-long -pedantic -Wdefaulted-function-deleted)
+    target_compile_options_if_supported(nova-renderer PUBLIC -Wall -Wextra -Wpedantic -Wconversion -Wdefaulted-function-deleted)
 endif()
 
 add_coverage(nova-renderer)
@@ -242,21 +254,23 @@ add_coverage(nova-renderer)
 # Set libraries to link #
 #########################
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
+                     fmt::fmt
                      glm::glm
+                     glsl-standalone
+                     glslang
+                     minitrace
+                     miniz
                      nlohmann::json
-                     spirv::headers
+                     nova-profiler
+                     SPIRV
                      spirv-cross-core
                      spirv-cross-glsl
                      spirv-cross-hlsl
                      spirv-cross-reflect
                      spirv-cross-util
-                     nova-profiler
-                     miniz
-                     minitrace
-                     glslang
-                     vulkan::sdk
+                     spirv::headers
                      vma::vma
-                     SPIRV
+                     vulkan::sdk
                      ${Vulkan_LIBRARIES})
 
 ##############################
@@ -312,14 +326,6 @@ target_link_libraries(nova-renderer PUBLIC ${COMMON_LINK_LIBS})
 # Fix issue with permissive #
 #############################
 remove_permissive(nova-renderer)
-
-#########################################################
-# Enable tests if not in submodule and debug or if MSVC #
-#########################################################
-if(NOT NOVA_IN_SUBMODULE)
-    message(STATUS "Enabling nova tests by default because Nova is not a submodule (wont overwrite if set manually)")
-    set(NOVA_TEST ON)
-endif()
 
 ##########################
 # Add tests if requested #

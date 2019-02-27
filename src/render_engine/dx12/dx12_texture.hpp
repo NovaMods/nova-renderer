@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 20-Oct-18.
  */
 
@@ -12,7 +12,7 @@
 
 using Microsoft::WRL::ComPtr;
 
-namespace nova {
+namespace nova::renderer {
     /*!
      * \brief
      */
@@ -21,18 +21,19 @@ namespace nova {
         dx12_texture() = default;
         explicit dx12_texture(const texture_resource_data& data);
 
-        dx12_texture(const texture_resource_data & data, const D3D12_RESOURCE_DESC texture_desc);
+        dx12_texture(const texture_resource_data& data, const D3D12_RESOURCE_DESC texture_desc);
 
-        dx12_texture(const texture_resource_data & data, ComPtr<ID3D12Resource> resource);
+        dx12_texture(const texture_resource_data& data, ComPtr<ID3D12Resource> resource);
 
         const texture_resource_data& get_data() const;
         ComPtr<ID3D12Resource> get_dx12_texture() const;
         bool is_depth_texture() const;
         DXGI_FORMAT get_dxgi_format() const;
+
     private:
         texture_resource_data data;
         ComPtr<ID3D12Resource> resource;
     };
-}
+} // namespace nova::renderer
 
-#endif //NOVA_RENDERER_DX_12_TEXTURE_HPP
+#endif // NOVA_RENDERER_DX_12_TEXTURE_HPP

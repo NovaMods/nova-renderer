@@ -1,21 +1,21 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 17-Dec-18.
  */
 
 #ifndef NOVA_RENDERER_CONDITION_COUNTER_HPP
 #define NOVA_RENDERER_CONDITION_COUNTER_HPP
 
+#include <condition_variable>
 #include <cstdint>
 #include <mutex>
-#include <condition_variable>
 
 namespace nova::ttl {
     /*!
      * \brief An atomic counter that can be waited on
-     * 
+     *
      * Brought to you by std::condition_variable, std::mutex, and uint32_t
-     * 
+     *
      * Internal value starts at 0
      */
     class condition_counter {
@@ -44,6 +44,6 @@ namespace nova::ttl {
         uint32_t counter = 0;
         uint32_t wait_val = 0;
     };
-}
+} // namespace nova::ttl
 
-#endif //NOVA_RENDERER_CONDITION_COUNTER_HPP
+#endif // NOVA_RENDERER_CONDITION_COUNTER_HPP
