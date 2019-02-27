@@ -27,8 +27,7 @@ endif()
 # Header only libraries #
 #########################
 
-include_target(glm::glm "${CMAKE_CURRENT_LIST_DIR}/glm")
-set_target_properties(glm::glm PROPERTIES INTERFACE_COMPILE_DEFINITIONS "GLM_ENABLE_EXPERIMENTAL")
+find_package(GLM REQUIRED)
 
 include_target(nlohmann::json "${CMAKE_CURRENT_LIST_DIR}/json/single_include")
 include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
