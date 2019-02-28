@@ -40,8 +40,8 @@ namespace nova::renderer {
             if(render_doc != nullptr) {
                 render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
-                RENDERDOC_InputButton captureKey = eRENDERDOC_Key_PrtScrn;
-                render_doc->SetCaptureKeys(&captureKey, 1);
+                RENDERDOC_InputButton capture_key = eRENDERDOC_Key_PrtScrn;
+                render_doc->SetCaptureKeys(&capture_key, 1);
 
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, 1U);
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, 1U);
