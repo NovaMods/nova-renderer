@@ -259,7 +259,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      glsl-standalone
                      glslang
                      minitrace
-                     miniz:miniz
+                     miniz::miniz
                      nlohmann::json
                      nova-profiler
                      SPIRV
