@@ -1,9 +1,6 @@
 [submodule "3rdparty/profiler"]
 	path = 3rdparty/profiler
 	url = https://github.com/NovaMods/profiler.git
-[submodule "3rdparty/json"]
-	path = 3rdparty/json
-	url = https://github.com/nlohmann/json.git
 [submodule "3rdparty/VulkanMemoryAllocator"]
 	path = 3rdparty/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git

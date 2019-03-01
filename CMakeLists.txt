@@ -260,7 +260,8 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      glslang
                      minitrace
                      miniz::miniz
-                     nlohmann::json
+                     nlohmann_json
+                     nlohmann_json::nlohmann_json
                      nova-profiler
                      SPIRV
                      spirv-cross-core

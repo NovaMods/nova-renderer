@@ -28,8 +28,8 @@ endif()
 #########################
 
 find_package(glm CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
-include_target(nlohmann::json "${CMAKE_CURRENT_LIST_DIR}/json/single_include")
 include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
 include_target(vma::vma "${3RD_PARTY_DIR}/VulkanMemoryAllocator/src")
 include_target(vulkan::sdk "${VULKAN_INCLUDE}")
@@ -51,6 +51,7 @@ endif()
 
 find_package(fmt CONFIG REQUIRED)
 find_package(miniz CONFIG REQUIRED)
+find_package(glslang CONFIG REQUIRED)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/profiler)
