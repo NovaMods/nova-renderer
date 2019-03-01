@@ -53,9 +53,6 @@ find_package(fmt CONFIG REQUIRED)
 find_package(miniz CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/glslang)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/profiler)
-
 set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers)
 set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
 set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
@@ -65,7 +62,6 @@ set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
 target_includes_system(fmt::fmt)
-target_includes_system(glslang)
 target_includes_system(nova-profiler)
 target_includes_system(SPIRV)
 target_includes_system(spirv-cross-core)
@@ -79,7 +75,6 @@ target_includes_system(spirv-cross-util)
 ############################
         
 include(minitrace)
-include(glslang)
 
 #####################################
 # Hide unnecessary targets from all #
