@@ -34,24 +34,9 @@ include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
 include_target(vma::vma "${3RD_PARTY_DIR}/VulkanMemoryAllocator/src")
 include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 
-#####################
-# Setup google test #
-#####################
-if(NOVA_TEST)
-	set(INSTALL_GTEST OFF)
-	set(gtest_force_shared_crt ON CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
-	set(BUILD_GMOCK OFF CACHE BOOL "Build GMOCK shared library" FORCE)
-	find_package(GTest MODULE REQUIRED)
-	include(GoogleTest)
-endif()
-
-#######################
-# Submodule libraries #
-#######################
-
 find_package(fmt CONFIG REQUIRED)
 find_package(miniz CONFIG REQUIRED)
-find_package(glslang CONFIG REQUIRED)
+find_library(glslang glslang)
 
 set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers)
 set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
@@ -62,13 +47,23 @@ set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
 target_includes_system(fmt::fmt)
-target_includes_system(nova-profiler)
 target_includes_system(SPIRV)
 target_includes_system(spirv-cross-core)
 target_includes_system(spirv-cross-glsl)
 target_includes_system(spirv-cross-hlsl)
 target_includes_system(spirv-cross-reflect)
 target_includes_system(spirv-cross-util)
+
+#####################
+# Setup google test #
+#####################
+if(NOVA_TEST)
+	set(INSTALL_GTEST OFF)
+	set(gtest_force_shared_crt ON CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
+	set(BUILD_GMOCK OFF CACHE BOOL "Build GMOCK shared library" FORCE)
+	find_package(GTest MODULE REQUIRED)
+	include(GoogleTest)
+endif()
 
 ############################
 # Manually built libraries #
