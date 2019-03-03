@@ -257,16 +257,14 @@ add_coverage(nova-renderer)
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      fmt::fmt
                      glm
-                     glsl-standalone
-                     glslang::glslang 
+                     glslang::glslang
                      glslang::OGLCompiler 
                      glslang::OSDependent
+                     glslang::SPIRV
                      minitrace
                      miniz::miniz
                      nlohmann_json
                      nlohmann_json::nlohmann_json
-                     nova-profiler
-                     SPIRV
                      spirv-cross-core
                      spirv-cross-glsl
                      spirv-cross-hlsl

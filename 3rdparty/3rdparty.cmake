@@ -48,7 +48,6 @@ set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
 
 target_includes_system(fmt::fmt)
-target_includes_system(SPIRV)
 target_includes_system(spirv-cross-core)
 target_includes_system(spirv-cross-glsl)
 target_includes_system(spirv-cross-hlsl)
@@ -75,10 +74,6 @@ include(minitrace)
 #####################################
 # Hide unnecessary targets from all #
 #####################################
-
-set_property(TARGET SPIRV PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET SPVRemapper PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-remap PROPERTY EXCLUDE_FROM_ALL True)
 
 set_property(TARGET spirv-tools-build-version PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-tools-debuginfo PROPERTY EXCLUDE_FROM_ALL True)
