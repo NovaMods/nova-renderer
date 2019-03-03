@@ -6,6 +6,7 @@ project(nova-renderer)
 ################################################################
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     set(NOVA_IN_SUBMODULE False)
+    
 else()
     set(NOVA_IN_SUBMODULE True)
 endif()
@@ -257,7 +258,9 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      fmt::fmt
                      glm
                      glsl-standalone
-                     glslang
+                     glslang::glslang 
+                     glslang::OGLCompiler 
+                     glslang::OSDependent
                      minitrace
                      miniz::miniz
                      nlohmann_json
@@ -300,7 +303,7 @@ if(WIN32)
     add_compile_options_if_supported(/Zc:twoPhase- /permissive)
 
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler glslang::HLSL)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
 

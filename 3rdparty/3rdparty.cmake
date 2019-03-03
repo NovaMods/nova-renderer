@@ -36,7 +36,8 @@ include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 
 find_package(fmt CONFIG REQUIRED)
 find_package(miniz CONFIG REQUIRED)
-find_library(glslang glslang)
+
+find_package(glslang CONFIG REQUIRED)
 
 set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers)
 set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
@@ -75,14 +76,12 @@ include(minitrace)
 # Hide unnecessary targets from all #
 #####################################
 
-set_property(TARGET glslang PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET glslang-default-resource-limits PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET OGLCompiler PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET OSDependent PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET glslang::glslang PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET glslang::OGLCompiler PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET glslang::OSDependent PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET SPIRV PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET SPVRemapper PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET HLSL PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET glslangValidator PROPERTY EXCLUDE_FROM_ALL True)
+set_property(TARGET glslang::HLSL PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-remap PROPERTY EXCLUDE_FROM_ALL True)
 
 set_property(TARGET spirv-tools-build-version PROPERTY EXCLUDE_FROM_ALL True)
