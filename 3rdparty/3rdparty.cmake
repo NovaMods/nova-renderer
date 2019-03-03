@@ -76,12 +76,8 @@ include(minitrace)
 # Hide unnecessary targets from all #
 #####################################
 
-set_property(TARGET glslang::glslang PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET glslang::OGLCompiler PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET glslang::OSDependent PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET SPIRV PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET SPVRemapper PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET glslang::HLSL PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-remap PROPERTY EXCLUDE_FROM_ALL True)
 
 set_property(TARGET spirv-tools-build-version PROPERTY EXCLUDE_FROM_ALL True)
