@@ -24,7 +24,7 @@
 #include <vulkan/vulkan.h>
 
 #include <queue>
-#include <vk_mem_alloc.h>
+#include "../../util/vma_usage.hpp"
 #include "compacting_block_allocator.hpp"
 #include "spirv_glsl.hpp"
 

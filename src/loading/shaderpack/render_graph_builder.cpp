@@ -4,9 +4,9 @@
  */
 
 #include "render_graph_builder.hpp"
+#include <minitrace.h>
 #include <unordered_set>
 #include "../../util/logger.hpp"
-#include <minitrace.h>
 
 namespace nova::renderer {
     /*!
