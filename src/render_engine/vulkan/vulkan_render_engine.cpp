@@ -3,7 +3,7 @@
 //
 
 #include "vulkan_render_engine.hpp"
-#include <spirv_glsl.hpp>
+#include <spirv_cross/spirv_glsl.hpp>
 #include <vector>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"

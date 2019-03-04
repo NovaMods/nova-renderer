@@ -24,9 +24,9 @@
 #include <vulkan/vulkan.h>
 
 #include <queue>
+#include <spirv_cross/spirv_glsl.hpp>
 #include "../../util/vma_usage.hpp"
 #include "compacting_block_allocator.hpp"
-#include "spirv_glsl.hpp"
 
 #include <mutex>
 #include "../../render_objects/render_object.hpp"

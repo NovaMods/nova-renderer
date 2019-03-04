@@ -36,23 +36,19 @@ include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 
 find_package(fmt CONFIG REQUIRED)
 find_package(miniz CONFIG REQUIRED)
-
 find_package(glslang CONFIG REQUIRED)
+find_package(spirv_cross_core CONFIG REQUIRED)
+find_package(spirv_cross_glsl CONFIG REQUIRED)
+find_package(spirv_cross_hlsl CONFIG REQUIRED)
+find_package(spirv_cross_reflect CONFIG REQUIRED)
+find_package(spirv_cross_util CONFIG REQUIRED)
 
 set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers)
 set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
 set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 
-set(ENABLE_EXPORTS ON CACHE BOOL "Enable linking SPIRV_Cross" FORCE)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Cross)
-
 target_includes_system(fmt::fmt)
-target_includes_system(spirv-cross-core)
-target_includes_system(spirv-cross-glsl)
-target_includes_system(spirv-cross-hlsl)
-target_includes_system(spirv-cross-reflect)
-target_includes_system(spirv-cross-util)
 
 #####################
 # Setup google test #
@@ -103,12 +99,3 @@ set_property(TARGET SPIRV-Tools-shared PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-tools-vimsyntax PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-tools-pkg-config PROPERTY EXCLUDE_FROM_ALL True)
 set_property(TARGET spirv-tools-shared-pkg-config PROPERTY EXCLUDE_FROM_ALL True)
-
-set_property(TARGET spirv-cross PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cross-core PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cross-cpp PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cross-glsl PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cross-hlsl PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cross-msl PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cross-reflect PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cross-util PROPERTY EXCLUDE_FROM_ALL True)
