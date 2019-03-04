@@ -516,7 +516,7 @@ namespace nova::renderer {
         std::unique_ptr<auto_buffer> static_model_matrix_buffer;
 
         /*
-         * All the renderers that Nova will process
+         * All the renderables that Nova will process
          */
 
         std::unordered_map<renderable_id_t, renderable_metadata> metadata_for_renderables;
