@@ -266,9 +266,11 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      nlohmann_json
                      nlohmann_json::nlohmann_json
                      spirv-cross-core
+                     spirv-cross-cpp
                      spirv-cross-glsl
                      spirv-cross-hlsl
                      spirv-cross-reflect
+                     spirv-cross-msl
                      spirv-cross-util
                      spirv::headers
                      unofficial::vulkan-memory-allocator::vulkan-memory-allocator
