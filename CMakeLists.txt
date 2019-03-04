@@ -271,7 +271,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-reflect
                      spirv-cross-util
                      spirv::headers
-                     vma::vma
+                     unofficial::vulkan-memory-allocator::vulkan-memory-allocator
                      vulkan::sdk
                      ${Vulkan_LIBRARIES})
 
