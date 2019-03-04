@@ -1,6 +1,3 @@
-[submodule "3rdparty/VulkanMemoryAllocator"]
-	path = 3rdparty/VulkanMemoryAllocator
-	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
 [submodule "3rdparty/SPIRV-Headers"]
 	path = 3rdparty/SPIRV-Headers
 	url = https://github.com/KhronosGroup/SPIRV-Headers.git
