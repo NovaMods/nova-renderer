@@ -265,13 +265,14 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      miniz::miniz
                      nlohmann_json
                      nlohmann_json::nlohmann_json
+                     spirv::headers
+                     SPIRV-Tools::SPIRV-Tools
                      spirv-cross-core
                      spirv-cross-cpp
                      spirv-cross-glsl
                      spirv-cross-reflect
                      spirv-cross-msl
                      spirv-cross-util
-                     spirv::headers
                      unofficial::vulkan-memory-allocator::vulkan-memory-allocator
                      vulkan::sdk
                      ${Vulkan_LIBRARIES})

@@ -44,11 +44,9 @@ find_package(spirv_cross_hlsl CONFIG REQUIRED)
 find_package(spirv_cross_msl CONFIG REQUIRED)
 find_package(spirv_cross_reflect CONFIG REQUIRED)
 find_package(spirv_cross_util CONFIG REQUIRED)
+find_package(SPIRV-Tools CONFIG REQUIRED)
 
-set(SPIRV-Headers_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers)
-set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
-set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
+include(minitrace)
 
 #####################
 # Setup google test #
@@ -60,41 +58,3 @@ if(NOVA_TEST)
 	find_package(GTest MODULE REQUIRED)
 endif()
 
-############################
-# Manually built libraries #
-############################
-        
-include(minitrace)
-
-#####################################
-# Hide unnecessary targets from all #
-#####################################
-
-set_property(TARGET spirv-tools-build-version PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-tools-debuginfo PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-tools-header-DebugInfo PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-tools-spv-amd-gcn-shader PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-tools-spv-amd-shader-ballot PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-tools-spv-amd-shader-explicit-vertex-parameter PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-tools-spv-amd-shader-trinary-minmax PROPERTY EXCLUDE_FROM_ALL True)
-
-set_property(TARGET spirv-tools-cpp-example PROPERTY EXCLUDE_FROM_ALL True)
-
-set_property(TARGET spirv-as PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-cfg PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-dis PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-link PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-opt PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-reduce PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-stats PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-val PROPERTY EXCLUDE_FROM_ALL True)
-
-set_property(TARGET SPIRV-Tools PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET SPIRV-Tools-link PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET SPIRV-Tools-opt PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET SPIRV-Tools-reduce PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET SPIRV-Tools-shared PROPERTY EXCLUDE_FROM_ALL True)
-
-set_property(TARGET spirv-tools-vimsyntax PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-tools-pkg-config PROPERTY EXCLUDE_FROM_ALL True)
-set_property(TARGET spirv-tools-shared-pkg-config PROPERTY EXCLUDE_FROM_ALL True)
