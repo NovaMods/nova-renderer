@@ -139,6 +139,8 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/auto_allocating_buffer.hpp
         src/render_engine/vulkan/uniform_buffer.hpp
         src/render_engine/vulkan/uniform_buffer.cpp
+        src/render_engine/vulkan/fixed_size_buffer_allocator.hpp
+        src/render_engine/vulkan/fixed_size_buffer_allocator.cpp
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp
         src/tasks/task_graph.hpp
