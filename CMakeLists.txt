@@ -261,7 +261,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      glslang::OGLCompiler 
                      glslang::OSDependent
                      glslang::SPIRV
-                     minitrace
+                     minitrace::minitrace
                      miniz::miniz
                      nlohmann_json
                      nlohmann_json::nlohmann_json
@@ -273,6 +273,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-msl
                      spirv-cross-util
                      unofficial::vulkan-memory-allocator::vulkan-memory-allocator
+                     Vulkan::Vulkan
                      vulkan::sdk
                      ${Vulkan_LIBRARIES})
 

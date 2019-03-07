@@ -17,7 +17,7 @@
 #include "debugging/renderdoc.hpp"
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 
-#include "minitrace.h"
+#include <minitrace/minitrace.h>
 
 namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;

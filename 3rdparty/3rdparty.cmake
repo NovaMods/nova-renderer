@@ -23,16 +23,12 @@ else()
     set(VULKAN_INCLUDE "")
 endif()
 
-#########################
-# Header only libraries #
-#########################
+include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
-
-include_target(vulkan::sdk "${VULKAN_INCLUDE}")
-
+find_package(minitrace CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(miniz CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
@@ -45,15 +41,10 @@ find_package(spirv_cross_reflect CONFIG REQUIRED)
 find_package(spirv_cross_util CONFIG REQUIRED)
 find_package(SPIRV-Tools CONFIG REQUIRED)
 
-include(minitrace)
-
 #####################
-# Setup google test #
+# Test dependencies #
 #####################
 if(NOVA_TEST)
-	set(INSTALL_GTEST OFF)
-	set(gtest_force_shared_crt ON CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
-	set(BUILD_GMOCK OFF CACHE BOOL "Build GMOCK shared library" FORCE)
 	find_package(GTest MODULE REQUIRED)
 endif()
 
