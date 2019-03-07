@@ -112,6 +112,7 @@ namespace nova::renderer {
 
             vkCreateImageView(device, &image_view_create_info, nullptr, &texture.image_view);
 
+#ifndef NDEBUG
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
@@ -119,6 +120,7 @@ namespace nova::renderer {
             object_name.pObjectName = texture_data.name.c_str();
             NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
             NOVA_LOG(INFO) << "Set object " << texture.image << " to have name " << texture_data.name;
+#endif
 
             textures[texture_data.name] = texture;
         }
@@ -384,12 +386,14 @@ namespace nova::renderer {
 
             render_passes[pass_name].render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
 
+#ifndef NDEBUG
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
             object_name.objectHandle = reinterpret_cast<uint64_t>(render_passes[pass_name].pass);
             object_name.pObjectName = pass_name.c_str();
             NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
+#endif
         }
     }
 

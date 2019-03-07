@@ -5,7 +5,6 @@
 
 #include "../../util/vma_usage.hpp"
 
-#include <Common.h>
 #include "../json_utils.hpp"
 #include "shaderpack_data.hpp"
 

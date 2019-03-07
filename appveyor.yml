@@ -22,12 +22,16 @@ install:
   - cmd: git submodule update --init --recursive
   - cmd: curl --silent --show-error --output VulkanSDK.exe https://cwfitz.com/s/19028-082433-VulkanSDK-1.1.97.0-Installer.exe
   - cmd: .\VulkanSDK.exe /S
+  - cmd: cd C:\Tools\vcpkg
+  - cmd: git pull
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%
+  - ps: .\setup-windows.ps1
 
 before_build:
   - cmd: cd C:\projects\nova-renderer
   - cmd: md build
   - cmd: cd build
-  - cmd: cmake .. -G "Visual Studio 15 2017 Win64" -DNOVA_TEST=On -DNOVA_TREAT_WARNINGS_AS_ERRORS=On -Thost=x64
+  - cmd: cmake .. -G "Visual Studio 15 2017 Win64" -DNOVA_TEST=On -DNOVA_TREAT_WARNINGS_AS_ERRORS=On -Thost=x64 -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build:
   project: C:\projects\nova-renderer\build\nova-renderer.sln
@@ -37,6 +41,9 @@ build:
 test_script:
 - cmd: dir C:\projects\nova-renderer\build\%CONFIGURATION%\
 - cmd: C:\projects\nova-renderer\build\%CONFIGURATION%\nova-test-unit.exe
+
+cache: 
+  - c:\tools\vcpkg\installed\
 
 on_success:
   - ps: Invoke-RestMethod https://raw.githubusercontent.com/DiscordHooks/appveyor-discord-webhook/master/send.ps1 -o send.ps1

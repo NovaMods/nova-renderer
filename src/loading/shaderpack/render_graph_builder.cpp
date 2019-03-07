@@ -4,9 +4,9 @@
  */
 
 #include "render_graph_builder.hpp"
+#include <minitrace/minitrace.h>
 #include <unordered_set>
 #include "../../util/logger.hpp"
-#include "nova/profiler.h"
 
 namespace nova::renderer {
     /*!
@@ -77,8 +77,8 @@ namespace nova::renderer {
     }
 
     std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_data>& passes) {
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        NOVA_PROFILER_SCOPE;
+        MTR_SCOPE("Renderpass", "order_passes");
+
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
         std::vector<std::string> ordered_passes;
 

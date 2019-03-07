@@ -8,10 +8,9 @@
 
 #include <algorithm>
 #include <d3d12sdklayers.h>
-#include <unordered_set>
 #include "dx12_render_engine.hpp"
 
-#include "../../../3rdparty/SPIRV-Cross/spirv_cross.hpp"
+#include <spirv_cross.hpp>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../nova_renderer.hpp"
