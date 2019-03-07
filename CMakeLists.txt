@@ -274,8 +274,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-util
                      unofficial::vulkan-memory-allocator::vulkan-memory-allocator
                      Vulkan::Vulkan
-                     vulkan::sdk
-                     ${Vulkan_LIBRARIES})
+                     vulkan::sdk)
 
 ##############################
 # Find C++ filesystem header #
