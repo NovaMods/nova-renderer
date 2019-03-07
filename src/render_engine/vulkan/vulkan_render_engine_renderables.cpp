@@ -14,7 +14,11 @@ namespace nova::renderer {
 
         const uint32_t alignment = static_cast<uint32_t>(gpu.props.limits.minUniformBufferOffsetAlignment);
 
-        static_model_matrix_buffer = std::make_unique<auto_buffer>("NovaStaticModelUBO", vma_allocator, info, alignment, false);
+        static_model_matrix_buffer = std::make_unique<fixed_size_buffer_allocator<sizeof(glm::mat4)>>("NovaStaticModelUBO",
+                                                                                                      vma_allocator,
+                                                                                                      info,
+                                                                                                      alignment,
+                                                                                                      false);
     }
 
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {
@@ -77,7 +81,7 @@ namespace nova::renderer {
         renderable.id = id;
         metadata_for_renderables[id] = meta;
 
-        renderable.matrix_index = static_model_matrix_buffer->allocate_space(sizeof(glm::mat4));
+        renderable.model_matrix_slot = static_model_matrix_buffer->allocate_block();
 
         // Find the materials basses that this renderable belongs to, put it in the appropriate maps
         for(const material_pass* pass : passes) {
@@ -92,7 +96,8 @@ namespace nova::renderer {
             const renderable_metadata& meta = metadata_for_renderables.at(id);
             for(const std::string& pass_name : meta.passes) {
                 if(renderables_by_material.find(pass_name) != renderables_by_material.end()) {
-                    std::unordered_map<mesh_id_t, std::vector<vk_static_mesh_renderable>>& renderables_for_mesh = renderables_by_material[pass_name][meta.buffer].static_meshes;
+                    std::unordered_map<mesh_id_t, std::vector<vk_static_mesh_renderable>>&
+                        renderables_for_mesh = renderables_by_material[pass_name][meta.buffer].static_meshes;
                     for(auto& [mesh_id, renderables] : renderables_for_mesh) {
                         for(vk_static_mesh_renderable& renderable : renderables) {
                             if(renderable.id == meta.id) {

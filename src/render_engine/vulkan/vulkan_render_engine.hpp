@@ -31,6 +31,7 @@
 #include <mutex>
 #include "../../render_objects/renderables.hpp"
 #include "auto_allocating_buffer.hpp"
+#include "fixed_size_buffer_allocator.hpp"
 #include "swapchain.hpp"
 
 namespace nova::ttl {
@@ -514,7 +515,7 @@ namespace nova::renderer {
         /*!
          * \brief A buffer to hold model matrices for static render objects
          */
-        std::unique_ptr<auto_buffer> static_model_matrix_buffer;
+        std::unique_ptr<fixed_size_buffer_allocator<sizeof(glm::mat4)>> static_model_matrix_buffer;
 
         /*
          * All the renderables that Nova will process

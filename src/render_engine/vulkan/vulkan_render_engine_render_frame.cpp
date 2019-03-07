@@ -523,7 +523,7 @@ namespace nova::renderer {
                 start_index = cur_index;
                 for(const vk_static_mesh_renderable& static_mesh : static_meshes) {
                     if(static_mesh.is_visible) {
-                        matrix_indices[cur_index] = static_mesh.matrix_index;
+                        matrix_indices[cur_index] = static_mesh.model_matrix_slot->index;
                         ++cur_index;
                     }
                 }

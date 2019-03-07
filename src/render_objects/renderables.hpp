@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.h>
 #include "../loading/shaderpack/shaderpack_data.hpp"
 #include "../render_engine/render_engine.hpp"
+#include "../render_engine/vulkan/fixed_size_buffer_allocator.hpp"
 
 namespace nova::renderer {
     static std::atomic<renderable_id_t> next_renderable_id;
@@ -24,11 +25,10 @@ namespace nova::renderer {
 
         bool is_visible = true;
 
-        uint32_t matrix_index = 0;
+        fixed_size_buffer_allocator<sizeof(glm::mat4)>::block* model_matrix_slot = nullptr;
     };
 
-    struct vk_static_mesh_renderable : renderable_base {
-    };
+    struct vk_static_mesh_renderable : renderable_base {};
 } // namespace nova::renderer
 
 #endif // NOVA_RENDERER_RENDER_OBJECT_HPP

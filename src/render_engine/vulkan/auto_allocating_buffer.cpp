@@ -36,7 +36,7 @@ namespace nova::renderer {
         size = size > alignment ? size : alignment;
         int32_t index_to_allocate_from = -1;
         if(!chunks.empty()) {
-            // Iterate backwards so that the blocks are at the start of the vector's memory, so inserting at the end 
+            // Iterate backwards so that the blocks are at the start of the vector's memory, so inserting at the end
             // or deleting from the end (expected use case) has a minimal cost
             for(int32_t i = static_cast<int32_t>(chunks.size() - 1); i >= 0; --i) {
                 if(chunks[static_cast<uint32_t>(i)].range >= size) {
