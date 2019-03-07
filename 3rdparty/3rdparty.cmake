@@ -31,7 +31,6 @@ find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
 
-include_target(spirv::headers "${CMAKE_CURRENT_LIST_DIR}/SPIRV-Headers")
 include_target(vulkan::sdk "${VULKAN_INCLUDE}")
 
 find_package(fmt CONFIG REQUIRED)

@@ -56,10 +56,9 @@ namespace nova::renderer {
             {
                 MTR_SCOPE("Init", "InitDirectX12RenderEngine");
                 engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
-            } 
-            break;
+            } break;
 #else
-            NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
+                NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
 #endif
             case graphics_api::vulkan:
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
