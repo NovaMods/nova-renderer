@@ -1,9 +1,3 @@
-[submodule "3rdparty/SPIRV-Cross"]
-	path = 3rdparty/SPIRV-Cross
-	url = https://github.com/KhronosGroup/SPIRV-Cross.git
-[submodule "3rdparty/glslang"]
-	path = 3rdparty/glslang
-	url = https://github.com/KhronosGroup/glslang.git
 [submodule "3rdparty/minitrace"]
 	path = 3rdparty/minitrace
 	url = https://github.com/hrydgard/minitrace.git
