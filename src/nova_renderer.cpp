@@ -9,7 +9,6 @@
 
 #include "glslang/MachineIndependent/Initialize.h"
 #include "loading/shaderpack/shaderpack_loading.hpp"
-#include "util/logger.hpp"
 
 #if defined(NOVA_WINDOWS)
 #include "render_engine/dx12/dx12_render_engine.hpp"
@@ -40,8 +39,8 @@ namespace nova::renderer {
             if(render_doc != nullptr) {
                 render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
-                RENDERDOC_InputButton capture_key = eRENDERDOC_Key_PrtScrn;
-                render_doc->SetCaptureKeys(&capture_key, 1);
+                RENDERDOC_InputButton capture_key[] = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
+                render_doc->SetCaptureKeys(capture_key, 1);
 
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, 1U);
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, 1U);
@@ -57,7 +56,10 @@ namespace nova::renderer {
             {
                 MTR_SCOPE("Init", "InitDirectX12RenderEngine");
                 engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
-            } break;
+            } 
+            break;
+#else
+            NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
 #endif
             case graphics_api::vulkan:
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");

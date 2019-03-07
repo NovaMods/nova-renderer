@@ -50,8 +50,6 @@ set(SPIRV_SKIP_TESTS ON CACHE BOOL "Disable SPIRV-Tools tests" FORCE)
 set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning SPIRV-Tools" FORCE)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/SPIRV-Tools)
 
-target_includes_system(fmt::fmt)
-
 #####################
 # Setup google test #
 #####################
@@ -60,7 +58,6 @@ if(NOVA_TEST)
 	set(gtest_force_shared_crt ON CACHE BOOL "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
 	set(BUILD_GMOCK OFF CACHE BOOL "Build GMOCK shared library" FORCE)
 	find_package(GTest MODULE REQUIRED)
-	include(GoogleTest)
 endif()
 
 ############################

@@ -268,7 +268,6 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-core
                      spirv-cross-cpp
                      spirv-cross-glsl
-                     spirv-cross-hlsl
                      spirv-cross-reflect
                      spirv-cross-msl
                      spirv-cross-util
@@ -303,7 +302,7 @@ if(WIN32)
     add_compile_options_if_supported(/Zc:twoPhase- /permissive)
 
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler glslang::HLSL)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler glslang::HLSL spirv-cross-hlsl)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
 

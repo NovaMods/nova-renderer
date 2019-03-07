@@ -16,9 +16,9 @@
 
 #include <memory>
 #include <mutex>
+#include <spirv_hlsl.hpp>
 #include <unordered_map>
 #include <wrl.h>
-#include "../../../3rdparty/SPIRV-Cross/spirv_hlsl.hpp"
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "dx12_texture.hpp"
 
