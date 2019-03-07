@@ -146,6 +146,7 @@ namespace nova::renderer {
         uint32_t model_matrix_offset;
 
         VkDrawIndexedIndirectCommand draw_cmd;
+        mesh_id_t id;
     };
 
     struct vk_gpu_info {
@@ -159,7 +160,7 @@ namespace nova::renderer {
     };
 
     struct vk_renderables {
-        std::vector<vk_static_mesh_renderable> static_meshes;
+        std::unordered_map<mesh_id_t, std::vector<vk_static_mesh_renderable>> static_meshes;
     };
 
     class vulkan_render_engine : public render_engine {

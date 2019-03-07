@@ -24,11 +24,10 @@ namespace nova::renderer {
 
         bool is_visible = true;
 
-        VkDescriptorSet model_matrix_ubo_descriptor = nullptr;
+        uint32_t matrix_index = 0;
     };
 
     struct vk_static_mesh_renderable : renderable_base {
-        const VkDrawIndexedIndirectCommand* draw_cmd = nullptr;
     };
 } // namespace nova::renderer
 

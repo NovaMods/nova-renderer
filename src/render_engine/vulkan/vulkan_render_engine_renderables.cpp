@@ -71,16 +71,17 @@ namespace nova::renderer {
 
         // Set all the renderable's data
         vk_static_mesh_renderable renderable = {};
-        renderable.draw_cmd = &mesh->draw_cmd;
 
         // Generate the renderable ID and store the renderable
         renderable_id_t id = next_renderable_id.fetch_add(1);
         renderable.id = id;
         metadata_for_renderables[id] = meta;
 
+        renderable.matrix_index = static_model_matrix_buffer->allocate_space(sizeof(glm::mat4));
+
         // Find the materials basses that this renderable belongs to, put it in the appropriate maps
         for(const material_pass* pass : passes) {
-            renderables_by_material[pass->name][mesh->memory->block->get_buffer()].static_meshes.push_back(renderable);
+            renderables_by_material[pass->name][mesh->memory->block->get_buffer()].static_meshes[mesh->id].push_back(renderable);
         }
 
         return result<renderable_id_t>(std::move(id));
@@ -91,10 +92,12 @@ namespace nova::renderer {
             const renderable_metadata& meta = metadata_for_renderables.at(id);
             for(const std::string& pass_name : meta.passes) {
                 if(renderables_by_material.find(pass_name) != renderables_by_material.end()) {
-                    std::vector<vk_static_mesh_renderable>& renderables = renderables_by_material[pass_name][meta.buffer].static_meshes;
-                    for(vk_static_mesh_renderable& renderable : renderables) {
-                        if(renderable.id == meta.id) {
-                            renderable.is_visible = is_visible;
+                    std::unordered_map<mesh_id_t, std::vector<vk_static_mesh_renderable>>& renderables_for_mesh = renderables_by_material[pass_name][meta.buffer].static_meshes;
+                    for(auto& [mesh_id, renderables] : renderables_for_mesh) {
+                        for(vk_static_mesh_renderable& renderable : renderables) {
+                            if(renderable.id == meta.id) {
+                                renderable.is_visible = is_visible;
+                            }
                         }
                     }
                 }

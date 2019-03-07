@@ -94,7 +94,7 @@ namespace nova::renderer {
             mesh_draw_command.vertexOffset = static_cast<int32_t>(mem->offset);
             mesh_draw_command.firstInstance = 0;
 
-            meshes[cmd.mesh_id] = {mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command};
+            meshes[cmd.mesh_id] = {mem, cmd.indices_offset, cmd.model_matrix_offset, mesh_draw_command, cmd.mesh_id};
 
             freed_buffers.insert(freed_buffers.end(), cmd.staging_buffer);
         }
@@ -439,7 +439,9 @@ namespace nova::renderer {
         vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, mat_pass.descriptor_sets.data(), 0, nullptr);
     }
 
-    void vulkan_render_engine::draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds, const result<std::string>& per_model_buffer_binding) {
+    void vulkan_render_engine::draw_all_for_material(const material_pass& pass,
+                                                     VkCommandBuffer cmds,
+                                                     const result<std::string>& per_model_buffer_binding) {
         // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
         // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
         // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute
@@ -513,11 +515,30 @@ namespace nova::renderer {
 
             // Version 1: write commands for all things to the indirect draw buffer
             auto* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
-            uint32_t draw_idx = 0;
-            for(const vk_static_mesh_renderable& static_mesh : renderables.static_meshes) {
-                if(static_mesh.is_visible) {
-                    indirect_commands[draw_idx] = *static_mesh.draw_cmd;
-                    draw_idx++;
+            std::unordered_map<uint32_t, uint32_t> matrix_indices;
+            uint32_t start_index = 0;
+            uint32_t cur_index = 0;
+            uint32_t draw_command_write_index = 0;
+            for(const auto& [mesh_id, static_meshes] : renderables.static_meshes) {
+                start_index = cur_index;
+                for(const vk_static_mesh_renderable& static_mesh : static_meshes) {
+                    if(static_mesh.is_visible) {
+                        matrix_indices[cur_index] = static_mesh.matrix_index;
+                        ++cur_index;
+                    }
+                }
+
+                if(cur_index != start_index) {
+                    const vk_mesh& mesh = meshes.at(mesh_id);
+
+                    VkDrawIndexedIndirectCommand& cmd = indirect_commands[draw_command_write_index];
+                    cmd.vertexOffset = mesh.draw_cmd.vertexOffset;
+                    cmd.firstIndex = mesh.draw_cmd.firstIndex;
+                    cmd.indexCount = mesh.draw_cmd.indexCount;
+                    cmd.firstInstance = start_index;
+                    cmd.instanceCount = cur_index - start_index;
+
+                    ++draw_command_write_index;
                 }
             }
 
