@@ -73,10 +73,10 @@ namespace nova::renderer {
             return 1;
         }
 
-        while(!window->should_close()) {
+        /*(while(!window->should_close()) {
             renderer->execute_frame();
             window->on_frame_end();
-        }
+        }*/
 
         nova_renderer::deinitialize();
 

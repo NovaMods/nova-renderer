@@ -529,7 +529,8 @@ namespace nova::renderer {
 
         result<const vk_mesh*> get_mesh_for_renderable(const static_mesh_renderable_data& data);
 
-        result<renderable_id_t> register_renderable(const static_mesh_renderable_data& data, const vk_mesh* mesh,
+        result<renderable_id_t> register_renderable(const static_mesh_renderable_data& data,
+                                                    const vk_mesh* mesh,
                                                     const std::vector<const material_pass*>& passes);
 #pragma endregion
 

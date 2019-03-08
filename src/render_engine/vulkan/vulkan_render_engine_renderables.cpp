@@ -1,7 +1,7 @@
+#include <glm/gtc/matrix_transform.hpp>
 #include "../../render_objects/renderables.hpp"
 #include "fmt/format.h"
 #include "vulkan_render_engine.hpp"
-# include <glm/gtc/matrix_transform.hpp>
 
 namespace nova::renderer {
     void vulkan_render_engine::create_builtin_uniform_buffers() {
@@ -18,8 +18,7 @@ namespace nova::renderer {
         static_model_matrix_buffer = std::make_unique<fixed_size_buffer_allocator<sizeof(glm::mat4)>>("NovaStaticModelUBO",
                                                                                                       vma_allocator,
                                                                                                       info,
-                                                                                                      alignment,
-                                                                                                      false);
+                                                                                                      alignment);
     }
 
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {

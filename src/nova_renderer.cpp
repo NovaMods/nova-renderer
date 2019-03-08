@@ -47,6 +47,11 @@ namespace nova::renderer {
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_VerifyMapWrites, 1U);
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, 1U);
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
+
+                NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
+
+            } else {
+                NOVA_LOG(ERROR) << "Could not load RenderDoc";
             }
         }
 
