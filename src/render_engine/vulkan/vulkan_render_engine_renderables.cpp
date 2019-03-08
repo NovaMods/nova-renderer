@@ -1,6 +1,7 @@
 #include "../../render_objects/renderables.hpp"
 #include "fmt/format.h"
 #include "vulkan_render_engine.hpp"
+# include <glm/gtc/matrix_transform.hpp>
 
 namespace nova::renderer {
     void vulkan_render_engine::create_builtin_uniform_buffers() {
@@ -24,7 +25,7 @@ namespace nova::renderer {
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {
         return get_material_passes_for_renderable(data).map([&](const std::vector<const material_pass*>& passes) {
             return get_mesh_for_renderable(data).map(
-                std::bind(&vulkan_render_engine::register_renderable, this, std::placeholders::_1, passes));
+                std::bind(&vulkan_render_engine::register_renderable, this, data, std::placeholders::_1, passes));
         });
     }
 
@@ -59,7 +60,8 @@ namespace nova::renderer {
         return result<const vk_mesh*>(&meshes.at(data.mesh));
     }
 
-    result<renderable_id_t> vulkan_render_engine::register_renderable(const vk_mesh* mesh,
+    result<renderable_id_t> vulkan_render_engine::register_renderable(const static_mesh_renderable_data& data,
+                                                                      const vk_mesh* mesh,
                                                                       const std::vector<const material_pass*>& passes) {
         renderable_metadata meta = {};
         meta.passes.reserve(passes.size());
@@ -81,7 +83,16 @@ namespace nova::renderer {
         renderable.id = id;
         metadata_for_renderables[id] = meta;
 
+        // Set up model matrix in buffer
         renderable.model_matrix_slot = static_model_matrix_buffer->allocate_block();
+        glm::mat4* model_matrices = reinterpret_cast<glm::mat4*>(static_model_matrix_buffer->get_allocation_info().pMappedData);
+
+        glm::mat4& model_matrix = model_matrices[renderable.model_matrix_slot->index];
+        model_matrix = glm::translate(model_matrix, data.initial_position);
+        model_matrix = glm::rotate(model_matrix, data.initial_rotation.x, {1, 0, 0});
+        model_matrix = glm::rotate(model_matrix, data.initial_rotation.y, {0, 1, 0});
+        model_matrix = glm::rotate(model_matrix, data.initial_rotation.x, {0, 0, 1});
+        model_matrix = glm::scale(model_matrix, data.initial_scale);
 
         // Find the materials basses that this renderable belongs to, put it in the appropriate maps
         for(const material_pass* pass : passes) {

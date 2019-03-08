@@ -5,8 +5,6 @@
 set(BUILD_DEMOS OFF CACHE BOOL "Disable demos" FORCE)
 set(BUILD_ICD OFF CACHE BOOL "Disable ICD" FORCE)
 
-set(BUILD_SHARED_LIBS OFF)
-
 include(IncludeTarget)
 include(TargetIncludesSystem)
 

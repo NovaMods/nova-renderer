@@ -13,6 +13,9 @@
 namespace nova::renderer {
     static std::atomic<renderable_id_t> next_renderable_id;
 
+    template <int BlockSize>
+    using block_t = typename fixed_size_buffer_allocator<BlockSize>::block*;
+
     struct renderable_metadata {
         renderable_id_t id = 0;
 
@@ -25,7 +28,7 @@ namespace nova::renderer {
 
         bool is_visible = true;
 
-        fixed_size_buffer_allocator<sizeof(glm::mat4)>::block* model_matrix_slot = nullptr;
+        block_t<sizeof(glm::mat4)> model_matrix_slot = nullptr;
     };
 
     struct vk_static_mesh_renderable : renderable_base {};
