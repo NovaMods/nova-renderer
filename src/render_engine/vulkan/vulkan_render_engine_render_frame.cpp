@@ -343,6 +343,8 @@ namespace nova::renderer {
 
         vkCmdEndRenderPass(cmds);
 
+        NOVA_LOG(TRACE) << "Ending renderpass " << *renderpass_name;
+
         if(renderpass.writes_to_backbuffer) {
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -369,17 +371,23 @@ namespace nova::renderer {
                                  nullptr,
                                  1,
                                  &barrier);
+            NOVA_LOG(TRACE) << "Added backbuffer barrier after renderpass " << *renderpass_name;
         }
 
         vkEndCommandBuffer(cmds);
+        NOVA_LOG(TRACE) << "Ended command buffer for renderpass " << *renderpass_name;
 
         // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's
         // fence
         if(renderpass.writes_to_backbuffer) {
+            NOVA_LOG(TRACE) << "image_available_semaphores.size() = " << image_available_semaphores.size()
+                            << " current_frame = " << current_frame;
             submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), {image_available_semaphores.at(current_frame)});
+            NOVA_LOG(TRACE) << "Submitted to render to backbuffer";
         }
         else {
             submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
+            NOVA_LOG(TRACE) << "Submitted to render to rendertarget";
         }
     }
 

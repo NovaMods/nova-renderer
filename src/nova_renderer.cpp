@@ -49,8 +49,8 @@ namespace nova::renderer {
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
 
                 NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
-
-            } else {
+            }
+            else {
                 NOVA_LOG(ERROR) << "Could not load RenderDoc";
             }
         }

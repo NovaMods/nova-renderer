@@ -56,8 +56,10 @@ namespace nova::renderer {
 
         renderer->execute_frame();
         window->on_frame_end();
+        NOVA_LOG(TRACE) << "Finished dummy frame one";
         renderer->execute_frame();
         window->on_frame_end();
+        NOVA_LOG(TRACE) << "Finished dummy frame two";
 
         result<renderable_id_t> renderable_add_result = mesh_add_result.map([&](const mesh_id_t& mesh_id) -> result<renderable_id_t> {
             static_mesh_renderable_data data = {};
