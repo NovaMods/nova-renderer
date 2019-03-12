@@ -81,7 +81,6 @@ namespace nova::renderer {
         }*/
 
         nova_renderer::deinitialize();
-        NOVA_LOG(TRACE) << "Nova deinitialized";
 
         return 0;
     }

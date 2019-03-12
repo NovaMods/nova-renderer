@@ -71,11 +71,7 @@ namespace nova::renderer {
         }
     }
 
-    nova_renderer::~nova_renderer() {
-        NOVA_LOG(TRACE) << "Minitrace about to shut down";
-        mtr_shutdown();
-        NOVA_LOG(TRACE) << "Minitrace shutdown successful";
-    }
+    nova_renderer::~nova_renderer() { mtr_shutdown(); }
 
     nova_settings& nova_renderer::get_settings() { return render_settings; }
 
@@ -104,11 +100,7 @@ namespace nova::renderer {
         return (instance = std::make_unique<nova_renderer>(settings)).get();
     }
 
-    void nova_renderer::deinitialize() {
-        NOVA_LOG(TRACE) << "About to reset the singleton pointer";
-        instance.reset();
-        NOVA_LOG(TRACE) << "Singleton pointer reset";
-    }
+    void nova_renderer::deinitialize() { instance.reset(); }
 
     nova::ttl::task_scheduler& nova_renderer::get_task_scheduler() { return task_scheduler; }
 } // namespace nova::renderer

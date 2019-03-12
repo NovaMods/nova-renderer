@@ -25,16 +25,13 @@ namespace nova::renderer {
         UpdateWindow(window_handle);
     }
 
-    win32_window::~win32_window() {
-        unregister_window_class();
-        NOVA_LOG(TRACE) << "Win32 window destructed";
-    }
+    win32_window::~win32_window() { unregister_window_class(); }
 
     void win32_window::create_window(const uint32_t width, const uint32_t height) {
         const DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;
         const DWORD extended_style = WS_EX_APPWINDOW | WS_EX_TOPMOST;
 
-        auto* title = const_cast<WCHAR*>(L"Minecraft Nova Renderer");
+        auto* title = const_cast<WCHAR*>(L"Nova Renderer");
 
         window_handle = CreateWindowExW(extended_style,
                                         window_class_name,

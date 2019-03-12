@@ -40,7 +40,7 @@ namespace nova::renderer {
                                     const VkBufferCreateInfo& create_info,
                                     const uint64_t alignment)
             : uniform_buffer(name, allocator, create_info, alignment, true),
-              num_blocks(create_info.size / BlockSize),
+              num_blocks(static_cast<uint32_t>(create_info.size) / BlockSize),
               blocks(new block[num_blocks]),
               first_block(blocks) {
 
@@ -72,11 +72,9 @@ namespace nova::renderer {
         }
 
         virtual ~fixed_size_buffer_allocator() {
-            NOVA_LOG(TRACE) << "Destructing a fixed_size_buffer_allocator";
             if(first_block != nullptr) {
                 delete[] first_block;
             }
-            NOVA_LOG(TRACE) << "Destruction complete";
         }
 
         /*!
