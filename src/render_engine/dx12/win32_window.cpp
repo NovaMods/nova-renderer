@@ -25,7 +25,10 @@ namespace nova::renderer {
         UpdateWindow(window_handle);
     }
 
-    win32_window::~win32_window() { unregister_window_class(); }
+    win32_window::~win32_window() {
+        unregister_window_class();
+        NOVA_LOG(TRACE) << "Win32 window destructed";
+    }
 
     void win32_window::create_window(const uint32_t width, const uint32_t height) {
         const DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;

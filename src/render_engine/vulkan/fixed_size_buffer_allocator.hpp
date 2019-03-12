@@ -39,8 +39,11 @@ namespace nova::renderer {
                                     VmaAllocator allocator,
                                     const VkBufferCreateInfo& create_info,
                                     const uint64_t alignment)
-            : uniform_buffer(name, allocator, create_info, alignment, true), num_blocks(create_info.size / BlockSize) {
-            blocks = new block[num_blocks];
+            : uniform_buffer(name, allocator, create_info, alignment, true),
+              num_blocks(create_info.size / BlockSize),
+              blocks(new block[num_blocks]),
+              first_block(blocks) {
+
             for(uint32_t i = 0; i < num_blocks; i++) {
                 blocks[i].index = i;
                 if(i < num_blocks - 1) {
@@ -69,16 +72,11 @@ namespace nova::renderer {
         }
 
         virtual ~fixed_size_buffer_allocator() {
-            if(blocks != nullptr) {
-                // Find the first block and issue the `delete[]` on that
-                for(uint32_t i = 0; i < num_blocks; i++) {
-                    if(blocks[i].index == 0) {
-                        delete[] & blocks[i];
-
-                        break;
-                    }
-                }
+            NOVA_LOG(TRACE) << "Destructing a fixed_size_buffer_allocator";
+            if(first_block != nullptr) {
+                delete[] first_block;
             }
+            NOVA_LOG(TRACE) << "Destruction complete";
         }
 
         /*!
@@ -101,8 +99,9 @@ namespace nova::renderer {
         }
 
     private:
-        block* blocks;
-
         uint32_t num_blocks;
+
+        block* blocks;
+        block* first_block;
     };
 } // namespace nova::renderer
