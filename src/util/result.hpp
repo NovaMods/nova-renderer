@@ -1,7 +1,12 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
+
+#include <fmt/format.h>
+
+#include "utils.hpp"
 
 namespace nova::renderer {
     struct nova_error {
@@ -11,9 +16,9 @@ namespace nova::renderer {
 
         nova_error() = default;
 
-        explicit nova_error(std::string&& message);
+        explicit nova_error(std::string message);
 
-        nova_error(std::string&& message, nova_error&& cause);
+        nova_error(std::string message, nova_error cause);
 
         [[nodiscard]] std::string to_string() const;
     };
@@ -33,7 +38,7 @@ namespace nova::renderer {
 
         explicit result(const ValueType& value) : value(value), has_value(true) {}
 
-        explicit result(nova_error&& error) : error(std::forward<nova_error>(error)) {}
+        explicit result(nova_error error) : error(std::move(error)) {}
 
         result(const result<ValueType>& other) = delete;
         result<ValueType>& operator=(const result<ValueType>& other) = delete;
@@ -76,7 +81,19 @@ namespace nova::renderer {
         }
 
         template <typename FuncType>
-        auto map(FuncType&& func) -> result<decltype(func(value).value)> {
+        auto map(FuncType&& func) -> result<decltype(func(value))> {
+            using RetVal = decltype(func(value));
+
+            if(has_value) {
+                return result<RetVal>(func(value));
+            }
+            else {
+                return result<RetVal>(std::move(error));
+            }
+        }
+
+        template <typename FuncType>
+        auto flatMap(FuncType&& func) -> result<decltype(func(value).value)> {
             using RetVal = decltype(func(value).value);
 
             if(has_value) {
@@ -86,5 +103,17 @@ namespace nova::renderer {
                 return result<RetVal>(std::move(error));
             }
         }
+
+        void on_error(std::function<void(const nova_error&)> error_func) const {
+            if(!has_value) {
+                error_func(error);
+            }
+        }
     };
+
+    template <typename ValueType, typename... Args>
+    result<ValueType> error_result(fmt::compile_string s, Args... args) {
+        return result<ValueType>(nova_error(fmt::format(s, args)));
+    }
+
 } // namespace nova::renderer

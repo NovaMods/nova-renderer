@@ -34,9 +34,11 @@ namespace nova::renderer {
 
         if(settings.debug.renderdoc.enabled) {
             MTR_SCOPE("Init", "LoadRenderdoc");
-            render_doc = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
+            auto rd_load_result = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
 
-            if(render_doc != nullptr) {
+            rd_load_result.map([&](RENDERDOC_API_1_3_0* api) {
+                render_doc = api;
+
                 render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
                 RENDERDOC_InputButton capture_key[] = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
@@ -49,10 +51,9 @@ namespace nova::renderer {
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
 
                 NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
-            }
-            else {
-                NOVA_LOG(ERROR) << "Could not load RenderDoc";
-            }
+
+                return 0;
+            });
         }
 
         switch(settings.api) {

@@ -3,9 +3,9 @@
 
 namespace nova::renderer {
 
-    nova_error::nova_error(std::string&& message) : message(message) {}
+    nova_error::nova_error(std::string message) : message(std::move(message)) {}
 
-    nova_error::nova_error(std::string&& message, nova_error&& cause) : message(message) {
+    nova_error::nova_error(std::string message, nova_error cause) : message(std::move(message)) {
         this->cause = std::make_unique<nova_error>();
         *this->cause = std::forward<nova_error>(cause);
     }

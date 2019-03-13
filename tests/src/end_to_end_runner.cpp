@@ -29,7 +29,7 @@ namespace nova::renderer {
         settings.vulkan.application_name = "Nova Renderer test";
         settings.vulkan.application_version = {0, 8, 0};
         settings.debug.enabled = true;
-        settings.debug.renderdoc.enabled = false;
+        settings.debug.renderdoc.enabled = true;
         settings.window.width = 640;
         settings.window.height = 480;
         const auto renderer = nova_renderer::initialize(settings);
@@ -61,7 +61,7 @@ namespace nova::renderer {
         window->on_frame_end();
         NOVA_LOG(TRACE) << "Finished dummy frame two";
 
-        result<renderable_id_t> renderable_add_result = mesh_add_result.map([&](const mesh_id_t& mesh_id) {
+        result<renderable_id_t> renderable_add_result = mesh_add_result.flatMap([&](const mesh_id_t& mesh_id) {
             static_mesh_renderable_data data = {};
             data.mesh = mesh_id;
             data.material_name = "gbuffers_terrain";
@@ -75,10 +75,10 @@ namespace nova::renderer {
             return 1;
         }
 
-        /*(while(!window->should_close()) {
+        while(!window->should_close()) {
             renderer->execute_frame();
             window->on_frame_end();
-        }*/
+        }
 
         nova_renderer::deinitialize();
 

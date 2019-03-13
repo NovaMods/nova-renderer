@@ -22,8 +22,8 @@ namespace nova::renderer {
     }
 
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {
-        return get_material_passes_for_renderable(data).map([&](const std::vector<const material_pass*>& passes) {
-            return get_mesh_for_renderable(data).map(
+        return get_material_passes_for_renderable(data).flatMap([&](const std::vector<const material_pass*>& passes) {
+            return get_mesh_for_renderable(data).flatMap(
                 std::bind(&vulkan_render_engine::register_renderable, this, data, std::placeholders::_1, passes));
         });
     }
