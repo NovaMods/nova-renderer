@@ -111,9 +111,5 @@ namespace nova::renderer {
         }
     };
 
-    template <typename ValueType, typename... Args>
-    result<ValueType> error_result(fmt::compile_string s, Args... args) {
-        return result<ValueType>(nova_error(fmt::format(s, args)));
-    }
-
+#define MAKE_ERROR(s, ...) nova_error(fmt::format(fmt(s), __VA_ARGS__))
 } // namespace nova::renderer

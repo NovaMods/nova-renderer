@@ -53,6 +53,9 @@ namespace nova::renderer {
                 NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
 
                 return 0;
+
+            }).on_error([](const nova_error& error) { 
+                NOVA_LOG(ERROR) << error.to_string();
             });
         }
 
