@@ -31,7 +31,7 @@ namespace nova::renderer {
         create_info.pNext = nullptr;
         create_info.flags = 0;
         create_info.pApplicationInfo = &application_info;
-        if(settings.debug.enabled) {
+        if(settings.debug.enabled && settings.debug.enable_validation_layers) {
             enabled_validation_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
         }
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_validation_layer_names.size());
@@ -47,10 +47,11 @@ namespace nova::renderer {
 #error Unsupported Operating system
 #endif
 
-#ifndef NDEBUG
-        enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-        enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
+        if(settings.debug.enabled && settings.debug.enable_validation_layers) {
+            enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+            enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        }
+
         create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extension_names.size());
         create_info.ppEnabledExtensionNames = enabled_extension_names.data();
 
@@ -68,11 +69,13 @@ namespace nova::renderer {
 
         NOVA_LOG(TRACE) << fmt::format(fmt("Supported extensions:\n{:s}"), fmt::to_string(buf));
 
-        if(settings.debug.enabled) {
+        if(settings.debug.enabled && settings.debug.enable_validation_layers) {
             vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
                 vkGetInstanceProcAddr(vk_instance, "vkCreateDebugUtilsMessengerEXT"));
+            NOVA_LOG(TRACE) << "Loaded vkCreateDebugUtilsMessengerEXT into " << vkCreateDebugUtilsMessengerEXT;
             vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
                 vkGetInstanceProcAddr(vk_instance, "vkDestroyDebugReportCallbackEXT"));
+            NOVA_LOG(TRACE) << "Loaded vkDestroyDebugReportCallbackEXT into " << vkDestroyDebugReportCallbackEXT;
 
             VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
             debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -116,7 +119,7 @@ namespace nova::renderer {
 
         create_builtin_uniform_buffers();
 
-        if(settings.debug.enabled) {
+        if(settings.debug.enabled && settings.debug.enable_validation_layers) {
             vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
                 vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
             if(vkSetDebugUtilsObjectNameEXT == nullptr) {

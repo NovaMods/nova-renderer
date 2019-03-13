@@ -76,7 +76,7 @@ namespace nova::renderer {
             /*!
              * \brief The size of one buffer
              *
-             * Nova doens't allocate `max_total_allocation` memory initially. It only allocates a single buffer of
+             * Nova doesn't allocate `max_total_allocation` memory initially. It only allocates a single buffer of
              * `new_buffer_size` size, then allocates new buffers as needed
              *
              * This number must be a whole-number multiple of `buffer_part_size`
@@ -107,7 +107,7 @@ namespace nova::renderer {
              * Nova developers need it on to debug their Vulkan or DX12 usage, while Nova should be robust enough that
              * errors that the validation layers would catch never happen in a shipping build
              */
-            bool enable_validation_layers = true;
+            bool enable_validation_layers = false;
 
             struct {
                 /*!
@@ -173,7 +173,7 @@ namespace nova::renderer {
             /*!
              * \brief The application version to pass to Vulkan
              */
-            semver application_version = {0, 8, 3};
+            semver application_version = {0, 8, 4};
         } vulkan;
 
         /*!

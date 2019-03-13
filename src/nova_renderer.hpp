@@ -28,7 +28,7 @@ namespace nova::renderer {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit nova_renderer(const nova_settings& settings);
+        explicit nova_renderer(nova_settings settings);
 
         nova_renderer(nova_renderer&& other) noexcept = delete;
         nova_renderer& operator=(nova_renderer&& other) noexcept = delete;

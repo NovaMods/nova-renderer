@@ -22,7 +22,7 @@
 namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer::nova_renderer(const nova_settings& settings)
+    nova_renderer::nova_renderer(nova_settings settings)
         : render_settings(settings), task_scheduler(1, nova::ttl::empty_queue_behavior::YIELD) {
 
         mtr_init("trace.json");
@@ -43,7 +43,7 @@ namespace nova::renderer {
                     render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
                     RENDERDOC_InputButton capture_key[] = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
-                    render_doc->SetCaptureKeys(capture_key, 1);
+                    render_doc->SetCaptureKeys(capture_key, 2);
 
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, 1U);
                     render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, 1U);
