@@ -22,7 +22,7 @@
 namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer::nova_renderer(const settings_options& settings)
+    nova_renderer::nova_renderer(const nova_settings& settings)
         : render_settings(settings), task_scheduler(1, nova::ttl::empty_queue_behavior::YIELD) {
 
         mtr_init("trace.json");
@@ -36,27 +36,26 @@ namespace nova::renderer {
             MTR_SCOPE("Init", "LoadRenderdoc");
             auto rd_load_result = load_renderdoc(settings.debug.renderdoc.renderdoc_dll_path);
 
-            rd_load_result.map([&](RENDERDOC_API_1_3_0* api) {
-                render_doc = api;
+            rd_load_result
+                .map([&](RENDERDOC_API_1_3_0* api) {
+                    render_doc = api;
 
-                render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
+                    render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
-                RENDERDOC_InputButton capture_key[] = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
-                render_doc->SetCaptureKeys(capture_key, 1);
+                    RENDERDOC_InputButton capture_key[] = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
+                    render_doc->SetCaptureKeys(capture_key, 1);
 
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, 1U);
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, 1U);
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_VerifyMapWrites, 1U);
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, 1U);
-                render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
+                    render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, 1U);
+                    render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, 1U);
+                    render_doc->SetCaptureOptionU32(eRENDERDOC_Option_VerifyMapWrites, 1U);
+                    render_doc->SetCaptureOptionU32(eRENDERDOC_Option_SaveAllInitials, 1U);
+                    render_doc->SetCaptureOptionU32(eRENDERDOC_Option_APIValidation, 1U);
 
-                NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
+                    NOVA_LOG(INFO) << "Loaded RenderDoc successfully";
 
-                return 0;
-
-            }).on_error([](const nova_error& error) { 
-                NOVA_LOG(ERROR) << error.to_string();
-            });
+                    return 0;
+                })
+                .on_error([](const nova_error& error) { NOVA_LOG(ERROR) << error.to_string(); });
         }
 
         switch(settings.api) {
@@ -100,7 +99,7 @@ namespace nova::renderer {
 
     nova_renderer* nova_renderer::get_instance() { return instance.get(); }
 
-    nova_renderer* nova_renderer::initialize(const settings_options& settings) {
+    nova_renderer* nova_renderer::initialize(const nova_settings& settings) {
         return (instance = std::make_unique<nova_renderer>(settings)).get();
     }
 

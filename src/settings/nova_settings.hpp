@@ -22,13 +22,43 @@ namespace nova::renderer {
         dx12,
     };
 
+    struct nova_settings;
+
     /*!
-     * \brief All the options to configure Nova with
-     *
-     * An application that uses Nova will likely store many of these setting in its configuration file and parse them
-     * itself
+     * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
      */
-    struct settings_options {
+    class iconfig_listener {
+    public:
+        /*!
+         * \brief Tells the listeners that there has been a change in the configuration
+         *
+         * This method is called throughout Nova's lifetime whenever a configuration value changes. This method should
+         * handle changing configuration values such as the size of the window and what shaderpack the user has loaded
+         *
+         * Note that this method only receives the read-write config values (the 'settings' node)
+         *
+         * \param new_config The updated configuration
+         */
+        virtual void on_config_change(const nova_settings& new_config) = 0;
+
+        /*!
+         * \brief Tells listeners that the configuration has been loaded
+         *
+         * When Nova starts up, this method is called on all config listeners, then on_config_change is called.
+         * on_config_change should be used to listen for any config values that change throughout the program's life, so
+         * then this method should be used for any initial configuration whose values will not change throughout the
+         * program's lifetime. An example of this is reading in the bind points of the UBOs: the bind points won't change
+         * throughout the program's life, so they should be handled in this function
+         *
+         * We may want to consider two config files: one for read-only values and one for read-write values. Probably a
+         * good idea, but I don't feel like implementing that just yet
+         *
+         * \param config The configuration that was loaded
+         */
+        virtual void on_config_loaded(const nova_settings& config) = 0;
+    };
+
+    struct nova_settings {
         /*!
          * \brief Options for configuring the way mesh memory is allocated
          *
@@ -46,7 +76,7 @@ namespace nova::renderer {
             /*!
              * \brief The size of one buffer
              *
-             * Nova doesn't allocate `max_total_allocation` memory initially. It only allocates a single buffer of
+             * Nova doens't allocate `max_total_allocation` memory initially. It only allocates a single buffer of
              * `new_buffer_size` size, then allocates new buffers as needed
              *
              * This number must be a whole-number multiple of `buffer_part_size`
@@ -170,59 +200,11 @@ namespace nova::renderer {
          * \brief Settings for how Nova should allocate index memory
          */
         block_allocator_settings index_memory_settings;
-    };
-
-    /*!
-     * \brief Anything which inherits from this class wants to know about the configuration and any changes to it
-     */
-    class iconfig_listener {
-    public:
-        /*!
-         * \brief Tells the listeners that there has been a change in the configuration
-         *
-         * This method is called throughout Nova's lifetime whenever a configuration value changes. This method should
-         * handle changing configuration values such as the size of the window and what shaderpack the user has loaded
-         *
-         * Note that this method only recieves the read-write config values (the 'settings' node)
-         *
-         * \param new_config The updated configuration
-         */
-        virtual void on_config_change(const settings_options& new_config) = 0;
-
-        /*!
-         * \brief Tells listeners that the configuration has been loaded
-         *
-         * When Nova starts up, this method is called on all config listeners, then on_config_change is called.
-         * on_config_change should be used to listen for any config values that change throughout the program's life, so
-         * then this method should be used for any initial configuration whose values will not change throughout the
-         * program's lifetime. An example of this is reading in the bind points of the UBOs: the bind points won't change
-         * throughout the program's life, so they should be handled in this function
-         *
-         * We may want to consider two config files: one for read-only values and one for read-write values. Probably a
-         * good idea, but I don't feel like implimenting that just yet
-         *
-         * \param config The configuration that was loaded
-         */
-        virtual void on_config_loaded(const settings_options& config) = 0;
-    };
-
-    /*!
-     * \brief Holds the configuration of Nova
-     *
-     * Stores values like the graphics settings, performance settings, any settings shaderpacks define, etc. Uses a JSON
-     * document as the data model
-     */
-    class nova_settings {
-    public:
-        explicit nova_settings(settings_options options);
 
         /*!
          * \brief Registers the given iconfig_change_listener as an Observer
          */
         void register_change_listener(iconfig_listener* new_listener);
-
-        settings_options& get_options();
-        [[nodiscard]] settings_options get_options() const;
 
         /*!
          * \brief Updates all the change listeners with the current state of the settings
@@ -239,8 +221,6 @@ namespace nova::renderer {
          */
         void update_config_loaded();
 
-    private:
-        settings_options options;
         std::vector<iconfig_listener*> config_change_listeners;
     };
 } // namespace nova::renderer

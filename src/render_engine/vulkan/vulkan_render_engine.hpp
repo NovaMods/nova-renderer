@@ -484,7 +484,7 @@ namespace nova::renderer {
          * `options.new_buffer_size` must be a whole-number multiple of `options.buffer_part_size`
          * `options.max_total_allocation` must be a whole-number multiple of `options.new_buffer_size`
          */
-        void validate_mesh_options(const settings_options::block_allocator_settings& options) const;
+        void validate_mesh_options(const nova_settings::block_allocator_settings& options) const;
 
         /*!
          * \brief Records and submits a command buffer that barriers until reading vertex data from the megamesh
@@ -595,14 +595,12 @@ namespace nova::renderer {
                              const std::vector<VkSemaphore>& wait_semaphores);
 #pragma endregion
 
-#ifndef NDEBUG
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 
         VkDebugUtilsMessengerEXT debug_callback{};
 
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
-#endif
 
         static VkFormat to_vk_format(pixel_format_enum format);
     };

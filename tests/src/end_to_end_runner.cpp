@@ -24,7 +24,7 @@ namespace nova::renderer {
         NOVA_LOG(DEBUG) << "Running in " << buff.data() << std::flush;
         NOVA_LOG(DEBUG) << "Predefined resources at: " << CMAKE_DEFINED_RESOURCES_PREFIX;
 
-        settings_options settings;
+        nova_settings settings;
         settings.api = graphics_api::vulkan;
         settings.vulkan.application_name = "Nova Renderer test";
         settings.vulkan.application_version = {0, 8, 0};

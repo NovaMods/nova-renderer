@@ -14,16 +14,14 @@ namespace nova::renderer {
         : render_engine(settings, task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
-        const settings_options& options = settings.get_options();
+        validate_mesh_options(settings.vertex_memory_settings);
 
-        validate_mesh_options(options.vertex_memory_settings);
-
-        const auto& version = options.vulkan.application_version;
+        const auto& version = settings.vulkan.application_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = nullptr;
-        application_info.pApplicationName = options.vulkan.application_name.c_str();
+        application_info.pApplicationName = settings.vulkan.application_name.c_str();
         application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
         application_info.pEngineName = "Nova renderer 0.1";
         application_info.apiVersion = VK_API_VERSION_1_1;
@@ -33,9 +31,9 @@ namespace nova::renderer {
         create_info.pNext = nullptr;
         create_info.flags = 0;
         create_info.pApplicationInfo = &application_info;
-#ifndef NDEBUG
-        enabled_validation_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
-#endif
+        if(settings.debug.enabled) {
+            enabled_validation_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
+        }
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_validation_layer_names.size());
         create_info.ppEnabledLayerNames = enabled_validation_layer_names.data();
 
@@ -70,28 +68,31 @@ namespace nova::renderer {
 
         NOVA_LOG(TRACE) << fmt::format(fmt("Supported extensions:\n{:s}"), fmt::to_string(buf));
 
-#ifndef NDEBUG
-        vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-            vkGetInstanceProcAddr(vk_instance, "vkCreateDebugUtilsMessengerEXT"));
-        vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
-            vkGetInstanceProcAddr(vk_instance, "vkDestroyDebugReportCallbackEXT"));
+        if(settings.debug.enabled) {
+            vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+                vkGetInstanceProcAddr(vk_instance, "vkCreateDebugUtilsMessengerEXT"));
+            vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
+                vkGetInstanceProcAddr(vk_instance, "vkDestroyDebugReportCallbackEXT"));
 
-        VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
-        debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        debug_create_info.pNext = nullptr;
-        debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-                                            VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        debug_create_info.pfnUserCallback = reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(&debug_report_callback);
-        debug_create_info.pUserData = this;
+            VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
+            debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+            debug_create_info.pNext = nullptr;
+            debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                                VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+                                                VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                                                VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+            debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                                            VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+            debug_create_info.pfnUserCallback = reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(&debug_report_callback);
+            debug_create_info.pUserData = this;
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateDebugUtilsMessengerEXT(vk_instance, &debug_create_info, nullptr, &debug_callback),
-                               render_engine_initialization_exception);
-#endif
+            NOVA_THROW_IF_VK_ERROR(vkCreateDebugUtilsMessengerEXT(vk_instance, &debug_create_info, nullptr, &debug_callback),
+                                   render_engine_initialization_exception);
+        }
+
         // First we open the window. This doesn't depend on anything except the VkInstance/ This method also creates
         // the VkSurfaceKHR we can render to
-        vulkan_render_engine::open_window(settings.get_options().window.width, settings.get_options().window.height);
+        vulkan_render_engine::open_window(settings.window.width, settings.window.height);
 
         // Create the device. This depends on both the VkInstance and the VkSurfaceKHR: we need the VkSurfaceKHR to
         // make sure we find a device that can present to that surface
@@ -104,7 +105,7 @@ namespace nova::renderer {
         create_swapchain();
 
         create_memory_allocator();
-        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings,
+        mesh_memory = std::make_unique<compacting_block_allocator>(settings.vertex_memory_settings,
                                                                    vma_allocator,
                                                                    graphics_family_index,
                                                                    copy_family_index);
@@ -115,16 +116,16 @@ namespace nova::renderer {
 
         create_builtin_uniform_buffers();
 
-#ifndef NDEBUG
-        vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
-            vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
-        if(vkSetDebugUtilsObjectNameEXT == nullptr) {
-            NOVA_LOG(ERROR) << "Could not load the debug name function";
+        if(settings.debug.enabled) {
+            vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
+                vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
+            if(vkSetDebugUtilsObjectNameEXT == nullptr) {
+                NOVA_LOG(ERROR) << "Could not load the debug name function";
+            }
         }
-#endif
     }
 
-    void vulkan_render_engine::validate_mesh_options(const settings_options::block_allocator_settings& options) const {
+    void vulkan_render_engine::validate_mesh_options(const nova_settings::block_allocator_settings& options) const {
         if(options.buffer_part_size % sizeof(full_vertex) != 0) {
             throw std::runtime_error("vertex_memory_settings.buffer_part_size must be a multiple of sizeof(full_vertex) (which equals " +
                                      std::to_string(sizeof(full_vertex)) + ")");

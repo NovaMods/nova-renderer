@@ -279,7 +279,7 @@ namespace nova::renderer {
         }
     }
 
-    compacting_block_allocator::compacting_block_allocator(const settings_options::block_allocator_settings& settings,
+    compacting_block_allocator::compacting_block_allocator(const nova_settings::block_allocator_settings& settings,
                                                            VmaAllocator vma_allocator,
                                                            const uint32_t graphics_queue_idx,
                                                            const uint32_t copy_queue_idx)

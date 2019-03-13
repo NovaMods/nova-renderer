@@ -24,7 +24,7 @@
 
 namespace nova::renderer {
     dx12_render_engine::dx12_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* scheduler)
-        : render_engine(settings, scheduler), num_in_flight_frames(settings.get_options().max_in_flight_frames) {
+        : render_engine(settings, scheduler), num_in_flight_frames(settings.max_in_flight_frames) {
         NOVA_LOG(INFO) << "Initializing Direct3D 12 rendering";
 
         create_device();
@@ -763,7 +763,7 @@ namespace nova::renderer {
          * Debugging
          */
 
-        if(nova_renderer::get_instance()->get_settings().get_options().debug.enabled) {
+        if(nova_renderer::get_instance()->get_settings().debug.enabled) {
             pipeline_state_desc.Flags = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
         }
 
