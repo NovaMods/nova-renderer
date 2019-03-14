@@ -55,8 +55,8 @@ endif()
 ############################
 # Initialize cmake options #
 ############################
-set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake" "${3RD_PARTY_DIR}")
+set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/external)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/tools/cmake" "${3RD_PARTY_DIR}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -82,7 +82,7 @@ set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 #################################
 # Setup 3rd party dependencies. #
 #################################
-include(3rdparty)
+include(external)
 
 ########################
 # Add Nova source code #
