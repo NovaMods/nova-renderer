@@ -180,7 +180,7 @@ namespace nova::renderer {
         VkQueue copy_queue{};
 #pragma endregion
 
-        vulkan_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* task_scheduler);
+        vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler);
 
         vulkan_render_engine(vulkan_render_engine&& other) = delete;
         vulkan_render_engine& operator=(vulkan_render_engine&& other) noexcept = delete;

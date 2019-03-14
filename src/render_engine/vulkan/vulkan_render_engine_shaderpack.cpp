@@ -74,8 +74,7 @@ namespace nova::renderer {
             image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
             if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
                 image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-            }
-            else {
+            } else {
                 image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
             }
             image_create_info.queueFamilyIndexCount = 1;
@@ -88,7 +87,7 @@ namespace nova::renderer {
             alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
             alloc_create_info.preferredFlags = 0;
             alloc_create_info.memoryTypeBits = 0;
-            alloc_create_info.pool = VK_NULL_HANDLE;
+            alloc_create_info.pool = nullptr;
             alloc_create_info.pUserData = nullptr;
 
             vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture.image, &texture.allocation, &texture.vma_info);
@@ -101,8 +100,7 @@ namespace nova::renderer {
             if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
                 image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
                 texture.is_depth_tex = true;
-            }
-            else {
+            } else {
                 image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             }
             image_view_create_info.subresourceRange.baseArrayLayer = 0;
@@ -112,15 +110,15 @@ namespace nova::renderer {
 
             vkCreateImageView(device, &image_view_create_info, nullptr, &texture.image_view);
 
-#ifndef NDEBUG
-            VkDebugUtilsObjectNameInfoEXT object_name = {};
-            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(texture.image);
-            object_name.pObjectName = texture_data.name.c_str();
-            NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
-            NOVA_LOG(INFO) << "Set object " << texture.image << " to have name " << texture_data.name;
-#endif
+            if(settings.debug.enabled) {
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(texture.image);
+                object_name.pObjectName = texture_data.name.c_str();
+                NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
+                NOVA_LOG(INFO) << "Set object " << texture.image << " to have name " << texture_data.name;
+            }
 
             textures[texture_data.name] = texture;
         }
@@ -232,8 +230,7 @@ namespace nova::renderer {
 
                 if(framebuffer_width == 0) {
                     framebuffer_width = attachment_size.x;
-                }
-                else if(attachment_size.x != framebuffer_width) {
+                } else if(attachment_size.x != framebuffer_width) {
                     NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a width of "
                                     << attachment_size.x << ", but the framebuffer has a width of " << framebuffer_width
                                     << ". This is illegal, all input textures of a single renderpass must be the same size";
@@ -241,8 +238,7 @@ namespace nova::renderer {
 
                 if(framebuffer_height == 0) {
                     framebuffer_height = attachment_size.y;
-                }
-                else if(attachment_size.y != framebuffer_height) {
+                } else if(attachment_size.y != framebuffer_height) {
                     NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a height of "
                                     << attachment_size.y << ", but the framebuffer has a height of " << framebuffer_height
                                     << ". This is illegal, all input textures of a single renderpass must be the same size";
@@ -285,8 +281,7 @@ namespace nova::renderer {
 
                 if(framebuffer_width == 0) {
                     framebuffer_width = attachment_size.x;
-                }
-                else if(attachment_size.x != framebuffer_width) {
+                } else if(attachment_size.x != framebuffer_width) {
                     NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name
                                     << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
                                     << framebuffer_width
@@ -295,8 +290,7 @@ namespace nova::renderer {
 
                 if(framebuffer_height == 0) {
                     framebuffer_height = attachment_size.y;
-                }
-                else if(attachment_size.y != framebuffer_height) {
+                } else if(attachment_size.y != framebuffer_height) {
                     NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name
                                     << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
                                     << framebuffer_height
@@ -358,8 +352,7 @@ namespace nova::renderer {
                 }
 
                 render_passes[pass_name].framebuffer.framebuffer = nullptr;
-            }
-            else {
+            } else {
                 VkFramebufferCreateInfo framebuffer_create_info = {};
                 framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
                 framebuffer_create_info.renderPass = render_passes[pass_name].pass;
@@ -386,14 +379,14 @@ namespace nova::renderer {
 
             render_passes[pass_name].render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
 
-#ifndef NDEBUG
-            VkDebugUtilsObjectNameInfoEXT object_name = {};
-            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(render_passes[pass_name].pass);
-            object_name.pObjectName = pass_name.c_str();
-            NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
-#endif
+            if(settings.debug.enabled) {
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(render_passes[pass_name].pass);
+                object_name.pObjectName = pass_name.c_str();
+                NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
+            }
         }
     }
 
@@ -669,8 +662,7 @@ namespace nova::renderer {
         if(bindings.find(resource.name) == bindings.end()) {
             // Totally new binding!
             bindings[resource.name] = new_binding;
-        }
-        else {
+        } else {
             // Existing binding. Is it the same as our binding?
             const vk_resource_binding& existing_binding = bindings.at(resource.name);
             if(existing_binding != new_binding) {
@@ -775,8 +767,8 @@ namespace nova::renderer {
 
         std::vector<VkWriteDescriptorSet> writes;
 
-        // We create VkDescriptorImageInfo objects in a different scope, so were they to live there forever they'd get destructed before we
-        // can use them Instead we have them in a std::vector so they get deallocated _after_ being used
+        // We create VkDescriptorImageInfo objects in a different scope, so were they to live there forever they'd get destructed before
+        // we can use them Instead we have them in a std::vector so they get deallocated _after_ being used
         std::vector<VkDescriptorImageInfo> image_infos(mat.bindings.size());
 
         std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
@@ -814,12 +806,12 @@ namespace nova::renderer {
             if(textures.find(resource_name) != textures.end()) {
                 const vk_texture& texture = textures.at(resource_name);
                 write_texture_to_descriptor(texture, write, image_infos);
-            }
-            else if(buffers.find(resource_name) != buffers.end()) {
+
+            } else if(buffers.find(resource_name) != buffers.end()) {
                 const vk_buffer& buffer = buffers.at(resource_name);
                 write_buffer_to_descriptor(buffer, write, buffer_infos);
-            }
-            else {
+
+            } else if(resource_name != "NovaPerModelUBO") { // List of builtin resources that I don't have a good way to handle generically
                 is_known = false;
                 NOVA_LOG(WARN) << "Resource " << resource_name
                                << " is not known to Nova. I hope you aren't using it cause it doesn't exist";
@@ -872,8 +864,10 @@ namespace nova::renderer {
         /*
          * For each renderpass:
          * - Walk backwards through previous renderpasses
-         * - If we find one that writes to a resource we read from before we find one that reads from a resource we read from, add a barrier
-         * - If we find one that reads from a resource we write to before we find one that writes to a resource we write to, add a barrier
+         * - If we find one that writes to a resource we read from before we find one that reads from a resource we read from, add a
+         * barrier
+         * - If we find one that reads from a resource we write to before we find one that writes to a resource we write to, add a
+         * barrier
          */
 
         std::unordered_map<std::string, barrier_necessity> read_texture_barrier_necessity;

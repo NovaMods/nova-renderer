@@ -158,7 +158,7 @@ namespace nova::renderer {
          *
          * \attention Called by nova
          */
-        explicit render_engine(const nova_settings& /* settings */, nova::ttl::task_scheduler* scheduler) : scheduler(scheduler){};
+        explicit render_engine(nova_settings& settings, nova::ttl::task_scheduler* scheduler) : scheduler(scheduler), settings(settings) {};
 
         /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window
@@ -168,6 +168,7 @@ namespace nova::renderer {
         virtual void open_window(uint32_t width, uint32_t height) = 0;
 
         nova::ttl::task_scheduler* scheduler;
+        nova_settings& settings;
     };
 } // namespace nova::renderer
 

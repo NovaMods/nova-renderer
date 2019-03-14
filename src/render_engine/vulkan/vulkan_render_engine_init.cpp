@@ -10,7 +10,7 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
-    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* task_scheduler)
+    vulkan_render_engine::vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler)
         : render_engine(settings, task_scheduler) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
