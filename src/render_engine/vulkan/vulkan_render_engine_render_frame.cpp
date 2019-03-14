@@ -155,8 +155,7 @@ namespace nova::renderer {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
                 depth_barriers.push_back(barrier);
-            }
-            else {
+            } else {
                 barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
                 barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -384,8 +383,7 @@ namespace nova::renderer {
                             << " current_frame = " << current_frame;
             submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), {image_available_semaphores.at(current_frame)});
             NOVA_LOG(TRACE) << "Submitted to render to backbuffer";
-        }
-        else {
+        } else {
             submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
             NOVA_LOG(TRACE) << "Submitted to render to rendertarget";
         }

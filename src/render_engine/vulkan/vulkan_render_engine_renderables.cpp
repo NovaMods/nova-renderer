@@ -45,8 +45,7 @@ namespace nova::renderer {
         if(passes.empty()) {
             return result<std::vector<const material_pass*>>(
                 nova_error(fmt::format(fmt("Could not find material {:s}"), data.material_name)));
-        }
-        else {
+        } else {
             return result<std::vector<const material_pass*>>(std::move(passes));
         }
     }

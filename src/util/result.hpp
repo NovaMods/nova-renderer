@@ -49,8 +49,7 @@ namespace nova::renderer {
                 old.value = {};
 
                 has_value = true;
-            }
-            else {
+            } else {
                 error = std::move(old.error);
                 old.error = {};
             }
@@ -62,8 +61,7 @@ namespace nova::renderer {
                 old.value = {};
 
                 has_value = true;
-            }
-            else {
+            } else {
                 error = old.error;
                 old.error = {};
             }
@@ -74,8 +72,7 @@ namespace nova::renderer {
         ~result() {
             if(has_value) {
                 value.~ValueType();
-            }
-            else {
+            } else {
                 error.~nova_error();
             }
         }
@@ -86,8 +83,7 @@ namespace nova::renderer {
 
             if(has_value) {
                 return result<RetVal>(func(value));
-            }
-            else {
+            } else {
                 return result<RetVal>(std::move(error));
             }
         }
@@ -98,8 +94,7 @@ namespace nova::renderer {
 
             if(has_value) {
                 return func(value);
-            }
-            else {
+            } else {
                 return result<RetVal>(std::move(error));
             }
         }

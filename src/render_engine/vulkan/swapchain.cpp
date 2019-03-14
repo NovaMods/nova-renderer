@@ -186,8 +186,7 @@ namespace nova::renderer {
         if(caps.currentExtent.width == 0xFFFFFFFF) {
             extent.width = static_cast<uint32_t>(window_dimensions.x);
             extent.height = static_cast<uint32_t>(window_dimensions.y);
-        }
-        else {
+        } else {
             extent = caps.currentExtent;
         }
 

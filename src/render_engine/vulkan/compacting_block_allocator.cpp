@@ -242,8 +242,7 @@ namespace nova::renderer {
 
                 // Don't read from memory that's free
                 amount_compacted += current->size;
-            }
-            else {
+            } else {
                 if(amount_compacted > 0) {
                     // The write and read pointers are different, which means that we need to move the current
                     // allocation back to fill the empty space
@@ -258,8 +257,7 @@ namespace nova::renderer {
             }
             if(current->next != nullptr) {
                 current = current->next;
-            }
-            else {
+            } else {
                 break;
             }
         }

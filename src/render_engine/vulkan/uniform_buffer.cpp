@@ -77,9 +77,7 @@ namespace nova::renderer {
         delete[] ubo_cache;
     }
 
-    void* uniform_buffer::get_data() const {
-        return ubo_cache;
-    }
+    void* uniform_buffer::get_data() const { return ubo_cache; }
 
     VmaAllocation& uniform_buffer::get_allocation() { return allocation; }
 

@@ -23,7 +23,7 @@
 #include "../../tasks/task_scheduler.hpp"
 
 namespace nova::renderer {
-    dx12_render_engine::dx12_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* scheduler)
+    dx12_render_engine::dx12_render_engine(nova_settings& settings, nova::ttl::task_scheduler* scheduler)
         : render_engine(settings, scheduler), num_in_flight_frames(settings.max_in_flight_frames) {
         NOVA_LOG(INFO) << "Initializing Direct3D 12 rendering";
 
@@ -153,11 +153,9 @@ namespace nova::renderer {
             NOVA_LOG(FATAL) << "Could not create swapchain";
             if(hr == DXGI_ERROR_INVALID_CALL) {
                 NOVA_LOG(INFO) << "Invalid call - one or more of the parameters was wrong";
-            }
-            else if(hr == DXGI_STATUS_OCCLUDED) {
+            } else if(hr == DXGI_STATUS_OCCLUDED) {
                 NOVA_LOG(INFO) << "Fullscreen is unavaible";
-            }
-            else if(hr == E_OUTOFMEMORY) {
+            } else if(hr == E_OUTOFMEMORY) {
                 NOVA_LOG(INFO) << "Out of memory. Soz bro :/";
             }
 
@@ -304,8 +302,7 @@ namespace nova::renderer {
             new_list->allocator = alloc_list->allocator;
             new_list->submission_fence = alloc_list->submission_fence;
             new_list->fence_value = alloc_list->fence_value;
-        }
-        else {
+        } else {
             command_list_base* pool_list = buffers.back();
             pool_list->is_done = false;
             buffers.pop_back();
@@ -335,8 +332,7 @@ namespace nova::renderer {
             hr = device->CreateFence(1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
             if(SUCCEEDED(hr)) {
                 frame_fences[i] = fence;
-            }
-            else {
+            } else {
                 NOVA_LOG(FATAL) << "Could not create fence for from index " << frame_index;
                 throw render_engine_initialization_exception("Could not create fence for from index " + std::to_string(frame_index));
             }
@@ -465,8 +461,7 @@ namespace nova::renderer {
                 if(format.dimension_type == texture_dimension_type_enum::Absolute) {
                     dimensions.x = static_cast<uint32_t>(format.width);
                     dimensions.y = static_cast<uint32_t>(format.height);
-                }
-                else {
+                } else {
                     dimensions = swapchain_dimensions;
                     dimensions.x *= static_cast<uint32_t>(format.width);
                     dimensions.y *= static_cast<uint32_t>(format.height);
@@ -528,8 +523,7 @@ namespace nova::renderer {
 
                 NOVA_LOG(TRACE) << "Added texture " << texture_name << " to the dynamic textures";
                 NOVA_LOG(TRACE) << "set dynamic_texture_to_idx[" << texture_name << "] = " << new_tex_index;
-            }
-            else {
+            } else {
                 NOVA_LOG(TRACE) << "The physical resource already exists, so we're just gonna use that";
                 // The texture we're aliasing already has a real texture behind it - so let's use that
                 dynamic_tex_name_to_idx[named_texture.first] = dynamic_tex_name_to_idx[texture_name];
@@ -652,11 +646,9 @@ namespace nova::renderer {
         raster_desc.FillMode = D3D12_FILL_MODE_SOLID;
         if(std::find(states_begin, states_end, state_enum::InvertCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_FRONT;
-        }
-        else if(std::find(states_begin, states_end, state_enum::DisableCulling) != states_end) {
+        } else if(std::find(states_begin, states_end, state_enum::DisableCulling) != states_end) {
             raster_desc.CullMode = D3D12_CULL_MODE_NONE;
-        }
-        else {
+        } else {
             raster_desc.CullMode = D3D12_CULL_MODE_BACK;
         }
         raster_desc.FrontCounterClockwise = true;
@@ -677,8 +669,7 @@ namespace nova::renderer {
         ds_desc.DepthEnable = std::find(states_begin, states_end, state_enum::DisableDepthTest) == states_end;
         if(std::find(states_begin, states_end, state_enum::DisableDepthWrite) != states_end) {
             ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-        }
-        else {
+        } else {
             ds_desc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
         }
 
@@ -743,8 +734,7 @@ namespace nova::renderer {
             const dx12_texture& tex = dynamic_textures.at(attachment.name);
             if(tex.is_depth_texture()) {
                 pipeline_state_desc.DSVFormat = tex.get_dxgi_format();
-            }
-            else {
+            } else {
                 pipeline_state_desc.RTVFormats[i] = to_dxgi_format(tex.get_data().format.pixel_format);
             }
         }

@@ -89,15 +89,13 @@ namespace nova::renderer {
                     return FALSE;
                 }
             }
-        }
-        else {
+        } else {
             view = reinterpret_cast<win32_window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
         }
 
         if(view) {
             return view->window_procedure(hWnd, message, wParam, lParam);
-        }
-        else {
+        } else {
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
     }

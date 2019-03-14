@@ -13,8 +13,7 @@ namespace nova::renderer {
     std::string nova_error::to_string() const {
         if(cause) {
             return fmt::format(fmt("{:s}\nCaused by: {:s}"), message, cause->to_string());
-        }
-        else {
+        } else {
             return message;
         }
     }

@@ -48,8 +48,7 @@ namespace nova::renderer {
                 blocks[i].index = i;
                 if(i < num_blocks - 1) {
                     blocks[i].next = &blocks[i + 1];
-                }
-                else {
+                } else {
                     blocks[i].next = nullptr;
                 }
             }

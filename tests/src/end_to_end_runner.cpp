@@ -86,8 +86,8 @@ namespace nova::renderer {
             nova_renderer::deinitialize();
 
             return 0;
-
-        } catch(const std::exception& e) {
+        }
+        catch(const std::exception& e) {
             NOVA_LOG(ERROR) << e.what();
             return -1;
         }

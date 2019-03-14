@@ -62,7 +62,7 @@ namespace nova::renderer {
          * \param settings The settings that may or may not influence initialization
          * \param scheduler The task scheduler that this render engine should use
          */
-        explicit dx12_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* scheduler);
+        explicit dx12_render_engine(nova_settings& settings, nova::ttl::task_scheduler* scheduler);
 
         static const std::string get_engine_name();
 

@@ -91,13 +91,11 @@ namespace nova::renderer {
         const auto& textures_itr = resources_json.find("textures");
         if(textures_itr == resources_json.end()) {
             missing_textures = true;
-        }
-        else {
+        } else {
             auto& textures_array = *textures_itr;
             if(textures_array.empty()) {
                 missing_textures = true;
-            }
-            else {
+            } else {
                 for(auto& tex : textures_array) {
                     const validation_report texture_report = validate_texture_data(tex);
                     report.merge_in(texture_report);
@@ -116,13 +114,11 @@ namespace nova::renderer {
                 report.errors.emplace_back(resources_msg(
                     "No samplers defined, but dynamic textures are defined. You need to define your own samplers to access a texture with"));
             }
-        }
-        else {
+        } else {
             nlohmann::json& all_samplers = *samplers_itr;
             if(!all_samplers.is_array()) {
                 report.errors.emplace_back(resources_msg("Samplers array must be an array, but like it isn't"));
-            }
-            else {
+            } else {
                 for(nlohmann::json& sampler : all_samplers) {
                     const validation_report sampler_report = validate_sampler_data(sampler);
                     report.merge_in(sampler_report);
@@ -141,8 +137,7 @@ namespace nova::renderer {
         std::string name;
         if(name_maybe) {
             name = name_maybe.value();
-        }
-        else {
+        } else {
             name = "<NAME_MISSING>";
             texture_json["name"] = name;
             report.errors.emplace_back(texture_msg(name, "Missing field name"));
@@ -151,8 +146,7 @@ namespace nova::renderer {
         const auto format_itr = texture_json.find("format");
         if(format_itr == texture_json.end()) {
             report.errors.emplace_back(texture_msg(name, "Missing field format"));
-        }
-        else {
+        } else {
             const validation_report format_report = validate_texture_format(*format_itr, name);
             report.merge_in(format_report);
         }
@@ -229,8 +223,7 @@ namespace nova::renderer {
         const bool missing_passes = material_json.find("passes") == material_json.end();
         if(missing_passes) {
             report.errors.emplace_back(material_msg(name, "Missing material passes"));
-        }
-        else {
+        } else {
             const nlohmann::json& passes_json = material_json.at("passes");
             if(!passes_json.is_array()) {
                 report.errors.emplace_back(material_msg(name, "Passes field must be an array"));
@@ -255,8 +248,7 @@ namespace nova::renderer {
                 const auto bindings_itr = pass_json.find("bindings");
                 if(bindings_itr == pass_json.end()) {
                     report.warnings.emplace_back(material_pass_msg(name, pass_name, "Missing field bindings"));
-                }
-                else {
+                } else {
                     const nlohmann::json& bindings = *bindings_itr;
                     if(bindings.empty()) {
                         report.warnings.emplace_back(material_pass_msg(name, pass_name, "Field bindings exists but it's empty"));

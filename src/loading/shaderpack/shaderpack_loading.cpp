@@ -421,8 +421,7 @@ namespace nova::renderer {
             }
             if(extension.string().find(".hlsl") != std::string::npos) {
                 shader.setEnvInput(glslang::EShSourceHlsl, stage, glslang::EShClientVulkan, 0);
-            }
-            else {
+            } else {
                 // GLSL files have a lot of possible extensions, but SPIR-V and HLSL don't!
                 shader.setEnvInput(glslang::EShSourceGlsl, stage, glslang::EShClientVulkan, 0);
             }

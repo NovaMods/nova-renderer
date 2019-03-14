@@ -73,8 +73,7 @@ namespace nova::ttl {
             }
 
             thread_idx = last_task_queue_index++;
-        }
-        else if(behavior_of_task_queue_search == task_queue_search_behavior::MOST_EMPTY) {
+        } else if(behavior_of_task_queue_search == task_queue_search_behavior::MOST_EMPTY) {
             size_t lowest_size = std::numeric_limits<size_t>::max();
             for(size_t i = 0; i < thread_local_data.size(); i++) {
                 size_t size = thread_local_data[i].task_queue->size();
@@ -151,8 +150,7 @@ namespace nova::ttl {
 
             if(success) {
                 next_task();
-            }
-            else {
+            } else {
                 // We failed to find a Task from any of the queues
                 // What we do now depends on behavior_of_empty_queues, which we loaded above
                 switch(behavior) {
