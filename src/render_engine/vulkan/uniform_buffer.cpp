@@ -5,7 +5,7 @@
 
 namespace nova::renderer {
     uniform_buffer::uniform_buffer(
-        const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t alignment, const bool mapped)
+        std::string name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t alignment, const bool mapped)
         : name(std::move(name)), alignment(alignment), allocator(allocator) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
@@ -22,11 +22,15 @@ namespace nova::renderer {
                                                               &allocation_info);
 
         if(buffer_create_result != VK_SUCCESS) {
-            NOVA_LOG(ERROR) << "Could not allocate a an autobuffer because " << buffer_create_result;
-        }
-        else {
+            NOVA_LOG(ERROR) << "Could not allocate a uniform buffer because " << buffer_create_result;
+        } else {
             NOVA_LOG(TRACE) << "Auto buffer allocation success! Buffer ID: " << buffer;
         }
+
+        // Allocate the CPU cache
+        // TODO: Support for custom allocators
+        cache_size_bytes = create_info.size;
+        ubo_cache = new uint8_t[cache_size_bytes];
     }
 
     uniform_buffer::uniform_buffer(uniform_buffer&& old) noexcept
@@ -36,12 +40,15 @@ namespace nova::renderer {
           device(old.device),
           buffer(old.buffer),
           allocation(old.allocation),
-          allocation_info(old.allocation_info) {
+          allocation_info(old.allocation_info),
+          ubo_cache(old.ubo_cache),
+          cache_size_bytes(old.cache_size_bytes) {
 
         old.device = nullptr;
         old.buffer = nullptr;
         old.allocation = {};
         old.allocation_info = {};
+        old.ubo_cache = nullptr;
     }
 
     uniform_buffer& uniform_buffer::operator=(uniform_buffer&& old) noexcept {
@@ -57,6 +64,7 @@ namespace nova::renderer {
         old.buffer = nullptr;
         old.allocation = {};
         old.allocation_info = {};
+        old.ubo_cache = nullptr;
 
         return *this;
     }
@@ -65,6 +73,12 @@ namespace nova::renderer {
         if(allocator != nullptr && buffer != nullptr) {
             vmaDestroyBuffer(allocator, buffer, allocation);
         }
+
+        delete[] ubo_cache;
+    }
+
+    void* uniform_buffer::get_data() const {
+        return ubo_cache;
     }
 
     VmaAllocation& uniform_buffer::get_allocation() { return allocation; }
@@ -76,12 +90,4 @@ namespace nova::renderer {
     const VkBuffer& uniform_buffer::get_vk_buffer() const { return buffer; }
 
     uint64_t uniform_buffer::get_size() const { return alignment; }
-
-    // ReSharper disable once CppMemberFunctionMayBeConst
-    void uniform_buffer::set_data(const void* data, uint32_t size) {
-        void* mapped_data;
-        vmaMapMemory(allocator, allocation, &mapped_data);
-        std::memcpy(mapped_data, data, size);
-        vmaUnmapMemory(allocator, allocation);
-    }
 } // namespace nova::renderer

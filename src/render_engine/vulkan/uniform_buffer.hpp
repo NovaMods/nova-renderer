@@ -12,13 +12,17 @@
 namespace nova::renderer {
     /*!
      * \brief A nice interface for uniform buffer objects
+     * 
+     * A uniform_buffer has two copies of the buffer: One in device memory and one in host memory. When you update a 
+     * uniform in the buffer, only the host memory buffer is changed. You must explicitly call .sync() to send the 
+     * host memory buffer to device memory
      */
     class uniform_buffer {
     public:
         uniform_buffer() = default;
 
         uniform_buffer(
-            const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment, bool mapped);
+             std::string name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment, bool mapped);
 
         uniform_buffer(const uniform_buffer& other) = delete;
         uniform_buffer& operator=(const uniform_buffer& other) = delete;
@@ -28,7 +32,12 @@ namespace nova::renderer {
 
         virtual ~uniform_buffer();
 
-        void set_data(const void* data, uint32_t size);
+        void* get_data() const;
+
+        template<typename UboStructType>
+        UboStructType* get_data() {
+            return reinterpret_cast<UboStructType*>(ubo_cache);
+        };
 
         [[nodiscard]] VmaAllocation& get_allocation();
 
@@ -51,6 +60,9 @@ namespace nova::renderer {
 
         VmaAllocation allocation = nullptr;
         VmaAllocationInfo allocation_info = {};
+
+        uint8_t* ubo_cache = nullptr;
+        uint32_t cache_size_bytes = 0;
     };
 } // namespace nova::renderer
 
