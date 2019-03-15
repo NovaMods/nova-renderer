@@ -176,7 +176,7 @@ namespace nova::renderer {
         VkQueue graphics_queue{};
         uint32_t compute_family_index{};
         VkQueue compute_queue{};
-        uint32_t copy_family_index{};
+        uint32_t transfer_family_index{};
         VkQueue copy_queue{};
 #pragma endregion
 
@@ -509,6 +509,11 @@ namespace nova::renderer {
          * \brief Returns the provided buffer to the pool of staging buffers
          */
         void free_mesh_staging_buffer(const vk_buffer& buffer);
+
+        /*!
+         * \brief Uploads all the UBOs to the GPU
+         */
+        void upload_new_ubos();
 #pragma endregion
 
 #pragma region Renderables

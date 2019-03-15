@@ -21,7 +21,7 @@ namespace nova::renderer {
     public:
         uniform_buffer() = default;
 
-        uniform_buffer(std::string name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment, bool mapped);
+        uniform_buffer(std::string name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
 
         uniform_buffer(const uniform_buffer& other) = delete;
         uniform_buffer& operator=(const uniform_buffer& other) = delete;
@@ -31,11 +31,16 @@ namespace nova::renderer {
 
         virtual ~uniform_buffer();
 
-        void* get_data() const;
-
+        /*!
+         * \brief Provides access to the CPU-side UBO
+         * 
+         * \tparam UboStructType The type of the data in the uniform buffer
+         * 
+         * \return A pointer to the CPU-side UBO
+         */
         template <typename UboStructType>
-        UboStructType* get_data() {
-            return reinterpret_cast<UboStructType*>(ubo_cache);
+        [[nodiscard]] UboStructType* get_data() {
+            return reinterpret_cast<UboStructType*>(cpu_buffer);
         };
 
         [[nodiscard]] VmaAllocation& get_allocation();
@@ -47,6 +52,8 @@ namespace nova::renderer {
         [[nodiscard]] const VkBuffer& get_vk_buffer() const;
 
         [[nodiscard]] uint64_t get_size() const;
+
+        void record_ubo_upload(VkCommandBuffer cmds);
 
     protected:
         std::string name;
@@ -60,8 +67,9 @@ namespace nova::renderer {
         VmaAllocation allocation = nullptr;
         VmaAllocationInfo allocation_info = {};
 
-        uint8_t* ubo_cache = nullptr;
-        uint32_t cache_size_bytes = 0;
+        VkBuffer cpu_buffer = nullptr;
+        VmaAllocation cpu_allocation = nullptr;
+        VmaAllocationInfo cpu_alloc_info = {};
     };
 } // namespace nova::renderer
 

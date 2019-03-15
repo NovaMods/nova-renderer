@@ -83,7 +83,7 @@ namespace nova::renderer {
 
         // Set up model matrix in buffer
         renderable.model_matrix_slot = static_model_matrix_buffer->allocate_block();
-        glm::mat4* model_matrices = reinterpret_cast<glm::mat4*>(static_model_matrix_buffer->get_allocation_info().pMappedData);
+        glm::mat4 *model_matrices = static_model_matrix_buffer->get_data<glm::mat4>();
 
         glm::mat4& model_matrix = model_matrices[renderable.model_matrix_slot->index];
         model_matrix = glm::translate(model_matrix, data.initial_position);

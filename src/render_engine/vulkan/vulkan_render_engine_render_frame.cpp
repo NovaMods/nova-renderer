@@ -18,6 +18,8 @@ namespace nova::renderer {
 
         swapchain->acquire_next_swapchain_image(image_available_semaphores.at(current_frame));
 
+        upload_new_ubos();
+
         // Records and submits a command buffer that barriers until reading vertex data from the megamesh buffer has
         // finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer are finished
         upload_new_mesh_parts();
@@ -54,7 +56,7 @@ namespace nova::renderer {
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         alloc_info.commandBufferCount = 1;
-        alloc_info.commandPool = get_command_buffer_pool_for_current_thread(copy_family_index);
+        alloc_info.commandPool = get_command_buffer_pool_for_current_thread(transfer_family_index);
         alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
         vkAllocateCommandBuffers(device, &alloc_info, &mesh_upload_cmds);

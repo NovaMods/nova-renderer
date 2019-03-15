@@ -111,7 +111,7 @@ namespace nova::renderer {
         mesh_memory = std::make_unique<compacting_block_allocator>(settings.vertex_memory_settings,
                                                                    vma_allocator,
                                                                    graphics_family_index,
-                                                                   copy_family_index);
+                                                                   transfer_family_index);
 
         create_global_sync_objects();
         create_per_thread_descriptor_pools();
@@ -281,7 +281,7 @@ namespace nova::renderer {
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
         compute_family_index = compute_family_idx;
         vkGetDeviceQueue(device, compute_family_idx, 0, &compute_queue);
-        copy_family_index = copy_family_idx;
+        transfer_family_index = copy_family_idx;
         vkGetDeviceQueue(device, copy_family_idx, 0, &copy_queue);
     }
 
@@ -311,7 +311,7 @@ namespace nova::renderer {
     std::unordered_map<uint32_t, VkCommandPool> vulkan_render_engine::make_new_command_pools() const {
         std::vector<uint32_t> queue_indices;
         queue_indices.push_back(graphics_family_index);
-        queue_indices.push_back(copy_family_index);
+        queue_indices.push_back(transfer_family_index);
         queue_indices.push_back(compute_family_index);
 
         std::unordered_map<uint32_t, VkCommandPool> pools_by_queue;
