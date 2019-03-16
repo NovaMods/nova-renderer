@@ -265,7 +265,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      miniz::miniz
                      nlohmann_json
                      nlohmann_json::nlohmann_json
-                     SPIRV-Tools::SPIRV-Tools
+                     spirv-tools::SPIRV-Tools
                      spirv-cross-core
                      spirv-cross-cpp
                      spirv-cross-glsl
