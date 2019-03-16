@@ -40,7 +40,7 @@ namespace nova::renderer {
             if(render_doc != nullptr) {
                 render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
-                std::array<RENDERDOC_InputButton> capture_key = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
+                std::array capture_key = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
                 render_doc->SetCaptureKeys(capture_key.data(), 1);
 
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, 1U);
