@@ -10,20 +10,18 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
-    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* task_scheduler)
-        : render_engine(settings, task_scheduler) {
+    vulkan_render_engine::vulkan_render_engine(const nova_settings& n_settings, nova::ttl::task_scheduler* task_scheduler)
+        : render_engine(n_settings, task_scheduler), settings(n_settings.get_options()) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
-        const settings_options& options = settings.get_options();
+        validate_mesh_options(settings.vertex_memory_settings);
 
-        validate_mesh_options(options.vertex_memory_settings);
-
-        const auto& version = options.vulkan.application_version;
+        const auto& version = settings.vulkan.application_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = nullptr;
-        application_info.pApplicationName = options.vulkan.application_name.c_str();
+        application_info.pApplicationName = settings.vulkan.application_name.c_str();
         application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
         application_info.pEngineName = "Nova renderer 0.1";
         application_info.apiVersion = VK_API_VERSION_1_1;
@@ -93,7 +91,7 @@ namespace nova::renderer {
 #endif
         // First we open the window. This doesn't depend on anything except the VkInstance/ This method also creates
         // the VkSurfaceKHR we can render to
-        vulkan_render_engine::open_window(settings.get_options().window.width, settings.get_options().window.height);
+        vulkan_render_engine::open_window(n_settings.get_options().window.width, settings.window.height);
 
         // Create the device. This depends on both the VkInstance and the VkSurfaceKHR: we need the VkSurfaceKHR to
         // make sure we find a device that can present to that surface
@@ -106,7 +104,7 @@ namespace nova::renderer {
         create_swapchain();
 
         create_memory_allocator();
-        mesh_memory = std::make_unique<compacting_block_allocator>(settings.get_options().vertex_memory_settings,
+        mesh_memory = std::make_unique<compacting_block_allocator>(settings.vertex_memory_settings,
                                                                    vma_allocator,
                                                                    graphics_family_index,
                                                                    copy_family_index);
@@ -145,7 +143,7 @@ namespace nova::renderer {
 
     void vulkan_render_engine::open_window(uint32_t width, uint32_t height) {
 #ifdef NOVA_LINUX
-        window = std::make_shared<x11_window>(width, height);
+        window = std::make_shared<x11_window>(width, height, settings.window.title);
 
         VkXlibSurfaceCreateInfoKHR x_surface_create_info;
         x_surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;

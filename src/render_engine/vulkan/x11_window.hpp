@@ -21,7 +21,7 @@ namespace nova::renderer {
         Atom wm_delete_window;
 
     public:
-        explicit x11_window(uint32_t width, uint32_t height);
+        explicit x11_window(uint32_t width, uint32_t height, const std::string &title);
 
         x11_window(x11_window&& other) noexcept = delete;
         x11_window& operator=(x11_window&& other) noexcept = delete;

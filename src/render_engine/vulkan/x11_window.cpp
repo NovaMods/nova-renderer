@@ -9,7 +9,7 @@
 #include "x11_window.hpp"
 
 namespace nova::renderer {
-    x11_window::x11_window(uint32_t width, uint32_t height) {
+    x11_window::x11_window(uint32_t width, uint32_t height, const std::string &title) {
         display = XOpenDisplay(nullptr);
         if(display == nullptr) {
             throw window_creation_error("Failed to open XDisplay");
@@ -27,6 +27,8 @@ namespace nova::renderer {
                                      1,
                                      BlackPixel(display, screen),  // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
                                      WhitePixel(display, screen)); // NOLINT(cppcoreguidelines-pro-type-cstyle-cast)
+
+        XStoreName(display, window, title.c_str());
 
         wm_protocols = XInternAtom(display, "WM_PROTOCOLS", 0);
         wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", 0);
