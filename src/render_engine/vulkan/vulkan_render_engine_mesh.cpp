@@ -109,7 +109,7 @@ namespace nova::renderer {
                              nullptr);
 
         static_model_matrix_buffer->record_ubo_upload(ubo_uploads);
-        
+
         VkBufferMemoryBarrier static_mesh_ubo_barrier_end = static_mesh_ubo_barrier_start;
         static_mesh_ubo_barrier_end.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         static_mesh_ubo_barrier_end.dstAccessMask = VK_ACCESS_UNIFORM_READ_BIT;
@@ -117,15 +117,15 @@ namespace nova::renderer {
         static_mesh_ubo_barrier_end.dstQueueFamilyIndex = graphics_family_index;
 
         vkCmdPipelineBarrier(ubo_uploads,
-            VK_PIPELINE_STAGE_TRANSFER_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_DEPENDENCY_BY_REGION_BIT,
-            0,
-            nullptr,
-            1,
-            &static_mesh_ubo_barrier_end,
-            0,
-            nullptr);
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                             VK_DEPENDENCY_BY_REGION_BIT,
+                             0,
+                             nullptr,
+                             1,
+                             &static_mesh_ubo_barrier_end,
+                             0,
+                             nullptr);
 
         VkSubmitInfo submit = {};
         submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

@@ -39,7 +39,7 @@ namespace nova::renderer {
                                     VmaAllocator allocator,
                                     const VkBufferCreateInfo& create_info,
                                     const uint64_t alignment)
-            : uniform_buffer(name, allocator, create_info, alignment, true),
+            : uniform_buffer(name, allocator, create_info, alignment),
               num_blocks(static_cast<uint32_t>(create_info.size) / BlockSize),
               blocks(new block[num_blocks]),
               first_block(blocks) {
@@ -78,8 +78,6 @@ namespace nova::renderer {
 
         /*!
          * \brief Allocates a single block from the buffer
-         *
-         * Blocks
          *
          * \return The newly allocated block
          */

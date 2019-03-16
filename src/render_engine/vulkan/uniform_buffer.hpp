@@ -26,16 +26,16 @@ namespace nova::renderer {
         uniform_buffer(const uniform_buffer& other) = delete;
         uniform_buffer& operator=(const uniform_buffer& other) = delete;
 
-        uniform_buffer(uniform_buffer&& old) noexcept;
-        uniform_buffer& operator=(uniform_buffer&& old) noexcept;
+        uniform_buffer(uniform_buffer&& old) noexcept = default;
+        uniform_buffer& operator=(uniform_buffer&& old) noexcept = default;
 
         virtual ~uniform_buffer();
 
         /*!
          * \brief Provides access to the CPU-side UBO
-         * 
+         *
          * \tparam UboStructType The type of the data in the uniform buffer
-         * 
+         *
          * \return A pointer to the CPU-side UBO
          */
         template <typename UboStructType>

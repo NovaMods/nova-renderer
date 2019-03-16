@@ -11,9 +11,8 @@ namespace nova::renderer {
     auto_buffer::auto_buffer(const std::string& name,
                              VmaAllocator allocator,
                              const VkBufferCreateInfo& create_info,
-                             const uint64_t alignment,
-                             const bool mapped = false)
-        : uniform_buffer(name, allocator, create_info, alignment, mapped) {
+                             const uint64_t alignment)
+        : uniform_buffer(name, allocator, create_info, alignment) {
 
         chunks.emplace_back(auto_buffer_chunk{VkDeviceSize(0), create_info.size});
     }
@@ -32,7 +31,7 @@ namespace nova::renderer {
         return *this;
     }
 
-    VkDescriptorBufferInfo auto_buffer::allocate_space(uint64_t size) {
+    result<VkDescriptorBufferInfo> auto_buffer::allocate_space(uint64_t size) {
         size = size > alignment ? size : alignment;
         int32_t index_to_allocate_from = -1;
         if(!chunks.empty()) {
@@ -49,13 +48,9 @@ namespace nova::renderer {
 
         if(index_to_allocate_from == -1) {
             // Whoops, couldn't find anything
-            const std::string msg = fmt::
-                format(fmt("No big enough slots in the buffer. There's {:d} slots. If there's a lot then you got some fragmentation"),
-                       chunks.size());
-
-            NOVA_LOG(ERROR) << msg;
-            // Halt execution like a boss
-            throw std::runtime_error(msg);
+            return result<VkDescriptorBufferInfo>(
+                MAKE_ERROR("No big enough slots in the buffer. There's {:d} slots. If there's a lot then you got some fragmentation",
+                           chunks.size()));
         }
 
         auto& chunk_to_allocate_from = chunks[static_cast<uint32_t>(index_to_allocate_from)];
@@ -64,7 +59,7 @@ namespace nova::renderer {
 
             ret_val = VkDescriptorBufferInfo{buffer, chunk_to_allocate_from.offset, chunk_to_allocate_from.range};
             chunks.erase(chunks.begin() + index_to_allocate_from);
-            return ret_val;
+            return result<VkDescriptorBufferInfo>(ret_val);
         }
 
         // The chunk is bigger than we need. Allocate at the beginning of it so our iteration algorithm finds the next
@@ -75,7 +70,7 @@ namespace nova::renderer {
         chunk_to_allocate_from.offset += size;
         chunk_to_allocate_from.range -= size;
 
-        return ret_val;
+        return result<VkDescriptorBufferInfo>(ret_val);
     }
 
     void auto_buffer::free_allocation(const VkDescriptorBufferInfo& to_free) {

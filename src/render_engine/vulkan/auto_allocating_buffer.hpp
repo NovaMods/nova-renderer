@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <vulkan/vulkan.h>
+#include "../../util/result.hpp"
 #include "uniform_buffer.hpp"
 
 namespace nova::renderer {
@@ -36,10 +37,8 @@ namespace nova::renderer {
          * \param allocator The allocator to allocate this buffer from
          * \param create_info Information about creating the buffer
          * \param alignment The minimum size of an allocation from this buffer
-         * \param mapped If true, make this buffer always mapped
          */
-        auto_buffer(
-            const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment, bool mapped);
+        auto_buffer(const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
 
         auto_buffer(const auto_buffer& other) = delete;
         auto_buffer& operator=(const auto_buffer& other) = delete;
@@ -52,15 +51,13 @@ namespace nova::renderer {
         /*!
          * \brief Allocates a chunk of the underlying buffer for your personal user
          *
-         * This method will give you thr first free chunk it has, nothing else. If that leads to lots of fragmentation
+         * This method will give you the first free chunk it has, nothing else. If that leads to lots of fragmentation
          * then I'll deal with that later
-         *
-         * If there is not space, throws an out of memory error
          *
          * \param size The size, in bytes, of the space that you need
          * \return A representation of the allocation that's ready for use in a descriptor set
          */
-        VkDescriptorBufferInfo allocate_space(uint64_t size);
+        result<VkDescriptorBufferInfo> allocate_space(uint64_t size);
 
         /*!
          * \brief Frees the provided allocation

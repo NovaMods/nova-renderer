@@ -36,41 +36,9 @@ namespace nova::renderer {
                                                                   &cpu_allocation,
                                                                   &cpu_alloc_info);
 
-        if (cpu_buffer_create_result != VK_SUCCESS) {
+        if(cpu_buffer_create_result != VK_SUCCESS) {
             NOVA_LOG(ERROR) << "Could not allocate a uniform buffer cache because " << cpu_buffer_create_result;
         }
-    }
-
-    uniform_buffer::uniform_buffer(uniform_buffer&& old) noexcept
-        : name(std::move(old.name)),
-          alignment(old.alignment),
-          allocator(old.allocator),
-          device(old.device),
-          buffer(old.buffer),
-          allocation(old.allocation),
-          allocation_info(old.allocation_info),
-          cpu_buffer(old.cpu_buffer),
-          cpu_allocation(old.cpu_allocation),
-          cpu_alloc_info(old.cpu_alloc_info) {
-
-        std::memset(&old, 0, sizeof(uniform_buffer));
-    }
-
-    uniform_buffer& uniform_buffer::operator=(uniform_buffer&& old) noexcept {
-        name = std::move(old.name);
-        alignment = old.alignment;
-        allocator = old.allocator;
-        device = old.device;
-        buffer = old.buffer;
-        allocation = old.allocation;
-        allocation_info = old.allocation_info;
-        cpu_buffer = old.cpu_buffer;
-        cpu_allocation = old.cpu_allocation;
-        cpu_alloc_info = old.cpu_alloc_info;
-
-        std::memset(&old, 0, sizeof(uniform_buffer));
-
-        return *this;
     }
 
     uniform_buffer::~uniform_buffer() {
