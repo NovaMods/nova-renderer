@@ -3,6 +3,7 @@
  * \date 03-Sep-18.
  */
 
+#include <array>
 #include <future>
 
 #include "nova_renderer.hpp"
@@ -39,8 +40,8 @@ namespace nova::renderer {
             if(render_doc != nullptr) {
                 render_doc->SetCaptureFilePathTemplate(settings.debug.renderdoc.capture_path.c_str());
 
-                RENDERDOC_InputButton capture_key[] = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
-                render_doc->SetCaptureKeys(capture_key, 1);
+                std::array<RENDERDOC_InputButton> capture_key = {eRENDERDOC_Key_F12, eRENDERDOC_Key_PrtScrn};
+                render_doc->SetCaptureKeys(capture_key.data(), 1);
 
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowFullscreen, 1U);
                 render_doc->SetCaptureOptionU32(eRENDERDOC_Option_AllowVSync, 1U);
