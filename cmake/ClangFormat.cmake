@@ -79,8 +79,8 @@ function(format TARGET)
         COMMAND "${CMAKE_COMMAND}" -E remove ${TOUCH_PATHS}
         COMMENT "Clearing format dependencies"
     )
-    set_target_properties(${TARGET}-format PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True FOLDER format)
-    set_target_properties(${TARGET}-reformat PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True FOLDER reformat)
+    set_target_properties(${TARGET}-format PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True FOLDER CMakePredefinedTargets/format)
+    set_target_properties(${TARGET}-reformat PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True FOLDER CMakePredefinedTargets/reformat)
 
     add_dependencies(format ${TARGET}-format)
     add_dependencies(reformat ${TARGET}-reformat)
