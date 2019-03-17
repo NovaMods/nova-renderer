@@ -807,9 +807,15 @@ namespace nova::renderer {
 
             } else if(buffers.find(resource_name) != buffers.end()) {
                 const vk_buffer& buffer = buffers.at(resource_name);
-                write_buffer_to_descriptor(buffer, write, buffer_infos);
+                write_buffer_to_descriptor(buffer.buffer, buffer.alloc_info.size, write, buffer_infos);
 
-            } else if(resource_name != "NovaPerModelUBO") { // List of builtin resources that I don't have a good way to handle generically
+            } else if(resource_name == "NovaPerModelUBO") { 
+                write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(),
+                                           model_matrix_buffer->get_size(),
+                                           write,
+                                           buffer_infos);
+
+            } else {
                 is_known = false;
                 NOVA_LOG(WARN) << "Resource " << resource_name
                                << " is not known to Nova. I hope you aren't using it cause it doesn't exist";
@@ -837,13 +843,14 @@ namespace nova::renderer {
         write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     }
 
-    void vulkan_render_engine::write_buffer_to_descriptor(const vk_buffer& buffer,
+    void vulkan_render_engine::write_buffer_to_descriptor(const VkBuffer& buffer,
+                                                          const uint32_t size,
                                                           VkWriteDescriptorSet& write,
                                                           std::vector<VkDescriptorBufferInfo>& buffer_infos) {
         VkDescriptorBufferInfo buffer_info = {};
-        buffer_info.buffer = buffer.buffer;
+        buffer_info.buffer = buffer;
         buffer_info.offset = 0;
-        buffer_info.range = buffer.alloc_info.size;
+        buffer_info.range = size;
 
         buffer_infos.push_back(buffer_info);
 

@@ -536,17 +536,6 @@ namespace nova::renderer {
             uint32_t cur_index = 0;
             uint32_t draw_command_write_index = 0;
 
-            per_model_buffer_binding.if_present([&](const vk_resource_binding& binding) {
-                vkCmdBindDescriptorSets(cmds,
-                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        pipeline_layout,
-                                        binding.set,
-                                        1,
-                                        &static_model_matrix_descriptor,
-                                        0,
-                                        nullptr);
-            });
-
             for(const auto& [mesh_id, static_meshes] : renderables.static_meshes) {
                 start_index = cur_index;
                 for(const vk_static_mesh_renderable& static_mesh : static_meshes) {

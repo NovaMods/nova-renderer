@@ -6,16 +6,16 @@
 namespace nova::renderer {
     void vulkan_render_engine::create_builtin_uniform_buffers() {
         // Future Work: Get this from a per-scene configuration
-        const uint32_t static_object_estimate = 10000;
+        const uint32_t total_object_estimate = 10000;
         VkBufferCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        info.size = static_object_estimate * sizeof(glm::mat4);
+        info.size = total_object_estimate * sizeof(glm::mat4);
         info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         const uint32_t alignment = static_cast<uint32_t>(gpu.props.limits.minUniformBufferOffsetAlignment);
 
-        static_model_matrix_buffer = std::make_unique<fixed_size_buffer_allocator<sizeof(glm::mat4)>>("NovaStaticModelUBO",
+        model_matrix_buffer = std::make_unique<fixed_size_buffer_allocator<sizeof(glm::mat4)>>("NovaStaticModelUBO",
                                                                                                       vma_allocator,
                                                                                                       info,
                                                                                                       alignment);
@@ -82,8 +82,8 @@ namespace nova::renderer {
         metadata_for_renderables[id] = meta;
 
         // Set up model matrix in buffer
-        renderable.model_matrix_slot = static_model_matrix_buffer->allocate_block();
-        glm::mat4* model_matrices = static_model_matrix_buffer->get_data<glm::mat4>();
+        renderable.model_matrix_slot = model_matrix_buffer->allocate_block();
+        glm::mat4* model_matrices = model_matrix_buffer->get_data<glm::mat4>();
 
         glm::mat4& model_matrix = model_matrices[renderable.model_matrix_slot->index];
         model_matrix = glm::translate(model_matrix, data.initial_position);

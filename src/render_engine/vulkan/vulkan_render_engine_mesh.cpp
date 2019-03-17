@@ -92,8 +92,8 @@ namespace nova::renderer {
         static_mesh_ubo_barrier_start.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         static_mesh_ubo_barrier_start.srcQueueFamilyIndex = graphics_family_index;
         static_mesh_ubo_barrier_start.dstQueueFamilyIndex = transfer_family_index;
-        static_mesh_ubo_barrier_start.buffer = static_model_matrix_buffer->get_vk_buffer();
-        static_mesh_ubo_barrier_start.size = static_model_matrix_buffer->get_size();
+        static_mesh_ubo_barrier_start.buffer = model_matrix_buffer->get_vk_buffer();
+        static_mesh_ubo_barrier_start.size = model_matrix_buffer->get_size();
 
         // TODO: Other barriers to send other UBOs to the transfer queue
 
@@ -108,7 +108,7 @@ namespace nova::renderer {
                              0,
                              nullptr);
 
-        static_model_matrix_buffer->record_ubo_upload(ubo_uploads);
+        model_matrix_buffer->record_ubo_upload(ubo_uploads);
 
         VkBufferMemoryBarrier static_mesh_ubo_barrier_end = static_mesh_ubo_barrier_start;
         static_mesh_ubo_barrier_end.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;

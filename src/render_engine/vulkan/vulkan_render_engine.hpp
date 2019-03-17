@@ -424,10 +424,12 @@ namespace nova::renderer {
          * \brief Helper function so I don't have the same code for dynamic and builtin buffers
          *
          * \param buffer The buffer to write to the descriptor set
+         * \param size The size of the buffer, in bytes
          * \param write A VkWriteDescriptorSet struct that we can add information about our descriptor to
          * \param buffer_infos A place to store VkDescriptorBufferInfo structs so they don't get cleaned up too early
          */
-        static void write_buffer_to_descriptor(const vk_buffer& buffer,
+        static void write_buffer_to_descriptor(const VkBuffer& buffer,
+                                               uint32_t size,
                                                VkWriteDescriptorSet& write,
                                                std::vector<VkDescriptorBufferInfo>& buffer_infos);
 
@@ -519,16 +521,9 @@ namespace nova::renderer {
 
 #pragma region Renderables
         /*!
-         * \brief A buffer to hold model matrices for static render objects
+         * \brief A buffer to hold model matrices for all render objects
          */
-        std::unique_ptr<fixed_size_buffer_allocator<sizeof(glm::mat4)>> static_model_matrix_buffer;
-
-        /*!
-         * \brief A descriptor for the UBO that holds model matrices for static objects
-         *
-         * Will be bound to the pipeline for static mesh rendering
-         */
-        VkDescriptorSet static_model_matrix_descriptor;
+        std::unique_ptr<fixed_size_buffer_allocator<sizeof(glm::mat4)>> model_matrix_buffer;
 
         /*!
          * \brief All the renderables that Nova will process
