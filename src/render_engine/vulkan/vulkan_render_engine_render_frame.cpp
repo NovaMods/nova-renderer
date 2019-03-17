@@ -425,9 +425,16 @@ namespace nova::renderer {
         for(const material_pass& pass : materials) {
             bind_material_resources(pass, *pipeline, *cmds);
 
-            result<std::string> per_model_buffer_binding = find_per_model_buffer_binding(pass);
+            result<vk_resource_binding> per_model_buffer_binding = find_per_model_buffer_binding(pass).flatMap(
+                [&pipeline](const std::string& binding_name) {
+                    if(pipeline->bindings.find(binding_name) == pipeline->bindings.end()) {
+                        return result<vk_resource_binding>(
+                            MAKE_ERROR("No binding {:s} in pipeline {:s}", binding_name, pipeline->data.name));
+                    }
+                    return result<vk_resource_binding>(pipeline->bindings.at(binding_name));
+                });
 
-            draw_all_for_material(pass, *cmds, per_model_buffer_binding);
+            draw_all_for_material(pass, *cmds, per_model_buffer_binding, pipeline->layout);
         }
 
         vkEndCommandBuffer(*cmds);
@@ -449,7 +456,8 @@ namespace nova::renderer {
 
     void vulkan_render_engine::draw_all_for_material(const material_pass& pass,
                                                      VkCommandBuffer cmds,
-                                                     const result<std::string>& per_model_buffer_binding) {
+                                                     result<vk_resource_binding>& per_model_buffer_binding,
+                                                     VkPipelineLayout pipeline_layout) {
         // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
         // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
         // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute
@@ -527,6 +535,18 @@ namespace nova::renderer {
             uint32_t start_index = 0;
             uint32_t cur_index = 0;
             uint32_t draw_command_write_index = 0;
+
+            per_model_buffer_binding.if_present([&](const vk_resource_binding& binding) {
+                vkCmdBindDescriptorSets(cmds,
+                                        VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        pipeline_layout,
+                                        binding.set,
+                                        1,
+                                        &static_model_matrix_descriptor,
+                                        0,
+                                        nullptr);
+            });
+
             for(const auto& [mesh_id, static_meshes] : renderables.static_meshes) {
                 start_index = cur_index;
                 for(const vk_static_mesh_renderable& static_mesh : static_meshes) {

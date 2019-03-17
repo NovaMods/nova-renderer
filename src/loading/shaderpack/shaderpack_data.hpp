@@ -551,6 +551,8 @@ namespace nova::renderer {
          * (will) copies its descriptor sets to each in-flight frame
          */
         std::vector<VkDescriptorSet> descriptor_sets;
+
+        VkPipelineLayout layout = nullptr;
     };
 
     struct material_data {

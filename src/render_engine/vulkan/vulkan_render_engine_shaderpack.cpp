@@ -675,32 +675,30 @@ namespace nova::renderer {
 
     std::vector<VkDescriptorSetLayout> vulkan_render_engine::create_descriptor_set_layouts(
         const std::unordered_map<std::string, vk_resource_binding>& all_bindings) const {
-        std::unordered_map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
+
+        /*
+         * A few tasks to accomplish:
+         * - Take the unordered map of descriptor sets (all_bindings) and convert it into
+         *      VkDescriptorSetLayoutCreateInfo structs, ordering everything along the way
+         * -
+         */
+
+        std::vector<std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
+        bindings_by_set.resize(all_bindings.size());
 
         for(const auto& named_binding : all_bindings) {
             const vk_resource_binding& binding = named_binding.second;
-            VkDescriptorSetLayoutBinding new_binding = {};
-            new_binding.binding = binding.binding;
-            new_binding.descriptorCount = binding.descriptorCount;
-            new_binding.descriptorType = binding.descriptorType;
-            new_binding.pImmutableSamplers = binding.pImmutableSamplers;
-            new_binding.stageFlags = VK_SHADER_STAGE_ALL;
+            if(binding.set >= bindings_by_set.size()) {
+                NOVA_LOG(ERROR) << "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it";
+                continue;
+            }
 
-            bindings_by_set[binding.set].push_back(new_binding);
+            bindings_by_set[binding.set].push_back(binding);
         }
 
         std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
         dsl_create_infos.reserve(bindings_by_set.size());
-        for(size_t i = 0; i < bindings_by_set.size(); i++) {
-            if(bindings_by_set.find(static_cast<uint32_t>(i)) == bindings_by_set.end()) {
-                NOVA_LOG(ERROR) << "Could not get information for descriptor set " << i << "; most likely you skipped"
-                                << " a descriptor set in your shader. Ensure that all shaders for this pipeline together don't have"
-                                << " any gaps in the descriptor sets they declare";
-                throw shader_layout_creation_failed("Descriptor set " + std::to_string(i) + " not present");
-            }
-
-            const std::vector<VkDescriptorSetLayoutBinding>& bindings = bindings_by_set[static_cast<uint32_t>(i)];
-
+        for(const auto& bindings : bindings_by_set) {
             VkDescriptorSetLayoutCreateInfo create_info = {};
             create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             create_info.bindingCount = static_cast<uint32_t>(bindings.size());

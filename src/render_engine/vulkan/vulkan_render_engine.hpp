@@ -379,7 +379,8 @@ namespace nova::renderer {
         /*!
          * \brief Creates descriptor set layouts for all the descriptor set bindings
          *
-         * \param all_bindings All the bindings we know about
+         * \param all_bindings All the bindings we know about. This is expected to cover sets 0 - n, with all whole
+         * numbers between 0 and n represented
          * \return A list of descriptor set layouts, one for each set in `bindings`
          */
         std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
@@ -522,10 +523,16 @@ namespace nova::renderer {
          */
         std::unique_ptr<fixed_size_buffer_allocator<sizeof(glm::mat4)>> static_model_matrix_buffer;
 
-        /*
-         * All the renderables that Nova will process
+        /*!
+         * \brief A descriptor for the UBO that holds model matrices for static objects
+         *
+         * Will be bound to the pipeline for static mesh rendering
          */
+        VkDescriptorSet static_model_matrix_descriptor;
 
+        /*!
+         * \brief All the renderables that Nova will process
+         */
         std::unordered_map<renderable_id_t, renderable_metadata> metadata_for_renderables;
 
         void create_builtin_uniform_buffers();
@@ -587,7 +594,10 @@ namespace nova::renderer {
         /*!
          * \brief Renders all the things using the provided material
          */
-        void draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds, const result<std::string>& per_model_buffer_binding);
+        void draw_all_for_material(const material_pass& pass,
+                                   VkCommandBuffer cmds,
+                                   result<vk_resource_binding>& per_model_buffer_binding,
+                                   VkPipelineLayout pipeline_layout);
 
         /*!
          * \brief Submits the provided command buffer to the provided queue

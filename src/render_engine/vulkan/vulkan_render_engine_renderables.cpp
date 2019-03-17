@@ -5,8 +5,8 @@
 
 namespace nova::renderer {
     void vulkan_render_engine::create_builtin_uniform_buffers() {
-        // TODO: move this to the settings
-        const uint32_t static_object_estimate = 5000;
+        // Future Work: Get this from a per-scene configuration
+        const uint32_t static_object_estimate = 10000;
         VkBufferCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         info.size = static_object_estimate * sizeof(glm::mat4);

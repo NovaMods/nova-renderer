@@ -99,6 +99,13 @@ namespace nova::renderer {
             }
         }
 
+        template<typename FuncType>
+        void if_present(FuncType&& func) {
+            if(has_value) {
+                func(value);
+            }
+        }
+
         void on_error(std::function<void(const nova_error&)> error_func) const {
             if(!has_value) {
                 error_func(error);
