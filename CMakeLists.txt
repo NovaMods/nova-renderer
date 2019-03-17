@@ -300,7 +300,7 @@ if(WIN32)
     get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
 
     # MSVC 15.9 broke the Windows SDK by implementing two phase lookup. "/Zc:twoPhase-" disables it.
-    add_compile_options_if_supported(/Zc:twoPhase- /permissive)
+    add_compile_options_if_supported(/Zc:twoPhase- /permissive /bigobj /NODEFAULTLIB:library)
 
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler glslang::HLSL spirv-cross-hlsl)
