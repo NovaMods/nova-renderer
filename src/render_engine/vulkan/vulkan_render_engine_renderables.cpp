@@ -16,9 +16,9 @@ namespace nova::renderer {
         const uint32_t alignment = static_cast<uint32_t>(gpu.props.limits.minUniformBufferOffsetAlignment);
 
         model_matrix_buffer = std::make_unique<fixed_size_buffer_allocator<sizeof(glm::mat4)>>("NovaStaticModelUBO",
-                                                                                                      vma_allocator,
-                                                                                                      info,
-                                                                                                      alignment);
+                                                                                               vma_allocator,
+                                                                                               info,
+                                                                                               alignment);
     }
 
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {

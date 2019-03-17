@@ -59,7 +59,7 @@ namespace nova::renderer {
 
     const VkBuffer& uniform_buffer::get_vk_buffer() const { return buffer; }
 
-    uint64_t uniform_buffer::get_size() const { return allocation_info.size; }
+    VkDeviceSize uniform_buffer::get_size() const { return allocation_info.size; }
 
     void uniform_buffer::record_ubo_upload(VkCommandBuffer cmds) {
         VkBufferCopy copy = {};

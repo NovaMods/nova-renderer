@@ -99,7 +99,7 @@ namespace nova::renderer {
             }
         }
 
-        template<typename FuncType>
+        template <typename FuncType>
         void if_present(FuncType&& func) {
             if(has_value) {
                 func(value);

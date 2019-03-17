@@ -51,7 +51,7 @@ namespace nova::renderer {
 
         [[nodiscard]] const VkBuffer& get_vk_buffer() const;
 
-        [[nodiscard]] uint64_t get_size() const;
+        [[nodiscard]] VkDeviceSize get_size() const;
 
         void record_ubo_upload(VkCommandBuffer cmds);
 

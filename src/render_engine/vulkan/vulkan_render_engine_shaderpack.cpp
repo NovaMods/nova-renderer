@@ -809,11 +809,8 @@ namespace nova::renderer {
                 const vk_buffer& buffer = buffers.at(resource_name);
                 write_buffer_to_descriptor(buffer.buffer, buffer.alloc_info.size, write, buffer_infos);
 
-            } else if(resource_name == "NovaPerModelUBO") { 
-                write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(),
-                                           model_matrix_buffer->get_size(),
-                                           write,
-                                           buffer_infos);
+            } else if(resource_name == "NovaPerModelUBO") {
+                write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(), model_matrix_buffer->get_size(), write, buffer_infos);
 
             } else {
                 is_known = false;
@@ -844,7 +841,7 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::write_buffer_to_descriptor(const VkBuffer& buffer,
-                                                          const uint32_t size,
+                                                          const VkDeviceSize size,
                                                           VkWriteDescriptorSet& write,
                                                           std::vector<VkDescriptorBufferInfo>& buffer_infos) {
         VkDescriptorBufferInfo buffer_info = {};
