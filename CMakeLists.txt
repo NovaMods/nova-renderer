@@ -234,13 +234,29 @@ source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE})
 ##########################
 # Setup the nova library #
 ##########################
-add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
+add_library(nova-renderer STATIC
+    ${NOVA_SOURCE}
+    ${3RD_PARTY_SOURCE}
+)
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
+
+install(
+    TARGETS nova-renderer
+    EXPORT nova-renderer-config
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
+)
+
+install(
+    EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_PREFIX}/share/nova-renderer
+    NAMESPACE nova::
+)
 
 ##################################
 # Add extra warnings if possible #
