@@ -1,20 +1,12 @@
 cmake_minimum_required(VERSION 3.12)
 project(nova-renderer)
 
-################################################################
-# Check if nova is in a submodule (nova as a cmake dependency) #
-################################################################
-if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-    set(NOVA_IN_SUBMODULE False)
-    
-else()
-    set(NOVA_IN_SUBMODULE True)
-endif()
+option(NOVA_PACKAGE "Build only the library, nothing else." ON)
 
 ############################################################
 # Fix build type because of possible capitalization issues #
 ############################################################
-if(NOT NOVA_IN_SUBMODULE AND CMAKE_BUILD_TYPE)
+if(NOT NOVA_PACKAGE AND CMAKE_BUILD_TYPE)
     string(TOLOWER ${CMAKE_BUILD_TYPE} TMP_BUILD_TYPE)
     set(BUILD_TYPE_FIXED_BY_NOVA FALSE)
     if("${TMP_BUILD_TYPE}" STREQUAL "debug" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -47,7 +39,7 @@ endif()
 #########################################################
 # Enable tests if not in submodule and debug or if MSVC #
 #########################################################
-if(NOT NOVA_IN_SUBMODULE)
+if(NOT NOVA_PACKAGE)
     message(STATUS "Enabling nova tests by default because Nova is not a submodule (wont overwrite if set manually)")
     set(NOVA_TEST ON)
 endif()
@@ -61,10 +53,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
-if(NOT ${NOVA_IN_SUBMODULE})
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-endif()
 
 #################################
 # Setup our own cmake additions #
@@ -76,7 +64,6 @@ include(CompilerOptionsUtils)
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
 
-set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/build)
 set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 
 #################################
@@ -248,14 +235,20 @@ target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
 install(
     TARGETS nova-renderer
     EXPORT nova-renderer-config
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
-    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
+    RUNTIME DESTINATION bin/
+    ARCHIVE DESTINATION lib/
+    LIBRARY DESTINATION lib/
 )
 
 install(
     EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_PREFIX}/share/nova-renderer
     NAMESPACE nova::
+)
+
+install(
+    DIRECTORY ${CMAKE_SOURCE_DIR}/src/
+    DESTINATION include/nova-renderer
+    FILES_MATCHING PATTERN "*.hpp*"
 )
 
 ##################################
