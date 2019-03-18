@@ -249,6 +249,7 @@ install(
 install(
     EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nova-renderer
     NAMESPACE nova-renderer::
+    EXPORT_LINK_INTERFACE_LIBRARIES
 )
 
 install(
