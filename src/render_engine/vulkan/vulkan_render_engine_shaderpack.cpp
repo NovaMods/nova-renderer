@@ -112,7 +112,6 @@ namespace nova::renderer {
 
             vkCreateImageView(device, &image_view_create_info, nullptr, &texture.image_view);
 
-#ifndef NDEBUG
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
@@ -386,7 +385,6 @@ namespace nova::renderer {
 
             render_passes[pass_name].render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
 
-#ifndef NDEBUG
             VkDebugUtilsObjectNameInfoEXT object_name = {};
             object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             object_name.objectType = VK_OBJECT_TYPE_IMAGE;
