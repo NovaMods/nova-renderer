@@ -403,31 +403,35 @@ namespace nova::renderer {
 
             NOVA_LOG(TRACE) << "Compiling vertex module";
             shader_modules[VK_SHADER_STAGE_VERTEX_BIT] = create_shader_module(data.vertex_shader.source);
-            get_shader_module_descriptors(data.vertex_shader.source, nova_pipeline.bindings);
+            get_shader_module_descriptors(data.vertex_shader.source, VK_SHADER_STAGE_VERTEX_BIT, nova_pipeline.bindings);
 
             if(data.geometry_shader) {
                 NOVA_LOG(TRACE) << "Compiling geometry module";
                 shader_modules[VK_SHADER_STAGE_GEOMETRY_BIT] = create_shader_module(data.geometry_shader->source);
-                get_shader_module_descriptors(data.geometry_shader->source, nova_pipeline.bindings);
+                get_shader_module_descriptors(data.geometry_shader->source, VK_SHADER_STAGE_GEOMETRY_BIT, nova_pipeline.bindings);
             }
 
             if(data.tessellation_control_shader) {
                 NOVA_LOG(TRACE) << "Compiling tessellation_control module";
                 shader_modules[VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT] = create_shader_module(data.tessellation_control_shader->source);
-                get_shader_module_descriptors(data.tessellation_control_shader->source, nova_pipeline.bindings);
+                get_shader_module_descriptors(data.tessellation_control_shader->source,
+                                              VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+                                              nova_pipeline.bindings);
             }
 
             if(data.tessellation_evaluation_shader) {
                 NOVA_LOG(TRACE) << "Compiling tessellation_evaluation module";
                 shader_modules[VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT] = create_shader_module(
                     data.tessellation_evaluation_shader->source);
-                get_shader_module_descriptors(data.tessellation_evaluation_shader->source, nova_pipeline.bindings);
+                get_shader_module_descriptors(data.tessellation_evaluation_shader->source,
+                                              VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+                                              nova_pipeline.bindings);
             }
 
             if(data.fragment_shader) {
                 NOVA_LOG(TRACE) << "Compiling fragment module";
                 shader_modules[VK_SHADER_STAGE_FRAGMENT_BIT] = create_shader_module(data.fragment_shader->source);
-                get_shader_module_descriptors(data.fragment_shader->source, nova_pipeline.bindings);
+                get_shader_module_descriptors(data.fragment_shader->source, VK_SHADER_STAGE_FRAGMENT_BIT, nova_pipeline.bindings);
             }
 
             nova_pipeline.layouts = create_descriptor_set_layouts(nova_pipeline.bindings);
@@ -614,6 +618,16 @@ namespace nova::renderer {
                                    render_engine_initialization_exception);
 
             pipelines_by_renderpass[data.pass].push_back(nova_pipeline);
+
+            if(settings.debug.enabled) {
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(nova_pipeline.pipeline);
+                object_name.pObjectName = data.name.c_str();
+                NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
+                NOVA_LOG(INFO) << "Set object " << nova_pipeline.pipeline << " to have name " << data.name;
+            }
         }
     }
 
@@ -633,24 +647,29 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+                                                             const VkShaderStageFlags shader_stage,
                                                              std::unordered_map<std::string, vk_resource_binding>& bindings) {
         const spirv_cross::CompilerGLSL shader_compiler(spirv);
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const spirv_cross::Resource& resource : resources.sampled_images) {
-            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            NOVA_LOG(TRACE) << "Found a texture resource named " << resource.name;
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
 
         for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
-            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            NOVA_LOG(TRACE) << "Found a UBO resource named " << resource.name;
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
 
         for(const spirv_cross::Resource& resource : resources.storage_buffers) {
-            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            NOVA_LOG(TRACE) << "Found a SSBO resource named " << resource.name;
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         }
     }
 
     void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
+                                                        const VkShaderStageFlags shader_stage,
                                                         const spirv_cross::CompilerGLSL& shader_compiler,
                                                         const spirv_cross::Resource& resource,
                                                         const VkDescriptorType type) {
@@ -662,6 +681,7 @@ namespace nova::renderer {
         new_binding.binding = binding;
         new_binding.descriptorType = type;
         new_binding.descriptorCount = 1;
+        new_binding.stageFlags = shader_stage;
 
         if(bindings.find(resource.name) == bindings.end()) {
             // Totally new binding!

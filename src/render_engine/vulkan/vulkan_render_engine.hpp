@@ -327,10 +327,12 @@ namespace nova::renderer {
          * user hasn't declared two different bindings with the same name
          *
          * \param spirv The SPIR-V shader code to get bindings from
+         * \param shader_stage The shader stage the binding was found in
          * \param bindings An in/out array that holds all the existing binding before this method, and holds the
          * existing bindings plus new ones declared in the shader after this method
          */
         static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+                                                  VkShaderStageFlags shader_stage,
                                                   std::unordered_map<std::string, vk_resource_binding>& bindings);
 
         /*!
@@ -340,11 +342,13 @@ namespace nova::renderer {
          * If something already exists, `bindings` is unchanged
          *
          * \param bindings The map of bindings to ass data to
+         * \param shader_stage The shader stage the binding was found in
          * \param shader_compiler The compiler used for the shader that the resource came from
          * \param resource The resource to maybe add to `bindings
          * \param type The type of this resource
          */
         static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
+                                             VkShaderStageFlags shader_stage,
                                              const spirv_cross::CompilerGLSL& shader_compiler,
                                              const spirv_cross::Resource& resource,
                                              VkDescriptorType type);

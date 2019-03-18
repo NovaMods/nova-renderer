@@ -34,7 +34,7 @@ namespace nova::renderer {
         cpu_alloc_create.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
         const VkResult cpu_buffer_create_result = vmaCreateBuffer(allocator,
-                                                                  &create_info,
+                                                                  &cpu_create_info,
                                                                   &cpu_alloc_create,
                                                                   &cpu_buffer,
                                                                   &cpu_allocation,
