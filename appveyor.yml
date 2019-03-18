@@ -43,7 +43,8 @@ test_script:
 - cmd: C:\projects\nova-renderer\build\%CONFIGURATION%\nova-test-unit.exe
 
 cache: 
-  - c:\tools\vcpkg\installed\
+  - c:\tools\vcpkg\packages\ -> appveyor.yml
+  - c:\tools\vcpkg\installed\ -> setup-windows.ps1
 
 on_success:
   - ps: Invoke-RestMethod https://raw.githubusercontent.com/DiscordHooks/appveyor-discord-webhook/master/send.ps1 -o send.ps1
