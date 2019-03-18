@@ -249,7 +249,6 @@ install(
 install(
     EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nova-renderer
     NAMESPACE nova-renderer::
-    EXPORT_LINK_INTERFACE_LIBRARIES
 )
 
 install(
@@ -290,7 +289,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-util
                      unofficial::vulkan-memory-allocator::vulkan-memory-allocator
                      Vulkan::Vulkan
-                     vulkan::sdk)
+)
 
 ##############################
 # Find C++ filesystem header #
