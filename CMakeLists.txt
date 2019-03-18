@@ -40,7 +40,7 @@ endif()
 # Enable tests if not in submodule and debug or if MSVC #
 #########################################################
 if(NOT NOVA_PACKAGE)
-    message(STATUS "Enabling nova tests by default because Nova is not a submodule (wont overwrite if set manually)")
+    message(STATUS "Enabling nova tests by default because Nova is not a package")
     set(NOVA_TEST ON)
 endif()
 
@@ -53,6 +53,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
+if(NOT ${NOVA_IN_SUBMODULE})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+endif()
 
 #################################
 # Setup our own cmake additions #
