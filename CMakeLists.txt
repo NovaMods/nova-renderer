@@ -248,7 +248,7 @@ install(
 
 install(
     EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nova-renderer
-    NAMESPACE nova::
+    NAMESPACE nova-renderer::
 )
 
 install(
