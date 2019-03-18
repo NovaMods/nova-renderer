@@ -644,6 +644,10 @@ namespace nova::renderer {
         for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
             add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         }
+
+        for(const spirv_cross::Resource& resource : resources.storage_buffers) {
+            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+        }
     }
 
     void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
@@ -807,10 +811,10 @@ namespace nova::renderer {
 
             } else if(buffers.find(resource_name) != buffers.end()) {
                 const vk_buffer& buffer = buffers.at(resource_name);
-                write_buffer_to_descriptor(buffer.buffer, buffer.alloc_info.size, write, buffer_infos);
+                write_buffer_to_descriptor(buffer.buffer, write, buffer_infos);
 
             } else if(resource_name == "NovaPerModelUBO") {
-                write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(), model_matrix_buffer->get_size(), write, buffer_infos);
+                write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(), write, buffer_infos);
 
             } else {
                 is_known = false;
@@ -841,18 +845,17 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::write_buffer_to_descriptor(const VkBuffer& buffer,
-                                                          const VkDeviceSize size,
                                                           VkWriteDescriptorSet& write,
                                                           std::vector<VkDescriptorBufferInfo>& buffer_infos) {
         VkDescriptorBufferInfo buffer_info = {};
         buffer_info.buffer = buffer;
         buffer_info.offset = 0;
-        buffer_info.range = size;
+        buffer_info.range = VK_WHOLE_SIZE;
 
         buffer_infos.push_back(buffer_info);
 
         write.pBufferInfo = &buffer_infos[buffer_infos.size() - 1];
-        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     }
 
     void vulkan_render_engine::generate_barriers_for_dynamic_resources() {

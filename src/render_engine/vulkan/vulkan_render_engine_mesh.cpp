@@ -86,6 +86,11 @@ namespace nova::renderer {
         VkCommandBuffer ubo_uploads;
         vkAllocateCommandBuffers(device, &alloc_info, &ubo_uploads);
 
+        VkCommandBufferBeginInfo begin = {};
+        begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        vkBeginCommandBuffer(ubo_uploads, &begin);
+
         VkBufferMemoryBarrier static_mesh_ubo_barrier_start = {};
         static_mesh_ubo_barrier_start.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
         static_mesh_ubo_barrier_start.srcAccessMask = VK_ACCESS_UNIFORM_READ_BIT;
@@ -127,11 +132,16 @@ namespace nova::renderer {
                              0,
                              nullptr);
 
+        vkEndCommandBuffer(ubo_uploads);
+
+        VkFence dummy_fence = model_matrix_buffer->get_dummy_fence();
+        vkResetFences(device, 1, &dummy_fence);
+
         VkSubmitInfo submit = {};
         submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit.commandBufferCount = 1;
         submit.pCommandBuffers = &ubo_uploads;
-        vkQueueSubmit(copy_queue, 1, &submit, nullptr);
+        vkQueueSubmit(copy_queue, 1, &submit, model_matrix_buffer->get_dummy_fence());
     }
 
     void vulkan_render_engine::delete_mesh(uint32_t mesh_id) {

@@ -30,16 +30,18 @@ namespace nova::renderer {
          * \brief Allocates the uniform buffer and sets up block allocation info
          *
          * \param name The name of this uniform buffer
+         * \param device The Vulkan device for this buffer to use
          * \param allocator the VmaAllocator you're allocating the uniform buffer from
          * \param create_info the VkBufferCreateInfo for the uniform buffer you want to create
          * \param alignment The alignment, in bytes, of the uniform buffer. This can be gotten from your
          * VkPhysicalDeviceProperties struct
          */
         fixed_size_buffer_allocator(const std::string& name,
+                                    VkDevice device,
                                     VmaAllocator allocator,
                                     const VkBufferCreateInfo& create_info,
                                     const uint64_t alignment)
-            : uniform_buffer(name, allocator, create_info, alignment),
+            : uniform_buffer(name, device, allocator, create_info, alignment),
               num_blocks(static_cast<uint32_t>(create_info.size) / BlockSize),
               blocks(new block[num_blocks]),
               first_block(blocks) {

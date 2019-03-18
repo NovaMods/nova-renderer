@@ -47,7 +47,7 @@ namespace nova::renderer {
 #error Unsupported Operating system
 #endif
 
-        if(settings.debug.enabled && settings.debug.enable_validation_layers) {
+        if(settings.debug.enabled) {
             enabled_extension_names.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
             enabled_extension_names.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
@@ -69,7 +69,7 @@ namespace nova::renderer {
 
         NOVA_LOG(TRACE) << fmt::format(fmt("Supported extensions:\n{:s}"), fmt::to_string(buf));
 
-        if(settings.debug.enabled && settings.debug.enable_validation_layers) {
+        if(settings.debug.enabled) {
             vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
                 vkGetInstanceProcAddr(vk_instance, "vkCreateDebugUtilsMessengerEXT"));
             NOVA_LOG(TRACE) << "Loaded vkCreateDebugUtilsMessengerEXT into " << vkCreateDebugUtilsMessengerEXT;
@@ -119,13 +119,19 @@ namespace nova::renderer {
 
         create_builtin_uniform_buffers();
 
-        if(settings.debug.enabled && settings.debug.enable_validation_layers) {
+        if(settings.debug.enabled) {
             vkSetDebugUtilsObjectNameEXT = reinterpret_cast<PFN_vkSetDebugUtilsObjectNameEXT>(
                 vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT"));
+
             if(vkSetDebugUtilsObjectNameEXT == nullptr) {
                 NOVA_LOG(ERROR) << "Could not load the debug name function";
+
+            } else {
+                NOVA_LOG(TRACE) << "Loaded vkSetDebugUtilsObjectNameEXT to " << vkSetDebugUtilsObjectNameEXT;
             }
         }
+
+        NOVA_LOG(INFO) << "Finished initializing the Vulkan render engine";
     }
 
     void vulkan_render_engine::validate_mesh_options(const nova_settings::block_allocator_settings& options) const {

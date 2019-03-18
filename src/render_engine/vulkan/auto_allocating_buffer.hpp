@@ -34,11 +34,13 @@ namespace nova::renderer {
         /*!
          * \brief Creates a new auto-allocating buffer of the given size on the provided device
          * \param name The name of the new buffer
+         * \param device The Vulkan device this buffer is tied to
          * \param allocator The allocator to allocate this buffer from
          * \param create_info Information about creating the buffer
          * \param alignment The minimum size of an allocation from this buffer
          */
-        auto_buffer(const std::string& name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
+        auto_buffer(
+            const std::string& name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
 
         auto_buffer(const auto_buffer& other) = delete;
         auto_buffer& operator=(const auto_buffer& other) = delete;

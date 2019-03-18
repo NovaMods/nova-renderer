@@ -21,7 +21,8 @@ namespace nova::renderer {
     public:
         uniform_buffer() = default;
 
-        uniform_buffer(std::string name, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
+        uniform_buffer(
+            std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
 
         uniform_buffer(const uniform_buffer& other) = delete;
         uniform_buffer& operator=(const uniform_buffer& other) = delete;
@@ -53,6 +54,8 @@ namespace nova::renderer {
 
         [[nodiscard]] VkDeviceSize get_size() const;
 
+        [[nodiscard]] VkFence get_dummy_fence() const;
+
         void record_ubo_upload(VkCommandBuffer cmds);
 
     protected:
@@ -70,6 +73,8 @@ namespace nova::renderer {
         VkBuffer cpu_buffer = nullptr;
         VmaAllocation cpu_allocation = nullptr;
         VmaAllocationInfo cpu_alloc_info = {};
+
+        VkFence dummy_fence = nullptr;
     };
 } // namespace nova::renderer
 

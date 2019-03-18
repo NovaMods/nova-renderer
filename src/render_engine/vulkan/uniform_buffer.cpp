@@ -4,13 +4,12 @@
 #include <cstring>
 
 namespace nova::renderer {
-    uniform_buffer::uniform_buffer(std::string name,
-                                   VmaAllocator allocator,
-                                   const VkBufferCreateInfo& create_info,
-                                   const uint64_t alignment)
-        : name(std::move(name)), alignment(alignment), allocator(allocator) {
+    uniform_buffer::uniform_buffer(
+        std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t alignment)
+        : name(std::move(name)), alignment(alignment), allocator(allocator), device(device) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        alloc_create.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
         const VkResult buffer_create_result = vmaCreateBuffer(allocator,
                                                               reinterpret_cast<const VkBufferCreateInfo*>(&create_info),
@@ -23,6 +22,9 @@ namespace nova::renderer {
             NOVA_LOG(ERROR) << "Could not allocate a uniform buffer because " << buffer_create_result;
         }
 
+        VkBufferCreateInfo cpu_create_info = create_info;
+        cpu_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
         // Allocate the CPU cache
         VmaAllocationCreateInfo cpu_alloc_create = {};
         cpu_alloc_create.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
@@ -31,7 +33,7 @@ namespace nova::renderer {
 
         const VkResult cpu_buffer_create_result = vmaCreateBuffer(allocator,
                                                                   &create_info,
-                                                                  &alloc_create,
+                                                                  &cpu_alloc_create,
                                                                   &cpu_buffer,
                                                                   &cpu_allocation,
                                                                   &cpu_alloc_info);
@@ -39,6 +41,11 @@ namespace nova::renderer {
         if(cpu_buffer_create_result != VK_SUCCESS) {
             NOVA_LOG(ERROR) << "Could not allocate a uniform buffer cache because " << cpu_buffer_create_result;
         }
+
+        VkFenceCreateInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+
+        vkCreateFence(device, &info, nullptr, &dummy_fence);
     }
 
     uniform_buffer::~uniform_buffer() {
@@ -60,6 +67,8 @@ namespace nova::renderer {
     const VkBuffer& uniform_buffer::get_vk_buffer() const { return buffer; }
 
     VkDeviceSize uniform_buffer::get_size() const { return allocation_info.size; }
+
+    VkFence uniform_buffer::get_dummy_fence() const { return dummy_fence; }
 
     void uniform_buffer::record_ubo_upload(VkCommandBuffer cmds) {
         VkBufferCopy copy = {};

@@ -429,7 +429,6 @@ namespace nova::renderer {
          * \param buffer_infos A place to store VkDescriptorBufferInfo structs so they don't get cleaned up too early
          */
         static void write_buffer_to_descriptor(const VkBuffer& buffer,
-                                               VkDeviceSize size,
                                                VkWriteDescriptorSet& write,
                                                std::vector<VkDescriptorBufferInfo>& buffer_infos);
 
