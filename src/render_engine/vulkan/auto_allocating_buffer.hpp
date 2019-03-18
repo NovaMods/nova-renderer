@@ -40,7 +40,7 @@ namespace nova::renderer {
          * \param alignment The minimum size of an allocation from this buffer
          */
         auto_buffer(
-            const std::string& name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
+            const std::string& name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, uint64_t alignment);
 
         auto_buffer(const auto_buffer& other) = delete;
         auto_buffer& operator=(const auto_buffer& other) = delete;

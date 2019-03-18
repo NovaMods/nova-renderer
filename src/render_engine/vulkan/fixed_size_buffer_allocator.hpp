@@ -39,7 +39,7 @@ namespace nova::renderer {
         fixed_size_buffer_allocator(const std::string& name,
                                     VkDevice device,
                                     VmaAllocator allocator,
-                                    const VkBufferCreateInfo& create_info,
+                                    VkBufferCreateInfo& create_info,
                                     const uint64_t alignment)
             : uniform_buffer(name, device, allocator, create_info, alignment),
               num_blocks(static_cast<uint32_t>(create_info.size) / BlockSize),

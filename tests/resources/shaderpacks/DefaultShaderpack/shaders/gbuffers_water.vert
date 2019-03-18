@@ -55,7 +55,7 @@ layout(std140) uniform per_frame_uniforms {
     float centerDepthSmooth;
 };
 
-layout(std140) buffer per_model_uniforms {
+layout(std140) readonly buffer per_model_uniforms {
     mat4 gbufferModel;
 };
 

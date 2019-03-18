@@ -22,7 +22,7 @@ namespace nova::renderer {
         uniform_buffer() = default;
 
         uniform_buffer(
-            std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
+            std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, uint64_t alignment);
 
         uniform_buffer(const uniform_buffer& other) = delete;
         uniform_buffer& operator=(const uniform_buffer& other) = delete;
@@ -41,7 +41,7 @@ namespace nova::renderer {
          */
         template <typename UboStructType>
         [[nodiscard]] UboStructType* get_data() {
-            return reinterpret_cast<UboStructType*>(cpu_buffer);
+            return reinterpret_cast<UboStructType*>(cpu_alloc_info.pMappedData);
         };
 
         [[nodiscard]] VmaAllocation& get_allocation();

@@ -5,14 +5,16 @@
 
 namespace nova::renderer {
     uniform_buffer::uniform_buffer(
-        std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t alignment)
+        std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, const uint64_t alignment)
         : name(std::move(name)), alignment(alignment), allocator(allocator), device(device) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         alloc_create.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
+        create_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+
         const VkResult buffer_create_result = vmaCreateBuffer(allocator,
-                                                              reinterpret_cast<const VkBufferCreateInfo*>(&create_info),
+                                                              &create_info,
                                                               &alloc_create,
                                                               reinterpret_cast<VkBuffer*>(&buffer),
                                                               &allocation,

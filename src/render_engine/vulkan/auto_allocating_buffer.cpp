@@ -9,7 +9,7 @@
 
 namespace nova::renderer {
     auto_buffer::auto_buffer(
-        const std::string& name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t alignment)
+        const std::string& name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, const uint64_t alignment)
         : uniform_buffer(name, device, allocator, create_info, alignment) {
 
         chunks.emplace_back(auto_buffer_chunk{VkDeviceSize(0), create_info.size});

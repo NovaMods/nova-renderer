@@ -53,7 +53,7 @@ layout(set = 0, binding = 0) uniform per_frame_uniforms {
     float centerDepthSmooth;
 };
 
-layout(set = 1, binding = 0) uniform per_model_uniforms{
+layout(set = 1, binding = 0) readonly buffer per_model_uniforms{
     mat4 gbufferModel;
 };
 
