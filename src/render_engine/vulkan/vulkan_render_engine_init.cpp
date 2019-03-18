@@ -10,18 +10,18 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
-    vulkan_render_engine::vulkan_render_engine(const nova_settings& n_settings, nova::ttl::task_scheduler* task_scheduler)
-        : render_engine(n_settings, task_scheduler), settings(n_settings.get_options()) {
+    vulkan_render_engine::vulkan_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* task_scheduler)
+        : render_engine(settings, task_scheduler), settings(settings.get_options()) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
-        validate_mesh_options(settings.vertex_memory_settings);
+        validate_mesh_options(this->settings.vertex_memory_settings);
 
-        const auto& version = settings.vulkan.application_version;
+        const auto& version = this->settings.vulkan.application_version;
 
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = nullptr;
-        application_info.pApplicationName = settings.vulkan.application_name.c_str();
+        application_info.pApplicationName = this->settings.vulkan.application_name.c_str();
         application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
         application_info.pEngineName = "Nova renderer 0.1";
         application_info.apiVersion = VK_API_VERSION_1_1;
@@ -91,7 +91,7 @@ namespace nova::renderer {
 #endif
         // First we open the window. This doesn't depend on anything except the VkInstance/ This method also creates
         // the VkSurfaceKHR we can render to
-        vulkan_render_engine::open_window(n_settings.get_options().window.width, settings.window.height);
+        vulkan_render_engine::open_window(this->settings.window.width, this->settings.window.height);
 
         // Create the device. This depends on both the VkInstance and the VkSurfaceKHR: we need the VkSurfaceKHR to
         // make sure we find a device that can present to that surface
@@ -104,7 +104,7 @@ namespace nova::renderer {
         create_swapchain();
 
         create_memory_allocator();
-        mesh_memory = std::make_unique<compacting_block_allocator>(settings.vertex_memory_settings,
+        mesh_memory = std::make_unique<compacting_block_allocator>(this->settings.vertex_memory_settings,
                                                                    vma_allocator,
                                                                    graphics_family_index,
                                                                    copy_family_index);
