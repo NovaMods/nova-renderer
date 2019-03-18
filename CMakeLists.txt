@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(nova-renderer)
 
-option(NOVA_PACKAGE "Build only the library, nothing else." ON)
+option(NOVA_PACKAGE "Build only the library, nothing else." OFF)
 
 ############################################################
 # Fix build type because of possible capitalization issues #
@@ -53,7 +53,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
-if(NOT ${NOVA_IN_SUBMODULE})
+if(NOT NOVA_PACKAGE)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
