@@ -52,13 +52,26 @@ namespace nova::renderer {
     struct vk_resource_binding : VkDescriptorSetLayoutBinding {
         uint32_t set;
 
+        /*!
+         * \brief Checks if two `vk_resource_binding` objects are equal
+         * 
+         * Checks every member except the pipeline stages that the descriptor is available to. This is so I can more
+         * easily handle descriptors that are used in multiple pipeline stages
+         */
         bool operator==(const vk_resource_binding& other) const;
+
+        /*!
+         * \brief Checks if two `vk_resource_binding` objects are not equal
+         *
+         * Checks every member except the pipeline stages that the descriptor is available to. This is so I can more
+         * easily handle descriptors that are used in multiple pipeline stages
+         */
         bool operator!=(const vk_resource_binding& other) const;
     };
 
     struct vk_texture {
-        VkImage image = VK_NULL_HANDLE;
-        VkImageView image_view = VK_NULL_HANDLE;
+        VkImage image = nullptr;
+        VkImageView image_view = nullptr;
 
         texture_resource_data data;
 

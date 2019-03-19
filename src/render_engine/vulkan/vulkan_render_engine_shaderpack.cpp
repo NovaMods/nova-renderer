@@ -688,11 +688,15 @@ namespace nova::renderer {
             bindings[resource.name] = new_binding;
         } else {
             // Existing binding. Is it the same as our binding?
-            const vk_resource_binding& existing_binding = bindings.at(resource.name);
+            vk_resource_binding& existing_binding = bindings.at(resource.name);
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
                                 << " in different shader stages. This is not allowed. Use unique names";
+
+            } else {
+                // Same binding, probably at different stages - let's fix that
+                existing_binding.stageFlags |= shader_stage;
             }
         }
     }
