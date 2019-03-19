@@ -456,8 +456,8 @@ namespace nova::renderer {
 
     void vulkan_render_engine::draw_all_for_material(const material_pass& pass,
                                                      VkCommandBuffer cmds,
-                                                     result<vk_resource_binding>& per_model_buffer_binding,
-                                                     VkPipelineLayout pipeline_layout) {
+                                                     result<vk_resource_binding>& /*per_model_buffer_binding*/,
+                                                     VkPipelineLayout /*pipeline_layout*/) {
         // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
         // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
         // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute

@@ -23,7 +23,7 @@ namespace nova::renderer {
         [[nodiscard]] std::string to_string() const;
     };
 
-    inline nova_error operator""_err(const char* str, std::size_t size) { return nova_error(std::string(str)); }
+    inline nova_error operator""_err(const char* str, std::size_t size) { return nova_error(std::string(str, size)); }
 
     template <typename ValueType>
     struct result {
