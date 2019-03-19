@@ -16,8 +16,7 @@ cmake ..\
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_CMAKE}\
     -DCMAKE_EXPORT_COMPILE_COMMANDS=On\
     -DNOVA_TREAT_WARNINGS_AS_ERRORS=On\
-    -DCMAKE_C_COMPILER=clang-8 -DCMAKE_CXX_COMPILER=clang++-8\
-    -DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache\
+    -DCMAKE_C_COMPILER=/usr/lib/ccache/clang-8 -DCMAKE_CXX_COMPILER=/usr/lib/ccache/clang++-8\
     -DCMAKE_{C,CXX}_FLAGS="-fsanitize=address,undefined"\
     -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=lld"\
     -GNinja
@@ -35,8 +34,7 @@ cmake ..\
     -DCMAKE_BUILD_TYPE=Debug\
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_CMAKE}\
     -DNOVA_TREAT_WARNINGS_AS_ERRORS=On\
-    -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7\
-    -DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache\
+    -DCMAKE_C_COMPILER=/usr/lib/ccache/gcc-7 -DCMAKE_CXX_COMPILER=/usr/lib/ccache/g++-7\
     -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=gold"\
     -DNOVA_COVERAGE=On\
     -GNinja
@@ -62,17 +60,17 @@ else
 fi
 
 # Linting
-cd build-clang
-${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml -j8 --header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` --clang-tidy-binary clang-tidy-8
-echo "End linting"
+# cd build-clang
+# ${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml -j8 --header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` --clang-tidy-binary clang-tidy-8
+# echo "End linting"
 
-if [ `cat fixes.yaml | wc -c` -eq 0 ]; then
-    echo "No linting warnings found."
-else 
-    echo "Lining warnings found. Aborting."
-    exit 1
-fi
-cd ..
+# if [ `cat fixes.yaml | wc -c` -eq 0 ]; then
+#     echo "No linting warnings found."
+# else 
+#     echo "Lining warnings found. Aborting."
+#     exit 1
+# fi
+# cd ..
 
 cd build-gcc
 lcov -c -d . -o live-coverage.info --gcov-tool gcov-7
