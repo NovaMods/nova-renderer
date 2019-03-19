@@ -87,7 +87,7 @@ function(format TARGET)
 endfunction()
 
 function(nova_format)
-    if (NOT NOVA_IN_SUBMODULE)
+    if (NOT NOVA_PACKAGE)
         format(${ARGV})
     endif()
 endfunction()
