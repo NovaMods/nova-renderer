@@ -1,3 +1,0 @@
-[submodule "external/run-clang-tidy"]
-	path = external/run-clang-tidy
-	url = https://github.com/cwfitzgerald/run-clang-tidy.git
