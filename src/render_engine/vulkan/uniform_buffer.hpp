@@ -42,7 +42,7 @@ namespace nova::renderer {
         template <typename UboStructType>
         [[nodiscard]] UboStructType* get_data() {
             return reinterpret_cast<UboStructType*>(cpu_alloc_info.pMappedData);
-        };
+        }
 
         [[nodiscard]] VmaAllocation& get_allocation();
 
