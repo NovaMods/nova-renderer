@@ -21,7 +21,7 @@ namespace nova::renderer {
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = nullptr;
-        application_info.pApplicationName = settings.vulkan.application_name.c_str();
+        application_info.pApplicationName = this->settings.vulkan.application_name.c_str();
         application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
         application_info.pEngineName = "Nova renderer 0.1";
         application_info.apiVersion = VK_API_VERSION_1_1;
@@ -153,7 +153,7 @@ namespace nova::renderer {
 
     void vulkan_render_engine::open_window(uint32_t width, uint32_t height) {
 #ifdef NOVA_LINUX
-        window = std::make_shared<x11_window>(width, height);
+        window = std::make_shared<x11_window>(width, height, settings.window.title);
 
         VkXlibSurfaceCreateInfoKHR x_surface_create_info;
         x_surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;

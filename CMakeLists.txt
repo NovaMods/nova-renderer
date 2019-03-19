@@ -1,20 +1,12 @@
 cmake_minimum_required(VERSION 3.12)
 project(nova-renderer)
 
-################################################################
-# Check if nova is in a submodule (nova as a cmake dependency) #
-################################################################
-if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-    set(NOVA_IN_SUBMODULE False)
-    
-else()
-    set(NOVA_IN_SUBMODULE True)
-endif()
+option(NOVA_PACKAGE "Build only the library, nothing else." OFF)
 
 ############################################################
 # Fix build type because of possible capitalization issues #
 ############################################################
-if(NOT NOVA_IN_SUBMODULE AND CMAKE_BUILD_TYPE)
+if(NOT NOVA_PACKAGE AND CMAKE_BUILD_TYPE)
     string(TOLOWER ${CMAKE_BUILD_TYPE} TMP_BUILD_TYPE)
     set(BUILD_TYPE_FIXED_BY_NOVA FALSE)
     if("${TMP_BUILD_TYPE}" STREQUAL "debug" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -47,8 +39,8 @@ endif()
 #########################################################
 # Enable tests if not in submodule and debug or if MSVC #
 #########################################################
-if(NOT NOVA_IN_SUBMODULE)
-    message(STATUS "Enabling nova tests by default because Nova is not a submodule (wont overwrite if set manually)")
+if(NOT NOVA_PACKAGE)
+    message(STATUS "Enabling nova tests by default because Nova is not a package")
     set(NOVA_TEST ON)
 endif()
 
@@ -61,7 +53,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
-if(NOT ${NOVA_IN_SUBMODULE})
+if(NOT NOVA_PACKAGE)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 endif()
@@ -76,7 +68,6 @@ include(CompilerOptionsUtils)
 include(CheckCXXCompilerFlag)
 include(CheckIncludeFileCXX)
 
-set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/build)
 set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 
 #################################
@@ -235,13 +226,37 @@ source_group("nova" FILES ${NOVA_NO_COMPILE} ${3RD_PARTY_SOURCE} ${NOVA_SOURCE})
 ##########################
 # Setup the nova library #
 ##########################
-add_library(nova-renderer STATIC ${NOVA_SOURCE} ${3RD_PARTY_SOURCE})
+add_library(nova-renderer STATIC
+    ${NOVA_SOURCE}
+    ${3RD_PARTY_SOURCE}
+)
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
 target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
 target_compile_definitions(nova-renderer PUBLIC FMT_STRING_ALIAS=1)
+
+include(GNUInstallDirs)
+
+install(
+    TARGETS nova-renderer
+    EXPORT nova-renderer-config
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/
+)
+
+install(
+    EXPORT nova-renderer-config DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/nova-renderer
+    NAMESPACE nova-renderer::
+)
+
+install(
+    DIRECTORY ${CMAKE_SOURCE_DIR}/src/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/nova-renderer
+    FILES_MATCHING PATTERN "*.hpp*"
+)
 
 ##################################
 # Add extra warnings if possible #
@@ -266,7 +281,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      miniz::miniz
                      nlohmann_json
                      nlohmann_json::nlohmann_json
-                     SPIRV-Tools::SPIRV-Tools
+                     spirv-tools::SPIRV-Tools
                      spirv-cross-core
                      spirv-cross-cpp
                      spirv-cross-glsl
@@ -275,7 +290,7 @@ set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      spirv-cross-util
                      unofficial::vulkan-memory-allocator::vulkan-memory-allocator
                      Vulkan::Vulkan
-                     vulkan::sdk)
+)
 
 ##############################
 # Find C++ filesystem header #

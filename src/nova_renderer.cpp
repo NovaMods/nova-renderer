@@ -3,6 +3,7 @@
  * \date 03-Sep-18.
  */
 
+#include <array>
 #include <future>
 
 #include "nova_renderer.hpp"
@@ -67,6 +68,7 @@ namespace nova::renderer {
             } break;
 #else
                 NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
+                [[fallthrough]];
 #endif
             case graphics_api::vulkan:
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");

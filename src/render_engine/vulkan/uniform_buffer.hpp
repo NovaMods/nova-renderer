@@ -7,7 +7,7 @@
 #define RENDERER_GL_UNIFORM_BUFFER_H
 
 #include <string>
-#include <vk_mem_alloc.h>
+#include "../../util/vma_usage.hpp"
 
 namespace nova::renderer {
     /*!

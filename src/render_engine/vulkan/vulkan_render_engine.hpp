@@ -217,6 +217,8 @@ namespace nova::renderer {
         VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
 
     private:
+        const settings_options settings;
+
         const uint32_t max_frames_in_queue = 1;
         uint32_t current_frame = 0;
 
