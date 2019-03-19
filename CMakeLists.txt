@@ -6,6 +6,7 @@ project(nova-renderer)
 ################################################################
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     set(NOVA_IN_SUBMODULE False)
+    
 else()
     set(NOVA_IN_SUBMODULE True)
 endif()
@@ -255,23 +256,25 @@ add_coverage(nova-renderer)
 #########################
 set(COMMON_LINK_LIBS ${CMAKE_DL_LIBS}
                      fmt::fmt
-                     glm::glm
-                     glsl-standalone
-                     glslang
-                     minitrace
-                     miniz
-                     nlohmann::json
-                     nova-profiler
-                     SPIRV
+                     glm
+                     glslang::glslang
+                     glslang::OGLCompiler 
+                     glslang::OSDependent
+                     glslang::SPIRV
+                     minitrace::minitrace
+                     miniz::miniz
+                     nlohmann_json
+                     nlohmann_json::nlohmann_json
+                     spirv-tools::SPIRV-Tools
                      spirv-cross-core
+                     spirv-cross-cpp
                      spirv-cross-glsl
-                     spirv-cross-hlsl
                      spirv-cross-reflect
+                     spirv-cross-msl
                      spirv-cross-util
-                     spirv::headers
-                     vma::vma
-                     vulkan::sdk
-                     ${Vulkan_LIBRARIES})
+                     unofficial::vulkan-memory-allocator::vulkan-memory-allocator
+                     Vulkan::Vulkan
+                     vulkan::sdk)
 
 ##############################
 # Find C++ filesystem header #
@@ -299,7 +302,7 @@ if(WIN32)
     add_compile_options_if_supported(/Zc:twoPhase- /permissive)
 
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
-    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler)
+    set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler glslang::HLSL spirv-cross-hlsl)
     target_include_directories(nova-renderer PRIVATE ${WinSDK_DIRS})
     target_compile_definitions(nova-renderer PUBLIC _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING NOMINMAX)
 

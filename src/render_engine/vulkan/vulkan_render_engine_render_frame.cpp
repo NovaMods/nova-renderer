@@ -446,6 +446,32 @@ namespace nova::renderer {
 
         const std::unordered_map<VkBuffer, std::vector<render_object>>& renderables_by_buffer = renderables_by_material.at(pass.name);
 
+        /*
+         * For the compute shader that generates draw commands:
+         *
+         *
+         * ZerfYesterday at 11:52 PM
+         * so in that case, do something like this
+         * curr_index = 0
+         * for each modeltype
+         *   start_index = curr_index
+         *   for each instance of modeltype
+         *      if ( is_culled ) {
+         *         continue
+         *      }
+         *      matrix_indices[curr_index] = matrix_index;
+         *      ++curr_index
+         *   }
+         *   if ( curr_index != start_index ) {
+         *      write render_indirect data
+         *      instanceCount = curr_index - start_index
+         *      firstInstance = start_index
+         *   }
+         * then in your shader, you can get the offset into matrix_indices by using gl_InstanceIndex
+         * and if you need the current instance, you can calculate it by using
+         * int curr_instance = gl_InstanceIndex - gl_BaseInstance
+         */
+
         for(const auto& [buffer, renderables] : renderables_by_buffer) {
             VkBufferCreateInfo buffer_create_info = {};
             buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;

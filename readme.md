@@ -17,6 +17,25 @@ The Nova Renderer is currently early in development, so early that I don't think
 
 If you want to see what we have planned, or what has already been done, check out [the GitHub projects page](https://github.com/NovaMods/nova-renderer/projects).
 
+## Developer setup
+
+Nova uses [vcpkg](https://github.com/Microsoft/vcpkg) for dependency management. You need to install it on your system PATH. Once `vcpkg` is on your path, run the appropriate setup script for your platform - run `setup-windows.ps1` from Powershell on Windows, run `setup-linux.sh` from Bash on Linux. This will install almost all of Nova's dependencies
+
+Install the LunarG Vulkan SDK. Use the latest SDK for Vulkan 1.1
+
+Generate your compiler's build files from the CMake project. We recommend creating your build files in a `build` directory in the root of your local Nova Renderer repository. Be sure to pass CMake the `vcpkg` toolchain file, or your CMake will be very sad. An example:
+
+```powershell
+cd $PATH_TO_NOVA
+mkdir build
+cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=C:/Users/DethRaid/Documents/vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 15 2017 Win64" -Thost=x64 ..
+```
+
+This will generate project files for Visual Studio 2017 to compile for a 64-bit machine, and it will use the `vcpkg` toolchain file in my local `vcpkg` repo
+
+That's it!
+
 ## End Goal
 
 Everything from here on out describes what the Nova Renderer will look like during version 1.0. This doesn't necessarily reflect the current status of the project. Check [the GitHub projects page](https://github.com/NovaMods/nova-renderer/projects) to see the current status of the Nova Renderer.

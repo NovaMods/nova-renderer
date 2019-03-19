@@ -31,9 +31,11 @@ message(STATUS "Found clang-format at ${CLANG_FORMAT_PROGRAM}")
 
 if(NOT TARGET format)
     add_custom_target(format VERBATIM)
+    set_target_properties(format PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True)
 endif()
 if(NOT TARGET reformat)
     add_custom_target(reformat VERBATIM)
+    set_target_properties(reformat PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True)
 endif()
 
 file(GLOB_RECURSE CLANG_FORMAT_PATHS CONFIGURE_DEPENDS "*.clang-format")
@@ -77,6 +79,8 @@ function(format TARGET)
         COMMAND "${CMAKE_COMMAND}" -E remove ${TOUCH_PATHS}
         COMMENT "Clearing format dependencies"
     )
+    set_target_properties(${TARGET}-format PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True FOLDER CMakePredefinedTargets/format)
+    set_target_properties(${TARGET}-reformat PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD True FOLDER CMakePredefinedTargets/reformat)
 
     add_dependencies(format ${TARGET}-format)
     add_dependencies(reformat ${TARGET}-reformat)
