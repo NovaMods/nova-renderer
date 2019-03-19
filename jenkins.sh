@@ -16,8 +16,7 @@ cmake ..\
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_CMAKE}\
     -DCMAKE_EXPORT_COMPILE_COMMANDS=On\
     -DNOVA_TREAT_WARNINGS_AS_ERRORS=On\
-    -DCMAKE_C_COMPILER=clang-8 -DCMAKE_CXX_COMPILER=clang++-8\
-    -DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache\
+    -DCMAKE_C_COMPILER=/usr/lib/ccache/clang-8 -DCMAKE_CXX_COMPILER=/usr/lib/ccache/clang++-8\
     -DCMAKE_{C,CXX}_FLAGS="-fsanitize=address,undefined"\
     -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=lld"\
     -GNinja
@@ -35,8 +34,7 @@ cmake ..\
     -DCMAKE_BUILD_TYPE=Debug\
     -DCMAKE_TOOLCHAIN_FILE=${VCPKG_CMAKE}\
     -DNOVA_TREAT_WARNINGS_AS_ERRORS=On\
-    -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7\
-    -DCMAKE_{C,CXX}_COMPILER_LAUNCHER=ccache\
+    -DCMAKE_C_COMPILER=/usr/lib/ccache/gcc-7 -DCMAKE_CXX_COMPILER=/usr/lib/ccache/g++-7\
     -DCMAKE_{EXE,SHARED}_LINKER_FLAGS="-fuse-ld=gold"\
     -DNOVA_COVERAGE=On\
     -GNinja
