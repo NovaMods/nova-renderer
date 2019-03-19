@@ -108,6 +108,7 @@ namespace nova::renderer {
                     std::unordered_map<mesh_id_t, std::vector<vk_static_mesh_renderable>>&
                         renderables_for_mesh = renderables_by_material[pass_name][meta.buffer].static_meshes;
                     for(auto& [mesh_id, renderables] : renderables_for_mesh) {
+                        (void) mesh_id;
                         for(vk_static_mesh_renderable& renderable : renderables) {
                             if(renderable.id == meta.id) {
                                 renderable.is_visible = is_visible;
