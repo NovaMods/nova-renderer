@@ -435,7 +435,7 @@ namespace nova::renderer {
 
     result<std::string> vulkan_render_engine::find_per_model_buffer_binding(const material_pass& mat_pass) {
         for(const auto& [descriptor_name, resource_name] : mat_pass.bindings) {
-            if(resource_name == "NovaPerModelUBO") {
+            if(resource_name == "NovaModelMatrixBuffer") {
                 return result<std::string>{descriptor_name};
             }
         }

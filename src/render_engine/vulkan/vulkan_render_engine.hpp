@@ -33,6 +33,8 @@
 #include "auto_allocating_buffer.hpp"
 #include "fixed_size_buffer_allocator.hpp"
 #include "swapchain.hpp"
+#include "struct_uniform_buffer.hpp"
+#include "../../render_objects/uniform_structs.hpp"
 
 namespace nova::ttl {
     class task_scheduler;
@@ -542,6 +544,8 @@ namespace nova::renderer {
          * \brief A buffer to hold model matrices for all render objects
          */
         std::unique_ptr<fixed_size_buffer_allocator<sizeof(glm::mat4)>> model_matrix_buffer;
+
+        std::unique_ptr<struct_uniform_buffer<per_frame_uniforms>> per_frame_data_buffer;
 
         /*!
          * \brief All the renderables that Nova will process

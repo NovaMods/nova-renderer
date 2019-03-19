@@ -2281,7 +2281,7 @@ TEST(MaterialValidator, NoErrorsOrWarnings) {
                     {"bindings",
                         {
                             {
-                                {"ModelMatrix", "NovaPerModelUBO"}
+                                {"ModelMatrix", "NovaModelMatrixBuffer"}
                             }
                         }
                     }
@@ -2366,7 +2366,7 @@ TEST(MaterialValidator, FilterMissing) {
                     {"bindings",
                         {
                             {
-                                {"ModelMatrix", "NovaPerModelUBO"}
+                                {"ModelMatrix", "NovaModelMatrixBuffer"}
                             }
                         }
                     }
@@ -2398,7 +2398,7 @@ TEST(MaterialValidator, NameMissing) {
                     {"bindings",
                         {
                             {
-                                 {"ModelMatrix", "NovaPerModelUBO"}
+                                 {"ModelMatrix", "NovaModelMatrixBuffer"}
                             }
                         }
                     }
@@ -2490,7 +2490,7 @@ TEST(MaterialValidator, PassNoPipeline) {
                     {"bindings",
                         {
                             {
-                                {"ModelMatrix", "NovaPerModelUBO"}
+                                {"ModelMatrix", "NovaModelMatrixBuffer"}
                             }
                         }
                     }
@@ -2523,7 +2523,7 @@ TEST(MaterialValidator, PassNoName) {
                     {"bindings",
                         {
                             {
-                                {"ModelMatrix", "NovaPerModelUBO"}
+                                {"ModelMatrix", "NovaModelMatrixBuffer"}
                             }
                         }
                      }

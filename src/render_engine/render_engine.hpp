@@ -13,53 +13,12 @@
 #include "../util/result.hpp"
 #include "../util/utils.hpp"
 #include "window.hpp"
+#include "../render_objects/renderables.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
-
-    struct full_vertex {
-        glm::vec3 position;          // 12 bytes
-        glm::vec3 normal;            // 12 bytes
-        glm::vec3 tangent;           // 12 bytes
-        glm::u16vec2 main_uv;        // 4 bytes
-        glm::u8vec2 secondary_uv;    // 2 bytes
-        uint32_t virtual_texture_id; // 4 bytes
-        glm::vec4 additional_stuff;  // 16 bytes
-    };
-
-    static_assert(sizeof(full_vertex) % 16 == 0, "full_vertex struct is not aligned to 16 bytes!");
-
-    /*!
-     * \brief All the data needed to make a single mesh
-     *
-     * Meshes all have the same data. Chunks need all the mesh data, and they're most of the world. Entities, GUI,
-     * particles, etc will probably have FAR fewer vertices than chunks, meaning that there's not a huge savings by
-     * making them use special vertex formats
-     */
-    struct mesh_data {
-        std::vector<full_vertex> vertex_data;
-        std::vector<uint32_t> indices;
-    };
-
-    using mesh_id_t = uint32_t;
-
-    struct static_mesh_renderable_update_data {
-        std::string material_name;
-
-        mesh_id_t mesh;
-    };
-
-    struct static_mesh_renderable_data : static_mesh_renderable_update_data {
-        glm::vec3 initial_position;
-        glm::vec3 initial_rotation;
-        glm::vec3 initial_scale = glm::vec3(1);
-
-        bool is_static = true;
-    };
-
-    using renderable_id_t = uint64_t;
-
+    
     /*!
      * \brief Abstract class for render backends
      *

@@ -7,7 +7,7 @@
             "pipeline": "gui",
             "bindings": {
                 "per_frame_uniforms": "NovaPerFrameUBO",
-                "per_model_uniforms": "NovaPerModelUBO",
+                "per_model_uniforms": "NovaModelMatrixBuffer",
                 "colortex": "minecraft:textures/gui/options_background.png"
             }
         }

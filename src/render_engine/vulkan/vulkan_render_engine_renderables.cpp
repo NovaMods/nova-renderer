@@ -2,23 +2,33 @@
 #include "../../render_objects/renderables.hpp"
 #include "fmt/format.h"
 #include "vulkan_render_engine.hpp"
+#include "../../render_objects/uniform_structs.hpp"
 
 namespace nova::renderer {
     void vulkan_render_engine::create_builtin_uniform_buffers() {
         // Future Work: Get this from a per-scene configuration
         const uint32_t total_object_estimate = 10000;
-        VkBufferCreateInfo info = {};
-        info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        info.size = total_object_estimate * sizeof(glm::mat4);
-        info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        VkBufferCreateInfo model_matrix_create_info = {};
+        model_matrix_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        model_matrix_create_info.size = total_object_estimate * sizeof(glm::mat4);
+        model_matrix_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        model_matrix_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
         const uint32_t alignment = static_cast<uint32_t>(gpu.props.limits.minUniformBufferOffsetAlignment);
 
-        model_matrix_buffer = std::make_unique<fixed_size_buffer_allocator<sizeof(glm::mat4)>>("NovaStaticModelUBO",
+        model_matrix_buffer = std::make_unique<fixed_size_buffer_allocator<sizeof(glm::mat4)>>("NovaModelMatrixBuffer",
                                                                                                device,
                                                                                                vma_allocator,
-                                                                                               info,
+                                                                                               model_matrix_create_info,
                                                                                                alignment);
+
+        VkBufferCreateInfo per_frame_data_create_info = {};
+        per_frame_data_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        per_frame_data_create_info.size = sizeof(per_frame_uniforms);
+        per_frame_data_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        per_frame_data_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+        per_frame_data_buffer = std::make_unique<struct_uniform_buffer<per_frame_uniforms>>("NovaPerFrameUBO", device, vma_allocator, per_frame_data_create_info, alignment);
     }
 
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {

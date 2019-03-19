@@ -107,7 +107,8 @@ set(NOVA_SOURCE
         src/loading/json_utils.hpp
         src/util/utils.hpp
         src/util/utils.cpp
-        src/render_objects/renderables.hpp 
+        src/render_objects/renderables.hpp
+        src/render_objects/uniform_structs.hpp 
         src/loading/shaderpack/shaderpack_validator.cpp 
         src/loading/shaderpack/shaderpack_validator.hpp 
         src/loading/shaderpack/render_graph_builder.cpp 
@@ -130,6 +131,8 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/auto_allocating_buffer.hpp
         src/render_engine/vulkan/uniform_buffer.hpp
         src/render_engine/vulkan/uniform_buffer.cpp
+        src/render_engine/vulkan/struct_uniform_buffer.hpp
+        src/render_engine/vulkan/struct_uniform_buffer.cpp
         src/render_engine/vulkan/fixed_size_buffer_allocator.hpp
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp
@@ -137,6 +140,7 @@ set(NOVA_SOURCE
         src/tasks/wait_free_queue.hpp
         src/tasks/condition_counter.cpp
         src/tasks/condition_counter.hpp
+
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
         src/debugging/renderdoc_app.h

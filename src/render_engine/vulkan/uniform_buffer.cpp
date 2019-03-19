@@ -11,7 +11,7 @@ namespace nova::renderer {
         alloc_create.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         alloc_create.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-        create_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+        create_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
         const VkResult buffer_create_result = vmaCreateBuffer(allocator,
                                                               &create_info,
