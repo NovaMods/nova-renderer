@@ -114,10 +114,12 @@ namespace nova::renderer {
         submit_info.pCommandBuffers = &mesh_upload_cmds;
 
         // Be super duper sure that mesh rendering is done
+        // TODO: Something smarter
         for(const auto& [pass_name, pass] : render_passes) {
             (void) pass_name;
             vkWaitForFences(device, 1, &pass.fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
         }
+        vkResetFences(device, 1, &upload_to_megamesh_buffer_done);
         vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
 
         vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
@@ -335,17 +337,13 @@ namespace nova::renderer {
         if(rp_begin_info.framebuffer == nullptr) {
             rp_begin_info.framebuffer = swapchain->get_current_framebuffer();
         }
-
-        NOVA_LOG(TRACE) << "Starting renderpass " << *renderpass_name << " with framebuffer " << rp_begin_info.framebuffer;
-
+        
         vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
 
         vkCmdEndRenderPass(cmds);
-
-        NOVA_LOG(TRACE) << "Ending renderpass " << *renderpass_name;
-
+        
         if(renderpass.writes_to_backbuffer) {
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -372,22 +370,17 @@ namespace nova::renderer {
                                  nullptr,
                                  1,
                                  &barrier);
-            NOVA_LOG(TRACE) << "Added backbuffer barrier after renderpass " << *renderpass_name;
         }
 
         vkEndCommandBuffer(cmds);
-        NOVA_LOG(TRACE) << "Ended command buffer for renderpass " << *renderpass_name;
 
         // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's
         // fence
         if(renderpass.writes_to_backbuffer) {
-            NOVA_LOG(TRACE) << "image_available_semaphores.size() = " << image_available_semaphores.size()
-                            << " current_frame = " << current_frame;
             submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), {image_available_semaphores.at(current_frame)});
-            NOVA_LOG(TRACE) << "Submitted to render to backbuffer";
+
         } else {
             submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
-            NOVA_LOG(TRACE) << "Submitted to render to rendertarget";
         }
     }
 
@@ -434,7 +427,7 @@ namespace nova::renderer {
                     return result<vk_resource_binding>(pipeline->bindings.at(binding_name));
                 });
 
-            draw_all_for_material(pass, *cmds, per_model_buffer_binding, pipeline->layout);
+            draw_all_for_material(pass, *cmds);
         }
 
         vkEndCommandBuffer(*cmds);
@@ -455,9 +448,8 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::draw_all_for_material(const material_pass& pass,
-                                                     VkCommandBuffer cmds,
-                                                     result<vk_resource_binding>& /*per_model_buffer_binding*/,
-                                                     VkPipelineLayout /*pipeline_layout*/) {
+                                                     VkCommandBuffer cmds) {
+        
         // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
         // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
         // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute

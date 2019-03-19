@@ -144,6 +144,8 @@ namespace nova::renderer {
         VmaAllocationInfo alloc_info;
 
         bool is_dynamic;
+
+        std::string name;
     };
 
     struct mesh_staging_buffer_upload_command {
@@ -606,9 +608,7 @@ namespace nova::renderer {
          * \brief Renders all the things using the provided material
          */
         void draw_all_for_material(const material_pass& pass,
-                                   VkCommandBuffer cmds,
-                                   result<vk_resource_binding>& per_model_buffer_binding,
-                                   VkPipelineLayout pipeline_layout);
+                                   VkCommandBuffer cmds);
 
         /*!
          * \brief Submits the provided command buffer to the provided queue

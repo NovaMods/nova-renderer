@@ -833,12 +833,18 @@ namespace nova::renderer {
                 const vk_texture& texture = textures.at(resource_name);
                 write_texture_to_descriptor(texture, write, image_infos);
 
+                NOVA_LOG(TRACE) << "Wrote texture " << texture.data.name << " to descriptor " << write.dstSet << "." << write.dstBinding;
+
             } else if(buffers.find(resource_name) != buffers.end()) {
                 const vk_buffer& buffer = buffers.at(resource_name);
                 write_buffer_to_descriptor(buffer.buffer, write, buffer_infos);
 
+                NOVA_LOG(TRACE) << "Wrote buffer " << buffer.name << " to descriptor " << write.dstSet << "." << write.dstBinding;
+
             } else if(resource_name == "NovaPerModelUBO") {
                 write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(), write, buffer_infos);
+
+                NOVA_LOG(TRACE) << "Wrote buffer NovaPerModelUBO to descriptor " << write.dstSet << "." << write.dstBinding;
 
             } else {
                 is_known = false;

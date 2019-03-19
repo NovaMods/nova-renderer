@@ -197,16 +197,20 @@ namespace nova::renderer {
 
         if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
             NOVA_LOG(ERROR) << "[" << type << "] " << msg;
+
         } else if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
             // Warnings may hint at unexpected / non-spec API usage
             NOVA_LOG(WARN) << "[" << type << "] " << msg;
+
         } else if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) {
             // Informal messages that may become handy during debugging
             NOVA_LOG(INFO) << "[" << type << "] " << msg;
+
         } else if((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
             // Diagnostic info from the Vulkan loader and layers
             // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
             NOVA_LOG(DEBUG) << "[" << type << "] " << msg;
+
         } else {
             // Catch-all to be super sure
             NOVA_LOG(INFO) << "[" << type << "]" << msg;
