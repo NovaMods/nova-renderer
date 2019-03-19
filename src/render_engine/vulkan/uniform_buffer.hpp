@@ -21,8 +21,7 @@ namespace nova::renderer {
     public:
         uniform_buffer() = default;
 
-        uniform_buffer(
-            std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, uint64_t alignment);
+        uniform_buffer(std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, uint64_t alignment);
 
         uniform_buffer(const uniform_buffer& other) = delete;
         uniform_buffer& operator=(const uniform_buffer& other) = delete;

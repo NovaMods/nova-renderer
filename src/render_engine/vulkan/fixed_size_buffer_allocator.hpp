@@ -36,11 +36,8 @@ namespace nova::renderer {
          * \param alignment The alignment, in bytes, of the uniform buffer. This can be gotten from your
          * VkPhysicalDeviceProperties struct
          */
-        fixed_size_buffer_allocator(const std::string& name,
-                                    VkDevice device,
-                                    VmaAllocator allocator,
-                                    VkBufferCreateInfo& create_info,
-                                    const uint64_t alignment)
+        fixed_size_buffer_allocator(
+            const std::string& name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, const uint64_t alignment)
             : uniform_buffer(name, device, allocator, create_info, alignment),
               num_blocks(static_cast<uint32_t>(create_info.size) / BlockSize),
               blocks(new block[num_blocks]),
