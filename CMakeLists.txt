@@ -129,8 +129,8 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/swapchain.hpp
         src/render_engine/vulkan/auto_allocating_buffer.cpp
         src/render_engine/vulkan/auto_allocating_buffer.hpp
-        src/render_engine/vulkan/uniform_buffer.hpp
-        src/render_engine/vulkan/uniform_buffer.cpp
+        src/render_engine/vulkan/cached_buffer.hpp
+        src/render_engine/vulkan/cached_buffer.cpp
         src/render_engine/vulkan/struct_uniform_buffer.hpp
         src/render_engine/vulkan/struct_uniform_buffer.cpp
         src/render_engine/vulkan/fixed_size_buffer_allocator.hpp
