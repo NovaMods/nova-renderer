@@ -113,7 +113,7 @@ namespace nova::renderer {
                              0,
                              nullptr);
 
-        model_matrix_buffer->record_ubo_upload(ubo_uploads);
+        model_matrix_buffer->record_buffer_upload(ubo_uploads);
 
         VkBufferMemoryBarrier static_mesh_ubo_barrier_end = static_mesh_ubo_barrier_start;
         static_mesh_ubo_barrier_end.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;

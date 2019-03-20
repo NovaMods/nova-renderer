@@ -445,13 +445,14 @@ namespace nova::renderer {
          * \brief Helper function so I don't have the same code for dynamic and builtin buffers
          *
          * \param buffer The buffer to write to the descriptor set
-         * \param size The size of the buffer, in bytes
          * \param write A VkWriteDescriptorSet struct that we can add information about our descriptor to
          * \param buffer_infos A place to store VkDescriptorBufferInfo structs so they don't get cleaned up too early
+         * \param type The type of buffer that the descriptor describes
          */
         static void write_buffer_to_descriptor(const VkBuffer& buffer,
                                                VkWriteDescriptorSet& write,
-                                               std::vector<VkDescriptorBufferInfo>& buffer_infos);
+                                               std::vector<VkDescriptorBufferInfo>& buffer_infos,
+                                               VkDescriptorType type);
 
         /*!
          * \brief Executed barriers for all the dynamic textures so they are in COLOR_ATTACHMENT_OPTIMAL layout
@@ -590,14 +591,6 @@ namespace nova::renderer {
          * of profiling to be sure
          */
         void render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass);
-
-        /*!
-         * \brief Finds where the per-model buffer should be bound to
-         *
-         * \param mat_pass The material pass to find the binding in
-         * \return The binding point to bind the per-model buffer to
-         */
-        static result<std::string> find_per_model_buffer_binding(const material_pass& mat_pass);
 
         /*!
          * \brief Binds all the resources that the provided material uses to the given pipeline

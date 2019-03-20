@@ -11,17 +11,31 @@
 
 namespace nova::renderer {
     /*!
-     * \brief A nice interface for uniform buffer objects
+     * \brief A buffer which is stored both in both device memory and host memory
      *
-     * A uniform_buffer has two copies of the buffer: One in device memory and one in host memory. When you update a
-     * uniform in the buffer, only the host memory buffer is changed. You must explicitly call .sync() to send the
-     * host memory buffer to device memory
+     * The buffer exists in both host and device memory. You can get a pointer to the host buffer with `get_data<T>()`, 
+     * which will `reinterpret_cast` the host buffer to the template argument. Fill out the data as needed, then use
+     * `record_upload_buffer` to record the buffer upload into a command list. 
+     *
+     * Intended use case is buffers which require large amounts of data to be uploaded at once
      */
     class cached_buffer {
     public:
         cached_buffer() = default;
 
-        cached_buffer(std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, uint64_t alignment);
+        /*!
+         * \brief Best constructor ever
+         * 
+         * \param name The name of the buffer
+         * \param device The device to create the buffer on
+         * \param allocator The VmaAllocator to allocate the host and device memory from
+         * \param create_info The create info for your buffer. This is used for both the host buffer and the device 
+         * buffer. When creating the device buffer, the constructor add the usage flag 
+         * `VK_BUFFER_USAGE_TRANSFER_DST_BIT` to whatever flags the caller sets. When creating the host buffer, the 
+         * flags are set to only `VK_BUFFER_USAGE_TRANSFER_SRC_BIT`
+         * \param alignment The device's buffer alignment
+         */
+        cached_buffer(std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
 
         cached_buffer(const cached_buffer& other) = delete;
         cached_buffer& operator=(const cached_buffer& other) = delete;
@@ -32,11 +46,11 @@ namespace nova::renderer {
         virtual ~cached_buffer();
 
         /*!
-         * \brief Provides access to the CPU-side UBO
+         * \brief Provides access to the buffer in host memory
          *
-         * \tparam UboStructType The type of the data in the uniform buffer
+         * \tparam UboStructType The type that you want to see the buffer as
          *
-         * \return A pointer to the CPU-side UBO
+         * \return A pointer to the buffer in host memory
          */
         template <typename UboStructType>
         [[nodiscard]] UboStructType* get_data() {
@@ -55,7 +69,17 @@ namespace nova::renderer {
 
         [[nodiscard]] VkFence get_dummy_fence() const;
 
-        void record_ubo_upload(VkCommandBuffer cmds);
+        /*!
+         * \brief Records a command to transfer the host buffer to the device buffer
+         * 
+         * This method won't add any barriers, since it doesn't know about how the buffer is used. You must add (or not 
+         * add) those yourself 
+         * 
+         * \param cmds The command buffer to record the buffer transfer command into
+         * 
+         * \pre `vkBeginCommandBuffer` has been called on the command buffer
+         */
+        void record_buffer_upload(VkCommandBuffer cmds);
 
     protected:
         std::string name;

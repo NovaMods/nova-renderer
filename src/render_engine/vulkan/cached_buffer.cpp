@@ -1,20 +1,19 @@
 #include "cached_buffer.hpp"
 #include "../../util/logger.hpp"
 
-#include <cstring>
-
 namespace nova::renderer {
     cached_buffer::cached_buffer(
-        std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, const uint64_t alignment)
+        std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t alignment)
         : name(std::move(name)), alignment(alignment), allocator(allocator), device(device) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         alloc_create.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-        create_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        VkBufferCreateInfo device_buffer_create_info = create_info;
+        device_buffer_create_info.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
         const VkResult buffer_create_result = vmaCreateBuffer(allocator,
-                                                              &create_info,
+                                                              &device_buffer_create_info,
                                                               &alloc_create,
                                                               reinterpret_cast<VkBuffer*>(&buffer),
                                                               &allocation,
@@ -24,8 +23,8 @@ namespace nova::renderer {
             NOVA_LOG(ERROR) << "Could not allocate a uniform buffer because " << buffer_create_result;
         }
 
-        VkBufferCreateInfo cpu_create_info = create_info;
-        cpu_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        VkBufferCreateInfo host_buffer_create_info = create_info;
+        host_buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
         // Allocate the CPU cache
         VmaAllocationCreateInfo cpu_alloc_create = {};
@@ -34,7 +33,7 @@ namespace nova::renderer {
         cpu_alloc_create.requiredFlags = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
         const VkResult cpu_buffer_create_result = vmaCreateBuffer(allocator,
-                                                                  &cpu_create_info,
+                                                                  &host_buffer_create_info,
                                                                   &cpu_alloc_create,
                                                                   &cpu_buffer,
                                                                   &cpu_allocation,
@@ -72,7 +71,7 @@ namespace nova::renderer {
 
     VkFence cached_buffer::get_dummy_fence() const { return dummy_fence; }
 
-    void cached_buffer::record_ubo_upload(VkCommandBuffer cmds) {
+    void cached_buffer::record_buffer_upload(VkCommandBuffer cmds) {
         VkBufferCopy copy = {};
         copy.size = allocation_info.size;
         copy.dstOffset = 0;

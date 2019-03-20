@@ -626,7 +626,7 @@ namespace nova::renderer {
                 object_name.objectHandle = reinterpret_cast<uint64_t>(nova_pipeline.pipeline);
                 object_name.pObjectName = data.name.c_str();
                 NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
-                NOVA_LOG(INFO) << "Set object " << nova_pipeline.pipeline << " to have name " << data.name;
+                NOVA_LOG(INFO) << "Set pipeline " << nova_pipeline.pipeline << " to have name " << data.name;
             }
         }
     }
@@ -792,12 +792,15 @@ namespace nova::renderer {
         NOVA_LOG(TRACE) << "Updating descriptors for material " << mat.material_name;
 
         std::vector<VkWriteDescriptorSet> writes;
+        writes.reserve(mat.bindings.size());
 
         // We create VkDescriptorImageInfo objects in a different scope, so were they to live there forever they'd get destructed before
         // we can use them Instead we have them in a std::vector so they get deallocated _after_ being used
-        std::vector<VkDescriptorImageInfo> image_infos(mat.bindings.size());
+        std::vector<VkDescriptorImageInfo> image_infos;
+        image_infos.reserve(mat.bindings.size());
 
-        std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
+        std::vector<VkDescriptorBufferInfo> buffer_infos;
+        buffer_infos.reserve(mat.bindings.size());
 
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             (void) renderpass_name;
@@ -835,13 +838,13 @@ namespace nova::renderer {
 
             } else if(buffers.find(resource_name) != buffers.end()) {
                 const vk_buffer& buffer = buffers.at(resource_name);
-                write_buffer_to_descriptor(buffer.buffer, write, buffer_infos);
+                write_buffer_to_descriptor(buffer.buffer, write, buffer_infos, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
-            } else if (resource_name == "NovaModelMatrixBuffer") {
-                write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(), write, buffer_infos);
+            } else if(resource_name == "NovaModelMatrixBuffer") {
+                write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(), write, buffer_infos, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
             } else if(resource_name == "NovaPerFrameUBO") {
-                write_buffer_to_descriptor(per_frame_data_buffer->get_vk_buffer(), write, buffer_infos);
+                write_buffer_to_descriptor(per_frame_data_buffer->get_vk_buffer(), write, buffer_infos, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
             } else {
                 is_known = false;
@@ -873,7 +876,8 @@ namespace nova::renderer {
 
     void vulkan_render_engine::write_buffer_to_descriptor(const VkBuffer& buffer,
                                                           VkWriteDescriptorSet& write,
-                                                          std::vector<VkDescriptorBufferInfo>& buffer_infos) {
+                                                          std::vector<VkDescriptorBufferInfo>& buffer_infos,
+                                                          const VkDescriptorType type) {
         VkDescriptorBufferInfo buffer_info = {};
         buffer_info.buffer = buffer;
         buffer_info.offset = 0;
@@ -882,7 +886,7 @@ namespace nova::renderer {
         buffer_infos.push_back(buffer_info);
 
         write.pBufferInfo = &buffer_infos[buffer_infos.size() - 1];
-        write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        write.descriptorType = type;
     }
 
     void vulkan_render_engine::generate_barriers_for_dynamic_resources() {

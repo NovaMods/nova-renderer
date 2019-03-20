@@ -417,33 +417,14 @@ namespace nova::renderer {
         const std::vector<material_pass> materials = material_passes_by_pipeline.at(pipeline->data.name);
         for(const material_pass& pass : materials) {
             bind_material_resources(pass, *pipeline, *cmds);
-
-            result<vk_resource_binding> per_model_buffer_binding = find_per_model_buffer_binding(pass).flatMap(
-                [&pipeline](const std::string& binding_name) {
-                    if(pipeline->bindings.find(binding_name) == pipeline->bindings.end()) {
-                        return result<vk_resource_binding>(
-                            MAKE_ERROR("No binding {:s} in pipeline {:s}", binding_name, pipeline->data.name));
-                    }
-                    return result<vk_resource_binding>(pipeline->bindings.at(binding_name));
-                });
-
             draw_all_for_material(pass, *cmds);
         }
 
         vkEndCommandBuffer(*cmds);
     }
 
-    result<std::string> vulkan_render_engine::find_per_model_buffer_binding(const material_pass& mat_pass) {
-        for(const auto& [descriptor_name, resource_name] : mat_pass.bindings) {
-            if(resource_name == "NovaModelMatrixBuffer") {
-                return result<std::string>{descriptor_name};
-            }
-        }
-
-        return result<std::string>("Could not find per-model UBO binding"_err);
-    }
-
     void vulkan_render_engine::bind_material_resources(const material_pass& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
+        NOVA_LOG(TRACE) << "Binding descriptors for material pass " << mat_pass.name << " in material " << mat_pass.material_name;
         vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, mat_pass.descriptor_sets.data(), 0, nullptr);
     }
 
@@ -586,7 +567,7 @@ namespace nova::renderer {
         submit_info.commandBufferCount = 1;
         submit_info.pCommandBuffers = &cmds;
 
-        const bool one_null_semaphore = wait_semaphores.size() == 1 && wait_semaphores.at(0) == VK_NULL_HANDLE;
+        const bool one_null_semaphore = wait_semaphores.size() == 1 && wait_semaphores.at(0) == nullptr;
         if(!one_null_semaphore) {
             submit_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
             submit_info.pWaitSemaphores = wait_semaphores.data();
