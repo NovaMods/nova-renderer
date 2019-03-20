@@ -5,6 +5,8 @@
 #ifndef NOVA_RENDERER_RENDER_OBJECT_HPP
 #define NOVA_RENDERER_RENDER_OBJECT_HPP
 
+#include <atomic>
+
 #include <vulkan/vulkan.h>
 #include "../loading/shaderpack/shaderpack_data.hpp"
 #include "../render_engine/vulkan/fixed_size_buffer_allocator.hpp"

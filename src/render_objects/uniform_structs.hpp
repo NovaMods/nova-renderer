@@ -1,6 +1,15 @@
 #pragma once
 #include <glm/glm.hpp>
 
+// minwindef.h #define's near and far because...?
+#ifdef near
+#undef near
+#endif
+
+#ifdef far
+#undef far
+#endif
+
 namespace nova::renderer {
     struct per_frame_uniforms {
         glm::mat4 gbufferModelView;
