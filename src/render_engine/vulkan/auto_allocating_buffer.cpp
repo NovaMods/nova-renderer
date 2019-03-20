@@ -10,18 +10,18 @@
 namespace nova::renderer {
     auto_buffer::auto_buffer(
         const std::string& name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, const uint64_t alignment)
-        : uniform_buffer(name, device, allocator, create_info, alignment) {
+        : cached_buffer(name, device, allocator, create_info, alignment) {
 
         chunks.emplace_back(auto_buffer_chunk{VkDeviceSize(0), create_info.size});
     }
 
-    auto_buffer::auto_buffer(auto_buffer&& old) noexcept : uniform_buffer(std::forward<uniform_buffer>(old)) {
+    auto_buffer::auto_buffer(auto_buffer&& old) noexcept : cached_buffer(std::forward<cached_buffer>(old)) {
         chunks = std::move(old.chunks);
         old.chunks.clear();
     }
 
     auto_buffer& auto_buffer::operator=(auto_buffer&& old) noexcept {
-        uniform_buffer::operator=(std::forward<uniform_buffer>(old));
+        cached_buffer::operator=(std::forward<cached_buffer>(old));
 
         chunks = std::move(old.chunks);
         old.chunks.clear();

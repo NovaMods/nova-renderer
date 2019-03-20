@@ -1,10 +1,10 @@
-#include "uniform_buffer.hpp"
+#include "cached_buffer.hpp"
 #include "../../util/logger.hpp"
 
 #include <cstring>
 
 namespace nova::renderer {
-    uniform_buffer::uniform_buffer(
+    cached_buffer::cached_buffer(
         std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, const uint64_t alignment)
         : name(std::move(name)), alignment(alignment), allocator(allocator), device(device) {
         VmaAllocationCreateInfo alloc_create = {};
@@ -50,7 +50,7 @@ namespace nova::renderer {
         vkCreateFence(device, &info, nullptr, &dummy_fence);
     }
 
-    uniform_buffer::~uniform_buffer() {
+    cached_buffer::~cached_buffer() {
         if(allocator != nullptr && buffer != nullptr) {
             vmaDestroyBuffer(allocator, buffer, allocation);
         }
@@ -60,19 +60,19 @@ namespace nova::renderer {
         }
     }
 
-    VmaAllocation& uniform_buffer::get_allocation() { return allocation; }
+    VmaAllocation& cached_buffer::get_allocation() { return allocation; }
 
-    VmaAllocationInfo& uniform_buffer::get_allocation_info() { return allocation_info; }
+    VmaAllocationInfo& cached_buffer::get_allocation_info() { return allocation_info; }
 
-    const std::string& uniform_buffer::get_name() const { return name; }
+    const std::string& cached_buffer::get_name() const { return name; }
 
-    const VkBuffer& uniform_buffer::get_vk_buffer() const { return buffer; }
+    const VkBuffer& cached_buffer::get_vk_buffer() const { return buffer; }
 
-    VkDeviceSize uniform_buffer::get_size() const { return allocation_info.size; }
+    VkDeviceSize cached_buffer::get_size() const { return allocation_info.size; }
 
-    VkFence uniform_buffer::get_dummy_fence() const { return dummy_fence; }
+    VkFence cached_buffer::get_dummy_fence() const { return dummy_fence; }
 
-    void uniform_buffer::record_ubo_upload(VkCommandBuffer cmds) {
+    void cached_buffer::record_ubo_upload(VkCommandBuffer cmds) {
         VkBufferCopy copy = {};
         copy.size = allocation_info.size;
         copy.dstOffset = 0;

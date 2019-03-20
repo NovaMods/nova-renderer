@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "uniform_buffer.hpp"
+#include "cached_buffer.hpp"
 
 namespace nova::renderer {
     /*!
@@ -18,7 +18,7 @@ namespace nova::renderer {
      * \tparam BlockSize The size, in bytes, of one block
      */
     template <uint32_t BlockSize>
-    class fixed_size_buffer_allocator : public uniform_buffer {
+    class fixed_size_buffer_allocator : public cached_buffer {
     public:
         struct block {
             uint32_t index = 0;
@@ -38,7 +38,7 @@ namespace nova::renderer {
          */
         fixed_size_buffer_allocator(
             const std::string& name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, const uint64_t alignment)
-            : uniform_buffer(name, device, allocator, create_info, alignment),
+            : cached_buffer(name, device, allocator, create_info, alignment),
               num_blocks(static_cast<uint32_t>(create_info.size) / BlockSize),
               blocks(new block[num_blocks]),
               first_block(blocks) {
@@ -57,11 +57,11 @@ namespace nova::renderer {
         fixed_size_buffer_allocator& operator=(const fixed_size_buffer_allocator& other) = delete;
 
         fixed_size_buffer_allocator(fixed_size_buffer_allocator&& old) noexcept
-            : uniform_buffer(std::forward(old)), blocks(old.blocks), num_blocks(old.num_blocks) {
+            : cached_buffer(std::forward(old)), blocks(old.blocks), num_blocks(old.num_blocks) {
             old.blocks = nullptr;
         }
         fixed_size_buffer_allocator& operator=(fixed_size_buffer_allocator&& old) noexcept {
-            uniform_buffer::operator=(std::forward<uniform_buffer>(old));
+            cached_buffer::operator=(std::forward<cached_buffer>(old));
             blocks = old.blocks;
             num_blocks = old.num_blocks;
             old.blocks = nullptr;

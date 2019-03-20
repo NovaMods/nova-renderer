@@ -17,19 +17,19 @@ namespace nova::renderer {
      * uniform in the buffer, only the host memory buffer is changed. You must explicitly call .sync() to send the
      * host memory buffer to device memory
      */
-    class uniform_buffer {
+    class cached_buffer {
     public:
-        uniform_buffer() = default;
+        cached_buffer() = default;
 
-        uniform_buffer(std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, uint64_t alignment);
+        cached_buffer(std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, uint64_t alignment);
 
-        uniform_buffer(const uniform_buffer& other) = delete;
-        uniform_buffer& operator=(const uniform_buffer& other) = delete;
+        cached_buffer(const cached_buffer& other) = delete;
+        cached_buffer& operator=(const cached_buffer& other) = delete;
 
-        uniform_buffer(uniform_buffer&& old) noexcept = default;
-        uniform_buffer& operator=(uniform_buffer&& old) noexcept = default;
+        cached_buffer(cached_buffer&& old) noexcept = default;
+        cached_buffer& operator=(cached_buffer&& old) noexcept = default;
 
-        virtual ~uniform_buffer();
+        virtual ~cached_buffer();
 
         /*!
          * \brief Provides access to the CPU-side UBO

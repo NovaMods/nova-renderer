@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 #include "../../util/result.hpp"
-#include "uniform_buffer.hpp"
+#include "cached_buffer.hpp"
 
 namespace nova::renderer {
     /*!
@@ -27,7 +27,7 @@ namespace nova::renderer {
      * A buffer allocated through this class is set up to move data from the CPU to the GPU. If that isn't the case in
      * the future then future DethRaid will have some work to do
      */
-    class auto_buffer : public uniform_buffer {
+    class auto_buffer : public cached_buffer {
     public:
         auto_buffer() = default;
 
