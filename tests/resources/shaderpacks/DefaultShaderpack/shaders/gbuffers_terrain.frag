@@ -1,7 +1,7 @@
 #version 450
 
-layout(set = 2, binding = 0) uniform sampler2D colortex;
-layout(set = 2, binding = 3) uniform sampler2D lightmap;
+// layout(set = 2, binding = 0) uniform sampler2D colortex;
+// layout(set = 2, binding = 3) uniform sampler2D lightmap;
 
 layout(set = 1, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
@@ -62,6 +62,7 @@ layout(location = 0) out vec4 color_out;
 
 void main() {
 
+    /*
     if(textureSize(colortex, 0).x > 0) {
         vec4 tex_sample = texture(colortex, uv);
         if(tex_sample.a < 0.5) {
@@ -73,5 +74,6 @@ void main() {
     }
 
     color_out.rgb *= texture(lightmap, lightmap_uv).rgb * color.rgb;
-
+    */
+    color_out = vec4(1, 0, 1, 1);
 }

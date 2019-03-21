@@ -821,8 +821,12 @@ namespace nova::renderer {
         }
 
         for(const auto& [descriptor_name, resource_name] : mat.bindings) {
+            if(name_to_descriptor.find(descriptor_name) == name_to_descriptor.end()) {
+                NOVA_LOG(ERROR) << "Descriptor " << descriptor_name << " is not known to Nova, probably because you have it in your material but not in your pipeline";
+                continue;
+            }
             const auto& descriptor_info = name_to_descriptor.at(descriptor_name);
-            const auto descriptor_set = mat.descriptor_sets[descriptor_info.set];
+            const auto descriptor_set = mat.descriptor_sets.at(descriptor_info.set);
             bool is_known = true;
 
             VkWriteDescriptorSet write = {};

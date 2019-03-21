@@ -55,7 +55,7 @@ namespace nova::renderer {
         }
 
         if(cpu_allocation != nullptr && cpu_buffer != nullptr) {
-            vmaDestroyBuffer(allocator, buffer, allocation);
+            vmaDestroyBuffer(allocator, cpu_buffer, cpu_allocation);
         }
     }
 
