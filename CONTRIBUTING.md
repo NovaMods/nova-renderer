@@ -11,10 +11,10 @@ The procedure for actually contributing is fairly simple:
   * If you're fixing a bug, reference the issue that the bug was first reported in somewhere in your pull request
 * I'll either approve your changes or let you know if there's any problems.
 
-# List of Contributors
+# List of Primary Rewrite Contributors
 
 User | Contribution
 ------------ | -------------
-[DethRaid](https://github.com/DethRaid) | Lead Developer
-[mdsitton](https://github.com/mdsitton) | CMake build fixes
-[SylveonBottle](https://github.com/SylveonBottle) | Creating CONTRIBUTING.md
+[DethRaid](https://github.com/DethRaid) | Lead Developer, Does Tons
+[cwfitzgerald](https://github.com/cwfitzgerald) | Build System, Packaging, and Continuous Integration
+[Janrupf](https://github.com/Janrupf) | Minecraft Bridge, Bug Fixes, Assorted Fixes
