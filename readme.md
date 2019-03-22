@@ -21,7 +21,7 @@ If you want to see what we have planned, or what has already been done, check ou
 
 Nova uses [vcpkg](https://github.com/Microsoft/vcpkg) for dependency management. You need to install it on your system PATH. Once `vcpkg` is on your path, run the appropriate setup script for your platform - run `setup-windows.ps1` from Powershell on Windows, run `setup-linux.sh` from Bash on Linux. This will install almost all of Nova's dependencies
 
-Install the LunarG Vulkan SDK. Use the latest SDK for Vulkan 1.1
+Install the LunarG Vulkan SDK. Use the latest SDK for Vulkan 1.1. If you are on linux you must add `VULKAN_SDK` to your environment, pointing to the installation root of the package, most likely `/usr`.
 
 Generate your compiler's build files from the CMake project. We recommend creating your build files in a `build` directory in the root of your local Nova Renderer repository. Be sure to pass CMake the `vcpkg` toolchain file, or your CMake will be very sad. An example:
 
