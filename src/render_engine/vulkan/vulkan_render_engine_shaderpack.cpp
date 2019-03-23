@@ -778,6 +778,12 @@ namespace nova::renderer {
                     NOVA_THROW_IF_VK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat_pass.descriptor_sets.data()),
                                            shaderpack_loading_error);
 
+                    std::stringstream ss;
+                    for(const VkDescriptorSet& set : mat_pass.descriptor_sets) {
+                        ss << set << ", ";
+                    }
+                    NOVA_LOG(TRACE) << "Material pass " << mat_pass.name << " in material " << mat_pass.material_name << " has descriptors [" << ss.str() << "]";
+
                     update_material_descriptor_sets(mat_pass, pipeline.bindings);
                 }
             }
@@ -837,17 +843,21 @@ namespace nova::renderer {
             write.dstArrayElement = 0;
 
             if(textures.find(resource_name) != textures.end()) {
+                NOVA_LOG(TRACE) << "Binding  texture " << resource_name << " to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
                 const vk_texture& texture = textures.at(resource_name);
                 write_texture_to_descriptor(texture, write, image_infos);
 
             } else if(buffers.find(resource_name) != buffers.end()) {
+                NOVA_LOG(TRACE) << "Binding dynamic buffer " << resource_name << " to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
                 const vk_buffer& buffer = buffers.at(resource_name);
                 write_buffer_to_descriptor(buffer.buffer, write, buffer_infos, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
             } else if(resource_name == "NovaModelMatrixBuffer") {
+                NOVA_LOG(TRACE) << "Binding buffer NovaModelMatrixBuffer to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
                 write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(), write, buffer_infos, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
             } else if(resource_name == "NovaPerFrameUBO") {
+                NOVA_LOG(TRACE) << "Binding buffer NovaPerFrameUBO to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
                 write_buffer_to_descriptor(per_frame_data_buffer->get_vk_buffer(), write, buffer_infos, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
             } else {
