@@ -45,20 +45,6 @@ echo "End GCC-Build"
 echo "End GCC-Tests"
 cd ..
 
-# Formatting
-cd build-clang
-ninja format
-cd ..
-echo "End formatting"
-
-if [ `git status --porcelain src tests | wc -c` -eq 0 ]; then
-    echo "No formatting errors found."
-else
-    echo "Formatting errors found."
-    git diff -numstat src tests
-    exit 1
-fi
-
 # Linting
 # cd build-clang
 # ${WORKSPACE}/3rdparty/run-clang-tidy/run-clang-tidy.py --export-fixes fixes.yaml -j8 --header-filter "${WORKSPACE}"'/(src|tests)/.*' `find ../{src,tests}/ -iname '*.cpp'` --clang-tidy-binary clang-tidy-8
@@ -80,3 +66,27 @@ lcov --list coverage.info
 bash ../codecov.bash -f coverage.info -t 'ae315f88-50ab-43e2-ae08-24e1b47e4f54' || echo "Codecov did not collect coverage reports"
 echo "End Coverage"
 cd ..
+
+# Formatting
+cd build-clang
+ninja format
+cd ..
+echo "End formatting"
+
+if [ `git status --porcelain src tests | wc -c` -eq 0 ]; then
+    echo "No formatting errors found."
+else
+    # Only for branches
+    if [[ $GIT_BRANCH == *'origin'* ]]; then
+        LOCAL_BRANCH=$(echo $GIT_BRANCH | sed -e 's/origin\///g')
+        echo "Formatting errors found. Committing changes."
+        git remote add origin-ssh git@github.com:/NovaMods/nova-renderer.git || true
+        git checkout `echo $LOCAL_BRANCH | sed -e 's/origin\///g'`
+        git pull --ff
+        git add src tests
+        git push origin-ssh $LOCAL_BRANCH
+    else
+        echo "Formatting errors found. Quitting."
+        exit 1
+    fi
+fi
