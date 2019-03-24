@@ -3,6 +3,7 @@
 layout(location = 0) in vec3 position_in;
 layout(location = 1) in vec2 uv_in;
 
+/*
 layout(set = 1, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
@@ -52,6 +53,7 @@ layout(set = 1, binding = 0) uniform per_frame_uniforms {
     float eyeAltitude;
     float centerDepthSmooth;
 };
+*/
 
 layout(set = 0, binding = 0) readonly buffer per_model_uniforms{
     mat4 gbufferModel;
@@ -60,7 +62,7 @@ layout(set = 0, binding = 0) readonly buffer per_model_uniforms{
 layout(location = 0) out vec2 uv;
 
 void main() {
-    gl_Position = gbufferProjection * gbufferModelView * gbufferModel * vec4(position_in, 1);
+    gl_Position = /*gbufferProjection * gbufferModelView * gbufferModel */ vec4(position_in, 1);
 
     uv = uv_in;
 }

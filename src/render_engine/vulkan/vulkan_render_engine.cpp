@@ -182,7 +182,7 @@ namespace nova::renderer {
         if(pCallbackData->objectCount != 0) {
             ss << " Objects: ";
             for(uint32_t i = 0; i < pCallbackData->objectCount; i++) {
-                ss << vulkan::to_string(pCallbackData->pObjects[i].objectType);
+                ss << to_string(pCallbackData->pObjects[i].objectType);
                 if(pCallbackData->pObjects[i].pObjectName != nullptr) {
                     ss << pCallbackData->pObjects[i].pObjectName;
                 }

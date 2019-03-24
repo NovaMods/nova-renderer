@@ -234,7 +234,17 @@ namespace nova::renderer {
         VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
 
     private:
-        const uint32_t max_frames_in_queue = 1;
+        /*!
+         * \brief The number of frames that Nova can have in-flight at a given time
+         * 
+         * The default value seen here is the number of in-flight frames we request from the GPU. However, the GPU may 
+         * create more swapchain images than we requested - which is fine, but that means that this value at runtime 
+         * may not be what it is here. Be aware.
+         * 
+         * This value should not be changed outside of the constructor, but I don't know how to make the compiler 
+         * enforce that - so be careful!
+         */
+        uint32_t max_in_flight_frames = 3;
         uint32_t current_frame = 0;
 
         std::vector<const char*> enabled_validation_layer_names;
@@ -578,8 +588,9 @@ namespace nova::renderer {
          * This method fill start a separate async task for each pipeline that is in the given renderpass
          *
          * \param renderpass_name The name of the renderpass to execute
+         * \param cmds The command buffer to record this renderpass into
          */
-        void execute_renderpass(const std::string* renderpass_name);
+        void record_renderpass(const std::string* renderpass_name, VkCommandBuffer cmds);
 
         /*!
          * \brief Renders all the meshes that use a single pipeline
@@ -611,6 +622,13 @@ namespace nova::renderer {
          * \brief Submits the provided command buffer to the provided queue
          *
          * This method is thread-safe
+         * 
+         * \param cmds The command buffer to submit
+         * \param queue The queue to submit the command buffer to
+         * \param cmd_buffer_done_fence The fence to signal when the command buffer has finished executing
+         * \param wait_semaphores Any semaphores that the command buffer needs to wait on
+         * 
+         * \pre cmds is a fully recorded command buffer
          */
         void submit_to_queue(VkCommandBuffer cmds,
                              VkQueue queue,

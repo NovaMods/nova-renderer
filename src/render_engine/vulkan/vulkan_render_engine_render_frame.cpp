@@ -13,7 +13,9 @@ namespace nova::renderer {
         reset_render_finished_semaphores();
 
         current_semaphore_idx = 0;
-        vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max());
+        // Apparently these fences are still in use?
+        NOVA_LOG(TRACE) << "Waiting on fence " << frame_fences.at(current_frame);
+        NOVA_CHECK_ERROR(vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max()));
         vkResetFences(device, 1, &frame_fences.at(current_frame));
 
         swapchain->acquire_next_swapchain_image(image_available_semaphores.at(current_frame));
@@ -34,13 +36,34 @@ namespace nova::renderer {
             transition_dynamic_textures();
         }
 
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+
+        VkCommandBufferAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        alloc_info.commandPool = command_pool;
+        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        alloc_info.commandBufferCount = 1;
+
+        VkCommandBuffer cmds;
+        NOVA_CHECK_ERROR(vkAllocateCommandBuffers(device, &alloc_info, &cmds));
+
+        VkCommandBufferBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        vkBeginCommandBuffer(cmds, &begin_info);
+
         for(const std::string& renderpass_name : render_passes_by_order) {
-            execute_renderpass(&renderpass_name);
+            record_renderpass(&renderpass_name, cmds);
         }
         shaderpack_loading_mutex.unlock();
 
+        vkEndCommandBuffer(cmds);
+
+        NOVA_LOG(TRACE) << "Submitting a command buffer that will signal fence " << frame_fences.at(current_frame);
+        submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), { image_available_semaphores.at(current_frame) });
+
         swapchain->present_current_image(render_finished_semaphores_by_frame.at(current_frame));
-        current_frame = (current_frame + 1) % max_frames_in_queue;
+        current_frame = (current_frame + 1) % max_in_flight_frames;
     }
 
     void vulkan_render_engine::reset_render_finished_semaphores() { render_finished_semaphores_by_frame[current_frame].clear(); }
@@ -229,24 +252,9 @@ namespace nova::renderer {
         dynamic_textures_need_to_transition = false;
     }
 
-    void vulkan_render_engine::execute_renderpass(const std::string* renderpass_name) {
+    void vulkan_render_engine::record_renderpass(const std::string* renderpass_name, VkCommandBuffer cmds) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
         vkResetFences(device, 1, &renderpass.fence);
-
-        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
-
-        VkCommandBufferAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        alloc_info.commandPool = command_pool;
-        alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        alloc_info.commandBufferCount = 1;
-
-        VkCommandBuffer cmds;
-        NOVA_THROW_IF_VK_ERROR(vkAllocateCommandBuffers(device, &alloc_info, &cmds), buffer_allocate_failed);
-
-        VkCommandBufferBeginInfo begin_info = {};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
         const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
 
@@ -258,9 +266,7 @@ namespace nova::renderer {
             render_pipeline(&pipe, &secondary_command_buffers[i], renderpass);
             i++;
         }
-
-        vkBeginCommandBuffer(cmds, &begin_info);
-
+        
 #pragma region Texture attachment layout transition
         if(!renderpass.read_texture_barriers.empty()) {
             vkCmdPipelineBarrier(cmds,
@@ -371,17 +377,6 @@ namespace nova::renderer {
                                  1,
                                  &barrier);
         }
-
-        vkEndCommandBuffer(cmds);
-
-        // If we write to the backbuffer, we need to signal the full-frame fence. If we do not, we can signal the individual renderpass's
-        // fence
-        if(renderpass.writes_to_backbuffer) {
-            submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), {image_available_semaphores.at(current_frame)});
-
-        } else {
-            submit_to_queue(cmds, graphics_queue, renderpass.fence, {});
-        }
     }
 
     void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass) {
@@ -424,7 +419,6 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::bind_material_resources(const material_pass& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
-        NOVA_LOG(TRACE) << "Binding descriptors for material pass " << mat_pass.name << " in material " << mat_pass.material_name;
         vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, mat_pass.descriptor_sets.data(), 0, nullptr);
     }
 
@@ -494,7 +488,7 @@ namespace nova::renderer {
             VmaAllocation allocation;
             VmaAllocationInfo alloc_info;
 
-            NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator,
+            NOVA_CHECK_ERROR(vmaCreateBuffer(vma_allocator,
                                                    &buffer_create_info,
                                                    &alloc_create_info,
                                                    &indirect_draw_commands_buffer,
@@ -554,7 +548,7 @@ namespace nova::renderer {
         while(render_finished_semaphores.size() <= current_semaphore_idx) {
             VkSemaphore semaphore;
 
-            NOVA_THROW_IF_VK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphore), render_engine_initialization_exception);
+            NOVA_CHECK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphore), render_engine_initialization_exception);
 
             render_finished_semaphores.push_back(semaphore);
         }
@@ -574,7 +568,7 @@ namespace nova::renderer {
         }
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_semaphore_idx);
-        NOVA_THROW_IF_VK_ERROR(vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence), render_engine_rendering_exception);
+        vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence);
 
         current_semaphore_idx++;
     }

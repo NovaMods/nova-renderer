@@ -63,7 +63,7 @@ namespace nova::renderer {
         allocation_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
         allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(vma_allocator,
+        NOVA_CHECK_ERROR(vmaCreateBuffer(vma_allocator,
                                                &buffer_create_info,
                                                &allocation_create_info,
                                                &new_buffer.buffer,
@@ -135,6 +135,7 @@ namespace nova::renderer {
         vkEndCommandBuffer(ubo_uploads);
 
         VkFence dummy_fence = model_matrix_buffer->get_dummy_fence();
+        vkWaitForFences(device, 1, &dummy_fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
         vkResetFences(device, 1, &dummy_fence);
 
         VkSubmitInfo submit = {};

@@ -45,6 +45,7 @@ namespace nova::renderer {
 
         VkFenceCreateInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         vkCreateFence(device, &info, nullptr, &dummy_fence);
     }

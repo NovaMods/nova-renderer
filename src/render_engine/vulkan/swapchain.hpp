@@ -50,6 +50,7 @@ namespace nova::renderer {
         void deinit();
 
         [[nodiscard]] uint32_t get_current_index() const;
+        [[nodiscard]] uint32_t get_num_images() const;
 
     private:
         vulkan_render_engine& render_engine;
@@ -65,6 +66,7 @@ namespace nova::renderer {
         std::vector<VkImageLayout> swapchain_image_layouts;
         std::vector<VkFence> fences;
 
+        uint32_t num_swapchain_images;
         uint32_t cur_swapchain_index = 0;
 
         static VkSurfaceFormatKHR choose_surface_format(const std::vector<VkSurfaceFormatKHR>& formats);

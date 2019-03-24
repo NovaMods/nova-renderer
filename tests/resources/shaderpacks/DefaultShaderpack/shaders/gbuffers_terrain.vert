@@ -6,6 +6,7 @@ layout(location = 3) in vec2 lightmap_uv_in;
 layout(location = 4) in vec3 normal_in;
 layout(location = 1) in vec4 color_in;
 
+/*
 layout(set = 1, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
@@ -55,6 +56,7 @@ layout(set = 1, binding = 0) uniform per_frame_uniforms {
     float eyeAltitude;
     float centerDepthSmooth;
 };
+*/
 
 layout(set = 0, binding = 0) readonly buffer per_model_uniforms {
     mat4 gbufferModel;
@@ -66,7 +68,7 @@ layout(location = 2) out vec2 lightmap_uv;
 layout(location = 3) out vec3 normal;
 
 void main() {
-	gl_Position =  gbufferProjection * gbufferModelView * gbufferModel * vec4(position_in, 1.0f);
+	gl_Position = /*gbufferProjection * gbufferModelView * gbufferModel */ vec4(position_in, 1.0f);
 
 	uv = uv_in;
  	color = color_in;

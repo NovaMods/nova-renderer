@@ -3,6 +3,7 @@
 // layout(set = 2, binding = 0) uniform sampler2D colortex;
 // layout(set = 2, binding = 3) uniform sampler2D lightmap;
 
+/*
 layout(set = 1, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
@@ -52,6 +53,7 @@ layout(set = 1, binding = 0) uniform per_frame_uniforms {
     float eyeAltitude;
     float centerDepthSmooth;
 };
+*/
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec4 color;

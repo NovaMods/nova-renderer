@@ -6,7 +6,6 @@
             "name": "main",
             "pipeline": "Final",
             "bindings": {
-                "per_frame_uniforms": "NovaPerFrameUBO",
                 "per_model_uniforms": "NovaModelMatrixBuffer"
             }
         }

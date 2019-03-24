@@ -8,7 +8,7 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
-    swapchain_manager::swapchain_manager(const uint32_t num_swapchain_images,
+    swapchain_manager::swapchain_manager(const uint32_t requested_num_swapchain_images,
                                          vulkan_render_engine& render_engine,
                                          const glm::ivec2 window_dimensions,
                                          const std::vector<VkPresentModeKHR>& present_modes)
@@ -22,7 +22,7 @@ namespace nova::renderer {
         info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         info.surface = render_engine.surface;
 
-        info.minImageCount = num_swapchain_images;
+        info.minImageCount = requested_num_swapchain_images;
 
         info.imageFormat = surface_format.format;
         info.imageColorSpace = surface_format.colorSpace;
@@ -47,16 +47,13 @@ namespace nova::renderer {
         this->present_mode = present_mode;
         swapchain_extent = extent;
 
-        uint32_t real_num_swapchain_images;
-        NOVA_THROW_IF_VK_ERROR(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &real_num_swapchain_images, nullptr),
-                               swapchain_creation_failed);
-        swapchain_images.resize(real_num_swapchain_images);
-        NOVA_THROW_IF_VK_ERROR(vkGetSwapchainImagesKHR(render_engine.device,
+        NOVA_CHECK_ERROR(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, nullptr));
+        swapchain_images.resize(num_swapchain_images);
+        NOVA_CHECK_ERROR(vkGetSwapchainImagesKHR(render_engine.device,
                                                        swapchain,
-                                                       &real_num_swapchain_images,
-                                                       swapchain_images.data()),
-                               swapchain_creation_failed);
-        swapchain_image_layouts.resize(real_num_swapchain_images);
+                                                       &num_swapchain_images,
+                                                       swapchain_images.data()));
+        swapchain_image_layouts.resize(num_swapchain_images);
         for(auto& swapchain_image_layout : swapchain_image_layouts) {
             swapchain_image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         }
@@ -296,6 +293,8 @@ namespace nova::renderer {
 
     uint32_t swapchain_manager::get_current_index() const { return cur_swapchain_index; }
 
+    uint32_t swapchain_manager::get_num_images() const { return num_swapchain_images;  }
+
     void swapchain_manager::acquire_next_swapchain_image(VkSemaphore image_acquire_semaphore) {
         const auto acquire_result = vkAcquireNextImageKHR(render_engine.device,
                                                           swapchain,
@@ -309,8 +308,7 @@ namespace nova::renderer {
             return;
         }
         if(acquire_result != VK_SUCCESS) {
-            throw render_engine_rendering_exception(std::string(__FILE__) + ":" + std::to_string(__LINE__) + "=> " +
-                                                    vulkan::vulkan_utils::vk_result_to_string(acquire_result));
+            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> " << vk_result_to_string(acquire_result);
         }
     }
 

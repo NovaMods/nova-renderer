@@ -22,8 +22,7 @@ namespace nova::renderer {
         buffer_info.size = size;
         buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(allocator, &buffer_info, &allocate_info, &buffer, &vma_allocation, &vma_allocation_info),
-                               buffer_allocation_failed);
+        NOVA_CHECK_ERROR(vmaCreateBuffer(allocator, &buffer_info, &allocate_info, &buffer, &vma_allocation, &vma_allocation_info));
 
         // Setup the first block.
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
