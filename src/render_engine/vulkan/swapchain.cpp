@@ -47,9 +47,9 @@ namespace nova::renderer {
         this->present_mode = present_mode;
         swapchain_extent = extent;
 
-        NOVA_CHECK_ERROR(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, nullptr));
+        NOVA_CHECK_RESULT(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, nullptr));
         swapchain_images.resize(num_swapchain_images);
-        NOVA_CHECK_ERROR(vkGetSwapchainImagesKHR(render_engine.device,
+        NOVA_CHECK_RESULT(vkGetSwapchainImagesKHR(render_engine.device,
                                                        swapchain,
                                                        &num_swapchain_images,
                                                        swapchain_images.data()));
@@ -203,7 +203,7 @@ namespace nova::renderer {
         present_info.pImageIndices = &cur_swapchain_index;
         present_info.pResults = &swapchain_result;
 
-        vkQueuePresentKHR(render_engine.graphics_queue, &present_info);
+        NOVA_CHECK_RESULT(vkQueuePresentKHR(render_engine.graphics_queue, &present_info));
     }
 
     void swapchain_manager::transition_swapchain_images_into_correct_layout(const std::vector<VkImage>& images) const {

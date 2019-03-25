@@ -30,11 +30,11 @@
 
 #include <mutex>
 #include "../../render_objects/renderables.hpp"
+#include "../../render_objects/uniform_structs.hpp"
 #include "auto_allocating_buffer.hpp"
 #include "fixed_size_buffer_allocator.hpp"
-#include "swapchain.hpp"
 #include "struct_uniform_buffer.hpp"
-#include "../../render_objects/uniform_structs.hpp"
+#include "swapchain.hpp"
 
 namespace nova::ttl {
     class task_scheduler;
@@ -56,7 +56,7 @@ namespace nova::renderer {
 
         /*!
          * \brief Checks if two `vk_resource_binding` objects are equal
-         * 
+         *
          * Checks every member except the pipeline stages that the descriptor is available to. This is so I can more
          * easily handle descriptors that are used in multiple pipeline stages
          */
@@ -236,12 +236,12 @@ namespace nova::renderer {
     private:
         /*!
          * \brief The number of frames that Nova can have in-flight at a given time
-         * 
-         * The default value seen here is the number of in-flight frames we request from the GPU. However, the GPU may 
-         * create more swapchain images than we requested - which is fine, but that means that this value at runtime 
+         *
+         * The default value seen here is the number of in-flight frames we request from the GPU. However, the GPU may
+         * create more swapchain images than we requested - which is fine, but that means that this value at runtime
          * may not be what it is here. Be aware.
-         * 
-         * This value should not be changed outside of the constructor, but I don't know how to make the compiler 
+         *
+         * This value should not be changed outside of the constructor, but I don't know how to make the compiler
          * enforce that - so be careful!
          */
         uint32_t max_in_flight_frames = 3;
@@ -601,7 +601,7 @@ namespace nova::renderer {
          * Intended use case is to render the things for each pipeline in a separate fiber, but imma have to do a lot
          * of profiling to be sure
          */
-        void render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass);
+        void record_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass);
 
         /*!
          * \brief Binds all the resources that the provided material uses to the given pipeline
@@ -615,25 +615,24 @@ namespace nova::renderer {
         /*!
          * \brief Renders all the things using the provided material
          */
-        void draw_all_for_material(const material_pass& pass,
-                                   VkCommandBuffer cmds);
+        void record_drawing_all_for_material(const material_pass& pass, VkCommandBuffer cmds);
 
         /*!
          * \brief Submits the provided command buffer to the provided queue
          *
          * This method is thread-safe
-         * 
+         *
          * \param cmds The command buffer to submit
          * \param queue The queue to submit the command buffer to
          * \param cmd_buffer_done_fence The fence to signal when the command buffer has finished executing
          * \param wait_semaphores Any semaphores that the command buffer needs to wait on
-         * 
+         *
          * \pre cmds is a fully recorded command buffer
          */
         void submit_to_queue(VkCommandBuffer cmds,
                              VkQueue queue,
-                             VkFence cmd_buffer_done_fence,
-                             const std::vector<VkSemaphore>& wait_semaphores);
+                             VkFence cmd_buffer_done_fence = {},
+                             const std::vector<VkSemaphore>& wait_semaphores = {});
 #pragma endregion
 
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;

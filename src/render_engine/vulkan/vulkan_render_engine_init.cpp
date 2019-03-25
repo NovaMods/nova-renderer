@@ -33,6 +33,7 @@ namespace nova::renderer {
         create_info.pApplicationInfo = &application_info;
         if(settings.debug.enabled && settings.debug.enable_validation_layers) {
             enabled_validation_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
+            enabled_validation_layer_names.push_back("VK_LAYER_LUNARG_assistant_layer");
         }
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_validation_layer_names.size());
         create_info.ppEnabledLayerNames = enabled_validation_layer_names.data();
@@ -55,7 +56,7 @@ namespace nova::renderer {
         create_info.enabledExtensionCount = static_cast<uint32_t>(enabled_extension_names.size());
         create_info.ppEnabledExtensionNames = enabled_extension_names.data();
 
-        NOVA_CHECK_ERROR(vkCreateInstance(&create_info, nullptr, &vk_instance));
+        NOVA_CHECK_RESULT(vkCreateInstance(&create_info, nullptr, &vk_instance));
 
         uint32_t num_extensions;
         vkEnumerateInstanceExtensionProperties(nullptr, &num_extensions, nullptr);
@@ -89,7 +90,7 @@ namespace nova::renderer {
             debug_create_info.pfnUserCallback = reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(&debug_report_callback);
             debug_create_info.pUserData = this;
 
-            NOVA_CHECK_ERROR(vkCreateDebugUtilsMessengerEXT(vk_instance, &debug_create_info, nullptr, &debug_callback));
+            NOVA_CHECK_RESULT(vkCreateDebugUtilsMessengerEXT(vk_instance, &debug_create_info, nullptr, &debug_callback));
         }
 
         // First we open the window. This doesn't depend on anything except the VkInstance/ This method also creates
@@ -171,7 +172,7 @@ namespace nova::renderer {
         win32_surface_create.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
         win32_surface_create.hwnd = window->get_window_handle();
 
-        NOVA_CHECK_ERROR(vkCreateWin32SurfaceKHR(vk_instance, &win32_surface_create, nullptr, &surface));
+        NOVA_CHECK_RESULT(vkCreateWin32SurfaceKHR(vk_instance, &win32_surface_create, nullptr, &surface));
 
 #else
 #error Unsuported window system
@@ -180,9 +181,9 @@ namespace nova::renderer {
 
     void vulkan_render_engine::create_device() {
         uint32_t device_count;
-        NOVA_CHECK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, nullptr));
+        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(vk_instance, &device_count, nullptr));
         auto physical_devices = std::vector<VkPhysicalDevice>(device_count);
-        NOVA_CHECK_ERROR(vkEnumeratePhysicalDevices(vk_instance, &device_count, physical_devices.data()));
+        NOVA_CHECK_RESULT(vkEnumeratePhysicalDevices(vk_instance, &device_count, physical_devices.data()));
 
         uint32_t graphics_family_idx = 0xFFFFFFFF;
         uint32_t compute_family_idx = 0xFFFFFFFF;
@@ -215,7 +216,7 @@ namespace nova::renderer {
                 }
 
                 VkBool32 supports_present = VK_FALSE;
-                NOVA_CHECK_ERROR(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, queue_idx, surface, &supports_present));
+                NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceSupportKHR(current_device, queue_idx, surface, &supports_present));
                 const VkQueueFlags supports_graphics = current_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
                 if((supports_graphics != 0U) && supports_present == VK_TRUE && graphics_family_idx == 0xFFFFFFFF) {
                     graphics_family_idx = queue_idx;
@@ -277,7 +278,7 @@ namespace nova::renderer {
             device_create_info.ppEnabledLayerNames = enabled_validation_layer_names.data();
         }
 
-        NOVA_CHECK_ERROR(vkCreateDevice(gpu.phys_device, &device_create_info, nullptr, &device));
+        NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, nullptr, &device));
 
         graphics_family_index = graphics_family_idx;
         vkGetDeviceQueue(device, graphics_family_idx, 0, &graphics_queue);
@@ -327,7 +328,7 @@ namespace nova::renderer {
             command_pool_create_info.queueFamilyIndex = queue_index;
 
             VkCommandPool command_pool;
-            NOVA_CHECK_ERROR(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool));
+            NOVA_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_create_info, nullptr, &command_pool));
             pools_by_queue[queue_index] = command_pool;
         }
 
@@ -335,21 +336,21 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::create_swapchain() {
-        NOVA_CHECK_ERROR(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities));
+        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu.phys_device, surface, &gpu.surface_capabilities));
 
         uint32_t num_surface_formats;
-        NOVA_CHECK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr));
+        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr));
         gpu.surface_formats.resize(num_surface_formats);
-        NOVA_CHECK_ERROR(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device,
+        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device,
                                                                     surface,
                                                                     &num_surface_formats,
                                                                     gpu.surface_formats.data()));
 
         uint32_t num_surface_present_modes;
-        NOVA_CHECK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr));
+        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr));
         std::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
         NOVA_LOG(DEBUG) << "Resized present_nodes to hold " << num_surface_present_modes << " formats";
-        NOVA_CHECK_ERROR(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device,
+        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device,
                                                                          surface,
                                                                          &num_surface_present_modes,
                                                                          present_modes.data()));
@@ -362,7 +363,7 @@ namespace nova::renderer {
         allocator_create_info.physicalDevice = gpu.phys_device;
         allocator_create_info.device = device;
 
-        NOVA_CHECK_ERROR(vmaCreateAllocator(&allocator_create_info, &vma_allocator));
+        NOVA_CHECK_RESULT(vmaCreateAllocator(&allocator_create_info, &vma_allocator));
     }
 
     void vulkan_render_engine::create_global_sync_objects() {
@@ -378,11 +379,11 @@ namespace nova::renderer {
         render_finished_semaphores_by_frame.resize(max_in_flight_frames);
 
         for(uint32_t i = 0; i < max_in_flight_frames; i++) {
-            NOVA_CHECK_ERROR(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]));
-            NOVA_CHECK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]));
+            NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]));
+            NOVA_CHECK_RESULT(vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]));
         }
-        NOVA_CHECK_ERROR(vkCreateFence(device, &fence_info, nullptr, &mesh_rendering_done));
-        NOVA_CHECK_ERROR(vkCreateFence(device, &fence_info, nullptr, &upload_to_megamesh_buffer_done));
+        NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &mesh_rendering_done));
+        NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &upload_to_megamesh_buffer_done));
     }
 
     void vulkan_render_engine::create_per_thread_descriptor_pools() {
@@ -408,7 +409,7 @@ namespace nova::renderer {
         pool_create_info.pPoolSizes = pool_sizes.data();
 
         VkDescriptorPool pool;
-        NOVA_CHECK_ERROR(vkCreateDescriptorPool(device, &pool_create_info, nullptr, &pool));
+        NOVA_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_create_info, nullptr, &pool));
 
         return pool;
     }
@@ -419,7 +420,7 @@ namespace nova::renderer {
         point_sampler_create.magFilter = VK_FILTER_NEAREST;
         point_sampler_create.minFilter = VK_FILTER_NEAREST;
 
-        NOVA_CHECK_ERROR(vkCreateSampler(device, &point_sampler_create, nullptr, &point_sampler));
+        NOVA_CHECK_RESULT(vkCreateSampler(device, &point_sampler_create, nullptr, &point_sampler));
     }
 
 } // namespace nova::renderer

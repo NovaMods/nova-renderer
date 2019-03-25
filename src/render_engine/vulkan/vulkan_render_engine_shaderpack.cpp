@@ -116,8 +116,8 @@ namespace nova::renderer {
                 object_name.objectType = VK_OBJECT_TYPE_IMAGE;
                 object_name.objectHandle = reinterpret_cast<uint64_t>(texture.image);
                 object_name.pObjectName = texture_data.name.c_str();
-                NOVA_CHECK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
-                NOVA_LOG(INFO) << "Set object " << texture.image << " to have name " << texture_data.name;
+                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+                NOVA_LOG(INFO) << "Set image " << texture.image << " to have name " << texture_data.name;
             }
 
             textures[texture_data.name] = texture;
@@ -341,8 +341,7 @@ namespace nova::renderer {
             render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
             render_pass_create_info.pAttachments = attachments.data();
 
-            NOVA_CHECK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_passes[pass_name].pass),
-                                   render_engine_initialization_exception);
+            NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_passes[pass_name].pass));
 
             if(writes_to_backbuffer) {
                 if(pass.data.texture_outputs.size() > 1) {
@@ -371,8 +370,7 @@ namespace nova::renderer {
                                 << "), and attachments " << ss.str();
 
                 VkFramebuffer framebuffer;
-                NOVA_CHECK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer),
-                                       render_engine_initialization_exception);
+                NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer));
                 render_passes[pass_name].framebuffer.framebuffer = framebuffer;
                 render_passes[pass_name].framebuffer.images = std::move(textures_in_framebuffer);
             }
@@ -385,7 +383,7 @@ namespace nova::renderer {
                 object_name.objectType = VK_OBJECT_TYPE_IMAGE;
                 object_name.objectHandle = reinterpret_cast<uint64_t>(render_passes[pass_name].pass);
                 object_name.pObjectName = pass_name.c_str();
-                NOVA_CHECK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
+                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
             }
         }
     }
@@ -446,8 +444,7 @@ namespace nova::renderer {
             pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
             VkPipelineLayout layout;
-            NOVA_CHECK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout),
-                                   render_engine_initialization_exception);
+            NOVA_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout));
             nova_pipeline.layout = layout;
 
             for(const auto& [stage, shader_module] : shader_modules) {
@@ -609,13 +606,12 @@ namespace nova::renderer {
             pipeline_create_info.subpass = 0;
             pipeline_create_info.basePipelineIndex = -1;
 
-            NOVA_CHECK_ERROR(vkCreateGraphicsPipelines(device,
+            NOVA_CHECK_RESULT(vkCreateGraphicsPipelines(device,
                                                              VK_NULL_HANDLE,
                                                              1,
                                                              &pipeline_create_info,
                                                              nullptr,
-                                                             &nova_pipeline.pipeline),
-                                   render_engine_initialization_exception);
+                                                             &nova_pipeline.pipeline));
 
             pipelines_by_renderpass[data.pass].push_back(nova_pipeline);
 
@@ -625,7 +621,7 @@ namespace nova::renderer {
                 object_name.objectType = VK_OBJECT_TYPE_IMAGE;
                 object_name.objectHandle = reinterpret_cast<uint64_t>(nova_pipeline.pipeline);
                 object_name.pObjectName = data.name.c_str();
-                NOVA_CHECK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
+                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
                 NOVA_LOG(INFO) << "Set pipeline " << nova_pipeline.pipeline << " to have name " << data.name;
             }
         }
@@ -640,8 +636,7 @@ namespace nova::renderer {
         shader_module_create_info.codeSize = spirv.size() * 4;
 
         VkShaderModule module;
-        NOVA_CHECK_ERROR(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module),
-                               render_engine_initialization_exception);
+        NOVA_CHECK_RESULT(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module));
 
         return module;
     }
@@ -775,8 +770,7 @@ namespace nova::renderer {
                     alloc_info.pSetLayouts = layouts.data();
 
                     mat_pass.descriptor_sets.resize(layouts.size());
-                    NOVA_CHECK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat_pass.descriptor_sets.data()),
-                                           shaderpack_loading_error);
+                    NOVA_CHECK_RESULT(vkAllocateDescriptorSets(device, &alloc_info, mat_pass.descriptor_sets.data()));
 
                     std::stringstream ss;
                     for(const VkDescriptorSet& set : mat_pass.descriptor_sets) {

@@ -15,8 +15,8 @@ namespace nova::renderer {
         current_semaphore_idx = 0;
         // Apparently these fences are still in use?
         NOVA_LOG(TRACE) << "Waiting on fence " << frame_fences.at(current_frame);
-        NOVA_CHECK_ERROR(vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max()));
-        vkResetFences(device, 1, &frame_fences.at(current_frame));
+        NOVA_CHECK_RESULT(vkWaitForFences(device, 1, &frame_fences.at(current_frame), VK_TRUE, std::numeric_limits<uint64_t>::max()));
+        NOVA_CHECK_RESULT(vkResetFences(device, 1, &frame_fences.at(current_frame)));
 
         swapchain->acquire_next_swapchain_image(image_available_semaphores.at(current_frame));
 
@@ -45,7 +45,7 @@ namespace nova::renderer {
         alloc_info.commandBufferCount = 1;
 
         VkCommandBuffer cmds;
-        NOVA_CHECK_ERROR(vkAllocateCommandBuffers(device, &alloc_info, &cmds));
+        NOVA_CHECK_RESULT(vkAllocateCommandBuffers(device, &alloc_info, &cmds));
 
         VkCommandBufferBeginInfo begin_info = {};
         begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -57,7 +57,7 @@ namespace nova::renderer {
         }
         shaderpack_loading_mutex.unlock();
 
-        vkEndCommandBuffer(cmds);
+        NOVA_CHECK_RESULT(vkEndCommandBuffer(cmds));
 
         NOVA_LOG(TRACE) << "Submitting a command buffer that will signal fence " << frame_fences.at(current_frame);
         submit_to_queue(cmds, graphics_queue, frame_fences.at(current_frame), { image_available_semaphores.at(current_frame) });
@@ -130,26 +130,23 @@ namespace nova::renderer {
         meshes_mutex.unlock();
 
         vkEndCommandBuffer(mesh_upload_cmds);
-
-        VkSubmitInfo submit_info = {};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &mesh_upload_cmds;
-
+        
         // Be super duper sure that mesh rendering is done
         // TODO: Something smarter
         for(const auto& [pass_name, pass] : render_passes) {
             (void) pass_name;
-            vkWaitForFences(device, 1, &pass.fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+            NOVA_CHECK_RESULT(vkWaitForFences(device, 1, &pass.fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
         }
-        vkResetFences(device, 1, &upload_to_megamesh_buffer_done);
-        vkQueueSubmit(copy_queue, 1, &submit_info, upload_to_megamesh_buffer_done);
+        NOVA_CHECK_RESULT(vkResetFences(device, 1, &upload_to_megamesh_buffer_done));
 
-        vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        submit_to_queue(mesh_upload_cmds, copy_queue, upload_to_megamesh_buffer_done, {});
 
-        vkResetFences(device, 1, &upload_to_megamesh_buffer_done);
+        NOVA_CHECK_RESULT(vkWaitForFences(device, 1, &upload_to_megamesh_buffer_done, VK_TRUE, std::numeric_limits<uint64_t>::max()));
+
+        NOVA_CHECK_RESULT(vkResetFences(device, 1, &upload_to_megamesh_buffer_done));
 
         // Once the upload is done, return all the staging buffers to the pool
+        // TODO: Do this asynchronosly once Nova has async things
         std::lock_guard l(mesh_staging_buffers_mutex);
         available_mesh_staging_buffers.insert(available_mesh_staging_buffers.end(), freed_buffers.begin(), freed_buffers.end());
     }
@@ -237,15 +234,10 @@ namespace nova::renderer {
         VkFenceCreateInfo fence_create_info = {};
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-        vkCreateFence(device, &fence_create_info, nullptr, &transition_done_fence);
+        NOVA_CHECK_RESULT(vkCreateFence(device, &fence_create_info, nullptr, &transition_done_fence));
 
-        VkSubmitInfo submit_info = {};
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.commandBufferCount = 1;
-        submit_info.pCommandBuffers = &cmds;
-
-        vkQueueSubmit(graphics_queue, 1, &submit_info, transition_done_fence);
-        vkWaitForFences(device, 1, &transition_done_fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+        submit_to_queue(cmds, graphics_queue, transition_done_fence);
+        NOVA_CHECK_RESULT(vkWaitForFences(device, 1, &transition_done_fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
 
         vkFreeCommandBuffers(device, command_pool, 1, &cmds);
 
@@ -254,7 +246,7 @@ namespace nova::renderer {
 
     void vulkan_render_engine::record_renderpass(const std::string* renderpass_name, VkCommandBuffer cmds) {
         const vk_render_pass& renderpass = render_passes.at(*renderpass_name);
-        vkResetFences(device, 1, &renderpass.fence);
+        NOVA_CHECK_RESULT(vkResetFences(device, 1, &renderpass.fence));
 
         const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
 
@@ -263,7 +255,7 @@ namespace nova::renderer {
         nova::ttl::condition_counter pipelines_rendering_counter;
         uint32_t i = 0;
         for(const vk_pipeline& pipe : pipelines) {
-            render_pipeline(&pipe, &secondary_command_buffers[i], renderpass);
+            record_pipeline(&pipe, &secondary_command_buffers[i], renderpass);
             i++;
         }
         
@@ -379,7 +371,7 @@ namespace nova::renderer {
         }
     }
 
-    void vulkan_render_engine::render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass) {
+    void vulkan_render_engine::record_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass) {
         // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
         // command pool for its thread, since command pools need to be externally synchronized
         VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
@@ -390,7 +382,7 @@ namespace nova::renderer {
         cmds_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
         cmds_info.commandBufferCount = 1;
 
-        vkAllocateCommandBuffers(device, &cmds_info, cmds);
+        NOVA_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmds_info, cmds));
 
         VkCommandBufferInheritanceInfo cmds_inheritance_info = {};
         cmds_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -403,7 +395,7 @@ namespace nova::renderer {
         begin_info.pInheritanceInfo = &cmds_inheritance_info;
 
         // Start command buffer, start renderpass, and bind pipeline
-        vkBeginCommandBuffer(*cmds, &begin_info);
+        NOVA_CHECK_RESULT(vkBeginCommandBuffer(*cmds, &begin_info));
 
         vkCmdBindPipeline(*cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
 
@@ -412,18 +404,20 @@ namespace nova::renderer {
         const std::vector<material_pass> materials = material_passes_by_pipeline.at(pipeline->data.name);
         for(const material_pass& pass : materials) {
             bind_material_resources(pass, *pipeline, *cmds);
-            draw_all_for_material(pass, *cmds);
+            record_drawing_all_for_material(pass, *cmds);
         }
 
-        vkEndCommandBuffer(*cmds);
+        NOVA_CHECK_RESULT(vkEndCommandBuffer(*cmds));
     }
 
     void vulkan_render_engine::bind_material_resources(const material_pass& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
         vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, mat_pass.descriptor_sets.data(), 0, nullptr);
     }
 
-    void vulkan_render_engine::draw_all_for_material(const material_pass& pass,
+    void vulkan_render_engine::record_drawing_all_for_material(const material_pass& pass,
                                                      VkCommandBuffer cmds) {
+
+        NOVA_LOG(TRACE) << "Recording drawcalls for material pass " << pass.name << " in material " << pass.material_name;
         
         // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
         // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
@@ -488,13 +482,12 @@ namespace nova::renderer {
             VmaAllocation allocation;
             VmaAllocationInfo alloc_info;
 
-            NOVA_CHECK_ERROR(vmaCreateBuffer(vma_allocator,
+            NOVA_CHECK_RESULT(vmaCreateBuffer(vma_allocator,
                                                    &buffer_create_info,
                                                    &alloc_create_info,
                                                    &indirect_draw_commands_buffer,
                                                    &allocation,
-                                                   &alloc_info),
-                                   buffer_allocate_failed);
+                                                   &alloc_info));
 
             // Version 1: write commands for all things to the indirect draw buffer
             auto* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
@@ -548,7 +541,7 @@ namespace nova::renderer {
         while(render_finished_semaphores.size() <= current_semaphore_idx) {
             VkSemaphore semaphore;
 
-            NOVA_CHECK_ERROR(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphore), render_engine_initialization_exception);
+            NOVA_CHECK_RESULT(vkCreateSemaphore(device, &semaphore_info, nullptr, &semaphore));
 
             render_finished_semaphores.push_back(semaphore);
         }
@@ -568,7 +561,9 @@ namespace nova::renderer {
         }
         submit_info.signalSemaphoreCount = 1;
         submit_info.pSignalSemaphores = &render_finished_semaphores.at(current_semaphore_idx);
-        vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence);
+        NOVA_CHECK_RESULT(vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence));
+
+        NOVA_LOG(TRACE) << "Submitted command buffer " << cmds << " to queue " << queue;
 
         current_semaphore_idx++;
     }

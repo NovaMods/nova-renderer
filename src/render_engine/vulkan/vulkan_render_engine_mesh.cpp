@@ -63,13 +63,12 @@ namespace nova::renderer {
         allocation_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
         allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        NOVA_CHECK_ERROR(vmaCreateBuffer(vma_allocator,
+        NOVA_CHECK_RESULT(vmaCreateBuffer(vma_allocator,
                                                &buffer_create_info,
                                                &allocation_create_info,
                                                &new_buffer.buffer,
                                                &new_buffer.allocation,
-                                               &new_buffer.alloc_info),
-                               render_engine_rendering_exception);
+                                               &new_buffer.alloc_info));
 
         return new_buffer;
     }
@@ -132,17 +131,13 @@ namespace nova::renderer {
                              0,
                              nullptr);
 
-        vkEndCommandBuffer(ubo_uploads);
+        NOVA_CHECK_RESULT(vkEndCommandBuffer(ubo_uploads));
 
         VkFence dummy_fence = model_matrix_buffer->get_dummy_fence();
-        vkWaitForFences(device, 1, &dummy_fence, VK_TRUE, std::numeric_limits<uint64_t>::max());
-        vkResetFences(device, 1, &dummy_fence);
+        NOVA_CHECK_RESULT(vkWaitForFences(device, 1, &dummy_fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
+        NOVA_CHECK_RESULT(vkResetFences(device, 1, &dummy_fence));
 
-        VkSubmitInfo submit = {};
-        submit.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit.commandBufferCount = 1;
-        submit.pCommandBuffers = &ubo_uploads;
-        vkQueueSubmit(copy_queue, 1, &submit, model_matrix_buffer->get_dummy_fence());
+        submit_to_queue(ubo_uploads, copy_queue, dummy_fence, {});
     }
 
     void vulkan_render_engine::delete_mesh(uint32_t mesh_id) {

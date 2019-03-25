@@ -23,11 +23,11 @@ namespace nova::renderer {
 // Release mode needs to be fast A F
 #ifndef NDEBUG
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
-#define NOVA_CHECK_ERROR(expr)                                                                                                             \
+#define NOVA_CHECK_RESULT(expr)                                                                                                            \
     {                                                                                                                                      \
         const VkResult result = (expr);                                                                                                    \
         if(result != VK_SUCCESS) {                                                                                                         \
-            throw NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ + "=> " << vk_result_to_string(result);                                   \
+            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> "  << #expr << "=" << vk_result_to_string(result);                      \
         }                                                                                                                                  \
     }
 #else
