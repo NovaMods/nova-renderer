@@ -10,8 +10,8 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
-    vulkan_render_engine::vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler)
-        : render_engine(settings, task_scheduler) {
+    vulkan_render_engine::vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler, RENDERDOC_API_1_3_0* renderdoc)
+        : render_engine(settings, task_scheduler), renderdoc(renderdoc) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
         validate_mesh_options(settings.vertex_memory_settings);
@@ -23,7 +23,7 @@ namespace nova::renderer {
         application_info.pNext = nullptr;
         application_info.pApplicationName = this->settings.vulkan.application_name.c_str();
         application_info.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.patch);
-        application_info.pEngineName = "Nova renderer 0.1";
+        application_info.pEngineName = "Nova renderer 0.8";
         application_info.apiVersion = VK_API_VERSION_1_1;
 
         VkInstanceCreateInfo create_info;
@@ -32,11 +32,11 @@ namespace nova::renderer {
         create_info.flags = 0;
         create_info.pApplicationInfo = &application_info;
         if(settings.debug.enabled && settings.debug.enable_validation_layers) {
-            enabled_validation_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
-            enabled_validation_layer_names.push_back("VK_LAYER_LUNARG_assistant_layer");
+            enabled_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
+            // enabled_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
         }
-        create_info.enabledLayerCount = static_cast<uint32_t>(enabled_validation_layer_names.size());
-        create_info.ppEnabledLayerNames = enabled_validation_layer_names.data();
+        create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
+        create_info.ppEnabledLayerNames = enabled_layer_names.data();
 
         std::vector<const char*> enabled_extension_names;
         enabled_extension_names.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
@@ -73,12 +73,10 @@ namespace nova::renderer {
         if(settings.debug.enabled) {
             vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
                 vkGetInstanceProcAddr(vk_instance, "vkCreateDebugUtilsMessengerEXT"));
-            NOVA_LOG(TRACE) << "Loaded vkCreateDebugUtilsMessengerEXT into " << vkCreateDebugUtilsMessengerEXT;
             vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
                 vkGetInstanceProcAddr(vk_instance, "vkDestroyDebugReportCallbackEXT"));
-            NOVA_LOG(TRACE) << "Loaded vkDestroyDebugReportCallbackEXT into " << vkDestroyDebugReportCallbackEXT;
 
-            VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
+            VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {};
             debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
             debug_create_info.pNext = nullptr;
             debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -107,6 +105,7 @@ namespace nova::renderer {
         // VkSurfaceKHR. This method also fills out a lot of the information in our vk_gpu_info
         create_swapchain();
         max_in_flight_frames = swapchain->get_num_images();
+        NOVA_LOG(DEBUG) << "Using " << max_in_flight_frames << " swapchain images";
 
         create_memory_allocator();
         mesh_memory = std::make_unique<compacting_block_allocator>(settings.vertex_memory_settings,
@@ -127,8 +126,6 @@ namespace nova::renderer {
             if(vkSetDebugUtilsObjectNameEXT == nullptr) {
                 NOVA_LOG(ERROR) << "Could not load the debug name function";
 
-            } else {
-                NOVA_LOG(TRACE) << "Loaded vkSetDebugUtilsObjectNameEXT to " << vkSetDebugUtilsObjectNameEXT;
             }
         }
 
@@ -273,9 +270,9 @@ namespace nova::renderer {
         device_create_info.enabledExtensionCount = 1;
         const char* swapchain_extension = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
         device_create_info.ppEnabledExtensionNames = &swapchain_extension;
-        device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_validation_layer_names.size());
-        if(!enabled_validation_layer_names.empty()) {
-            device_create_info.ppEnabledLayerNames = enabled_validation_layer_names.data();
+        device_create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
+        if(!enabled_layer_names.empty()) {
+            device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
         }
 
         NOVA_CHECK_RESULT(vkCreateDevice(gpu.phys_device, &device_create_info, nullptr, &device));
@@ -349,7 +346,6 @@ namespace nova::renderer {
         uint32_t num_surface_present_modes;
         NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr));
         std::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
-        NOVA_LOG(DEBUG) << "Resized present_nodes to hold " << num_surface_present_modes << " formats";
         NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device,
                                                                          surface,
                                                                          &num_surface_present_modes,

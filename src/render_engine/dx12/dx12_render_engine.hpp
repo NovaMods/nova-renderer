@@ -64,7 +64,7 @@ namespace nova::renderer {
          */
         explicit dx12_render_engine(nova_settings& settings, nova::ttl::task_scheduler* scheduler);
 
-        static const std::string get_engine_name();
+        static std::string get_engine_name();
 
         /**
          * render_engine overrides
@@ -159,7 +159,7 @@ namespace nova::renderer {
         /*!
          * \brief Creates the swapchain from the size of the window
          *
-         * This method has a precondition that the window must be initialized
+         * \pre the window must be initialized
          */
         void create_swapchain();
 

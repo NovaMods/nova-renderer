@@ -42,6 +42,8 @@ namespace nova::renderer {
         std::vector<command_list_base*> compute_buffers;
         compute_buffers.reserve(32);
         buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COMPUTE, compute_buffers);
+
+        open_window(settings.window.width, settings.window.height);
     }
 
     void dx12_render_engine::open_window(uint32_t width, uint32_t height) {
@@ -50,7 +52,7 @@ namespace nova::renderer {
         create_render_target_descriptor_heap();
     }
 
-    const std::string dx12_render_engine::get_engine_name() { return "DirectX 12"; }
+    std::string dx12_render_engine::get_engine_name() { return "DirectX 12"; }
 
     void dx12_render_engine::create_device() {
         //#ifndef NDEBUG
@@ -154,7 +156,7 @@ namespace nova::renderer {
             if(hr == DXGI_ERROR_INVALID_CALL) {
                 NOVA_LOG(INFO) << "Invalid call - one or more of the parameters was wrong";
             } else if(hr == DXGI_STATUS_OCCLUDED) {
-                NOVA_LOG(INFO) << "Fullscreen is unavaible";
+                NOVA_LOG(INFO) << "Fullscreen is unavailable";
             } else if(hr == E_OUTOFMEMORY) {
                 NOVA_LOG(INFO) << "Out of memory. Soz bro :/";
             }

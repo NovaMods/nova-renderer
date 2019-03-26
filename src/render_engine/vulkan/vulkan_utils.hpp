@@ -27,7 +27,7 @@ namespace nova::renderer {
     {                                                                                                                                      \
         const VkResult result = (expr);                                                                                                    \
         if(result != VK_SUCCESS) {                                                                                                         \
-            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> "  << #expr << "=" << vk_result_to_string(result);                      \
+            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> "  << #expr << "=" << vk_result_to_string(result);                       \
         }                                                                                                                                  \
     }
 #else

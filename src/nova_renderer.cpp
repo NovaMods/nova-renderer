@@ -72,7 +72,7 @@ namespace nova::renderer {
 #endif
             case graphics_api::vulkan:
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler);
+                engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler, render_doc);
         }
     }
 

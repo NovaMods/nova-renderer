@@ -10,6 +10,9 @@
 
 namespace nova::renderer {
     void vulkan_render_engine::render_frame() {
+        // renderdoc->StartFrameCapture(nullptr, nullptr);
+        const std::chrono::system_clock::time_point frame_start_time = std::chrono::system_clock::now();
+
         reset_render_finished_semaphores();
 
         current_semaphore_idx = 0;
@@ -64,9 +67,22 @@ namespace nova::renderer {
 
         swapchain->present_current_image(render_finished_semaphores_by_frame.at(current_frame));
         current_frame = (current_frame + 1) % max_in_flight_frames;
+
+        const std::chrono::system_clock::time_point frame_end_time = std::chrono::system_clock::now();
+        const std::chrono::system_clock::duration frame_cpu_duration = frame_end_time - frame_start_time;
+
+        NOVA_LOG(DEBUG) << "Frame took " << (frame_cpu_duration.count() / 1000000.0) << "ms";
+        // renderdoc->EndFrameCapture(nullptr, nullptr);
     }
 
-    void vulkan_render_engine::reset_render_finished_semaphores() { render_finished_semaphores_by_frame[current_frame].clear(); }
+    void vulkan_render_engine::reset_render_finished_semaphores() {
+        const std::vector<VkSemaphore>& semaphores = render_finished_semaphores_by_frame[current_frame];
+        for (const VkSemaphore& semaphore : semaphores) {
+            vkDestroySemaphore(device, semaphore, nullptr);
+        }
+
+        render_finished_semaphores_by_frame[current_frame].clear();
+    }
 
     void vulkan_render_engine::upload_new_mesh_parts() {
         if(mesh_upload_queue.empty()) {
@@ -249,15 +265,6 @@ namespace nova::renderer {
         NOVA_CHECK_RESULT(vkResetFences(device, 1, &renderpass.fence));
 
         const std::vector<vk_pipeline> pipelines = pipelines_by_renderpass.at(*renderpass_name);
-
-        std::vector<VkCommandBuffer> secondary_command_buffers(pipelines.size());
-
-        nova::ttl::condition_counter pipelines_rendering_counter;
-        uint32_t i = 0;
-        for(const vk_pipeline& pipe : pipelines) {
-            record_pipeline(&pipe, &secondary_command_buffers[i], renderpass);
-            i++;
-        }
         
 #pragma region Texture attachment layout transition
         if(!renderpass.read_texture_barriers.empty()) {
@@ -336,9 +343,13 @@ namespace nova::renderer {
             rp_begin_info.framebuffer = swapchain->get_current_framebuffer();
         }
         
-        vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-
-        vkCmdExecuteCommands(cmds, static_cast<uint32_t>(secondary_command_buffers.size()), secondary_command_buffers.data());
+        vkCmdBeginRenderPass(cmds, &rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+        
+        uint32_t i = 0;
+        for (const vk_pipeline& pipe : pipelines) {
+            record_pipeline(&pipe, &cmds, renderpass);
+            i++;
+        }
 
         vkCmdEndRenderPass(cmds);
         
@@ -374,28 +385,29 @@ namespace nova::renderer {
     void vulkan_render_engine::record_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass) {
         // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
         // command pool for its thread, since command pools need to be externally synchronized
-        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
-
-        VkCommandBufferAllocateInfo cmds_info = {};
-        cmds_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cmds_info.commandPool = command_pool;
-        cmds_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-        cmds_info.commandBufferCount = 1;
-
-        NOVA_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmds_info, cmds));
-
-        VkCommandBufferInheritanceInfo cmds_inheritance_info = {};
-        cmds_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-        cmds_inheritance_info.framebuffer = renderpass.framebuffer.framebuffer;
-        cmds_inheritance_info.renderPass = renderpass.pass;
-
-        VkCommandBufferBeginInfo begin_info = {};
-        begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-        begin_info.pInheritanceInfo = &cmds_inheritance_info;
-
-        // Start command buffer, start renderpass, and bind pipeline
-        NOVA_CHECK_RESULT(vkBeginCommandBuffer(*cmds, &begin_info));
+        // VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        // 
+        // VkCommandBufferAllocateInfo cmds_info = {};
+        // cmds_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        // cmds_info.commandPool = command_pool;
+        // cmds_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+        // cmds_info.commandBufferCount = 1;
+        // 
+        // NOVA_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmds_info, cmds));
+        // 
+        // VkCommandBufferInheritanceInfo cmds_inheritance_info = {};
+        // cmds_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+        // cmds_inheritance_info.framebuffer = renderpass.framebuffer.framebuffer;
+        // cmds_inheritance_info.renderPass = renderpass.pass;
+        // 
+        // VkCommandBufferBeginInfo begin_info = {};
+        // begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        // begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+        // begin_info.pInheritanceInfo = &cmds_inheritance_info;
+        // 
+        // // Start command buffer, start renderpass, and bind pipeline
+        // NOVA_CHECK_RESULT(vkBeginCommandBuffer(*cmds, &begin_info));
+        
 
         vkCmdBindPipeline(*cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
 
@@ -407,7 +419,7 @@ namespace nova::renderer {
             record_drawing_all_for_material(pass, *cmds);
         }
 
-        NOVA_CHECK_RESULT(vkEndCommandBuffer(*cmds));
+        // vkEndCommandBuffer(*cmds);
     }
 
     void vulkan_render_engine::bind_material_resources(const material_pass& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {

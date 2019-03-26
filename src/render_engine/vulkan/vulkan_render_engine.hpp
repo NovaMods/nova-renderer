@@ -36,6 +36,8 @@
 #include "struct_uniform_buffer.hpp"
 #include "swapchain.hpp"
 
+#include "../../debugging/renderdoc_app.h"
+
 namespace nova::ttl {
     class task_scheduler;
 } // namespace nova::ttl
@@ -197,7 +199,7 @@ namespace nova::renderer {
         VkQueue copy_queue{};
 #pragma endregion
 
-        vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler);
+        vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler, RENDERDOC_API_1_3_0* renderdoc);
 
         vulkan_render_engine(vulkan_render_engine&& other) = delete;
         vulkan_render_engine& operator=(vulkan_render_engine&& other) noexcept = delete;
@@ -247,7 +249,7 @@ namespace nova::renderer {
         uint32_t max_in_flight_frames = 3;
         uint32_t current_frame = 0;
 
-        std::vector<const char*> enabled_validation_layer_names;
+        std::vector<const char*> enabled_layer_names;
 
 #ifdef NOVA_LINUX
         std::shared_ptr<x11_window> window;
@@ -256,6 +258,8 @@ namespace nova::renderer {
 #endif
 
 #pragma region Globals
+        RENDERDOC_API_1_3_0* renderdoc;
+
         VkInstance vk_instance{};
 
         VmaAllocator vma_allocator{};
