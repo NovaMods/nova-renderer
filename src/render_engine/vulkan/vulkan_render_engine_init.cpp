@@ -160,8 +160,7 @@ namespace nova::renderer {
         x_surface_create_info.dpy = window->get_display();
         x_surface_create_info.window = window->get_x11_window();
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface),
-                               render_engine_initialization_exception);
+        NOVA_THROW_IF_VK_ERROR(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface));
 #elif defined(NOVA_WINDOWS)
         window = std::make_shared<win32_window>(width, height);
 

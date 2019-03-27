@@ -134,10 +134,10 @@ namespace nova::renderer {
         NOVA_CHECK_RESULT(vkEndCommandBuffer(ubo_uploads));
 
         VkFence dummy_fence = model_matrix_buffer->get_dummy_fence();
-        NOVA_CHECK_RESULT(vkWaitForFences(device, 1, &dummy_fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
-        NOVA_CHECK_RESULT(vkResetFences(device, 1, &dummy_fence));
+        // NOVA_CHECK_RESULT(vkWaitForFences(device, 1, &dummy_fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
+        // NOVA_CHECK_RESULT(vkResetFences(device, 1, &dummy_fence));
 
-        submit_to_queue(ubo_uploads, copy_queue, dummy_fence);
+        submit_to_queue(ubo_uploads, copy_queue);
     }
 
     void vulkan_render_engine::delete_mesh(uint32_t mesh_id) {
