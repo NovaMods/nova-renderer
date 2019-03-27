@@ -372,12 +372,16 @@ namespace nova::renderer {
 
         frame_fences.resize(max_in_flight_frames);
         image_available_semaphores.resize(max_in_flight_frames);
-        render_finished_semaphores_by_frame.resize(max_in_flight_frames);
+        render_finished_semaphores.resize(max_in_flight_frames);
 
         for(uint32_t i = 0; i < max_in_flight_frames; i++) {
             NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &frame_fences[i]));
             NOVA_CHECK_RESULT(vkCreateSemaphore(device, &semaphore_info, nullptr, &image_available_semaphores[i]));
+            NOVA_CHECK_RESULT(vkCreateSemaphore(device, &semaphore_info, nullptr, &render_finished_semaphores[i]));
+
+            NOVA_LOG(TRACE) << "render_finished_semaphores[" << i << "] = " << render_finished_semaphores[i];
         }
+
         NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &mesh_rendering_done));
         NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &upload_to_megamesh_buffer_done));
     }

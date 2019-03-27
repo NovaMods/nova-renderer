@@ -32,8 +32,14 @@ namespace nova::renderer {
                           glm::ivec2 window_dimensions,
                           const std::vector<VkPresentModeKHR>& present_modes);
 
-        void present_current_image(const std::vector<VkSemaphore>& wait_semaphores) const;
+        void present_current_image(VkSemaphore wait_semaphores) const;
 
+        /*!
+         * \brief Acquires the next image in the swapchain, signalling the provided semaphore when the image is ready 
+         * to be rendered to
+         * 
+         * \param image_acquire_semaphore The semaphore to signal when the image is ready to be rendered to
+         */
         void acquire_next_swapchain_image(VkSemaphore image_acquire_semaphore);
 
         void set_current_layout(VkImageLayout new_layout);

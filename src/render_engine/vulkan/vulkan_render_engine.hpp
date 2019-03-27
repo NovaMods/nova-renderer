@@ -247,6 +247,7 @@ namespace nova::renderer {
          * enforce that - so be careful!
          */
         uint32_t max_in_flight_frames = 3;
+        uint32_t current_swapchain_image = 0;
         uint32_t current_frame = 0;
 
         std::vector<const char*> enabled_layer_names;
@@ -264,13 +265,7 @@ namespace nova::renderer {
 
         VmaAllocator vma_allocator{};
 
-        std::mutex render_done_sync_mutex;
-        uint64_t current_semaphore_idx = 0;
-
-        /*!
-         * \brief A collection of semaphores that tell us when each of the renderpasses rendered this frame is done executing
-         */
-        std::vector<std::vector<VkSemaphore>> render_finished_semaphores_by_frame;
+        std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
 
         /*!
@@ -630,13 +625,15 @@ namespace nova::renderer {
          * \param queue The queue to submit the command buffer to
          * \param cmd_buffer_done_fence The fence to signal when the command buffer has finished executing
          * \param wait_semaphores Any semaphores that the command buffer needs to wait on
+         * \param signal_semaphores The semaphores to signal when the command buffer is done
          *
          * \pre cmds is a fully recorded command buffer
          */
         void submit_to_queue(VkCommandBuffer cmds,
                              VkQueue queue,
                              VkFence cmd_buffer_done_fence = {},
-                             const std::vector<VkSemaphore>& wait_semaphores = {});
+                             const std::vector<VkSemaphore>& wait_semaphores = {},
+                             const std::vector<VkSemaphore>& signal_semaphores = {});
 #pragma endregion
 
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;
