@@ -376,7 +376,7 @@ namespace nova::renderer {
         }
     }
 
-    void vulkan_render_engine::record_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass) {
+    void vulkan_render_engine::record_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& /*renderpass*/) {
         // This function is intended to be run inside a separate fiber than its caller, so it needs to get the
         // command pool for its thread, since command pools need to be externally synchronized
         // VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
@@ -551,7 +551,7 @@ namespace nova::renderer {
             submit_info.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphores.size());
             submit_info.pWaitSemaphores = wait_semaphores.data();
         }
-        submit_info.signalSemaphoreCount = signal_semaphores.size();
+        submit_info.signalSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size());
         submit_info.pSignalSemaphores = signal_semaphores.data();
         NOVA_CHECK_RESULT(vkQueueSubmit(queue, 1, &submit_info, cmd_buffer_done_fence));
 
