@@ -160,12 +160,12 @@ namespace nova::renderer {
     };
 
     struct vk_mesh {
-        compacting_block_allocator::allocation_info* memory;
+        vk_buffer index_buffer = {};
+        vk_buffer vertex_buffer = {};
 
-        uint32_t index_offset;
-        uint32_t model_matrix_offset;
+        uint32_t num_indices = 0;
+        uint32_t num_vertices = 0;
 
-        VkDrawIndexedIndirectCommand draw_cmd;
         mesh_id_t id;
     };
 
