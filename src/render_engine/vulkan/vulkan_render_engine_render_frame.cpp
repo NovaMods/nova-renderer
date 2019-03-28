@@ -20,7 +20,7 @@ namespace nova::renderer {
         swapchain->acquire_next_swapchain_image(image_available_semaphores.at(cur_frame));
 
         upload_new_ubos();
-        
+
         // Record command buffers
         // We can't upload a new shaderpack in the middle of a frame!
         // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the
@@ -54,7 +54,11 @@ namespace nova::renderer {
 
         NOVA_CHECK_RESULT(vkEndCommandBuffer(cmds));
 
-        submit_to_queue(cmds, graphics_queue, frame_fences.at(cur_frame), {image_available_semaphores.at(cur_frame)}, {render_finished_semaphores.at(cur_frame)});
+        submit_to_queue(cmds,
+                        graphics_queue,
+                        frame_fences.at(cur_frame),
+                        {image_available_semaphores.at(cur_frame)},
+                        {render_finished_semaphores.at(cur_frame)});
 
         swapchain->present_current_image(render_finished_semaphores.at(cur_frame));
 
@@ -69,7 +73,7 @@ namespace nova::renderer {
 
         render_finished_semaphores.clear();
     }
-    
+
     void vulkan_render_engine::transition_dynamic_textures() {
         NOVA_LOG(TRACE) << "Transitioning dynamic textures to color attachment layouts";
         std::vector<VkImageMemoryBarrier> color_barriers;
@@ -154,8 +158,8 @@ namespace nova::renderer {
         fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
         NOVA_CHECK_RESULT(vkCreateFence(device, &fence_create_info, nullptr, &transition_done_fence));
-        
-        submit_to_queue(cmds, graphics_queue, transition_done_fence, {}, { render_finished_semaphores.at(current_swapchain_image) });
+
+        submit_to_queue(cmds, graphics_queue, transition_done_fence, {}, {render_finished_semaphores.at(current_swapchain_image)});
         NOVA_CHECK_RESULT(vkWaitForFences(device, 1, &transition_done_fence, VK_TRUE, std::numeric_limits<uint64_t>::max()));
         vkDestroyFence(device, transition_done_fence, nullptr);
 
@@ -351,7 +355,7 @@ namespace nova::renderer {
             return;
         }
 
-        const std::unordered_map<VkBuffer, vk_renderables>& renderables_by_buffer = renderables_by_material.at(pass.name);
+        const vk_renderables& renderables = renderables_by_material.at(pass.name);
 
         /*
          * For the compute shader that generates draw commands:
@@ -379,70 +383,31 @@ namespace nova::renderer {
          * int curr_instance = gl_InstanceIndex - gl_BaseInstance
          */
 
-        for(const auto& [buffer, renderables] : renderables_by_buffer) {
-            VkBufferCreateInfo buffer_create_info = {};
-            buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            buffer_create_info.size = sizeof(VkDrawIndexedIndirectCommand) * renderables.static_meshes.size();
-            buffer_create_info.usage = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-            buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            buffer_create_info.queueFamilyIndexCount = 1;
-            buffer_create_info.pQueueFamilyIndices = &graphics_family_index;
+        for(const auto& [mesh_id, static_meshes] : renderables.static_meshes) {
+            uint32_t num_instances = 0;
 
-            VmaAllocationCreateInfo alloc_create_info = {};
-            alloc_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-            alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-            VkBuffer indirect_draw_commands_buffer;
-            VmaAllocation allocation;
-            VmaAllocationInfo alloc_info;
-
-            NOVA_CHECK_RESULT(vmaCreateBuffer(vma_allocator,
-                                              &buffer_create_info,
-                                              &alloc_create_info,
-                                              &indirect_draw_commands_buffer,
-                                              &allocation,
-                                              &alloc_info));
-
-            // Version 1: write commands for all things to the indirect draw buffer
-            auto* indirect_commands = reinterpret_cast<VkDrawIndexedIndirectCommand*>(alloc_info.pMappedData);
-            std::unordered_map<uint32_t, uint32_t> matrix_indices;
-            uint32_t start_index = 0;
-            uint32_t cur_index = 0;
-            uint32_t draw_command_write_index = 0;
-
-            VkDeviceSize offsets[7] = { 0, 0, 0, 0, 0, 0, 0 };
-            VkBuffer buffers[7] = { buffer, buffer, buffer, buffer, buffer, buffer, buffer };
-            vkCmdBindVertexBuffers(cmds, 0, 7, buffers, offsets);
-            vkCmdBindIndexBuffer(cmds, buffer, 0, VK_INDEX_TYPE_UINT32);
-
-            for(const auto& [mesh_id, static_meshes] : renderables.static_meshes) {
-                const vk_mesh& mesh = meshes.at(mesh_id);
-
-                start_index = cur_index;
-                for(const vk_static_mesh_renderable& static_mesh : static_meshes) {
-                    if(static_mesh.is_visible) {
-                        vkCmdDrawIndexed(cmds, mesh.draw_cmd.indexCount, mesh.draw_cmd.instanceCount, mesh.draw_cmd.firstIndex, mesh.draw_cmd.vertexOffset, mesh.draw_cmd.firstInstance);
-
-                        matrix_indices[cur_index] = static_mesh.model_matrix_slot->index;
-                        ++cur_index;
-                    }
-                }
-
-                if(cur_index != start_index) {
-                    const vk_mesh& mesh = meshes.at(mesh_id);
-
-                    VkDrawIndexedIndirectCommand& cmd = indirect_commands[draw_command_write_index];
-                    cmd.vertexOffset = mesh.draw_cmd.vertexOffset;
-                    cmd.firstIndex = mesh.draw_cmd.firstIndex;
-                    cmd.indexCount = mesh.draw_cmd.indexCount;
-                    cmd.firstInstance = start_index;
-                    cmd.instanceCount = cur_index - start_index;
-
-                    ++draw_command_write_index;
+            for(const vk_static_mesh_renderable& static_mesh : static_meshes) {
+                if(static_mesh.is_visible) {
+                    num_instances++;
                 }
             }
 
-            // vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, static_cast<uint32_t>(renderables.static_meshes.size()), 0);
+            if(num_instances > 0) {
+                const vk_mesh& mesh = meshes.at(mesh_id);
+
+                VkDeviceSize offsets[7] = {0, 0, 0, 0, 0, 0, 0};
+                VkBuffer buffers[7] = {mesh.vertex_buffer.buffer,
+                                       mesh.vertex_buffer.buffer,
+                                       mesh.vertex_buffer.buffer,
+                                       mesh.vertex_buffer.buffer,
+                                       mesh.vertex_buffer.buffer,
+                                       mesh.vertex_buffer.buffer,
+                                       mesh.vertex_buffer.buffer};
+                vkCmdBindVertexBuffers(cmds, 0, 7, buffers, offsets);
+                vkCmdBindIndexBuffer(cmds, mesh.index_buffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+
+                vkCmdDrawIndexed(cmds, mesh.num_indices, num_instances, 0, 0, 0);
+            }
         }
     }
 
@@ -451,7 +416,7 @@ namespace nova::renderer {
                                                VkFence cmd_buffer_done_fence,
                                                const std::vector<VkSemaphore>& wait_semaphores,
                                                const std::vector<VkSemaphore>& signal_semaphores) {
-               
+
         VkSubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submit_info.pNext = nullptr;

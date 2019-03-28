@@ -164,7 +164,7 @@ namespace nova::renderer {
         vk_buffer vertex_buffer = {};
 
         uint32_t num_indices = 0;
-        uint32_t num_vertices = 0;
+        std::size_t num_vertices = 0;
 
         mesh_id_t id;
     };

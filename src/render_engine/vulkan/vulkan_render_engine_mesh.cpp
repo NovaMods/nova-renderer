@@ -13,7 +13,7 @@ namespace nova::renderer {
 
         vk_mesh mesh;
         mesh.num_vertices = input_mesh.vertex_data.size();
-        mesh.num_indices = input_mesh.indices.size();
+        mesh.num_indices = static_cast<uint32_t>(input_mesh.indices.size());
 
         vk_buffer vertex_data_staging_buffer;
         vk_buffer index_data_staging_buffer;

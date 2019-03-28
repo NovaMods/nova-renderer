@@ -73,8 +73,8 @@ namespace nova::renderer {
                 return "VK_ERROR_INVALID_DEVICE_ADDRESS_EXT";
             case VK_RESULT_RANGE_SIZE:
                 return "VK_RESULT_RANGE_SIZE";
-            case VK_RESULT_MAX_ENUM:
-                return "VK_RESULT_MAX_ENUM";
+            default:
+                return "Unknown result";
         }
     }
 
