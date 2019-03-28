@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Fail if failed
-set -e
+# Fail if failed and print all
+set -e -x
 
 # Coverage
 curl -so codecov.bash https://codecov.io/bash
