@@ -12,6 +12,8 @@ namespace nova::renderer {
         const auto index_size = static_cast<uint32_t>(input_mesh.indices.size() * sizeof(uint32_t));
 
         vk_mesh mesh;
+        mesh.num_vertices = input_mesh.vertex_data.size();
+        mesh.num_indices = input_mesh.indices.size();
 
         vk_buffer vertex_data_staging_buffer;
         vk_buffer index_data_staging_buffer;

@@ -576,7 +576,7 @@ namespace nova::renderer {
 #pragma region Rendering
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
-        std::unordered_map<std::string, std::unordered_map<VkBuffer, vk_renderables>> renderables_by_material;
+        std::unordered_map<std::string, vk_renderables> renderables_by_material;
 
         std::mutex rendering_mutex;
         std::condition_variable rendering_cv;
