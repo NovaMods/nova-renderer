@@ -8,7 +8,7 @@
 
 namespace nova::renderer {
     std::string vk_result_to_string(VkResult result) {
-        switch (result) {
+        switch(result) {
             case VK_SUCCESS:
                 return "VK_SUCCESS";
             case VK_NOT_READY:
@@ -73,8 +73,8 @@ namespace nova::renderer {
                 return "VK_ERROR_INVALID_DEVICE_ADDRESS_EXT";
             case VK_RESULT_RANGE_SIZE:
                 return "VK_RESULT_RANGE_SIZE";
-            case VK_RESULT_MAX_ENUM:
-                return "VK_RESULT_MAX_ENUM";
+            default:
+                return "Unknown result";
         }
     }
 
@@ -264,4 +264,4 @@ namespace nova::renderer {
 
         return attribute_descriptions;
     }
-} // namespace nova::renderer::vulkan
+} // namespace nova::renderer

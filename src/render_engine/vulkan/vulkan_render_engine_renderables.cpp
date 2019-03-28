@@ -1,8 +1,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "../../render_objects/renderables.hpp"
+#include "../../render_objects/uniform_structs.hpp"
 #include "fmt/format.h"
 #include "vulkan_render_engine.hpp"
-#include "../../render_objects/uniform_structs.hpp"
 
 namespace nova::renderer {
     void vulkan_render_engine::create_builtin_uniform_buffers() {
@@ -28,7 +28,11 @@ namespace nova::renderer {
         per_frame_data_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         per_frame_data_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-        per_frame_data_buffer = std::make_unique<struct_uniform_buffer<per_frame_uniforms>>("NovaPerFrameUBO", device, vma_allocator, per_frame_data_create_info, alignment);
+        per_frame_data_buffer = std::make_unique<struct_uniform_buffer<per_frame_uniforms>>("NovaPerFrameUBO",
+                                                                                            device,
+                                                                                            vma_allocator,
+                                                                                            per_frame_data_create_info,
+                                                                                            alignment);
     }
 
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {
@@ -77,8 +81,6 @@ namespace nova::renderer {
             meta.passes.push_back(m->name);
         }
 
-        meta.buffer = mesh->memory->block->get_buffer();
-
         // TODO: UBO things!
         // If the renderable is static, allocate its model matrix ubo slot from the static objects UBO
         // If the renderable is dynamic, allocate its model matrix UBO from the dynamic objects ubo
@@ -104,7 +106,7 @@ namespace nova::renderer {
 
         // Find the materials basses that this renderable belongs to, put it in the appropriate maps
         for(const material_pass* pass : passes) {
-            renderables_by_material[pass->name][mesh->memory->block->get_buffer()].static_meshes[mesh->id].push_back(renderable);
+            renderables_by_material[pass->name].static_meshes[mesh->id].push_back(renderable);
         }
 
         return result<renderable_id_t>(std::move(id));
@@ -116,7 +118,7 @@ namespace nova::renderer {
             for(const std::string& pass_name : meta.passes) {
                 if(renderables_by_material.find(pass_name) != renderables_by_material.end()) {
                     std::unordered_map<mesh_id_t, std::vector<vk_static_mesh_renderable>>&
-                        renderables_for_mesh = renderables_by_material[pass_name][meta.buffer].static_meshes;
+                        renderables_for_mesh = renderables_by_material[pass_name].static_meshes;
                     for(auto& [mesh_id, renderables] : renderables_for_mesh) {
                         (void) mesh_id;
                         for(vk_static_mesh_renderable& renderable : renderables) {

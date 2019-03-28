@@ -8,17 +8,17 @@
 #include <memory>
 #include "../loading/shaderpack/shaderpack_data.hpp"
 #include "../platform.hpp"
+#include "../render_objects/renderables.hpp"
 #include "../settings/nova_settings.hpp"
 #include "../tasks/task_scheduler.hpp"
 #include "../util/result.hpp"
 #include "../util/utils.hpp"
 #include "window.hpp"
-#include "../render_objects/renderables.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
-    
+
     /*!
      * \brief Abstract class for render backends
      *

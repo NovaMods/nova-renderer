@@ -57,9 +57,9 @@ namespace nova::renderer {
 
             result<mesh_id_t> mesh_add_result = engine->add_mesh(cube);
 
+            // Render one frame to upload mesh data
             renderer->execute_frame();
             window->on_frame_end();
-            NOVA_LOG(TRACE) << "Finished dummy frame one";
 
             result<renderable_id_t> renderable_add_result = mesh_add_result.flatMap([&](const mesh_id_t& mesh_id) {
                 static_mesh_renderable_data data = {};
@@ -86,6 +86,7 @@ namespace nova::renderer {
             renderer->execute_frame();
             window->on_frame_end();
 
+            /*
             renderer->execute_frame();
             window->on_frame_end();
             renderer->execute_frame();
@@ -99,6 +100,7 @@ namespace nova::renderer {
             window->on_frame_end();
             renderer->execute_frame();
             window->on_frame_end();
+            */
 
             nova_renderer::deinitialize();
 

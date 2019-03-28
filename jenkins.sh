@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Fail if failed
-set -e
+# Fail if failed and print all
+set -e -x
 
 # Coverage
 curl -so codecov.bash https://codecov.io/bash
@@ -76,15 +76,20 @@ echo "End formatting"
 if [ `git status --porcelain src tests | wc -c` -eq 0 ]; then
     echo "No formatting errors found."
 else
+    git diff src tests
     # Only for branches
     if [[ $GIT_BRANCH == *'origin'* ]]; then
-        LOCAL_BRANCH=$(echo $GIT_BRANCH | sed -e 's/origin\///g')
-        echo "Formatting errors found. Committing changes."
-        git remote add origin-ssh git@github.com:/NovaMods/nova-renderer.git || true
-        git checkout `echo $LOCAL_BRANCH | sed -e 's/origin\///g'`
-        git pull --ff
-        git add src tests
-        git push origin-ssh $LOCAL_BRANCH
+        echo "Formatting errors found. Meh. Gib formatting pls."
+        #LOCAL_BRANCH=$(echo $GIT_BRANCH | sed -e 's/origin\///g')
+        #echo "Formatting errors found. Committing changes."
+        #git remote add origin-ssh git@github.com:/NovaMods/nova-renderer.git || true
+        #git stash
+        #git checkout `echo $LOCAL_BRANCH | sed -e 's/origin\///g'`
+        #git stash pop
+        #git pull --ff
+        #git add src tests
+        #git commit -m "Automated formatting correction [ci skip]"
+        #git push origin-ssh $LOCAL_BRANCH
     else
         echo "Formatting errors found. Quitting."
         exit 1

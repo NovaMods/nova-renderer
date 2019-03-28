@@ -7,7 +7,6 @@
 
 #include <atomic>
 
-#include <vulkan/vulkan.h>
 #include "../loading/shaderpack/shaderpack_data.hpp"
 #include "../render_engine/vulkan/fixed_size_buffer_allocator.hpp"
 
@@ -63,7 +62,6 @@ namespace nova::renderer {
         renderable_id_t id = 0;
 
         std::vector<std::string> passes;
-        VkBuffer buffer = nullptr;
     };
 
     struct renderable_base {

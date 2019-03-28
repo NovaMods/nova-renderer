@@ -12,14 +12,14 @@ namespace nova::renderer {
     public:
         /*!
          * \brief Initializes this buffer
-         * 
-         * `create_info.size`, the size of this buffer, is set to sizeof(DataType). This constructor doesn't make any 
+         *
+         * `create_info.size`, the size of this buffer, is set to sizeof(DataType). This constructor doesn't make any
          * other modifications to the create_info (but cached_buffer's constructor does!)
-         * 
+         *
          * \param name The name of this buffer
          * \param device The device to create this buffer in
          * \param allocator The allocator to allocate this buffer's host and device memory from
-         * \param create_info The create info for this buffer. Its size is set to sizeof(DataType) before it's sent to 
+         * \param create_info The create info for this buffer. Its size is set to sizeof(DataType) before it's sent to
          * cached_buffer's constructor
          * \param alignment The device's buffer alignment
          */

@@ -10,7 +10,9 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
-    vulkan_render_engine::vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler, RENDERDOC_API_1_3_0* renderdoc)
+    vulkan_render_engine::vulkan_render_engine(nova_settings& settings,
+                                               nova::ttl::task_scheduler* task_scheduler,
+                                               RENDERDOC_API_1_3_0* renderdoc)
         : render_engine(settings, task_scheduler), renderdoc(renderdoc) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
@@ -33,7 +35,7 @@ namespace nova::renderer {
         create_info.pApplicationInfo = &application_info;
         if(settings.debug.enabled && settings.debug.enable_validation_layers) {
             enabled_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
-            // enabled_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
+            enabled_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
         }
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
         create_info.ppEnabledLayerNames = enabled_layer_names.data();
@@ -108,10 +110,6 @@ namespace nova::renderer {
         NOVA_LOG(DEBUG) << "Using " << max_in_flight_frames << " swapchain images";
 
         create_memory_allocator();
-        mesh_memory = std::make_unique<compacting_block_allocator>(settings.vertex_memory_settings,
-                                                                   vma_allocator,
-                                                                   graphics_family_index,
-                                                                   transfer_family_index);
 
         create_global_sync_objects();
         create_per_thread_descriptor_pools();
@@ -125,7 +123,6 @@ namespace nova::renderer {
 
             if(vkSetDebugUtilsObjectNameEXT == nullptr) {
                 NOVA_LOG(ERROR) << "Could not load the debug name function";
-
             }
         }
 
@@ -337,18 +334,13 @@ namespace nova::renderer {
         uint32_t num_surface_formats;
         NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr));
         gpu.surface_formats.resize(num_surface_formats);
-        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device,
-                                                                    surface,
-                                                                    &num_surface_formats,
-                                                                    gpu.surface_formats.data()));
+        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, gpu.surface_formats.data()));
 
         uint32_t num_surface_present_modes;
         NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr));
         std::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
-        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device,
-                                                                         surface,
-                                                                         &num_surface_present_modes,
-                                                                         present_modes.data()));
+        NOVA_CHECK_RESULT(
+            vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data()));
 
         swapchain = std::make_unique<swapchain_manager>(max_in_flight_frames, *this, window->get_window_size(), present_modes);
     }
@@ -380,9 +372,6 @@ namespace nova::renderer {
 
             NOVA_LOG(TRACE) << "render_finished_semaphores[" << i << "] = " << render_finished_semaphores[i];
         }
-
-        NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &mesh_rendering_done));
-        NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &upload_to_megamesh_buffer_done));
     }
 
     void vulkan_render_engine::create_per_thread_descriptor_pools() {
