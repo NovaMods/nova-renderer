@@ -13,9 +13,9 @@ namespace nova::renderer {
     /*!
      * \brief A buffer which is stored both in both device memory and host memory
      *
-     * The buffer exists in both host and device memory. You can get a pointer to the host buffer with `get_data<T>()`, 
+     * The buffer exists in both host and device memory. You can get a pointer to the host buffer with `get_data<T>()`,
      * which will `reinterpret_cast` the host buffer to the template argument. Fill out the data as needed, then use
-     * `record_upload_buffer` to record the buffer upload into a command list. 
+     * `record_upload_buffer` to record the buffer upload into a command list.
      *
      * Intended use case is buffers which require large amounts of data to be uploaded at once
      */
@@ -25,13 +25,13 @@ namespace nova::renderer {
 
         /*!
          * \brief Best constructor ever
-         * 
+         *
          * \param name The name of the buffer
          * \param device The device to create the buffer on
          * \param allocator The VmaAllocator to allocate the host and device memory from
-         * \param create_info The create info for your buffer. This is used for both the host buffer and the device 
-         * buffer. When creating the device buffer, the constructor add the usage flag 
-         * `VK_BUFFER_USAGE_TRANSFER_DST_BIT` to whatever flags the caller sets. When creating the host buffer, the 
+         * \param create_info The create info for your buffer. This is used for both the host buffer and the device
+         * buffer. When creating the device buffer, the constructor add the usage flag
+         * `VK_BUFFER_USAGE_TRANSFER_DST_BIT` to whatever flags the caller sets. When creating the host buffer, the
          * flags are set to only `VK_BUFFER_USAGE_TRANSFER_SRC_BIT`
          * \param alignment The device's buffer alignment
          */
@@ -71,12 +71,12 @@ namespace nova::renderer {
 
         /*!
          * \brief Records a command to transfer the host buffer to the device buffer
-         * 
-         * This method won't add any barriers, since it doesn't know about how the buffer is used. You must add (or not 
-         * add) those yourself 
-         * 
+         *
+         * This method won't add any barriers, since it doesn't know about how the buffer is used. You must add (or not
+         * add) those yourself
+         *
          * \param cmds The command buffer to record the buffer transfer command into
-         * 
+         *
          * \pre `vkBeginCommandBuffer` has been called on the command buffer
          */
         void record_buffer_upload(VkCommandBuffer cmds);

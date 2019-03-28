@@ -17,7 +17,7 @@ namespace nova::renderer {
     std::vector<VkVertexInputBindingDescription>& get_vertex_input_binding_descriptions();
 
     std::vector<VkVertexInputAttributeDescription>& get_vertex_input_attribute_descriptions();
-} // namespace nova::renderer::vulkan
+} // namespace nova::renderer
 
 // Only validate errors in debug mode
 // Release mode needs to be fast A F
@@ -27,7 +27,7 @@ namespace nova::renderer {
     {                                                                                                                                      \
         const VkResult result = (expr);                                                                                                    \
         if(result != VK_SUCCESS) {                                                                                                         \
-            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> "  << #expr << "=" << vk_result_to_string(result);                       \
+            NOVA_LOG(ERROR) << __FILE__ << ":" << __LINE__ << "=> " << #expr << "=" << vk_result_to_string(result);                        \
         }                                                                                                                                  \
     }
 #else

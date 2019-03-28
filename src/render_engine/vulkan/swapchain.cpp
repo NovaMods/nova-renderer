@@ -49,10 +49,7 @@ namespace nova::renderer {
 
         NOVA_CHECK_RESULT(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, nullptr));
         swapchain_images.resize(num_swapchain_images);
-        NOVA_CHECK_RESULT(vkGetSwapchainImagesKHR(render_engine.device,
-                                                       swapchain,
-                                                       &num_swapchain_images,
-                                                       swapchain_images.data()));
+        NOVA_CHECK_RESULT(vkGetSwapchainImagesKHR(render_engine.device, swapchain, &num_swapchain_images, swapchain_images.data()));
         swapchain_image_layouts.resize(num_swapchain_images);
         for(auto& swapchain_image_layout : swapchain_image_layouts) {
             swapchain_image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -293,7 +290,7 @@ namespace nova::renderer {
 
     uint32_t swapchain_manager::get_current_index() const { return cur_swapchain_index; }
 
-    uint32_t swapchain_manager::get_num_images() const { return num_swapchain_images;  }
+    uint32_t swapchain_manager::get_num_images() const { return num_swapchain_images; }
 
     void swapchain_manager::acquire_next_swapchain_image(VkSemaphore image_acquire_semaphore) {
         const auto acquire_result = vkAcquireNextImageKHR(render_engine.device,

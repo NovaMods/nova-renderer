@@ -206,7 +206,8 @@ namespace nova::renderer {
             // Warnings may hint at unexpected / non-spec API usage
             NOVA_LOG(WARN) << "[" << type << "] " << msg;
 
-        } else if(((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) && ((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U)) { // No validation info!
+        } else if(((messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) &&
+                  ((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U)) { // No validation info!
             // Informal messages that may become handy during debugging
             NOVA_LOG(INFO) << "[" << type << "] " << msg;
 
@@ -215,7 +216,7 @@ namespace nova::renderer {
             // Usually not helpful in terms of API usage, but may help to debug layer and loader problems
             NOVA_LOG(DEBUG) << "[" << type << "] " << msg;
 
-        } else if ((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
+        } else if((messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) == 0U) { // No validation info!
             // Catch-all to be super sure
             NOVA_LOG(INFO) << "[" << type << "]" << msg;
         }

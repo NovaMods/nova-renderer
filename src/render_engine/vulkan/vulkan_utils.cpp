@@ -8,7 +8,7 @@
 
 namespace nova::renderer {
     std::string vk_result_to_string(VkResult result) {
-        switch (result) {
+        switch(result) {
             case VK_SUCCESS:
                 return "VK_SUCCESS";
             case VK_NOT_READY:
@@ -264,4 +264,4 @@ namespace nova::renderer {
 
         return attribute_descriptions;
     }
-} // namespace nova::renderer::vulkan
+} // namespace nova::renderer

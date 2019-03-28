@@ -460,10 +460,8 @@ namespace nova::renderer {
                 shader_stages.push_back(shader_stage_create_info);
             }
 
-            const std::vector<VkVertexInputBindingDescription>&
-                vertex_binding_descriptions = get_vertex_input_binding_descriptions();
-            const std::vector<VkVertexInputAttributeDescription>&
-                vertex_attribute_descriptions = get_vertex_input_attribute_descriptions();
+            const std::vector<VkVertexInputBindingDescription>& vertex_binding_descriptions = get_vertex_input_binding_descriptions();
+            const std::vector<VkVertexInputAttributeDescription>& vertex_attribute_descriptions = get_vertex_input_attribute_descriptions();
 
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -606,12 +604,8 @@ namespace nova::renderer {
             pipeline_create_info.subpass = 0;
             pipeline_create_info.basePipelineIndex = -1;
 
-            NOVA_CHECK_RESULT(vkCreateGraphicsPipelines(device,
-                                                             VK_NULL_HANDLE,
-                                                             1,
-                                                             &pipeline_create_info,
-                                                             nullptr,
-                                                             &nova_pipeline.pipeline));
+            NOVA_CHECK_RESULT(
+                vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.pipeline));
 
             pipelines_by_renderpass[data.pass].push_back(nova_pipeline);
 
@@ -776,7 +770,8 @@ namespace nova::renderer {
                     for(const VkDescriptorSet& set : mat_pass.descriptor_sets) {
                         ss << set << ", ";
                     }
-                    NOVA_LOG(TRACE) << "Material pass " << mat_pass.name << " in material " << mat_pass.material_name << " has descriptors [" << ss.str() << "]";
+                    NOVA_LOG(TRACE) << "Material pass " << mat_pass.name << " in material " << mat_pass.material_name
+                                    << " has descriptors [" << ss.str() << "]";
 
                     update_material_descriptor_sets(mat_pass, pipeline.bindings);
                 }
@@ -822,7 +817,8 @@ namespace nova::renderer {
 
         for(const auto& [descriptor_name, resource_name] : mat.bindings) {
             if(name_to_descriptor.find(descriptor_name) == name_to_descriptor.end()) {
-                NOVA_LOG(ERROR) << "Descriptor " << descriptor_name << " is not known to Nova, probably because you have it in your material but not in your pipeline";
+                NOVA_LOG(ERROR) << "Descriptor " << descriptor_name
+                                << " is not known to Nova, probably because you have it in your material but not in your pipeline";
                 continue;
             }
             const auto& descriptor_info = name_to_descriptor.at(descriptor_name);
@@ -837,12 +833,14 @@ namespace nova::renderer {
             write.dstArrayElement = 0;
 
             if(textures.find(resource_name) != textures.end()) {
-                NOVA_LOG(TRACE) << "Binding  texture " << resource_name << " to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
+                NOVA_LOG(TRACE) << "Binding  texture " << resource_name << " to descriptor (" << write.dstSet << "." << write.dstBinding
+                                << ")";
                 const vk_texture& texture = textures.at(resource_name);
                 write_texture_to_descriptor(texture, write, image_infos);
 
             } else if(buffers.find(resource_name) != buffers.end()) {
-                NOVA_LOG(TRACE) << "Binding dynamic buffer " << resource_name << " to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
+                NOVA_LOG(TRACE) << "Binding dynamic buffer " << resource_name << " to descriptor (" << write.dstSet << "."
+                                << write.dstBinding << ")";
                 const vk_buffer& buffer = buffers.at(resource_name);
                 write_buffer_to_descriptor(buffer.buffer, write, buffer_infos, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 

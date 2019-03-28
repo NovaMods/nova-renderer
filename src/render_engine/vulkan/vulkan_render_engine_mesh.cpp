@@ -29,13 +29,23 @@ namespace nova::renderer {
             VmaAllocationCreateInfo vertex_alloc_info = {};
             vertex_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-            vmaCreateBuffer(vma_allocator, &vertex_create, &vertex_alloc_info, &mesh.vertex_buffer.buffer, &mesh.vertex_buffer.allocation, &mesh.vertex_buffer.alloc_info);
-            
+            vmaCreateBuffer(vma_allocator,
+                            &vertex_create,
+                            &vertex_alloc_info,
+                            &mesh.vertex_buffer.buffer,
+                            &mesh.vertex_buffer.allocation,
+                            &mesh.vertex_buffer.alloc_info);
+
             vertex_create.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             vertex_alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
             vertex_alloc_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-            vmaCreateBuffer(vma_allocator, &vertex_create, &vertex_alloc_info, &vertex_data_staging_buffer.buffer, &vertex_data_staging_buffer.allocation, &vertex_data_staging_buffer.alloc_info);
+            vmaCreateBuffer(vma_allocator,
+                            &vertex_create,
+                            &vertex_alloc_info,
+                            &vertex_data_staging_buffer.buffer,
+                            &vertex_data_staging_buffer.allocation,
+                            &vertex_data_staging_buffer.alloc_info);
 
             std::memcpy(vertex_data_staging_buffer.alloc_info.pMappedData, input_mesh.vertex_data.data(), vertex_size);
         }
@@ -50,14 +60,23 @@ namespace nova::renderer {
             VmaAllocationCreateInfo index_alloc_info = {};
             index_alloc_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-            vmaCreateBuffer(vma_allocator, &index_create, &index_alloc_info, &mesh.index_buffer.buffer, &mesh.index_buffer.allocation, &mesh.index_buffer.alloc_info);
-
+            vmaCreateBuffer(vma_allocator,
+                            &index_create,
+                            &index_alloc_info,
+                            &mesh.index_buffer.buffer,
+                            &mesh.index_buffer.allocation,
+                            &mesh.index_buffer.alloc_info);
 
             index_create.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             index_alloc_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
             index_alloc_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-            vmaCreateBuffer(vma_allocator, &index_create, &index_alloc_info, &index_data_staging_buffer.buffer, &index_data_staging_buffer.allocation, &index_data_staging_buffer.alloc_info);
+            vmaCreateBuffer(vma_allocator,
+                            &index_create,
+                            &index_alloc_info,
+                            &index_data_staging_buffer.buffer,
+                            &index_data_staging_buffer.allocation,
+                            &index_data_staging_buffer.alloc_info);
 
             std::memcpy(index_data_staging_buffer.alloc_info.pMappedData, input_mesh.indices.data(), index_size);
         }

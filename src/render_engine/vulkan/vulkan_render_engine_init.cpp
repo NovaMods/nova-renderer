@@ -10,7 +10,9 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
-    vulkan_render_engine::vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler, RENDERDOC_API_1_3_0* renderdoc)
+    vulkan_render_engine::vulkan_render_engine(nova_settings& settings,
+                                               nova::ttl::task_scheduler* task_scheduler,
+                                               RENDERDOC_API_1_3_0* renderdoc)
         : render_engine(settings, task_scheduler), renderdoc(renderdoc) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
@@ -121,7 +123,6 @@ namespace nova::renderer {
 
             if(vkSetDebugUtilsObjectNameEXT == nullptr) {
                 NOVA_LOG(ERROR) << "Could not load the debug name function";
-
             }
         }
 
@@ -333,18 +334,13 @@ namespace nova::renderer {
         uint32_t num_surface_formats;
         NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, nullptr));
         gpu.surface_formats.resize(num_surface_formats);
-        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device,
-                                                                    surface,
-                                                                    &num_surface_formats,
-                                                                    gpu.surface_formats.data()));
+        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu.phys_device, surface, &num_surface_formats, gpu.surface_formats.data()));
 
         uint32_t num_surface_present_modes;
         NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, nullptr));
         std::vector<VkPresentModeKHR> present_modes(num_surface_present_modes);
-        NOVA_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device,
-                                                                         surface,
-                                                                         &num_surface_present_modes,
-                                                                         present_modes.data()));
+        NOVA_CHECK_RESULT(
+            vkGetPhysicalDeviceSurfacePresentModesKHR(gpu.phys_device, surface, &num_surface_present_modes, present_modes.data()));
 
         swapchain = std::make_unique<swapchain_manager>(max_in_flight_frames, *this, window->get_window_size(), present_modes);
     }

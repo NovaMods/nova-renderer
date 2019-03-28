@@ -51,4 +51,4 @@ namespace nova::renderer {
         float eyeAltitude;
         float centerDepthSmooth;
     };
-}
+} // namespace nova::renderer
