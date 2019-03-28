@@ -108,10 +108,6 @@ namespace nova::renderer {
         NOVA_LOG(DEBUG) << "Using " << max_in_flight_frames << " swapchain images";
 
         create_memory_allocator();
-        mesh_memory = std::make_unique<compacting_block_allocator>(settings.vertex_memory_settings,
-                                                                   vma_allocator,
-                                                                   graphics_family_index,
-                                                                   transfer_family_index);
 
         create_global_sync_objects();
         create_per_thread_descriptor_pools();
@@ -380,9 +376,6 @@ namespace nova::renderer {
 
             NOVA_LOG(TRACE) << "render_finished_semaphores[" << i << "] = " << render_finished_semaphores[i];
         }
-
-        NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &mesh_rendering_done));
-        NOVA_CHECK_RESULT(vkCreateFence(device, &fence_info, nullptr, &upload_to_megamesh_buffer_done));
     }
 
     void vulkan_render_engine::create_per_thread_descriptor_pools() {

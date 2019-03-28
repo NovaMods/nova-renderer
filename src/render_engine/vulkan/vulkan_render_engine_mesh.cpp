@@ -15,6 +15,7 @@ namespace nova::renderer {
         mesh.num_vertices = input_mesh.vertex_data.size();
         mesh.num_indices = static_cast<uint32_t>(input_mesh.indices.size());
 
+        // TODO: staging buffer pool
         vk_buffer vertex_data_staging_buffer;
         vk_buffer index_data_staging_buffer;
 
@@ -107,53 +108,9 @@ namespace nova::renderer {
         mesh.id = next_mesh_id;
         next_mesh_id.fetch_add(1);
 
+        meshes.emplace(mesh.id, mesh);
+
         return result<mesh_id_t>(mesh.id);
-    }
-
-    vk_buffer vulkan_render_engine::get_or_allocate_mesh_staging_buffer(const uint32_t needed_size) {
-        std::lock_guard l(mesh_staging_buffers_mutex);
-
-        if(!available_mesh_staging_buffers.empty()) {
-            // Try to find a buffer that's big enough
-            uint32_t potential_staging_buffer_idx = std::numeric_limits<uint32_t>::max();
-
-            for(size_t i = 0; i < available_mesh_staging_buffers.size(); i++) {
-                if(available_mesh_staging_buffers[i].alloc_info.size >= needed_size &&
-                   available_mesh_staging_buffers[i].alloc_info.size >
-                       available_mesh_staging_buffers[potential_staging_buffer_idx].alloc_info.size) {
-                    potential_staging_buffer_idx = static_cast<uint32_t>(i);
-                }
-            }
-
-            if(potential_staging_buffer_idx < available_mesh_staging_buffers.size()) {
-                const vk_buffer staging_buffer = available_mesh_staging_buffers[potential_staging_buffer_idx];
-                available_mesh_staging_buffers.erase(available_mesh_staging_buffers.begin() + potential_staging_buffer_idx);
-                return staging_buffer;
-            }
-        }
-
-        vk_buffer new_buffer = {};
-
-        VkBufferCreateInfo buffer_create_info = {};
-        buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        buffer_create_info.size = needed_size;
-        buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buffer_create_info.queueFamilyIndexCount = 1;
-        buffer_create_info.pQueueFamilyIndices = &transfer_family_index;
-
-        VmaAllocationCreateInfo allocation_create_info = {};
-        allocation_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
-        allocation_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-
-        NOVA_CHECK_RESULT(vmaCreateBuffer(vma_allocator,
-                                               &buffer_create_info,
-                                               &allocation_create_info,
-                                               &new_buffer.buffer,
-                                               &new_buffer.allocation,
-                                               &new_buffer.alloc_info));
-
-        return new_buffer;
     }
 
     void vulkan_render_engine::upload_new_ubos() {

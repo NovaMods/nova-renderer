@@ -495,16 +495,6 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Mesh
-        std::unique_ptr<compacting_block_allocator> mesh_memory;
-
-        std::mutex mesh_staging_buffers_mutex;
-        std::vector<vk_buffer> available_mesh_staging_buffers;
-
-        std::queue<mesh_staging_buffer_upload_command> mesh_upload_queue;
-        std::mutex mesh_upload_queue_mutex;
-        VkFence mesh_rendering_done{};
-        VkFence upload_to_megamesh_buffer_done{};
-
         // Might need to make 64-bit keys eventually, but in 2018 it's not a concern
         std::unordered_map<uint32_t, vk_mesh> meshes;
         std::mutex meshes_mutex;
