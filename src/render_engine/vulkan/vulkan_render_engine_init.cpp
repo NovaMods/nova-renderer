@@ -33,7 +33,7 @@ namespace nova::renderer {
         create_info.pApplicationInfo = &application_info;
         if(settings.debug.enabled && settings.debug.enable_validation_layers) {
             enabled_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
-            // enabled_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
+            enabled_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
         }
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
         create_info.ppEnabledLayerNames = enabled_layer_names.data();
@@ -160,7 +160,7 @@ namespace nova::renderer {
         x_surface_create_info.dpy = window->get_display();
         x_surface_create_info.window = window->get_x11_window();
 
-        NOVA_THROW_IF_VK_ERROR(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface));
+        NOVA_CHECK_RESULT(vkCreateXlibSurfaceKHR(vk_instance, &x_surface_create_info, nullptr, &surface));
 #elif defined(NOVA_WINDOWS)
         window = std::make_shared<win32_window>(width, height);
 

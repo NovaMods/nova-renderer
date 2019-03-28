@@ -14,8 +14,6 @@ namespace nova::renderer {
 
         const uint32_t cur_frame = current_swapchain_image;
 
-        // Apparently these fences are still in use?
-        NOVA_LOG(TRACE) << "Waiting on fence " << frame_fences.at(cur_frame);
         NOVA_CHECK_RESULT(vkWaitForFences(device, 1, &frame_fences.at(cur_frame), VK_TRUE, std::numeric_limits<uint64_t>::max()));
         NOVA_CHECK_RESULT(vkResetFences(device, 1, &frame_fences.at(current_swapchain_image)));
 
@@ -60,7 +58,6 @@ namespace nova::renderer {
 
         NOVA_CHECK_RESULT(vkEndCommandBuffer(cmds));
 
-        NOVA_LOG(TRACE) << "Submitting a command buffer that will wait on semaphore " << image_available_semaphores.at(cur_frame) << " and then signal fence " << frame_fences.at(cur_frame);
         submit_to_queue(cmds, graphics_queue, frame_fences.at(cur_frame), {image_available_semaphores.at(cur_frame)}, {render_finished_semaphores.at(cur_frame)});
 
         swapchain->present_current_image(render_finished_semaphores.at(cur_frame));
@@ -500,10 +497,19 @@ namespace nova::renderer {
             uint32_t cur_index = 0;
             uint32_t draw_command_write_index = 0;
 
+            VkDeviceSize offsets[7] = { 0, 0, 0, 0, 0, 0, 0 };
+            VkBuffer buffers[7] = { buffer, buffer, buffer, buffer, buffer, buffer, buffer };
+            vkCmdBindVertexBuffers(cmds, 0, 7, buffers, offsets);
+            vkCmdBindIndexBuffer(cmds, buffer, 0, VK_INDEX_TYPE_UINT32);
+
             for(const auto& [mesh_id, static_meshes] : renderables.static_meshes) {
+                const vk_mesh& mesh = meshes.at(mesh_id);
+
                 start_index = cur_index;
                 for(const vk_static_mesh_renderable& static_mesh : static_meshes) {
                     if(static_mesh.is_visible) {
+                        vkCmdDrawIndexed(cmds, mesh.draw_cmd.indexCount, mesh.draw_cmd.instanceCount, mesh.draw_cmd.firstIndex, mesh.draw_cmd.vertexOffset, mesh.draw_cmd.firstInstance);
+
                         matrix_indices[cur_index] = static_mesh.model_matrix_slot->index;
                         ++cur_index;
                     }
@@ -523,12 +529,7 @@ namespace nova::renderer {
                 }
             }
 
-            VkDeviceSize offsets[7] = {0, 0, 0, 0, 0, 0, 0};
-            VkBuffer buffers[7] = {buffer, buffer, buffer, buffer, buffer, buffer, buffer};
-            vkCmdBindVertexBuffers(cmds, 0, 7, buffers, offsets);
-            vkCmdBindIndexBuffer(cmds, buffer, 0, VK_INDEX_TYPE_UINT32);
-
-            vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, static_cast<uint32_t>(renderables.static_meshes.size()), 0);
+            // vkCmdDrawIndexedIndirect(cmds, indirect_draw_commands_buffer, 0, static_cast<uint32_t>(renderables.static_meshes.size()), 0);
         }
     }
 

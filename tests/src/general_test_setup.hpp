@@ -34,7 +34,7 @@
     [] {                                                                                                                                   \
         auto error_log = std::make_shared<std::ofstream>();                                                                                \
         error_log->open("test_error_log.log");                                                                                             \
-        auto test_log = std::make_shared<std::ofstream>("E:\\Documents\\Nova\\nova-renderer\\tests\\resources\\test_log.log");             \
+        auto test_log = std::make_shared<std::ofstream>("test_log.log");                                                                   \
         auto& log = nova::renderer::logger::instance;                                                                                      \
         log.add_log_handler(nova::renderer::TRACE, [test_log](auto msg) {                                                                  \
             std::cout << "TRACE: " << msg << std::endl;                                                                                    \

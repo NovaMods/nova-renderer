@@ -296,7 +296,6 @@ namespace nova::renderer {
     uint32_t swapchain_manager::get_num_images() const { return num_swapchain_images;  }
 
     void swapchain_manager::acquire_next_swapchain_image(VkSemaphore image_acquire_semaphore) {
-        NOVA_LOG(TRACE) << "Acquiring image, image_acquire_semaphore=" << image_acquire_semaphore;
         const auto acquire_result = vkAcquireNextImageKHR(render_engine.device,
                                                           swapchain,
                                                           std::numeric_limits<uint64_t>::max(),
