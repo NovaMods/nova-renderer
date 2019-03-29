@@ -31,6 +31,6 @@ namespace nova::renderer {
         }                                                                                                                                  \
     }
 #else
-#define NOVA_CHECK_ERROR(expr) expr
+#define NOVA_CHECK_RESULT(expr) expr
 #endif
 #endif // NOVA_RENDERER_VULKAN_UTILS_HPP
