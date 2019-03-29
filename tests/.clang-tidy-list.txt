@@ -32,3 +32,4 @@ readability*
 -*-string-constructor
 -*-misplaced-const
 -*-use-auto
+-*-else-after-return

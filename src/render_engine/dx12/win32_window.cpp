@@ -31,7 +31,7 @@ namespace nova::renderer {
         const DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP | WS_OVERLAPPEDWINDOW;
         const DWORD extended_style = WS_EX_APPWINDOW | WS_EX_TOPMOST;
 
-        auto* title = const_cast<WCHAR*>(L"Minecraft Nova Renderer");
+        auto* title = const_cast<WCHAR*>(L"Nova Renderer");
 
         window_handle = CreateWindowExW(extended_style,
                                         window_class_name,
@@ -89,15 +89,13 @@ namespace nova::renderer {
                     return FALSE;
                 }
             }
-        }
-        else {
+        } else {
             view = reinterpret_cast<win32_window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
         }
 
         if(view) {
             return view->window_procedure(hWnd, message, wParam, lParam);
-        }
-        else {
+        } else {
             return DefWindowProc(hWnd, message, wParam, lParam);
         }
     }

@@ -15,8 +15,7 @@ namespace nova::renderer {
         fs::path full_resource_path;
         if(has_root(resource_path, *root_folder)) {
             full_resource_path = resource_path;
-        }
-        else {
+        } else {
             full_resource_path = *root_folder / resource_path;
         }
 

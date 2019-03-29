@@ -27,10 +27,19 @@ namespace nova::renderer {
      */
     class swapchain_manager {
     public:
-        swapchain_manager(uint32_t num_swapchain_images, vulkan_render_engine& render_engine, glm::ivec2 window_dimensions);
+        swapchain_manager(uint32_t num_swapchain_images,
+                          vulkan_render_engine& render_engine,
+                          glm::ivec2 window_dimensions,
+                          const std::vector<VkPresentModeKHR>& present_modes);
 
-        void present_current_image(const std::vector<VkSemaphore>& wait_semaphores) const;
+        void present_current_image(VkSemaphore wait_semaphores) const;
 
+        /*!
+         * \brief Acquires the next image in the swapchain, signalling the provided semaphore when the image is ready
+         * to be rendered to
+         *
+         * \param image_acquire_semaphore The semaphore to signal when the image is ready to be rendered to
+         */
         void acquire_next_swapchain_image(VkSemaphore image_acquire_semaphore);
 
         void set_current_layout(VkImageLayout new_layout);
@@ -47,6 +56,7 @@ namespace nova::renderer {
         void deinit();
 
         [[nodiscard]] uint32_t get_current_index() const;
+        [[nodiscard]] uint32_t get_num_images() const;
 
     private:
         vulkan_render_engine& render_engine;
@@ -62,6 +72,7 @@ namespace nova::renderer {
         std::vector<VkImageLayout> swapchain_image_layouts;
         std::vector<VkFence> fences;
 
+        uint32_t num_swapchain_images;
         uint32_t cur_swapchain_index = 0;
 
         static VkSurfaceFormatKHR choose_surface_format(const std::vector<VkSurfaceFormatKHR>& formats);

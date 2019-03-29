@@ -55,8 +55,8 @@ layout(std140) uniform per_frame_uniforms {
     float centerDepthSmooth;
 };
 
-layout(std140) uniform per_model_uniforms{
-    mat4 gbufferModel;
+layout(std140) readonly buffer per_model_uniforms {
+    mat4 modelMatrices[];
 };
 
 layout(location = 0) out vec2 uv;

@@ -542,7 +542,17 @@ namespace nova::renderer {
         std::string material_name;
         std::string pipeline;
         std::unordered_map<std::string, std::string> bindings;
+
+        /*!
+         * \brief All the descriptor sets needed to bind everything used by this material to its pipeline
+         *
+         * All the material's resources get bound to its descriptor sets when the material is created. Updating
+         * descriptor sets is allowed, although the result won't show up on screen for a couple frames because Nova
+         * (will) copies its descriptor sets to each in-flight frame
+         */
         std::vector<VkDescriptorSet> descriptor_sets;
+
+        VkPipelineLayout layout = nullptr;
     };
 
     struct material_data {

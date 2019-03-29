@@ -1,4 +1,4 @@
-#version 450
+#version 460
 
 layout(location = 0) in vec3 position_in;
 layout(location = 2) in vec2 uv_in;
@@ -6,7 +6,8 @@ layout(location = 3) in vec2 lightmap_uv_in;
 layout(location = 4) in vec3 normal_in;
 layout(location = 1) in vec4 color_in;
 
-layout(set = 0, binding = 0) uniform per_frame_uniforms {
+/*
+layout(set = 1, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
     mat4 gbufferPreviousModelView;
@@ -55,9 +56,10 @@ layout(set = 0, binding = 0) uniform per_frame_uniforms {
     float eyeAltitude;
     float centerDepthSmooth;
 };
+*/
 
-layout(set = 1, binding = 0) uniform per_model_uniforms{
-    mat4 gbufferModel;
+layout(set = 0, binding = 0) readonly buffer per_model_uniforms {
+    mat4 modelMatrices[];
 };
 
 layout(location = 0) out vec2 uv;
@@ -66,7 +68,8 @@ layout(location = 2) out vec2 lightmap_uv;
 layout(location = 3) out vec3 normal;
 
 void main() {
-	gl_Position =  gbufferProjection * gbufferModelView * gbufferModel * vec4(position_in, 1.0f);
+    int model_matrix_index = gl_InstanceIndex - gl_BaseInstance;
+	gl_Position = /*gbufferProjection * gbufferModelView * gbufferModel */ modelMatrices[model_matrix_index] * vec4(position_in, 1.0f);
 
 	uv = uv_in;
  	color = color_in;

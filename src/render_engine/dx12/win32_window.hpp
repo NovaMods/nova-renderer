@@ -10,12 +10,10 @@
 #define UNICODE
 #endif
 
-#include <SDKDDKVer.h>
+#include <sdkddkver.h>
 
 #include "../../util/windows.hpp"
 
-// C RunTime Header Files
-#include <tchar.h>
 
 #include <DirectXMath.h>
 #include <dxgi1_2.h>

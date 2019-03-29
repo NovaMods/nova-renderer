@@ -141,8 +141,7 @@ namespace nova::ttl {
                     }
                     m_bottom.store(b + 1, std::memory_order_relaxed);
                 }
-            }
-            else {
+            } else {
                 /* Empty queue. */
                 result = false;
                 m_bottom.store(b + 1, std::memory_order_relaxed);

@@ -62,6 +62,8 @@ namespace nova::renderer {
         [[nodiscard]] const char* what() const noexcept override;
     };
 
+#define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
+
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define NOVA_EXCEPTION(name)                                                                                                               \
     /* NOLINTNEXTLINE(bugprone-macro-parentheses)*/                                                                                        \

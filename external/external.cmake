@@ -5,8 +5,6 @@
 set(BUILD_DEMOS OFF CACHE BOOL "Disable demos" FORCE)
 set(BUILD_ICD OFF CACHE BOOL "Disable ICD" FORCE)
 
-set(BUILD_SHARED_LIBS OFF)
-
 include(IncludeTarget)
 include(TargetIncludesSystem)
 
@@ -45,4 +43,3 @@ find_package(SPIRV-Tools CONFIG REQUIRED)
 if(NOVA_TEST)
 	find_package(GTest MODULE REQUIRED)
 endif()
-

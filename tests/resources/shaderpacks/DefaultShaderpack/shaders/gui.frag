@@ -1,8 +1,9 @@
-#version 450
+#version 460
 
-layout(set = 2, binding = 0) uniform sampler2D colortex;
+// layout(set = 2, binding = 0) uniform sampler2D colortex;
 
-layout(set = 0, binding = 0) uniform per_frame_uniforms {
+/*
+layout(set = 1, binding = 0) uniform per_frame_uniforms {
     mat4 gbufferModelView;
     mat4 gbufferModelViewInverse;
     mat4 gbufferPreviousModelView;
@@ -51,6 +52,7 @@ layout(set = 0, binding = 0) uniform per_frame_uniforms {
     float eyeAltitude;
     float centerDepthSmooth;
 };
+*/
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec4 color;
@@ -58,6 +60,7 @@ layout(location = 1) in vec4 color;
 layout(location = 0) out vec4 color_out;
 
 void main() {
+    /*
     if(textureSize(colortex, 0).x > 0) {
         vec4 tex_sample = texture(colortex, mod(uv,1.0));
         if(tex_sample.a < 0.01) {
@@ -67,4 +70,6 @@ void main() {
     } else {
         color_out = vec4(1, 0, 1, 1);
     }
+    */
+    color_out = vec4(1, 0, 1, 1);
 }

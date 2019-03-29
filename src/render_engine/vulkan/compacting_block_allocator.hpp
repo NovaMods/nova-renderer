@@ -119,7 +119,7 @@ namespace nova::renderer {
             void compact_all_memory();
         };
 
-        compacting_block_allocator(const settings_options::block_allocator_settings& settings,
+        compacting_block_allocator(const nova_settings::block_allocator_settings& settings,
                                    VmaAllocator vma_allocator,
                                    uint32_t graphics_queue_idx,
                                    uint32_t copy_queue_idx);
@@ -162,7 +162,7 @@ namespace nova::renderer {
         std::vector<block_allocator_buffer> pools;
         std::mutex pools_mutex;
 
-        const settings_options::block_allocator_settings settings;
+        const nova_settings::block_allocator_settings settings;
         VmaAllocator vma_allocator;
         uint32_t graphics_queue_idx;
         uint32_t copy_queue_idx;

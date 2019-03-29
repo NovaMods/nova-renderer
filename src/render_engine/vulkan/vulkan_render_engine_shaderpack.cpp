@@ -74,8 +74,7 @@ namespace nova::renderer {
             image_create_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
             if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
                 image_create_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-            }
-            else {
+            } else {
                 image_create_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
             }
             image_create_info.queueFamilyIndexCount = 1;
@@ -88,7 +87,7 @@ namespace nova::renderer {
             alloc_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
             alloc_create_info.preferredFlags = 0;
             alloc_create_info.memoryTypeBits = 0;
-            alloc_create_info.pool = VK_NULL_HANDLE;
+            alloc_create_info.pool = nullptr;
             alloc_create_info.pUserData = nullptr;
 
             vmaCreateImage(vma_allocator, &image_create_info, &alloc_create_info, &texture.image, &texture.allocation, &texture.vma_info);
@@ -101,8 +100,7 @@ namespace nova::renderer {
             if(texture.format == VK_FORMAT_D24_UNORM_S8_UINT || texture.format == VK_FORMAT_D32_SFLOAT) {
                 image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
                 texture.is_depth_tex = true;
-            }
-            else {
+            } else {
                 image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             }
             image_view_create_info.subresourceRange.baseArrayLayer = 0;
@@ -112,15 +110,15 @@ namespace nova::renderer {
 
             vkCreateImageView(device, &image_view_create_info, nullptr, &texture.image_view);
 
-            VkDebugUtilsObjectNameInfoEXT object_name = {};
-            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(texture.image);
-            object_name.pObjectName = texture_data.name.c_str();
-#ifndef NDEBUG
-            NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
-            NOVA_LOG(INFO) << "Set object " << texture.image << " to have name " << texture_data.name;
-#endif
+            if(settings.debug.enabled) {
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(texture.image);
+                object_name.pObjectName = texture_data.name.c_str();
+                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+                NOVA_LOG(INFO) << "Set image " << texture.image << " to have name " << texture_data.name;
+            }
 
             textures[texture_data.name] = texture;
         }
@@ -138,6 +136,7 @@ namespace nova::renderer {
             render_passes[pass_data.name].data = pass_data;
             VkFenceCreateInfo fence_info = {};
             fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
             vkCreateFence(device, &fence_info, nullptr, &render_passes[pass_data.name].fence);
             regular_render_passes[pass_data.name] = pass_data;
@@ -231,8 +230,7 @@ namespace nova::renderer {
 
                 if(framebuffer_width == 0) {
                     framebuffer_width = attachment_size.x;
-                }
-                else if(attachment_size.x != framebuffer_width) {
+                } else if(attachment_size.x != framebuffer_width) {
                     NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a width of "
                                     << attachment_size.x << ", but the framebuffer has a width of " << framebuffer_width
                                     << ". This is illegal, all input textures of a single renderpass must be the same size";
@@ -240,8 +238,7 @@ namespace nova::renderer {
 
                 if(framebuffer_height == 0) {
                     framebuffer_height = attachment_size.y;
-                }
-                else if(attachment_size.y != framebuffer_height) {
+                } else if(attachment_size.y != framebuffer_height) {
                     NOVA_LOG(ERROR) << "Texture " << attachment.name << " used by renderpass " << pass_name << " has a height of "
                                     << attachment_size.y << ", but the framebuffer has a height of " << framebuffer_height
                                     << ". This is illegal, all input textures of a single renderpass must be the same size";
@@ -284,8 +281,7 @@ namespace nova::renderer {
 
                 if(framebuffer_width == 0) {
                     framebuffer_width = attachment_size.x;
-                }
-                else if(attachment_size.x != framebuffer_width) {
+                } else if(attachment_size.x != framebuffer_width) {
                     NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name
                                     << " has a width of " << attachment_size.x << ", but the framebuffer has a width of "
                                     << framebuffer_width
@@ -294,8 +290,7 @@ namespace nova::renderer {
 
                 if(framebuffer_height == 0) {
                     framebuffer_height = attachment_size.y;
-                }
-                else if(attachment_size.y != framebuffer_height) {
+                } else if(attachment_size.y != framebuffer_height) {
                     NOVA_LOG(ERROR) << "Texture " << pass.data.depth_texture->name << " used by renderpass " << pass_name
                                     << " has a height of " << attachment_size.y << ", but the framebuffer has a height of "
                                     << framebuffer_height
@@ -346,8 +341,7 @@ namespace nova::renderer {
             render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
             render_pass_create_info.pAttachments = attachments.data();
 
-            NOVA_THROW_IF_VK_ERROR(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_passes[pass_name].pass),
-                                   render_engine_initialization_exception);
+            NOVA_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_create_info, nullptr, &render_passes[pass_name].pass));
 
             if(writes_to_backbuffer) {
                 if(pass.data.texture_outputs.size() > 1) {
@@ -357,8 +351,7 @@ namespace nova::renderer {
                 }
 
                 render_passes[pass_name].framebuffer.framebuffer = nullptr;
-            }
-            else {
+            } else {
                 VkFramebufferCreateInfo framebuffer_create_info = {};
                 framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
                 framebuffer_create_info.renderPass = render_passes[pass_name].pass;
@@ -377,22 +370,21 @@ namespace nova::renderer {
                                 << "), and attachments " << ss.str();
 
                 VkFramebuffer framebuffer;
-                NOVA_THROW_IF_VK_ERROR(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer),
-                                       render_engine_initialization_exception);
+                NOVA_CHECK_RESULT(vkCreateFramebuffer(device, &framebuffer_create_info, nullptr, &framebuffer));
                 render_passes[pass_name].framebuffer.framebuffer = framebuffer;
                 render_passes[pass_name].framebuffer.images = std::move(textures_in_framebuffer);
             }
 
             render_passes[pass_name].render_area = {{0, 0}, {framebuffer_width, framebuffer_height}};
 
-            VkDebugUtilsObjectNameInfoEXT object_name = {};
-            object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-            object_name.objectType = VK_OBJECT_TYPE_IMAGE;
-            object_name.objectHandle = reinterpret_cast<uint64_t>(render_passes[pass_name].pass);
-            object_name.pObjectName = pass_name.c_str();
-#ifndef NDEBUG
-            NOVA_THROW_IF_VK_ERROR(vkSetDebugUtilsObjectNameEXT(device, &object_name), render_engine_initialization_exception);
-#endif
+            if(settings.debug.enabled) {
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(render_passes[pass_name].pass);
+                object_name.pObjectName = pass_name.c_str();
+                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+            }
         }
     }
 
@@ -409,31 +401,35 @@ namespace nova::renderer {
 
             NOVA_LOG(TRACE) << "Compiling vertex module";
             shader_modules[VK_SHADER_STAGE_VERTEX_BIT] = create_shader_module(data.vertex_shader.source);
-            get_shader_module_descriptors(data.vertex_shader.source, nova_pipeline.bindings);
+            get_shader_module_descriptors(data.vertex_shader.source, VK_SHADER_STAGE_VERTEX_BIT, nova_pipeline.bindings);
 
             if(data.geometry_shader) {
                 NOVA_LOG(TRACE) << "Compiling geometry module";
                 shader_modules[VK_SHADER_STAGE_GEOMETRY_BIT] = create_shader_module(data.geometry_shader->source);
-                get_shader_module_descriptors(data.geometry_shader->source, nova_pipeline.bindings);
+                get_shader_module_descriptors(data.geometry_shader->source, VK_SHADER_STAGE_GEOMETRY_BIT, nova_pipeline.bindings);
             }
 
             if(data.tessellation_control_shader) {
                 NOVA_LOG(TRACE) << "Compiling tessellation_control module";
                 shader_modules[VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT] = create_shader_module(data.tessellation_control_shader->source);
-                get_shader_module_descriptors(data.tessellation_control_shader->source, nova_pipeline.bindings);
+                get_shader_module_descriptors(data.tessellation_control_shader->source,
+                                              VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+                                              nova_pipeline.bindings);
             }
 
             if(data.tessellation_evaluation_shader) {
                 NOVA_LOG(TRACE) << "Compiling tessellation_evaluation module";
                 shader_modules[VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT] = create_shader_module(
                     data.tessellation_evaluation_shader->source);
-                get_shader_module_descriptors(data.tessellation_evaluation_shader->source, nova_pipeline.bindings);
+                get_shader_module_descriptors(data.tessellation_evaluation_shader->source,
+                                              VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+                                              nova_pipeline.bindings);
             }
 
             if(data.fragment_shader) {
                 NOVA_LOG(TRACE) << "Compiling fragment module";
                 shader_modules[VK_SHADER_STAGE_FRAGMENT_BIT] = create_shader_module(data.fragment_shader->source);
-                get_shader_module_descriptors(data.fragment_shader->source, nova_pipeline.bindings);
+                get_shader_module_descriptors(data.fragment_shader->source, VK_SHADER_STAGE_FRAGMENT_BIT, nova_pipeline.bindings);
             }
 
             nova_pipeline.layouts = create_descriptor_set_layouts(nova_pipeline.bindings);
@@ -448,8 +444,7 @@ namespace nova::renderer {
             pipeline_layout_create_info.pPushConstantRanges = nullptr;
 
             VkPipelineLayout layout;
-            NOVA_THROW_IF_VK_ERROR(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout),
-                                   render_engine_initialization_exception);
+            NOVA_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout));
             nova_pipeline.layout = layout;
 
             for(const auto& [stage, shader_module] : shader_modules) {
@@ -465,10 +460,8 @@ namespace nova::renderer {
                 shader_stages.push_back(shader_stage_create_info);
             }
 
-            const std::vector<VkVertexInputBindingDescription>&
-                vertex_binding_descriptions = vulkan::get_vertex_input_binding_descriptions();
-            const std::vector<VkVertexInputAttributeDescription>&
-                vertex_attribute_descriptions = vulkan::get_vertex_input_attribute_descriptions();
+            const std::vector<VkVertexInputBindingDescription>& vertex_binding_descriptions = get_vertex_input_binding_descriptions();
+            const std::vector<VkVertexInputAttributeDescription>& vertex_attribute_descriptions = get_vertex_input_attribute_descriptions();
 
             VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;
             vertex_input_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -611,15 +604,20 @@ namespace nova::renderer {
             pipeline_create_info.subpass = 0;
             pipeline_create_info.basePipelineIndex = -1;
 
-            NOVA_THROW_IF_VK_ERROR(vkCreateGraphicsPipelines(device,
-                                                             VK_NULL_HANDLE,
-                                                             1,
-                                                             &pipeline_create_info,
-                                                             nullptr,
-                                                             &nova_pipeline.pipeline),
-                                   render_engine_initialization_exception);
+            NOVA_CHECK_RESULT(
+                vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &nova_pipeline.pipeline));
 
             pipelines_by_renderpass[data.pass].push_back(nova_pipeline);
+
+            if(settings.debug.enabled) {
+                VkDebugUtilsObjectNameInfoEXT object_name = {};
+                object_name.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+                object_name.objectType = VK_OBJECT_TYPE_IMAGE;
+                object_name.objectHandle = reinterpret_cast<uint64_t>(nova_pipeline.pipeline);
+                object_name.pObjectName = data.name.c_str();
+                NOVA_CHECK_RESULT(vkSetDebugUtilsObjectNameEXT(device, &object_name));
+                NOVA_LOG(INFO) << "Set pipeline " << nova_pipeline.pipeline << " to have name " << data.name;
+            }
         }
     }
 
@@ -632,27 +630,35 @@ namespace nova::renderer {
         shader_module_create_info.codeSize = spirv.size() * 4;
 
         VkShaderModule module;
-        NOVA_THROW_IF_VK_ERROR(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module),
-                               render_engine_initialization_exception);
+        NOVA_CHECK_RESULT(vkCreateShaderModule(device, &shader_module_create_info, nullptr, &module));
 
         return module;
     }
 
     void vulkan_render_engine::get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+                                                             const VkShaderStageFlags shader_stage,
                                                              std::unordered_map<std::string, vk_resource_binding>& bindings) {
         const spirv_cross::CompilerGLSL shader_compiler(spirv);
         const spirv_cross::ShaderResources resources = shader_compiler.get_shader_resources();
 
         for(const spirv_cross::Resource& resource : resources.sampled_images) {
-            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            NOVA_LOG(TRACE) << "Found a texture resource named " << resource.name;
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
 
         for(const spirv_cross::Resource& resource : resources.uniform_buffers) {
-            add_resource_to_bindings(bindings, shader_compiler, resource, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+            NOVA_LOG(TRACE) << "Found a UBO resource named " << resource.name;
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        }
+
+        for(const spirv_cross::Resource& resource : resources.storage_buffers) {
+            NOVA_LOG(TRACE) << "Found a SSBO resource named " << resource.name;
+            add_resource_to_bindings(bindings, shader_stage, shader_compiler, resource, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         }
     }
 
     void vulkan_render_engine::add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
+                                                        const VkShaderStageFlags shader_stage,
                                                         const spirv_cross::CompilerGLSL& shader_compiler,
                                                         const spirv_cross::Resource& resource,
                                                         const VkDescriptorType type) {
@@ -664,50 +670,52 @@ namespace nova::renderer {
         new_binding.binding = binding;
         new_binding.descriptorType = type;
         new_binding.descriptorCount = 1;
+        new_binding.stageFlags = shader_stage;
 
         if(bindings.find(resource.name) == bindings.end()) {
             // Totally new binding!
             bindings[resource.name] = new_binding;
-        }
-        else {
+        } else {
             // Existing binding. Is it the same as our binding?
-            const vk_resource_binding& existing_binding = bindings.at(resource.name);
+            vk_resource_binding& existing_binding = bindings.at(resource.name);
             if(existing_binding != new_binding) {
                 // They have two different bindings with the same name. Not allowed
                 NOVA_LOG(ERROR) << "You have two different uniforms named " << resource.name
                                 << " in different shader stages. This is not allowed. Use unique names";
+
+            } else {
+                // Same binding, probably at different stages - let's fix that
+                existing_binding.stageFlags |= shader_stage;
             }
         }
     }
 
     std::vector<VkDescriptorSetLayout> vulkan_render_engine::create_descriptor_set_layouts(
         const std::unordered_map<std::string, vk_resource_binding>& all_bindings) const {
-        std::unordered_map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
+
+        /*
+         * A few tasks to accomplish:
+         * - Take the unordered map of descriptor sets (all_bindings) and convert it into
+         *      VkDescriptorSetLayoutCreateInfo structs, ordering everything along the way
+         * -
+         */
+
+        std::vector<std::vector<VkDescriptorSetLayoutBinding>> bindings_by_set;
+        bindings_by_set.resize(all_bindings.size());
 
         for(const auto& named_binding : all_bindings) {
             const vk_resource_binding& binding = named_binding.second;
-            VkDescriptorSetLayoutBinding new_binding = {};
-            new_binding.binding = binding.binding;
-            new_binding.descriptorCount = binding.descriptorCount;
-            new_binding.descriptorType = binding.descriptorType;
-            new_binding.pImmutableSamplers = binding.pImmutableSamplers;
-            new_binding.stageFlags = VK_SHADER_STAGE_ALL;
+            if(binding.set >= bindings_by_set.size()) {
+                NOVA_LOG(ERROR) << "You've skipped one or more descriptor sets! Don't do that, Nova can't handle it";
+                continue;
+            }
 
-            bindings_by_set[binding.set].push_back(new_binding);
+            bindings_by_set[binding.set].push_back(binding);
         }
 
         std::vector<VkDescriptorSetLayoutCreateInfo> dsl_create_infos = {};
         dsl_create_infos.reserve(bindings_by_set.size());
-        for(size_t i = 0; i < bindings_by_set.size(); i++) {
-            if(bindings_by_set.find(static_cast<uint32_t>(i)) == bindings_by_set.end()) {
-                NOVA_LOG(ERROR) << "Could not get information for descriptor set " << i << "; most likely you skipped"
-                                << " a descriptor set in your shader. Ensure that all shaders for this pipeline together don't have"
-                                << " any gaps in the descriptor sets they declare";
-                throw shader_layout_creation_failed("Descriptor set " + std::to_string(i) + " not present");
-            }
-
-            const std::vector<VkDescriptorSetLayoutBinding>& bindings = bindings_by_set[static_cast<uint32_t>(i)];
-
+        for(const auto& bindings : bindings_by_set) {
             VkDescriptorSetLayoutCreateInfo create_info = {};
             create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             create_info.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -756,8 +764,14 @@ namespace nova::renderer {
                     alloc_info.pSetLayouts = layouts.data();
 
                     mat_pass.descriptor_sets.resize(layouts.size());
-                    NOVA_THROW_IF_VK_ERROR(vkAllocateDescriptorSets(device, &alloc_info, mat_pass.descriptor_sets.data()),
-                                           shaderpack_loading_error);
+                    NOVA_CHECK_RESULT(vkAllocateDescriptorSets(device, &alloc_info, mat_pass.descriptor_sets.data()));
+
+                    std::stringstream ss;
+                    for(const VkDescriptorSet& set : mat_pass.descriptor_sets) {
+                        ss << set << ", ";
+                    }
+                    NOVA_LOG(TRACE) << "Material pass " << mat_pass.name << " in material " << mat_pass.material_name
+                                    << " has descriptors [" << ss.str() << "]";
 
                     update_material_descriptor_sets(mat_pass, pipeline.bindings);
                 }
@@ -773,12 +787,15 @@ namespace nova::renderer {
         NOVA_LOG(TRACE) << "Updating descriptors for material " << mat.material_name;
 
         std::vector<VkWriteDescriptorSet> writes;
+        writes.reserve(mat.bindings.size());
 
-        // We create VkDescriptorImageInfo objects in a different scope, so were they to live there forever they'd get destructed before we
-        // can use them Instead we have them in a std::vector so they get deallocated _after_ being used
-        std::vector<VkDescriptorImageInfo> image_infos(mat.bindings.size());
+        // We create VkDescriptorImageInfo objects in a different scope, so were they to live there forever they'd get destructed before
+        // we can use them Instead we have them in a std::vector so they get deallocated _after_ being used
+        std::vector<VkDescriptorImageInfo> image_infos;
+        image_infos.reserve(mat.bindings.size());
 
-        std::vector<VkDescriptorBufferInfo> buffer_infos(mat.bindings.size());
+        std::vector<VkDescriptorBufferInfo> buffer_infos;
+        buffer_infos.reserve(mat.bindings.size());
 
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             (void) renderpass_name;
@@ -799,8 +816,13 @@ namespace nova::renderer {
         }
 
         for(const auto& [descriptor_name, resource_name] : mat.bindings) {
+            if(name_to_descriptor.find(descriptor_name) == name_to_descriptor.end()) {
+                NOVA_LOG(ERROR) << "Descriptor " << descriptor_name
+                                << " is not known to Nova, probably because you have it in your material but not in your pipeline";
+                continue;
+            }
             const auto& descriptor_info = name_to_descriptor.at(descriptor_name);
-            const auto descriptor_set = mat.descriptor_sets[descriptor_info.set];
+            const auto descriptor_set = mat.descriptor_sets.at(descriptor_info.set);
             bool is_known = true;
 
             VkWriteDescriptorSet write = {};
@@ -811,14 +833,26 @@ namespace nova::renderer {
             write.dstArrayElement = 0;
 
             if(textures.find(resource_name) != textures.end()) {
+                NOVA_LOG(TRACE) << "Binding  texture " << resource_name << " to descriptor (" << write.dstSet << "." << write.dstBinding
+                                << ")";
                 const vk_texture& texture = textures.at(resource_name);
                 write_texture_to_descriptor(texture, write, image_infos);
-            }
-            else if(buffers.find(resource_name) != buffers.end()) {
+
+            } else if(buffers.find(resource_name) != buffers.end()) {
+                NOVA_LOG(TRACE) << "Binding dynamic buffer " << resource_name << " to descriptor (" << write.dstSet << "."
+                                << write.dstBinding << ")";
                 const vk_buffer& buffer = buffers.at(resource_name);
-                write_buffer_to_descriptor(buffer, write, buffer_infos);
-            }
-            else {
+                write_buffer_to_descriptor(buffer.buffer, write, buffer_infos, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+
+            } else if(resource_name == "NovaModelMatrixBuffer") {
+                NOVA_LOG(TRACE) << "Binding buffer NovaModelMatrixBuffer to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
+                write_buffer_to_descriptor(model_matrix_buffer.buffer, write, buffer_infos, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+
+            } else if(resource_name == "NovaPerFrameUBO") {
+                NOVA_LOG(TRACE) << "Binding buffer NovaPerFrameUBO to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
+                write_buffer_to_descriptor(per_frame_data_buffer.buffer, write, buffer_infos, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+            } else {
                 is_known = false;
                 NOVA_LOG(WARN) << "Resource " << resource_name
                                << " is not known to Nova. I hope you aren't using it cause it doesn't exist";
@@ -846,18 +880,19 @@ namespace nova::renderer {
         write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     }
 
-    void vulkan_render_engine::write_buffer_to_descriptor(const vk_buffer& buffer,
+    void vulkan_render_engine::write_buffer_to_descriptor(const VkBuffer& buffer,
                                                           VkWriteDescriptorSet& write,
-                                                          std::vector<VkDescriptorBufferInfo>& buffer_infos) {
+                                                          std::vector<VkDescriptorBufferInfo>& buffer_infos,
+                                                          const VkDescriptorType type) {
         VkDescriptorBufferInfo buffer_info = {};
-        buffer_info.buffer = buffer.buffer;
+        buffer_info.buffer = buffer;
         buffer_info.offset = 0;
-        buffer_info.range = buffer.alloc_info.size;
+        buffer_info.range = VK_WHOLE_SIZE;
 
         buffer_infos.push_back(buffer_info);
 
         write.pBufferInfo = &buffer_infos[buffer_infos.size() - 1];
-        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        write.descriptorType = type;
     }
 
     void vulkan_render_engine::generate_barriers_for_dynamic_resources() {
@@ -871,8 +906,10 @@ namespace nova::renderer {
         /*
          * For each renderpass:
          * - Walk backwards through previous renderpasses
-         * - If we find one that writes to a resource we read from before we find one that reads from a resource we read from, add a barrier
-         * - If we find one that reads from a resource we write to before we find one that writes to a resource we write to, add a barrier
+         * - If we find one that writes to a resource we read from before we find one that reads from a resource we read from, add a
+         * barrier
+         * - If we find one that reads from a resource we write to before we find one that writes to a resource we write to, add a
+         * barrier
          */
 
         std::unordered_map<std::string, barrier_necessity> read_texture_barrier_necessity;

@@ -22,8 +22,7 @@ namespace nova::renderer {
         buffer_info.size = size;
         buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        NOVA_THROW_IF_VK_ERROR(vmaCreateBuffer(allocator, &buffer_info, &allocate_info, &buffer, &vma_allocation, &vma_allocation_info),
-                               buffer_allocation_failed);
+        NOVA_CHECK_RESULT(vmaCreateBuffer(allocator, &buffer_info, &allocate_info, &buffer, &vma_allocation, &vma_allocation_info));
 
         // Setup the first block.
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
@@ -242,8 +241,7 @@ namespace nova::renderer {
 
                 // Don't read from memory that's free
                 amount_compacted += current->size;
-            }
-            else {
+            } else {
                 if(amount_compacted > 0) {
                     // The write and read pointers are different, which means that we need to move the current
                     // allocation back to fill the empty space
@@ -258,8 +256,7 @@ namespace nova::renderer {
             }
             if(current->next != nullptr) {
                 current = current->next;
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -279,7 +276,7 @@ namespace nova::renderer {
         }
     }
 
-    compacting_block_allocator::compacting_block_allocator(const settings_options::block_allocator_settings& settings,
+    compacting_block_allocator::compacting_block_allocator(const nova_settings::block_allocator_settings& settings,
                                                            VmaAllocator vma_allocator,
                                                            const uint32_t graphics_queue_idx,
                                                            const uint32_t copy_queue_idx)

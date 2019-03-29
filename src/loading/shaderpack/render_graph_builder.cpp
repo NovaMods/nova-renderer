@@ -170,8 +170,7 @@ namespace nova::renderer {
             if(resource_to_write_pass.find(texture_name) == resource_to_write_pass.end()) {
                 // TODO: Ignore the implicitly defined resources
                 NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from resource " << texture_name << ", but nothing writes to it";
-            }
-            else {
+            } else {
                 const auto& write_passes = resource_to_write_pass.at(texture_name);
                 ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
 
@@ -184,8 +183,7 @@ namespace nova::renderer {
         for(const auto& buffer_name : pass.input_buffers) {
             if(resource_to_write_pass.find(buffer_name) == resource_to_write_pass.end()) {
                 NOVA_LOG(ERROR) << "Pass " << pass_name << " reads from buffer " << buffer_name << ", but no passes write to it";
-            }
-            else {
+            } else {
                 const auto& write_passes = resource_to_write_pass.at(buffer_name);
                 ordered_passes.insert(ordered_passes.end(), write_passes.begin(), write_passes.end());
 
@@ -207,8 +205,7 @@ namespace nova::renderer {
 
                 if(pass_idx < tex_range.first_write_pass) {
                     tex_range.first_write_pass = pass_idx;
-                }
-                else if(pass_idx > tex_range.last_write_pass) {
+                } else if(pass_idx > tex_range.last_write_pass) {
                     tex_range.last_write_pass = pass_idx;
                 }
 
@@ -223,8 +220,7 @@ namespace nova::renderer {
 
                     if(pass_idx < tex_range.first_write_pass) {
                         tex_range.first_write_pass = pass_idx;
-                    }
-                    else if(pass_idx > tex_range.last_write_pass) {
+                    } else if(pass_idx > tex_range.last_write_pass) {
                         tex_range.last_write_pass = pass_idx;
                     }
 

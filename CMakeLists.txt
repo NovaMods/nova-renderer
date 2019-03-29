@@ -47,8 +47,8 @@ endif()
 ############################
 # Initialize cmake options #
 ############################
-set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/3rdparty)
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake" "${3RD_PARTY_DIR}")
+set(3RD_PARTY_DIR ${CMAKE_CURRENT_LIST_DIR}/external)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/tools/cmake" "${3RD_PARTY_DIR}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -73,7 +73,7 @@ set(BUILD_TESTING OFF CACHE BOOL "NO TESTING" FORCE)
 #################################
 # Setup 3rd party dependencies. #
 #################################
-include(3rdparty)
+include(external)
 
 ########################
 # Add Nova source code #
@@ -107,8 +107,8 @@ set(NOVA_SOURCE
         src/loading/json_utils.hpp
         src/util/utils.hpp
         src/util/utils.cpp
-        src/render_objects/render_object.cpp
-        src/render_objects/render_object.hpp 
+        src/render_objects/renderables.hpp
+        src/render_objects/uniform_structs.hpp 
         src/loading/shaderpack/shaderpack_validator.cpp 
         src/loading/shaderpack/shaderpack_validator.hpp 
         src/loading/shaderpack/render_graph_builder.cpp 
@@ -117,7 +117,7 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/vulkan_render_engine.cpp
         src/render_engine/vulkan/vulkan_render_engine_init.cpp
         src/render_engine/vulkan/vulkan_render_engine_shaderpack.cpp
-        src/render_engine/vulkan/vulkan_render_engine_render_objects.cpp
+        src/render_engine/vulkan/vulkan_render_engine_renderables.cpp
         src/render_engine/vulkan/vulkan_render_engine_render_frame.cpp
         src/render_engine/vulkan/vulkan_render_engine_mesh.cpp
         src/render_engine/vulkan/vulkan_utils.hpp
@@ -129,19 +129,24 @@ set(NOVA_SOURCE
         src/render_engine/vulkan/swapchain.hpp
         src/render_engine/vulkan/auto_allocating_buffer.cpp
         src/render_engine/vulkan/auto_allocating_buffer.hpp
-        src/render_engine/vulkan/uniform_buffer.hpp
-        src/render_engine/vulkan/uniform_buffer.cpp
+        src/render_engine/vulkan/cached_buffer.hpp
+        src/render_engine/vulkan/cached_buffer.cpp
+        src/render_engine/vulkan/struct_uniform_buffer.hpp
+        src/render_engine/vulkan/struct_uniform_buffer.cpp
+        src/render_engine/vulkan/fixed_size_buffer_allocator.hpp
         src/tasks/task_scheduler.cpp
         src/tasks/task_scheduler.hpp
         src/tasks/task_graph.hpp
         src/tasks/wait_free_queue.hpp
         src/tasks/condition_counter.cpp
         src/tasks/condition_counter.hpp
+
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
         src/debugging/renderdoc_app.h
-
-
+                
+        src/util/result.hpp
+        src/util/result.cpp
         )
 
 ##################################
@@ -314,7 +319,7 @@ if(WIN32)
     get_windowssdk_include_dirs(${WINDOWSSDK_LATEST_DIR} WinSDK_DIRS)
 
     # MSVC 15.9 broke the Windows SDK by implementing two phase lookup. "/Zc:twoPhase-" disables it.
-    add_compile_options_if_supported(/Zc:twoPhase- /permissive)
+    add_compile_options_if_supported(/Zc:twoPhase- /permissive /bigobj )
 
     set_target_properties(nova-renderer PROPERTIES PREFIX "")
     set(COMMON_LINK_LIBS ${COMMON_LINK_LIBS} d3d12 dxgi d3dcompiler glslang::HLSL spirv-cross-hlsl)

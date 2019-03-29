@@ -28,7 +28,7 @@ namespace nova::renderer {
         /*!
          * \brief Initializes the Nova Renderer
          */
-        explicit nova_renderer(const settings_options& settings);
+        explicit nova_renderer(nova_settings settings);
 
         nova_renderer(nova_renderer&& other) noexcept = delete;
         nova_renderer& operator=(nova_renderer&& other) noexcept = delete;
@@ -60,7 +60,7 @@ namespace nova::renderer {
 
         nova::ttl::task_scheduler& get_task_scheduler();
 
-        static nova_renderer* initialize(const settings_options& settings);
+        static nova_renderer* initialize(const nova_settings& settings);
 
         static nova_renderer* get_instance();
 

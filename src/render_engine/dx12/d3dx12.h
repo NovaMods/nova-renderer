@@ -1514,8 +1514,7 @@ inline UINT64 UpdateSubresources(_In_ ID3D12GraphicsCommandList* pCmdList,
 
     if(DestinationDesc.Dimension == D3D12_RESOURCE_DIMENSION_BUFFER) {
         pCmdList->CopyBufferRegion(pDestinationResource, 0, pIntermediate, pLayouts[0].Offset, pLayouts[0].Footprint.Width);
-    }
-    else {
+    } else {
         for(UINT i = 0; i < NumSubresources; ++i) {
             CD3DX12_TEXTURE_COPY_LOCATION Dst(pDestinationResource, i + FirstSubresource);
             CD3DX12_TEXTURE_COPY_LOCATION Src(pIntermediate, pLayouts[i]);

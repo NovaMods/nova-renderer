@@ -29,9 +29,14 @@
 #include "compacting_block_allocator.hpp"
 
 #include <mutex>
-#include "../../render_objects/render_object.hpp"
+#include "../../render_objects/renderables.hpp"
+#include "../../render_objects/uniform_structs.hpp"
 #include "auto_allocating_buffer.hpp"
+#include "fixed_size_buffer_allocator.hpp"
+#include "struct_uniform_buffer.hpp"
 #include "swapchain.hpp"
+
+#include "../../debugging/renderdoc_app.h"
 
 namespace nova::ttl {
     class task_scheduler;
@@ -51,13 +56,26 @@ namespace nova::renderer {
     struct vk_resource_binding : VkDescriptorSetLayoutBinding {
         uint32_t set;
 
+        /*!
+         * \brief Checks if two `vk_resource_binding` objects are equal
+         *
+         * Checks every member except the pipeline stages that the descriptor is available to. This is so I can more
+         * easily handle descriptors that are used in multiple pipeline stages
+         */
         bool operator==(const vk_resource_binding& other) const;
+
+        /*!
+         * \brief Checks if two `vk_resource_binding` objects are not equal
+         *
+         * Checks every member except the pipeline stages that the descriptor is available to. This is so I can more
+         * easily handle descriptors that are used in multiple pipeline stages
+         */
         bool operator!=(const vk_resource_binding& other) const;
     };
 
     struct vk_texture {
-        VkImage image = VK_NULL_HANDLE;
-        VkImageView image_view = VK_NULL_HANDLE;
+        VkImage image = nullptr;
+        VkImageView image_view = nullptr;
 
         texture_resource_data data;
 
@@ -130,6 +148,8 @@ namespace nova::renderer {
         VmaAllocationInfo alloc_info;
 
         bool is_dynamic;
+
+        std::string name;
     };
 
     struct mesh_staging_buffer_upload_command {
@@ -140,12 +160,13 @@ namespace nova::renderer {
     };
 
     struct vk_mesh {
-        compacting_block_allocator::allocation_info* memory;
+        vk_buffer index_buffer = {};
+        vk_buffer vertex_buffer = {};
 
-        uint32_t index_offset;
-        uint32_t model_matrix_offset;
+        uint32_t num_indices = 0;
+        std::size_t num_vertices = 0;
 
-        VkDrawIndexedIndirectCommand draw_cmd;
+        mesh_id_t id;
     };
 
     struct vk_gpu_info {
@@ -156,7 +177,10 @@ namespace nova::renderer {
         std::vector<VkSurfaceFormatKHR> surface_formats;
         VkPhysicalDeviceProperties props{};
         VkPhysicalDeviceFeatures supported_features{};
-        std::vector<VkPresentModeKHR> present_modes;
+    };
+
+    struct vk_renderables {
+        std::unordered_map<mesh_id_t, std::vector<vk_static_mesh_renderable>> static_meshes;
     };
 
     class vulkan_render_engine : public render_engine {
@@ -171,11 +195,11 @@ namespace nova::renderer {
         VkQueue graphics_queue{};
         uint32_t compute_family_index{};
         VkQueue compute_queue{};
-        uint32_t copy_family_index{};
+        uint32_t transfer_family_index{};
         VkQueue copy_queue{};
 #pragma endregion
 
-        vulkan_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* task_scheduler);
+        vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler, RENDERDOC_API_1_3_0* renderdoc);
 
         vulkan_render_engine(vulkan_render_engine&& other) = delete;
         vulkan_render_engine& operator=(vulkan_render_engine&& other) noexcept = delete;
@@ -185,13 +209,21 @@ namespace nova::renderer {
 
         ~vulkan_render_engine() override;
 
+        void flush_model_matrix_buffer();
+
         void render_frame() override;
 
         std::shared_ptr<iwindow> get_window() const override;
 
         void set_shaderpack(const shaderpack_data& data) override;
 
-        mesh_id_t add_mesh(const mesh_data& input_mesh) override;
+        result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) override;
+
+        void set_renderable_visibility(renderable_id_t id, bool is_visible) override;
+
+        void delete_renderable(renderable_id_t id) override;
+
+        result<mesh_id_t> add_mesh(const mesh_data& input_mesh) override;
 
         void delete_mesh(uint32_t mesh_id) override;
 
@@ -206,12 +238,21 @@ namespace nova::renderer {
         VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
 
     private:
-        const settings_options settings;
-
-        const uint32_t max_frames_in_queue = 1;
+        /*!
+         * \brief The number of frames that Nova can have in-flight at a given time
+         *
+         * The default value seen here is the number of in-flight frames we request from the GPU. However, the GPU may
+         * create more swapchain images than we requested - which is fine, but that means that this value at runtime
+         * may not be what it is here. Be aware.
+         *
+         * This value should not be changed outside of the constructor, but I don't know how to make the compiler
+         * enforce that - so be careful!
+         */
+        uint32_t max_in_flight_frames = 3;
+        uint32_t current_swapchain_image = 0;
         uint32_t current_frame = 0;
 
-        std::vector<const char*> enabled_validation_layer_names;
+        std::vector<const char*> enabled_layer_names;
 
 #ifdef NOVA_LINUX
         std::shared_ptr<x11_window> window;
@@ -220,17 +261,13 @@ namespace nova::renderer {
 #endif
 
 #pragma region Globals
+        RENDERDOC_API_1_3_0* renderdoc;
+
         VkInstance vk_instance{};
 
         VmaAllocator vma_allocator{};
 
-        std::mutex render_done_sync_mutex;
-        uint64_t current_semaphore_idx = 0;
-
-        /*!
-         * \brief A collection of semaphores that tell us when each of the renderpasses rendered this frame is done executing
-         */
-        std::vector<std::vector<VkSemaphore>> render_finished_semaphores_by_frame;
+        std::vector<VkSemaphore> render_finished_semaphores;
         std::vector<VkSemaphore> image_available_semaphores;
 
         /*!
@@ -318,10 +355,12 @@ namespace nova::renderer {
          * user hasn't declared two different bindings with the same name
          *
          * \param spirv The SPIR-V shader code to get bindings from
+         * \param shader_stage The shader stage the binding was found in
          * \param bindings An in/out array that holds all the existing binding before this method, and holds the
          * existing bindings plus new ones declared in the shader after this method
          */
         static void get_shader_module_descriptors(const std::vector<uint32_t>& spirv,
+                                                  VkShaderStageFlags shader_stage,
                                                   std::unordered_map<std::string, vk_resource_binding>& bindings);
 
         /*!
@@ -331,11 +370,13 @@ namespace nova::renderer {
          * If something already exists, `bindings` is unchanged
          *
          * \param bindings The map of bindings to ass data to
+         * \param shader_stage The shader stage the binding was found in
          * \param shader_compiler The compiler used for the shader that the resource came from
          * \param resource The resource to maybe add to `bindings
          * \param type The type of this resource
          */
         static void add_resource_to_bindings(std::unordered_map<std::string, vk_resource_binding>& bindings,
+                                             VkShaderStageFlags shader_stage,
                                              const spirv_cross::CompilerGLSL& shader_compiler,
                                              const spirv_cross::Resource& resource,
                                              VkDescriptorType type);
@@ -370,7 +411,8 @@ namespace nova::renderer {
         /*!
          * \brief Creates descriptor set layouts for all the descriptor set bindings
          *
-         * \param all_bindings All the bindings we know about
+         * \param all_bindings All the bindings we know about. This is expected to cover sets 0 - n, with all whole
+         * numbers between 0 and n represented
          * \return A list of descriptor set layouts, one for each set in `bindings`
          */
         std::vector<VkDescriptorSetLayout> create_descriptor_set_layouts(
@@ -416,10 +458,12 @@ namespace nova::renderer {
          * \param buffer The buffer to write to the descriptor set
          * \param write A VkWriteDescriptorSet struct that we can add information about our descriptor to
          * \param buffer_infos A place to store VkDescriptorBufferInfo structs so they don't get cleaned up too early
+         * \param type The type of buffer that the descriptor describes
          */
-        static void write_buffer_to_descriptor(const vk_buffer& buffer,
+        static void write_buffer_to_descriptor(const VkBuffer& buffer,
                                                VkWriteDescriptorSet& write,
-                                               std::vector<VkDescriptorBufferInfo>& buffer_infos);
+                                               std::vector<VkDescriptorBufferInfo>& buffer_infos,
+                                               VkDescriptorType type);
 
         /*!
          * \brief Executed barriers for all the dynamic textures so they are in COLOR_ATTACHMENT_OPTIMAL layout
@@ -453,16 +497,6 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Mesh
-        std::unique_ptr<compacting_block_allocator> mesh_memory;
-
-        std::mutex mesh_staging_buffers_mutex;
-        std::vector<vk_buffer> available_mesh_staging_buffers;
-
-        std::queue<mesh_staging_buffer_upload_command> mesh_upload_queue;
-        std::mutex mesh_upload_queue_mutex;
-        VkFence mesh_rendering_done{};
-        VkFence upload_to_megamesh_buffer_done{};
-
         // Might need to make 64-bit keys eventually, but in 2018 it's not a concern
         std::unordered_map<uint32_t, vk_mesh> meshes;
         std::mutex meshes_mutex;
@@ -475,46 +509,37 @@ namespace nova::renderer {
          * `options.new_buffer_size` must be a whole-number multiple of `options.buffer_part_size`
          * `options.max_total_allocation` must be a whole-number multiple of `options.new_buffer_size`
          */
-        void validate_mesh_options(const settings_options::block_allocator_settings& options) const;
-
-        /*!
-         * \brief Records and submits a command buffer that barriers until reading vertex data from the megamesh
-         * buffer has finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer
-         * are finished
-         *
-         * The command buffer will wait on fence `mesh_rendering_done` before getting submitted, and it'll signal
-         * `upload_to_megamesh_buffer_done` when it's done copying data into the megamesh buffer. This method uploads
-         * all new mesh data and it's awesome
-         */
-        void upload_new_mesh_parts();
-
-        /*!
-         * \brief If a mesh staging buffer is available, it's returned to the user. Otherwise, a new mesh staging
-         * buffer is created - and then returned to the user
-         *
-         * \param needed_size The size of the desired buffer
-         */
-        vk_buffer get_or_allocate_mesh_staging_buffer(uint32_t needed_size);
-
-        /*!
-         * \brief Returns the provided buffer to the pool of staging buffers
-         */
-        void free_mesh_staging_buffer(const vk_buffer& buffer);
+        void validate_mesh_options(const nova_settings::block_allocator_settings& options) const;
 #pragma endregion
 
-#pragma region Render Object
+#pragma region Renderables
         /*!
-         * \brief A buffer to hold model matrices for static render objects
+         * \brief A buffer to hold model matrices for all render objects
          */
-        std::unique_ptr<auto_buffer> static_model_matrix_buffer;
+        vk_buffer model_matrix_buffer;
+
+        vk_buffer per_frame_data_buffer;
+
+        /*!
+         * \brief All the renderables that Nova will process
+         */
+        std::unordered_map<renderable_id_t, renderable_metadata> metadata_for_renderables;
 
         void create_builtin_uniform_buffers();
+
+        result<std::vector<const material_pass*>> get_material_passes_for_renderable(const static_mesh_renderable_data& data);
+
+        result<const vk_mesh*> get_mesh_for_renderable(const static_mesh_renderable_data& data);
+
+        result<renderable_id_t> register_renderable(const static_mesh_renderable_data& data,
+                                                    const vk_mesh* mesh,
+                                                    const std::vector<const material_pass*>& passes);
 #pragma endregion
 
 #pragma region Rendering
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
-        std::unordered_map<std::string, std::unordered_map<VkBuffer, std::vector<render_object>>> renderables_by_material;
+        std::unordered_map<std::string, vk_renderables> renderables_by_material;
 
         std::mutex rendering_mutex;
         std::condition_variable rendering_cv;
@@ -525,8 +550,9 @@ namespace nova::renderer {
          * This method fill start a separate async task for each pipeline that is in the given renderpass
          *
          * \param renderpass_name The name of the renderpass to execute
+         * \param cmds The command buffer to record this renderpass into
          */
-        void execute_renderpass(const std::string* renderpass_name);
+        void record_renderpass(const std::string* renderpass_name, VkCommandBuffer cmds);
 
         /*!
          * \brief Renders all the meshes that use a single pipeline
@@ -537,7 +563,7 @@ namespace nova::renderer {
          * Intended use case is to render the things for each pipeline in a separate fiber, but imma have to do a lot
          * of profiling to be sure
          */
-        void render_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass);
+        void record_pipeline(const vk_pipeline* pipeline, VkCommandBuffer* cmds, const vk_render_pass& renderpass);
 
         /*!
          * \brief Binds all the resources that the provided material uses to the given pipeline
@@ -551,27 +577,34 @@ namespace nova::renderer {
         /*!
          * \brief Renders all the things using the provided material
          */
-        void draw_all_for_material(const material_pass& pass, VkCommandBuffer cmds);
+        void record_drawing_all_for_material(const material_pass& pass, VkCommandBuffer cmds);
 
         /*!
          * \brief Submits the provided command buffer to the provided queue
          *
          * This method is thread-safe
+         *
+         * \param cmds The command buffer to submit
+         * \param queue The queue to submit the command buffer to
+         * \param cmd_buffer_done_fence The fence to signal when the command buffer has finished executing
+         * \param wait_semaphores Any semaphores that the command buffer needs to wait on
+         * \param signal_semaphores The semaphores to signal when the command buffer is done
+         *
+         * \pre cmds is a fully recorded command buffer
          */
         void submit_to_queue(VkCommandBuffer cmds,
                              VkQueue queue,
-                             VkFence cmd_buffer_done_fence,
-                             const std::vector<VkSemaphore>& wait_semaphores);
+                             VkFence cmd_buffer_done_fence = {},
+                             const std::vector<VkSemaphore>& wait_semaphores = {},
+                             const std::vector<VkSemaphore>& signal_semaphores = {});
 #pragma endregion
 
-#ifndef NDEBUG
         PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;
         PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 
         VkDebugUtilsMessengerEXT debug_callback{};
 
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
-#endif
 
         static VkFormat to_vk_format(pixel_format_enum format);
     };

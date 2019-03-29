@@ -62,9 +62,9 @@ namespace nova::renderer {
          * \param settings The settings that may or may not influence initialization
          * \param scheduler The task scheduler that this render engine should use
          */
-        explicit dx12_render_engine(const nova_settings& settings, nova::ttl::task_scheduler* scheduler);
+        explicit dx12_render_engine(nova_settings& settings, nova::ttl::task_scheduler* scheduler);
 
-        static const std::string get_engine_name();
+        static std::string get_engine_name();
 
         /**
          * render_engine overrides
@@ -74,7 +74,13 @@ namespace nova::renderer {
 
         void set_shaderpack(const shaderpack_data& data) override;
 
-        mesh_id_t add_mesh(const mesh_data&) override;
+        result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) override;
+
+        void set_renderable_visibility(renderable_id_t id, bool is_visible) override;
+
+        void delete_renderable(renderable_id_t id) override;
+
+        result<mesh_id_t> add_mesh(const mesh_data&) override;
 
         void delete_mesh(uint32_t) override;
 
@@ -153,7 +159,7 @@ namespace nova::renderer {
         /*!
          * \brief Creates the swapchain from the size of the window
          *
-         * This method has a precondition that the window must be initialized
+         * \pre the window must be initialized
          */
         void create_swapchain();
 
