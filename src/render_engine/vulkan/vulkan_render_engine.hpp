@@ -508,44 +508,15 @@ namespace nova::renderer {
          * `options.max_total_allocation` must be a whole-number multiple of `options.new_buffer_size`
          */
         void validate_mesh_options(const nova_settings::block_allocator_settings& options) const;
-
-        /*!
-         * \brief Records and submits a command buffer that barriers until reading vertex data from the megamesh
-         * buffer has finished, uploads new mesh parts, then barriers until transfers to the megamesh vertex buffer
-         * are finished
-         *
-         * The command buffer will wait on fence `mesh_rendering_done` before getting submitted, and it'll signal
-         * `upload_to_megamesh_buffer_done` when it's done copying data into the megamesh buffer. This method uploads
-         * all new mesh data and it's awesome
-         */
-        void upload_new_mesh_parts();
-
-        /*!
-         * \brief If a mesh staging buffer is available, it's returned to the user. Otherwise, a new mesh staging
-         * buffer is created - and then returned to the user
-         *
-         * \param needed_size The size of the desired buffer
-         */
-        vk_buffer get_or_allocate_mesh_staging_buffer(uint32_t needed_size);
-
-        /*!
-         * \brief Returns the provided buffer to the pool of staging buffers
-         */
-        void free_mesh_staging_buffer(const vk_buffer& buffer);
-
-        /*!
-         * \brief Uploads all the UBOs to the GPU
-         */
-        void upload_new_ubos();
 #pragma endregion
 
 #pragma region Renderables
         /*!
          * \brief A buffer to hold model matrices for all render objects
          */
-        std::unique_ptr<fixed_size_buffer_allocator<sizeof(glm::mat4)>> model_matrix_buffer;
+        vk_buffer model_matrix_buffer;
 
-        std::unique_ptr<struct_uniform_buffer<per_frame_uniforms>> per_frame_data_buffer;
+        vk_buffer per_frame_data_buffer;
 
         /*!
          * \brief All the renderables that Nova will process

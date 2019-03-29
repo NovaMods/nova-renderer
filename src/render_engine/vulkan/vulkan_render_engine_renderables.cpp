@@ -6,33 +6,45 @@
 
 namespace nova::renderer {
     void vulkan_render_engine::create_builtin_uniform_buffers() {
-        // Future Work: Get this from a per-scene configuration
-        const uint32_t total_object_estimate = 10000;
-        VkBufferCreateInfo model_matrix_create_info = {};
-        model_matrix_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        model_matrix_create_info.size = total_object_estimate * sizeof(glm::mat4);
-        model_matrix_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        model_matrix_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+        {
+            // Future Work: Get this from a per-scene configuration
+            const uint32_t total_object_estimate = 10000;
+            VkBufferCreateInfo model_matrix_create_info = {};
+            model_matrix_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            model_matrix_create_info.size = total_object_estimate * sizeof(glm::mat4);
+            model_matrix_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            model_matrix_create_info.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
-        const uint32_t alignment = static_cast<uint32_t>(gpu.props.limits.minUniformBufferOffsetAlignment);
+            VmaAllocationCreateInfo alloc_create_info = {};
+            alloc_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+            alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        model_matrix_buffer = std::make_unique<fixed_size_buffer_allocator<sizeof(glm::mat4)>>("NovaModelMatrixBuffer",
-                                                                                               device,
-                                                                                               vma_allocator,
-                                                                                               model_matrix_create_info,
-                                                                                               alignment);
+            vmaCreateBuffer(vma_allocator,
+                            &model_matrix_create_info,
+                            &alloc_create_info,
+                            &model_matrix_buffer.buffer,
+                            &model_matrix_buffer.allocation,
+                            &model_matrix_buffer.alloc_info);
+        }
 
-        VkBufferCreateInfo per_frame_data_create_info = {};
-        per_frame_data_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        per_frame_data_create_info.size = sizeof(per_frame_uniforms);
-        per_frame_data_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        per_frame_data_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        {
+            VkBufferCreateInfo per_frame_data_create_info = {};
+            per_frame_data_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            per_frame_data_create_info.size = sizeof(per_frame_uniforms);
+            per_frame_data_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            per_frame_data_create_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-        per_frame_data_buffer = std::make_unique<struct_uniform_buffer<per_frame_uniforms>>("NovaPerFrameUBO",
-                                                                                            device,
-                                                                                            vma_allocator,
-                                                                                            per_frame_data_create_info,
-                                                                                            alignment);
+            VmaAllocationCreateInfo alloc_create_info = {};
+            alloc_create_info.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
+            alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+            vmaCreateBuffer(vma_allocator,
+                &per_frame_data_create_info,
+                &alloc_create_info,
+                &per_frame_data_buffer.buffer,
+                &per_frame_data_buffer.allocation,
+                &per_frame_data_buffer.alloc_info);
+        }
     }
 
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {
@@ -93,16 +105,12 @@ namespace nova::renderer {
         renderable.id = id;
         metadata_for_renderables[id] = meta;
 
-        // Set up model matrix in buffer
-        renderable.model_matrix_slot = model_matrix_buffer->allocate_block();
-        glm::mat4* model_matrices = model_matrix_buffer->get_data<glm::mat4>();
-
-        glm::mat4& model_matrix = model_matrices[renderable.model_matrix_slot->index];
-        model_matrix = glm::translate(model_matrix, data.initial_position);
-        model_matrix = glm::rotate(model_matrix, data.initial_rotation.x, {1, 0, 0});
-        model_matrix = glm::rotate(model_matrix, data.initial_rotation.y, {0, 1, 0});
-        model_matrix = glm::rotate(model_matrix, data.initial_rotation.x, {0, 0, 1});
-        model_matrix = glm::scale(model_matrix, data.initial_scale);
+        // Set up model matrix
+        renderable.model_matrix = glm::translate(renderable.model_matrix, data.initial_position);
+        renderable.model_matrix = glm::rotate(renderable.model_matrix, data.initial_rotation.x, {1, 0, 0});
+        renderable.model_matrix = glm::rotate(renderable.model_matrix, data.initial_rotation.y, {0, 1, 0});
+        renderable.model_matrix = glm::rotate(renderable.model_matrix, data.initial_rotation.x, {0, 0, 1});
+        renderable.model_matrix = glm::scale(renderable.model_matrix, data.initial_scale);
 
         // Find the materials basses that this renderable belongs to, put it in the appropriate maps
         for(const material_pass* pass : passes) {

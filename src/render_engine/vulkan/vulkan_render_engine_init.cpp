@@ -35,7 +35,7 @@ namespace nova::renderer {
         create_info.pApplicationInfo = &application_info;
         if(settings.debug.enabled && settings.debug.enable_validation_layers) {
             enabled_layer_names.push_back("VK_LAYER_LUNARG_standard_validation");
-            enabled_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
+            // enabled_layer_names.push_back("VK_LAYER_LUNARG_api_dump");
         }
         create_info.enabledLayerCount = static_cast<uint32_t>(enabled_layer_names.size());
         create_info.ppEnabledLayerNames = enabled_layer_names.data();

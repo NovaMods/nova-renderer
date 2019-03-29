@@ -1,4 +1,4 @@
-#version 450
+#version 460
 
 // layout(set = 2, binding = 0) uniform sampler2D colortex;
 // layout(set = 2, binding = 3) uniform sampler2D lightmap;

@@ -35,7 +35,8 @@ namespace nova::renderer {
          * flags are set to only `VK_BUFFER_USAGE_TRANSFER_SRC_BIT`
          * \param alignment The device's buffer alignment
          */
-        cached_buffer(std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, uint64_t alignment);
+        cached_buffer(
+            std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, VkDeviceSize alignment);
 
         cached_buffer(const cached_buffer& other) = delete;
         cached_buffer& operator=(const cached_buffer& other) = delete;
@@ -83,7 +84,7 @@ namespace nova::renderer {
 
     protected:
         std::string name;
-        uint64_t alignment = 64;
+        VkDeviceSize alignment = 64;
 
         VmaAllocator allocator = nullptr;
 

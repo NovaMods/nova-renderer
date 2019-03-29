@@ -3,7 +3,7 @@
 
 namespace nova::renderer {
     cached_buffer::cached_buffer(
-        std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const uint64_t alignment)
+        std::string name, VkDevice device, VmaAllocator allocator, const VkBufferCreateInfo& create_info, const VkDeviceSize alignment)
         : name(std::move(name)), alignment(alignment), allocator(allocator), device(device) {
         VmaAllocationCreateInfo alloc_create = {};
         alloc_create.usage = VMA_MEMORY_USAGE_GPU_ONLY;

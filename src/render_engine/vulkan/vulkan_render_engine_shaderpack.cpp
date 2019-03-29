@@ -846,11 +846,11 @@ namespace nova::renderer {
 
             } else if(resource_name == "NovaModelMatrixBuffer") {
                 NOVA_LOG(TRACE) << "Binding buffer NovaModelMatrixBuffer to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
-                write_buffer_to_descriptor(model_matrix_buffer->get_vk_buffer(), write, buffer_infos, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+                write_buffer_to_descriptor(model_matrix_buffer.buffer, write, buffer_infos, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
             } else if(resource_name == "NovaPerFrameUBO") {
                 NOVA_LOG(TRACE) << "Binding buffer NovaPerFrameUBO to descriptor (" << write.dstSet << "." << write.dstBinding << ")";
-                write_buffer_to_descriptor(per_frame_data_buffer->get_vk_buffer(), write, buffer_infos, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+                write_buffer_to_descriptor(per_frame_data_buffer.buffer, write, buffer_infos, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
             } else {
                 is_known = false;

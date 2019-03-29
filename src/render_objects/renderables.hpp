@@ -69,7 +69,7 @@ namespace nova::renderer {
 
         bool is_visible = true;
 
-        block_t<sizeof(glm::mat4)> model_matrix_slot = nullptr;
+        glm::mat4 model_matrix;
     };
 
     struct vk_static_mesh_renderable : renderable_base {};

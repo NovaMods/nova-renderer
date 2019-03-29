@@ -56,7 +56,7 @@ layout(std140) uniform per_frame_uniforms {
 };
 
 layout(std140) readonly buffer per_model_uniforms {
-    mat4 gbufferModel;
+    mat4 modelMatrices[];
 };
 
 layout(location = 0) out vec2 uv;

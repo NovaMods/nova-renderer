@@ -1,4 +1,4 @@
-#version 450
+#version 460
 
 layout(location = 0) in vec3 position_in;
 layout(location = 1) in vec2 uv_in;
@@ -57,7 +57,7 @@ layout(set = 1, binding = 0) uniform per_frame_uniforms {
 */
 
 layout(set = 0, binding = 0) readonly buffer per_model_uniforms {
-    mat4 gbufferModel;
+    mat4 modelMatrices[];
 };
 
 layout(location = 0) out vec2 uv;

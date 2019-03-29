@@ -24,8 +24,6 @@
 namespace nova::renderer {
     vulkan_render_engine::~vulkan_render_engine() {
         vkDeviceWaitIdle(device);
-        model_matrix_buffer.reset();
-        per_frame_data_buffer.reset();
     }
 
     std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }

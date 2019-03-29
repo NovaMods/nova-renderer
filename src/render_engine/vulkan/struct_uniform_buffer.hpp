@@ -24,7 +24,7 @@ namespace nova::renderer {
          * \param alignment The device's buffer alignment
          */
         struct_uniform_buffer(
-            std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, uint64_t alignment)
+            std::string name, VkDevice device, VmaAllocator allocator, VkBufferCreateInfo& create_info, VkDeviceSize alignment)
             : cached_buffer(name,
                             device,
                             allocator,

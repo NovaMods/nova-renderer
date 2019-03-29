@@ -19,8 +19,6 @@ namespace nova::renderer {
 
         swapchain->acquire_next_swapchain_image(image_available_semaphores.at(cur_frame));
 
-        upload_new_ubos();
-
         // Record command buffers
         // We can't upload a new shaderpack in the middle of a frame!
         // Future iterations of this code will likely be more clever, so that "load shaderpack" gets scheduled for the beginning of the
@@ -322,6 +320,11 @@ namespace nova::renderer {
         // I'll worry about depth sorting later
         const std::vector<material_pass> materials = material_passes_by_pipeline.at(pipeline->data.name);
         for(const material_pass& pass : materials) {
+            if (renderables_by_material.find(pass.name) == renderables_by_material.end()) {
+                // Nothing to render? Don't render it!
+                continue;
+            }
+
             bind_material_resources(pass, *pipeline, *cmds);
             record_drawing_all_for_material(pass, *cmds);
         }
@@ -336,24 +339,6 @@ namespace nova::renderer {
     void vulkan_render_engine::record_drawing_all_for_material(const material_pass& pass, VkCommandBuffer cmds) {
 
         NOVA_LOG(TRACE) << "Recording drawcalls for material pass " << pass.name << " in material " << pass.material_name;
-
-        // Version 1: Put indirect draw commands into a buffer right here, send that data to the GPU, and render that
-        // Version 2: Let the host application tell us which render objects are visible and which are not, and incorporate that information
-        // Version 3: Send data about what is and isn't visible to the GPU and construct the indirect draw commands buffer in a compute
-        // shader
-        // Version 4: Incorporate occlusion queries so we know what with all certainty what is and isn't visible
-
-        // At the current time I'm making version 1
-
-        // TODO: _Anything_ smarter
-
-        if(renderables_by_material.find(pass.name) == renderables_by_material.end()) {
-            // Nothing to render? Don't render it!
-
-            // smh
-
-            return;
-        }
 
         const vk_renderables& renderables = renderables_by_material.at(pass.name);
 
@@ -383,16 +368,20 @@ namespace nova::renderer {
          * int curr_instance = gl_InstanceIndex - gl_BaseInstance
          */
 
+        glm::mat4* model_matrices = reinterpret_cast<glm::mat4*>(model_matrix_buffer.alloc_info.pMappedData);
+
+        uint32_t cur_index = 0;
         for(const auto& [mesh_id, static_meshes] : renderables.static_meshes) {
-            uint32_t num_instances = 0;
+            const uint32_t start_index = cur_index;
 
             for(const vk_static_mesh_renderable& static_mesh : static_meshes) {
                 if(static_mesh.is_visible) {
-                    num_instances++;
+                    model_matrices[cur_index] = static_mesh.model_matrix;
+                    cur_index++;
                 }
             }
 
-            if(num_instances > 0) {
+            if(cur_index != start_index) {
                 const vk_mesh& mesh = meshes.at(mesh_id);
 
                 VkDeviceSize offsets[7] = {0, 0, 0, 0, 0, 0, 0};
@@ -406,7 +395,7 @@ namespace nova::renderer {
                 vkCmdBindVertexBuffers(cmds, 0, 7, buffers, offsets);
                 vkCmdBindIndexBuffer(cmds, mesh.index_buffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-                vkCmdDrawIndexed(cmds, mesh.num_indices, num_instances, 0, 0, 0);
+                vkCmdDrawIndexed(cmds, mesh.num_indices, cur_index - start_index, 0, 0, 0);
             }
         }
     }
