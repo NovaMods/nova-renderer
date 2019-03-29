@@ -74,7 +74,7 @@ namespace nova::renderer {
                 NOVA_LOG(ERROR) << "Could not add a renderable to the render engine: " << renderable_add_result.error.to_string();
                 return 1;
             }
-            
+
             while(!window->should_close()) {
                 renderer->execute_frame();
                 window->on_frame_end();

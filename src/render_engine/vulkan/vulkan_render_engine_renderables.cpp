@@ -39,11 +39,11 @@ namespace nova::renderer {
             alloc_create_info.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
             vmaCreateBuffer(vma_allocator,
-                &per_frame_data_create_info,
-                &alloc_create_info,
-                &per_frame_data_buffer.buffer,
-                &per_frame_data_buffer.allocation,
-                &per_frame_data_buffer.alloc_info);
+                            &per_frame_data_create_info,
+                            &alloc_create_info,
+                            &per_frame_data_buffer.buffer,
+                            &per_frame_data_buffer.allocation,
+                            &per_frame_data_buffer.alloc_info);
         }
     }
 
