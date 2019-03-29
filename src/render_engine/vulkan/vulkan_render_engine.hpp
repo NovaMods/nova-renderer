@@ -209,6 +209,8 @@ namespace nova::renderer {
 
         ~vulkan_render_engine() override;
 
+        void flush_model_matrix_buffer();
+
         void render_frame() override;
 
         std::shared_ptr<iwindow> get_window() const override;

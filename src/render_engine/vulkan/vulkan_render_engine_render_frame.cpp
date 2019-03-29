@@ -9,6 +9,16 @@
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {
+    void vulkan_render_engine::flush_model_matrix_buffer() {
+        VkMappedMemoryRange model_matrix_buffer_range = {};
+        model_matrix_buffer_range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+        model_matrix_buffer_range.memory = model_matrix_buffer.alloc_info.deviceMemory;
+        model_matrix_buffer_range.offset = model_matrix_buffer.alloc_info.offset;
+        model_matrix_buffer_range.size = model_matrix_buffer.alloc_info.size;
+
+        vkFlushMappedMemoryRanges(device, 1, &model_matrix_buffer_range);
+    }
+
     void vulkan_render_engine::render_frame() {
         NOVA_LOG(DEBUG) << "\n*******************************\n*         FRAME START         *\n*******************************\n";
 
@@ -48,6 +58,9 @@ namespace nova::renderer {
         for(const std::string& renderpass_name : render_passes_by_order) {
             record_renderpass(&renderpass_name, cmds);
         }
+
+        flush_model_matrix_buffer();
+
         shaderpack_loading_mutex.unlock();
 
         NOVA_CHECK_RESULT(vkEndCommandBuffer(cmds));
