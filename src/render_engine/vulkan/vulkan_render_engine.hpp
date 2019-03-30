@@ -514,18 +514,9 @@ namespace nova::renderer {
 
 #pragma region Renderables
         /*!
-         * \brief A buffer to hold model matrices for all render objects
-         */
-        vk_buffer model_matrix_buffer;
-
-        vk_buffer per_frame_data_buffer;
-
-        /*!
          * \brief All the renderables that Nova will process
          */
         std::unordered_map<renderable_id_t, renderable_metadata> metadata_for_renderables;
-
-        void create_builtin_uniform_buffers();
 
         result<std::vector<const material_pass*>> get_material_passes_for_renderable(const static_mesh_renderable_data& data);
 
@@ -537,12 +528,42 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Rendering
+        /*!
+         * \brief A buffer to hold model matrices for all render objects
+         *
+         * Nova puts all the model matrices for all the objects into a single buffer, then indexes into that from
+         * shaders. This allows Nova to make heavy use of instanced rendering
+         */
+        vk_buffer model_matrix_buffer;
+
+        /*!
+         * \brief The data that's constant for the whole frame
+         *
+         * Includes things like the world time
+         */
+        vk_buffer per_frame_data_buffer;
+
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
         std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
         std::unordered_map<std::string, vk_renderables> renderables_by_material;
 
         std::mutex rendering_mutex;
         std::condition_variable rendering_cv;
+
+        /*!
+         * \brief The index in the model matrix buffer for write a model matrix to
+         *
+         * When Nova generates drawcalls, it writes model matrices to a single buffer. This variable keeps track of the
+         * current write position
+         *
+         * This will need to be reworked a lot for multithreaded rendering. The current plan for multithreaded
+         * rendering is to make each material's drawcalls a separate async task. This means that each task will have to
+         * be given a separate piece of the model matrix buffer. This variable will still be used at a high level, but
+         * each task will need a local index into the model matrix buffer
+         */
+        uint32_t cur_model_matrix_idx = 0;
+
+        void create_builtin_uniform_buffers();
 
         /*!
          * \brief Performs all tasks necessary to render this renderpass
