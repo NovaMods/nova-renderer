@@ -383,18 +383,17 @@ namespace nova::renderer {
 
         glm::mat4* model_matrices = reinterpret_cast<glm::mat4*>(model_matrix_buffer.alloc_info.pMappedData);
 
-        uint32_t cur_index = 0;
         for(const auto& [mesh_id, static_meshes] : renderables.static_meshes) {
-            const uint32_t start_index = cur_index;
+            const uint32_t start_index = cur_model_matrix_idx;
 
             for(const vk_static_mesh_renderable& static_mesh : static_meshes) {
                 if(static_mesh.is_visible) {
-                    model_matrices[cur_index] = static_mesh.model_matrix;
-                    cur_index++;
+                    model_matrices[cur_model_matrix_idx] = static_mesh.model_matrix;
+                    cur_model_matrix_idx++;
                 }
             }
 
-            if(cur_index != start_index) {
+            if(cur_model_matrix_idx != start_index) {
                 const vk_mesh& mesh = meshes.at(mesh_id);
 
                 VkDeviceSize offsets[7] = {0, 0, 0, 0, 0, 0, 0};
@@ -408,7 +407,7 @@ namespace nova::renderer {
                 vkCmdBindVertexBuffers(cmds, 0, 7, buffers, offsets);
                 vkCmdBindIndexBuffer(cmds, mesh.index_buffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
-                vkCmdDrawIndexed(cmds, mesh.num_indices, cur_index - start_index, 0, 0, 0);
+                vkCmdDrawIndexed(cmds, mesh.num_indices, cur_model_matrix_idx - start_index, 0, 0, 0);
             }
         }
     }
