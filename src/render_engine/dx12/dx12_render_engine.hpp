@@ -60,9 +60,8 @@ namespace nova::renderer {
         /*!
          * \brief Initializes DX12
          * \param settings The settings that may or may not influence initialization
-         * \param scheduler The task scheduler that this render engine should use
          */
-        explicit dx12_render_engine(nova_settings& settings, nova::ttl::task_scheduler* scheduler);
+        explicit dx12_render_engine(nova_settings& settings);
 
         static std::string get_engine_name();
 
@@ -182,7 +181,7 @@ namespace nova::renderer {
 
         void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> passes);
 
-        void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines, ttl::task_scheduler* scheduler);
+        void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines);
 
         pipeline make_single_pso(const pipeline_data& input);
 

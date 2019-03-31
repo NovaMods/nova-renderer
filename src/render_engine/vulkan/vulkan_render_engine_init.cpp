@@ -8,12 +8,12 @@
 #include "swapchain.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
+#include "../../util/logger.hpp"
 
 namespace nova::renderer {
     vulkan_render_engine::vulkan_render_engine(nova_settings& settings,
-                                               nova::ttl::task_scheduler* task_scheduler,
                                                RENDERDOC_API_1_3_0* renderdoc)
-        : render_engine(settings, task_scheduler), renderdoc(renderdoc) {
+        : render_engine(settings), renderdoc(renderdoc) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 
         validate_mesh_options(settings.vertex_memory_settings);
@@ -296,7 +296,7 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::create_per_thread_command_pools() {
-        const uint32_t num_threads = scheduler->get_num_threads();
+        const uint32_t num_threads = 1;
         command_pools_by_thread_idx.reserve(num_threads);
 
         for(uint32_t i = 0; i < num_threads; i++) {
@@ -375,7 +375,7 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::create_per_thread_descriptor_pools() {
-        const uint32_t num_threads = scheduler->get_num_threads();
+        const uint32_t num_threads = 1;
         descriptor_pools_by_thread_idx.reserve(num_threads);
 
         for(uint32_t i = 0; i < num_threads; i++) {

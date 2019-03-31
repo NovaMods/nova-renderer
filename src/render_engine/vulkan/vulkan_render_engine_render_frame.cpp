@@ -7,6 +7,7 @@
 #include "swapchain.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
+#include "../../util/logger.hpp"
 
 namespace nova::renderer {
     void vulkan_render_engine::flush_model_matrix_buffer() {

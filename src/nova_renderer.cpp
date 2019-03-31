@@ -19,12 +19,13 @@
 #include "render_engine/vulkan/vulkan_render_engine.hpp"
 
 #include <minitrace/minitrace.h>
+#include "util/logger.hpp"
 
 namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
     nova_renderer::nova_renderer(nova_settings settings)
-        : render_settings(settings), task_scheduler(1, nova::ttl::empty_queue_behavior::YIELD) {
+        : render_settings(settings) {
 
         mtr_init("trace.json");
 
@@ -64,7 +65,7 @@ namespace nova::renderer {
 #if defined(NOVA_WINDOWS)
             {
                 MTR_SCOPE("Init", "InitDirectX12RenderEngine");
-                engine = std::make_unique<dx12_render_engine>(render_settings, &task_scheduler);
+                engine = std::make_unique<dx12_render_engine>(render_settings);
             } break;
 #else
                 NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
@@ -72,7 +73,7 @@ namespace nova::renderer {
 #endif
             case graphics_api::vulkan:
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                engine = std::make_unique<vulkan_render_engine>(render_settings, &task_scheduler, render_doc);
+                engine = std::make_unique<vulkan_render_engine>(render_settings, render_doc);
         }
     }
 
@@ -106,6 +107,4 @@ namespace nova::renderer {
     }
 
     void nova_renderer::deinitialize() { instance.reset(); }
-
-    nova::ttl::task_scheduler& nova_renderer::get_task_scheduler() { return task_scheduler; }
 } // namespace nova::renderer

@@ -109,14 +109,13 @@ namespace nova::renderer {
         /*!
          * \brief Initializes the engine, does **NOT** open any window
          * \param settings The settings passed to nova
-         * \param scheduler The task scheduler that this render engine should use
          *
          * Intentionally does nothing. This constructor serves mostly to ensure that concrete render engines have a
          * constructor that takes in some settings
          *
          * \attention Called by nova
          */
-        explicit render_engine(nova_settings& settings, nova::ttl::task_scheduler* scheduler) : scheduler(scheduler), settings(settings){};
+        explicit render_engine(nova_settings& settings) : settings(settings){};
 
         /*!
          * \brief Initializes the window with the given size, and creates the swapchain for that window
@@ -125,7 +124,6 @@ namespace nova::renderer {
          */
         virtual void open_window(uint32_t width, uint32_t height) = 0;
 
-        nova::ttl::task_scheduler* scheduler;
         nova_settings& settings;
     };
 } // namespace nova::renderer
