@@ -3,11 +3,11 @@
 //
 
 #include "vulkan_render_engine.hpp"
+#include <nova_renderer/util/platform.hpp>
 #include <spirv_cross/spirv_glsl.hpp>
 #include <vector>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
-#include <nova_renderer/util/platform.hpp>
 #include "../../util/logger.hpp"
 #include "../dx12/win32_window.hpp"
 #include "vulkan_utils.hpp"
@@ -29,9 +29,7 @@ namespace nova::renderer {
         return command_pools_by_thread_idx.at(0).at(queue_index);
     }
 
-    VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() {
-        return descriptor_pools_by_thread_idx.at(0);
-    }
+    VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() { return descriptor_pools_by_thread_idx.at(0); }
 
     std::pair<std::vector<VkAttachmentDescription>, std::vector<VkAttachmentReference>> vulkan_render_engine::to_vk_attachment_info(
         std::vector<std::string>& attachment_names) {

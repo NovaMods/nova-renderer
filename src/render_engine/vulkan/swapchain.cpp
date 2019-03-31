@@ -4,9 +4,9 @@
  */
 
 #include "swapchain.hpp"
+#include "../../util/logger.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
-#include "../../util/logger.hpp"
 
 namespace nova::renderer {
     swapchain_manager::swapchain_manager(const uint32_t requested_num_swapchain_images,

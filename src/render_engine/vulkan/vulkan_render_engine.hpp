@@ -28,6 +28,7 @@
 #include "../../util/vma_usage.hpp"
 #include "compacting_block_allocator.hpp"
 
+#include <condition_variable>
 #include <mutex>
 #include <nova_renderer/renderables.hpp>
 #include "../../render_objects/uniform_structs.hpp"
@@ -35,7 +36,6 @@
 #include "fixed_size_buffer_allocator.hpp"
 #include "struct_uniform_buffer.hpp"
 #include "swapchain.hpp"
-#include <condition_variable>
 
 #include <nova_renderer/renderdoc_app.h>
 

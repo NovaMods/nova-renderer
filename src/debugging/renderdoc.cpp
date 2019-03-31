@@ -1,8 +1,8 @@
 #include "renderdoc.hpp"
 
 #include <nova_renderer/util/platform.hpp>
-#include "../util/logger.hpp"
 #include <nova_renderer/util/utils.hpp>
+#include "../util/logger.hpp"
 
 #if defined(NOVA_WINDOWS)
 #include "../util/windows.hpp"

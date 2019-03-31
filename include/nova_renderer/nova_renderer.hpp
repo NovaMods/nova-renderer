@@ -11,9 +11,9 @@
 #include <memory>
 #include <string>
 
-#include "renderdoc_app.h"
-#include "render_engine.hpp"
 #include "nova_settings.hpp"
+#include "render_engine.hpp"
+#include "renderdoc_app.h"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
@@ -66,7 +66,7 @@ namespace nova::renderer {
     private:
         nova_settings render_settings;
         std::unique_ptr<render_engine> engine;
-        
+
         RENDERDOC_API_1_3_0* render_doc;
         static std::unique_ptr<nova_renderer> instance;
     };

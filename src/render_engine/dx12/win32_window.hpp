@@ -14,7 +14,6 @@
 
 #include "../../util/windows.hpp"
 
-
 #include <DirectXMath.h>
 #include <dxgi1_2.h>
 #include <glm/glm.hpp>

@@ -24,8 +24,7 @@
 namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
 
-    nova_renderer::nova_renderer(nova_settings settings)
-        : render_settings(settings) {
+    nova_renderer::nova_renderer(nova_settings settings) : render_settings(settings) {
 
         mtr_init("trace.json");
 

@@ -5,14 +5,13 @@
 
 #include <fmt/format.h>
 #include <set>
+#include "../../util/logger.hpp"
 #include "swapchain.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
-#include "../../util/logger.hpp"
 
 namespace nova::renderer {
-    vulkan_render_engine::vulkan_render_engine(nova_settings& settings,
-                                               RENDERDOC_API_1_3_0* renderdoc)
+    vulkan_render_engine::vulkan_render_engine(nova_settings& settings, RENDERDOC_API_1_3_0* renderdoc)
         : render_engine(settings), renderdoc(renderdoc) {
         NOVA_LOG(INFO) << "Initializing Vulkan rendering";
 

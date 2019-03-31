@@ -3,11 +3,11 @@
  * \date 07-Feb-19.
  */
 
+#include "../../util/logger.hpp"
 #include "fmt/format.h"
 #include "swapchain.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
-#include "../../util/logger.hpp"
 
 namespace nova::renderer {
     void vulkan_render_engine::flush_model_matrix_buffer() {

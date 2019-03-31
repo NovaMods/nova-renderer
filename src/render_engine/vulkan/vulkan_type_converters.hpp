@@ -5,8 +5,8 @@
 #ifndef NOVA_RENDERER_VULKAN_TYPE_CONVERTERS_HPP
 #define NOVA_RENDERER_VULKAN_TYPE_CONVERTERS_HPP
 
-#include <vulkan/vulkan.h>
 #include <nova_renderer/shaderpack_data.hpp>
+#include <vulkan/vulkan.h>
 
 #ifdef Always // RIP X11 and its macros
 #undef Always

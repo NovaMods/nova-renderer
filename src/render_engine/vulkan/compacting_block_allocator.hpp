@@ -1,10 +1,10 @@
 #pragma once
 
 #include <mutex>
-#include <vector>
-#include <vulkan/vulkan.h>
 #include <nova_renderer/nova_settings.hpp>
 #include <nova_renderer/util/utils.hpp>
+#include <vector>
+#include <vulkan/vulkan.h>
 #include "../../util/vma_usage.hpp"
 
 namespace ftl {

@@ -7,8 +7,8 @@
 #define NOVA_RENDERER_DX_12_TEXTURE_HPP
 
 #include <d3d12.h>
-#include <wrl.h>
 #include <nova_renderer/shaderpack_data.hpp>
+#include <wrl.h>
 
 using Microsoft::WRL::ComPtr;
 
