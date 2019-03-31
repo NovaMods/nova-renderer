@@ -19,8 +19,6 @@ namespace nova::renderer {
     public:
         explicit d3d12_command_list(ComPtr<ID3D12CommandList> cmds);
 
-        void begin() override;
-
         void resource_barrier() override;
 
         void copy_buffer() override;
@@ -34,8 +32,6 @@ namespace nova::renderer {
     class d3d12_graphics_command_list : public graphics_command_list {
     public:
         explicit d3d12_graphics_command_list(ComPtr<ID3D12GraphicsCommandList> cmds);
-
-        void begin() override;
 
         void resource_barrier() override;
 

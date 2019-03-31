@@ -373,6 +373,8 @@ namespace nova::renderer {
             ComPtr<ID3D12GraphicsCommandList> gfx_list;
             list->QueryInterface(IID_PPV_ARGS(&gfx_list));
 
+            gfx_list->Reset(allocator.Get(), nullptr);
+
             return new d3d12_graphics_command_list(gfx_list);
 
         } else {

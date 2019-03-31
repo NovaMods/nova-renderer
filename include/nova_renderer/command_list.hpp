@@ -30,11 +30,6 @@ namespace nova::renderer {
         command_list& operator=(const command_list& other) = delete;
 
         /*!
-         * \brief Marks this command list as being recorded. Must be called before recording any commands
-         */
-        virtual void begin() = 0;
-
-        /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
          * to the resource after the barrier
          */

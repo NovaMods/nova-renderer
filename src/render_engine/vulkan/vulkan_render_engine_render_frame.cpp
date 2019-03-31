@@ -7,45 +7,6 @@
 #include "vulkan_command_list.hpp"
 
 namespace nova::renderer {
-    command_list* vulkan_render_engine::allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) {
-        uint32_t queue_family_idx = graphics_family_index;
-        switch(needed_queue_type) {
-        case queue_type::GRAPHICS:
-            queue_family_idx = graphics_family_index;
-            break;
-
-        case queue_type::TRANSFER:
-            queue_family_idx = transfer_family_index;
-            break;
-
-        case queue_type::ASYNC_COMPUTE:
-            queue_family_idx = compute_family_index;
-            break;
-        }
-
-        VkCommandPool pool = get_command_buffer_pool_for_current_thread(thread_idx, queue_family_idx);
-
-        VkCommandBufferAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        alloc_info.commandPool = pool;
-        switch (command_list_type) {
-        case command_list::level::PRIMARY:
-            alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-            break;
-
-        case command_list::level::SECONDARY:
-            alloc_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-            break;
-        }
-
-        alloc_info.commandBufferCount = 1;
-
-        VkCommandBuffer cmds;
-        vkAllocateCommandBuffers(device, &alloc_info, &cmds);
-
-        return new vulkan_command_list(cmds);
-    }
-
     void vulkan_render_engine::flush_model_matrix_buffer() const {
         VkMappedMemoryRange model_matrix_buffer_range = {};
         model_matrix_buffer_range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;

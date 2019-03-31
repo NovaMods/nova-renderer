@@ -115,6 +115,9 @@ namespace nova::renderer {
          * There is one command list pool per swapchain image per thread. All the pools for one swapchain image are
          * reset at the beginning of a frame that renders to that swapchain image. This means that any command list
          * allocated in one frame will not be valid in the next frame. DO NOT hold on to command lists
+         * 
+         * Command lists allocated by this method are returned ready to record commands into - the caller doess't need
+         * to begin the command list
          */
         virtual command_list* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) = 0;
 
