@@ -9,7 +9,7 @@
 
 #include <X11/Xlib.h>
 #include <cstdint>
-#include "../window.hpp"
+#include <nova_renderer/window.hpp>
 
 namespace nova::renderer {
     class x11_window : public iwindow {
