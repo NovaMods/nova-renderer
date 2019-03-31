@@ -29,11 +29,11 @@
 #include "../dx12/win32_window.hpp"
 #endif
 
-#include <spirv_cross/spirv_glsl.hpp>
-
+#include <spirv_glsl.hpp>
 #include "../../util/vma_usage.hpp"
-#include "auto_allocating_buffer.hpp"
 #include "compacting_block_allocator.hpp"
+
+#include "auto_allocating_buffer.hpp"
 #include "swapchain.hpp"
 
 namespace nova::ttl {
@@ -227,7 +227,7 @@ namespace nova::renderer {
 
         ~vulkan_render_engine() override;
 
-        void flush_model_matrix_buffer();
+        void flush_model_matrix_buffer() const;
 
         void render_frame() override;
 
@@ -245,15 +245,18 @@ namespace nova::renderer {
 
         void delete_mesh(uint32_t mesh_id) override;
 
+        command_list* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) override;
+
         /*!
          * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
          * current thread
          *
+         * \param thread_idx The index of the thread that the command buffer you want to allocate will be used from
          * \param queue_index the index of the queue we need to get a command pool for
          *
          * \return The command pool for the current thread
          */
-        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
+        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t thread_idx, uint32_t queue_index);
 
     private:
         /*!

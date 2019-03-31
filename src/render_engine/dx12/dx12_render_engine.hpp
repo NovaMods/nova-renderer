@@ -24,23 +24,6 @@ namespace nova::ttl {
 }
 
 namespace nova::renderer {
-
-    struct command_list_base {
-        ComPtr<ID3D12CommandAllocator> allocator;
-        D3D12_COMMAND_LIST_TYPE type;
-        ComPtr<ID3D12Fence> submission_fence;
-        uint32_t fence_value = 0;
-        bool is_done = false;
-    };
-
-    struct command_list : public command_list_base {
-        ComPtr<ID3D12CommandList> list;
-    };
-
-    struct gfx_command_list : public command_list_base {
-        ComPtr<ID3D12GraphicsCommandList> list;
-    };
-
     struct pipeline {
         ComPtr<ID3D12PipelineState> pso;
         ComPtr<ID3D12RootSignature> root_signature;
@@ -77,6 +60,8 @@ namespace nova::renderer {
         result<mesh_id_t> add_mesh(const mesh_data&) override;
 
         void delete_mesh(uint32_t) override;
+        
+        command_list* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) override;
 
         void render_frame() override;
 
@@ -98,26 +83,17 @@ namespace nova::renderer {
 
         uint32_t rtv_descriptor_size; // size of the rtv descriptor on the device (all front and back buffers will be the same size)
 
-        // Maps from command buffer type to command buffer list
-        std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<command_list_base*>> buffer_pool;
+        /*!
+         * \brief The command allocators, one per command list type per thread
+         */
+        std::unordered_map<D3D12_COMMAND_LIST_TYPE, std::vector<ComPtr<ID3D12CommandAllocator>>> command_allocators;
+
+        void initialize_command_allocators();
+
+        ComPtr<ID3D12CommandAllocator> get_allocator_for_thread(uint32_t thread_idx, D3D12_COMMAND_LIST_TYPE type);
+
         std::mutex buffer_pool_mutex;
 
-        /*
-         * Synchronization is hard
-         *
-         * Nova renders the first frame. It gets all the command lists it needs, records them, and they get added to
-         * this map.
-         *
-         * Nova renders the second frame. It looks at all these command lists to see if any are done executing. If so,
-         * they can be reused. If not, it makes new ones
-         *
-         * Nova renders the third frame. Once again it reuses any command lists that have finished executing, and
-         * allocates whatever it needs.
-         *
-         * Now we get to the fourth frame. Nova has a maximum number of in-flight frames, which defaults to three. The
-         * fourth frame has to wait for the first frame to finish
-         */
-        std::vector<command_list_base*> lists_to_free;
         std::mutex lists_to_free_mutex;
 
         uint32_t frame_index = 0;
@@ -163,10 +139,6 @@ namespace nova::renderer {
         void create_render_target_descriptor_heap();
 
         command_list* allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const;
-
-        gfx_command_list* get_graphics_command_list();
-
-        void release_command_list(command_list_base* list);
 
         void create_full_frame_fences();
 

@@ -15,6 +15,7 @@
 #include "../../util/windows_utils.hpp"
 #include "dx12_utils.hpp"
 #include "vertex_attributes.hpp"
+#include "d3d12_command_list.hpp"
 
 namespace nova::renderer {
     dx12_render_engine::dx12_render_engine(nova_settings& settings)
@@ -24,18 +25,6 @@ namespace nova::renderer {
         create_device();
         create_rtv_command_queue();
         create_full_frame_fences();
-
-        std::vector<command_list_base*> direct_buffers;
-        direct_buffers.reserve(32); // Not sure how many we need, this should be enough
-        buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_DIRECT, direct_buffers);
-
-        std::vector<command_list_base*> copy_buffers;
-        copy_buffers.reserve(32);
-        buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COPY, copy_buffers);
-
-        std::vector<command_list_base*> compute_buffers;
-        compute_buffers.reserve(32);
-        buffer_pool.emplace(D3D12_COMMAND_LIST_TYPE_COMPUTE, compute_buffers);
 
         open_window(settings.window.width, settings.window.height);
     }
@@ -243,6 +232,23 @@ namespace nova::renderer {
         release_command_list(present_commands);
     }
 
+    void dx12_render_engine::initialize_command_allocators() {
+        D3D12_COMMAND_LIST_TYPE types[] = { D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_COMPUTE, D3D12_COMMAND_LIST_TYPE_COPY, D3D12_COMMAND_LIST_TYPE_BUNDLE };
+        for(const D3D12_COMMAND_LIST_TYPE type : types) {
+            std::vector<ComPtr<ID3D12CommandAllocator>> allocators(NUM_THREADS);
+            for(ComPtr<ID3D12CommandAllocator>& allocator : allocators) {
+                device->CreateCommandAllocator(type, IID_PPV_ARGS(&allocator));
+            }
+
+            command_allocators.emplace(type, allocators);
+        }
+    }
+
+    ComPtr<ID3D12CommandAllocator> dx12_render_engine::get_allocator_for_thread(uint32_t thread_idx, D3D12_COMMAND_LIST_TYPE type) {
+
+        return command_allocators.at(type).at(thread_idx);
+    }
+
     void dx12_render_engine::wait_for_previous_frame() { // Wait for the previous frame at our index to finish
         frame_index = swapchain->GetCurrentBackBufferIndex();
         if(frame_fences.at(frame_index)->GetCompletedValue() < frame_fence_values.at(frame_index)) {
@@ -252,68 +258,6 @@ namespace nova::renderer {
         // There is enough space in a 32-bit integer to run Nova at 60 fps for almost three years. Running Nova
         // continuously for more than one year is not supported
         frame_fence_values[frame_index]++;
-    }
-
-    command_list* dx12_render_engine::allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const {
-        ComPtr<ID3D12CommandAllocator> allocator;
-        HRESULT hr = device->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&allocator));
-        if(FAILED(hr)) {
-            NOVA_LOG(FATAL) << "Could not create command buffer";
-            throw render_engine_initialization_exception("Could not create command buffer");
-        }
-
-        ComPtr<ID3D12CommandList> list;
-        hr = device->CreateCommandList(0, command_list_type, allocator.Get(), nullptr, IID_PPV_ARGS(&list));
-        if(FAILED(hr)) {
-            NOVA_LOG(ERROR) << "Could not create a command list of type " << (uint32_t) command_list_type;
-            throw render_engine_initialization_exception("Could not create command list");
-        }
-
-        ComPtr<ID3D12Fence> fence;
-        device->CreateFence(1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-
-        auto* cmd_list = new command_list;
-        cmd_list->list = list;
-        cmd_list->allocator = allocator;
-        cmd_list->submission_fence = fence;
-        cmd_list->type = command_list_type;
-
-        return cmd_list;
-    }
-
-    gfx_command_list* dx12_render_engine::get_graphics_command_list() {
-        std::lock_guard<std::mutex> lock(buffer_pool_mutex);
-        gfx_command_list* new_list;
-        auto& buffers = buffer_pool.at(D3D12_COMMAND_LIST_TYPE_DIRECT);
-        if(buffers.empty()) {
-            command_list* alloc_list = allocate_command_list(D3D12_COMMAND_LIST_TYPE_DIRECT);
-
-            ComPtr<ID3D12GraphicsCommandList> graphics_list;
-            alloc_list->list->QueryInterface(IID_PPV_ARGS(&graphics_list));
-            graphics_list->Close();
-
-            new_list = new gfx_command_list;
-            new_list->list = graphics_list;
-            new_list->type = alloc_list->type;
-            new_list->allocator = alloc_list->allocator;
-            new_list->submission_fence = alloc_list->submission_fence;
-            new_list->fence_value = alloc_list->fence_value;
-        } else {
-            command_list_base* pool_list = buffers.back();
-            pool_list->is_done = false;
-            buffers.pop_back();
-
-            // CLion complains about the static cast but dynasmic_cast doesn't work since gfx_command_list doesn't have
-            // a vtable
-            new_list = static_cast<gfx_command_list*>(pool_list);
-        }
-
-        return new_list;
-    }
-
-    void dx12_render_engine::release_command_list(command_list_base* list) {
-        std::lock_guard<std::mutex> lock(lists_to_free_mutex);
-        lists_to_free.push_back(list);
     }
 
     void dx12_render_engine::create_full_frame_fences() {
@@ -395,6 +339,45 @@ namespace nova::renderer {
 
     void dx12_render_engine::delete_mesh(uint32_t) {
         // TODO
+    }
+
+    command_list* dx12_render_engine::allocate_command_list(uint32_t thread_idx,
+                                                            queue_type needed_queue_type,
+                                                            command_list::level command_list_type) {
+        D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        if (command_list_type == command_list::level::SECONDARY) {
+            type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
+
+        } else {
+            switch (needed_queue_type) {
+            case queue_type::GRAPHICS:
+                type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+                break;
+
+            case queue_type::TRANSFER:
+                type = D3D12_COMMAND_LIST_TYPE_COPY;
+                break;
+
+            case queue_type::ASYNC_COMPUTE:
+                type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+                break;
+            }
+        }
+
+        ComPtr<ID3D12CommandAllocator> allocator = get_allocator_for_thread(thread_idx, type);
+
+        ComPtr<ID3D12CommandList> list;
+        device->CreateCommandList(0, type, allocator.Get(), nullptr, IID_PPV_ARGS(&list));
+
+        if (type == D3D12_COMMAND_LIST_TYPE_DIRECT) {
+            ComPtr<ID3D12GraphicsCommandList> gfx_list;
+            list->QueryInterface(IID_PPV_ARGS(&gfx_list));
+
+            return new d3d12_graphics_command_list(gfx_list);
+
+        } else {
+            return new d3d12_command_list(list);
+        }
     }
 
     void dx12_render_engine::try_to_free_command_lists() {
