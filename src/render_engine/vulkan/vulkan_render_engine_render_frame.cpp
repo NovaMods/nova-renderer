@@ -37,7 +37,7 @@ namespace nova::renderer {
             transition_dynamic_textures();
         }
 
-        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(0, graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -121,7 +121,7 @@ namespace nova::renderer {
             }
         }
 
-        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(graphics_family_index);
+        VkCommandPool command_pool = get_command_buffer_pool_for_current_thread(0, graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

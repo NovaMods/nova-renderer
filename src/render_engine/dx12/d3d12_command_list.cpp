@@ -15,22 +15,19 @@ namespace nova::renderer {
         dx12_barriers.reserve(barriers.size());
 
         for(const resource_barrier_t& barrier : barriers) {
-            switch(barrier.barrier_type) {
-                case resource_barrier_t::type::RESOURCE_TRANSITION:
-                    const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.initial_state);
-                    const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.final_state);
-                    const CD3DX12_RESOURCE_BARRIER transition_barrier = CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier->resource.Get(), initial_state, final_state);
-                    dx12_barriers.push_back(transition_barrier);
-                    break;
+            if(barrier.access_after_barrier == 0) {
+                const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.initial_state);
+                const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.final_state);
+                dx12_barriers.push_back(
+                    CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier->resource.Get(), initial_state, final_state));
 
-                case resource_barrier_t::type::SYNCHRONIZATION:
-                    const CD3DX12_RESOURCE_BARRIER sync_barrier = CD3DX12_RESOURCE_BARRIER::UAV(barrier.resource_to_barrier->resource.Get());
-                    dx12_barriers.push_back(sync_barrier);
-                    break;
+            } else {
+                const CD3DX12_RESOURCE_BARRIER sync = CD3DX12_RESOURCE_BARRIER::UAV(barrier.resource_to_barrier->resource.Get());
+                dx12_barriers.push_back(sync);
             }
         }
 
-        cmds->ResourceBarrier(dx12_barriers.size(), dx12_barriers.data());
+        cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());
     }
 
 } // namespace nova::renderer

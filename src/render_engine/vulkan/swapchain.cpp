@@ -224,7 +224,7 @@ namespace nova::renderer {
             barriers.push_back(barrier);
         }
 
-        VkCommandPool command_pool = render_engine.get_command_buffer_pool_for_current_thread(render_engine.graphics_family_index);
+        VkCommandPool command_pool = render_engine.get_command_buffer_pool_for_current_thread(0, render_engine.graphics_family_index);
 
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

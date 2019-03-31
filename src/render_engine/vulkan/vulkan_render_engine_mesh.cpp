@@ -76,7 +76,7 @@ namespace nova::renderer {
             std::memcpy(index_data_staging_buffer.alloc_info.pMappedData, input_mesh.indices.data(), index_size);
         }
 
-        VkCommandPool pool = get_command_buffer_pool_for_current_thread(transfer_family_index);
+        VkCommandPool pool = get_command_buffer_pool_for_current_thread(0, transfer_family_index);
 
         VkCommandBufferAllocateInfo cmd_alloc = {};
         cmd_alloc.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
