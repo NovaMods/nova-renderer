@@ -13,10 +13,19 @@
 #include "util/result.hpp"
 #include "util/utils.hpp"
 #include "window.hpp"
+#include "command_list.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
+
+#define NUM_THREADS 1
+
+    enum class queue_type {
+        GRAPHICS,
+        TRANSFER,
+        ASYNC_COMPUTE,
+    };
 
     /*!
      * \brief Abstract class for render backends
@@ -99,6 +108,19 @@ namespace nova::renderer {
          * \param mesh_id The ID of the mesh to delete
          */
         virtual void delete_mesh(uint32_t mesh_id) = 0;
+
+        /*!
+         * \brief Allocates a new command list that can be used from the provided thread and has the desired type
+         * 
+         * Ownership of the command list is given to the caller. You can record your commands into it, then submit it
+         * to a queue. Submitting it gives ownership back to the render engine, and recording commands into a
+         * submitted command list is not supported
+         * 
+         * There is one command list pool per swapchain image per thread. All the pools for one swapchain image are
+         * reset at the beginning of a frame that renders to that swapchain image. This means that any command list
+         * allocated in one frame will not be valid in the next frame. DO NOT hold on to command lists
+         */
+        virtual command_list* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) = 0;
 
         /*!
          * \brief Renders a frame like so well, you guys

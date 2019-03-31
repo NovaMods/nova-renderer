@@ -5,7 +5,18 @@
 #ifndef NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 #define NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 
+#include <condition_variable>
+#include <mutex>
+#include <queue>
+
+#include <vulkan/vulkan.h>
+
+#include <spirv_cross/spirv_glsl.hpp>
+
 #include <nova_renderer/render_engine.hpp>
+#include <nova_renderer/renderables.hpp>
+#include <nova_renderer/renderdoc_app.h>
+
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB
@@ -21,23 +32,11 @@
 #include "../dx12/win32_window.hpp"
 #endif
 
-#include <vulkan/vulkan.h>
-
-#include <queue>
-#include <spirv_cross/spirv_glsl.hpp>
 #include "../../util/vma_usage.hpp"
 #include "compacting_block_allocator.hpp"
 
-#include <condition_variable>
-#include <mutex>
-#include <nova_renderer/renderables.hpp>
-#include "../../render_objects/uniform_structs.hpp"
 #include "auto_allocating_buffer.hpp"
-#include "fixed_size_buffer_allocator.hpp"
-#include "struct_uniform_buffer.hpp"
 #include "swapchain.hpp"
-
-#include <nova_renderer/renderdoc_app.h>
 
 namespace nova::ttl {
     class task_scheduler;
@@ -210,7 +209,7 @@ namespace nova::renderer {
 
         ~vulkan_render_engine() override;
 
-        void flush_model_matrix_buffer();
+        void flush_model_matrix_buffer() const;
 
         void render_frame() override;
 
@@ -228,15 +227,18 @@ namespace nova::renderer {
 
         void delete_mesh(uint32_t mesh_id) override;
 
+        command_list* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) override;
+
         /*!
          * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
          * current thread
          *
+         * \param thread_idx The index of the thread that the command buffer you want to allocate will be used from
          * \param queue_index the index of the queue we need to get a command pool for
          *
          * \return The command pool for the current thread
          */
-        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t queue_index);
+        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t thread_idx, uint32_t queue_index);
 
     private:
         /*!

@@ -25,8 +25,8 @@ namespace nova::renderer {
 
     std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }
 
-    VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t queue_index) {
-        return command_pools_by_thread_idx.at(0).at(queue_index);
+    VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t thread_idx, uint32_t queue_index) {
+        return command_pools_by_thread_idx.at(thread_idx).at(queue_index);
     }
 
     VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() { return descriptor_pools_by_thread_idx.at(0); }
