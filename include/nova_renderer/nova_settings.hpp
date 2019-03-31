@@ -14,6 +14,7 @@ namespace nova::renderer {
     enum class graphics_api {
         vulkan,
         dx12,
+        gl2,
     };
 
     struct nova_settings;
