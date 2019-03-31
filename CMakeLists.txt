@@ -235,7 +235,7 @@ add_library(nova-renderer STATIC
     ${3RD_PARTY_SOURCE}
 )
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
-target_include_directories(nova-renderer PUBLIC $<BUILD_INTERFACE:include>)
+target_include_directories(nova-renderer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}include>)
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)
