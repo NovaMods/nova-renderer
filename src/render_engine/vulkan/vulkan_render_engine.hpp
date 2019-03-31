@@ -5,7 +5,7 @@
 #ifndef NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 #define NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 
-#include "../render_engine.hpp"
+#include "../../../include/nova_renderer/render_engine.hpp"
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB
@@ -29,14 +29,14 @@
 #include "compacting_block_allocator.hpp"
 
 #include <mutex>
-#include "../../render_objects/renderables.hpp"
+#include "../../../include/nova_renderer/renderables.hpp"
 #include "../../render_objects/uniform_structs.hpp"
 #include "auto_allocating_buffer.hpp"
 #include "fixed_size_buffer_allocator.hpp"
 #include "struct_uniform_buffer.hpp"
 #include "swapchain.hpp"
 
-#include "../../debugging/renderdoc_app.h"
+#include "../../../include/nova_renderer/renderdoc_app.h"
 
 namespace nova::ttl {
     class task_scheduler;

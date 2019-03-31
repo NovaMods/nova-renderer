@@ -9,9 +9,9 @@
 #include <iostream>
 
 #include "../../src/loading/zip_folder_accessor.hpp"
-#include "../../src/nova_renderer.hpp"
-#include "../../src/platform.hpp"
-#include "../../src/settings/nova_settings.hpp"
+#include "../../include/nova_renderer/nova_renderer.hpp"
+#include "../../include/nova_renderer/util/platform.hpp"
+#include "../../include/nova_renderer/nova_settings.hpp"
 #ifdef _WIN32
 #include <direct.h>
 #include "../../src/render_engine/dx12/dx12_render_engine.hpp"

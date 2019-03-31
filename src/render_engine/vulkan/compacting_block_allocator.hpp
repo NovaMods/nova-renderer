@@ -3,8 +3,8 @@
 #include <mutex>
 #include <vector>
 #include <vulkan/vulkan.h>
-#include "../../settings/nova_settings.hpp"
-#include "../../util/utils.hpp"
+#include "../../../include/nova_renderer/nova_settings.hpp"
+#include "../../../include/nova_renderer/util/utils.hpp"
 #include "../../util/vma_usage.hpp"
 
 namespace ftl {

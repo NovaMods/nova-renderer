@@ -6,7 +6,7 @@
 #ifndef NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP
 #define NOVA_RENDERER_DX_12_RENDER_ENGINE_HPP
 
-#include "../render_engine.hpp"
+#include "../../../include/nova_renderer/render_engine.hpp"
 
 #include <DirectXMath.h>
 #include <d3d12.h>

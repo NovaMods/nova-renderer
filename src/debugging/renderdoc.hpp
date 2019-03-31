@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "../util/result.hpp"
-#include "renderdoc_app.h"
+#include "../../include/nova_renderer/util/result.hpp"
+#include "../../include/nova_renderer/renderdoc_app.h"
 
 namespace nova::renderer {
     result<RENDERDOC_API_1_3_0*> load_renderdoc(const std::string& renderdoc_dll_path);

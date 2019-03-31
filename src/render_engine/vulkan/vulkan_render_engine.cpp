@@ -7,9 +7,9 @@
 #include <vector>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
-#include "../../platform.hpp"
+#include "../../../include/nova_renderer/util/platform.hpp"
 #include "../../util/logger.hpp"
-#include "../../util/utils.hpp"
+#include "../../../include/nova_renderer/util/utils.hpp"
 #include "../dx12/win32_window.hpp"
 #include "vulkan_utils.hpp"
 #define VMA_IMPLEMENTATION

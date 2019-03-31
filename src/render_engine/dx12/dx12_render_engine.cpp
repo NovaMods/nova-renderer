@@ -13,7 +13,7 @@
 #include <spirv_cross.hpp>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
-#include "../../nova_renderer.hpp"
+#include "../../../include/nova_renderer/nova_renderer.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
 #include "d3dx12.h"

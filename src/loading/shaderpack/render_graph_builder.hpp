@@ -8,7 +8,7 @@
 
 #include <string>
 #include <unordered_map>
-#include "shaderpack_data.hpp"
+#include "../../../include/nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(pass_ordering_exception);

@@ -3,7 +3,7 @@
  * \date 18-May-16.
  */
 
-#include "utils.hpp"
+#include "../../include/nova_renderer/util/utils.hpp"
 #include <cstring>
 #include <utility>
 #include "logger.hpp"

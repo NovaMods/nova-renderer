@@ -11,8 +11,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "../util/filesystem.hpp"
-#include "../util/utils.hpp"
+#include "../../include/nova_renderer/util/filesystem.hpp"
+#include "../../include/nova_renderer/util/utils.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(resource_not_found_exception);

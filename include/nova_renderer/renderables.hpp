@@ -7,8 +7,7 @@
 
 #include <atomic>
 
-#include "../loading/shaderpack/shaderpack_data.hpp"
-#include "../render_engine/vulkan/fixed_size_buffer_allocator.hpp"
+#include "shaderpack_data.hpp"
 
 namespace nova::renderer {
     struct full_vertex {
@@ -54,9 +53,6 @@ namespace nova::renderer {
     using renderable_id_t = uint64_t;
 
     static std::atomic<renderable_id_t> next_renderable_id;
-
-    template <int BlockSize>
-    using block_t = typename fixed_size_buffer_allocator<BlockSize>::block*;
 
     struct renderable_metadata {
         renderable_id_t id = 0;

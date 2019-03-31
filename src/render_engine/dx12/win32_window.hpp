@@ -1,8 +1,8 @@
 #ifndef WIN32_WINDOW_H
 #define WIN32_WINDOW_H
 
-#include "../../platform.hpp"
-#include "../window.hpp"
+#include "../../../include/nova_renderer/util/platform.hpp"
+#include "../../../include/nova_renderer/window.hpp"
 
 #ifdef SUPPORT_DX12
 

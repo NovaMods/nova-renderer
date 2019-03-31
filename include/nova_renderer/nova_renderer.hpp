@@ -11,10 +11,9 @@
 #include <memory>
 #include <string>
 
-#include "debugging/renderdoc_app.h"
-#include "render_engine/render_engine.hpp"
-#include "settings/nova_settings.hpp"
-#include "tasks/task_scheduler.hpp"
+#include "renderdoc_app.h"
+#include "render_engine.hpp"
+#include "nova_settings.hpp"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);

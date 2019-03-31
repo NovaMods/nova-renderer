@@ -6,7 +6,7 @@
 #ifndef NOVA_RENDERER_JSON_INTEROP_HPP
 #define NOVA_RENDERER_JSON_INTEROP_HPP
 
-#include "shaderpack_data.hpp"
+#include "../../../include/nova_renderer/shaderpack_data.hpp"
 
 namespace nova::renderer {
     void from_json(const nlohmann::json& j, texture_format& format);

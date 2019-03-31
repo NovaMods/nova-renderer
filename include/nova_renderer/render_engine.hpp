@@ -6,13 +6,12 @@
 #define NOVA_RENDERER_RENDER_ENGINE_HPP
 
 #include <memory>
-#include "../loading/shaderpack/shaderpack_data.hpp"
-#include "../platform.hpp"
-#include "../render_objects/renderables.hpp"
-#include "../settings/nova_settings.hpp"
-#include "../tasks/task_scheduler.hpp"
-#include "../util/result.hpp"
-#include "../util/utils.hpp"
+#include "shaderpack_data.hpp"
+#include "util/platform.hpp"
+#include "renderables.hpp"
+#include "nova_settings.hpp"
+#include "util/result.hpp"
+#include "util/utils.hpp"
 #include "window.hpp"
 
 namespace nova::renderer {

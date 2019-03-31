@@ -6,7 +6,7 @@
 #include <array>
 #include <future>
 
-#include "nova_renderer.hpp"
+#include "../include/nova_renderer/nova_renderer.hpp"
 
 #include "glslang/MachineIndependent/Initialize.h"
 #include "loading/shaderpack/shaderpack_loading.hpp"

@@ -5,7 +5,7 @@
 
 #include "compacting_block_allocator.hpp"
 #include "../../util/logger.hpp"
-#include "../render_engine.hpp"
+#include "../../../include/nova_renderer/render_engine.hpp"
 #include "vulkan_utils.hpp"
 
 namespace nova::renderer {

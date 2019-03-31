@@ -14,8 +14,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "../../util/filesystem.hpp"
-#include "../../util/utils.hpp"
+#include "util/filesystem.hpp"
+#include "util/utils.hpp"
 
 #include <vulkan/vulkan.h>
 

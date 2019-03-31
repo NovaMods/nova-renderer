@@ -11,7 +11,7 @@
 #include <functional>
 #include <future>
 #include "../util/logger.hpp"
-#include "../util/utils.hpp"
+#include "../../include/nova_renderer/util/utils.hpp"
 #include "condition_counter.hpp"
 #include "task_graph.hpp"
 #include "wait_free_queue.hpp"
