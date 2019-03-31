@@ -35,6 +35,7 @@
 #include "fixed_size_buffer_allocator.hpp"
 #include "struct_uniform_buffer.hpp"
 #include "swapchain.hpp"
+#include <condition_variable>
 
 #include "../../../include/nova_renderer/renderdoc_app.h"
 
