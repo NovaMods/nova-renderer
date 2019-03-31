@@ -16,10 +16,10 @@
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
+#include "d3d12_command_list.hpp"
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
 #include "vertex_attributes.hpp"
-#include "d3d12_command_list.hpp"
 
 namespace nova::renderer {
     dx12_render_engine::dx12_render_engine(nova_settings& settings)
@@ -237,7 +237,10 @@ namespace nova::renderer {
     }
 
     void dx12_render_engine::initialize_command_allocators() {
-        D3D12_COMMAND_LIST_TYPE types[] = { D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_TYPE_COMPUTE, D3D12_COMMAND_LIST_TYPE_COPY, D3D12_COMMAND_LIST_TYPE_BUNDLE };
+        D3D12_COMMAND_LIST_TYPE types[] = {D3D12_COMMAND_LIST_TYPE_DIRECT,
+                                           D3D12_COMMAND_LIST_TYPE_COMPUTE,
+                                           D3D12_COMMAND_LIST_TYPE_COPY,
+                                           D3D12_COMMAND_LIST_TYPE_BUNDLE};
         for(const D3D12_COMMAND_LIST_TYPE type : types) {
             std::vector<ComPtr<ID3D12CommandAllocator>> allocators(NUM_THREADS);
             for(ComPtr<ID3D12CommandAllocator>& allocator : allocators) {
@@ -249,7 +252,6 @@ namespace nova::renderer {
     }
 
     ComPtr<ID3D12CommandAllocator> dx12_render_engine::get_allocator_for_thread(uint32_t thread_idx, D3D12_COMMAND_LIST_TYPE type) {
-
         return command_allocators.at(type).at(thread_idx);
     }
 
@@ -349,22 +351,22 @@ namespace nova::renderer {
                                                             queue_type needed_queue_type,
                                                             command_list::level command_list_type) {
         D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        if (command_list_type == command_list::level::SECONDARY) {
+        if(command_list_type == command_list::level::SECONDARY) {
             type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
 
         } else {
-            switch (needed_queue_type) {
-            case queue_type::GRAPHICS:
-                type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-                break;
+            switch(needed_queue_type) {
+                case queue_type::GRAPHICS:
+                    type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+                    break;
 
-            case queue_type::TRANSFER:
-                type = D3D12_COMMAND_LIST_TYPE_COPY;
-                break;
+                case queue_type::TRANSFER:
+                    type = D3D12_COMMAND_LIST_TYPE_COPY;
+                    break;
 
-            case queue_type::ASYNC_COMPUTE:
-                type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-                break;
+                case queue_type::ASYNC_COMPUTE:
+                    type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+                    break;
             }
         }
 
@@ -373,17 +375,12 @@ namespace nova::renderer {
         ComPtr<ID3D12CommandList> list;
         device->CreateCommandList(0, type, allocator.Get(), nullptr, IID_PPV_ARGS(&list));
 
-        if (type == D3D12_COMMAND_LIST_TYPE_DIRECT) {
-            ComPtr<ID3D12GraphicsCommandList> gfx_list;
-            list->QueryInterface(IID_PPV_ARGS(&gfx_list));
-
-            gfx_list->Reset(allocator.Get(), nullptr);
-
-            return new d3d12_graphics_command_list(gfx_list);
-
-        } else {
-            return new d3d12_command_list(list);
-        }
+        ComPtr<ID3D12GraphicsCommandList> gfx_list;
+        list->QueryInterface(IID_PPV_ARGS(&gfx_list));
+        
+        gfx_list->Reset(allocator.Get(), nullptr);
+        
+        return new d3d12_graphics_command_list(gfx_list);
     }
 
     void dx12_render_engine::try_to_free_command_lists() {

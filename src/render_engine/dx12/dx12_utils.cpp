@@ -6,6 +6,43 @@
 #include "dx12_utils.hpp"
 
 namespace nova::renderer {
+    D3D12_RESOURCE_STATES to_dx12_state(resource_state state) {
+        switch(state) {
+            case resource_state::UNDEFINED:
+            case resource_state::GENERAL:
+                return D3D12_RESOURCE_STATE_COMMON;
+
+            case resource_state::COLOR_ATTACHMENT:
+                return D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+            case resource_state::DEPTH_STENCIL_ATTACHMENT:
+            case resource_state::DEPTH_ATTACHMENT_STENCIL_READ_ONLY:
+                return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+
+            case resource_state::DEPTH_READ_ONLY_STENCIL_ATTACHMENT:
+            case resource_state::DEPTH_STENCIL_READ_ONLY_ATTACHMENT:
+                return D3D12_RESOURCE_STATE_DEPTH_READ;
+
+            case resource_state::PRESENT_SOURCE:
+                return D3D12_RESOURCE_STATE_PRESENT;
+
+            case resource_state::NON_FRAGMENT_SHADER_READ_ONLY:
+                return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+
+            case resource_state::FRAGMENT_SHADER_READ_ONLY:
+                return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+
+            case resource_state::TRANSFER_SOURCE:
+                return D3D12_RESOURCE_STATE_COPY_SOURCE;
+
+            case resource_state::TRANSFER_DESTINATION:
+                return D3D12_RESOURCE_STATE_COPY_DEST;
+
+            default:
+                return D3D12_RESOURCE_STATE_COMMON;
+        }
+    }
+
     D3D12_BLEND to_dx12_blend(const blend_factor_enum blend_factor) {
         switch(blend_factor) {
             case blend_factor_enum::One:

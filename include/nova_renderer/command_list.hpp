@@ -4,8 +4,58 @@
  */
 
 #pragma once
+#include <vector>
 
 namespace nova::renderer {
+#pragma region Forward declarations
+    struct resource_t;
+#pragma endregion
+
+#pragma region Enums
+    enum class resource_state {
+        UNDEFINED,
+        GENERAL,
+
+        COLOR_ATTACHMENT,
+        DEPTH_STENCIL_ATTACHMENT,
+        DEPTH_READ_ONLY_STENCIL_ATTACHMENT,
+        DEPTH_ATTACHMENT_STENCIL_READ_ONLY,
+        DEPTH_STENCIL_READ_ONLY_ATTACHMENT,
+
+        PRESENT_SOURCE,
+
+        NON_FRAGMENT_SHADER_READ_ONLY,
+        FRAGMENT_SHADER_READ_ONLY,
+
+        TRANSFER_SOURCE,
+        TRANSFER_DESTINATION,
+
+    };
+#pragma endregion
+
+#pragma region Structs
+    struct resource_barrier_t {
+        /*!
+         * \brief The type of barrier that you want
+         * 
+         * A RESOURCE_TRANSITION barrier can transition a resource from one state to another, while a SYNCHRONIZATION
+         * barrier ensures that all reads or writes are complete before the next set of reads or writes can happen
+         */
+        enum class type {
+            RESOURCE_TRANSITION,
+            SYNCHRONIZATION,
+        };
+
+        type barrier_type;
+
+        resource_t* resource_to_barrier;
+
+        resource_state initial_state;
+        resource_state final_state;
+    };
+#pragma endregion
+
+#pragma region Command list API
     /*!
      * \brief An API-agnostic command list
      * 
@@ -37,18 +87,15 @@ namespace nova::renderer {
         /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
          * to the resource after the barrier
+         * 
+         * \param barriers All the resource barriers to use
          */
-        virtual void resource_barrier() = 0;
+        virtual void resource_barrier(const std::vector<resource_barrier_t>& barriers) = 0;
 
         virtual void copy_buffer() = 0;
 
         virtual void execute_command_lists() = 0;
-        
-        virtual ~command_list() = default;
-    };
 
-    class graphics_command_list : public command_list {
-    public:
         virtual void begin_renderpass() = 0;
         virtual void end_renderpass() = 0;
         virtual void bind_pipeline() = 0;
@@ -57,5 +104,8 @@ namespace nova::renderer {
         virtual void bind_vertex_buffers() = 0;
         virtual void bind_index_buffers() = 0;
         virtual void draw_indexed() = 0;
+        
+        virtual ~command_list() = default;
     };
+#prgama endregion
 }
