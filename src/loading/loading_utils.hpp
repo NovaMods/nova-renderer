@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "../util/filesystem.hpp"
+#include "../../include/nova_renderer/util/filesystem.hpp"
 
 namespace nova::renderer {
     /*!

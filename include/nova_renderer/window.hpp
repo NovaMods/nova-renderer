@@ -6,7 +6,7 @@
 #ifndef NOVA_RENDERER_WINDOW_HPP
 #define NOVA_RENDERER_WINDOW_HPP
 
-#include "../util/utils.hpp"
+#include "util/utils.hpp"
 
 #include <glm/glm.hpp>
 

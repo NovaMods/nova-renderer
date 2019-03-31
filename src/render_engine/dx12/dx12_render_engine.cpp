@@ -10,21 +10,19 @@
 #include <d3d12sdklayers.h>
 #include "dx12_render_engine.hpp"
 
+#include <nova_renderer/nova_renderer.hpp>
 #include <spirv_cross.hpp>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
-#include "../../nova_renderer.hpp"
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
 #include "vertex_attributes.hpp"
 
-#include "../../tasks/task_scheduler.hpp"
-
 namespace nova::renderer {
-    dx12_render_engine::dx12_render_engine(nova_settings& settings, nova::ttl::task_scheduler* scheduler)
-        : render_engine(settings, scheduler), num_in_flight_frames(settings.max_in_flight_frames) {
+    dx12_render_engine::dx12_render_engine(nova_settings& settings)
+        : render_engine(settings), num_in_flight_frames(settings.max_in_flight_frames) {
         NOVA_LOG(INFO) << "Initializing Direct3D 12 rendering";
 
         create_device();
@@ -377,7 +375,7 @@ namespace nova::renderer {
         }
         create_dynamic_textures(data.resources.textures, passes_in_submission_order);
 
-        make_pipeline_state_objects(data.pipelines, scheduler);
+        make_pipeline_state_objects(data.pipelines);
     }
 
     result<renderable_id_t> dx12_render_engine::add_renderable(const static_mesh_renderable_data& data) {
@@ -542,31 +540,15 @@ namespace nova::renderer {
         device->CreateQueryHeap(&heap_desc, IID_PPV_ARGS(&renderpass_timestamp_query_heap));
     }
 
-    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines,
-                                                         nova::ttl::task_scheduler* scheduler) {
-        std::vector<std::future<pipeline>> future_pipelines(pipelines.size());
+    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines) {
+        std::vector<pipeline> future_pipelines(pipelines.size());
         std::size_t write_pipeline = 0;
 
         for(const pipeline_data& data : pipelines) {
             if(!data.name.empty()) {
-                future_pipelines[write_pipeline] = scheduler->add_task(
-                    [&](ttl::task_scheduler* task_scheduler, const pipeline_data data) {
-                        try {
-                            return make_single_pso(data);
-                        }
-                        catch(shader_compilation_failed& err) {
-                            NOVA_LOG(ERROR) << "Could not compile shaders for PSO " << data.name << ": " << err.what();
-                            return pipeline{};
-                        }
-                    },
-                    data);
+                future_pipelines[write_pipeline] = make_single_pso(data);
                 write_pipeline++;
             }
-        }
-
-        for(auto& future_pipeline : future_pipelines) {
-            future_pipeline.wait();
-            // TODO
         }
     }
 

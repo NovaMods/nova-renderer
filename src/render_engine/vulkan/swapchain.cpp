@@ -4,6 +4,7 @@
  */
 
 #include "swapchain.hpp"
+#include "../../util/logger.hpp"
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 

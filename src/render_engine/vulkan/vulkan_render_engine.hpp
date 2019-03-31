@@ -5,7 +5,7 @@
 #ifndef NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 #define NOVA_RENDERER_VULKAN_RENDER_ENGINE_HPP
 
-#include "../render_engine.hpp"
+#include <nova_renderer/render_engine.hpp>
 #ifdef NOVA_LINUX
 #define VK_USE_PLATFORM_XLIB_KHR // Use X11 for window creating on Linux... TODO: Wayland?
 #define NOVA_VK_XLIB
@@ -28,15 +28,16 @@
 #include "../../util/vma_usage.hpp"
 #include "compacting_block_allocator.hpp"
 
+#include <condition_variable>
 #include <mutex>
-#include "../../render_objects/renderables.hpp"
+#include <nova_renderer/renderables.hpp>
 #include "../../render_objects/uniform_structs.hpp"
 #include "auto_allocating_buffer.hpp"
 #include "fixed_size_buffer_allocator.hpp"
 #include "struct_uniform_buffer.hpp"
 #include "swapchain.hpp"
 
-#include "../../debugging/renderdoc_app.h"
+#include <nova_renderer/renderdoc_app.h>
 
 namespace nova::ttl {
     class task_scheduler;
@@ -199,7 +200,7 @@ namespace nova::renderer {
         VkQueue copy_queue{};
 #pragma endregion
 
-        vulkan_render_engine(nova_settings& settings, nova::ttl::task_scheduler* task_scheduler, RENDERDOC_API_1_3_0* renderdoc);
+        vulkan_render_engine(nova_settings& settings, RENDERDOC_API_1_3_0* renderdoc);
 
         vulkan_render_engine(vulkan_render_engine&& other) = delete;
         vulkan_render_engine& operator=(vulkan_render_engine&& other) noexcept = delete;

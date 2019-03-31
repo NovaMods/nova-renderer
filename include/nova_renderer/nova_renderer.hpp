@@ -11,10 +11,9 @@
 #include <memory>
 #include <string>
 
-#include "debugging/renderdoc_app.h"
-#include "render_engine/render_engine.hpp"
-#include "settings/nova_settings.hpp"
-#include "tasks/task_scheduler.hpp"
+#include "nova_settings.hpp"
+#include "render_engine.hpp"
+#include "renderdoc_app.h"
 
 namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
@@ -58,8 +57,6 @@ namespace nova::renderer {
 
         [[nodiscard]] render_engine* get_engine() const;
 
-        nova::ttl::task_scheduler& get_task_scheduler();
-
         static nova_renderer* initialize(const nova_settings& settings);
 
         static nova_renderer* get_instance();
@@ -69,9 +66,6 @@ namespace nova::renderer {
     private:
         nova_settings render_settings;
         std::unique_ptr<render_engine> engine;
-
-        nova::ttl::task_scheduler task_scheduler;
-        std::future<void> frame_done_future;
 
         RENDERDOC_API_1_3_0* render_doc;
         static std::unique_ptr<nova_renderer> instance;

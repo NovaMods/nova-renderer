@@ -3,6 +3,7 @@
  * \date 07-Feb-19.
  */
 
+#include "../../util/logger.hpp"
 #include "fmt/format.h"
 #include "swapchain.hpp"
 #include "vulkan_render_engine.hpp"

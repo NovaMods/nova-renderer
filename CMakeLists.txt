@@ -79,11 +79,11 @@ include(external)
 # Add Nova source code #
 ########################
 set(NOVA_SOURCE
-        src/platform.hpp
+        include/nova_renderer/util/platform.hpp
         src/loading/zip_folder_accessor.hpp
         src/loading/regular_folder_accessor.hpp
         src/loading/folder_accessor.hpp
-        src/nova_renderer.hpp
+        include/nova_renderer/nova_renderer.hpp
         src/nova_renderer.cpp
         src/loading/folder_accessor.cpp
         src/loading/regular_folder_accessor.cpp
@@ -93,21 +93,21 @@ set(NOVA_SOURCE
         src/loading/shaderpack/shaderpack_loading.hpp
         src/loading/loading_utils.cpp
         src/loading/loading_utils.hpp
-        src/loading/shaderpack/shaderpack_data.hpp
+        include/nova_renderer/shaderpack_data.hpp
         src/loading/shaderpack/shaderpack_data.cpp
 
         src/settings/nova_settings.cpp
-        src/settings/nova_settings.hpp
+        include/nova_renderer/nova_settings.hpp
         src/util/logger.cpp
         src/util/logger.hpp
-        src/render_engine/render_engine.hpp
-        src/render_engine/window.hpp
+        include/nova_renderer/render_engine.hpp
+        include/nova_renderer/window.hpp
         src/loading/shaderpack/json_interop.cpp
         src/loading/shaderpack/json_interop.hpp
         src/loading/json_utils.hpp
-        src/util/utils.hpp
+        include/nova_renderer/util/utils.hpp
         src/util/utils.cpp
-        src/render_objects/renderables.hpp
+        include/nova_renderer/renderables.hpp
         src/render_objects/uniform_structs.hpp 
         src/loading/shaderpack/shaderpack_validator.cpp 
         src/loading/shaderpack/shaderpack_validator.hpp 
@@ -143,9 +143,9 @@ set(NOVA_SOURCE
 
         src/debugging/renderdoc.cpp
         src/debugging/renderdoc.hpp
-        src/debugging/renderdoc_app.h
-                
-        src/util/result.hpp
+        include/nova_renderer/renderdoc_app.h
+
+        include/nova_renderer/util/result.hpp
         src/util/result.cpp
         )
 
@@ -235,7 +235,7 @@ add_library(nova-renderer STATIC
     ${3RD_PARTY_SOURCE}
 )
 nova_format(nova-renderer "${OTHER_NOVA_SOURCE}")
-target_include_directories(nova-renderer INTERFACE ${JNI_INCLUDE_DIRS})
+target_include_directories(nova-renderer PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 set_target_properties(nova-renderer PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(nova-renderer PUBLIC DUMP_NOVA_CALLS)
 target_compile_definitions(nova-renderer PUBLIC MTR_ENABLED)

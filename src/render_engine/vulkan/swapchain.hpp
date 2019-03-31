@@ -8,9 +8,9 @@
 
 #include <cstdint>
 #include <glm/glm.hpp>
+#include <nova_renderer/util/utils.hpp>
 #include <vector>
 #include <vulkan/vulkan.h>
-#include "../../util/utils.hpp"
 
 namespace nova::renderer {
     class vulkan_render_engine;
