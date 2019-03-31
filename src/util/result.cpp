@@ -1,4 +1,4 @@
-#include "../../include/nova_renderer/util/result.hpp"
+#include <nova_renderer/util/result.hpp>
 #include "fmt/format.h"
 
 namespace nova::renderer {

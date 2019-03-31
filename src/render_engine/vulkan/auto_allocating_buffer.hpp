@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <vulkan/vulkan.h>
-#include "../../../include/nova_renderer/util/result.hpp"
+#include <nova_renderer/util/result.hpp>
 #include "cached_buffer.hpp"
 
 namespace nova::renderer {

@@ -8,7 +8,7 @@
 
 #include <d3d12.h>
 
-#include "../../../include/nova_renderer/shaderpack_data.hpp"
+#include <nova_renderer/shaderpack_data.hpp>
 
 namespace nova::renderer {
     enum class pixel_format_enum;

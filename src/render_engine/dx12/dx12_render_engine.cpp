@@ -13,14 +13,12 @@
 #include <spirv_cross.hpp>
 #include "../../loading/shaderpack/render_graph_builder.hpp"
 #include "../../loading/shaderpack/shaderpack_loading.hpp"
-#include "../../../include/nova_renderer/nova_renderer.hpp"
+#include <nova_renderer/nova_renderer.hpp>
 #include "../../util/logger.hpp"
 #include "../../util/windows_utils.hpp"
 #include "d3dx12.h"
 #include "dx12_utils.hpp"
 #include "vertex_attributes.hpp"
-
-#include "../../tasks/task_scheduler.hpp"
 
 namespace nova::renderer {
     dx12_render_engine::dx12_render_engine(nova_settings& settings)

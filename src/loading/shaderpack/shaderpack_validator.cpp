@@ -5,7 +5,7 @@
 
 #include "shaderpack_validator.hpp"
 #include "../../../tests/src/general_test_setup.hpp"
-#include "../../../include/nova_renderer/util/utils.hpp"
+#include <nova_renderer/util/utils.hpp>
 #include "../json_utils.hpp"
 
 #include <fmt/format.h>
