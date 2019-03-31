@@ -2,9 +2,12 @@
 
 #include <d3d12.h>
 
-#include "nova_renderer/shaderpack_data.hpp"
+#include <nova_renderer/shaderpack_data.hpp>
+#include "nova_renderer/command_list.hpp"
 
 namespace nova::renderer {
+    D3D12_RESOURCE_STATES to_dx12_state(resource_state state);
+
     enum class pixel_format_enum;
     DXGI_FORMAT to_dxgi_format(pixel_format_enum pixel_format);
 

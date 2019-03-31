@@ -3,6 +3,47 @@
 #include "nova_renderer/render_engine.hpp"
 
 namespace nova::renderer {
+    VkImageLayout to_vk_layout(const resource_state state) {
+        switch (state) {
+        case resource_state::UNDEFINED:
+            return VK_IMAGE_LAYOUT_UNDEFINED;
+
+        case resource_state::GENERAL:
+            return VK_IMAGE_LAYOUT_GENERAL;
+
+        case resource_state::COLOR_ATTACHMENT:
+            return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        case resource_state::DEPTH_STENCIL_ATTACHMENT:
+            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        case resource_state::DEPTH_READ_ONLY_STENCIL_ATTACHMENT:
+            return VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+
+        case resource_state::DEPTH_ATTACHMENT_STENCIL_READ_ONLY:
+            return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
+
+        case resource_state::DEPTH_STENCIL_READ_ONLY_ATTACHMENT:
+            return VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL;
+
+        case resource_state::PRESENT_SOURCE:
+            return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        case resource_state::NON_FRAGMENT_SHADER_READ_ONLY:
+        case resource_state::FRAGMENT_SHADER_READ_ONLY:
+            return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        case resource_state::TRANSFER_SOURCE:
+            return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+
+        case resource_state::TRANSFER_DESTINATION:
+            return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+        default:
+            return VK_IMAGE_LAYOUT_GENERAL;
+        }
+    }
+
     std::string vk_result_to_string(VkResult result) {
         switch(result) {
             case VK_SUCCESS:

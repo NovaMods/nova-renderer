@@ -6,6 +6,10 @@
 #include "vulkan.hpp"
 
 namespace nova::renderer {
+    enum class resource_state;
+
+    VkImageLayout to_vk_layout(resource_state state);
+
     std::string vk_result_to_string(VkResult result);
 
     std::string to_string(VkObjectType obj_type);

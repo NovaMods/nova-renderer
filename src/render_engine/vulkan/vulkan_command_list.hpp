@@ -13,13 +13,11 @@ namespace nova::renderer {
     /*!
      * \brief Vulkan implementation of `command_list`
      */
-    class vulkan_command_list : public graphics_command_list {
+    class vulkan_command_list : public command_list {
     public:
         explicit vulkan_command_list(VkCommandBuffer cmds);
 
-        void begin() override;
-
-        void resource_barrier() override;
+        void resource_barrier(const std::vector<resource_barrier_t>& barriers) override;
 
         void copy_buffer() override;
 

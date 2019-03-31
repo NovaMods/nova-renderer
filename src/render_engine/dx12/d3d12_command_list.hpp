@@ -12,28 +12,15 @@
 namespace nova::renderer {
     using namespace Microsoft::WRL;
 
-    /*!
-     * \brief
-     */
-    class d3d12_command_list : public command_list {
-    public:
-        explicit d3d12_command_list(ComPtr<ID3D12CommandList> cmds);
-
-        void resource_barrier() override;
-
-        void copy_buffer() override;
-
-        void execute_command_lists() override;
-
-    private:
-        ComPtr<ID3D12CommandList> cmds;
+    struct resource_t {
+        ComPtr<ID3D12Resource> resource;
     };
-
-    class d3d12_graphics_command_list : public graphics_command_list {
+        
+    class d3d12_graphics_command_list : public command_list {
     public:
         explicit d3d12_graphics_command_list(ComPtr<ID3D12GraphicsCommandList> cmds);
 
-        void resource_barrier() override;
+        void resource_barrier(const std::vector<resource_barrier_t>& barriers) override;
 
         void copy_buffer() override;
 
