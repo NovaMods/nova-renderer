@@ -12,7 +12,7 @@ namespace nova::renderer {
      */
     class gl2_render_engine : render_engine {
     public:
-        gl2_render_engine();
+        explicit gl2_render_engine(nova_settings& settings);
 
         gl2_render_engine(gl2_render_engine&& other) = delete;
         gl2_render_engine& operator=(gl2_render_engine&& other) noexcept = delete;

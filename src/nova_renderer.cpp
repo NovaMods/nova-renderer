@@ -20,6 +20,7 @@
 
 #include <minitrace/minitrace.h>
 #include "util/logger.hpp"
+#include "render_engine/gl2/gl2_render_engine.hpp"
 
 namespace nova::renderer {
     std::unique_ptr<nova_renderer> nova_renderer::instance;
@@ -73,6 +74,12 @@ namespace nova::renderer {
             case graphics_api::vulkan:
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
                 engine = std::make_unique<vulkan_render_engine>(render_settings, render_doc);
+                break;
+
+            case graphics_api::gl2:
+                MTR_SCOPE("Init", "InitGL2RenderEngine");
+                engine = std::make_unique<gl2_render_engine>(render_settings);
+                break;
         }
     }
 
