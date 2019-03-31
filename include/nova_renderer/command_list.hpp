@@ -2,7 +2,7 @@
 #include <vector>
 
 namespace nova::renderer {
-#pragma region Forward declarations
+#pragma region Opqaue pointers
     struct resource_t;
 #pragma endregion
 
@@ -24,29 +24,37 @@ namespace nova::renderer {
 
         TRANSFER_SOURCE,
         TRANSFER_DESTINATION,
+    };
 
+    enum resource_access_flags {
+        INDEX_READ_BIT = 0x00000002,
+        VERTEX_ATTRIBUTE_READ_BIT = 0x00000004,
+        UNIFORM_READ_BIT = 0x00000008,
+        INPUT_ATTACHMENT_READ_BIT = 0x00000010,
+        SHADER_READ_BIT = 0x00000020,
+        SHADER_WRITE_BIT = 0x00000040,
+        COLOR_ATTACHMENT_READ_BIT = 0x00000080,
+        COLOR_ATTACHMENT_WRITE_BIT = 0x00000100,
+        DEPTH_STENCIL_ATTACHMENT_READ_BIT = 0x00000200,
+        DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = 0x00000400,
+        TRANSFER_READ_BIT = 0x00000800,
+        TRANSFER_WRITE_BIT = 0x00001000,
+        HOST_READ_BIT = 0x00002000,
+        HOST_WRITE_BIT = 0x00004000,
+        MEMORY_READ_BIT = 0x00008000,
+        MEMORY_WRITE_BIT = 0x00010000,
     };
 #pragma endregion
 
 #pragma region Structs
     struct resource_barrier_t {
-        /*!
-         * \brief The type of barrier that you want
-         * 
-         * A RESOURCE_TRANSITION barrier can transition a resource from one state to another, while a SYNCHRONIZATION
-         * barrier ensures that all reads or writes are complete before the next set of reads or writes can happen
-         */
-        enum class type {
-            RESOURCE_TRANSITION,
-            SYNCHRONIZATION,
-        };
-
-        type barrier_type;
-
         resource_t* resource_to_barrier;
 
         resource_state initial_state;
         resource_state final_state;
+
+        resource_access_flags access_before_barrier;
+        resource_access_flags access_after_barrier;
     };
 #pragma endregion
 
@@ -61,6 +69,8 @@ namespace nova::renderer {
      * There is one command list pool per swapchain image per thread. All the pools for one swapchain image are
      * reset at the beginning of a frame that renders to that swapchain image. This means that any command list
      * allocated in one frame will not be valid in the next frame. DO NOT hold on to command lists
+     * 
+     * A command list may only be recorded to from one thread at a time
      * 
      * Command lists are fully bound to ChaiScript
      */
@@ -97,10 +107,10 @@ namespace nova::renderer {
         virtual void bind_material() = 0;
 
         virtual void bind_vertex_buffers() = 0;
-        virtual void bind_index_buffers() = 0;
-        virtual void draw_indexed() = 0;
+        virtual void bind_index_buffer() = 0;
+        virtual void draw_indexed_mesh() = 0;
         
         virtual ~command_list() = default;
     };
-#prgama endregion
+#pragma endregion
 }

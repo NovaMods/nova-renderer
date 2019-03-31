@@ -8,9 +8,9 @@
 #include "dx12_utils.hpp"
 
 namespace nova::renderer {
-    d3d12_graphics_command_list::d3d12_graphics_command_list(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
+    d3d12_command_list::d3d12_command_list(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
-    void d3d12_graphics_command_list::resource_barrier(const std::vector<resource_barrier_t>& barriers) {
+    void d3d12_command_list::resource_barrier(const std::vector<resource_barrier_t>& barriers) {
         std::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
         dx12_barriers.reserve(barriers.size());
 
@@ -29,6 +29,8 @@ namespace nova::renderer {
                     break;
             }
         }
+
+        cmds->ResourceBarrier(dx12_barriers.size(), dx12_barriers.data());
     }
 
 } // namespace nova::renderer

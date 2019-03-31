@@ -377,7 +377,7 @@ namespace nova::renderer {
         
         gfx_list->Reset(allocator.Get(), nullptr);
         
-        return new d3d12_graphics_command_list(gfx_list);
+        return new d3d12_command_list(gfx_list);
     }
 
     void dx12_render_engine::try_to_free_command_lists() {
