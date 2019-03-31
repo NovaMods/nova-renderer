@@ -10,6 +10,23 @@
 #include <vulkan/vulkan.h>
 
 namespace nova::renderer {
+#pragma region Opaque pointers
+    struct resource_t {
+        enum class type {
+            IMAGE,
+            BUFFER,
+        };
+
+        type resource_type;
+
+        union {
+            VkBuffer buffer;
+            VkImage image;
+        };
+    };
+#pragma endregion
+
+#pragma region Vulkan command list implementation
     /*!
      * \brief Vulkan implementation of `command_list`
      */
@@ -29,10 +46,11 @@ namespace nova::renderer {
         void bind_material() override;
 
         void bind_vertex_buffers() override;
-        void bind_index_buffers() override;
-        void draw_indexed() override;
+        void bind_index_buffer() override;
+        void draw_indexed_mesh() override;
 
     private:
         VkCommandBuffer cmds;
     };
+#pragma endregion
 }

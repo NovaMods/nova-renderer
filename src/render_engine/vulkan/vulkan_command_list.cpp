@@ -17,5 +17,17 @@ namespace nova::renderer {
 
         std::vector<VkImageMemoryBarrier> image_barriers;
         image_barriers.reserve(barriers.size());
+
+        for(const resource_barrier_t& barrier : barriers) {
+            switch(barrier.resource_to_barrier->resource_type) {
+                case resource_t::type::IMAGE:
+                    VkImageMemoryBarrier image_barrier = {};
+                    image_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    image_barrier.image = barrier.resource_to_barrier->image;
+
+                case resource_t::type::BUFFER: 
+                break;
+            }
+        }
     }
 } // namespace nova::renderer
