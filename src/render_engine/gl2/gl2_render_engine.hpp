@@ -52,6 +52,7 @@ namespace nova::renderer {
 
 #pragma region Shaderpack
         std::unordered_map<std::string, gl_texture> dynamic_textures;
+        std::unordered_map<std::string, sampler_state_data> samplers;
 
         void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas);
         void destroy_dynamic_textures();

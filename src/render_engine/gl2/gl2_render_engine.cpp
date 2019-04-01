@@ -30,6 +30,9 @@ namespace nova::renderer {
         destroy_dynamic_textures();
 
         create_dynamic_textures(data.resources.textures);
+        for(const sampler_state_data& sampler_data : data.resources.samplers) {
+            samplers.emplace(sampler_data.name, sampler_data);
+        }
     }
 
     command_list* gl2_render_engine::allocate_command_list(uint32_t thread_idx,
@@ -92,5 +95,14 @@ namespace nova::renderer {
         }
     }
 
-    void gl2_render_engine::destroy_dynamic_textures() {}
+    void gl2_render_engine::destroy_dynamic_textures() {
+        std::vector<GLuint> textures_to_delete;
+        textures_to_delete.reserve(dynamic_textures.size());
+        for(const auto& [texture_name, texture] : dynamic_textures) {
+            textures_to_delete.push_back(texture.id);
+        }
+
+        glDeleteTextures(textures_to_delete.size(), textures_to_delete.data());
+        dynamic_textures.clear();
+    }
 } // namespace nova::renderer
