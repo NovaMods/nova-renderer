@@ -32,20 +32,22 @@ namespace nova::renderer {
 
     std::shared_ptr<iwindow> vulkan_render_engine::get_window() const { return window; }
 
-    command_list* vulkan_render_engine::allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) {
+    command_list* vulkan_render_engine::allocate_command_list(uint32_t thread_idx,
+                                                              queue_type needed_queue_type,
+                                                              command_list::level command_list_type) {
         uint32_t queue_family_idx = graphics_family_index;
-        switch (needed_queue_type) {
-        case queue_type::GRAPHICS:
-            queue_family_idx = graphics_family_index;
-            break;
+        switch(needed_queue_type) {
+            case queue_type::GRAPHICS:
+                queue_family_idx = graphics_family_index;
+                break;
 
-        case queue_type::TRANSFER:
-            queue_family_idx = transfer_family_index;
-            break;
+            case queue_type::TRANSFER:
+                queue_family_idx = transfer_family_index;
+                break;
 
-        case queue_type::ASYNC_COMPUTE:
-            queue_family_idx = compute_family_index;
-            break;
+            case queue_type::ASYNC_COMPUTE:
+                queue_family_idx = compute_family_index;
+                break;
         }
 
         VkCommandPool pool = get_command_buffer_pool_for_current_thread(thread_idx, queue_family_idx);
@@ -53,14 +55,14 @@ namespace nova::renderer {
         VkCommandBufferAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         alloc_info.commandPool = pool;
-        switch (command_list_type) {
-        case command_list::level::PRIMARY:
-            alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-            break;
+        switch(command_list_type) {
+            case command_list::level::PRIMARY:
+                alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+                break;
 
-        case command_list::level::SECONDARY:
-            alloc_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-            break;
+            case command_list::level::SECONDARY:
+                alloc_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+                break;
         }
 
         alloc_info.commandBufferCount = 1;
@@ -82,6 +84,17 @@ namespace nova::renderer {
 
     VkCommandPool vulkan_render_engine::get_command_buffer_pool_for_current_thread(uint32_t thread_idx, uint32_t queue_index) {
         return command_pools_by_thread_idx.at(thread_idx).at(queue_index);
+    }
+
+    uint32_t vulkan_render_engine::get_queue_family_index(const queue_type queue) const {
+        switch(queue) {
+            case queue_type::GRAPHICS:
+                return graphics_family_index;
+            case queue_type::TRANSFER:
+                return transfer_family_index;
+            case queue_type::ASYNC_COMPUTE:
+                return compute_family_index;
+        }
     }
 
     VkDescriptorPool vulkan_render_engine::get_descriptor_pool_for_current_thread() { return descriptor_pools_by_thread_idx.at(0); }

@@ -10,7 +10,9 @@
 namespace nova::renderer {
     d3d12_command_list::d3d12_command_list(ComPtr<ID3D12GraphicsCommandList> cmds) : cmds(std::move(cmds)) {}
 
-    void d3d12_command_list::resource_barrier(const std::vector<resource_barrier_t>& barriers) {
+    void d3d12_command_list::resource_barriers([[maybe_unused]] pipeline_stage_flags stages_before_barrier,
+                                              [[maybe_unused]] pipeline_stage_flags stages_after_barrier,
+                                              const std::vector<resource_barrier_t>& barriers) {
         std::vector<D3D12_RESOURCE_BARRIER> dx12_barriers;
         dx12_barriers.reserve(barriers.size());
 

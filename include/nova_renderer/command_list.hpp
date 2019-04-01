@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "render_engine.hpp"
 
 namespace nova::renderer {
 #pragma region Opqaue pointers
@@ -45,6 +46,38 @@ namespace nova::renderer {
         MEMORY_READ_BIT = 0x00008000,
         MEMORY_WRITE_BIT = 0x00010000,
     };
+
+    enum image_aspect_flags {
+        COLOR = 0x00000001,
+        DEPTH = 0x00000002,
+        STENCIL = 0x00000004,
+    };
+
+    enum pipeline_stage_flags {
+        TOP_OF_PIPE = 0x00000001,
+        DRAW_INDIRECT = 0x00000002,
+        VERTEX_INPUT = 0x00000004,
+        VERTEX_SHADER = 0x00000008,
+        TESSELLATION_CONTROL_SHADER = 0x00000010,
+        TESSELLATION_EVALUATION_SHADER = 0x00000020,
+        GEOMETRY_SHADER = 0x00000040,
+        FRAGMENT_SHADER = 0x00000080,
+        EARLY_FRAGMENT_TESTS = 0x00000100,
+        LATE_FRAGMENT_TESTS = 0x00000200,
+        COLOR_ATTACHMENT_OUTPUT = 0x00000400,
+        COMPUTE_SHADER = 0x00000800,
+        TRANSFER = 0x00001000,
+        BOTTOM_OF_PIPE = 0x00002000,
+        HOST = 0x00004000,
+        ALL_GRAPHICS = 0x00008000,
+        ALL_COMMANDS = 0x00010000,
+        SHADING_RATE_IMAGE = 0x00400000,
+        RAY_TRACING_SHADER = 0x00200000,
+        ACCELERATION_STRUCTURE_BUILD = 0x02000000,
+        TASK_SHADER = 0x00080000,
+        MESH_SHADER = 0x00100000,
+        FRAGMENT_DENSITY_PROCESS = 0x00800000,
+    };
 #pragma endregion
 
 #pragma region Structs
@@ -56,6 +89,20 @@ namespace nova::renderer {
 
         resource_access_flags access_before_barrier;
         resource_access_flags access_after_barrier;
+
+        queue_type source_queue;
+        queue_type destination_queue;
+
+        union {
+            struct {
+                image_aspect_flags aspect;
+            } image_memory_barrier;
+
+            struct {
+                uint64_t offset;
+                uint64_t size;
+            } buffer_memory_barrier;
+        };
     };
 #pragma endregion
 
@@ -94,9 +141,13 @@ namespace nova::renderer {
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
          * to the resource after the barrier
          *
+         * \param stages_before_barrier The pipeline stages that should be completed before the barriers take effect
+         * \param stages_after_barrier The pipeline stages that must wait for the barrier
          * \param barriers All the resource barriers to use
          */
-        virtual void resource_barrier(const std::vector<resource_barrier_t>& barriers) = 0;
+        virtual void resource_barriers(pipeline_stage_flags stages_before_barrier,
+                                      pipeline_stage_flags stages_after_barrier,
+                                      const std::vector<resource_barrier_t>& barriers) = 0;
 
         /*!
          * \brief Records a command to copy one region of a buffer to another buffer
@@ -122,7 +173,7 @@ namespace nova::renderer {
                                  uint64_t source_offset,
                                  uint64_t num_bytes) = 0;
 
-        virtual void execute_command_lists() = 0;
+        virtual void execute_command_lists(const std::vector<command_list*>& lists) = 0;
 
         virtual void begin_renderpass() = 0;
         virtual void end_renderpass() = 0;

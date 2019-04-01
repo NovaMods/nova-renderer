@@ -23,7 +23,9 @@ namespace nova::renderer {
     public:
         explicit d3d12_command_list(ComPtr<ID3D12GraphicsCommandList> cmds);
 
-        void resource_barrier(const std::vector<resource_barrier_t>& barriers) override;
+        void resource_barriers([[maybe_unused]] pipeline_stage_flags stages_before_barrier,
+                              [[maybe_unused]] pipeline_stage_flags stages_after_barrier,
+                              const std::vector<resource_barrier_t>& barriers) override;
 
         void copy_buffer(resource_t* destination_buffer,
                          uint64_t destination_offset,

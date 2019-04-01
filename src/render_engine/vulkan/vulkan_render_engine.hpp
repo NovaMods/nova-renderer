@@ -258,6 +258,8 @@ namespace nova::renderer {
          */
         VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t thread_idx, uint32_t queue_index);
 
+        uint32_t get_queue_family_index(const queue_type queue) const;
+
     private:
         /*!
          * \brief The number of frames that Nova can have in-flight at a given time

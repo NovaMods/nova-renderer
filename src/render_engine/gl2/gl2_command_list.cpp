@@ -12,7 +12,9 @@ namespace nova::renderer {
         commands.reserve(128);
     }
 
-    void gl2_command_list::resource_barrier([[maybe_unused]] const std::vector<resource_barrier_t>& barriers) {
+    void gl2_command_list::resource_barriers([[maybe_unused]] pipeline_stage_flags stages_before_barrier,
+                                            [[maybe_unused]] pipeline_stage_flags stages_after_barrier,
+                                            [[maybe_unused]] const std::vector<resource_barrier_t>& barriers) {
         // Don't need to do anything whoop
     }
 
