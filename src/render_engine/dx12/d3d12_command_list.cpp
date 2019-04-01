@@ -30,4 +30,16 @@ namespace nova::renderer {
         cmds->ResourceBarrier(static_cast<UINT>(dx12_barriers.size()), dx12_barriers.data());
     }
 
+    void d3d12_command_list::copy_buffer(resource_t* destination_buffer,
+                                         const uint64_t destination_offset,
+                                         resource_t* source_buffer,
+                                         const uint64_t source_offset,
+                                         const uint64_t num_bytes) {
+        cmds->CopyBufferRegion(destination_buffer->resource.Get(),
+                               destination_offset,
+                               source_buffer->resource.Get(),
+                               source_offset,
+                               num_bytes);
+    }
+
 } // namespace nova::renderer

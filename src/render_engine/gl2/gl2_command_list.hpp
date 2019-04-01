@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 31-Mar-19.
  */
 
@@ -7,7 +7,15 @@
 #define NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
 #include <nova_renderer/command_list.hpp>
 
+#include "glad.h"
+
 namespace nova::renderer {
+#pragma region Opaque pointers
+    struct resource_t {
+        GLuint id;
+    };
+#pragma endregion
+
     enum class gl2_command_type {
         BUFFER_COPY,
         EXECUTE_COMMAND_LISTS,
@@ -20,35 +28,28 @@ namespace nova::renderer {
     };
 
     struct buffer_copy_command {
-        
+        GLuint destination_buffer;
+        uint64_t destination_offset;
+
+        GLuint source_buffer;
+        uint64_t source_offset;
+
+        uint64_t num_bytes;
     };
 
-    struct execute_command_lists_command {
-        
-    };
+    struct execute_command_lists_command {};
 
-    struct bind_renderpass_command {
-    };
+    struct bind_renderpass_command {};
 
-    struct bind_pipeline_command {
-        
-    };
+    struct bind_pipeline_command {};
 
-    struct bind_material_command {
-        
-    };
+    struct bind_material_command {};
 
-    struct bind_vertex_buffers_command {
-        
-    };
+    struct bind_vertex_buffers_command {};
 
-    struct bind_index_buffer_command {
-        
-    };
+    struct bind_index_buffer_command {};
 
-    struct draw_indexed_mesh_command {
-        
-    };
+    struct draw_indexed_mesh_command {};
 
     struct gl_command {
         gl2_command_type type;
@@ -67,16 +68,16 @@ namespace nova::renderer {
 
     /*!
      * \brief Command list implementation for OpenGL 2.1
-     * 
+     *
      * This class is fun because OpenGL has no notion of a command list - it's synchronous af. Thus, this command list
      * is a custom thing that records commands into host memory. When this command list is submitted to a "queue", Nova
      * runs the OpenGL commands. This lets command lists be recorded from multiple threads, but submitting a command
      * list to OpenGL is _way_ more expensive than submitting a DirectX or Vulkan command list
-     * 
+     *
      * OpenGL also has a really fun property where it can't be multithreaded, especially since Nova has to use OpenGL
      * 2.1. The OpenGL render engine will chew through OpenGL commands in a separate thread, and in that way mimic the
      * async nature of modern APIs, but still... it'll be rough
-     * 
+     *
      * On the other hand, OpenGL has no concept of a resource barrier...
      */
     class gl2_command_list : public command_list {
@@ -85,7 +86,11 @@ namespace nova::renderer {
 
         void resource_barrier(const std::vector<resource_barrier_t>& barriers) override;
 
-        void copy_buffer() override;
+        void copy_buffer(resource_t* destination_buffer,
+                         uint64_t destination_offset,
+                         resource_t* source_buffer,
+                         uint64_t source_offset,
+                         uint64_t num_bytes) override;
 
         void execute_command_lists() override;
 
@@ -113,6 +118,6 @@ namespace nova::renderer {
     private:
         std::vector<gl_command> commands;
     };
-}
+} // namespace nova::renderer
 
-#endif //NOVA_RENDERER_GL_2_COMMAND_LIST_HPP
+#endif // NOVA_RENDERER_GL_2_COMMAND_LIST_HPP

@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 30-Mar-19.
  */
 
@@ -36,7 +36,11 @@ namespace nova::renderer {
 
         void resource_barrier(const std::vector<resource_barrier_t>& barriers) override;
 
-        void copy_buffer() override;
+        void copy_buffer(uint64_t* destination_buffer,
+                         uint32_t destination_offset,
+                         resource_t* source_buffer,
+                         uint64_t source_offset,
+                         uint64_t num_bytes) override;
 
         void execute_command_lists() override;
 
@@ -53,4 +57,4 @@ namespace nova::renderer {
         VkCommandBuffer cmds;
     };
 #pragma endregion
-}
+} // namespace nova::renderer

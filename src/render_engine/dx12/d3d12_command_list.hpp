@@ -1,13 +1,13 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 30-Mar-19.
  */
 
 #ifndef NOVA_RENDERER_D3D12_COMMAND_LIST_HPP
 #define NOVA_RENDERER_D3D12_COMMAND_LIST_HPP
-#include "nova_renderer/command_list.hpp"
-#include <wrl/client.h>
 #include <d3d12.h>
+#include <wrl/client.h>
+#include "nova_renderer/command_list.hpp"
 
 namespace nova::renderer {
     using namespace Microsoft::WRL;
@@ -25,7 +25,11 @@ namespace nova::renderer {
 
         void resource_barrier(const std::vector<resource_barrier_t>& barriers) override;
 
-        void copy_buffer() override;
+        void copy_buffer(resource_t* destination_buffer,
+                         uint64_t destination_offset,
+                         resource_t* source_buffer,
+                         uint64_t source_offset,
+                         uint64_t num_bytes) override;
 
         void execute_command_lists() override;
 
@@ -42,6 +46,6 @@ namespace nova::renderer {
         ComPtr<ID3D12GraphicsCommandList> cmds;
     };
 #pragma endregion
-}
+} // namespace nova::renderer
 
-#endif //NOVA_RENDERER_D3D12_COMMAND_LIST_HPP
+#endif // NOVA_RENDERER_D3D12_COMMAND_LIST_HPP
