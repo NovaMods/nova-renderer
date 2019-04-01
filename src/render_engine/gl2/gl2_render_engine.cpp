@@ -35,9 +35,9 @@ namespace nova::renderer {
         }
     }
 
-    command_list* gl2_render_engine::allocate_command_list(uint32_t thread_idx,
-                                                           queue_type needed_queue_type,
-                                                           command_list::level command_list_type) {
+    command_list* gl2_render_engine::allocate_command_list([[maybe_unused]] uint32_t thread_idx,
+                                                           [[maybe_unused]] queue_type needed_queue_type,
+                                                           [[maybe_unused]] command_list::level command_list_type) {
         return new gl2_command_list();
     }
 
@@ -66,7 +66,8 @@ namespace nova::renderer {
                     break;
 
                 case pixel_format_enum::RGBA32F:
-                    NOVA_LOG(WARN) << "You requested a texture with 128 bits per component, but your graphics card only supports 64 bits per component";
+                    NOVA_LOG(WARN)
+                        << "You requested a texture with 128 bits per component, but your graphics card only supports 64 bits per component";
                 case pixel_format_enum::RGBA16F:
                     internal_format = GL_RGBA16;
                     format = GL_RGBA;
@@ -86,7 +87,9 @@ namespace nova::renderer {
                     break;
             }
 
-            glTexImage2D(GL_TEXTURE_2D, 0, internal_format, data.format.width, data.format.height, 0, format, type, nullptr);
+            const glm::uvec2 texture_size = data.format.get_size_in_pixels(window->get_window_size());
+
+            glTexImage2D(GL_TEXTURE_2D, 0, internal_format, texture_size.x, texture_size.y, 0, format, type, nullptr);
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

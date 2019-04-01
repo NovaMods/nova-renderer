@@ -48,7 +48,11 @@ namespace nova::renderer {
     protected:
         static void set_initial_state();
 
+#pragma region Window
+        std::unique_ptr<iwindow> window;
+
         void open_window(uint32_t width, uint32_t height) override;
+#pragma endregion
 
 #pragma region Shaderpack
         std::unordered_map<std::string, gl_texture> dynamic_textures;

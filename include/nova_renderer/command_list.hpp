@@ -1,5 +1,5 @@
 /*!
- * \author ddubois 
+ * \author ddubois
  * \date 30-Mar-19.
  */
 
@@ -12,6 +12,7 @@ namespace nova::renderer {
 #pragma endregion
 
 #pragma region Enums
+
     enum class resource_state {
         UNDEFINED,
         GENERAL,
@@ -66,17 +67,17 @@ namespace nova::renderer {
 #pragma region Command list API
     /*!
      * \brief An API-agnostic command list
-     * 
+     *
      * Command lists are allocated from the render engine. Once allocated, ownership is passed to the callee. You can
      * then record whatever commands you want and submit the command list back to the render engine for execution on
      * the GPU. Once submitted, you may not record any more commands into the command list
-     * 
+     *
      * There is one command list pool per swapchain image per thread. All the pools for one swapchain image are
      * reset at the beginning of a frame that renders to that swapchain image. This means that any command list
      * allocated in one frame will not be valid in the next frame. DO NOT hold on to command lists
-     * 
+     *
      * A command list may only be recorded to from one thread at a time
-     * 
+     *
      * Command lists are fully bound to ChaiScript
      */
     class command_list {
@@ -97,12 +98,34 @@ namespace nova::renderer {
         /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
          * to the resource after the barrier
-         * 
+         *
          * \param barriers All the resource barriers to use
          */
         virtual void resource_barrier(const std::vector<resource_barrier_t>& barriers) = 0;
 
-        virtual void copy_buffer() = 0;
+        /*!
+         * \brief Records a command to copy one region of a buffer to another buffer
+         *
+         * \param destination_buffer The buffer to write data to
+         * \param destination_offset The offset in the destination buffer to start writing to. Measured in bytes
+         * \param source_buffer The buffer to read data from
+         * \param source_offset The offset in the source buffer to start reading from. Measures in bytes
+         * \param num_bytes The number of bytes to copy
+         *
+         * \pre destination_buffer != nullptr
+         * \pre destination_buffer is a buffer
+         * \pre destination_offset is less than the size of destination_buffer
+         * \pre source_buffer != nullptr
+         * \pre source_buffer is a buffer
+         * \pre source_offset is less than the size of source_buffer
+         * \pre destination_offset plus num_bytes is less than the size of destination_buffer
+         * \pre destination_offset plus num_bytes is less than the size of source_buffer
+         */
+        virtual void copy_buffer(resource_t* destination_buffer,
+                                 uint64_t destination_offset,
+                                 resource_t* source_buffer,
+                                 uint64_t source_offset,
+                                 uint64_t num_bytes) = 0;
 
         virtual void execute_command_lists() = 0;
 
@@ -114,8 +137,8 @@ namespace nova::renderer {
         virtual void bind_vertex_buffers() = 0;
         virtual void bind_index_buffer() = 0;
         virtual void draw_indexed_mesh() = 0;
-        
+
         virtual ~command_list() = default;
     };
 #pragma endregion
-}
+} // namespace nova::renderer
