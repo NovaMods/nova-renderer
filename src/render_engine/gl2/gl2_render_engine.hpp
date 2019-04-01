@@ -5,8 +5,13 @@
 
 #pragma once
 #include <nova_renderer/render_engine.hpp>
+#include "glad.h"
 
 namespace nova::renderer {
+    struct gl_texture {
+        GLuint id;
+    };
+
     /*!
      * \brief OpenGL 2.1 render engine because compatibility
      */
@@ -23,7 +28,7 @@ namespace nova::renderer {
         ~gl2_render_engine() override;
 
         std::shared_ptr<iwindow> get_window() const override;
-
+        
         void set_shaderpack(const shaderpack_data& data) override;
 
         result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) override;
@@ -41,6 +46,15 @@ namespace nova::renderer {
         void render_frame() override;
 
     protected:
+        static void set_initial_state();
+
         void open_window(uint32_t width, uint32_t height) override;
+
+#pragma region Shaderpack
+        std::unordered_map<std::string, gl_texture> dynamic_textures;
+
+        void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas);
+        void destroy_dynamic_textures();
+#pragma endregion 
     };
 }

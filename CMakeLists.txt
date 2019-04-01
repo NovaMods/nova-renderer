@@ -152,10 +152,13 @@ set(NOVA_SOURCE
         src/render_engine/command_list.cpp
         src/render_engine/vulkan/vulkan_command_list.cpp
         src/render_engine/vulkan/vulkan_command_list.hpp 
+
         src/render_engine/gl2/gl2_render_engine.cpp
         src/render_engine/gl2/gl2_render_engine.hpp 
         src/render_engine/gl2/gl2_command_list.cpp 
-        src/render_engine/gl2/gl2_command_list.hpp)
+        src/render_engine/gl2/gl2_command_list.hpp 
+        src/render_engine/gl2/glad.h 
+        src/render_engine/gl2/glad.c)
 
 ##################################
 # Select platform dependent code #
