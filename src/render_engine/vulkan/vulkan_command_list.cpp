@@ -7,6 +7,8 @@
 #include "vulkan_render_engine.hpp"
 #include "vulkan_utils.hpp"
 
+#include "vk_structs.hpp"
+
 namespace nova::renderer {
     vulkan_command_list::vulkan_command_list(VkCommandBuffer cmds, const vulkan_render_engine& render_engine)
         : cmds(cmds), render_engine(render_engine) {}
@@ -94,5 +96,16 @@ namespace nova::renderer {
         }
 
         vkCmdExecuteCommands(cmds, buffers.size(), buffers.data());
+    }
+
+    void vulkan_command_list::begin_renderpass(renderpass_t* renderpass, framebuffer_t* framebuffer) {
+        VkRenderPassBeginInfo begin_info = {};
+        begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        begin_info.renderPass = renderpass->renderpass;
+        begin_info.framebuffer = framebuffer->framebuffer;
+        begin_info.renderArea = framebuffer->size;
+
+        // Nova _always_ records command lists in parallel for each renderpass
+        vkCmdBeginRenderPass(cmds, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
     }
 } // namespace nova::renderer

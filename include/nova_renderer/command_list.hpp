@@ -5,15 +5,10 @@
 
 #pragma once
 #include <vector>
-#include "render_engine.hpp"
+#include <nova_renderer/render_engine.hpp>
 
 namespace nova::renderer {
-#pragma region Opqaue pointers
-    struct resource_t;
-#pragma endregion
-
 #pragma region Enums
-
     enum class resource_state {
         UNDEFINED,
         GENERAL,
@@ -186,7 +181,7 @@ namespace nova::renderer {
          */
         virtual void execute_command_lists(const std::vector<command_list*>& lists) = 0;
 
-        virtual void begin_renderpass() = 0;
+        virtual void begin_renderpass(renderpass_t* renderpass, framebuffer_t* framebuffer) = 0;
         virtual void end_renderpass() = 0;
         virtual void bind_pipeline() = 0;
         virtual void bind_material() = 0;

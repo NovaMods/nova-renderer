@@ -13,9 +13,20 @@
 #include "util/result.hpp"
 #include "util/utils.hpp"
 #include "window.hpp"
-#include "command_list.hpp"
 
 namespace nova::renderer {
+#pragma region Forward declarations
+    struct resource_t {};
+
+    struct renderpass_t {};
+
+    struct framebuffer_t {
+        glm::uvec2 size;
+    };
+
+    class command_list;
+#pragma endregion
+
     NOVA_EXCEPTION(render_engine_initialization_exception);
     NOVA_EXCEPTION(render_engine_rendering_exception);
 
@@ -48,6 +59,20 @@ namespace nova::renderer {
         virtual ~render_engine() = default;
 
         [[nodiscard]] virtual std::shared_ptr<iwindow> get_window() const = 0;
+
+#pragma region Shaderpack
+        /*!
+         * \brief Creates a renderpass from the provided data
+         * 
+         * Renderpasses are created 100% upfront, meaning that the caller can't change anything about a renderpass
+         * after it's been created
+         * 
+         * \param data The data to create a renderpass from
+         * 
+         * \return The newly created renderpass
+         */
+        [[nodiscard]] virtual renderpass_t create_renderpass(const render_pass_data& data) = 0;
+#pragma endregion 
 
         /*!
          * \brief Loads the specified shaderpack, building API-specific data structures

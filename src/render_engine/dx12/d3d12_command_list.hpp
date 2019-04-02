@@ -7,18 +7,13 @@
 #define NOVA_RENDERER_D3D12_COMMAND_LIST_HPP
 #include <d3d12.h>
 #include <wrl/client.h>
-#include "nova_renderer/command_list.hpp"
+#include <nova_renderer/command_list.hpp>
+
+#include "d3d12_structs.hpp"
 
 namespace nova::renderer {
     using namespace Microsoft::WRL;
 
-#pragma region Opaque pointers
-    struct resource_t {
-        ComPtr<ID3D12Resource> resource;
-    };
-#pragma endregion
-
-#pragma region D3D12 command list implementation
     class d3d12_command_list : public command_list {
     public:
         explicit d3d12_command_list(ComPtr<ID3D12GraphicsCommandList> cmds);
@@ -35,7 +30,7 @@ namespace nova::renderer {
 
         void execute_command_lists(const std::vector<command_list*>& lists) override;
 
-        void begin_renderpass() override;
+        void begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) override;
         void end_renderpass() override;
         void bind_pipeline() override;
         void bind_material() override;
@@ -47,7 +42,6 @@ namespace nova::renderer {
     private:
         ComPtr<ID3D12GraphicsCommandList> cmds;
     };
-#pragma endregion
 } // namespace nova::renderer
 
 #endif // NOVA_RENDERER_D3D12_COMMAND_LIST_HPP

@@ -12,23 +12,6 @@
 namespace nova::renderer {
     class vulkan_render_engine;
 
-#pragma region Opaque pointers
-    struct resource_t {
-        enum class type {
-            IMAGE,
-            BUFFER,
-        };
-
-        type resource_type;
-
-        union {
-            VkBuffer buffer;
-            VkImage image;
-        };
-    };
-#pragma endregion
-
-#pragma region Vulkan command list implementation
     /*!
      * \brief Vulkan implementation of `command_list`
      */
@@ -48,7 +31,7 @@ namespace nova::renderer {
 
         void execute_command_lists(const std::vector<command_list*>& lists) override;
 
-        void begin_renderpass() override;
+        void begin_renderpass(renderpass_t* renderpass, framebuffer_t* framebuffer) override;
         void end_renderpass() override;
         void bind_pipeline() override;
         void bind_material() override;
@@ -61,5 +44,4 @@ namespace nova::renderer {
         VkCommandBuffer cmds;
         const vulkan_render_engine& render_engine;
     };
-#pragma endregion
 } // namespace nova::renderer

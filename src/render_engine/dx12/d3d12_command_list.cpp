@@ -17,14 +17,16 @@ namespace nova::renderer {
         dx12_barriers.reserve(barriers.size());
 
         for(const resource_barrier_t& barrier : barriers) {
+            d3d12_resource_t* resource_to_barrier = reinterpret_cast<d3d12_resource_t*>(barrier.resource_to_barrier);
+
             if(barrier.access_after_barrier == 0) {
                 const D3D12_RESOURCE_STATES initial_state = to_dx12_state(barrier.initial_state);
                 const D3D12_RESOURCE_STATES final_state = to_dx12_state(barrier.final_state);
                 dx12_barriers.push_back(
-                    CD3DX12_RESOURCE_BARRIER::Transition(barrier.resource_to_barrier->resource.Get(), initial_state, final_state));
+                    CD3DX12_RESOURCE_BARRIER::Transition(resource_to_barrier->resource.Get(), initial_state, final_state));
 
             } else {
-                const CD3DX12_RESOURCE_BARRIER sync = CD3DX12_RESOURCE_BARRIER::UAV(barrier.resource_to_barrier->resource.Get());
+                const CD3DX12_RESOURCE_BARRIER sync = CD3DX12_RESOURCE_BARRIER::UAV(resource_to_barrier->resource.Get());
                 dx12_barriers.push_back(sync);
             }
         }
@@ -37,9 +39,12 @@ namespace nova::renderer {
                                          resource_t* source_buffer,
                                          const uint64_t source_offset,
                                          const uint64_t num_bytes) {
-        cmds->CopyBufferRegion(destination_buffer->resource.Get(),
+        d3d12_resource_t* dst_buf = reinterpret_cast<d3d12_resource_t*>(destination_buffer);
+        d3d12_resource_t* src_buf = reinterpret_cast<d3d12_resource_t*>(source_buffer);
+
+        cmds->CopyBufferRegion(dst_buf->resource.Get(),
                                destination_offset,
-                               source_buffer->resource.Get(),
+            src_buf->resource.Get(),
                                source_offset,
                                num_bytes);
     }
@@ -55,6 +60,16 @@ namespace nova::renderer {
             d3d12_command_list* d3d12_list = dynamic_cast<d3d12_command_list*>(list);
             cmds->ExecuteBundle(d3d12_list->cmds.Get());
         }
+    }
+
+    void d3d12_command_list::begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) {
+        d3d12_framebuffer_t* d3d12_framebuffer = reinterpret_cast<d3d12_framebuffer_t*>(framebuffer);
+
+        D3D12_CPU_DESCRIPTOR_HANDLE* depth_stencil = nullptr;
+        if(d3d12_framebuffer->has_depth_stencil) {
+            depth_stencil = &d3d12_framebuffer->depth_stencil_image;
+        }
+        cmds->OMSetRenderTargets(d3d12_framebuffer->render_targets.size(), d3d12_framebuffer->render_targets.data(), false, depth_stencil);
     }
 
 } // namespace nova::renderer
