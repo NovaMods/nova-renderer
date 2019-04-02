@@ -37,7 +37,9 @@ namespace nova::renderer {
         uint64_t num_bytes;
     };
 
-    struct execute_command_lists_command {};
+    struct execute_command_lists_command {
+        std::vector<command_list*> lists_to_execute;
+    };
 
     struct bind_renderpass_command {};
 
@@ -94,7 +96,7 @@ namespace nova::renderer {
                          uint64_t source_offset,
                          uint64_t num_bytes) override;
 
-        void execute_command_lists() override;
+        void execute_command_lists(const std::vector<command_list*>& lists) override;
 
         void begin_renderpass() override;
 
