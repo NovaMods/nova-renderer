@@ -178,6 +178,12 @@ namespace nova::renderer {
                                  uint64_t source_offset,
                                  uint64_t num_bytes) = 0;
 
+        /*!
+         * \brief Executed a number of command lists
+         * 
+         * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need
+         * to be nice - the API-specific validation layers _will_ yell at you
+         */
         virtual void execute_command_lists(const std::vector<command_list*>& lists) = 0;
 
         virtual void begin_renderpass() = 0;

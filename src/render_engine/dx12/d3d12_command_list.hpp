@@ -33,7 +33,7 @@ namespace nova::renderer {
                          uint64_t source_offset,
                          uint64_t num_bytes) override;
 
-        void execute_command_lists() override;
+        void execute_command_lists(const std::vector<command_list*>& lists) override;
 
         void begin_renderpass() override;
         void end_renderpass() override;
