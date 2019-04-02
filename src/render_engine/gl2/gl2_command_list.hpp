@@ -10,16 +10,11 @@
 #include "glad.h"
 
 namespace nova::renderer {
-#pragma region Opaque pointers
-    struct resource_t {
-        GLuint id;
-    };
-#pragma endregion
-
     enum class gl2_command_type {
         BUFFER_COPY,
         EXECUTE_COMMAND_LISTS,
-        BIND_RENDERPASS,
+        BEGIN_RENDERPASS,
+        END_RENDERPASS,
         BIND_PIPELINE,
         BIND_MATERIAL,
         BIND_VERTEX_BUFFERS,
@@ -41,7 +36,9 @@ namespace nova::renderer {
         std::vector<command_list*> lists_to_execute;
     };
 
-    struct bind_renderpass_command {};
+    struct bind_renderpass_command {
+        GLuint framebuffer;
+    };
 
     struct bind_pipeline_command {};
 
@@ -98,7 +95,7 @@ namespace nova::renderer {
 
         void execute_command_lists(const std::vector<command_list*>& lists) override;
 
-        void begin_renderpass() override;
+        void begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) override;
 
         void end_renderpass() override;
 
