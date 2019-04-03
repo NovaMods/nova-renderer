@@ -13,7 +13,7 @@ namespace nova::renderer {
      * \brief If a data member isn't in the JSON (which is fully supported and is 100% fine) then we use this to fill in
      * any missing values
      */
-    pipeline_data default_pipeline;
+    pipeline_create_info_t default_pipeline;
 
     bool texture_format::operator==(const texture_format& other) const {
         return pixel_format == other.pixel_format && dimension_type == other.dimension_type && width == other.width &&
@@ -22,7 +22,7 @@ namespace nova::renderer {
 
     bool texture_format::operator!=(const texture_format& other) const { return !(*this == other); }
 
-    bool texture_attachment::operator==(const texture_attachment& other) const { return other.name == name; }
+    bool texture_attachment_info_t::operator==(const texture_attachment_info_t& other) const { return other.name == name; }
 
     glm::uvec2 texture_format::get_size_in_pixels(const glm::uvec2& screen_size) const {
         float pixel_width = width;

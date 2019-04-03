@@ -8,7 +8,7 @@
 
 #include <d3d12.h>
 
-#include <nova_renderer/shaderpack_data.hpp>
+#include <nova_renderer/shaderpack_data_t.hpp>
 #include "nova_renderer/command_list.hpp"
 
 namespace nova::renderer {

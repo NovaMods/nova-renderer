@@ -98,7 +98,7 @@ namespace nova::renderer {
         MTR_SCOPE("ShaderpackLoading", "load_shaderpack");
         glslang::InitializeProcess();
 
-        const shaderpack_data shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
+        const shaderpack_data_t shaderpack_data = load_shaderpack_data(fs::path(shaderpack_name));
 
         engine->set_shaderpack(shaderpack_data);
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";

@@ -27,9 +27,9 @@ namespace nova::renderer {
 
         ~gl2_render_engine() override;
 
-        std::shared_ptr<iwindow> get_window() const override;
+        std::shared_ptr<window> get_window() const override;
         
-        void set_shaderpack(const shaderpack_data& data) override;
+        void set_shaderpack(const shaderpack_data_t& data) override;
 
         result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) override;
 
@@ -41,7 +41,7 @@ namespace nova::renderer {
 
         void delete_mesh(uint32_t mesh_id) override;
 
-        command_list* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) override;
+        command_list_t* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list_t::level command_list_type) override;
 
         void render_frame() override;
 
@@ -49,16 +49,16 @@ namespace nova::renderer {
         static void set_initial_state();
 
 #pragma region Window
-        std::unique_ptr<iwindow> window;
+        std::unique_ptr<window> window;
 
         void open_window(uint32_t width, uint32_t height) override;
 #pragma endregion
 
 #pragma region Shaderpack
         std::unordered_map<std::string, gl_texture> dynamic_textures;
-        std::unordered_map<std::string, sampler_state_data> samplers;
+        std::unordered_map<std::string, sampler_create_info_t> samplers;
 
-        void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas);
+        void create_dynamic_textures(const std::vector<texture_create_into_t>& texture_datas);
         void destroy_dynamic_textures();
 #pragma endregion 
     };

@@ -38,6 +38,8 @@
 #include "auto_allocating_buffer.hpp"
 #include "swapchain.hpp"
 
+#include <nova_renderer/command_list.hpp>
+
 namespace nova::ttl {
     class task_scheduler;
 } // namespace nova::ttl
@@ -77,7 +79,7 @@ namespace nova::renderer {
         VkImage image = nullptr;
         VkImageView image_view = nullptr;
 
-        texture_resource_data data;
+        texture_create_into_t data;
 
         VmaAllocation allocation{};
         VmaAllocationInfo vma_info{};
@@ -103,7 +105,7 @@ namespace nova::renderer {
          * If this is VK_NULL_HANDLE, we should use the backbuffer's framebuffer
          */
         vk_framebuffer framebuffer;
-        render_pass_data data;
+        render_pass_create_info_t data;
         VkRect2D render_area{};
         VkFence fence{};
 
@@ -136,7 +138,7 @@ namespace nova::renderer {
         VkPipelineLayout layout = VK_NULL_HANDLE;
 
         std::vector<VkDescriptorSetLayout> layouts;
-        pipeline_data data;
+        pipeline_create_info_t data;
 
         std::unordered_map<std::string, vk_resource_binding> bindings;
     };
@@ -209,25 +211,13 @@ namespace nova::renderer {
 
         ~vulkan_render_engine() override;
 
-        void flush_model_matrix_buffer() const;
-
         void render_frame() override;
 
-        std::shared_ptr<iwindow> get_window() const override;
+        std::shared_ptr<window> get_window() const override;
 
-        void set_shaderpack(const shaderpack_data& data) override;
+		pipeline_t* create_pipeline(const pipeline_create_info_t& data) override;
 
-        result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) override;
-
-        void set_renderable_visibility(renderable_id_t id, bool is_visible) override;
-
-        void delete_renderable(renderable_id_t id) override;
-
-        result<mesh_id_t> add_mesh(const mesh_data& input_mesh) override;
-
-        void delete_mesh(uint32_t mesh_id) override;
-
-        command_list* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) override;
+        command_list_t* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list_t::level command_list_type) override;
 
         /*!
          * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
@@ -348,12 +338,12 @@ namespace nova::renderer {
 #pragma region Shaderpack
         bool shaderpack_loaded = false;
         std::mutex shaderpack_loading_mutex;
-        shaderpack_data shaderpack;
+        shaderpack_data_t shaderpack;
 
         std::unordered_map<std::string, vk_render_pass> render_passes;
         std::vector<std::string> render_passes_by_order;
 
-        std::unordered_map<std::string, material_data> materials;
+        std::unordered_map<std::string, material_data_t> materials;
 
         /*!
          * \brief Gets all the descriptor bindings from the provided SPIR-V code, performing basic validation that the
@@ -390,13 +380,13 @@ namespace nova::renderer {
          * \brief Creates a Vulkan renderpass for every element in passes
          * \param passes A list of render_pass_infos to create Vulkan renderpasses for
          */
-        void create_render_passes(const std::vector<render_pass_data>& passes);
+        void create_render_passes(const std::vector<render_pass_create_info_t>& passes);
 
         /*!
          * \brief Creates a VkGraphicsPipeline for each pipeline_data in pipelines
          * \param pipelines The pipeline_datas to create pipelines for
          */
-        void create_graphics_pipelines(const std::vector<pipeline_data>& pipelines);
+        void create_graphics_pipelines(const std::vector<pipeline_create_info_t>& pipelines);
 
         /*!
          * \brief Creates a single shader module from the provided SPIR-V code
@@ -411,7 +401,7 @@ namespace nova::renderer {
          * \brief Adds an entry to the dynamic textures for each entry in texture_data
          * \param texture_datas All the texture_datas that you want to create a dynamic texture for
          */
-        void create_textures(const std::vector<texture_resource_data>& texture_datas);
+        void create_textures(const std::vector<texture_create_into_t>& texture_datas);
 
         /*!
          * \brief Creates descriptor set layouts for all the descriptor set bindings
@@ -443,7 +433,7 @@ namespace nova::renderer {
          *
          * Prerequisite: This function must be run after create_material_descriptor_sets
          */
-        void update_material_descriptor_sets(const material_pass& mat,
+        void update_material_descriptor_sets(const material_pass_t& mat,
                                              const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor);
 
         /*!
@@ -523,13 +513,13 @@ namespace nova::renderer {
          */
         std::unordered_map<renderable_id_t, renderable_metadata> metadata_for_renderables;
 
-        result<std::vector<const material_pass*>> get_material_passes_for_renderable(const static_mesh_renderable_data& data);
+        result<std::vector<const material_pass_t*>> get_material_passes_for_renderable(const static_mesh_renderable_data& data);
 
         result<const vk_mesh*> get_mesh_for_renderable(const static_mesh_renderable_data& data);
 
         result<renderable_id_t> register_renderable(const static_mesh_renderable_data& data,
                                                     const vk_mesh* mesh,
-                                                    const std::vector<const material_pass*>& passes);
+                                                    const std::vector<const material_pass_t*>& passes);
 #pragma endregion
 
 #pragma region Rendering
@@ -549,7 +539,7 @@ namespace nova::renderer {
         vk_buffer per_frame_data_buffer;
 
         std::unordered_map<std::string, std::vector<vk_pipeline>> pipelines_by_renderpass;
-        std::unordered_map<std::string, std::vector<material_pass>> material_passes_by_pipeline;
+        std::unordered_map<std::string, std::vector<material_pass_t>> material_passes_by_pipeline;
         std::unordered_map<std::string, vk_renderables> renderables_by_material;
 
         std::mutex rendering_mutex;
@@ -569,6 +559,8 @@ namespace nova::renderer {
         uint32_t cur_model_matrix_idx = 0;
 
         void create_builtin_uniform_buffers();
+
+        void flush_model_matrix_buffer() const;
 
         /*!
          * \brief Performs all tasks necessary to render this renderpass
@@ -598,12 +590,12 @@ namespace nova::renderer {
          * \param pipeline The pipeline to get binding locations from
          * \param cmds The command buffer to bind things in
          */
-        void bind_material_resources(const material_pass& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds);
+        void bind_material_resources(const material_pass_t& pass, const vk_pipeline& pipeline, VkCommandBuffer cmds);
 
         /*!
          * \brief Renders all the things using the provided material
          */
-        void record_drawing_all_for_material(const material_pass& pass, VkCommandBuffer cmds);
+        void record_drawing_all_for_material(const material_pass_t& pass, VkCommandBuffer cmds);
 
         /*!
          * \brief Submits the provided command buffer to the provided queue

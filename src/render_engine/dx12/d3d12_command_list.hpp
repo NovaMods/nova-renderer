@@ -14,7 +14,7 @@
 namespace nova::renderer {
     using namespace Microsoft::WRL;
 
-    class d3d12_command_list : public command_list {
+    class d3d12_command_list : public command_list_t {
     public:
         explicit d3d12_command_list(ComPtr<ID3D12GraphicsCommandList> cmds);
 
@@ -28,7 +28,7 @@ namespace nova::renderer {
                          uint64_t source_offset,
                          uint64_t num_bytes) override;
 
-        void execute_command_lists(const std::vector<command_list*>& lists) override;
+        void execute_command_lists(const std::vector<command_list_t*>& lists) override;
 
         void begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) override;
         void end_renderpass() override;

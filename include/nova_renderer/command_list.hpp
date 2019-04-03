@@ -122,20 +122,20 @@ namespace nova::renderer {
      *
      * Command lists are fully bound to ChaiScript
      */
-    class command_list {
+    class command_list_t {
     public:
         enum class level {
             PRIMARY,
             SECONDARY,
         };
 
-        command_list() = default;
+        command_list_t() = default;
 
-        command_list(command_list&& old) noexcept = default;
-        command_list& operator=(command_list&& old) noexcept = default;
+        command_list_t(command_list_t&& old) noexcept = default;
+        command_list_t& operator=(command_list_t&& old) noexcept = default;
 
-        command_list(const command_list& other) = delete;
-        command_list& operator=(const command_list& other) = delete;
+        command_list_t(const command_list_t& other) = delete;
+        command_list_t& operator=(const command_list_t& other) = delete;
 
         /*!
          * \brief Inserts a barrier so that all access to a resource before the barrier is resolved before any access
@@ -179,7 +179,7 @@ namespace nova::renderer {
          * These command lists should be secondary command lists. Nova doesn't validate this because yolo but you need
          * to be nice - the API-specific validation layers _will_ yell at you
          */
-        virtual void execute_command_lists(const std::vector<command_list*>& lists) = 0;
+        virtual void execute_command_lists(const std::vector<command_list_t*>& lists) = 0;
 
         virtual void begin_renderpass(renderpass_t* renderpass, framebuffer_t* framebuffer) = 0;
         virtual void end_renderpass() = 0;
@@ -190,7 +190,7 @@ namespace nova::renderer {
         virtual void bind_index_buffer() = 0;
         virtual void draw_indexed_mesh() = 0;
 
-        virtual ~command_list() = default;
+        virtual ~command_list_t() = default;
     };
 #pragma endregion
 } // namespace nova::renderer

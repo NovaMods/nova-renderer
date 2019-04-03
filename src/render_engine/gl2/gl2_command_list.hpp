@@ -33,7 +33,7 @@ namespace nova::renderer {
     };
 
     struct execute_command_lists_command {
-        std::vector<command_list*> lists_to_execute;
+        std::vector<command_list_t*> lists_to_execute;
     };
 
     struct bind_renderpass_command {
@@ -79,7 +79,7 @@ namespace nova::renderer {
      *
      * On the other hand, OpenGL has no concept of a resource barrier...
      */
-    class gl2_command_list : public command_list {
+    class gl2_command_list : public command_list_t {
     public:
         gl2_command_list();
 
@@ -93,7 +93,7 @@ namespace nova::renderer {
                          uint64_t source_offset,
                          uint64_t num_bytes) override;
 
-        void execute_command_lists(const std::vector<command_list*>& lists) override;
+        void execute_command_lists(const std::vector<command_list_t*>& lists) override;
 
         void begin_renderpass([[maybe_unused]] renderpass_t* renderpass, framebuffer_t* framebuffer) override;
 

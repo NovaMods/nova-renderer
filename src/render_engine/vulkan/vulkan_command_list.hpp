@@ -15,7 +15,7 @@ namespace nova::renderer {
     /*!
      * \brief Vulkan implementation of `command_list`
      */
-    class vulkan_command_list : public command_list {
+    class vulkan_command_list : public command_list_t {
     public:
         explicit vulkan_command_list(VkCommandBuffer cmds, const vulkan_render_engine& render_engine);
 
@@ -29,7 +29,7 @@ namespace nova::renderer {
                          uint64_t source_offset,
                          uint64_t num_bytes) override;
 
-        void execute_command_lists(const std::vector<command_list*>& lists) override;
+        void execute_command_lists(const std::vector<command_list_t*>& lists) override;
 
         void begin_renderpass(renderpass_t* renderpass, framebuffer_t* framebuffer) override;
         void end_renderpass() override;

@@ -333,8 +333,8 @@ namespace nova::renderer {
 
         // Record all the draws for a material
         // I'll worry about depth sorting later
-        const std::vector<material_pass> materials = material_passes_by_pipeline.at(pipeline->data.name);
-        for(const material_pass& pass : materials) {
+        const std::vector<material_pass_t> materials = material_passes_by_pipeline.at(pipeline->data.name);
+        for(const material_pass_t& pass : materials) {
             if(renderables_by_material.find(pass.name) == renderables_by_material.end()) {
                 // Nothing to render? Don't render it!
                 continue;
@@ -347,11 +347,11 @@ namespace nova::renderer {
         // vkEndCommandBuffer(*cmds);
     }
 
-    void vulkan_render_engine::bind_material_resources(const material_pass& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
+    void vulkan_render_engine::bind_material_resources(const material_pass_t& mat_pass, const vk_pipeline& pipeline, VkCommandBuffer cmds) {
         vkCmdBindDescriptorSets(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.layout, 0, 1, mat_pass.descriptor_sets.data(), 0, nullptr);
     }
 
-    void vulkan_render_engine::record_drawing_all_for_material(const material_pass& pass, VkCommandBuffer cmds) {
+    void vulkan_render_engine::record_drawing_all_for_material(const material_pass_t& pass, VkCommandBuffer cmds) {
 
         NOVA_LOG(TRACE) << "Recording drawcalls for material pass " << pass.name << " in material " << pass.material_name;
 

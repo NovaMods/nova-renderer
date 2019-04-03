@@ -14,7 +14,7 @@
 namespace nova::renderer {
     enum class barrier_necessity { maybe, yes, no };
 
-    void vulkan_render_engine::set_shaderpack(const shaderpack_data& data) {
+    void vulkan_render_engine::set_shaderpack(const shaderpack_data_t& data) {
         NOVA_LOG(DEBUG) << "Vulkan render engine loading new shaderpack";
         if(shaderpack_loaded) {
             destroy_render_passes();
@@ -28,10 +28,10 @@ namespace nova::renderer {
 
         create_textures(data.resources.textures);
         NOVA_LOG(DEBUG) << "Dynamic textures created";
-        for(const material_data& mat_data : data.materials) {
+        for(const material_data_t& mat_data : data.materials) {
             materials[mat_data.name] = mat_data;
 
-            for(const material_pass& mat : mat_data.passes) {
+            for(const material_pass_t& mat : mat_data.passes) {
                 material_passes_by_pipeline[mat.pipeline].push_back(mat);
             }
         }
@@ -50,10 +50,10 @@ namespace nova::renderer {
         shaderpack_loaded = true;
     }
 
-    void vulkan_render_engine::create_textures(const std::vector<texture_resource_data>& texture_datas) {
+    void vulkan_render_engine::create_textures(const std::vector<texture_create_into_t>& texture_datas) {
         const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
         const glm::uvec2 swapchain_extent_glm = {swapchain_extent.width, swapchain_extent.height};
-        for(const texture_resource_data& texture_data : texture_datas) {
+        for(const texture_create_into_t& texture_data : texture_datas) {
             vk_texture texture;
             texture.is_dynamic = true;
             texture.data = texture_data;
@@ -126,13 +126,13 @@ namespace nova::renderer {
         dynamic_textures_need_to_transition = true;
     }
 
-    void vulkan_render_engine::create_render_passes(const std::vector<render_pass_data>& passes) {
+    void vulkan_render_engine::create_render_passes(const std::vector<render_pass_create_info_t>& passes) {
         NOVA_LOG(DEBUG) << "Flattening frame graph...";
 
-        std::unordered_map<std::string, render_pass_data> regular_render_passes;
+        std::unordered_map<std::string, render_pass_create_info_t> regular_render_passes;
         regular_render_passes.reserve(passes.size());
         render_passes.reserve(passes.size());
-        for(const render_pass_data& pass_data : passes) {
+        for(const render_pass_create_info_t& pass_data : passes) {
             render_passes[pass_data.name].data = pass_data;
             VkFenceCreateInfo fence_info = {};
             fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -185,7 +185,7 @@ namespace nova::renderer {
             textures_in_framebuffer.reserve(pass.data.texture_outputs.size() + (pass.data.depth_texture ? 1 : 0));
             bool writes_to_backbuffer = false;
             // Collect framebuffer size information from color output attachments
-            for(const texture_attachment& attachment : pass.data.texture_outputs) {
+            for(const texture_attachment_info_t& attachment : pass.data.texture_outputs) {
                 if(attachment.name == "Backbuffer") {
                     // Handle backbuffer
                     // Backbuffer framebuffers are handled by themselves in their own special snowflake way so we just need to skip
@@ -388,10 +388,10 @@ namespace nova::renderer {
         }
     }
 
-    void vulkan_render_engine::create_graphics_pipelines(const std::vector<pipeline_data>& pipelines) {
+    void vulkan_render_engine::create_graphics_pipelines(const std::vector<pipeline_create_info_t>& pipelines) {
         const VkExtent2D swapchain_extent = swapchain->get_swapchain_extent();
 
-        for(const pipeline_data& data : pipelines) {
+        for(const pipeline_create_info_t& data : pipelines) {
             NOVA_LOG(TRACE) << "Creating a VkPipeline for pipeline " << data.name;
             vk_pipeline nova_pipeline;
             nova_pipeline.data = data;
@@ -737,8 +737,8 @@ namespace nova::renderer {
         for(const auto& [renderpass_name, pipelines] : pipelines_by_renderpass) {
             (void) renderpass_name;
             for(const auto& pipeline : pipelines) {
-                std::vector<material_pass>& material_passes = material_passes_by_pipeline.at(pipeline.data.name);
-                for(material_pass& mat_pass : material_passes) {
+                std::vector<material_pass_t>& material_passes = material_passes_by_pipeline.at(pipeline.data.name);
+                for(material_pass_t& mat_pass : material_passes) {
                     if(pipeline.layouts.empty()) {
                         // If there's no layouts, we're done
                         NOVA_LOG(TRACE) << "No layouts for pipeline " << pipeline.data.name << ", which material pass " << mat_pass.name
@@ -780,7 +780,7 @@ namespace nova::renderer {
     }
 
     void vulkan_render_engine::update_material_descriptor_sets(
-        const material_pass& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor) {
+        const material_pass_t& mat, const std::unordered_map<std::string, vk_resource_binding>& name_to_descriptor) {
         // for each resource:
         //  - Get its set and binding from the pipeline
         //  - Update its descriptor set
@@ -920,7 +920,7 @@ namespace nova::renderer {
 
         std::unordered_map<std::string, barrier_necessity> write_texture_barrier_necessity;
         write_texture_barrier_necessity.reserve(pass.data.texture_outputs.size());
-        for(const texture_attachment& attach : pass.data.texture_outputs) {
+        for(const texture_attachment_info_t& attach : pass.data.texture_outputs) {
             write_texture_barrier_necessity[attach.name] = barrier_necessity::maybe;
         }
 
@@ -959,7 +959,7 @@ namespace nova::renderer {
                 }
             }
 
-            for(const texture_attachment& prev_write_tex : previous_pass.data.texture_outputs) {
+            for(const texture_attachment_info_t& prev_write_tex : previous_pass.data.texture_outputs) {
                 // If the previous pass write to a texture that we read from, we need a barrier
                 if(read_texture_barrier_necessity.find(prev_write_tex.name) != read_texture_barrier_necessity.end()) {
                     if(read_texture_barrier_necessity.at(prev_write_tex.name) == barrier_necessity::maybe) {
