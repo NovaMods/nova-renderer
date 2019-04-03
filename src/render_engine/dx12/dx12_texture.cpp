@@ -2,9 +2,9 @@
 #include "dx12_utils.hpp"
 
 namespace nova::renderer {
-    dx12_texture::dx12_texture(const texture_resource_data& data, ComPtr<ID3D12Resource> resource) : data(data), resource(resource) {}
+    dx12_texture::dx12_texture(const texture_create_into_t& data, ComPtr<ID3D12Resource> resource) : data(data), resource(resource) {}
 
-    const texture_resource_data& dx12_texture::get_data() const { return data; }
+    const texture_create_into_t& dx12_texture::get_data() const { return data; }
 
     ComPtr<ID3D12Resource> dx12_texture::get_dx12_texture() const { return resource; }
 

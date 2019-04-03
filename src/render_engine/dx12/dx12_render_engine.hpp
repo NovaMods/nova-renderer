@@ -47,9 +47,9 @@ namespace nova::renderer {
          * render_engine overrides
          */
 
-        std::shared_ptr<iwindow> get_window() const override;
+        std::shared_ptr<window> get_window() const override;
 
-        void set_shaderpack(const shaderpack_data& data) override;
+        void set_shaderpack(const shaderpack_data_t& data) override;
 
         result<renderable_id_t> add_renderable(const static_mesh_renderable_data& data) override;
 
@@ -61,7 +61,7 @@ namespace nova::renderer {
 
         void delete_mesh(uint32_t) override;
         
-        command_list* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list::level command_list_type) override;
+        command_list_t* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list_t::level command_list_type) override;
 
         void render_frame() override;
 
@@ -113,7 +113,7 @@ namespace nova::renderer {
         /*!
          * \brief The passes in the current frame graph, in submission order
          */
-        std::unordered_map<std::string, render_pass_data> render_passes;
+        std::unordered_map<std::string, render_pass_create_info_t> render_passes;
         std::vector<std::string> ordered_passes;
 
         std::shared_ptr<win32_window> window;
@@ -138,7 +138,7 @@ namespace nova::renderer {
          */
         void create_render_target_descriptor_heap();
 
-        command_list* allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const;
+        command_list_t* allocate_command_list(D3D12_COMMAND_LIST_TYPE command_list_type) const;
 
         void create_full_frame_fences();
 
@@ -146,11 +146,11 @@ namespace nova::renderer {
 
         void try_to_free_command_lists();
 
-        void create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas, std::vector<render_pass_data> passes);
+        void create_dynamic_textures(const std::vector<texture_create_into_t>& texture_datas, std::vector<render_pass_create_info_t> passes);
 
-        void make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines);
+        void make_pipeline_state_objects(const std::vector<pipeline_create_info_t>& pipelines);
 
-        pipeline make_single_pso(const pipeline_data& input);
+        pipeline make_single_pso(const pipeline_create_info_t& input);
 
         ComPtr<ID3D12RootSignature> create_root_signature(
             const std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) const;
@@ -173,7 +173,7 @@ namespace nova::renderer {
      *
      * \return The compiled shader
      */
-    ComPtr<ID3DBlob> compile_shader(const shader_source& shader,
+    ComPtr<ID3DBlob> compile_shader(const shader_source_t& shader,
                                     const std::string& target,
                                     const spirv_cross::CompilerHLSL::Options& options,
                                     std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables);

@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-#include "shaderpack_data.hpp"
+#include <nova_renderer/shaderpack_data.hpp>
 
 namespace nova::renderer {
     struct full_vertex {

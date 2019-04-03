@@ -214,7 +214,7 @@ namespace nova::renderer {
      *
      * At the time of writing I'm not sure how this is corellated with a texture, but all well
      */
-    struct sampler_state_data {
+    struct sampler_create_info_t {
         std::string name;
 
         /*!
@@ -240,12 +240,12 @@ namespace nova::renderer {
         uint32_t write_mask;
     };
 
-    struct shader_source {
+    struct shader_source_t {
         fs::path filename;
         std::vector<uint32_t> source;
     };
 
-    struct vertex_field_data {
+    struct vertex_field_data_t {
         std::string semantic_name;
         vertex_field_enum field{};
     };
@@ -253,7 +253,7 @@ namespace nova::renderer {
     /*!
      * \brief All the data that Nova uses to build a pipeline
      */
-    struct pipeline_data {
+    struct pipeline_create_info_t {
         /*!
          * \brief The name of this pipeline
          */
@@ -284,7 +284,7 @@ namespace nova::renderer {
          *
          * The index in the array is the attribute index that the vertex field is bound to
          */
-        std::vector<vertex_field_data> vertex_fields;
+        std::vector<vertex_field_data_t> vertex_fields;
 
         /*!
          * \brief The stencil buffer operations to perform on the front faces
@@ -368,17 +368,17 @@ namespace nova::renderer {
          */
         render_queue_enum render_queue{};
 
-        shader_source vertex_shader{};
+        shader_source_t vertex_shader{};
 
-        std::optional<shader_source> geometry_shader;
-        std::optional<shader_source> tessellation_control_shader;
-        std::optional<shader_source> tessellation_evaluation_shader;
-        std::optional<shader_source> fragment_shader;
+        std::optional<shader_source_t> geometry_shader;
+        std::optional<shader_source_t> tessellation_control_shader;
+        std::optional<shader_source_t> tessellation_evaluation_shader;
+        std::optional<shader_source_t> fragment_shader;
 
         /*!
          * \brief Merges this pipeline with the parent, returning the merged pipeline
          */
-        [[nodiscard]] pipeline_data merge_with_parent(const pipeline_data& parent_pipeline) const;
+        [[nodiscard]] pipeline_create_info_t merge_with_parent(const pipeline_create_info_t& parent_pipeline) const;
     };
 
     struct texture_format {
@@ -410,7 +410,7 @@ namespace nova::renderer {
     /*!
      * \brief A texture that a pass can use
      */
-    struct texture_resource_data {
+    struct texture_create_into_t {
         /*!
          * \brief The name of the texture
          *
@@ -450,15 +450,15 @@ namespace nova::renderer {
         texture_format format{};
     };
 
-    struct shaderpack_resources_data {
-        std::vector<texture_resource_data> textures;
-        std::vector<sampler_state_data> samplers;
+    struct shaderpack_resources_data_t {
+        std::vector<texture_create_into_t> textures;
+        std::vector<sampler_create_info_t> samplers;
     };
 
     /*!
      * \brief A description of a texture that a render pass outputs to
      */
-    struct texture_attachment {
+    struct texture_attachment_info_t {
         /*!
          * \brief The name of the texture
          */
@@ -473,7 +473,7 @@ namespace nova::renderer {
          */
         bool clear = false;
 
-        bool operator==(const texture_attachment& other) const;
+        bool operator==(const texture_attachment_info_t& other) const;
     };
 
     /*!
@@ -495,7 +495,7 @@ namespace nova::renderer {
      * resources.json file sets up sixteen framebuffer color attachments for ping-pong buffers, a depth attachment,
      * some shadow maps, etc
      */
-    struct render_pass_data {
+    struct render_pass_create_info_t {
         /*!
          * \brief The name of this render pass
          */
@@ -513,11 +513,11 @@ namespace nova::renderer {
         /*!
          * \brief The textures that this pass will write to
          */
-        std::vector<texture_attachment> texture_outputs;
+        std::vector<texture_attachment_info_t> texture_outputs;
         /*!
          * \brief The depth texture this pass will write to
          */
-        std::optional<texture_attachment> depth_texture;
+        std::optional<texture_attachment_info_t> depth_texture;
 
         /*!
          * \brief All the buffers that this renderpass reads from
@@ -529,36 +529,36 @@ namespace nova::renderer {
          */
         std::vector<std::string> output_buffers;
 
-        render_pass_data() = default;
+        render_pass_create_info_t() = default;
     };
 
-    struct material_pass {
+    struct material_pass_t {
         std::string name;
         std::string material_name;
         std::string pipeline;
         std::unordered_map<std::string, std::string> bindings;
     };
 
-    struct material_data {
+    struct material_data_t {
         std::string name;
-        std::vector<material_pass> passes;
+        std::vector<material_pass_t> passes;
         std::string geometry_filter;
     };
 
     /*!
      * \brief All the data that can be in a shaderpack
      */
-    struct shaderpack_data {
-        std::vector<pipeline_data> pipelines;
+    struct shaderpack_data_t {
+        std::vector<pipeline_create_info_t> pipelines;
 
         /*!
          * \brief All the renderpasses that this shaderpack needs, in submission order
          */
-        std::vector<render_pass_data> passes;
+        std::vector<render_pass_create_info_t> passes;
 
-        std::vector<material_data> materials;
+        std::vector<material_data_t> materials;
 
-        shaderpack_resources_data resources;
+        shaderpack_resources_data_t resources;
     };
 
     pixel_format_enum pixel_format_enum_from_string(const std::string& str);

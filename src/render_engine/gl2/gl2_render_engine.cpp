@@ -26,28 +26,28 @@ namespace nova::renderer {
         glFrontFace(GL_CCW);
     }
 
-    void gl2_render_engine::set_shaderpack(const shaderpack_data& data) {
+    void gl2_render_engine::set_shaderpack(const shaderpack_data_t& data) {
         destroy_dynamic_textures();
 
         create_dynamic_textures(data.resources.textures);
-        for(const sampler_state_data& sampler_data : data.resources.samplers) {
+        for(const sampler_create_info_t& sampler_data : data.resources.samplers) {
             samplers.emplace(sampler_data.name, sampler_data);
         }
     }
 
-    command_list* gl2_render_engine::allocate_command_list([[maybe_unused]] uint32_t thread_idx,
+    command_list_t* gl2_render_engine::allocate_command_list([[maybe_unused]] uint32_t thread_idx,
                                                            [[maybe_unused]] queue_type needed_queue_type,
-                                                           [[maybe_unused]] command_list::level command_list_type) {
+                                                           [[maybe_unused]] command_list_t::level command_list_type) {
         return new gl2_command_list();
     }
 
-    void gl2_render_engine::create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas) {
+    void gl2_render_engine::create_dynamic_textures(const std::vector<texture_create_into_t>& texture_datas) {
         dynamic_textures.reserve(texture_datas.size());
 
         std::vector<GLuint> texture_ids(texture_datas.size());
         glGenTextures(texture_ids.size(), texture_ids.data());
 
-        for(const texture_resource_data& data : texture_datas) {
+        for(const texture_create_into_t& data : texture_datas) {
             gl_texture texture = {};
             texture.id = texture_ids.front();
             texture_ids.pop_back();

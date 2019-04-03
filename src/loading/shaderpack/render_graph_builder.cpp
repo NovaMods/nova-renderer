@@ -23,7 +23,7 @@ namespace nova::renderer {
      * passes, there's a circular dependency somewhere in the render graph. This is Bad and we hate it
      */
     void add_dependent_passes(const std::string& pass_name,
-                              const std::unordered_map<std::string, render_pass_data>& passes,
+                              const std::unordered_map<std::string, render_pass_create_info_t>& passes,
                               std::vector<std::string>& ordered_passes,
                               const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
                               uint32_t depth);
@@ -74,7 +74,7 @@ namespace nova::renderer {
         return left || right;
     }
 
-    std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_data>& passes) {
+    std::vector<std::string> order_passes(const std::unordered_map<std::string, render_pass_create_info_t>& passes) {
         MTR_SCOPE("Renderpass", "order_passes");
 
         NOVA_LOG(DEBUG) << "Executing Pass Scheduler";
@@ -90,7 +90,7 @@ namespace nova::renderer {
         auto resource_to_write_pass = std::unordered_map<std::string, std::vector<std::string>>{};
 
         for(const auto& item : passes) {
-            const render_pass_data& pass = item.second;
+            const render_pass_create_info_t& pass = item.second;
 
             for(const auto& output : pass.texture_outputs) {
                 resource_to_write_pass[output.name].push_back(pass.name);
@@ -147,7 +147,7 @@ namespace nova::renderer {
     }
 
     void add_dependent_passes(const std::string& pass_name,
-                              const std::unordered_map<std::string, render_pass_data>& passes,
+                              const std::unordered_map<std::string, render_pass_create_info_t>& passes,
                               std::vector<std::string>& ordered_passes,
                               const std::unordered_map<std::string, std::vector<std::string>>& resource_to_write_pass,
                               const uint32_t depth) {
@@ -192,7 +192,7 @@ namespace nova::renderer {
         }
     }
 
-    void determine_usage_order_of_textures(const std::vector<render_pass_data>& passes,
+    void determine_usage_order_of_textures(const std::vector<render_pass_create_info_t>& passes,
                                            std::unordered_map<std::string, range>& resource_used_range,
                                            std::vector<std::string>& resources_in_order) {
         uint32_t pass_idx = 0;
@@ -233,7 +233,7 @@ namespace nova::renderer {
     }
 
     std::unordered_map<std::string, std::string> determine_aliasing_of_textures(
-        const std::unordered_map<std::string, texture_resource_data>& textures,
+        const std::unordered_map<std::string, texture_create_into_t>& textures,
         const std::unordered_map<std::string, range>& resource_used_range,
         const std::vector<std::string>& resources_in_order) {
         std::unordered_map<std::string, std::string> aliases;

@@ -187,7 +187,7 @@ namespace nova::renderer {
         }
     }
 
-    std::shared_ptr<iwindow> dx12_render_engine::get_window() const { return window; }
+    std::shared_ptr<window> dx12_render_engine::get_window() const { return window; }
 
     void dx12_render_engine::render_frame() {
         wait_for_previous_frame();
@@ -285,7 +285,7 @@ namespace nova::renderer {
         full_frame_fence_event = CreateEvent(nullptr, false, false, nullptr);
     }
 
-    void dx12_render_engine::set_shaderpack(const shaderpack_data& data) {
+    void dx12_render_engine::set_shaderpack(const shaderpack_data_t& data) {
         // Let's build our data from the ground up!
         // To load a new shaderpack, we need to first clear out all the data from the old shaderpack. Then, we can
         // make the new dynamic textures and samplers, then the PSOs, then the material definitions, then the
@@ -302,7 +302,7 @@ namespace nova::renderer {
         // Build up E V E R Y T H I N G
         render_passes.clear();
         render_passes.reserve(data.passes.size());
-        for(const render_pass_data& pass_data : data.passes) {
+        for(const render_pass_create_info_t& pass_data : data.passes) {
             render_passes[pass_data.name] = pass_data;
         }
         ordered_passes = order_passes(render_passes);
@@ -311,7 +311,7 @@ namespace nova::renderer {
 
         create_gpu_query_heap(ordered_passes.size());
 
-        std::vector<render_pass_data> passes_in_submission_order;
+        std::vector<render_pass_create_info_t> passes_in_submission_order;
         passes_in_submission_order.reserve(ordered_passes.size());
         for(const std::string& pass_name : ordered_passes) {
             passes_in_submission_order.push_back(render_passes.at(pass_name));
@@ -344,11 +344,11 @@ namespace nova::renderer {
         // TODO
     }
 
-    command_list* dx12_render_engine::allocate_command_list(uint32_t thread_idx,
+    command_list_t* dx12_render_engine::allocate_command_list(uint32_t thread_idx,
                                                             queue_type needed_queue_type,
-                                                            command_list::level command_list_type) {
+                                                            command_list_t::level command_list_type) {
         D3D12_COMMAND_LIST_TYPE type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        if(command_list_type == command_list::level::SECONDARY) {
+        if(command_list_type == command_list_t::level::SECONDARY) {
             type = D3D12_COMMAND_LIST_TYPE_BUNDLE;
 
         } else {
@@ -398,10 +398,10 @@ namespace nova::renderer {
         lists_to_free.erase(erase_itr, lists_to_free.end());
     }
 
-    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_resource_data>& texture_datas,
-                                                     std::vector<render_pass_data> passes) {
-        std::unordered_map<std::string, texture_resource_data> textures;
-        for(const texture_resource_data& data : texture_datas) {
+    void dx12_render_engine::create_dynamic_textures(const std::vector<texture_create_into_t>& texture_datas,
+                                                     std::vector<render_pass_create_info_t> passes) {
+        std::unordered_map<std::string, texture_create_into_t> textures;
+        for(const texture_create_into_t& data : texture_datas) {
             textures[data.name] = data;
         }
 
@@ -519,11 +519,11 @@ namespace nova::renderer {
         device->CreateQueryHeap(&heap_desc, IID_PPV_ARGS(&renderpass_timestamp_query_heap));
     }
 
-    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_data>& pipelines) {
+    void dx12_render_engine::make_pipeline_state_objects(const std::vector<pipeline_create_info_t>& pipelines) {
         std::vector<pipeline> future_pipelines(pipelines.size());
         std::size_t write_pipeline = 0;
 
-        for(const pipeline_data& data : pipelines) {
+        for(const pipeline_create_info_t& data : pipelines) {
             if(!data.name.empty()) {
                 future_pipelines[write_pipeline] = make_single_pso(data);
                 write_pipeline++;
@@ -531,8 +531,8 @@ namespace nova::renderer {
         }
     }
 
-    pipeline dx12_render_engine::make_single_pso(const pipeline_data& input) {
-        const render_pass_data& render_pass = render_passes.at(input.pass);
+    pipeline dx12_render_engine::make_single_pso(const pipeline_create_info_t& input) {
+        const render_pass_create_info_t& render_pass = render_passes.at(input.pass);
         const auto states_begin = input.states.begin();
         const auto states_end = input.states.end();
         pipeline output;
@@ -663,7 +663,7 @@ namespace nova::renderer {
 
         std::vector<D3D12_INPUT_ELEMENT_DESC> input_descs;
         input_descs.reserve(input.vertex_fields.size());
-        for(const vertex_field_data& vertex_field : input.vertex_fields) {
+        for(const vertex_field_data_t& vertex_field : input.vertex_fields) {
             const vertex_attribute& attr = all_formats.at(vertex_field.field);
 
             D3D12_INPUT_ELEMENT_DESC desc = {};
@@ -693,7 +693,7 @@ namespace nova::renderer {
 
         uint32_t i = 0;
         for(i = 0; i < render_pass.texture_outputs.size(); i++) {
-            const texture_attachment& attachment = render_pass.texture_outputs.at(i);
+            const texture_attachment_info_t& attachment = render_pass.texture_outputs.at(i);
             const dx12_texture& tex = dynamic_textures.at(attachment.name);
             if(tex.is_depth_texture()) {
                 pipeline_state_desc.DSVFormat = tex.get_dxgi_format();
@@ -746,7 +746,7 @@ namespace nova::renderer {
         tables[set].push_back(range);
     }
 
-    ComPtr<ID3DBlob> compile_shader(const shader_source& shader,
+    ComPtr<ID3DBlob> compile_shader(const shader_source_t& shader,
                                     const std::string& target,
                                     const spirv_cross::CompilerHLSL::Options& options,
                                     std::unordered_map<uint32_t, std::vector<D3D12_DESCRIPTOR_RANGE1>>& tables) {

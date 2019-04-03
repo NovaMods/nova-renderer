@@ -33,5 +33,5 @@ namespace nova::renderer {
      * \param task_scheduler The task scheduler to use when kicking off tasks to process all of the shaderpack data
      * \return The shaderpack, if it can be loaded, or an empty optional if it cannot
      */
-    shaderpack_data load_shaderpack_data(const fs::path& shaderpack_name);
+    shaderpack_data_t load_shaderpack_data(const fs::path& shaderpack_name);
 } // namespace nova::renderer

@@ -14,19 +14,19 @@ namespace nova::renderer {
     class dx12_texture {
     public:
         dx12_texture() = default;
-        explicit dx12_texture(const texture_resource_data& data);
+        explicit dx12_texture(const texture_create_into_t& data);
 
-        dx12_texture(const texture_resource_data& data, const D3D12_RESOURCE_DESC texture_desc);
+        dx12_texture(const texture_create_into_t& data, const D3D12_RESOURCE_DESC texture_desc);
 
-        dx12_texture(const texture_resource_data& data, ComPtr<ID3D12Resource> resource);
+        dx12_texture(const texture_create_into_t& data, ComPtr<ID3D12Resource> resource);
 
-        const texture_resource_data& get_data() const;
+        const texture_create_into_t& get_data() const;
         ComPtr<ID3D12Resource> get_dx12_texture() const;
         bool is_depth_texture() const;
         DXGI_FORMAT get_dxgi_format() const;
 
     private:
-        texture_resource_data data;
+        texture_create_into_t data;
         ComPtr<ID3D12Resource> resource;
     };
 } // namespace nova::renderer

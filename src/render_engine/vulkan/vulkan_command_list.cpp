@@ -86,11 +86,11 @@ namespace nova::renderer {
         vkCmdCopyBuffer(cmds, source_buffer->buffer, destination_buffer->buffer, 1, &copy);
     }
 
-    void vulkan_command_list::execute_command_lists(const std::vector<command_list*>& lists) {
+    void vulkan_command_list::execute_command_lists(const std::vector<command_list_t*>& lists) {
         std::vector<VkCommandBuffer> buffers;
         buffers.reserve(lists.size());
 
-        for(command_list* list : lists) {
+        for(command_list_t* list : lists) {
             vulkan_command_list* vk_list = dynamic_cast<vulkan_command_list*>(list);
             buffers.push_back(vk_list->cmds);
         }

@@ -49,14 +49,14 @@ namespace nova::renderer {
                                num_bytes);
     }
 
-    void d3d12_command_list::execute_command_lists(const std::vector<command_list*>& lists) {
+    void d3d12_command_list::execute_command_lists(const std::vector<command_list_t*>& lists) {
         // Apparently D3D12 can only execute bundles from another command list, meaning that the strategy I use to
         // record command buffers in Vulkan won't work here...
         //
         // OR WILL IT??????!?!?!?!??!?!?!??!?!?!??!!?
         // 
 
-        for(command_list* list : lists) {
+        for(command_list_t* list : lists) {
             d3d12_command_list* d3d12_list = dynamic_cast<d3d12_command_list*>(list);
             cmds->ExecuteBundle(d3d12_list->cmds.Get());
         }

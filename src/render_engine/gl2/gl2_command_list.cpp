@@ -15,8 +15,8 @@ namespace nova::renderer {
     }
 
     void gl2_command_list::resource_barriers([[maybe_unused]] pipeline_stage_flags stages_before_barrier,
-                                            [[maybe_unused]] pipeline_stage_flags stages_after_barrier,
-                                            [[maybe_unused]] const std::vector<resource_barrier_t>& barriers) {
+                                             [[maybe_unused]] pipeline_stage_flags stages_after_barrier,
+                                             [[maybe_unused]] const std::vector<resource_barrier_t>& barriers) {
         // Don't need to do anything whoop
     }
 
@@ -39,7 +39,7 @@ namespace nova::renderer {
         copy_command.buffer_copy.num_bytes = num_bytes;
     }
 
-    void gl2_command_list::execute_command_lists(const std::vector<command_list*>& lists) {
+    void gl2_command_list::execute_command_lists(const std::vector<command_list_t*>& lists) {
         commands.emplace_back();
 
         gl_command& execute_lists_command = commands.front();

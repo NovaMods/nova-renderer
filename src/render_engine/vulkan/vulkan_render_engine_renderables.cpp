@@ -50,7 +50,7 @@ namespace nova::renderer {
     }
 
     result<renderable_id_t> vulkan_render_engine::add_renderable(const static_mesh_renderable_data& data) {
-        return get_material_passes_for_renderable(data).flatMap([&](const std::vector<const vk_material_pass*>& passes) {
+        return get_material_passes_for_renderable(data).flatMap([&](const std::vector<const material_pass_t*>& passes) {
             return get_mesh_for_renderable(data).flatMap(
                 std::bind(&vulkan_render_engine::register_renderable, this, data, std::placeholders::_1, passes));
         });
@@ -62,8 +62,7 @@ namespace nova::renderer {
 
         for(const auto& [pipeline_name, materials] : material_passes_by_pipeline) {
             static_cast<void>(pipeline_name);
-
-            for(const vk_material_pass& pass : materials) {
+            for(const material_pass_t& pass : materials) {
                 if(pass.material_name == data.material_name) {
                     passes.push_back(&pass);
                 }
@@ -71,10 +70,10 @@ namespace nova::renderer {
         }
 
         if(passes.empty()) {
-            return result<std::vector<const vk_material_pass*>>(
+            return result<std::vector<const material_pass_t*>>(
                 nova_error(fmt::format(fmt("Could not find material {:s}"), data.material_name)));
         } else {
-            return result<std::vector<const vk_material_pass*>>(std::move(passes));
+            return result<std::vector<const material_pass_t*>>(std::move(passes));
         }
     }
 
@@ -88,21 +87,14 @@ namespace nova::renderer {
 
     result<renderable_id_t> vulkan_render_engine::register_renderable(const static_mesh_renderable_data& data,
                                                                       const vk_mesh* mesh,
-                                                                      const std::vector<const vk_material_pass*>& passes) {
+                                                                      const std::vector<const material_pass_t*>& passes) {
         renderable_metadata meta = {};
         meta.passes.reserve(passes.size());
-        for(const vk_material_pass* m : passes) {
-            meta.passes.push_back(m->name);
-        }
-
-        // TODO: UBO things!
-        // If the renderable is static, allocate its model matrix ubo slot from the static objects UBO
-        // If the renderable is dynamic, allocate its model matrix UBO from the dynamic objects ubo
+        for(const material_pass_t* m : passes) {
 
         // Set all the renderable's data
         vk_static_mesh_renderable renderable = {};
 
-        // Generate the renderable ID and store the renderable
         renderable_id_t id = next_renderable_id.fetch_add(1);
         renderable.id = id;
         metadata_for_renderables[id] = meta;
@@ -115,7 +107,7 @@ namespace nova::renderer {
         renderable.model_matrix = glm::scale(renderable.model_matrix, data.initial_scale);
 
         // Find the materials basses that this renderable belongs to, put it in the appropriate maps
-        for(const material_pass* pass : passes) {
+        for(const material_pass_t* pass : passes) {
             renderables_by_material[pass->name].static_meshes[mesh->id].push_back(renderable);
         }
 
