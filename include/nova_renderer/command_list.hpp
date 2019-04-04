@@ -5,7 +5,7 @@
 
 #pragma once
 #include <vector>
-#include <nova_renderer/render_engine.hpp>
+#include <nova_renderer/rhi_types.hpp>
 
 namespace nova::renderer {
 #pragma region Enums

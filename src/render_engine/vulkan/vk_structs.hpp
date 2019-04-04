@@ -25,10 +25,21 @@ namespace nova::renderer {
     };
 
     struct vk_renderpass_t : renderpass_t {
-        VkRenderPass renderpass;
+        VkRenderPass pass;
+        VkRect2D render_area;
     };
 
     struct vk_framebuffer_t : framebuffer_t {
         VkFramebuffer framebuffer;
+    };
+
+	struct vk_gpu_info {
+        VkPhysicalDevice phys_device{};
+        std::vector<VkQueueFamilyProperties> queue_family_props;
+        std::vector<VkExtensionProperties> available_extensions;
+        VkSurfaceCapabilitiesKHR surface_capabilities{};
+        std::vector<VkSurfaceFormatKHR> surface_formats;
+        VkPhysicalDeviceProperties props{};
+        VkPhysicalDeviceFeatures supported_features{};
     };
 }

@@ -469,6 +469,8 @@ namespace nova::renderer {
          */
         std::string name;
 
+		pixel_format_enum pixel_format;
+
         /*!
          * \brief Whether to clear it
          *
@@ -519,6 +521,7 @@ namespace nova::renderer {
          * \brief The textures that this pass will write to
          */
         std::vector<texture_attachment_info_t> texture_outputs;
+
         /*!
          * \brief The depth texture this pass will write to
          */
