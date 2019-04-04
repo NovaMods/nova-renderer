@@ -44,6 +44,125 @@ namespace nova::renderer {
         }
     }
 
+    VkPrimitiveTopology to_primitive_topology(primitive_topology_enum topology) {
+        switch(topology) {
+            case primitive_topology_enum::Lines:
+                return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+            case primitive_topology_enum::Triangles:
+                return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        }
+    }
+
+    VkBlendFactor to_blend_factor(blend_factor_enum factor) {
+        switch(factor) {
+            case blend_factor_enum::DstAlpha:
+                return VK_BLEND_FACTOR_DST_ALPHA;
+            case blend_factor_enum::DstColor:
+                return VK_BLEND_FACTOR_DST_COLOR;
+            case blend_factor_enum::One:
+                return VK_BLEND_FACTOR_ONE;
+            case blend_factor_enum::OneMinusDstAlpha:
+                return VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+            case blend_factor_enum::OneMinusDstColor:
+                return VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+            case blend_factor_enum::OneMinusSrcAlpha:
+                return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+            case blend_factor_enum::OneMinusSrcColor:
+                return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+            case blend_factor_enum::SrcAlpha:
+                return VK_BLEND_FACTOR_SRC_ALPHA;
+            case blend_factor_enum::SrcColor:
+                return VK_BLEND_FACTOR_SRC_COLOR;
+            case blend_factor_enum::Zero:
+                return VK_BLEND_FACTOR_ZERO;
+            default:
+                return VK_BLEND_FACTOR_ZERO;
+        }
+    }
+
+    VkCompareOp to_compare_op(const compare_op_enum compare_op) {
+        switch(compare_op) {
+            case compare_op_enum::Never:
+                return VK_COMPARE_OP_NEVER;
+
+            case compare_op_enum::Less:
+                return VK_COMPARE_OP_LESS;
+
+            case compare_op_enum::LessEqual:
+                return VK_COMPARE_OP_LESS_OR_EQUAL;
+
+            case compare_op_enum::Greater:
+                return VK_COMPARE_OP_GREATER;
+
+            case compare_op_enum::GreaterEqual:
+                return VK_COMPARE_OP_GREATER_OR_EQUAL;
+
+            case compare_op_enum::Equal:
+                return VK_COMPARE_OP_EQUAL;
+
+            case compare_op_enum::NotEqual:
+                return VK_COMPARE_OP_NOT_EQUAL;
+
+            case compare_op_enum::Always:
+                return VK_COMPARE_OP_ALWAYS;
+
+            default:
+                return VK_COMPARE_OP_NEVER;
+        }
+    }
+
+    VkStencilOp to_stencil_op(stencil_op_enum stencil_op) {
+        switch(stencil_op) {
+            case stencil_op_enum::Keep:
+                return VK_STENCIL_OP_KEEP;
+
+            case stencil_op_enum::Zero:
+                return VK_STENCIL_OP_ZERO;
+
+            case stencil_op_enum::Replace:
+                return VK_STENCIL_OP_REPLACE;
+
+            case stencil_op_enum::Incr:
+                return VK_STENCIL_OP_INCREMENT_AND_CLAMP;
+
+            case stencil_op_enum::IncrWrap:
+                return VK_STENCIL_OP_INCREMENT_AND_WRAP;
+
+            case stencil_op_enum::Decr:
+                return VK_STENCIL_OP_DECREMENT_AND_CLAMP;
+
+            case stencil_op_enum::DecrWrap:
+                return VK_STENCIL_OP_DECREMENT_AND_WRAP;
+
+            case stencil_op_enum::Invert:
+                return VK_STENCIL_OP_INVERT;
+
+            default:
+                return VK_STENCIL_OP_KEEP;
+        }
+    }
+
+    VkFormat to_vk_format(const pixel_format_enum format) {
+        switch(format) {
+            case pixel_format_enum::RGBA8:
+                return VK_FORMAT_R8G8B8A8_UNORM;
+
+            case pixel_format_enum::RGBA16F:
+                return VK_FORMAT_R16G16B16A16_SFLOAT;
+
+            case pixel_format_enum::RGBA32F:
+                return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+            case pixel_format_enum::Depth:
+                return VK_FORMAT_D32_SFLOAT;
+
+            case pixel_format_enum::DepthStencil:
+                return VK_FORMAT_D24_UNORM_S8_UINT;
+        }
+
+        return VK_FORMAT_R10X6G10X6_UNORM_2PACK16;
+    }
+
     std::string vk_result_to_string(VkResult result) {
         switch(result) {
             case VK_SUCCESS:

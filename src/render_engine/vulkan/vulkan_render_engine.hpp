@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #pragma once
 
 #include <condition_variable>
@@ -34,15 +35,23 @@
 #include "compacting_block_allocator.hpp"
 
 #include "auto_allocating_buffer.hpp"
+=======
+/*!
+ * \author ddubois
+ * \date 03-Apr-19.
+ */
+
+#pragma once
+
+#include <memory>
+
+#include <nova_renderer/render_engine.hpp>
+
+>>>>>>> Vulkan implementation of renderpass creation
 #include "swapchain.hpp"
 
-#include <nova_renderer/command_list.hpp>
-
-namespace nova::ttl {
-    class task_scheduler;
-} // namespace nova::ttl
-
 namespace nova::renderer {
+<<<<<<< HEAD
 
     NOVA_EXCEPTION(buffer_allocate_failed);
     NOVA_EXCEPTION(shaderpack_loading_error);
@@ -203,152 +212,59 @@ namespace nova::renderer {
         }
     };
 
+=======
+    /*!
+     * \brief Vulkan implementation of a render engine
+     */
+>>>>>>> Vulkan implementation of renderpass creation
     class vulkan_render_engine : public render_engine {
     public:
-        VkDevice device{};
-        VkSurfaceKHR surface{};
+        vulkan_render_engine(nova_settings& settings);
 
-        vk_gpu_info gpu;
+		vulkan_render_engine(vulkan_render_engine&& old) noexcept = delete;
+        vulkan_render_engine& operator=(vulkan_render_engine&& old) noexcept = delete;
 
-#pragma region Queues
-        uint32_t graphics_family_index{};
-        VkQueue graphics_queue{};
-        uint32_t compute_family_index{};
-        VkQueue compute_queue{};
-        uint32_t transfer_family_index{};
-        VkQueue copy_queue{};
-#pragma endregion
-
-        vulkan_render_engine(nova_settings& settings, RENDERDOC_API_1_3_0* renderdoc);
-
-        vulkan_render_engine(vulkan_render_engine&& other) = delete;
-        vulkan_render_engine& operator=(vulkan_render_engine&& other) noexcept = delete;
-
-        vulkan_render_engine(const vulkan_render_engine& other) = delete;
+		vulkan_render_engine(const vulkan_render_engine& other) = delete;
         vulkan_render_engine& operator=(const vulkan_render_engine& other) = delete;
 
-        ~vulkan_render_engine() override;
+        // Inherited via render_engine
+        virtual std::shared_ptr<window> get_window() const override;
 
-        void render_frame() override;
+        virtual result<renderpass_t*> create_renderpass(const render_pass_create_info_t& data) override;
+        virtual pipeline_t* create_pipeline(const pipeline_create_info_t& data) override;
+        virtual resource_t* create_buffer(const buffer_create_info_t& info) override;
+        virtual resource_t* create_texture(const texture2d_create_info_t& info) override;
+        virtual semaphore_t* create_semaphore() override;
+        virtual std::vector<semaphore_t*> create_semaphores(uint32_t num_semaphores) override;
+        virtual fence_t* create_fence(bool signaled = false) override;
+        virtual std::vector<fence_t*> create_fences(uint32_t num_fences, bool signaled = false) override;
 
-        std::shared_ptr<window> get_window() const override;
+        virtual void destroy_renderpass(renderpass_t* pass) override;
+        virtual void destroy_pipeline(pipeline_t* pipeline) override;
+        virtual void destroy_resource(resource_t* resource) override;
+        virtual void destroy_semaphores(const std::vector<semaphore_t*>& semaphores) override;
+        virtual void destroy_fences(const std::vector<fence_t*>& fences) override;
 
-		pipeline_t* create_pipeline(const pipeline_create_info_t& data) override;
+        virtual command_list_t* allocate_command_list(uint32_t thread_idx,
+                                                      queue_type needed_queue_type,
+                                                      command_list_t::level level) override;
+        virtual void submit_command_list(command_list_t* cmds,
+                                         queue_type queue,
+                                         fence_t* fence_to_signal = nullptr,
+                                         const std::vector<semaphore_t*>& wait_semaphores = {},
+                                         const std::vector<semaphore_t*>& signal_semaphores = {}) override;
 
-        command_list_t* allocate_command_list(uint32_t thread_idx, queue_type needed_queue_type, command_list_t::level command_list_type) override;
-
-        /*!
-         * \brief Retrieves the command pool for the current thread, or creates a new one if there is nothing or the
-         * current thread
-         *
-         * \param thread_idx The index of the thread that the command buffer you want to allocate will be used from
-         * \param queue_index the index of the queue we need to get a command pool for
-         *
-         * \return The command pool for the current thread
-         */
-        VkCommandPool get_command_buffer_pool_for_current_thread(uint32_t thread_idx, uint32_t queue_index);
-
-        uint32_t get_queue_family_index(const queue_type queue) const;
-
-    private:
-        /*!
-         * \brief The number of frames that Nova can have in-flight at a given time
-         *
-         * The default value seen here is the number of in-flight frames we request from the GPU. However, the GPU may
-         * create more swapchain images than we requested - which is fine, but that means that this value at runtime
-         * may not be what it is here. Be aware.
-         *
-         * This value should not be changed outside of the constructor, but I don't know how to make the compiler
-         * enforce that - so be careful!
-         */
-        uint32_t max_in_flight_frames = 3;
-        uint32_t current_swapchain_image = 0;
-        uint32_t current_frame = 0;
-
-        std::vector<const char*> enabled_layer_names;
-
-#ifdef NOVA_LINUX
-        std::shared_ptr<x11_window> window;
-#elif defined(NOVA_WINDOWS)
-        std::shared_ptr<win32_window> window;
-#endif
-
-#pragma region Globals
-        RENDERDOC_API_1_3_0* renderdoc;
-
-        VkInstance vk_instance{};
-
-        VmaAllocator vma_allocator{};
-
-        std::vector<VkSemaphore> render_finished_semaphores;
-        std::vector<VkSemaphore> image_available_semaphores;
-
-        /*!
-         * \brief Fences to tell us if we can render the next frame
-         */
-        std::vector<VkFence> frame_fences;
-
-        bool dynamic_textures_need_to_transition = false;
-        std::unordered_map<std::string, vk_texture> textures;
-        std::unordered_map<std::string, vk_buffer> buffers;
-
-        VkSampler point_sampler{};
-
-        /*!
-         * \brief Thread-local command pools so multiple tasks don't try to use the same command pools at the same time
-         */
-        std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
-
-        std::vector<VkDescriptorPool> descriptor_pools_by_thread_idx;
-
-        void reset_render_finished_semaphores();
-
-        /*!
-         * \brief Fills out the `command_pools_by_thread_idx` member
-         */
-        void create_per_thread_command_pools();
-
-        /*!
-         * \brief Fills out the `descriptor_pools_by_thread_idx` member
-         */
-        void create_per_thread_descriptor_pools();
-
-        /*!
-         * \brief Allocates new command pools - one for graphics, one for transfer, one for compute
-         */
-        std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
-
-        /*!
-         * \brief Factory function to make a new descriptor pool
-         */
-        VkDescriptorPool make_new_descriptor_pool() const;
-
-        /*!
-         * \brief Retrieves the descriptor pool for the calling thread
-         */
-        VkDescriptorPool get_descriptor_pool_for_current_thread();
-
-        /*!
-         * \brief Creates a point sampler and a linear sampler
-         */
-        void create_default_samplers();
-#pragma endregion
-
-#pragma region Init
     protected:
-        void open_window(uint32_t width, uint32_t height) override;
+        virtual void open_window(uint32_t width, uint32_t height) override;
 
     private:
-        static bool does_device_support_extensions(VkPhysicalDevice device);
+        VkInstance instance;
+        VkDevice device;
 
-        void create_device();
-        void create_memory_allocator();
+		vk_gpu_info gpu;
 
-        void create_global_sync_objects();
-#pragma endregion
-
-#pragma region Swapchain
         std::unique_ptr<swapchain_manager> swapchain;
+<<<<<<< HEAD
 
         void create_swapchain();
 #pragma endregion
@@ -637,10 +553,7 @@ namespace nova::renderer {
         PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
 
         static VkFormat to_vk_format(pixel_format_enum format);
+=======
+>>>>>>> Vulkan implementation of renderpass creation
     };
-
-    VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                         VkDebugUtilsMessageTypeFlagsEXT messageTypes,
-                                                         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                         void* pUserData);
 } // namespace nova::renderer

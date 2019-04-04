@@ -1,14 +1,19 @@
 #pragma once
 
+<<<<<<< HEAD
 #include "nova_renderer/shaderpack_data.hpp"
+=======
+#pragma once
+>>>>>>> Vulkan implementation of renderpass creation
 
-#include <nova_renderer/shaderpack_data_t.hpp>
+#include <nova_renderer/shaderpack_data.hpp>
 #include <vulkan/vulkan.h>
 
 #ifdef Always // RIP X11 and its macros
 #undef Always
 #endif
 
+<<<<<<< HEAD
 namespace nova::renderer::vulkan {
     static VkPrimitiveTopology to_primitive_topology(primitive_topology_enum topology) {
         switch(topology) {
@@ -108,3 +113,7 @@ namespace nova::renderer::vulkan {
         }
     };
 } // namespace nova::renderer::vulkan
+=======
+namespace nova::renderer {
+} // namespace nova::renderer
+>>>>>>> Vulkan implementation of renderpass creation
