@@ -25,7 +25,7 @@ namespace nova::renderer {
     /*!
      * \brief A Win32 window for the DX12 variant of Nova
      */
-    class win32_window : public window {
+    class win32_window : public window_t {
     public:
         win32_window(uint32_t width, uint32_t height);
         ~win32_window();

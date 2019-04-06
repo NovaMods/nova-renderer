@@ -35,7 +35,7 @@ namespace nova::renderer {
             renderer->load_shaderpack(CMAKE_DEFINED_RESOURCES_PREFIX "shaderpacks/DefaultShaderpack");
 
             render_engine* engine = renderer->get_engine();
-            std::shared_ptr<window> window = engine->get_window();
+            std::shared_ptr<window_t> window = engine->get_window();
 
             mesh_data cube = {};
             cube.vertex_data = {

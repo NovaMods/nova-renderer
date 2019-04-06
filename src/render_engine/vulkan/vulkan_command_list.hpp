@@ -10,14 +10,14 @@
 #include <vulkan/vulkan.h>
 
 namespace nova::renderer {
-    class vulkan_render_engine;
+    class vk_render_engine;
 
     /*!
      * \brief Vulkan implementation of `command_list`
      */
     class vulkan_command_list : public command_list_t {
     public:
-        explicit vulkan_command_list(VkCommandBuffer cmds, const vulkan_render_engine& render_engine);
+        explicit vulkan_command_list(VkCommandBuffer cmds, const vk_render_engine& render_engine);
 
         void resource_barriers(pipeline_stage_flags stages_before_barrier,
                               pipeline_stage_flags stages_after_barrier,
@@ -42,6 +42,6 @@ namespace nova::renderer {
 
     private:
         VkCommandBuffer cmds;
-        const vulkan_render_engine& render_engine;
+        const vk_render_engine& render_engine;
     };
 } // namespace nova::renderer

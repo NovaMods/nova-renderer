@@ -62,7 +62,7 @@ namespace nova::renderer {
 
         std::unique_ptr<window> window;
 
-        void open_window(uint32_t width, uint32_t height) override;
+        void open_window(const nova_settings::window_options& options) override;
 
         std::unordered_map<std::string, sampler_create_info_t> samplers;
     };
