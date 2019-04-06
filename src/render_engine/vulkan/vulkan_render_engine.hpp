@@ -11,22 +11,25 @@
 
 #include "swapchain.hpp"
 
+#include "../../util/vma_usage.hpp"
+#include "vk_structs.hpp"
+
 namespace nova::renderer {
     /*!
      * \brief Vulkan implementation of a render engine
      */
-    class vulkan_render_engine : public render_engine {
+    class vk_render_engine : public render_engine {
     public:
-        vulkan_render_engine(nova_settings& settings);
+        vk_render_engine(nova_settings& settings);
 
-		vulkan_render_engine(vulkan_render_engine&& old) noexcept = delete;
-        vulkan_render_engine& operator=(vulkan_render_engine&& old) noexcept = delete;
+        vk_render_engine(vk_render_engine&& old) noexcept = delete;
+        vk_render_engine& operator=(vk_render_engine&& old) noexcept = delete;
 
-		vulkan_render_engine(const vulkan_render_engine& other) = delete;
-        vulkan_render_engine& operator=(const vulkan_render_engine& other) = delete;
+        vk_render_engine(const vk_render_engine& other) = delete;
+        vk_render_engine& operator=(const vk_render_engine& other) = delete;
 
         // Inherited via render_engine
-        virtual std::shared_ptr<window> get_window() const override;
+        virtual std::shared_ptr<window_t> get_window() const override;
 
         virtual result<renderpass_t*> create_renderpass(const render_pass_create_info_t& data) override;
         virtual pipeline_t* create_pipeline(const pipeline_create_info_t& data) override;
@@ -53,14 +56,72 @@ namespace nova::renderer {
                                          const std::vector<semaphore_t*>& signal_semaphores = {}) override;
 
     protected:
-        virtual void open_window(uint32_t width, uint32_t height) override;
+        virtual void open_window_and_create_surface(const nova_settings::window_options& options) override;
 
     private:
+        // Global Vulkan objects
         VkInstance instance;
-        VkDevice device;
 
-		vk_gpu_info gpu;
+        VkDevice device;
+        VmaAllocator vma_allocator;
+
+        VkSurfaceKHR surface{};
+
+        uint32_t graphics_family_index;
+        uint32_t compute_family_index;
+        uint32_t transfer_family_index;
+
+        VkQueue graphics_queue;
+        VkQueue compute_queue;
+        VkQueue copy_queue;
 
         std::unique_ptr<swapchain_manager> swapchain;
+        uint32_t max_in_flight_frames = 3;
+
+        /*!
+         * The index in the vector is the thread index, the key in the map is the queue family index
+         */
+        std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
+
+        std::vector<VkDescriptorPool> descriptor_pools_by_thread_idx;
+
+        // Info about the hardware
+        vk_gpu_info gpu;
+
+        // Debugging things
+        PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
+        PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = nullptr;
+        PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = nullptr;
+
+#pragma region Initialization
+        std::vector<const char*> enabled_layer_names;
+
+        void create_instance();
+
+        void enable_debug_output();
+
+        void initialze_vma();
+
+        void create_device_and_queues();
+
+        bool does_device_support_extensions(VkPhysicalDevice device);
+
+        void create_swapchain();
+
+        void create_per_thread_command_pools();
+
+        std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
+
+		void create_per_thread_descritor_sets();
+#pragma endregion
+
+#pragma region Debugging
+        VkDebugUtilsMessengerEXT debug_callback{};
+
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                                    VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+                                                                    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                                    void* pUserData);
+#pragma endregion
     };
 } // namespace nova::renderer

@@ -13,15 +13,15 @@ namespace nova::renderer {
     /*!
      * \brief D3D12 implmentation of a render engine
      */
-    class d2d12_render_engine : public render_engine {
+    class d3d12_render_engine : public render_engine {
     public:
-        d2d12_render_engine(nova_settings& settings);
+        d3d12_render_engine(nova_settings& settings);
 
-        d2d12_render_engine(d2d12_render_engine&& old) noexcept = delete;
-        d2d12_render_engine& operator=(d2d12_render_engine&& old) noexcept = delete;
+        d3d12_render_engine(d3d12_render_engine&& old) noexcept = delete;
+        d3d12_render_engine& operator=(d3d12_render_engine&& old) noexcept = delete;
 
-        d2d12_render_engine(const d2d12_render_engine& other) = delete;
-        d2d12_render_engine& operator=(const d2d12_render_engine& other) = delete;
+        d3d12_render_engine(const d3d12_render_engine& other) = delete;
+        d3d12_render_engine& operator=(const d3d12_render_engine& other) = delete;
 
         // Inherited via render_engine
         virtual std::shared_ptr<window> get_window() const override;
@@ -47,6 +47,6 @@ namespace nova::renderer {
                                          fence_t* fence_to_signal = nullptr,
                                          const std::vector<semaphore_t*>& wait_semaphores = {},
                                          const std::vector<semaphore_t*>& signal_semaphores = {}) override;
-        virtual void open_window(uint32_t width, uint32_t height) override;
+        virtual void open_window_and_create_surface(const nova_settings::window_options& options) override;
     };
 } // namespace nova::renderer

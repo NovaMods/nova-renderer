@@ -12,7 +12,7 @@
 #include "loading/shaderpack/shaderpack_loading.hpp"
 
 #if defined(NOVA_WINDOWS)
-#include "render_engine/dx12/dx12_render_engine.hpp"
+#include "render_engine/dx12/d3d12_render_engine.hpp"
 #endif
 
 #include "debugging/renderdoc.hpp"
@@ -64,8 +64,8 @@ namespace nova::renderer {
             case graphics_api::dx12:
 #if defined(NOVA_WINDOWS)
             {
-                MTR_SCOPE("Init", "InitDirectX12RenderEngine");
-                engine = std::make_unique<dx12_render_engine>(render_settings);
+                MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
+                engine = std::make_unique<d3d12_render_engine>(render_settings);
             } break;
 #else
                 NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
@@ -73,7 +73,7 @@ namespace nova::renderer {
 #endif
             case graphics_api::vulkan: {
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                engine = std::make_unique<vulkan_render_engine>(render_settings, render_doc);
+                engine = std::make_unique<vk_render_engine>(render_settings, render_doc);
             } break;
 
             case graphics_api::gl2: {
@@ -89,7 +89,8 @@ namespace nova::renderer {
 
     void nova_renderer::execute_frame() const {
         MTR_SCOPE("RenderLoop", "execute_frame");
-        engine->render_frame();
+
+
 
         mtr_flush();
     }

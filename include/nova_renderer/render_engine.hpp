@@ -61,7 +61,7 @@ namespace nova::renderer {
          */
         virtual ~render_engine() = default;
 
-        [[nodiscard]] virtual std::shared_ptr<window> get_window() const = 0;
+        [[nodiscard]] virtual std::shared_ptr<window_t> get_window() const = 0;
 
         /*!
          * \brief Creates a renderpass from the provided data
@@ -124,6 +124,14 @@ namespace nova::renderer {
                                          const std::vector<semaphore_t*>& signal_semaphores = {}) = 0;
 
     protected:
+        nova_settings& settings;
+
+#ifdef NOVA_LINUX
+        std::shared_ptr<x11_window> window;
+#elif defined(NOVA_WINDOWS)
+        std::shared_ptr<win32_window> window;
+#endif
+
         /*!
          * \brief Initializes the engine, does **NOT** open any window
          * \param settings The settings passed to nova
@@ -140,9 +148,8 @@ namespace nova::renderer {
          * \param width The width, in pixels, of the desired window
          * \param height The height, in pixels of the desired window
          */
-        virtual void open_window(uint32_t width, uint32_t height) = 0;
+        virtual void open_window(const nova_settings::window_options& options) = 0;
 
-        nova_settings& settings;
     };
 } // namespace nova::renderer
 

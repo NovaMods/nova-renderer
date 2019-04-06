@@ -10,7 +10,7 @@
 
 namespace nova::renderer {
     swapchain_manager::swapchain_manager(const uint32_t requested_num_swapchain_images,
-                                         vulkan_render_engine& render_engine,
+                                         vk_render_engine& render_engine,
                                          const glm::ivec2 window_dimensions,
                                          const std::vector<VkPresentModeKHR>& present_modes)
         : render_engine(render_engine),
