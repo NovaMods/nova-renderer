@@ -113,6 +113,8 @@ namespace nova::renderer {
         std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
 
 		void create_per_thread_descritor_sets();
+
+		VkDescriptorPool make_new_descriptor_pool() const;
 #pragma endregion
 
 #pragma region Debugging

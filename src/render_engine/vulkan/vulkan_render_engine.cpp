@@ -535,6 +535,25 @@ namespace nova::renderer {
         }
     }
 
+    VkDescriptorPool vk_render_engine::make_new_descriptor_pool() const {
+        std::vector<VkDescriptorPoolSize> pool_sizes;
+        pool_sizes.emplace_back(
+            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 5}); // Virtual textures greatly reduces the number of total textures
+        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 5});
+        pool_sizes.emplace_back(VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 5000});
+
+        VkDescriptorPoolCreateInfo pool_create_info = {};
+        pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        pool_create_info.maxSets = 5000;
+        pool_create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
+        pool_create_info.pPoolSizes = pool_sizes.data();
+
+        VkDescriptorPool pool;
+        NOVA_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_create_info, nullptr, &pool));
+
+        return pool;
+    }
+
     VKAPI_ATTR VkBool32 VKAPI_CALL vk_render_engine::debug_report_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                                            VkDebugUtilsMessageTypeFlagsEXT messageTypes,
                                                                            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
