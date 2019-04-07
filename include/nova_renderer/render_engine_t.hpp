@@ -52,7 +52,7 @@ namespace nova::renderer::rhi {
     public:
         render_engine_t(render_engine_t&& other) = delete;
         render_engine_t& operator=(render_engine_t&& other) noexcept = delete;
-
+        
         render_engine_t(const render_engine_t& other) = delete;
         render_engine_t& operator=(const render_engine_t& other) = delete;
 
@@ -73,11 +73,11 @@ namespace nova::renderer::rhi {
          *
          * \return The newly created renderpass
          */
-        [[nodiscard]] virtual result<renderpass_t*> create_renderpass(const render_pass_create_info_t& data) = 0;
+        [[nodiscard]] virtual result<renderpass_t*> create_renderpass(const shaderpack::render_pass_create_info_t& data) = 0;
 
 		[[nodiscard]] virtual framebuffer_t* create_framebuffer(const std::vector<resource_t*>& attachments) = 0;
 
-        [[nodiscard]] virtual pipeline_t* create_pipeline(const pipeline_create_info_t& data) = 0;
+        [[nodiscard]] virtual pipeline_t* create_pipeline(const shaderpack::pipeline_create_info_t& data) = 0;
 
         [[nodiscard]] virtual resource_t* create_buffer(const buffer_create_info_t& info) = 0;
 
@@ -92,6 +92,8 @@ namespace nova::renderer::rhi {
         [[nodiscard]] virtual std::vector<fence_t*> create_fences(uint32_t num_fences, bool signaled = false) = 0;
 
         virtual void destroy_renderpass(renderpass_t* pass) = 0;
+
+        virtual void destroy_framebuffer(const framebuffer_t* framebuffer) = 0;
 
         virtual void destroy_pipeline(pipeline_t* pipeline) = 0;
 
