@@ -65,7 +65,7 @@ namespace nova::renderer {
 #if defined(NOVA_WINDOWS)
             {
                 MTR_SCOPE("Init", "InitDirect3D12RenderEngine");
-                engine = std::make_unique<rhi::d3d12_render_engine>(render_settings);
+                rhi = std::make_unique<rhi::d3d12_render_engine>(render_settings);
             } break;
 #else
                 NOVA_LOG(WARN) << "You selected the DX12 graphics API, but your system doesn't support it. Defaulting to Vulkan";
@@ -73,12 +73,12 @@ namespace nova::renderer {
 #endif
             case graphics_api::vulkan: {
                 MTR_SCOPE("Init", "InitVulkanRenderEngine");
-                engine = std::make_unique<rhi::vk_render_engine>(render_settings);
+                rhi = std::make_unique<rhi::vk_render_engine>(render_settings);
             } break;
 
             case graphics_api::gl2: {
                 MTR_SCOPE("Init", "InitGL2RenderEngine");
-                engine = std::make_unique<rhi::gl2_render_engine>(render_settings);
+                rhi = std::make_unique<rhi::gl2_render_engine>(render_settings);
             } break;
         }
     }
@@ -101,9 +101,7 @@ namespace nova::renderer {
 
         if(shaderpack_loaded) {
             destroy_render_passes();
-            destroy_graphics_pipelines();
-            materials.clear();
-            material_passes_by_pipeline.clear();
+
             destroy_dynamic_resources();
 
             NOVA_LOG(DEBUG) << "Resources from old shaderpacks destroyed";
@@ -133,17 +131,35 @@ namespace nova::renderer {
         shaderpack_loaded = true;
 
         NOVA_LOG(INFO) << "Shaderpack " << shaderpack_name << " loaded successfully";
-    } 
+    }
 
     void nova_renderer::destroy_render_passes() {
-        for(renderpass_t* renderpass : renderpasses) {
-            engine->destroy_renderpass(renderpass->renderpass);
+        for(renderpass_t& renderpass : renderpasses) {
+            rhi->destroy_renderpass(renderpass.renderpass);
+            rhi->destroy_framebuffer(renderpass.framebuffer);
+
+            for(pipeline_t& pipeline : renderpass.pipelines) {
+                rhi->destroy_pipeline(pipeline.pipeline);
+
+                for(material_pass_t& material_pass : pipeline.passes) {
+                    // TODO: Destroy descriptors for material
+                    // TODO: Have a way to save mesh data somewhere outside of the render graph, then process it cleanly here
+                }
+            }
         }
 
         renderpasses.clear();
     }
 
-    rhi::render_engine_t* nova_renderer::get_engine() const { return engine.get(); }
+    void nova_renderer::destroy_dynamic_resources() {
+        for(auto& [name, resource] : dynamic_resources) {
+            rhi->destroy_resource(resource);
+        }
+
+        dynamic_resources.clear();
+    }
+
+    rhi::render_engine_t* nova_renderer::get_engine() const { return rhi.get(); }
 
     nova_renderer* nova_renderer::get_instance() { return instance.get(); }
 

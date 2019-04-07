@@ -19,11 +19,19 @@ namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
     NOVA_EXCEPTION(uninitialized_exception);
 
-#pragma region Runtime - optimized data
+#pragma region Runtime-optimized data
+    template<typename RenderableType>
+    struct mesh_batch_t {
+        rhi::resource_t* vertex_buffer;
+        rhi::resource_t* index_buffer;
+                
+        std::vector<RenderableType> renderables;
+    };
+
     struct material_pass_t {
         // Descriptors for the material pass
 
-        std::vector<static_mesh_renderable_t> renderables;
+        std::vector<mesh_batch_t<static_mesh_renderable_t>> static_mesh_draws;
     };
 
     struct pipeline_t {
@@ -34,7 +42,7 @@ namespace nova::renderer {
 
     struct renderpass_t {
         rhi::renderpass_t* renderpass;
-        rhi::framebuffer_t& framebuffer;
+        rhi::framebuffer_t* framebuffer;
 
         std::vector<pipeline_t> pipelines;
     };
@@ -57,7 +65,7 @@ namespace nova::renderer {
         nova_renderer& operator=(const nova_renderer& other) = delete;
 
         ~nova_renderer();
-
+        
         /*!
          * \brief Loads the shaderpack with the given name
          *
@@ -86,7 +94,7 @@ namespace nova::renderer {
 
     private:
         nova_settings render_settings;
-        std::unique_ptr<rhi::render_engine_t> engine;
+        std::unique_ptr<rhi::render_engine_t> rhi;
 
         RENDERDOC_API_1_3_0* render_doc;
         static std::unique_ptr<nova_renderer> instance;
@@ -97,9 +105,13 @@ namespace nova::renderer {
         /*!
          * \brief The renderpasses in the shaderpack, in submission order
          */
-        std::vector<renderpass_t*> renderpasses;
+        std::vector<renderpass_t> renderpasses;
+
+        std::unordered_map<std::string, rhi::resource_t*> dynamic_resources;
 
         void destroy_render_passes();
+
+        void destroy_dynamic_resources();
 #pragma endregion
     };
 } // namespace nova::renderer
