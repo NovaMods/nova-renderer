@@ -2,7 +2,7 @@
 #include <vector>
 #include <nova_renderer/rhi_types.hpp>
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
 #pragma region Enums
     enum class resource_state {
         UNDEFINED,

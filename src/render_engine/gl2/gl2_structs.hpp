@@ -7,7 +7,7 @@
 
 #pragma once
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     struct gl_resource_t : resource_t {
         GLuint id;
     };

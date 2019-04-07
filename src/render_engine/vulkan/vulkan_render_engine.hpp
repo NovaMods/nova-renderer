@@ -14,7 +14,7 @@
 #include "../../util/vma_usage.hpp"
 #include "vk_structs.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     /*!
      * \brief Vulkan implementation of a render engine
      */

@@ -11,7 +11,22 @@ namespace nova::renderer {
     NOVA_EXCEPTION(already_initialized_exception);
     NOVA_EXCEPTION(uninitialized_exception);
 
-    
+#pragma region Runtime - optimized data
+    struct material_pass_t {};
+
+    struct pipeline_t {
+        rhi::pipeline_t* pipeline;
+
+        std::vector<material_pass_t> passes;
+    };
+
+    struct renderpass_t {
+        rhi::renderpass_t* renderpass;
+        rhi::framebuffer_t& framebuffer;
+
+        std::vector<pipeline_t> pipelines;
+    };
+#pragma endregion
 
     /*!
      * \brief Main class for Nova. Owns all of Nova's resources and provides a way to access them
@@ -31,7 +46,7 @@ namespace nova::renderer {
         nova_renderer& operator=(const nova_renderer& other) = delete;
 
         ~nova_renderer();
-        
+
         /*!
          * \brief Loads the shaderpack with the given name
          *
@@ -50,7 +65,7 @@ namespace nova::renderer {
 
         nova_settings& get_settings();
 
-        [[nodiscard]] render_engine_t* get_engine() const;
+        [[nodiscard]] rhi::render_engine_t* get_engine() const;
 
         static nova_renderer* initialize(const nova_settings& settings);
 
@@ -60,7 +75,7 @@ namespace nova::renderer {
 
     private:
         nova_settings render_settings;
-        std::unique_ptr<render_engine_t> engine;
+        std::unique_ptr<rhi::render_engine_t> engine;
 
         RENDERDOC_API_1_3_0* render_doc;
         static std::unique_ptr<nova_renderer> instance;

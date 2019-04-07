@@ -7,7 +7,7 @@
 
 #include "../../util/logger.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     D3D12_RESOURCE_STATES to_dx12_state(resource_state state);
 
     enum class pixel_format_enum;

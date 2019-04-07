@@ -57,7 +57,7 @@
 #include "../dx12/win32_window.hpp"
 #endif
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     vk_render_engine::vk_render_engine(nova_settings& settings) : render_engine_t(settings) {
         create_instance();
 

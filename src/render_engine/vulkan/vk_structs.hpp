@@ -9,7 +9,7 @@
 
 #include <nova_renderer/render_engine_t.hpp>
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     struct vk_resource_t : resource_t {
         enum class type {
             IMAGE,

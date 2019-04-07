@@ -9,7 +9,7 @@
 
 #include "vk_structs.hpp"
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     vulkan_command_list::vulkan_command_list(VkCommandBuffer cmds, const vk_render_engine& render_engine)
         : cmds(cmds), render_engine(render_engine) {}
 

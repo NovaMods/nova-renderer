@@ -7,7 +7,7 @@
 
 #include <glm/glm.hpp>
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     enum class queue_type {
         GRAPHICS,
         TRANSFER,

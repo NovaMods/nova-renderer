@@ -9,7 +9,7 @@
 
 #include <vulkan/vulkan.h>
 
-namespace nova::renderer {
+namespace nova::renderer::rhi {
     class vk_render_engine;
 
     /*!
