@@ -54,7 +54,7 @@ namespace nova::renderer {
 
         explicit nova_exception(const std::exception& cause);
         nova_exception(const std::string& msg, const std::exception& cause);
-        [[nodiscard]] const char* what() const noexcept override;
+        [[nodiscard]] const char* what() const noexcept override final;
     };
 
 #define FORMAT(s, ...) fmt::format(fmt(s), __VA_ARGS__)
