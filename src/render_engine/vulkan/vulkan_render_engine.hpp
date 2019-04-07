@@ -81,8 +81,6 @@ namespace nova::renderer {
          */
         std::vector<std::unordered_map<uint32_t, VkCommandPool>> command_pools_by_thread_idx;
 
-        std::vector<VkDescriptorPool> descriptor_pools_by_thread_idx;
-
         // Info about the hardware
         vk_gpu_info gpu;
 
@@ -109,8 +107,6 @@ namespace nova::renderer {
         void create_per_thread_command_pools();
 
         std::unordered_map<uint32_t, VkCommandPool> make_new_command_pools() const;
-
-        void create_per_thread_descriptor_sets();
 
         VkDescriptorPool make_new_descriptor_pool() const;
 #pragma endregion
