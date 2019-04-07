@@ -8,11 +8,22 @@
 #include "../../util/logger.hpp"
 #include "d3d12_render_engine.hpp"
 #include "d3dx12.h"
+#include "dx12_utils.hpp"
 
 using Microsoft::WRL::ComPtr;
 
 namespace nova::renderer {
-    d3d12_render_engine::d3d12_render_engine(nova_settings& settings) : render_engine(settings) { create_device(); }
+    d3d12_render_engine::d3d12_render_engine(nova_settings& settings) : render_engine(settings) {
+        const std::optional<nova_error> create_device_error = create_device();
+        if(create_device_error) {
+            NOVA_LOG(FATAL) << "Could not create D3D12 render engine: " << create_device_error->to_string();
+            return;
+        }
+
+        open_window_and_create_surface(settings.window);
+
+        create_queues();
+    }
 
     std::shared_ptr<window_t> d3d12_render_engine::get_window() const { return window; }
 
@@ -32,9 +43,9 @@ namespace nova::renderer {
 
     std::vector<semaphore_t*> d3d12_render_engine::create_semaphores(uint32_t num_semaphores) { return std::vector<semaphore_t*>(); }
 
-    fence_t* d3d12_render_engine::create_fence(bool signaled = false) { return nullptr; }
+    fence_t* d3d12_render_engine::create_fence(bool signaled) { return nullptr; }
 
-    std::vector<fence_t*> d3d12_render_engine::create_fences(uint32_t num_fences, bool signaled = false) { return std::vector<fence_t*>(); }
+    std::vector<fence_t*> d3d12_render_engine::create_fences(uint32_t num_fences, bool signaled) { return std::vector<fence_t*>(); }
 
     void d3d12_render_engine::destroy_renderpass(renderpass_t* pass) {}
 
@@ -60,7 +71,7 @@ namespace nova::renderer {
 
     void d3d12_render_engine::open_window_and_create_surface(const nova_settings::window_options& options) {}
 
-    std::optional<nova_error> d3d12_render_engine::create_device() {
+    void d3d12_render_engine::create_device() {
         if(settings.debug.enabled && settings.debug.enable_validation_layers) {
             ComPtr<ID3D12Debug> debug_controller;
             D3D12GetDebugInterface(IID_PPV_ARGS(&debug_controller));
@@ -69,10 +80,8 @@ namespace nova::renderer {
 
         NOVA_LOG(TRACE) << "Creating DX12 device";
 
-        HRESULT hr = CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&dxgi_factory));
-        if(FAILED(hr)) {
-            return std::make_optional(nova_error("Could not create DXGI Factory"));
-        }
+        CHECK_ERROR(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&dxgi_factory)), "Could not create DXGI Factory");
+
         NOVA_LOG(TRACE) << "Device created";
 
         ComPtr<IDXGIAdapter1> adapter;
@@ -93,7 +102,7 @@ namespace nova::renderer {
             // Direct3D 12 is feature level 11.
             //
             // cool
-            hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, _uuidof(ID3D12Device), nullptr);
+            const HRESULT hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
             if(SUCCEEDED(hr)) {
                 adapter_found = true;
                 break;
@@ -103,14 +112,22 @@ namespace nova::renderer {
         }
 
         if(!adapter_found) {
-            return std::make_optional(nova_error("Could not find a GPU that supports DX12"));
+            NOVA_LOG(ERROR) << "Could not find a GPU that supports DX12";
         }
+    }
 
-        NOVA_LOG(TRACE) << "Adapter found";
+    void d3d12_render_engine::create_queues() {
+        D3D12_COMMAND_QUEUE_DESC rtv_queue_desc = {};
+        CHECK_ERROR(device->CreateCommandQueue(&rtv_queue_desc, IID_PPV_ARGS(&direct_command_queue)),
+                    "Could not create main command queue");
 
-        hr = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
-        if(FAILED(hr)) {
-            return std::make_optional(nova_error("Could not create DX12 device"));
-        }
+        D3D12_COMMAND_QUEUE_DESC compute_queue_desc = {};
+        compute_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+        CHECK_ERROR(device->CreateCommandQueue(&compute_queue_desc, IID_PPV_ARGS(&compute_command_queue)),
+                    "Could not create asymc compute command queue");
+
+        D3D12_COMMAND_QUEUE_DESC copy_queue_desc = {};
+        copy_queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+        CHECK_ERROR(device->CreateCommandQueue(&copy_queue_desc, IID_PPV_ARGS(&copy_command_queue)), "Could not create copy command queue");
     }
 } // namespace nova::renderer

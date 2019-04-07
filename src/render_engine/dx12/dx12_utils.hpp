@@ -5,6 +5,8 @@
 #include <nova_renderer/shaderpack_data.hpp>
 #include "nova_renderer/command_list.hpp"
 
+#include "../../util/logger.hpp"
+
 namespace nova::renderer {
     D3D12_RESOURCE_STATES to_dx12_state(resource_state state);
 
@@ -18,4 +20,16 @@ namespace nova::renderer {
     D3D12_STENCIL_OP to_dx12_stencil_op(stencil_op_enum op);
 
     D3D12_PRIMITIVE_TOPOLOGY_TYPE to_dx12_topology(primitive_topology_enum primitive_mode);
+
+#ifndef NDEBUG
+#define CHECK_ERROR(expr, msg)                                                                                                             \
+    {                                                                                                                                      \
+        HRESULT hr = expr;                                                                                                                 \
+        if(FAILED(hr)) {                                                                                                                   \
+            NOVA_LOG(ERROR) << __FILE__ << "(" << __LINE__ << ") failed: " << msg;                                                         \
+        }                                                                                                                                  \
+    }
+#else
+#define CHECK_ERROR(expr, msg) expr;
+#endif
 } // namespace nova::renderer

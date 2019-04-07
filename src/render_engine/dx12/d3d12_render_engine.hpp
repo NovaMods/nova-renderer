@@ -60,6 +60,14 @@ namespace nova::renderer {
 
         Microsoft::WRL::ComPtr<IDXGISwapChain3> swapchain; // swapchain used to switch between render targets
 
-        std::optional<nova_error> create_device();
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> direct_command_queue;
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> compute_command_queue;
+        Microsoft::WRL::ComPtr<ID3D12CommandQueue> copy_command_queue;
+
+#pragma region Initialization
+        void create_device();
+
+        void create_queues();
+#pragma endregion
     };
 } // namespace nova::renderer
